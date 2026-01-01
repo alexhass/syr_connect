@@ -1,0 +1,107 @@
+"""Config flow for SYR Connect integration."""
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+import voluptuous as vol
+
+from homeassistant import config_entries
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+from .const import DOMAIN, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .api import SyrConnectAPI
+
+_LOGGER = logging.getLogger(__name__)
+
+STEP_USER_DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_PASSWORD): str,
+    }
+)
+
+
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+    """Validate the user input allows us to connect."""
+    _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
+    session = async_get_clientsession(hass)
+    api = SyrConnectAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
+    
+    # Test authentication
+    _LOGGER.debug("Testing API authentication...")
+    await api.login()
+    _LOGGER.info("API authentication successful for user: %s", data[CONF_USERNAME])
+    
+    return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
+
+
+class SyrConnectOptionsFlow(config_entries.OptionsFlow):
+    """Handle options flow for SYR Connect."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        # Get current scan interval with safe fallback
+        current_scan_interval = DEFAULT_SCAN_INTERVAL
+        if self.config_entry and self.config_entry.options:
+            current_scan_interval = self.config_entry.options.get(
+                CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+            )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_SCAN_INTERVAL,
+                        default=current_scan_interval,
+                    ): vol.All(vol.Coerce(int), vol.Range(min=60, max=600)),
+                }
+            ),
+        )
+
+
+class SyrConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for SYR Connect."""
+
+    VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry):
+        """Get the options flow for this handler."""
+        return SyrConnectOptionsFlow()
+
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the initial step."""
+        errors: dict[str, str] = {}
+        
+        if user_input is not None:
+            _LOGGER.info("Processing config flow for user: %s", user_input[CONF_USERNAME])
+            try:
+                info = await validate_input(self.hass, user_input)
+                _LOGGER.debug("Validation successful")
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.exception("Config flow validation failed: %s", err)
+                errors["base"] = "cannot_connect"
+            else:
+                _LOGGER.debug("Setting unique ID: %s", user_input[CONF_USERNAME])
+                await self.async_set_unique_id(user_input[CONF_USERNAME])
+                self._abort_if_unique_id_configured()
+                
+                _LOGGER.info("Creating config entry: %s", info["title"])
+                return self.async_create_entry(title=info["title"], data=user_input)
+        else:
+            _LOGGER.debug("Showing config form to user")
+
+        return self.async_show_form(
+            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+        )

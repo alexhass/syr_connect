@@ -1,0 +1,14 @@
+{
+  "domain": "syr_connect",
+  "name": "SYR Connect",
+  "codeowners": ["@custom"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/alexhass/syr_connect",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "requirements": ["xmltodict==0.13.0", "pycryptodomex==3.19.0"],
+  "version": "1.0.0",
+  "icon": "mdi:water-pump",
+  "loggers": ["custom_components.syr_connect"]
+}

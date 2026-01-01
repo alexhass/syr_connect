@@ -1,0 +1,84 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SYR Connect",
+        "description": "Enter your SYR Connect App credentials",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "init": {
+        "title": "SYR Connect Options",
+        "data": {
+          "scan_interval": "Data update interval in seconds"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Please check your credentials.",
+      "unknown": "An unknown error occurred"
+    },
+    "abort": {
+      "already_configured": "This account is already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "getSRN": { "name": "Serial Number" },
+      "getVER": { "name": "Firmware Version" },
+      "getFIR": { "name": "Firmware Model" },
+      "getTYP": { "name": "Type" },
+      "getCNA": { "name": "Device Name" },
+      "getMAN": { "name": "Manufacturer" },
+      "getMAC": { "name": "MAC Address" },
+      "getIPA": { "name": "IP Address" },
+      "getDGW": { "name": "Gateway" },
+      "getIWH": { "name": "Input Water Hardness" },
+      "getOWH": { "name": "Output Water Hardness" },
+      "getWHU": { "name": "Water Hardness Unit" },
+      "getRES": { "name": "Remaining Capacity" },
+      "getTOR": { "name": "Total Capacity" },
+      "getRPD": { "name": "Regeneration Interval" },
+      "getRPW": { "name": "Regenerations per Week" },
+      "getRTH": { "name": "Regeneration Time (Hour)" },
+      "getRTM": { "name": "Regeneration Time (Minute)" },
+      "getRTI": { "name": "Regeneration Time" },
+      "getSIR": { "name": "Immediate Regeneration" },
+      "getSRE": { "name": "Regeneration Active" },
+      "getNOR": { "name": "Number of Regenerations" },
+      "getSV1": { "name": "Salt Volume Container 1" },
+      "getSV2": { "name": "Salt Volume Container 2" },
+      "getSV3": { "name": "Salt Volume Container 3" },
+      "getSS1": { "name": "Salt Stock Container 1" },
+      "getSS2": { "name": "Salt Stock Container 2" },
+      "getSS3": { "name": "Salt Stock Container 3" },
+      "getPRS": { "name": "Pressure" },
+      "getFLO": { "name": "Flow" },
+      "getFCO": { "name": "Flow Counter" },
+      "getDWF": { "name": "Flow Warning Value" },
+      "getALM": { "name": "Alarm" },
+      "getSTA": { "name": "Status" },
+      "getPST": { "name": "Operating State" },
+      "getCDE": { "name": "Configuration Code" },
+      "getCS1": { "name": "Configuration Level 1" },
+      "getCS2": { "name": "Configuration Level 2" },
+      "getCS3": { "name": "Configuration Level 3" },
+      "getDEN": { "name": "Device Enabled" },
+      "getCYN": { "name": "Cycle Counter" },
+      "getCYT": { "name": "Cycle Time" },
+      "getNOT": { "name": "Notes" },
+      "getINR": { "name": "Internal Reference" },
+      "getLAR": { "name": "Last Action" },
+      "getRG1": { "name": "Regeneration Group 1" },
+      "getRG2": { "name": "Regeneration Group 2" },
+      "getRG3": { "name": "Regeneration Group 3" },
+      "getVS1": { "name": "Volume Threshold 1" },
+      "getVS2": { "name": "Volume Threshold 2" },
+      "getVS3": { "name": "Volume Threshold 3" },
+      "getRDO": { "name": "Remaining Runtime" },
+      "getSCR": { "name": "Screen Lock" }
+    }
+  }
+}

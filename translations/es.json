@@ -1,0 +1,84 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SYR Connect",
+        "description": "Introduce las credenciales de la aplicación SYR Connect",
+        "data": {
+          "username": "Nombre de usuario",
+          "password": "Contraseña"
+        }
+      },
+      "init": {
+        "title": "Opciones de SYR Connect",
+        "data": {
+          "scan_interval": "Intervalo de actualización en segundos"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Error de conexión. Por favor, verifique sus credenciales.",
+      "unknown": "Se ha producido un error desconocido"
+    },
+    "abort": {
+      "already_configured": "Esta cuenta ya está configurada"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "getSRN": { "name": "Número de serie" },
+      "getVER": { "name": "Versión de firmware" },
+      "getFIR": { "name": "Modelo de firmware" },
+      "getTYP": { "name": "Tipo" },
+      "getCNA": { "name": "Nombre del dispositivo" },
+      "getMAN": { "name": "Fabricante" },
+      "getMAC": { "name": "Dirección MAC" },
+      "getIPA": { "name": "Dirección IP" },
+      "getDGW": { "name": "Puerta de enlace" },
+      "getIWH": { "name": "Dureza del agua de entrada" },
+      "getOWH": { "name": "Dureza del agua de salida" },
+      "getWHU": { "name": "Unidad de dureza del agua" },
+      "getRES": { "name": "Capacidad restante" },
+      "getTOR": { "name": "Capacidad total" },
+      "getRPD": { "name": "Intervalo de regeneración" },
+      "getRPW": { "name": "Regeneraciones por semana" },
+      "getRTH": { "name": "Hora de regeneración (Hora)" },
+      "getRTM": { "name": "Hora de regeneración (Minuto)" },
+      "getRTI": { "name": "Hora de regeneración" },
+      "getSIR": { "name": "Regeneración inmediata" },
+      "getSRE": { "name": "Regeneración activa" },
+      "getNOR": { "name": "Número de regeneraciones" },
+      "getSV1": { "name": "Cantidad de sal depósito 1" },
+      "getSV2": { "name": "Cantidad de sal depósito 2" },
+      "getSV3": { "name": "Cantidad de sal depósito 3" },
+      "getSS1": { "name": "Reserva de sal depósito 1" },
+      "getSS2": { "name": "Reserva de sal depósito 2" },
+      "getSS3": { "name": "Reserva de sal depósito 3" },
+      "getPRS": { "name": "Presión" },
+      "getFLO": { "name": "Caudal" },
+      "getFCO": { "name": "Contador de caudal" },
+      "getDWF": { "name": "Valor de advertencia de caudal" },
+      "getALM": { "name": "Alarma" },
+      "getSTA": { "name": "Estado" },
+      "getPST": { "name": "Estado de funcionamiento" },
+      "getCDE": { "name": "Código de configuración" },
+      "getCS1": { "name": "Nivel de configuración 1" },
+      "getCS2": { "name": "Nivel de configuración 2" },
+      "getCS3": { "name": "Nivel de configuración 3" },
+      "getDEN": { "name": "Dispositivo activado" },
+      "getCYN": { "name": "Contador de ciclos" },
+      "getCYT": { "name": "Tiempo de ciclo" },
+      "getNOT": { "name": "Notas" },
+      "getINR": { "name": "Referencia interna" },
+      "getLAR": { "name": "Última acción" },
+      "getRG1": { "name": "Grupo de regeneración 1" },
+      "getRG2": { "name": "Grupo de regeneración 2" },
+      "getRG3": { "name": "Grupo de regeneración 3" },
+      "getVS1": { "name": "Umbral de volumen 1" },
+      "getVS2": { "name": "Umbral de volumen 2" },
+      "getVS3": { "name": "Umbral de volumen 3" },
+      "getRDO": { "name": "Tiempo restante" },
+      "getSCR": { "name": "Bloqueo de pantalla" }
+    }
+  }
+}
