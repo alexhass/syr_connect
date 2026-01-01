@@ -1,2 +1,2 @@
 # syr_connect
-Home Assistent integration in Hans Sasserath - SYR Connect
+Home Assistant integration in Hans Sasserath - SYR Connect
