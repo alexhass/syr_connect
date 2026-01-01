@@ -15,6 +15,7 @@ from homeassistant.const import (
     UnitOfPressure,
     UnitOfTime,
     UnitOfVolume,
+    UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -47,9 +48,9 @@ _SENSOR_UNITS = {
     "getSS2": UnitOfTime.WEEKS,
     "getSS3": UnitOfTime.WEEKS,
     "getPRS": UnitOfPressure.BAR,
-    "getFLO": "L/min",
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
     "getFCO": UnitOfVolume.LITERS,
-    "getDWF": "L/min",
+    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
     "getRDO": PERCENTAGE,
 }
 
