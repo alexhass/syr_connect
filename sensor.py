@@ -9,6 +9,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfMass,
+    UnitOfPressure,
+    UnitOfTime,
+    UnitOfVolume,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -29,21 +36,21 @@ _LOGGER = logging.getLogger(__name__)
 _SENSOR_UNITS = {
     "getIWH": "°dH",
     "getOWH": "°dH",
-    "getRES": "L",
-    "getTOR": "L",
-    "getRPD": "days",
-    "getRTH": "h",
-    "getSV1": "kg",
-    "getSV2": "kg",
-    "getSV3": "kg",
-    "getSS1": "weeks",
-    "getSS2": "weeks",
-    "getSS3": "weeks",
-    "getPRS": "bar",
+    "getRES": UnitOfVolume.LITERS,
+    "getTOR": UnitOfVolume.LITERS,
+    "getRPD": UnitOfTime.DAYS,
+    "getRTH": UnitOfTime.HOURS,
+    "getSV1": UnitOfMass.KILOGRAMS,
+    "getSV2": UnitOfMass.KILOGRAMS,
+    "getSV3": UnitOfMass.KILOGRAMS,
+    "getSS1": UnitOfTime.WEEKS,
+    "getSS2": UnitOfTime.WEEKS,
+    "getSS3": UnitOfTime.WEEKS,
+    "getPRS": UnitOfPressure.BAR,
     "getFLO": "L/min",
-    "getFCO": "L",
+    "getFCO": UnitOfVolume.LITERS,
     "getDWF": "L/min",
-    "getRDO": "%",
+    "getRDO": PERCENTAGE,
 }
 
 
