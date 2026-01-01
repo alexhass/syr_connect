@@ -8,12 +8,6 @@
           "username": "Benutzername",
           "password": "Passwort"
         }
-      },
-      "init": {
-        "title": "SYR Connect Optionen",
-        "data": {
-          "scan_interval": "Datenaktualisierung in Sekunden"
-        }
       }
     },
     "error": {
@@ -22,6 +16,16 @@
     },
     "abort": {
       "already_configured": "Dieser Account ist bereits konfiguriert"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SYR Connect Optionen",
+        "data": {
+          "scan_interval": "Datenaktualisierung in Sekunden"
+        }
+      }
     }
   },
   "entity": {
