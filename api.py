@@ -69,34 +69,6 @@ class SyrConnectAPI:
         """Get current timestamp in required format."""
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    def _generate_curl_command(self, method: str, url: str, headers: dict, data: Any = None) -> str:
-        """Generate a curl command for debugging (Windows CMD compatible)."""
-        curl_parts = ["curl", "-X", method.upper()]
-        
-        # Add headers (use double quotes for Windows CMD)
-        for key, value in headers.items():
-            # Escape double quotes for Windows CMD
-            escaped_value = str(value).replace('"', '\\"')
-            curl_parts.append(f'-H "{key}: {escaped_value}"')
-        
-        # Add data
-        if data:
-            if isinstance(data, dict):
-                # Form data
-                for key, value in data.items():
-                    # Escape double quotes in value for Windows CMD
-                    escaped_value = str(value).replace('"', '\\"')
-                    curl_parts.append(f'--data-urlencode "{key}={escaped_value}"')
-            else:
-                # Raw data - escape double quotes for Windows CMD
-                escaped_data = str(data).replace('"', '\\"')
-                curl_parts.append(f'--data "{escaped_data}"')
-        
-        # Add URL (use double quotes for Windows CMD)
-        curl_parts.append(f'"{url}"')
-        
-        return " ".join(curl_parts)
-
     async def login(self) -> bool:
         """Login to SYR Connect API."""
         _LOGGER.info("Attempting login for user: %s", self.username)
@@ -123,8 +95,6 @@ class SyrConnectAPI:
         
         try:
             _LOGGER.debug("Sending login request to %s", API_LOGIN_URL)
-            curl_cmd = self._generate_curl_command("POST", API_LOGIN_URL, headers, xml_data)
-            _LOGGER.debug("Login curl command: %s", curl_cmd)
             async with self.session.post(
                 API_LOGIN_URL, data=xml_data, headers=headers
             ) as response:
@@ -216,8 +186,6 @@ class SyrConnectAPI:
         
         try:
             _LOGGER.debug("Sending device list request to %s", API_DEVICE_LIST_URL)
-            curl_cmd = self._generate_curl_command("POST", API_DEVICE_LIST_URL, headers, {'xml': payload})
-            _LOGGER.debug("Device list curl command: %s", curl_cmd)
             async with self.session.post(
                 API_DEVICE_LIST_URL,
                 data={'xml': payload},
@@ -340,8 +308,6 @@ class SyrConnectAPI:
         
         try:
             _LOGGER.debug("Sending status request to %s", API_DEVICE_STATUS_URL)
-            curl_cmd = self._generate_curl_command("POST", API_DEVICE_STATUS_URL, headers, {'xml': payload})
-            _LOGGER.debug("Status curl command: %s", curl_cmd)
             async with self.session.post(
                 API_DEVICE_STATUS_URL,
                 data={'xml': payload},
@@ -407,8 +373,6 @@ class SyrConnectAPI:
         
         try:
             _LOGGER.debug("Sending set status request to %s", API_SET_STATUS_URL)
-            curl_cmd = self._generate_curl_command("POST", API_SET_STATUS_URL, headers, {'xml': payload})
-            _LOGGER.debug("Set status curl command: %s", curl_cmd)
             async with self.session.post(
                 API_SET_STATUS_URL,
                 data={'xml': payload},
@@ -476,8 +440,6 @@ class SyrConnectAPI:
         
         try:
             _LOGGER.debug("Sending statistics request to %s", API_STATISTICS_URL)
-            curl_cmd = self._generate_curl_command("POST", API_STATISTICS_URL, headers, {'xml': payload})
-            _LOGGER.debug("Statistics curl command: %s", curl_cmd)
             async with self.session.post(
                 API_STATISTICS_URL,
                 data={'xml': payload},
