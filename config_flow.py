@@ -7,10 +7,11 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers import selector
 
 from .const import DOMAIN, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
 from .api import SyrConnectAPI
@@ -61,7 +62,14 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
                         default=current_scan_interval,
-                    ): vol.All(vol.Coerce(int), vol.Range(min=60, max=600)),
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            min=60,
+                            max=600,
+                            unit_of_measurement=UnitOfTime.SECONDS,
+                            mode=selector.NumberSelectorMode.BOX,
+                        ),
+                    ),
                 }
             ),
         )

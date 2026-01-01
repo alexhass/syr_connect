@@ -22,8 +22,9 @@
     "step": {
       "init": {
         "title": "SYR Connect Options",
+        "description": "Defines the time interval between API calls.",
         "data": {
-          "scan_interval": "Data update interval in seconds"
+          "scan_interval": "Update interval"
         }
       }
     }
