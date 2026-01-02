@@ -46,7 +46,7 @@ jobs:
       - name: Ruff Lint
         run: |
           ruff --version
-          ruff check syr_connect
+          ruff check .
 
   typecheck:
     runs-on: ubuntu-latest
