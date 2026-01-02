@@ -52,10 +52,6 @@ STRING_SENSORS = {
     "getIPA",  # IP Address
     "getDGW",  # Gateway
     "getRTI",  # Regeneration time (combined from getRTH and getRTM)
-    "getSRE",  # Regeneration active (boolean displayed as Ein/Aus)
-    "getPST",  # Operating state (boolean displayed as Ein/Aus)
-    "getSCR",  # Screen lock (boolean displayed as Ein/Aus)
-    "getALM",  # Alarm (boolean displayed as Ein/Aus)
     "getWHU",  # Water hardness unit (mapped to unit names)
 }
 

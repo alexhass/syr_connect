@@ -82,6 +82,11 @@ async def async_setup_entry(
         'getLAR',  # Last action - not useful as sensor
         'getSRN_dt',
         'getALM_dt',
+        # Boolean sensors - now handled as binary_sensor platform
+        'getSRE',  # Regeneration active
+        'getPST',  # Operating state
+        'getSCR',  # Screen lock
+        'getALM',  # Alarm
     }
     
     # Sensors to exclude only when value is 0
@@ -252,42 +257,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return f"{int(hour):02d}:{int(minute):02d}"
                     except (ValueError, TypeError):
                         return "00:00"
-                
-                # Special handling for regeneration active sensor (boolean)
-                if self._sensor_key == 'getSRE':
-                    value = status.get(self._sensor_key)
-                    if isinstance(value, (int, float)):
-                        return "Ein" if value != 0 else "Aus"
-                    elif isinstance(value, str):
-                        return "Ein" if value not in ("0", "false", "False", "") else "Aus"
-                    return "Aus"
-                
-                # Special handling for operating state sensor (boolean)
-                if self._sensor_key == 'getPST':
-                    value = status.get(self._sensor_key)
-                    if isinstance(value, (int, float)):
-                        return "Ein" if value != 0 else "Aus"
-                    elif isinstance(value, str):
-                        return "Ein" if value not in ("0", "false", "False", "") else "Aus"
-                    return "Aus"
-                
-                # Special handling for screen lock sensor (boolean)
-                if self._sensor_key == 'getSCR':
-                    value = status.get(self._sensor_key)
-                    if isinstance(value, (int, float)):
-                        return "Ein" if value != 0 else "Aus"
-                    elif isinstance(value, str):
-                        return "Ein" if value not in ("0", "false", "False", "") else "Aus"
-                    return "Aus"
-                
-                # Special handling for alarm sensor (boolean)
-                if self._sensor_key == 'getALM':
-                    value = status.get(self._sensor_key)
-                    if isinstance(value, (int, float)):
-                        return "Ein" if value != 0 else "Aus"
-                    elif isinstance(value, str):
-                        return "Ein" if value not in ("0", "false", "False", "") else "Aus"
-                    return "Aus"
                 
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
