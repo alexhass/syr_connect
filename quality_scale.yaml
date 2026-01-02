@@ -33,12 +33,12 @@ rules:
     comment: |
       - Config Flow with UI setup implemented
       - Options Flow for scan interval available
-      - data_description used in strings.json
+      - Translations provided via translations/*.json (no strings.json required)
       - ConfigEntry.data for credentials, ConfigEntry.options for scan interval
   
   dependency-transparency:
     status: done
-    comment: Dependencies correctly declared in manifest.json (xmltodict, pycryptodomex)
+    comment: Dependencies declared in manifest.json (pycryptodomex); no hidden runtime deps
   
   docs-actions:
     status: exempt
@@ -123,7 +123,7 @@ rules:
   
   test-coverage:
     status: not_done
-    comment: No coverage measurement performed, not all modules tested
+    comment: Unit tests exist (config_flow, api, payload_builder, encryption, exceptions), but coverage is not measured
 
   # GOLD TIER
   devices:
@@ -221,7 +221,7 @@ rules:
   
   strict-typing:
     status: done
-    comment: Full type hints with SyrConnectConfigEntry TypedDict, py.typed marker file for PEP 561 compliance
+    comment: Extensive type hints; mypy config added; py.typed marker file present for PEP 561 compliance
 
 # Summary
 # Bronze: 19/19 completed (100%) ✅ (3 exempt rules)
