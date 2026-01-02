@@ -2,8 +2,8 @@
 
 DOMAIN = "syr_connect"
 
-CONF_SCAN_INTERVAL = "scan_interval"
-DEFAULT_SCAN_INTERVAL = 60  # seconds
+_CONF_SCAN_INTERVAL = "scan_interval"
+_DEFAULT_SCAN_INTERVAL = 60  # seconds
 
 # API URLs (internal)
 _API_BASE_URL = "https://syrconnect.de/WebServices"

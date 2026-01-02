@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import DOMAIN, _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
 from .coordinator import SyrConnectDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     
     # Get scan interval from options, fall back to default
-    scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    scan_interval = entry.options.get(_CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL)
     
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,

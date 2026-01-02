@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 import aiohttp
 
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, CONF_SCAN_INTERVAL
+from .const import _DEFAULT_SCAN_INTERVAL, DOMAIN, _CONF_SCAN_INTERVAL
 from .api import SyrConnectAPI
 from .repairs import create_issue, delete_issue
 
@@ -30,7 +30,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         session: aiohttp.ClientSession,
         username: str,
         password: str,
-        scan_interval: int = DEFAULT_SCAN_INTERVAL,
+        scan_interval: int = _DEFAULT_SCAN_INTERVAL,
     ) -> None:
         """Initialize the coordinator.
         
