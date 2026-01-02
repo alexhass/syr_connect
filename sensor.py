@@ -130,6 +130,20 @@ async def async_setup_entry(
         'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
     }
     
+    # Sensors that are disabled by default (less frequently used)
+    DISABLED_BY_DEFAULT_SENSORS = {
+        'getCYN',  # Cycle Counter - technical metric
+        'getCYT',  # Cycle Time - technical metric
+        'getNOT',  # Notes - rarely used
+        'getINR',  # Internal Reference - technical
+        'getLAR',  # Last Action - technical log
+        'getRG1', 'getRG2', 'getRG3',  # Regeneration Groups - advanced config
+        'getVS1', 'getVS2', 'getVS3',  # Volume Thresholds - advanced config
+        'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
+        'getRPW',  # Regenerations per Week - less useful than count
+        'getDWF',  # Flow Warning Value - advanced setting
+    }
+    
     entities = []
     
     for device in coordinator.data.get('devices', []):
@@ -233,12 +247,68 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if sensor_key in SENSOR_ICONS:
             self._attr_icon = SENSOR_ICONS[sensor_key]
         
-        # Disable IP address, Gateway and MAC address sensors by default
-        if sensor_key in ("getIPA", "getDGW", "getMAC"):
+        # Store base icon for state-based icon changes
+        self._base_icon = self._attr_icon
+        
+        # Disable sensors by default based on configuration
+        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in DISABLED_BY_DEFAULT_SENSORS:
             self._attr_entity_registry_enabled_default = False
         
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+
+    @property
+    def icon(self) -> str | None:
+        """Return the icon to use in the frontend, if any.
+        
+        Icons change dynamically based on sensor state for certain sensors:
+        - Alarm: alert icon when alarm active, bell icon when inactive
+        - Regeneration: autorenew icon when active, timer icon when inactive
+        - Salt stock: full/half/empty cup based on level
+        - Remaining capacity: gauge-empty/low/full based on percentage
+        """
+        # Dynamic icon for alarm sensor
+        if self._sensor_key == "getALM":
+            value = self.native_value
+            if value and str(value).lower() in ("1", "true", "on", "active"):
+                return "mdi:bell-alert"
+            return "mdi:bell-outline"
+        
+        # Dynamic icon for regeneration active sensor
+        if self._sensor_key == "getSRE":
+            value = self.native_value
+            if value and str(value).lower() in ("1", "true", "on", "active"):
+                return "mdi:autorenew"
+            return "mdi:timer-outline"
+        
+        # Dynamic icon for salt stock sensors (percentage based)
+        if self._sensor_key in ("getSS1", "getSS2", "getSS3"):
+            try:
+                value = float(self.native_value) if self.native_value is not None else 0
+                if value >= 66:
+                    return "mdi:cup-water"
+                elif value >= 33:
+                    return "mdi:cup"
+                else:
+                    return "mdi:cup-outline"
+            except (ValueError, TypeError):
+                pass
+        
+        # Dynamic icon for remaining capacity (percentage based)
+        if self._sensor_key == "getRES":
+            try:
+                value = float(self.native_value) if self.native_value is not None else 0
+                if value >= 66:
+                    return "mdi:gauge-full"
+                elif value >= 33:
+                    return "mdi:gauge"
+                else:
+                    return "mdi:gauge-low"
+            except (ValueError, TypeError):
+                pass
+        
+        # Return base icon for all other sensors
+        return self._base_icon
 
     @property
     def native_value(self) -> str | int | float | None:

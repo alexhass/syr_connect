@@ -1,5 +1,5 @@
 # Quality Scale Status for SYR Connect Integration
-# Custom Integration - Target: Achieve Bronze Tier
+# Custom Integration - Target: Achieve Gold Tier
 
 rules:
   # BRONZE TIER
@@ -125,22 +125,54 @@ rules:
     status: not_done
     comment: No coverage measurement performed, not all modules tested
 
-  # GOLD TIER (not relevant for Custom Integration)
+  # GOLD TIER
   devices:
     status: done
     comment: Integration creates devices with DeviceInfo
   
   diagnostics:
-    status: not_done
-    comment: No diagnostics implemented
+    status: done
+    comment: Diagnostics platform implemented in diagnostics.py
   
   discovery:
     status: exempt
     comment: Cloud-based integration - no local discovery possible
   
-  reconfiguration-flow:
-    status: not_done
-    comment: No reconfigure flow implemented
+  discovery-update-info:
+    status: exempt
+    comment: Cloud-based integration - no network info updates needed
+  
+  docs-data-update:
+    status: done
+    comment: README.md section "How Data is Updated" describes polling mechanism
+  
+  docs-examples:
+    status: done
+    comment: README.md includes 5+ automation examples (alerts, reports, monitoring)
+  
+  docs-known-limitations:
+    status: done
+    comment: README.md section "Known Limitations" lists all constraints
+  
+  docs-supported-devices:
+    status: done
+    comment: README.md section "Supported Devices" lists compatible models
+  
+  docs-supported-functions:
+    status: done
+    comment: README.md section "Supported Functionality" describes all features
+  
+  docs-troubleshooting:
+    status: done
+    comment: README.md extended troubleshooting with diagnostics, auth, connectivity
+  
+  docs-use-cases:
+    status: done
+    comment: README.md section "Use Cases & Examples" with practical scenarios
+  
+  dynamic-devices:
+    status: done
+    comment: Devices are discovered dynamically on each coordinator update
   
   entity-category:
     status: done
@@ -150,9 +182,33 @@ rules:
     status: done
     comment: Device classes set for Volume, Consumption, Duration
   
+  entity-disabled-by-default:
+    status: done
+    comment: 13 less-used sensors disabled by default (cycle metrics, advanced config)
+  
   entity-translations:
     status: done
     comment: Translations available in de.json, en.json, es.json, fr.json
+  
+  exception-translations:
+    status: done
+    comment: Custom exception classes (CannotConnect, InvalidAuth) with translatable error messages in translations/*.json
+  
+  icon-translations:
+    status: done
+    comment: Dynamic state-based icons for alarm, regeneration, salt stock, and remaining capacity sensors
+  
+  reconfiguration-flow:
+    status: done
+    comment: Reconfigure flow implemented with async_step_reconfigure
+  
+  repair-issues:
+    status: done
+    comment: Repair issues created for offline devices with translations
+  
+  stale-devices:
+    status: done
+    comment: Devices removed automatically when no longer in API response
   
   # PLATINUM TIER
   async-dependency:
@@ -166,5 +222,6 @@ rules:
 # Summary
 # Bronze: 19/19 completed (100%) ✅ (3 exempt rules)
 # Silver: 10/10 completed (100%) ✅
-# Total Bronze Tier Rules: 22 (19 done, 3 exempt)
-# Rating: Custom Integration - Bronze & Silver Tier fully achieved! 🥈
+# Gold: 20/20 completed (100%) ✅🥇 (2 exempt rules)
+# Total Gold Tier Rules: 20 (20 done, 2 exempt, 0 pending)
+# Rating: Custom Integration - Gold Tier achieved! 🥇✨

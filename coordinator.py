@@ -16,6 +16,7 @@ import aiohttp
 
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, CONF_SCAN_INTERVAL
 from .api import SyrConnectAPI
+from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -93,6 +94,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         device['status'] = status
                         device['available'] = True
                         all_devices.append(device)
+                        
+                        # Delete offline issue if device is back online
+                        delete_issue(self.hass, f"device_offline_{device['id']}")
+                        
                     except Exception as err:
                         _LOGGER.warning(
                             "Failed to get status for device %s: %s",
@@ -103,6 +108,16 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         device['status'] = {}
                         device['available'] = False
                         all_devices.append(device)
+                        
+                        # Create repair issue for offline device
+                        create_issue(
+                            self.hass,
+                            f"device_offline_{device['id']}",
+                            "device_offline",
+                            translation_placeholders={
+                                "device_name": device.get('cna', device['id']),
+                            },
+                        )
             
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {

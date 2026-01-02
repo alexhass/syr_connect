@@ -16,17 +16,27 @@
           "username": "Benutzername",
           "password": "Passwort"
         }
+      },
+      "reconfigure": {
+        "title": "SYR Connect neu konfigurieren",
+        "description": "Aktualisieren Sie Ihre SYR Connect Anmeldedaten.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Verbindung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
-      "invalid_auth": "Ungültige Anmeldedaten. Bitte versuchen Sie es erneut.",
-      "unknown": "Ein unbekannter Fehler ist aufgetreten"
+      "cannot_connect": "Verbindung zu SYR Connect nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+      "invalid_auth": "Ungültiger Benutzername oder Passwort. Bitte überprüfen Sie Ihre Anmeldedaten.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
     },
     "abort": {
       "already_configured": "Dieser Account ist bereits konfiguriert",
       "reauth_successful": "Erneute Authentifizierung erfolgreich",
-      "reauth_failed": "Erneute Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+      "reauth_failed": "Erneute Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "reconfigure_successful": "Neukonfiguration erfolgreich",
+      "reconfigure_failed": "Neukonfiguration fehlgeschlagen. Bitte versuchen Sie es erneut."
     }
   },
   "options": {
@@ -94,5 +104,9 @@
       "getRDO": { "name": "Restlaufzeit" },
       "getSCR": { "name": "Bildschirmsperre" }
     }
-  }
-}
+  },
+  "issues": {
+    "device_offline": {
+      "title": "Gerät offline: {device_name}",
+      "description": "Das SYR Connect Gerät \"{device_name}\" ist derzeit offline und kann nicht erreicht werden. Bitte überprüfen Sie:\n\n- Stromversorgung des Geräts\n- Netzwerkverbindung\n- SYR Connect Cloud-Dienst Status\n\nDas Gerät wird automatisch wieder verbunden, sobald es online ist."
+    }

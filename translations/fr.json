@@ -11,8 +11,9 @@
       }
     },
     "error": {
-      "cannot_connect": "Échec de la connexion. Veuillez vérifier vos identifiants.",
-      "unknown": "Une erreur inconnue s'est produite"
+      "cannot_connect": "Impossible de se connecter à SYR Connect. Veuillez vérifier votre connexion Internet et réessayer.",
+      "invalid_auth": "Nom d'utilisateur ou mot de passe invalide. Veuillez vérifier vos identifiants.",
+      "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
     },
     "abort": {
       "already_configured": "Ce compte est déjà configuré"

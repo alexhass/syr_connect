@@ -16,17 +16,27 @@
           "username": "Username",
           "password": "Password"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure SYR Connect",
+        "description": "Update your SYR Connect credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect. Please check your credentials.",
-      "invalid_auth": "Invalid credentials. Please try again.",
-      "unknown": "An unknown error occurred"
+      "cannot_connect": "Unable to connect to SYR Connect. Please check your internet connection and try again.",
+      "invalid_auth": "Invalid username or password. Please check your credentials.",
+      "unknown": "An unexpected error occurred. Please try again later."
     },
     "abort": {
       "already_configured": "This account is already configured",
       "reauth_successful": "Reauthentication successful",
-      "reauth_failed": "Reauthentication failed. Please try again."
+      "reauth_failed": "Reauthentication failed. Please try again.",
+      "reconfigure_successful": "Reconfiguration successful",
+      "reconfigure_failed": "Reconfiguration failed. Please try again."
     }
   },
   "options": {
@@ -96,5 +106,9 @@
       "getRDO": { "name": "Remaining Runtime" },
       "getSCR": { "name": "Screen Lock" }
     }
-  }
-}
+  },
+  "issues": {
+    "device_offline": {
+      "title": "Device Offline: {device_name}",
+      "description": "The SYR Connect device \"{device_name}\" is currently offline and cannot be reached. Please check:\n\n- Device power supply\n- Network connection\n- SYR Connect cloud service status\n\nThe device will automatically reconnect when it comes back online."
+    }

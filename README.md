@@ -34,14 +34,178 @@ This custom integration enables control of SYR Connect devices through Home Assi
 
 The integration automatically creates entities for all your SYR Connect devices.
 
-### Sensors
-- All device status values are created as sensors
-- Automatic detection of values like water flow, salt level, etc.
+### Supported Devices
 
-### Buttons (Actions)
+This integration supports the following SYR water softener models:
+- SYR LEX Plus 10 Connect
+- Other SYR Connect-enabled water softeners
+
+**Note**: Devices must be connected to the SYR Connect cloud service via the SYR Connect App.
+
+### Supported Functionality
+
+#### Sensors
+The integration provides comprehensive monitoring of your water softener:
+
+**Water Quality & Capacity**
+- Input/Output water hardness monitoring
+- Remaining capacity tracking
+- Total capacity information
+- Water hardness unit display
+
+**Regeneration Information**
+- Regeneration status (active/inactive)
+- Number of regenerations performed
+- Regeneration interval settings
+- Regeneration time schedule
+
+**Salt Management**
+- Salt volume in containers (1-3)
+- Salt stock levels
+- Estimated salt supply duration
+
+**System Monitoring**
+- Water pressure monitoring
+- Flow rate (current)
+- Flow counter (total consumption)
+- Operating state
+- Alarm status
+
+**Device Information** (disabled by default, available in diagnostics category)
+- Serial number
+- Firmware version and model
+- Device type and manufacturer
+- Network information (IP, MAC, Gateway)
+
+#### Binary Sensors
+- Regeneration active status
+- Operating state
+- Screen lock status
+- Alarm status
+
+#### Buttons (Actions)
 - **Regenerate Now (setSIR)**: Start immediate regeneration
-- **Multi Regenerate (setSMR)**: Multiple regeneration
-- **Reset Device (setRST)**: Reset device
+- **Multi Regenerate (setSMR)**: Multiple regeneration cycle
+- **Reset Device (setRST)**: Reset device settings
+
+### Known Limitations
+
+- **Cloud Dependency**: This integration requires an active internet connection and functioning SYR Connect cloud service
+- **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting
+- **Read-Only Data**: Most sensors are read-only; only regeneration actions can be triggered
+- **Single Account**: Each Home Assistant instance can only connect to one SYR Connect account
+- **No Local API**: The integration uses the cloud API; no local network communication is possible
+
+## How Data is Updated
+
+The integration polls the SYR Connect cloud API at regular intervals (default: 60 seconds):
+
+1. **Login**: Authenticates with the SYR Connect API using your credentials
+2. **Device Discovery**: Retrieves all projects and devices associated with your account
+3. **Status Updates**: For each device, fetches current status including all sensor values
+4. **Entity Updates**: Updates all Home Assistant entities with the latest values
+
+If a device becomes unavailable (e.g., offline or communication error), its entities are marked as unavailable until the next successful update.
+
+## Use Cases & Examples
+
+### Automation Examples
+
+#### Low Salt Alert
+Get notified when salt supply is running low:
+
+```yaml
+automation:
+  - alias: "SYR: Low Salt Alert"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.SERIAL_NUMBER_getSS1
+        below: 2  # Less than 2 weeks of salt remaining
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Water Softener Alert"
+          message: "Salt supply low - less than 2 weeks remaining"
+```
+
+#### Daily Regeneration Report
+Get a daily summary of regeneration activity:
+
+```yaml
+automation:
+  - alias: "SYR: Daily Regeneration Report"
+    trigger:
+      - platform: time
+        at: "20:00:00"
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Water Softener Daily Report"
+          message: >
+            Regenerations today: {{ states('sensor.SERIAL_NUMBER_getNOR') }}
+            Remaining capacity: {{ states('sensor.SERIAL_NUMBER_getRES') }}L
+            Salt supply: {{ states('sensor.SERIAL_NUMBER_getSS1') }} weeks
+```
+
+#### Alarm Notification
+Immediate notification when an alarm is triggered:
+
+```yaml
+automation:
+  - alias: "SYR: Alarm Notification"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.SERIAL_NUMBER_getALM
+        to: "on"
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "⚠️ Water Softener Alarm"
+          message: "Check your SYR device - alarm detected!"
+          data:
+            priority: high
+```
+
+#### Water Flow Monitoring
+Alert on unusually high water flow (possible leak):
+
+```yaml
+automation:
+  - alias: "SYR: High Flow Alert"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.SERIAL_NUMBER_getFLO
+        above: 20  # Flow rate above 20 L/min
+        for:
+          minutes: 5
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "High Water Flow Detected"
+          message: "Unusual water flow - check for leaks!"
+```
+
+#### Scheduled Regeneration Override
+Trigger regeneration at a specific time:
+
+```yaml
+automation:
+  - alias: "SYR: Weekend Regeneration"
+    trigger:
+      - platform: time
+        at: "03:00:00"
+    condition:
+      - condition: time
+        weekday:
+          - sat
+          - sun
+    action:
+      - service: button.press
+        target:
+          entity_id: button.SERIAL_NUMBER_setSIR
+```
+
+**Note**: Replace `SERIAL_NUMBER` with your actual device serial number in all examples.
 
 ## Configuration Options
 
@@ -67,14 +231,47 @@ All associated devices and entities will be automatically removed.
 
 ## Troubleshooting
 
+### Download Diagnostics
+
+If you encounter issues, you can download diagnostic information:
+
+1. Go to Settings > Devices & Services
+2. Find the SYR Connect integration
+3. Click on the device
+4. Click the three dots (⋮) menu
+5. Select "Download diagnostics"
+
+This file contains helpful information for troubleshooting (sensitive data like passwords are automatically redacted).
+
 ### Connection fails
-- Check your credentials
-- Make sure you can access your account with the SYR Connect App
-- Check the Home Assistant logs for detailed error messages
+- **Check credentials**: Verify your SYR Connect App username and password
+- **Test the app**: Make sure you can log in to the SYR Connect mobile app
+- **Check logs**: Go to Settings > System > Logs and search for "syr_connect" errors
+- **Network issues**: Ensure your Home Assistant instance has internet access
+
+### Authentication errors
+If you see "Authentication failed" errors:
+1. Verify your credentials are correct
+2. The integration will prompt for reauthentication
+3. Go to Settings > Devices & Services
+4. Click "Authenticate" on the SYR Connect integration
+5. Enter your credentials again
 
 ### No devices found
-- Make sure your SYR Connect devices are set up in the app
-- Check the logs for connection issues
+- **App setup**: Ensure devices are properly configured in the SYR Connect App
+- **Account access**: Verify you're using the same account that has the devices
+- **Device status**: Check if devices are online in the SYR Connect App
+- **Logs**: Check Home Assistant logs for specific error messages
+
+### Entities show as unavailable
+- **Device offline**: Check if the device is online in the SYR Connect App
+- **Network issues**: Verify internet connectivity
+- **Cloud service**: The SYR Connect cloud service might be temporarily unavailable
+- **Wait for update**: Entities will become available again on the next successful update
+
+### High CPU/Memory usage
+- **Increase scan interval**: Set a higher value (e.g., 120-300 seconds) in integration options
+- This reduces API calls and system load
 
 ## Dependencies
 

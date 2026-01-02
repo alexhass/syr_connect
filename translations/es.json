@@ -11,8 +11,9 @@
       }
     },
     "error": {
-      "cannot_connect": "Error de conexión. Por favor, verifique sus credenciales.",
-      "unknown": "Se ha producido un error desconocido"
+      "cannot_connect": "No se puede conectar a SYR Connect. Verifique su conexión a Internet e inténtelo de nuevo.",
+      "invalid_auth": "Nombre de usuario o contraseña inválidos. Verifique sus credenciales.",
+      "unknown": "Se ha producido un error inesperado. Inténtelo de nuevo más tarde."
     },
     "abort": {
       "already_configured": "Esta cuenta ya está configurada"

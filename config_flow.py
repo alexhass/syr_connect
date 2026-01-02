@@ -8,6 +8,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -27,17 +28,43 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect."""
+    """Validate the user input allows us to connect.
+    
+    Args:
+        hass: Home Assistant instance
+        data: User input data with username and password
+        
+    Returns:
+        Dictionary with title for the config entry
+        
+    Raises:
+        CannotConnect: If connection to API fails
+        InvalidAuth: If authentication fails
+    """
     _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
     api = SyrConnectAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
     
     # Test authentication
     _LOGGER.debug("Testing API authentication...")
-    await api.login()
+    try:
+        await api.login()
+    except Exception as err:
+        if "login" in str(err).lower() or "auth" in str(err).lower():
+            raise InvalidAuth from err
+        raise CannotConnect from err
+    
     _LOGGER.info("API authentication successful for user: %s", data[CONF_USERNAME])
     
     return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
+
+
+class CannotConnect(HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+
+class InvalidAuth(HomeAssistantError):
+    """Error to indicate there is invalid auth."""
 
 
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
@@ -152,15 +179,81 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 
                 return self.async_abort(reason="reauth_successful")
                 
-            except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Reauth validation failed: %s", err)
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected error during reauth: %s", err)
+                errors["base"] = "unknown"
         
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
             description_placeholders={"username": self.context.get("username", "")},
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle reconfiguration of the integration.
+        
+        Args:
+            user_input: User input data with new credentials
+            
+        Returns:
+            FlowResult with updated config entry or form with errors
+        """
+        errors: dict[str, str] = {}
+        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        
+        if user_input is not None:
+            if entry is None:
+                return self.async_abort(reason="reconfigure_failed")
+            
+            try:
+                # Validate new credentials
+                await validate_input(self.hass, user_input)
+                
+                # Update the config entry with new credentials
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    data={
+                        CONF_USERNAME: user_input[CONF_USERNAME],
+                        CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    },
+                )
+                
+                # Reload the config entry
+                await self.hass.config_entries.async_reload(entry.entry_id)
+                
+                return self.async_abort(reason="reconfigure_successful")
+                
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
+                errors["base"] = "unknown"
+        
+        # Pre-fill with current username
+        current_data = {}
+        if entry:
+            current_data = {
+                CONF_USERNAME: entry.data.get(CONF_USERNAME, ""),
+            }
+        
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_USERNAME, default=current_data.get(CONF_USERNAME, "")): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
         )
 
     async def async_step_user(
@@ -181,9 +274,13 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 info = await validate_input(self.hass, user_input)
                 _LOGGER.debug("Validation successful")
-            except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Config flow validation failed: %s", err)
+            except CannotConnect:
                 errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected error during config flow: %s", err)
+                errors["base"] = "unknown"
             else:
                 _LOGGER.debug("Setting unique ID: %s", user_input[CONF_USERNAME])
                 await self.async_set_unique_id(user_input[CONF_USERNAME])
