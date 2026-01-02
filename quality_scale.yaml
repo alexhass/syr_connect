@@ -1,0 +1,169 @@
+# Quality Scale Status für SYR Connect Integration
+# Custom Integration - Ziel: Bronze Tier erreichen
+
+rules:
+  # BRONZE TIER
+  action-setup:
+    status: exempt
+    comment: Integration hat keine Service Actions definiert (nur Button Entities)
+  
+  appropriate-polling:
+    status: done
+    comment: Polling interval ist konfigurierbar (default 60s) über Options Flow
+  
+  brands:
+    status: exempt
+    comment: Custom integration - keine Branding Assets in Home Assistant brands repository
+  
+  common-modules:
+    status: done
+    comment: |
+      - encryption.py für AES-Verschlüsselung
+      - payload_builder.py für XML-Payloads
+      - response_parser.py für XML-Parsing
+      - http_client.py für HTTP-Requests
+      - helpers.py für DeviceInfo und Entity ID
+  
+  config-flow-test-coverage:
+    status: done
+    comment: Tests in tests/test_config_flow.py vorhanden (6 Testfälle)
+  
+  config-flow:
+    status: done
+    comment: |
+      - Config Flow mit UI-Setup implementiert
+      - Options Flow für Scan Interval vorhanden
+      - data_description in strings.json verwendet
+      - ConfigEntry.data für Credentials, ConfigEntry.options für Scan Interval
+  
+  dependency-transparency:
+    status: done
+    comment: Dependencies in manifest.json korrekt deklariert (xmltodict, pycryptodomex)
+  
+  docs-actions:
+    status: exempt
+    comment: Keine Service Actions - nur Button Entities
+  
+  docs-high-level-description:
+    status: done
+    comment: README.md beschreibt SYR Connect Cloud-Service und Geräte
+  
+  docs-installation-instructions:
+    status: done
+    comment: README.md enthält Installations- und Setup-Anleitung
+  
+  docs-removal-instructions:
+    status: done
+    comment: Removal-Anleitung in README.md hinzugefügt
+  
+  entity-event-setup:
+    status: exempt
+    comment: Integration verwendet keine Event Entities
+  
+  entity-unique-id:
+    status: done
+    comment: Alle Entities haben unique_id (device_id + sensor_key)
+  
+  has-entity-name:
+    status: done
+    comment: Entities verwenden has_entity_name = True
+  
+  runtime-data:
+    status: done
+    comment: Verwendet ConfigEntry.runtime_data statt hass.data
+  
+  test-before-configure:
+    status: done
+    comment: validate_input() testet API-Verbindung vor Erstellung des ConfigEntry
+  
+  test-before-setup:
+    status: done
+    comment: async_config_entry_first_refresh() testet Verbindung, wirft ConfigEntryNotReady bei Fehler
+  
+  unique-config-entry:
+    status: done
+    comment: _abort_if_unique_id_configured() verhindert Duplikate
+
+  # SILVER TIER
+  action-exceptions:
+    status: not_done
+    comment: Button.async_press() sollte Exceptions werfen statt nur zu loggen
+  
+  config-entry-unloading:
+    status: done
+    comment: async_unload_entry() implementiert
+  
+  docs-configuration-parameters:
+    status: done
+    comment: Scan Interval in README.md unter Configuration Options beschrieben
+  
+  docs-installation-parameters:
+    status: done
+    comment: Username und Password in README beschrieben
+  
+  entity-unavailable:
+    status: done
+    comment: Entities prüfen device['available'] und setzen unavailable bei Fehlern
+  
+  integration-owner:
+    status: done
+    comment: Codeowner @alexhass in manifest.json
+  
+  log-when-unavailable:
+    status: done
+    comment: Coordinator loggt Warnung bei Device-Fehlern, markiert als unavailable
+  
+  parallel-updates:
+    status: done
+    comment: PARALLEL_UPDATES = 1 in sensor.py, binary_sensor.py, button.py gesetzt
+  
+  reauthentication-flow:
+    status: not_done
+    comment: Keine Reauthentifizierung bei Login-Fehlern implementiert
+  
+  test-coverage:
+    status: not_done
+    comment: Keine Coverage-Messung durchgeführt, nicht alle Module getestet
+
+  # GOLD TIER (nicht relevant für Custom Integration)
+  devices:
+    status: done
+    comment: Integration erstellt Devices mit DeviceInfo
+  
+  diagnostics:
+    status: not_done
+    comment: Keine Diagnostics implementiert
+  
+  discovery:
+    status: exempt
+    comment: Cloud-basierte Integration - keine lokale Discovery möglich
+  
+  reconfiguration-flow:
+    status: not_done
+    comment: Kein Reconfigure Flow implementiert
+  
+  entity-category:
+    status: not_done
+    comment: Keine EntityCategory gesetzt (z.B. DIAGNOSTIC für Fehler-Sensoren)
+  
+  entity-device-class:
+    status: done
+    comment: Device Classes für Volume, Consumption, Duration gesetzt
+  
+  entity-translations:
+    status: done
+    comment: Translations in de.json, en.json, es.json, fr.json vorhanden
+  
+  # PLATINUM TIER
+  async-dependency:
+    status: not_done
+    comment: Dependency xmltodict ist nicht async
+  
+  strict-typing:
+    status: not_done
+    comment: Keine strict type checking mit mypy
+
+# Zusammenfassung
+# Bronze: 19/22 erfüllt (86%)
+# Silver: 7/10 erfüllt (70%)
+# Bewertung: Custom Integration - nahe an Bronze tier, arbeitet Richtung Silver

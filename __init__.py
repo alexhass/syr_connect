@@ -21,7 +21,6 @@ PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR, Platform.B
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
     _LOGGER.info("Setting up SYR Connect integration for user: %s", entry.data[CONF_USERNAME])
-    hass.data.setdefault(DOMAIN, {})
     
     session = async_get_clientsession(hass)
     
@@ -42,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Failed to connect to SYR Connect API: %s", err)
         raise ConfigEntryNotReady(f"Unable to connect to SYR Connect: {err}") from err
     
-    hass.data[DOMAIN][entry.entry_id] = coordinator
+    entry.runtime_data = coordinator
     
     # Register update listener for options changes
     entry.async_on_unload(entry.add_update_listener(update_listener))
@@ -56,8 +55,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.info("Unloading SYR Connect integration")
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    
+    if unload_ok:
         _LOGGER.info("SYR Connect integration unloaded successfully")
     else:
         _LOGGER.warning("Failed to unload SYR Connect integration")

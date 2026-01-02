@@ -43,9 +43,29 @@ The integration automatically creates entities for all your SYR Connect devices.
 - **Multi Regenerate (setSMR)**: Multiple regeneration
 - **Reset Device (setRST)**: Reset device
 
-## Update Interval
+## Configuration Options
 
-Data is updated every 60 seconds by default. This can be configured in the integration.
+### Scan Interval
+Data is updated every 60 seconds by default. You can configure this in the integration options:
+
+1. Go to Settings > Devices & Services
+2. Find the SYR Connect integration
+3. Click "Configure"
+4. Adjust the scan interval (in seconds)
+
+## Removal
+
+To remove the integration from Home Assistant:
+
+1. Go to Settings > Devices & Services
+2. Find the SYR Connect integration
+3. Click the three dots (⋮) menu
+4. Select "Delete"
+5. Confirm the deletion
+
+All associated devices and entities will be automatically removed.
+
+## Troubleshooting
 
 ### Connection fails
 - Check your credentials

@@ -79,6 +79,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         dclg = device.get('dclg', device['id'])
                         status = await self.api.get_device_status(dclg)
                         device['status'] = status
+                        device['available'] = True
                         all_devices.append(device)
                     except Exception as err:
                         _LOGGER.warning(
@@ -86,6 +87,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             device['id'],
                             err
                         )
+                        # Mark device as unavailable but still add it
+                        device['status'] = {}
+                        device['available'] = False
+                        all_devices.append(device)
             
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {

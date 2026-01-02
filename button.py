@@ -15,6 +15,9 @@ from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
+# Limit parallel updates to avoid overwhelming the API
+PARALLEL_UPDATES = 1
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -29,7 +32,7 @@ async def async_setup_entry(
         async_add_entities: Callback to add entities
     """
     _LOGGER.debug("Setting up SYR Connect buttons")
-    coordinator: SyrConnectDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
     
     entities = []
     
@@ -121,6 +124,14 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         """Return if entity is available.
         
         Returns:
-            True if last coordinator update was successful
+            True if last coordinator update was successful and device is available
         """
-        return self.coordinator.last_update_success
+        if not self.coordinator.last_update_success:
+            return False
+        
+        # Check if the specific device is available
+        for device in self.coordinator.data.get('devices', []):
+            if device['id'] == self._device_id:
+                return device.get('available', True)
+        
+        return True

@@ -34,6 +34,9 @@ from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
+# Limit parallel updates to avoid overwhelming the API
+PARALLEL_UPDATES = 1
+
 # Sensor units mapping (units are standardized and not translated)
 _SENSOR_UNITS = {
     "getIWH": "°dH",
@@ -69,7 +72,7 @@ async def async_setup_entry(
         async_add_entities: Callback to add entities
     """
     _LOGGER.debug("Setting up SYR Connect sensors")
-    coordinator: SyrConnectDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
     
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for sensors")
@@ -280,4 +283,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        return self.coordinator.last_update_success
+        if not self.coordinator.last_update_success:
+            return False
+        
+        # Check if the specific device is available
+        for device in self.coordinator.data.get('devices', []):
+            if device['id'] == self._device_id:
+                return device.get('available', True)
+        
+        return True
