@@ -11,6 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -99,14 +100,10 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This matches the sensor entity ID structure
-        self.entity_id = f"button.{DOMAIN}_{device_id.lower()}_{command.lower()}"
+        self.entity_id = build_entity_id("button", device_id, command)
         
-        self._attr_device_info = {
-            "identifiers": {(DOMAIN, device_id)},
-            "name": device_name,
-            "manufacturer": "SYR",
-            "model": "Connect",
-        }
+        # Build device info from coordinator data
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     async def async_press(self) -> None:
         """Press the button.

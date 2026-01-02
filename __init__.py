@@ -42,8 +42,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Failed to connect to SYR Connect API: %s", err)
         raise ConfigEntryNotReady(f"Unable to connect to SYR Connect: {err}") from err
     
-    _LOGGER.info("SYR Connect integration setup completed")
-    
     hass.data[DOMAIN][entry.entry_id] = coordinator
     
     # Register update listener for options changes

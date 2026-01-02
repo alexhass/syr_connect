@@ -30,6 +30,7 @@ from .const import (
     STRING_SENSORS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This prevents entity IDs from using aliases like "weichwasser"
-        self.entity_id = f"sensor.{DOMAIN}_{device_id.lower()}_{sensor_key.lower()}"
+        self.entity_id = build_entity_id("sensor", device_id, sensor_key)
         
         # Set unit of measurement if available
         if sensor_key in _SENSOR_UNITS:
@@ -211,46 +212,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if sensor_key in ("getIPA", "getDGW", "getMAC"):
             self._attr_entity_registry_enabled_default = False
         
-        # Build device info with data from coordinator
-        model = None
-        sw_version = None
-        hw_version = None
-        
-        # Add additional device information from status if available
-        for device in coordinator.data.get('devices', []):
-            if device['id'] == device_id:
-                status = device.get('status', {})
-                
-                # Add model from getCNA
-                if 'getCNA' in status and status['getCNA']:
-                    model = str(status['getCNA'])
-                else:
-                    _LOGGER.warning("getCNA not found in status or is empty for device %s", device_id)
-                
-                # Add firmware version from getVER
-                if 'getVER' in status and status['getVER']:
-                    sw_version = str(status['getVER'])
-                
-                # Add hardware version/type from getFIR
-                if 'getFIR' in status and status['getFIR']:
-                    hw_version = str(status['getFIR'])
-                
-                break
-        
-        # Fallback if no model found
-        if model is None:
-            model = "SYR Connect"
-            _LOGGER.warning("No model found, using fallback 'SYR Connect'")
-        
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, device_id)},
-            name=device_name,
-            manufacturer="SYR",
-            model=model,
-            sw_version=sw_version,
-            hw_version=hw_version,
-            serial_number=device_id,
-        )
+        # Build device info from coordinator data
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     @property
     def native_value(self) -> str | int | float | None:

@@ -15,6 +15,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN, SENSOR_ICONS
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -108,34 +109,14 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._attr_device_class = device_class
         
         # Override the entity_id to use technical name (serial number) with domain prefix
-        self.entity_id = f"binary_sensor.{DOMAIN}_{device_id.lower()}_{sensor_key.lower()}"
+        self.entity_id = build_entity_id("binary_sensor", device_id, sensor_key)
         
         # Set icon if available
         if sensor_key in SENSOR_ICONS:
             self._attr_icon = SENSOR_ICONS[sensor_key]
         
-        # Build device info with data from coordinator
-        model = None
-        sw_version = None
-        hw_version = None
-        
-        for device in coordinator.data.get('devices', []):
-            if device['id'] == device_id:
-                status = device.get('status', {})
-                model = str(status.get('getCNA', 'SYR Connect'))
-                sw_version = str(status['getVER']) if 'getVER' in status and status['getVER'] else None
-                hw_version = str(status['getFIR']) if 'getFIR' in status and status['getFIR'] else None
-                break
-        
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, device_id)},
-            name=device_name,
-            manufacturer="SYR",
-            model=model or "SYR Connect",
-            sw_version=sw_version,
-            hw_version=hw_version,
-            serial_number=device_id,
-        )
+        # Build device info from coordinator data
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     @property
     def is_on(self) -> bool | None:
