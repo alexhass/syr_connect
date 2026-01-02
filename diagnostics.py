@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import Any
+from datetime import datetime
 
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
@@ -40,6 +41,8 @@ async def async_get_config_entry_diagnostics(
     devices_info: list[dict[str, Any]] = []
     projects_info: list[dict[str, Any]] = []
 
+    last_success_time = getattr(coordinator, "last_update_success_time", None)
+
     diagnostics_data = {
         "entry": {
             "title": entry.title,
@@ -48,8 +51,8 @@ async def async_get_config_entry_diagnostics(
         },
         "coordinator": {
             "last_update_success": coordinator.last_update_success,
-            "last_update_time": coordinator.last_update.isoformat()
-            if coordinator.last_update
+            "last_update_time": last_success_time.isoformat()
+            if isinstance(last_success_time, datetime)
             else None,
         },
         "devices": devices_info,
