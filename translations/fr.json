@@ -8,6 +8,22 @@
           "username": "Nom d'utilisateur",
           "password": "Mot de passe"
         }
+      },
+      "reauth_confirm": {
+        "title": "Réauthentifier SYR Connect",
+        "description": "Les identifiants pour {username} ne sont plus valides. Veuillez saisir de nouveaux identifiants.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer SYR Connect",
+        "description": "Mettez à jour vos identifiants SYR Connect.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
+        }
       }
     },
     "error": {
@@ -16,7 +32,11 @@
       "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
     },
     "abort": {
-      "already_configured": "Ce compte est déjà configuré"
+      "already_configured": "Ce compte est déjà configuré",
+      "reauth_successful": "Réauthentification réussie",
+      "reauth_failed": "Échec de la réauthentification. Veuillez réessayer.",
+      "reconfigure_successful": "Reconfiguration réussie",
+      "reconfigure_failed": "Échec de la reconfiguration. Veuillez réessayer."
     }
   },
   "options": {
@@ -85,6 +105,12 @@
       "getVS3": { "name": "Seuil de volume 3" },
       "getRDO": { "name": "Durée restante" },
       "getSCR": { "name": "Verrouillage de l'écran" }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "title": "Appareil hors ligne : {device_name}",
+      "description": "L'appareil SYR Connect \"{device_name}\" est actuellement hors ligne et ne peut pas être contacté. Veuillez vérifier :\n\n- L'alimentation électrique de l'appareil\n- La connexion réseau\n- L'état du service cloud SYR Connect\n\nL'appareil se reconnectera automatiquement lorsqu'il sera de nouveau en ligne."
     }
   }
 }

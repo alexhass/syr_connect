@@ -8,6 +8,22 @@
           "username": "Nombre de usuario",
           "password": "Contraseña"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar SYR Connect",
+        "description": "Las credenciales de {username} ya no son válidas. Introduzca nuevas credenciales.",
+        "data": {
+          "username": "Nombre de usuario",
+          "password": "Contraseña"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar SYR Connect",
+        "description": "Actualice sus credenciales de SYR Connect.",
+        "data": {
+          "username": "Nombre de usuario",
+          "password": "Contraseña"
+        }
       }
     },
     "error": {
@@ -16,7 +32,11 @@
       "unknown": "Se ha producido un error inesperado. Inténtelo de nuevo más tarde."
     },
     "abort": {
-      "already_configured": "Esta cuenta ya está configurada"
+      "already_configured": "Esta cuenta ya está configurada",
+      "reauth_successful": "Reautenticación exitosa",
+      "reauth_failed": "Falló la reautenticación. Inténtelo de nuevo.",
+      "reconfigure_successful": "Reconfiguración exitosa",
+      "reconfigure_failed": "Falló la reconfiguración. Inténtelo de nuevo."
     }
   },
   "options": {
@@ -85,6 +105,12 @@
       "getVS3": { "name": "Umbral de volumen 3" },
       "getRDO": { "name": "Tiempo restante" },
       "getSCR": { "name": "Bloqueo de pantalla" }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "title": "Dispositivo sin conexión: {device_name}",
+      "description": "El dispositivo SYR Connect \"{device_name}\" está actualmente sin conexión y no se puede contactar. Por favor, verifique:\n\n- La alimentación eléctrica del dispositivo\n- La conexión de red\n- El estado del servicio en la nube de SYR Connect\n\nEl dispositivo se reconectará automáticamente cuando vuelva a estar en línea."
     }
   }
 }

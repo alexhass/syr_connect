@@ -110,3 +110,6 @@
       "title": "Gerät offline: {device_name}",
       "description": "Das SYR Connect Gerät \"{device_name}\" ist derzeit offline und kann nicht erreicht werden. Bitte überprüfen Sie:\n\n- Stromversorgung des Geräts\n- Netzwerkverbindung\n- SYR Connect Cloud-Dienst Status\n\nDas Gerät wird automatisch wieder verbunden, sobald es online ist."
     }
+  }
+}
+
