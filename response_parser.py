@@ -44,7 +44,8 @@ class ResponseParser:
         """
         try:
             root = ET.fromstring(xml_string)
-            return ResponseParser._element_to_dict(root)
+            # Wrap in root tag like xmltodict does
+            return {root.tag: ResponseParser._element_to_dict(root)}
         except ET.ParseError as err:
             _LOGGER.error("Failed to parse XML: %s", err)
             raise ValueError(f"Invalid XML response: {err}") from err
@@ -84,13 +85,14 @@ class ResponseParser:
             
             result.update(child_dict)
         
-        # Add text content
+        # Add text content if present
         if element.text and element.text.strip():
-            result['#text'] = element.text.strip()
-        
-        # If only text and no attributes/children, return just the text
-        if len(result) == 1 and '#text' in result:
-            return result
+            text = element.text.strip()
+            # If there are no children and no attributes, return just the text string
+            if not children and not element.attrib:
+                return text
+            # Otherwise add it as #text key
+            result['#text'] = text
         
         return result if result else {}
 
@@ -109,10 +111,19 @@ class ResponseParser:
         parsed = self.parse_xml(xml_response)
         
         # Validate response structure
-        if not self.validate_structure(parsed, ['sc', 'api', '#text']):
+        if not self.validate_structure(parsed, ['sc', 'api']):
             raise ValueError("Authentication failed: Invalid login response structure")
         
-        return parsed['sc']['api']['#text'], parsed
+        # The api element contains the encrypted session data as a string
+        api_data = parsed['sc']['api']
+        if isinstance(api_data, dict):
+            # If it has attributes, the text is in #text
+            encrypted_text = api_data.get('#text', '')
+        else:
+            # Otherwise it's a direct string
+            encrypted_text = api_data
+        
+        return encrypted_text, parsed
 
     def parse_decrypted_login(self, decrypted_xml: str) -> tuple[str, list[dict[str, Any]]]:
         """Parse decrypted login data.
