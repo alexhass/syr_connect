@@ -36,11 +36,13 @@ The integration automatically creates entities for all your SYR Connect devices.
 
 ### Supported Devices
 
-This integration supports the following SYR water softener models:
-- SYR LEX Plus 10 Connect
-- Other SYR Connect-enabled water softeners
+This integration works with SYR water softeners that appear in the SYR Connect cloud (via the SYR Connect app). Tested and reported working:
+- SYR LEX Plus 10 Connect / SLIM
+- SYR LEX Plus 10 S Connect
+- SYR LEX Plus 10 IP (when linked through SYR Connect)
+- Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
-**Note**: Devices must be connected to the SYR Connect cloud service via the SYR Connect App.
+**Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically.
 
 ### Supported Functionality
 
