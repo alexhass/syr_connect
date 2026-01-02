@@ -1,0 +1,19 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # isort
+  "W",  # warnings
+  "N",  # pep8-naming
+  "UP", # pyupgrade
+  "B",  # flake8-bugbear
+]
+ignore = [
+  "E501",  # line length handled by formatter/line-length
+]
+exclude = [
+  "tests",
+  "translations",
+]

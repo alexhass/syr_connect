@@ -2,3 +2,5 @@ pytest==8.2.0
 pytest-asyncio==0.23.6
 aiohttp==3.9.5
 pycryptodomex==3.19.0
+ruff==0.6.2
+mypy==1.7.1
