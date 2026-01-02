@@ -29,7 +29,15 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         password: str,
         scan_interval: int = DEFAULT_SCAN_INTERVAL,
     ) -> None:
-        """Initialize the coordinator."""
+        """Initialize the coordinator.
+        
+        Args:
+            hass: Home Assistant instance
+            session: aiohttp client session
+            username: SYR Connect username
+            password: SYR Connect password
+            scan_interval: Update interval in seconds
+        """
         super().__init__(
             hass,
             _LOGGER,
@@ -41,11 +49,18 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         self._username = username
 
     async def _async_update_data(self) -> dict[str, Any]:
-        """Fetch data from API."""
+        """Fetch data from API.
+        
+        Returns:
+            Dictionary containing devices and projects data
+            
+        Raises:
+            UpdateFailed: If API communication fails
+        """
         try:
             # Login if not already logged in
             if not self.api.session_data:
-                _LOGGER.info("No active session, logging in...")
+                _LOGGER.debug("No active session, logging in...")
                 await self.api.login()
             
             all_devices = []
@@ -53,7 +68,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Get devices from all projects
             for project in self.api.projects:
                 project_id = project['id']
-                project_name = project['name']
                 
                 # Get devices for this project
                 devices = await self.api.get_devices(project_id)
@@ -73,7 +87,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             err
                         )
             
-            _LOGGER.info("Update cycle completed: %d device(s) total", len(all_devices))
+            _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {
                 'devices': all_devices,
                 'projects': self.api.projects,
@@ -86,9 +100,22 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
     async def async_set_device_value(
         self, device_id: str, command: str, value: Any
     ) -> None:
-        """Set a device value."""
-        _LOGGER.info("Setting device %s command %s to %s", device_id, command, value)
+        """Set a device value.
+        
+        Args:
+            device_id: The device ID (serial number)
+            command: The command to execute
+            value: The value to set
+            
+        Raises:
+            ValueError: If coordinator data is not available
+        """
+        _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
         try:
+            if not self.data:
+                _LOGGER.error("No coordinator data available")
+                raise ValueError("Coordinator data not available")
+            
             # Find the DCLG for this device_id (which is now SN)
             dclg = None
             for device in self.data.get('devices', []):

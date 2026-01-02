@@ -118,7 +118,11 @@ class SyrChecksum:
             values = []
 
             def extract_values(obj: dict | list | Any) -> None:
-                """Recursively extract all attribute values from parsed XML."""
+                """Recursively extract all attribute values from parsed XML.
+                
+                Args:
+                    obj: The object to extract values from (dict, list, or other)
+                """
                 if isinstance(obj, dict):
                     for key, value in obj.items():
                         if key.startswith('@') and key != '@n':

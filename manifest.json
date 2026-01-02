@@ -1,7 +1,7 @@
 {
   "domain": "syr_connect",
   "name": "SYR Connect",
-  "codeowners": ["@custom"],
+  "codeowners": ["@alexhass"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/alexhass/syr_connect",

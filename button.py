@@ -20,11 +20,21 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up SYR Connect buttons."""
-    _LOGGER.info("Setting up SYR Connect buttons")
+    """Set up SYR Connect buttons.
+    
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+        async_add_entities: Callback to add entities
+    """
+    _LOGGER.debug("Setting up SYR Connect buttons")
     coordinator: SyrConnectDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     
     entities = []
+    
+    if not coordinator.data:
+        _LOGGER.warning("No coordinator data available for buttons")
+        return
     
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
@@ -51,7 +61,7 @@ async def async_setup_entry(
             )
 
     
-    _LOGGER.info("Adding %d button(s) total", len(entities))
+    _LOGGER.debug("Adding %d button(s) total", len(entities))
     async_add_entities(entities)
 
 
@@ -67,7 +77,16 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         command: str,
         button_name: str,
     ) -> None:
-        """Initialize the button."""
+        """Initialize the button.
+        
+        Args:
+            coordinator: Data update coordinator
+            device_id: Device ID (serial number)
+            device_name: Device display name
+            project_id: Project ID
+            command: Command to execute (e.g., 'setSIR')
+            button_name: Display name for the button
+        """
         super().__init__(coordinator)
         
         self._device_id = device_id
@@ -90,8 +109,11 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         }
 
     async def async_press(self) -> None:
-        """Press the button."""
-        _LOGGER.info("Button pressed: %s (device: %s)", self._attr_name, self._device_id)
+        """Press the button.
+        
+        Sends the command to the device with value 1 to trigger the action.
+        """
+        _LOGGER.debug("Button pressed: %s (device: %s)", self._attr_name, self._device_id)
         # Send command with value 1 (trigger action)
         await self.coordinator.async_set_device_value(
             self._device_id, self._command, 1
@@ -99,5 +121,9 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
     @property
     def available(self) -> bool:
-        """Return if entity is available."""
+        """Return if entity is available.
+        
+        Returns:
+            True if last coordinator update was successful
+        """
         return self.coordinator.last_update_success

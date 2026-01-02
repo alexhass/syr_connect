@@ -44,6 +44,14 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for SYR Connect."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Manage the options for scan interval configuration.
+        
+        Args:
+            user_input: User input data from the form
+            
+        Returns:
+            FlowResult with the configuration entry or form
+        """
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
@@ -83,17 +91,32 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
+        """Get the options flow for this handler.
+        
+        Args:
+            config_entry: The config entry to get options flow for
+            
+        Returns:
+            The options flow handler instance
+        """
         """Get the options flow for this handler."""
         return SyrConnectOptionsFlow()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the initial step."""
+        """Handle the initial step.
+        
+        Args:
+            user_input: User input data containing username and password
+            
+        Returns:
+            FlowResult with config entry or form with validation errors
+        """
         errors: dict[str, str] = {}
         
         if user_input is not None:
-            _LOGGER.info("Processing config flow for user: %s", user_input[CONF_USERNAME])
+            _LOGGER.debug("Processing config flow for user: %s", user_input[CONF_USERNAME])
             try:
                 info = await validate_input(self.hass, user_input)
                 _LOGGER.debug("Validation successful")

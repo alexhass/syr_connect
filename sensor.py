@@ -60,9 +60,19 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up SYR Connect sensors."""
-    _LOGGER.info("Setting up SYR Connect sensors")
+    """Set up SYR Connect sensors.
+    
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+        async_add_entities: Callback to add entities
+    """
+    _LOGGER.debug("Setting up SYR Connect sensors")
     coordinator: SyrConnectDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    
+    if not coordinator.data:
+        _LOGGER.warning("No coordinator data available for sensors")
+        return
     
     # Sensors to always exclude (parameters from XML that should not be exposed)
     EXCLUDED_SENSORS = {
@@ -148,7 +158,7 @@ async def async_setup_entry(
         
         _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
     
-    _LOGGER.info("Adding %d sensor(s) total", len(entities))
+    _LOGGER.debug("Adding %d sensor(s) total", len(entities))
     async_add_entities(entities)
 
 

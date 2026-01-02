@@ -32,11 +32,21 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up SYR Connect binary sensors."""
-    _LOGGER.info("Setting up SYR Connect binary sensors")
+    """Set up SYR Connect binary sensors.
+    
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+        async_add_entities: Callback to add entities
+    """
+    _LOGGER.debug("Setting up SYR Connect binary sensors")
     coordinator: SyrConnectDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     
     entities = []
+    
+    if not coordinator.data:
+        _LOGGER.warning("No coordinator data available for binary sensors")
+        return
     
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
@@ -58,7 +68,7 @@ async def async_setup_entry(
                     )
                 )
     
-    _LOGGER.info("Adding %d binary sensor(s) total", len(entities))
+    _LOGGER.debug("Adding %d binary sensor(s) total", len(entities))
     async_add_entities(entities)
 
 
@@ -74,7 +84,16 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         sensor_key: str,
         device_class: BinarySensorDeviceClass,
     ) -> None:
-        """Initialize the binary sensor."""
+        """Initialize the binary sensor.
+        
+        Args:
+            coordinator: Data update coordinator
+            device_id: Device ID (serial number)
+            device_name: Device display name
+            project_id: Project ID
+            sensor_key: Sensor key (e.g., 'getSRE')
+            device_class: Binary sensor device class
+        """
         super().__init__(coordinator)
         
         self._device_id = device_id
@@ -120,7 +139,11 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if the binary sensor is on."""
+        """Return true if the binary sensor is on.
+        
+        Returns:
+            True if sensor is on, False if off, None if unavailable
+        """
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 status = device.get('status', {})
@@ -138,5 +161,9 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
     @property
     def available(self) -> bool:
-        """Return if entity is available."""
+        """Return if entity is available.
+        
+        Returns:
+            True if last coordinator update was successful
+        """
         return self.coordinator.last_update_success
