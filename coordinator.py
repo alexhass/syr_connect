@@ -90,6 +90,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 # Get status for each device
                 for device in devices:
                     try:
+                        # Add project_id to device
+                        device['project_id'] = project_id
+                        
                         # Use DCLG for API calls
                         dclg = device.get('dclg', device['id'])
                         status = await self.api.get_device_status(dclg)
@@ -106,6 +109,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             device['id'],
                             err
                         )
+                        # Add project_id even on error
+                        device['project_id'] = project_id
                         # Mark device as unavailable but still add it
                         device['status'] = {}
                         device['available'] = False

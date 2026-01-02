@@ -146,11 +146,15 @@ async def async_setup_entry(
     
     entities = []
     
+    _LOGGER.debug("Setting up sensors for %d device(s)", len(coordinator.data.get('devices', [])))
+    
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
         project_id = device['project_id']
         status = device.get('status', {})
+        
+        _LOGGER.debug("Device %s (%s) has %d status values", device_name, device_id, len(status))
         
         # Create sensors for all status values
         sensor_count = 0
