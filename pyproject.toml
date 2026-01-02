@@ -18,3 +18,4 @@ select = [
 ]
 ignore = [
   "E501",  # line length handled by formatter/line-length
+]
