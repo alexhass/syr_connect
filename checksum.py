@@ -6,7 +6,7 @@ import xmltodict
 class SyrChecksum:
     """Calculate checksums for SYR Connect API requests."""
 
-    def __init__(self, base_characters: str, key: str):
+    def __init__(self, base_characters: str, key: str) -> None:
         """Initialize the checksum calculator.
         
         Args:
@@ -117,7 +117,7 @@ class SyrChecksum:
             json_obj = xmltodict.parse(xml_string, xml_attribs=True)
             values = []
 
-            def extract_values(obj):
+            def extract_values(obj: dict | list | Any) -> None:
                 """Recursively extract all attribute values from parsed XML."""
                 if isinstance(obj, dict):
                     for key, value in obj.items():

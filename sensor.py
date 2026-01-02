@@ -243,7 +243,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         )
 
     @property
-    def native_value(self):
+    def native_value(self) -> str | int | float | None:
         """Return the state of the sensor."""
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:

@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 class SyrConnectAPI:
     """API client for SYR Connect."""
 
-    def __init__(self, session: aiohttp.ClientSession, username: str, password: str):
+    def __init__(self, session: aiohttp.ClientSession, username: str, password: str) -> None:
         """Initialize the API client."""
         self.session = session
         self.username = username
