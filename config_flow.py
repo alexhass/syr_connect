@@ -123,7 +123,6 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for SYR Connect."""
 
     VERSION = 1
-    DOMAIN = DOMAIN
 
     @staticmethod
     @callback
