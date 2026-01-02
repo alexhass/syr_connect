@@ -8,14 +8,25 @@
           "username": "Benutzername",
           "password": "Passwort"
         }
+      },
+      "reauth_confirm": {
+        "title": "SYR Connect erneut authentifizieren",
+        "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Bitte geben Sie neue Anmeldedaten ein.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort"
+        }
       }
     },
     "error": {
       "cannot_connect": "Verbindung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
+      "invalid_auth": "Ungültige Anmeldedaten. Bitte versuchen Sie es erneut.",
       "unknown": "Ein unbekannter Fehler ist aufgetreten"
     },
     "abort": {
-      "already_configured": "Dieser Account ist bereits konfiguriert"
+      "already_configured": "Dieser Account ist bereits konfiguriert",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich",
+      "reauth_failed": "Erneute Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut."
     }
   },
   "options": {

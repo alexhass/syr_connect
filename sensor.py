@@ -21,6 +21,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityCategory
 
 from .const import (
     DOMAIN,
@@ -36,6 +37,23 @@ _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+# Diagnostic sensors (configuration, technical info, firmware)
+DIAGNOSTIC_SENSORS = {
+    'getSRN',  # Serial Number
+    'getVER',  # Firmware Version
+    'getFIR',  # Firmware Model
+    'getTYP',  # Type
+    'getCNA',  # Device Name
+    'getMAN',  # Manufacturer
+    'getMAC',  # MAC Address
+    'getIPA',  # IP Address
+    'getDGW',  # Gateway
+    'getCDE',  # Configuration Code
+    'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
+    'getINR',  # Internal Reference
+    'getNOT',  # Notes
+}
 
 # Sensor units mapping (units are standardized and not translated)
 _SENSOR_UNITS = {
@@ -194,6 +212,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This prevents entity IDs from using aliases like "weichwasser"
         self.entity_id = build_entity_id("sensor", device_id, sensor_key)
+        
+        # Set entity category for diagnostic sensors
+        if sensor_key in DIAGNOSTIC_SENSORS:
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
         
         # Set unit of measurement if available
         if sensor_key in _SENSOR_UNITS:

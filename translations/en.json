@@ -8,14 +8,25 @@
           "username": "Username",
           "password": "Password"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate SYR Connect",
+        "description": "The credentials for {username} are no longer valid. Please enter new credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect. Please check your credentials.",
+      "invalid_auth": "Invalid credentials. Please try again.",
       "unknown": "An unknown error occurred"
     },
     "abort": {
-      "already_configured": "This account is already configured"
+      "already_configured": "This account is already configured",
+      "reauth_successful": "Reauthentication successful",
+      "reauth_failed": "Reauthentication failed. Please try again."
     }
   },
   "options": {

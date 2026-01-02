@@ -5,7 +5,9 @@ from datetime import timedelta
 import logging
 from typing import Any
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -55,13 +57,23 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             Dictionary containing devices and projects data
             
         Raises:
+            ConfigEntryAuthFailed: If authentication fails
             UpdateFailed: If API communication fails
         """
         try:
             # Login if not already logged in
             if not self.api.session_data:
                 _LOGGER.debug("No active session, logging in...")
-                await self.api.login()
+                try:
+                    await self.api.login()
+                except Exception as err:
+                    _LOGGER.error("Login failed: %s", err)
+                    # Check if it's an authentication error
+                    if "login" in str(err).lower() or "auth" in str(err).lower():
+                        raise ConfigEntryAuthFailed(
+                            "Authentication failed. Please reconfigure the integration."
+                        ) from err
+                    raise
             
             all_devices = []
             
@@ -113,27 +125,23 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             value: The value to set
             
         Raises:
-            ValueError: If coordinator data is not available
+            ValueError: If coordinator data is not available or device not found
+            HomeAssistantError: If setting the value fails
         """
         _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
-        try:
-            if not self.data:
-                _LOGGER.error("No coordinator data available")
-                raise ValueError("Coordinator data not available")
-            
-            # Find the DCLG for this device_id (which is now SN)
-            dclg = None
-            for device in self.data.get('devices', []):
-                if device['id'] == device_id:
-                    dclg = device.get('dclg', device_id)
-                    break
-            
-            if not dclg:
-                _LOGGER.error("Could not find DCLG for device %s", device_id)
-                return
-            
-            await self.api.set_device_status(dclg, command, value)
-            await self.async_request_refresh()
-        except Exception as err:
-            _LOGGER.error("Failed to set device value: %s", err, exc_info=True)
-            raise
+        
+        if not self.data:
+            raise ValueError("Coordinator data not available")
+        
+        # Find the DCLG for this device_id (which is now SN)
+        dclg = None
+        for device in self.data.get('devices', []):
+            if device['id'] == device_id:
+                dclg = device.get('dclg', device_id)
+                break
+        
+        if not dclg:
+            raise ValueError(f"Device {device_id} not found")
+        
+        await self.api.set_device_status(dclg, command, value)
+        await self.async_request_refresh()

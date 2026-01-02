@@ -6,6 +6,7 @@ import logging
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -112,12 +113,21 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         """Press the button.
         
         Sends the command to the device with value 1 to trigger the action.
+        
+        Raises:
+            HomeAssistantError: If the button press fails
         """
         _LOGGER.debug("Button pressed: %s (device: %s)", self._attr_name, self._device_id)
-        # Send command with value 1 (trigger action)
-        await self.coordinator.async_set_device_value(
-            self._device_id, self._command, 1
-        )
+        
+        try:
+            # Send command with value 1 (trigger action)
+            await self.coordinator.async_set_device_value(
+                self._device_id, self._command, 1
+            )
+        except ValueError as err:
+            raise HomeAssistantError(f"Failed to press button: {err}") from err
+        except Exception as err:
+            raise HomeAssistantError(f"Unexpected error pressing button: {err}") from err
 
     @property
     def available(self) -> bool:
