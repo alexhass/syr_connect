@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -12,6 +13,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
+
+if TYPE_CHECKING:
+    from . import SyrConnectConfigEntry
 
 from .const import DOMAIN, SENSOR_ICONS
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -33,7 +37,7 @@ BINARY_SENSORS = {
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SYR Connect binary sensors.

@@ -1,6 +1,7 @@
 """Checksum calculation for SYR Connect API."""
 from __future__ import annotations
-import xmltodict
+import xml.etree.ElementTree as ET
+from typing import Any
 
 
 class SyrChecksum:
@@ -113,38 +114,32 @@ class SyrChecksum:
             xml_string: The XML string to process
         """
         try:
-            # Parse XML to dict
-            json_obj = xmltodict.parse(xml_string, xml_attribs=True)
-            values = []
+            # Parse XML using ElementTree
+            root = ET.fromstring(xml_string)
+            values: list[str] = []
 
-            def extract_values(obj: dict | list | Any) -> None:
-                """Recursively extract all attribute values from parsed XML.
+            def extract_values(element: ET.Element) -> None:
+                """Recursively extract all attribute values from XML element.
                 
                 Args:
-                    obj: The object to extract values from (dict, list, or other)
+                    element: The XML element to extract values from
                 """
-                if isinstance(obj, dict):
-                    for key, value in obj.items():
-                        if key.startswith('@') and key != '@n':
-                            # It's an attribute value (and not 'n')
-                            values.append(str(value))
-                        elif isinstance(value, (dict, list)):
-                            extract_values(value)
-                        elif not key.startswith('@') and not key.startswith('#'):
-                            # Regular value
-                            if key != 'n':
-                                values.append(str(value))
-                elif isinstance(obj, list):
-                    for item in obj:
-                        extract_values(item)
+                # Extract attribute values (except 'n')
+                for key, value in element.attrib.items():
+                    if key != 'n':
+                        values.append(str(value))
+                
+                # Recursively process child elements
+                for child in element:
+                    extract_values(child)
 
-            extract_values(json_obj)
+            extract_values(root)
 
             # Add each extracted value to the checksum calculation
             for value in values:
                 self.add_to_checksum(value)
 
-        except Exception as error:
+        except ET.ParseError:
             # In case of error, silently continue
             pass
 

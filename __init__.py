@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
@@ -13,12 +13,19 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import DOMAIN, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
 from .coordinator import SyrConnectDataUpdateCoordinator
 
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry as ConfigEntryType
+    
+    class SyrConnectConfigEntry(ConfigEntryType):
+        """Typed ConfigEntry for SYR Connect."""
+        runtime_data: SyrConnectDataUpdateCoordinator
+
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR, Platform.BUTTON]
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
     _LOGGER.info("Setting up SYR Connect integration for user: %s", entry.data[CONF_USERNAME])
     
@@ -52,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.info("Unloading SYR Connect integration")
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
@@ -63,6 +70,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.warning("Failed to unload SYR Connect integration")
     
     return unload_ok
+
+
+async def update_listener(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> None:
 
 
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:

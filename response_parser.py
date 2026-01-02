@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import logging
+import xml.etree.ElementTree as ET
 from typing import Any
-
-import xmltodict
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,22 +31,68 @@ class ResponseParser:
 
     @staticmethod
     def parse_xml(xml_string: str) -> dict[str, Any]:
-        """Parse XML string to dictionary.
+        """Parse XML string to dictionary using ElementTree.
         
         Args:
             xml_string: XML string to parse
             
         Returns:
-            Parsed dictionary
+            Parsed dictionary representation of XML
             
         Raises:
             ValueError: If XML parsing fails
         """
         try:
-            return xmltodict.parse(xml_string)
-        except Exception as err:
+            root = ET.fromstring(xml_string)
+            return ResponseParser._element_to_dict(root)
+        except ET.ParseError as err:
             _LOGGER.error("Failed to parse XML: %s", err)
             raise ValueError(f"Invalid XML response: {err}") from err
+
+    @staticmethod
+    def _element_to_dict(element: ET.Element) -> dict[str, Any]:
+        """Convert XML element to dictionary.
+        
+        Args:
+            element: XML element to convert
+            
+        Returns:
+            Dictionary representation of the element
+        """
+        result: dict[str, Any] = {}
+        
+        # Add attributes with @ prefix
+        if element.attrib:
+            for key, value in element.attrib.items():
+                result[f"@{key}"] = value
+        
+        # Handle child elements
+        children = list(element)
+        if children:
+            child_dict: dict[str, Any] = {}
+            for child in children:
+                child_data = ResponseParser._element_to_dict(child)
+                
+                # Handle multiple children with same tag
+                if child.tag in child_dict:
+                    # Convert to list if not already
+                    if not isinstance(child_dict[child.tag], list):
+                        child_dict[child.tag] = [child_dict[child.tag]]
+                    child_dict[child.tag].append(child_data)
+                else:
+                    child_dict[child.tag] = child_data
+            
+            result.update(child_dict)
+        
+        # Add text content
+        if element.text and element.text.strip():
+            result['#text'] = element.text.strip()
+        
+        # If only text and no attributes/children, return just the text
+        if len(result) == 1 and '#text' in result:
+            return result
+        
+        return result if result else {}
 
     def parse_login_response(self, xml_response: str) -> tuple[str, list[dict[str, Any]]]:
         """Parse login response and extract session ID and projects.

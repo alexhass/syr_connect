@@ -275,13 +275,12 @@ If you see "Authentication failed" errors:
 
 ## Dependencies
 
-The integration requires the following Python packages:
-- `xmltodict==0.13.0`: For parsing XML responses
+The integration requires the following Python package:
 - `pycryptodomex==3.19.0`: For AES encryption/decryption
 
-**Important**: The integration uses `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's built-in crypto libraries.
+**Note**: The integration uses Python's built-in `xml.etree.ElementTree` for XML parsing (no external dependency needed) and `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's built-in crypto libraries.
 
-These packages are **automatically installed** by Home Assistant when you:
+This package is **automatically installed** by Home Assistant when you:
 1. Add the integration through the UI
 2. Restart Home Assistant after installation
 

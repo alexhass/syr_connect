@@ -24,17 +24,15 @@ pytest --cov=custom_components.syr_connect --cov-report=term-missing tests/
 
 ## Python Package Requirements
 
-The following packages will be automatically installed by Home Assistant:
+The following package will be automatically installed by Home Assistant:
 
 ### Required Packages
-1. **xmltodict** (==0.13.0)
-   - Purpose: XML parsing for API responses
-   - License: MIT
-
-2. **pycryptodomex** (==3.19.0)
+1. **pycryptodomex** (==3.19.0)
    - Purpose: AES encryption/decryption for API communication
    - License: BSD, Public Domain
    - Note: Uses `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's crypto libraries
+
+**XML Parsing**: The integration uses Python's built-in `xml.etree.ElementTree` module (no external dependency needed).
 
 ## Network Requirements
 - **Internet Connection**: Required for cloud API access
@@ -77,15 +75,15 @@ After installing the integration in Home Assistant:
 
 ## Manual Dependency Installation (Advanced)
 
-If automatic installation fails, you can manually install dependencies:
+If automatic installation fails, you can manually install the dependency:
 
 ```bash
 # For Home Assistant Container/OS
-docker exec -it homeassistant pip install xmltodict==0.13.0 pycryptodomex==3.19.0
+docker exec -it homeassistant pip install pycryptodomex==3.19.0
 
 # For Home Assistant Core
 source /srv/homeassistant/bin/activate
-pip install xmltodict==0.13.0 pycryptodomex==3.19.0
+pip install pycryptodomex==3.19.0
 ```
 
 ## File Structure Requirements
