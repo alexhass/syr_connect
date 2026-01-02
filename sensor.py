@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -24,9 +23,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 
-if TYPE_CHECKING:
-    from . import SyrConnectConfigEntry
-
+from . import SyrConnectConfigEntry
 from .const import (
     DOMAIN,
     SENSOR_DEVICE_CLASS,

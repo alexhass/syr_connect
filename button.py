@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
@@ -11,9 +10,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-if TYPE_CHECKING:
-    from . import SyrConnectConfigEntry
-
+from . import SyrConnectConfigEntry
 from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id

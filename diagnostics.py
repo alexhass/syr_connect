@@ -1,16 +1,14 @@
 """Diagnostics support for SYR Connect."""
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-if TYPE_CHECKING:
-    from . import SyrConnectConfigEntry
-
+from . import SyrConnectConfigEntry
 from .coordinator import SyrConnectDataUpdateCoordinator
 
 TO_REDACT = {
