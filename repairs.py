@@ -20,7 +20,7 @@ def create_issue(
     **kwargs: Any,
 ) -> None:
     """Create a repair issue.
-    
+
     Args:
         hass: Home Assistant instance
         issue_id: Unique identifier for the issue
@@ -41,7 +41,7 @@ def create_issue(
 
 def delete_issue(hass: HomeAssistant, issue_id: str) -> None:
     """Delete a repair issue.
-    
+
     Args:
         hass: Home Assistant instance
         issue_id: Unique identifier for the issue to delete

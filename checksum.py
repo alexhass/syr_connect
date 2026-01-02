@@ -9,7 +9,7 @@ class SyrChecksum:
 
     def __init__(self, base_characters: str, key: str) -> None:
         """Initialize the checksum calculator.
-        
+
         Args:
             base_characters: A string representing the character set used for encoding
             key: A keyword used in the encoding process
@@ -21,12 +21,12 @@ class SyrChecksum:
     @staticmethod
     def extract_bits(byte: int, start: int, length: int) -> int:
         """Extract a subset of bits from a byte.
-        
+
         Args:
             byte: The byte to extract bits from
             start: The starting bit position
             length: The number of bits to extract
-            
+
         Returns:
             Extracted bits as a number
         """
@@ -34,10 +34,10 @@ class SyrChecksum:
 
     def compute_checksum_value(self, value: str) -> int:
         """Compute a checksum-compatible numeric value from the input string.
-        
+
         Args:
             value: The input string to process
-            
+
         Returns:
             Computed numeric checksum contribution
         """
@@ -65,7 +65,7 @@ class SyrChecksum:
 
             # Get the current byte (or 0 if out-of-range)
             current_byte = bytes_arr[byte_index] if byte_index < len(bytes_arr) else 0
-            
+
             # Shift current byte
             shifted = (current_byte << bit_offset) & 0xff  # keep only 8 bits
 
@@ -101,7 +101,7 @@ class SyrChecksum:
 
     def add_to_checksum(self, input_str: str) -> None:
         """Add a string's computed value to the checksum total.
-        
+
         Args:
             input_str: The input string to process
         """
@@ -109,7 +109,7 @@ class SyrChecksum:
 
     def add_xml_to_checksum(self, xml_string: str) -> None:
         """Parse an XML string, extract all attribute values, and add them to the checksum.
-        
+
         Args:
             xml_string: The XML string to process
         """
@@ -120,7 +120,7 @@ class SyrChecksum:
 
             def extract_values(element: ET.Element) -> None:
                 """Recursively extract all attribute values from XML element.
-                
+
                 Args:
                     element: The XML element to extract values from
                 """
@@ -128,7 +128,7 @@ class SyrChecksum:
                 for key, value in element.attrib.items():
                     if key != 'n':
                         values.append(str(value))
-                
+
                 # Recursively process child elements
                 for child in element:
                     extract_values(child)
@@ -149,7 +149,7 @@ class SyrChecksum:
 
     def get_checksum(self) -> str:
         """Return the computed checksum as a hexadecimal string.
-        
+
         Returns:
             Checksum value in uppercase hexadecimal
         """
@@ -157,7 +157,7 @@ class SyrChecksum:
 
     def set_checksum(self, hex_string: str) -> None:
         """Manually set the checksum value from a hex string.
-        
+
         Args:
             hex_string: Hexadecimal string representation of the checksum
         """

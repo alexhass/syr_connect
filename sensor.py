@@ -129,7 +129,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SYR Connect sensors.
-    
+
     Args:
         hass: Home Assistant instance
         entry: Config entry
@@ -137,37 +137,37 @@ async def async_setup_entry(
     """
     _LOGGER.debug("Setting up SYR Connect sensors")
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
-    
+
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for sensors")
         return
-    
+
     entities = []
-    
+
     _LOGGER.debug("Setting up sensors for %d device(s)", len(coordinator.data.get('devices', [])))
-    
+
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
         project_id = device['project_id']
         status = device.get('status', {})
-        
+
         _LOGGER.debug("Device %s (%s) has %d status values", device_name, device_id, len(status))
-        
+
         # Create sensors for all status values
         sensor_count = 0
         for key, value in status.items():
             # Skip sensors that are always excluded
             if key in _EXCLUDED_SENSORS or key.startswith('_'):
                 continue
-            
+
             # Skip specific sensors only when value is 0
             if key in _EXCLUDE_WHEN_ZERO:
                 if isinstance(value, (int, float)) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
                     continue
-            
+
             # Create sensor if value is valid
             if isinstance(value, (int, float, str)):
                 entities.append(
@@ -180,7 +180,7 @@ async def async_setup_entry(
                     )
                 )
                 sensor_count += 1
-        
+
         # Create combined regeneration time sensor from getRTH and getRTM
         if 'getRTH' in status and 'getRTM' in status:
             entities.append(
@@ -193,9 +193,9 @@ async def async_setup_entry(
                 )
             )
             sensor_count += 1
-        
+
         _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
-    
+
     _LOGGER.debug("Adding %d sensor(s) total", len(entities))
     async_add_entities(entities)
 
@@ -213,56 +213,56 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
-        
+
         self._device_id = device_id
         self._device_name = device_name
         self._project_id = project_id
         self._sensor_key = sensor_key
-        
+
         # Set unique ID and translation platform
         # device_id is the serial number - use it for technical entity IDs
         self._attr_unique_id = f"{device_id}_{sensor_key}"
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key
-        
+
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This prevents entity IDs from using aliases like "weichwasser"
         self.entity_id = build_entity_id("sensor", device_id, sensor_key)
-        
+
         # Set entity category for diagnostic sensors
         if sensor_key in _DIAGNOSTIC_SENSORS:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
-        
+
         # Set unit of measurement if available
         if sensor_key in _SENSOR_UNITS:
             self._attr_native_unit_of_measurement = _SENSOR_UNITS[sensor_key]
-        
+
         # Set device class if available
         if sensor_key in _SENSOR_DEVICE_CLASS:
             self._attr_device_class = _SENSOR_DEVICE_CLASS[sensor_key]
-        
+
         # Set state class if available
         if sensor_key in _SENSOR_STATE_CLASS:
             self._attr_state_class = _SENSOR_STATE_CLASS[sensor_key]
-        
+
         # Set icon if available
         if sensor_key in _SENSOR_ICONS:
             self._attr_icon = _SENSOR_ICONS[sensor_key]
-        
+
         # Store base icon for state-based icon changes
         self._base_icon = self._attr_icon
-        
+
         # Disable sensors by default based on configuration
         if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _DISABLED_BY_DEFAULT_SENSORS:
             self._attr_entity_registry_enabled_default = False
-        
+
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     @property
     def icon(self) -> str | None:
         """Return the icon to use in the frontend, if any.
-        
+
         Icons change dynamically based on sensor state for certain sensors:
         - Alarm: alert icon when alarm active, bell icon when inactive
         - Regeneration: autorenew icon when active, timer icon when inactive
@@ -275,14 +275,14 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             if value and str(value).lower() in ("1", "true", "on", "active"):
                 return "mdi:bell-alert"
             return "mdi:bell-outline"
-        
+
         # Dynamic icon for regeneration active sensor
         if self._sensor_key == "getSRE":
             value = self.native_value
             if value and str(value).lower() in ("1", "true", "on", "active"):
                 return "mdi:autorenew"
             return "mdi:timer-outline"
-        
+
         # Dynamic icon for salt stock sensors (percentage based)
         if self._sensor_key in ("getSS1", "getSS2", "getSS3"):
             try:
@@ -295,7 +295,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     return "mdi:cup-outline"
             except (ValueError, TypeError):
                 pass
-        
+
         # Dynamic icon for remaining capacity (percentage based)
         if self._sensor_key == "getRES":
             try:
@@ -308,7 +308,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     return "mdi:gauge-low"
             except (ValueError, TypeError):
                 pass
-        
+
         # Return base icon for all other sensors
         return self._base_icon
 
@@ -318,7 +318,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 status = device.get('status', {})
-                
+
                 # Special handling for combined regeneration time sensor
                 if self._sensor_key == 'getRTI':
                     hour = status.get('getRTH', 0)
@@ -327,7 +327,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return f"{int(hour):02d}:{int(minute):02d}"
                     except (ValueError, TypeError):
                         return "00:00"
-                
+
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
                     value = status.get(self._sensor_key)
@@ -345,13 +345,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         except (ValueError, TypeError):
                             return "°dH"
                     return "°dH"
-                
+
                 value = status.get(self._sensor_key)
-                
+
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
                 if self._sensor_key in _STRING_SENSORS:
                     return str(value) if value is not None else None
-                
+
                 # Try to convert to number if possible for other sensors
                 if isinstance(value, str):
                     try:
@@ -362,16 +362,16 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return numeric_value
                     except (ValueError, TypeError):
                         return value
-                
+
                 # Handle numeric values directly
                 if isinstance(value, (int, float)):
                     # Divide pressure by 10 to convert to correct unit
                     if self._sensor_key == 'getPRS':
                         return value / 10
                     return value
-                
+
                 return value
-        
+
         return None
 
     @property
@@ -379,10 +379,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         """Return if entity is available."""
         if not self.coordinator.last_update_success:
             return False
-        
+
         # Check if the specific device is available
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 return device.get('available', True)
-        
+
         return True

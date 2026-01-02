@@ -28,16 +28,16 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry.
-    
+
     Args:
         hass: Home Assistant instance
         entry: Config entry
-        
+
     Returns:
         Dictionary with diagnostic information
     """
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
-    
+
     devices_info: list[dict[str, Any]] = []
     projects_info: list[dict[str, Any]] = []
 
@@ -58,7 +58,7 @@ async def async_get_config_entry_diagnostics(
         "devices": devices_info,
         "projects": projects_info,
     }
-    
+
     if coordinator.data:
         # Add device information
         for device in coordinator.data.get("devices", []):
@@ -71,7 +71,7 @@ async def async_get_config_entry_diagnostics(
                 "status_keys": list(device.get("status", {}).keys()),
             }
             devices_info.append(device_info)
-        
+
         # Add project information
         for project in coordinator.data.get("projects", []):
             project_info = {
@@ -79,6 +79,6 @@ async def async_get_config_entry_diagnostics(
                 "name": project.get("name"),
             }
             projects_info.append(project_info)
-    
+
     # Redact sensitive information
     return async_redact_data(diagnostics_data, _TO_REDACT)

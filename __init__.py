@@ -21,12 +21,12 @@ PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR, Platform.B
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
     _LOGGER.info("Setting up SYR Connect integration for user: %s", entry.data[CONF_USERNAME])
-    
+
     session = async_get_clientsession(hass)
-    
+
     # Get scan interval from options, fall back to default
     scan_interval = entry.options.get(_CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL)
-    
+
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
         session,
@@ -34,21 +34,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PASSWORD],
         scan_interval,
     )
-    
+
     try:
         await coordinator.async_config_entry_first_refresh()
     except Exception as err:
         _LOGGER.error("Failed to connect to SYR Connect API: %s", err)
         raise ConfigEntryNotReady(f"Unable to connect to SYR Connect: {err}") from err
-    
+
     entry.runtime_data = coordinator
-    
+
     # Register listener for options changes (scan_interval updates)
     entry.async_on_unload(entry.add_update_listener(async_options_update_listener))
-    
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _LOGGER.info("SYR Connect integration setup completed")
-    
+
     return True
 
 
@@ -56,24 +56,24 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.info("Unloading SYR Connect integration")
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    
+
     if unload_ok:
         _LOGGER.info("SYR Connect integration unloaded successfully")
     else:
         _LOGGER.warning("Failed to unload SYR Connect integration")
-    
+
     return unload_ok
 
 
 async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update (scan_interval changes).
-    
+
     This listener is triggered when the user changes integration options
     through the Options Flow (e.g., updates the scan interval).
     """
     old_scan_interval = entry.runtime_data.update_interval.total_seconds()
     new_scan_interval = entry.options.get(_CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL)
-    
+
     if old_scan_interval != new_scan_interval:
         _LOGGER.info(
             "Scan interval updated from %d to %d seconds, reloading coordinator",
@@ -90,7 +90,7 @@ async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry)
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload integration when critical settings change (credentials via reauth).
-    
+
     This is called when the user reconfigures or reauthenticates the integration.
     """
     _LOGGER.info("Reloading SYR Connect integration due to configuration change")

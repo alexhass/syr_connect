@@ -21,7 +21,7 @@ class HTTPClient:
         timeout: int = 30,
     ) -> None:
         """Initialize HTTP client.
-        
+
         Args:
             session: aiohttp client session
             user_agent: User agent string for requests
@@ -35,10 +35,10 @@ class HTTPClient:
 
     def _get_headers(self, content_type: str = 'application/x-www-form-urlencoded') -> dict[str, str]:
         """Get standard headers for API requests.
-        
+
         Args:
             content_type: Content-Type header value
-            
+
         Returns:
             Dictionary of headers
         """
@@ -57,28 +57,28 @@ class HTTPClient:
         content_type: str = 'application/x-www-form-urlencoded',
     ) -> str:
         """Make POST request with retry logic.
-        
+
         Args:
             url: URL to request
             data: Request data (dict or string)
             content_type: Content-Type header value
-            
+
         Returns:
             Response text
-            
+
         Raises:
             aiohttp.ClientError: If request fails after all retries
         """
         headers = self._get_headers(content_type)
         timeout = aiohttp.ClientTimeout(total=self.timeout)
-        
+
         for attempt in range(self.max_retries):
             try:
                 _LOGGER.debug(
                     "Making POST request to %s (attempt %d/%d)",
                     url, attempt + 1, self.max_retries
                 )
-                
+
                 async with self.session.post(
                     url, data=data, headers=headers, timeout=timeout
                 ) as response:
@@ -87,14 +87,14 @@ class HTTPClient:
                     text = await response.text()
                     _LOGGER.debug("Response received (length: %d)", len(text))
                     return text
-                    
+
             except (aiohttp.ClientError, asyncio.TimeoutError) as err:
                 is_last_attempt = attempt == self.max_retries - 1
-                
+
                 if is_last_attempt:
                     _LOGGER.error("Request failed after %d attempts: %s", self.max_retries, err)
                     raise
-                
+
                 # Calculate backoff time (exponential: 1s, 2s, 4s, ...)
                 backoff_time = 2 ** attempt
                 _LOGGER.warning(
@@ -102,6 +102,6 @@ class HTTPClient:
                     attempt + 1, self.max_retries, err, backoff_time
                 )
                 await asyncio.sleep(backoff_time)
-        
+
         # Should never reach here, but for type safety
         raise aiohttp.ClientError("Request failed after all retries")

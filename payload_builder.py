@@ -15,7 +15,7 @@ class PayloadBuilder:
 
     def __init__(self, app_version: str, checksum_calculator: SyrChecksum) -> None:
         """Initialize payload builder.
-        
+
         Args:
             app_version: Application version string
             checksum_calculator: Checksum calculator instance
@@ -26,7 +26,7 @@ class PayloadBuilder:
     @staticmethod
     def get_timestamp() -> str:
         """Get current timestamp in required format.
-        
+
         Returns:
             Formatted timestamp string
         """
@@ -34,11 +34,11 @@ class PayloadBuilder:
 
     def build_login_payload(self, username: str, password: str) -> str:
         """Build login XML payload.
-        
+
         Args:
             username: SYR Connect username
             password: SYR Connect password
-            
+
         Returns:
             XML string for login request
         """
@@ -56,11 +56,11 @@ class PayloadBuilder:
 
     def build_device_list_payload(self, session_id: str, project_id: str) -> str:
         """Build device list XML payload with checksum.
-        
+
         Args:
             session_id: Active session ID
             project_id: Project ID to query
-            
+
         Returns:
             XML string with checksum
         """
@@ -77,11 +77,11 @@ class PayloadBuilder:
 
     def build_device_status_payload(self, session_id: str, device_id: str) -> str:
         """Build device status XML payload with checksum.
-        
+
         Args:
             session_id: Active session ID
             device_id: Device ID to query
-            
+
         Returns:
             XML string with checksum
         """
@@ -100,13 +100,13 @@ class PayloadBuilder:
         self, session_id: str, device_id: str, command: str, value: int | str
     ) -> str:
         """Build set device status XML payload with checksum.
-        
+
         Args:
             session_id: Active session ID
             device_id: Device ID to control
             command: Command name
             value: Command value
-            
+
         Returns:
             XML string with checksum
         """
@@ -129,12 +129,12 @@ class PayloadBuilder:
         self, session_id: str, device_id: str, statistic_type: str = "water"
     ) -> str:
         """Build statistics XML payload with checksum.
-        
+
         Args:
             session_id: Active session ID
             device_id: Device ID to query
             statistic_type: Type of statistics ("water" or "salt")
-            
+
         Returns:
             XML string with checksum
         """
@@ -147,22 +147,22 @@ class PayloadBuilder:
             f'<col><dcl dclg="{safe_device}"></dcl></col>'
             f'</sc>'
         )
-        
+
         # Add statistic-specific payload
         if statistic_type == "salt":
             stat_payload = '<sh t="2" rtyp="1" lg="de" rg="DE" unit="kg"/>'
         else:
             stat_payload = '<sh t="1" rtyp="1" lg="de" rg="DE" unit="l"/>'
-        
+
         payload = base_payload.replace('></dcl>', f'>{stat_payload}</dcl>')
         return self._add_checksum(payload)
 
     def _add_checksum(self, payload: str) -> str:
         """Add checksum to XML payload.
-        
+
         Args:
             payload: XML payload without checksum
-            
+
         Returns:
             XML payload with checksum tag
         """

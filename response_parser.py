@@ -14,11 +14,11 @@ class ResponseParser:
     @staticmethod
     def validate_structure(data: dict, required_path: list[str]) -> bool:
         """Validate that a nested dictionary contains a required path.
-        
+
         Args:
             data: Dictionary to validate
             required_path: List of keys representing the path to validate
-            
+
         Returns:
             True if path exists, False otherwise
         """
@@ -32,13 +32,13 @@ class ResponseParser:
     @staticmethod
     def parse_xml(xml_string: str) -> dict[str, Any]:
         """Parse XML string to dictionary using ElementTree.
-        
+
         Args:
             xml_string: XML string to parse
-            
+
         Returns:
             Parsed dictionary representation of XML
-            
+
         Raises:
             ValueError: If XML parsing fails
         """
@@ -53,27 +53,27 @@ class ResponseParser:
     @staticmethod
     def _element_to_dict(element: ET.Element) -> Any:
         """Convert XML element to dictionary.
-        
+
         Args:
             element: XML element to convert
-            
+
         Returns:
             Dictionary representation of the element
         """
         result: dict[str, Any] = {}
-        
+
         # Add attributes with @ prefix
         if element.attrib:
             for key, value in element.attrib.items():
                 result[f"@{key}"] = value
-        
+
         # Handle child elements
         children = list(element)
         if children:
             child_dict: dict[str, Any] = {}
             for child in children:
                 child_data = ResponseParser._element_to_dict(child)
-                
+
                 # Handle multiple children with same tag
                 if child.tag in child_dict:
                     # Convert to list if not already
@@ -82,9 +82,9 @@ class ResponseParser:
                     child_dict[child.tag].append(child_data)
                 else:
                     child_dict[child.tag] = child_data
-            
+
             result.update(child_dict)
-        
+
         # Add text content if present
         if element.text and element.text.strip():
             text = element.text.strip()
@@ -93,27 +93,27 @@ class ResponseParser:
                 return text
             # Otherwise add it as #text key
             result['#text'] = text
-        
+
         return result if result else {}
 
     def parse_login_response(self, xml_response: str) -> tuple[str, dict[str, Any]]:
         """Parse login response and extract session ID and projects.
-        
+
         Args:
             xml_response: XML response string
-            
+
         Returns:
             Tuple of (session_id, projects_list)
-            
+
         Raises:
             ValueError: If response structure is invalid
         """
         parsed = self.parse_xml(xml_response)
-        
+
         # Validate response structure
         if not self.validate_structure(parsed, ['sc', 'api']):
             raise ValueError("Authentication failed: Invalid login response structure")
-        
+
         # The api element contains the encrypted session data as a string
         api_data = parsed['sc']['api']
         if isinstance(api_data, dict):
@@ -122,40 +122,40 @@ class ResponseParser:
         else:
             # Otherwise it's a direct string
             encrypted_text = api_data
-        
+
         return encrypted_text, parsed
 
     def parse_decrypted_login(self, decrypted_xml: str) -> tuple[str, list[dict[str, Any]]]:
         """Parse decrypted login data.
-        
+
         Args:
             decrypted_xml: Decrypted XML string
-            
+
         Returns:
             Tuple of (session_id, projects_list)
-            
+
         Raises:
             ValueError: If structure is invalid
         """
         wrapped_xml = f'<xml>{decrypted_xml}</xml>'
         parsed = self.parse_xml(wrapped_xml)
-        
+
         # Validate session structure
         if not self.validate_structure(parsed, ['xml', 'usr', '@id']):
             raise ValueError("Authentication failed: Invalid credentials or session data")
-        
+
         session_id = parsed['xml']['usr']['@id']
-        
+
         # Validate projects structure
         if not self.validate_structure(parsed, ['xml', 'prs', 'pre']):
             raise ValueError("Authentication succeeded but no projects found in account")
-        
+
         projects_data = parsed['xml']['prs']['pre']
-        
+
         # Ensure projects is a list
         if not isinstance(projects_data, list):
             projects_data = [projects_data]
-        
+
         # Parse projects
         projects = []
         for project in projects_data:
@@ -163,22 +163,22 @@ class ResponseParser:
                 'id': project['@id'],
                 'name': project['@n'],
             })
-        
+
         return session_id, projects
 
     def parse_device_list_response(self, xml_response: str) -> list[dict[str, Any]]:
         """Parse device list response.
-        
+
         Args:
             xml_response: XML response string
-            
+
         Returns:
             List of devices with their information
         """
         parsed = self.parse_xml(xml_response)
         devices: list[dict[str, Any]] = []
         device_aliases: dict[str, str] = {}
-        
+
         # Extract device aliases
         if self.validate_structure(parsed, ['sc', 'col']):
             col = parsed['sc']['col']
@@ -187,14 +187,14 @@ class ResponseParser:
                 for dcl in dcl_list:
                     if '@dclg' in dcl and '@ali' in dcl:
                         device_aliases[dcl['@dclg']] = dcl['@ali']
-        
+
         # Extract devices
         if not self.validate_structure(parsed, ['sc', 'dvs']):
             _LOGGER.debug("No 'dvs' element found in device list response")
             return devices
-        
+
         dvs = parsed['sc']['dvs']
-        
+
         # Check if dvs contains 'd' element(s)
         if 'd' in dvs:
             device_list = dvs['d']
@@ -206,17 +206,17 @@ class ResponseParser:
         else:
             _LOGGER.debug("No devices found in 'dvs' element: %s", dvs)
             return devices
-        
+
         _LOGGER.debug("Found %d device(s) in response", len(device_list))
-        
+
         for device in device_list:
             if '@dclg' in device:
                 dclg_id = device['@dclg']
                 serial_number = device.get('@sn', 'Unknown')
                 device_name = device_aliases.get(dclg_id, serial_number)
-                
+
                 _LOGGER.debug("Adding device: %s (DCLG: %s, SN: %s)", device_name, dclg_id, serial_number)
-                
+
                 devices.append({
                     'id': serial_number,  # Use serial number as device ID
                     'dclg': dclg_id,
@@ -225,79 +225,79 @@ class ResponseParser:
                 })
             else:
                 _LOGGER.debug("Skipping device without @dclg: %s", device)
-        
+
         return devices
 
     def parse_device_status_response(self, xml_response: str) -> dict[str, Any]:
         """Parse device status response.
-        
+
         Args:
             xml_response: XML response string
-            
+
         Returns:
             Dictionary of status attributes
         """
         parsed = self.parse_xml(xml_response)
-        
+
         if 'sc' not in parsed:
             _LOGGER.warning("No 'sc' element in status response")
             return {}
-        
+
         return self._flatten_attributes(parsed['sc'])
 
     def parse_statistics_response(self, xml_response: str) -> dict[str, Any]:
         """Parse statistics response.
-        
+
         Args:
             xml_response: XML response string
-            
+
         Returns:
             Dictionary of statistics data
         """
         parsed = self.parse_xml(xml_response)
-        
+
         # Check for error messages
         if self.validate_structure(parsed, ['sc', 'msg']):
             _LOGGER.warning("Statistics API returned message: %s", parsed['sc']['msg'])
             return {}
-        
+
         if 'sc' not in parsed:
             _LOGGER.warning("No 'sc' element in statistics response")
             return {}
-        
+
         # Remove checksum before flattening
         if 'cs' in parsed['sc']:
             del parsed['sc']['cs']
-        
+
         return self._flatten_attributes(parsed['sc'])
 
     @staticmethod
     def _flatten_attributes(data: dict | list, prefix: str = "") -> dict[str, Any]:
         """Flatten XML attributes to simple dict.
-        
+
         Args:
             data: Data structure to flatten
             prefix: Prefix for nested keys
-            
+
         Returns:
             Flattened dictionary
         """
         result = {}
-        
+
         if isinstance(data, dict):
             for key, value in data.items():
                 # Skip checksum
                 if key == 'cs':
                     continue
-                
+
                 # Handle attributes (starting with @)
                 if key.startswith('@'):
                     result[key[1:]] = value
-                
+
                 # Handle text content
                 elif key == '#text':
                     result['_text'] = value
-                
+
                 # Handle 'c' tags which contain actual data
                 elif key == 'c':
                     if isinstance(value, list):
@@ -312,19 +312,19 @@ class ResponseParser:
                         result[name] = value['@v']
                         if '@dt' in value:
                             result[f"{name}_dt"] = value['@dt']
-                
+
                 # Handle nested structures
                 elif isinstance(value, (dict, list)):
                     nested = ResponseParser._flatten_attributes(value, prefix)
                     result.update(nested)
-                
+
                 # Handle simple values
                 else:
                     result[key] = value
-        
+
         elif isinstance(data, list):
             for item in data:
                 nested = ResponseParser._flatten_attributes(item, prefix)
                 result.update(nested)
-        
+
         return result

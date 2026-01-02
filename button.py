@@ -23,7 +23,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SYR Connect buttons.
-    
+
     Args:
         hass: Home Assistant instance
         entry: Config entry
@@ -31,25 +31,25 @@ async def async_setup_entry(
     """
     _LOGGER.debug("Setting up SYR Connect buttons")
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
-    
+
     entities = []
-    
+
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for buttons")
         return
-    
+
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
         project_id = device['project_id']
-        
+
         # Add action buttons based on the ioBroker adapter
         action_buttons = [
             ("setSIR", "Regenerate Now"),
             ("setSMR", "Multi Regenerate"),
             ("setRST", "Reset Device"),
         ]
-        
+
         for command, name in action_buttons:
             entities.append(
                 SyrConnectButton(
@@ -62,7 +62,7 @@ async def async_setup_entry(
                 )
             )
 
-    
+
     _LOGGER.debug("Adding %d button(s) total", len(entities))
     async_add_entities(entities)
 
@@ -80,7 +80,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         button_name: str,
     ) -> None:
         """Initialize the button.
-        
+
         Args:
             coordinator: Data update coordinator
             device_id: Device ID (serial number)
@@ -90,34 +90,34 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
             button_name: Display name for the button
         """
         super().__init__(coordinator)
-        
+
         self._device_id = device_id
         self._device_name = device_name
         self._project_id = project_id
         self._command = command
-        
+
         self._attr_unique_id = f"{device_id}_{command}"
         # Use translation key for localized button names; let HA build the name
         self._attr_has_entity_name = True
         self._attr_translation_key = command
-        
+
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This matches the sensor entity ID structure
         self.entity_id = build_entity_id("button", device_id, command)
-        
+
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     async def async_press(self) -> None:
         """Press the button.
-        
+
         Sends the command to the device with value 1 to trigger the action.
-        
+
         Raises:
             HomeAssistantError: If the button press fails
         """
         _LOGGER.debug("Button pressed: %s (device: %s)", self._attr_name, self._device_id)
-        
+
         try:
             # Send command with value 1 (trigger action)
             await self.coordinator.async_set_device_value(
@@ -131,16 +131,16 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available.
-        
+
         Returns:
             True if last coordinator update was successful and device is available
         """
         if not self.coordinator.last_update_success:
             return False
-        
+
         # Check if the specific device is available
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 return device.get('available', True)
-        
+
         return True

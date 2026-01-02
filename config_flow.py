@@ -30,14 +30,14 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect.
-    
+
     Args:
         hass: Home Assistant instance
         data: User input data with username and password
-        
+
     Returns:
         Dictionary with title for the config entry
-        
+
     Raises:
         CannotConnect: If connection to API fails
         InvalidAuth: If authentication fails
@@ -45,7 +45,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
     api = SyrConnectAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
-    
+
     # Test authentication
     _LOGGER.debug("Testing API authentication...")
     try:
@@ -59,9 +59,9 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     except Exception as err:
         _LOGGER.error("Unexpected error during validation: %s", err)
         raise CannotConnect from err
-    
+
     _LOGGER.info("API authentication successful for user: %s", data[CONF_USERNAME])
-    
+
     return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
 
 
@@ -82,10 +82,10 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options for scan interval configuration.
-        
+
         Args:
             user_input: User input data from the form
-            
+
         Returns:
             FlowResult with the configuration entry or form
         """
@@ -130,10 +130,10 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
         config_entry: config_entries.ConfigEntry,
     ) -> SyrConnectOptionsFlow:
         """Get the options flow for this handler.
-        
+
         Args:
             config_entry: The config entry to get options flow for
-            
+
         Returns:
             The options flow handler instance
         """
@@ -141,10 +141,10 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
         """Handle reauth flow when credentials are invalid.
-        
+
         Args:
             entry_data: The existing config entry data
-            
+
         Returns:
             FlowResult to prompt user for new credentials
         """
@@ -154,26 +154,26 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle reauth confirmation step.
-        
+
         Args:
             user_input: User input data with new credentials
-            
+
         Returns:
             FlowResult with updated config entry or form with errors
         """
         errors: dict[str, str] = {}
-        
+
         if user_input is not None:
             # Get the existing config entry
             entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
-            
+
             if entry is None:
                 return self.async_abort(reason="reauth_failed")
-            
+
             try:
                 # Validate new credentials
                 await validate_input(self.hass, user_input)
-                
+
                 # Update the config entry with new credentials
                 self.hass.config_entries.async_update_entry(
                     entry,
@@ -183,12 +183,12 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     },
                 )
-                
+
                 # Reload the config entry
                 await self.hass.config_entries.async_reload(entry.entry_id)
-                
+
                 return self.async_abort(reason="reauth_successful")
-                
+
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
@@ -196,7 +196,7 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reauth: %s", err)
                 errors["base"] = "unknown"
-        
+
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=STEP_USER_DATA_SCHEMA,
@@ -208,24 +208,24 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle reconfiguration of the integration.
-        
+
         Args:
             user_input: User input data with new credentials
-            
+
         Returns:
             FlowResult with updated config entry or form with errors
         """
         errors: dict[str, str] = {}
         entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
-        
+
         if user_input is not None:
             if entry is None:
                 return self.async_abort(reason="reconfigure_failed")
-            
+
             try:
                 # Validate new credentials
                 await validate_input(self.hass, user_input)
-                
+
                 # Update the config entry with new credentials
                 self.hass.config_entries.async_update_entry(
                     entry,
@@ -234,12 +234,12 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     },
                 )
-                
+
                 # Reload the config entry
                 await self.hass.config_entries.async_reload(entry.entry_id)
-                
+
                 return self.async_abort(reason="reconfigure_successful")
-                
+
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
@@ -247,14 +247,14 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
                 errors["base"] = "unknown"
-        
+
         # Pre-fill with current username
         current_data = {}
         if entry:
             current_data = {
                 CONF_USERNAME: entry.data.get(CONF_USERNAME, ""),
             }
-        
+
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=vol.Schema(
@@ -270,15 +270,15 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step.
-        
+
         Args:
             user_input: User input data containing username and password
-            
+
         Returns:
             FlowResult with config entry or form with validation errors
         """
         errors: dict[str, str] = {}
-        
+
         if user_input is not None:
             _LOGGER.debug("Processing config flow for user: %s", user_input[CONF_USERNAME])
             try:
@@ -295,7 +295,7 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
                 _LOGGER.debug("Setting unique ID: %s", user_input[CONF_USERNAME])
                 await self.async_set_unique_id(user_input[CONF_USERNAME])
                 self._abort_if_unique_id_configured()
-                
+
                 _LOGGER.info("Creating config entry: %s", info["title"])
                 return self.async_create_entry(title=info["title"], data=user_input)
         else:

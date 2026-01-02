@@ -13,7 +13,7 @@ class SyrEncryption:
 
     def __init__(self, key: str, iv: str) -> None:
         """Initialize encryption handler.
-        
+
         Args:
             key: Hexadecimal encryption key
             iv: Hexadecimal initialization vector
@@ -23,13 +23,13 @@ class SyrEncryption:
 
     def decrypt(self, encrypted_payload: str) -> str:
         """Decrypt an encrypted payload.
-        
+
         Args:
             encrypted_payload: Base64-encoded encrypted string
-            
+
         Returns:
             Decrypted string
-            
+
         Raises:
             ValueError: If decryption fails
         """
@@ -37,10 +37,10 @@ class SyrEncryption:
         try:
             encrypted_data = base64.b64decode(encrypted_payload)
             _LOGGER.debug("Decoded base64 data (length: %d bytes)", len(encrypted_data))
-            
+
             cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
             decrypted = cipher.decrypt(encrypted_data)
-            
+
             # Remove padding manually (handle non-standard padding)
             result = decrypted.decode('utf-8').rstrip('\x00').rstrip()
             _LOGGER.debug("Decryption successful (result length: %d chars)", len(result))
