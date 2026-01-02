@@ -67,4 +67,4 @@ jobs:
       - name: MyPy Type Check
         run: |
           mypy --version
-          mypy syr_connect
+          mypy .
