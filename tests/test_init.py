@@ -7,7 +7,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from custom_components.syr_connect.const import DOMAIN
+from syr_connect.const import DOMAIN
 
 
 async def test_setup_entry(hass: HomeAssistant) -> None:
@@ -23,7 +23,7 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectAPI"
+        "syr_connect.coordinator.SyrConnectAPI"
     ) as mock_api_class:
         # Mock API instance
         mock_api = MagicMock()
@@ -64,7 +64,7 @@ async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectAPI"
+        "syr_connect.coordinator.SyrConnectAPI"
     ) as mock_api_class:
         # Mock API that fails on first_refresh
         mock_api = MagicMock()
@@ -88,7 +88,7 @@ async def test_unload_entry(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectAPI"
+        "syr_connect.coordinator.SyrConnectAPI"
     ) as mock_api_class:
         # Mock successful setup
         mock_api = MagicMock()
@@ -135,7 +135,7 @@ async def test_reload_entry(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectAPI"
+        "syr_connect.coordinator.SyrConnectAPI"
     ) as mock_api_class:
         mock_api = MagicMock()
         mock_api.login = AsyncMock(return_value=True)

@@ -7,7 +7,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.syr_connect.const import DOMAIN
+from syr_connect.const import DOMAIN
 
 
 async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
@@ -19,7 +19,7 @@ async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
     assert result["errors"] == {}
 
     with patch(
-        "custom_components.syr_connect.async_setup_entry",
+        "syr_connect.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
         result2 = await hass.config_entries.flow.async_configure(
@@ -47,7 +47,7 @@ async def test_form_invalid_auth(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        "syr_connect.config_flow.SyrConnectAPI.login",
         side_effect=Exception("Authentication failed"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -69,7 +69,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        "syr_connect.config_flow.SyrConnectAPI.login",
         side_effect=Exception("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -101,7 +101,7 @@ async def test_form_already_configured(hass: HomeAssistant, mock_syr_api) -> Non
     )
 
     with patch(
-        "custom_components.syr_connect.async_setup_entry",
+        "syr_connect.async_setup_entry",
         return_value=True,
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -131,7 +131,7 @@ async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.syr_connect.async_setup_entry",
+        "syr_connect.async_setup_entry",
         return_value=True,
     ):
         await hass.config_entries.async_setup(entry.entry_id)

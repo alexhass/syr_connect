@@ -1,8 +1,8 @@
 """Test the SYR Connect payload builder."""
 import pytest
 
-from custom_components.syr_connect.payload_builder import PayloadBuilder
-from custom_components.syr_connect.checksum import SyrChecksum
+from syr_connect.payload_builder import PayloadBuilder
+from syr_connect.checksum import SyrChecksum
 
 
 @pytest.fixture

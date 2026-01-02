@@ -1,7 +1,7 @@
 """Test the SYR Connect exceptions."""
 import pytest
 
-from custom_components.syr_connect.exceptions import (
+from syr_connect.exceptions import (
     SyrConnectError,
     SyrConnectAuthError,
     SyrConnectConnectionError,

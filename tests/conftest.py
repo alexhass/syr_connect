@@ -10,7 +10,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 def mock_setup_entry() -> Generator[AsyncMock, None, None]:
     """Override async_setup_entry."""
     with patch(
-        "custom_components.syr_connect.async_setup_entry", return_value=True
+        "syr_connect.async_setup_entry", return_value=True
     ) as mock_setup_entry:
         yield mock_setup_entry
 
@@ -18,7 +18,7 @@ def mock_setup_entry() -> Generator[AsyncMock, None, None]:
 @pytest.fixture
 def mock_syr_api():
     """Mock SyrConnectAPI."""
-    with patch("custom_components.syr_connect.config_flow.SyrConnectAPI") as mock_api:
+    with patch("syr_connect.config_flow.SyrConnectAPI") as mock_api:
         api_instance = MagicMock()
         api_instance.login = AsyncMock(return_value=True)
         api_instance.session_data = "test_session_id"

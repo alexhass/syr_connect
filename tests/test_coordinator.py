@@ -7,12 +7,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 
 
 async def test_coordinator_update_success(hass: HomeAssistant) -> None:
     """Test successful coordinator update."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -49,7 +49,7 @@ async def test_coordinator_update_success(hass: HomeAssistant) -> None:
 
 async def test_coordinator_update_no_session(hass: HomeAssistant) -> None:
     """Test coordinator update without session triggers login."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = None  # No session initially
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -75,7 +75,7 @@ async def test_coordinator_update_no_session(hass: HomeAssistant) -> None:
 
 async def test_coordinator_update_failure(hass: HomeAssistant) -> None:
     """Test coordinator update with API failure."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -96,7 +96,7 @@ async def test_coordinator_update_failure(hass: HomeAssistant) -> None:
 
 async def test_coordinator_set_device_value(hass: HomeAssistant) -> None:
     """Test setting device value through coordinator."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]

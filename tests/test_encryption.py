@@ -2,7 +2,7 @@
 import pytest
 import base64
 
-from custom_components.syr_connect.encryption import SyrEncryption
+from syr_connect.encryption import SyrEncryption
 
 
 @pytest.fixture
