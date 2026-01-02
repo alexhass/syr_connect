@@ -39,7 +39,7 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 # Diagnostic sensors (configuration, technical info, firmware)
-DIAGNOSTIC_SENSORS = {
+_DIAGNOSTIC_SENSORS = {
     'getSRN',  # Serial Number
     'getVER',  # Firmware Version
     'getFIR',  # Firmware Model
@@ -77,7 +77,7 @@ _SENSOR_UNITS = {
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed)
-EXCLUDED_SENSORS = {
+_EXCLUDED_SENSORS = {
     'p1883', 'p1883rd', 'p8883', 'p8883rd',
     'sbt', 'sta', 'dst', 'ast', 'so',
     'dclg', 'clb', 'nrs',  # Device collection metadata
@@ -102,7 +102,7 @@ EXCLUDED_SENSORS = {
 }
 
 # Sensors to exclude only when value is 0
-EXCLUDE_WHEN_ZERO = {
+_EXCLUDE_WHEN_ZERO = {
     'getSV1', 'getSV2', 'getSV3',  # Salt amount containers
     'getSS1', 'getSS2', 'getSS3',  # Salt supply containers
     'getCS1', 'getCS2', 'getCS3',  # Configuration stages
@@ -111,7 +111,7 @@ EXCLUDE_WHEN_ZERO = {
 }
 
 # Sensors that are disabled by default (less frequently used)
-DISABLED_BY_DEFAULT_SENSORS = {
+_DISABLED_BY_DEFAULT_SENSORS = {
     'getCYN',  # Cycle Counter - technical metric
     'getCYT',  # Cycle Time - technical metric
     'getNOT',  # Notes - rarely used
@@ -160,11 +160,11 @@ async def async_setup_entry(
         sensor_count = 0
         for key, value in status.items():
             # Skip sensors that are always excluded
-            if key in EXCLUDED_SENSORS or key.startswith('_'):
+            if key in _EXCLUDED_SENSORS or key.startswith('_'):
                 continue
             
             # Skip specific sensors only when value is 0
-            if key in EXCLUDE_WHEN_ZERO:
+            if key in _EXCLUDE_WHEN_ZERO:
                 if isinstance(value, (int, float)) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
@@ -232,7 +232,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = build_entity_id("sensor", device_id, sensor_key)
         
         # Set entity category for diagnostic sensors
-        if sensor_key in DIAGNOSTIC_SENSORS:
+        if sensor_key in _DIAGNOSTIC_SENSORS:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
         
         # Set unit of measurement if available
@@ -255,7 +255,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         self._base_icon = self._attr_icon
         
         # Disable sensors by default based on configuration
-        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in DISABLED_BY_DEFAULT_SENSORS:
+        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _DISABLED_BY_DEFAULT_SENSORS:
             self._attr_entity_registry_enabled_default = False
         
         # Build device info from coordinator data
