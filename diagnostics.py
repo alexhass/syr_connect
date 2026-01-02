@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 
 from .coordinator import SyrConnectDataUpdateCoordinator
 
-TO_REDACT = {
+_TO_REDACT = {
     CONF_PASSWORD,
     CONF_USERNAME,
     "session_data",
@@ -75,4 +75,4 @@ async def async_get_config_entry_diagnostics(
             diagnostics_data["projects"].append(project_info)
     
     # Redact sensitive information
-    return async_redact_data(diagnostics_data, TO_REDACT)
+    return async_redact_data(diagnostics_data, _TO_REDACT)

@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import DOMAIN, SENSOR_ICONS
+from .const import DOMAIN, _SENSOR_ICONS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 # Binary sensors mapping with their device classes
-BINARY_SENSORS = {
+_BINARY_SENSORS = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
     "getPST": BinarySensorDeviceClass.RUNNING,  # Operating state
     "getSCR": BinarySensorDeviceClass.LOCK,     # Screen lock
@@ -59,7 +59,7 @@ async def async_setup_entry(
         status = device.get('status', {})
         
         # Create binary sensors for boolean status values
-        for sensor_key, device_class in BINARY_SENSORS.items():
+        for sensor_key, device_class in _BINARY_SENSORS.items():
             if sensor_key in status:
                 entities.append(
                     SyrConnectBinarySensor(
@@ -115,8 +115,8 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self.entity_id = build_entity_id("binary_sensor", device_id, sensor_key)
         
         # Set icon if available
-        if sensor_key in SENSOR_ICONS:
-            self._attr_icon = SENSOR_ICONS[sensor_key]
+        if sensor_key in _SENSOR_ICONS:
+            self._attr_icon = _SENSOR_ICONS[sensor_key]
         
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)

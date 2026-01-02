@@ -25,10 +25,10 @@ from homeassistant.helpers.entity import EntityCategory
 
 from .const import (
     DOMAIN,
-    SENSOR_DEVICE_CLASS,
-    SENSOR_STATE_CLASS,
-    SENSOR_ICONS,
-    STRING_SENSORS,
+    _SENSOR_DEVICE_CLASS,
+    _SENSOR_STATE_CLASS,
+    _SENSOR_ICONS,
+    _STRING_SENSORS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
@@ -240,16 +240,16 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             self._attr_native_unit_of_measurement = _SENSOR_UNITS[sensor_key]
         
         # Set device class if available
-        if sensor_key in SENSOR_DEVICE_CLASS:
-            self._attr_device_class = SENSOR_DEVICE_CLASS[sensor_key]
+        if sensor_key in _SENSOR_DEVICE_CLASS:
+            self._attr_device_class = _SENSOR_DEVICE_CLASS[sensor_key]
         
         # Set state class if available
-        if sensor_key in SENSOR_STATE_CLASS:
-            self._attr_state_class = SENSOR_STATE_CLASS[sensor_key]
+        if sensor_key in _SENSOR_STATE_CLASS:
+            self._attr_state_class = _SENSOR_STATE_CLASS[sensor_key]
         
         # Set icon if available
-        if sensor_key in SENSOR_ICONS:
-            self._attr_icon = SENSOR_ICONS[sensor_key]
+        if sensor_key in _SENSOR_ICONS:
+            self._attr_icon = _SENSOR_ICONS[sensor_key]
         
         # Store base icon for state-based icon changes
         self._base_icon = self._attr_icon
@@ -351,7 +351,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 value = status.get(self._sensor_key)
                 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
-                if self._sensor_key in STRING_SENSORS:
+                if self._sensor_key in _STRING_SENSORS:
                     return str(value) if value is not None else None
                 
                 # Try to convert to number if possible for other sensors
