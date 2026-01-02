@@ -11,5 +11,5 @@
   "requirements": ["pycryptodomex==3.19.0"],
   "version": "1.0.1",
   "icon": "mdi:water-pump",
-  "loggers": ["syr_connect"]
+  "loggers": ["custom_components.syr_connect"]
 }
