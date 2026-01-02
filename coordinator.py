@@ -81,9 +81,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Get devices from all projects
             for project in self.api.projects:
                 project_id = project['id']
+                _LOGGER.debug("Getting devices for project: %s (%s)", project['name'], project_id)
                 
                 # Get devices for this project
                 devices = await self.api.get_devices(project_id)
+                _LOGGER.debug("Found %d device(s) in project %s", len(devices), project['name'])
                 
                 # Get status for each device
                 for device in devices:

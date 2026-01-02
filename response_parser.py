@@ -190,13 +190,24 @@ class ResponseParser:
         
         # Extract devices
         if not self.validate_structure(parsed, ['sc', 'dvs']):
+            _LOGGER.debug("No 'dvs' element found in device list response")
             return devices
         
         dvs = parsed['sc']['dvs']
-        device_list = dvs.get('d', dvs)
         
-        if not isinstance(device_list, list):
-            device_list = [device_list]
+        # Check if dvs contains 'd' element(s)
+        if 'd' in dvs:
+            device_list = dvs['d']
+            if not isinstance(device_list, list):
+                device_list = [device_list]
+        elif isinstance(dvs, dict) and '@dclg' in dvs:
+            # dvs itself is a device
+            device_list = [dvs]
+        else:
+            _LOGGER.debug("No devices found in 'dvs' element: %s", dvs)
+            return devices
+        
+        _LOGGER.debug("Found %d device(s) in response", len(device_list))
         
         for device in device_list:
             if '@dclg' in device:
@@ -204,11 +215,16 @@ class ResponseParser:
                 serial_number = device.get('@sn', 'Unknown')
                 device_name = device_aliases.get(dclg_id, serial_number)
                 
+                _LOGGER.debug("Adding device: %s (DCLG: %s, SN: %s)", device_name, dclg_id, serial_number)
+                
                 devices.append({
+                    'id': serial_number,  # Use serial number as device ID
                     'dclg': dclg_id,
                     'serial_number': serial_number,
                     'name': device_name,
                 })
+            else:
+                _LOGGER.debug("Skipping device without @dclg: %s", device)
         
         return devices
 
