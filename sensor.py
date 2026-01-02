@@ -76,6 +76,54 @@ _SENSOR_UNITS = {
     "getRDO": PERCENTAGE,
 }
 
+# Sensors to always exclude (parameters from XML that should not be exposed)
+EXCLUDED_SENSORS = {
+    'p1883', 'p1883rd', 'p8883', 'p8883rd',
+    'sbt', 'sta', 'dst', 'ast', 'so',
+    'dclg', 'clb', 'nrs',  # Device collection metadata
+    'nrdt', 'dg',  # Additional device metadata attributes
+    'dt',  # Timestamp attributes (getSRN_dt, getALM_dt, etc.)
+    'getDEN',  # Boolean sensor - device enabled/disabled
+    'getRTH', 'getRTM',  # Regeneration time - combined into getRTI
+    'getCDE',  # Configuration code - not useful for users
+    'getNOT',  # Notes field not useful as sensor
+    'getSIR',  # Immediate regeneration control
+    'getSTA',  # Status - redundant with other status sensors
+    'getTYP',  # Type - not helpful for users
+    'getINR',  # Internal reference - not useful
+    'getLAR',  # Last action - not useful as sensor
+    'getSRN_dt',
+    'getALM_dt',
+    # Boolean sensors - now handled as binary_sensor platform
+    'getSRE',  # Regeneration active
+    'getPST',  # Operating state
+    'getSCR',  # Screen lock
+    'getALM',  # Alarm
+}
+
+# Sensors to exclude only when value is 0
+EXCLUDE_WHEN_ZERO = {
+    'getSV1', 'getSV2', 'getSV3',  # Salt amount containers
+    'getSS1', 'getSS2', 'getSS3',  # Salt supply containers
+    'getCS1', 'getCS2', 'getCS3',  # Configuration stages
+    'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
+    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
+}
+
+# Sensors that are disabled by default (less frequently used)
+DISABLED_BY_DEFAULT_SENSORS = {
+    'getCYN',  # Cycle Counter - technical metric
+    'getCYT',  # Cycle Time - technical metric
+    'getNOT',  # Notes - rarely used
+    'getINR',  # Internal Reference - technical
+    'getLAR',  # Last Action - technical log
+    'getRG1', 'getRG2', 'getRG3',  # Regeneration Groups - advanced config
+    'getVS1', 'getVS2', 'getVS3',  # Volume Thresholds - advanced config
+    'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
+    'getRPW',  # Regenerations per Week - less useful than count
+    'getDWF',  # Flow Warning Value - advanced setting
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -95,54 +143,6 @@ async def async_setup_entry(
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for sensors")
         return
-    
-    # Sensors to always exclude (parameters from XML that should not be exposed)
-    EXCLUDED_SENSORS = {
-        'p1883', 'p1883rd', 'p8883', 'p8883rd',
-        'sbt', 'sta', 'dst', 'ast', 'so',
-        'dclg', 'clb', 'nrs',  # Device collection metadata
-        'nrdt', 'dg',  # Additional device metadata attributes
-        'dt',  # Timestamp attributes (getSRN_dt, getALM_dt, etc.)
-        'getDEN',  # Boolean sensor - device enabled/disabled
-        'getRTH', 'getRTM',  # Regeneration time - combined into getRTI
-        'getCDE',  # Configuration code - not useful for users
-        'getNOT',  # Notes field not useful as sensor
-        'getSIR',  # Immediate regeneration control
-        'getSTA',  # Status - redundant with other status sensors
-        'getTYP',  # Type - not helpful for users
-        'getINR',  # Internal reference - not useful
-        'getLAR',  # Last action - not useful as sensor
-        'getSRN_dt',
-        'getALM_dt',
-        # Boolean sensors - now handled as binary_sensor platform
-        'getSRE',  # Regeneration active
-        'getPST',  # Operating state
-        'getSCR',  # Screen lock
-        'getALM',  # Alarm
-    }
-    
-    # Sensors to exclude only when value is 0
-    EXCLUDE_WHEN_ZERO = {
-        'getSV1', 'getSV2', 'getSV3',  # Salt amount containers
-        'getSS1', 'getSS2', 'getSS3',  # Salt supply containers
-        'getCS1', 'getCS2', 'getCS3',  # Configuration stages
-        'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
-        'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
-    }
-    
-    # Sensors that are disabled by default (less frequently used)
-    DISABLED_BY_DEFAULT_SENSORS = {
-        'getCYN',  # Cycle Counter - technical metric
-        'getCYT',  # Cycle Time - technical metric
-        'getNOT',  # Notes - rarely used
-        'getINR',  # Internal Reference - technical
-        'getLAR',  # Last Action - technical log
-        'getRG1', 'getRG2', 'getRG3',  # Regeneration Groups - advanced config
-        'getVS1', 'getVS2', 'getVS3',  # Volume Thresholds - advanced config
-        'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
-        'getRPW',  # Regenerations per Week - less useful than count
-        'getDWF',  # Flow Warning Value - advanced setting
-    }
     
     entities = []
     
