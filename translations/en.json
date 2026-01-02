@@ -105,6 +105,11 @@
       "getVS3": { "name": "Volume Threshold 3" },
       "getRDO": { "name": "Remaining Runtime" },
       "getSCR": { "name": "Screen Lock" }
+    },
+    "button": {
+      "setSIR": { "name": "Regenerate Now" },
+      "setSMR": { "name": "Multi Regenerate" },
+      "setRST": { "name": "Reset Device" }
     }
   },
   "issues": {

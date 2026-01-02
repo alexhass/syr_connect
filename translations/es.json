@@ -105,6 +105,11 @@
       "getVS3": { "name": "Umbral de volumen 3" },
       "getRDO": { "name": "Tiempo restante" },
       "getSCR": { "name": "Bloqueo de pantalla" }
+    },
+    "button": {
+      "setSIR": { "name": "Regenerar ahora" },
+      "setSMR": { "name": "Regeneración múltiple" },
+      "setRST": { "name": "Reiniciar dispositivo" }
     }
   },
   "issues": {

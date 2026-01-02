@@ -105,6 +105,11 @@
       "getVS3": { "name": "Seuil de volume 3" },
       "getRDO": { "name": "Durée restante" },
       "getSCR": { "name": "Verrouillage de l'écran" }
+    },
+    "button": {
+      "setSIR": { "name": "Régénérer maintenant" },
+      "setSMR": { "name": "Régénération multiple" },
+      "setRST": { "name": "Réinitialiser l'appareil" }
     }
   },
   "issues": {

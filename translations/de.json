@@ -103,6 +103,11 @@
       "getVS3": { "name": "Volumenschwelle 3" },
       "getRDO": { "name": "Restlaufzeit" },
       "getSCR": { "name": "Bildschirmsperre" }
+    },
+    "button": {
+      "setSIR": { "name": "Sofort regenerieren" },
+      "setSMR": { "name": "Mehrfach regenerieren" },
+      "setRST": { "name": "Gerät zurücksetzen" }
     }
   },
   "issues": {

@@ -96,8 +96,10 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         self._project_id = project_id
         self._command = command
         
-        self._attr_name = f"{device_name} {button_name}"
         self._attr_unique_id = f"{device_id}_{command}"
+        # Use translation key for localized button names; let HA build the name
+        self._attr_has_entity_name = True
+        self._attr_translation_key = command
         
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This matches the sensor entity ID structure
