@@ -104,7 +104,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 
                 project = self.api.projects[project_idx]
                 project_id = project['id']
-                devices = result
+                devices_result = result
+                if not isinstance(devices_result, list):
+                    _LOGGER.warning("Device list result is not a list: %s", devices_result)
+                    continue
+                devices: list[dict[str, Any]] = devices_result
                 
                 _LOGGER.debug(
                     "Found %d device(s) in project %s",

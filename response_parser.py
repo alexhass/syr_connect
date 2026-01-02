@@ -51,7 +51,7 @@ class ResponseParser:
             raise ValueError(f"Invalid XML response: {err}") from err
 
     @staticmethod
-    def _element_to_dict(element: ET.Element) -> dict[str, Any]:
+    def _element_to_dict(element: ET.Element) -> Any:
         """Convert XML element to dictionary.
         
         Args:
@@ -96,7 +96,7 @@ class ResponseParser:
         
         return result if result else {}
 
-    def parse_login_response(self, xml_response: str) -> tuple[str, list[dict[str, Any]]]:
+    def parse_login_response(self, xml_response: str) -> tuple[str, dict[str, Any]]:
         """Parse login response and extract session ID and projects.
         
         Args:
@@ -176,8 +176,8 @@ class ResponseParser:
             List of devices with their information
         """
         parsed = self.parse_xml(xml_response)
-        devices = []
-        device_aliases = {}
+        devices: list[dict[str, Any]] = []
+        device_aliases: dict[str, str] = {}
         
         # Extract device aliases
         if self.validate_structure(parsed, ['sc', 'col']):

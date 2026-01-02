@@ -37,6 +37,9 @@ async def async_get_config_entry_diagnostics(
     """
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
     
+    devices_info: list[dict[str, Any]] = []
+    projects_info: list[dict[str, Any]] = []
+
     diagnostics_data = {
         "entry": {
             "title": entry.title,
@@ -49,8 +52,8 @@ async def async_get_config_entry_diagnostics(
             if coordinator.last_update
             else None,
         },
-        "devices": [],
-        "projects": [],
+        "devices": devices_info,
+        "projects": projects_info,
     }
     
     if coordinator.data:
@@ -64,7 +67,7 @@ async def async_get_config_entry_diagnostics(
                 "status_count": len(device.get("status", {})),
                 "status_keys": list(device.get("status", {}).keys()),
             }
-            diagnostics_data["devices"].append(device_info)
+            devices_info.append(device_info)
         
         # Add project information
         for project in coordinator.data.get("projects", []):
@@ -72,7 +75,7 @@ async def async_get_config_entry_diagnostics(
                 "id": project.get("id"),
                 "name": project.get("name"),
             }
-            diagnostics_data["projects"].append(project_info)
+            projects_info.append(project_info)
     
     # Redact sensitive information
     return async_redact_data(diagnostics_data, _TO_REDACT)
