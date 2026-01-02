@@ -1,6 +1,12 @@
 [tool.ruff]
 target-version = "py311"
 line-length = 120
+exclude = [
+  "tests",
+  "translations",
+]
+
+[tool.ruff.lint]
 select = [
   "E",  # pycodestyle
   "F",  # pyflakes
@@ -12,8 +18,3 @@ select = [
 ]
 ignore = [
   "E501",  # line length handled by formatter/line-length
-]
-exclude = [
-  "tests",
-  "translations",
-]
