@@ -4,6 +4,24 @@
 - **Home Assistant Version**: 2023.1.0 or higher (recommended: latest stable)
 - **Python Version**: 3.11 or higher (included in Home Assistant)
 
+## Development Requirements
+
+For running tests and development:
+
+```bash
+pip install pytest pytest-homeassistant-custom-component pytest-cov
+```
+
+Run tests with:
+```bash
+pytest tests/
+```
+
+Run tests with coverage:
+```bash
+pytest --cov=custom_components.syr_connect --cov-report=term-missing tests/
+```
+
 ## Python Package Requirements
 
 The following packages will be automatically installed by Home Assistant:

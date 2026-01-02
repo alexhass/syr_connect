@@ -1,0 +1,176 @@
+"""Test the SYR Connect config flow."""
+from unittest.mock import AsyncMock, patch
+
+import pytest
+from homeassistant import config_entries
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
+
+from custom_components.syr_connect.const import DOMAIN
+
+
+async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test we get the form."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {}
+
+    with patch(
+        "custom_components.syr_connect.async_setup_entry",
+        return_value=True,
+    ) as mock_setup_entry:
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
+    assert result2["title"] == "SYR Connect (test@example.com)"
+    assert result2["data"] == {
+        CONF_USERNAME: "test@example.com",
+        CONF_PASSWORD: "test_password",
+    }
+    assert len(mock_setup_entry.mock_calls) == 1
+
+
+async def test_form_invalid_auth(hass: HomeAssistant) -> None:
+    """Test we handle invalid auth."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        side_effect=Exception("Authentication failed"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "wrong_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "cannot_connect"}
+
+
+async def test_form_cannot_connect(hass: HomeAssistant) -> None:
+    """Test we handle cannot connect error."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        side_effect=Exception("Connection error"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "cannot_connect"}
+
+
+async def test_form_already_configured(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test we handle already configured."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.syr_connect.async_setup_entry",
+        return_value=True,
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "already_configured"
+
+
+async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test options flow."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        options={},
+    )
+    entry.add_to_hass(hass)
+
+    with patch(
+        "custom_components.syr_connect.async_setup_entry",
+        return_value=True,
+    ):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "init"
+
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={"scan_interval": 120},
+    )
+
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
+    assert result2["data"] == {"scan_interval": 120}
+
+
+# Helper for config entries
+class MockConfigEntry(config_entries.ConfigEntry):
+    """Mock ConfigEntry."""
+
+    def __init__(
+        self,
+        *,
+        domain: str,
+        data: dict,
+        unique_id: str | None = None,
+        options: dict | None = None,
+    ) -> None:
+        """Initialize mock config entry."""
+        super().__init__(
+            version=1,
+            minor_version=1,
+            domain=domain,
+            title="",
+            data=data,
+            source=config_entries.SOURCE_USER,
+            options=options or {},
+            unique_id=unique_id,
+        )
