@@ -25,6 +25,7 @@ from homeassistant.helpers.entity import EntityCategory
 
 from .const import (
     DOMAIN,
+    PARALLEL_UPDATES,
     _SENSOR_DEVICE_CLASS,
     _SENSOR_STATE_CLASS,
     _SENSOR_ICONS,
@@ -34,9 +35,6 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
-
-# Limit parallel updates to avoid overwhelming the API
-PARALLEL_UPDATES = 1
 
 # Diagnostic sensors (configuration, technical info, firmware)
 _DIAGNOSTIC_SENSORS = {

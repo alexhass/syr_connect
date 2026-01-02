@@ -5,6 +5,9 @@ DOMAIN = "syr_connect"
 _CONF_SCAN_INTERVAL = "scan_interval"
 _DEFAULT_SCAN_INTERVAL = 60  # seconds
 
+# Platform update limits
+PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
+
 # API URLs (internal)
 _API_BASE_URL = "https://syrconnect.de/WebServices"
 _API_LOGIN_URL = f"{_API_BASE_URL}/Api/SyrApiService.svc/REST/GetProjects"

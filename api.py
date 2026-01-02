@@ -1,6 +1,7 @@
 """SYR Connect API client."""
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 import logging
 from typing import Any
 
@@ -24,18 +25,33 @@ from .encryption import SyrEncryption
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
 from .http_client import HTTPClient
+from .exceptions import (
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
+    SyrConnectSessionExpiredError,
+)
 
 _LOGGER = logging.getLogger(__name__)
+
+# Session timeout in minutes
+_SESSION_TIMEOUT_MINUTES = 30
 
 
 class SyrConnectAPI:
     """API client for SYR Connect."""
 
     def __init__(self, session: aiohttp.ClientSession, username: str, password: str) -> None:
-        """Initialize the API client."""
+        """Initialize the API client.
+        
+        Args:
+            session: aiohttp client session
+            username: SYR Connect username
+            password: SYR Connect password
+        """
         self.username = username
         self.password = password
         self.session_data: str = ""  # Session ID as string
+        self.session_expires_at: datetime | None = None
         self.projects: list[dict[str, Any]] = []
         
         # Initialize helper components
@@ -45,8 +61,34 @@ class SyrConnectAPI:
         self.response_parser = ResponseParser()
         self.http_client = HTTPClient(session, _USER_AGENT)
 
+    def _is_session_valid(self) -> bool:
+        """Check if current session is valid.
+        
+        Returns:
+            True if session exists and not expired, False otherwise
+        """
+        if not self.session_data:
+            return False
+        
+        if self.session_expires_at is None:
+            return False
+        
+        return datetime.now() < self.session_expires_at
+
+    def _update_session_expiry(self) -> None:
+        """Update session expiration time."""
+        self.session_expires_at = datetime.now() + timedelta(minutes=_SESSION_TIMEOUT_MINUTES)
+
     async def login(self) -> bool:
-        """Login to SYR Connect API."""
+        """Login to SYR Connect API.
+        
+        Returns:
+            True if login successful
+            
+        Raises:
+            SyrConnectAuthError: If authentication fails
+            SyrConnectConnectionError: If connection fails
+        """
         _LOGGER.debug("Attempting login for user: %s", self.username)
         
         # Build login payload
@@ -60,15 +102,16 @@ class SyrConnectAPI:
                 xml_data, 
                 content_type='text/xml'
             )
-            _LOGGER.debug("Login XML response: %s", xml_response)
+            _LOGGER.debug("Login XML response received")
             
             # Parse and decrypt response
             encrypted_text, _ = self.response_parser.parse_login_response(xml_response)
             decrypted = self.encryption.decrypt(encrypted_text)
-            _LOGGER.debug("Decrypted login payload: %s", decrypted)
+            _LOGGER.info("Login response decrypted successfully")
             
             # Parse decrypted data
             self.session_data, self.projects = self.response_parser.parse_decrypted_login(decrypted)
+            self._update_session_expiry()
             _LOGGER.info("Login successful, found %d project(s)", len(self.projects))
             
             for project in self.projects:
@@ -76,12 +119,33 @@ class SyrConnectAPI:
             
             return True
             
+        except ValueError as err:
+            # Parser errors indicate auth failure
+            _LOGGER.error("Authentication failed: %s", err)
+            raise SyrConnectAuthError(f"Authentication failed: {err}") from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            _LOGGER.error("Connection failed: %s", err)
+            raise SyrConnectConnectionError(f"Connection failed: {err}") from err
         except Exception as err:
-            _LOGGER.error("Login failed: %s", err)
-            raise
+            _LOGGER.error("Login failed with unexpected error: %s", err)
+            raise SyrConnectConnectionError(f"Login failed: {err}") from err
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
-        """Get devices for a project."""
+        """Get devices for a project.
+        
+        Args:
+            project_id: Project ID
+            
+        Returns:
+            List of devices
+            
+        Raises:
+            SyrConnectSessionExpiredError: If session expired
+        """
+        if not self._is_session_valid():
+            _LOGGER.warning("Session expired, re-authenticating...")
+            await self.login()
+        
         _LOGGER.debug("Getting devices for project: %s", project_id)
         
         # Build payload
@@ -101,11 +165,13 @@ class SyrConnectAPI:
             
             # Add project_id to each device
             for device in devices:
-                device['id'] = device['serial_number']  # Use SN as ID
                 device['project_id'] = project_id
+                # Ensure 'id' field exists (should be set by parser as serial_number)
+                if 'id' not in device and 'serial_number' in device:
+                    device['id'] = device['serial_number']
                 _LOGGER.debug(
                     "Device found: %s (ID: %s, DCLG: %s)", 
-                    device['name'], device['id'], device['dclg']
+                    device['name'], device.get('id'), device.get('dclg')
                 )
             
             _LOGGER.debug("Found %d device(s) in project %s", len(devices), project_id)
@@ -116,7 +182,21 @@ class SyrConnectAPI:
             raise
 
     async def get_device_status(self, device_id: str) -> dict[str, Any]:
-        """Get status of a device."""
+        """Get status of a device.
+        
+        Args:
+            device_id: Device ID (DCLG)
+            
+        Returns:
+            Dictionary with device status
+            
+        Raises:
+            SyrConnectSessionExpiredError: If session expired
+        """
+        if not self._is_session_valid():
+            _LOGGER.warning("Session expired, re-authenticating...")
+            await self.login()
+        
         _LOGGER.debug("Getting status for device: %s", device_id)
         
         # Build payload
@@ -141,7 +221,23 @@ class SyrConnectAPI:
             raise
 
     async def set_device_status(self, device_id: str, command: str, value: Any) -> bool:
-        """Set device status/command."""
+        """Set device status/command.
+        
+        Args:
+            device_id: Device ID (DCLG)
+            command: Command name
+            value: Command value
+            
+        Returns:
+            True if successful
+            
+        Raises:
+            SyrConnectSessionExpiredError: If session expired
+        """
+        if not self._is_session_valid():
+            _LOGGER.warning("Session expired, re-authenticating...")
+            await self.login()
+        
         _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
         
         # Convert boolean to int

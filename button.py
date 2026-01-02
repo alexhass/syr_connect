@@ -10,14 +10,11 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, PARALLEL_UPDATES
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
-
-# Limit parallel updates to avoid overwhelming the API
-PARALLEL_UPDATES = 1
 
 
 async def async_setup_entry(

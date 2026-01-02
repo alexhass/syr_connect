@@ -13,14 +13,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import DOMAIN, _SENSOR_ICONS
+from .const import DOMAIN, PARALLEL_UPDATES, _SENSOR_ICONS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
-
-# Limit parallel updates to avoid overwhelming the API
-PARALLEL_UPDATES = 1
 
 # Binary sensors mapping with their device classes
 _BINARY_SENSORS = {

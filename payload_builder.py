@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from xml.sax.saxutils import escape
 
 from .checksum import SyrChecksum
 
@@ -42,11 +43,14 @@ class PayloadBuilder:
             XML string for login request
         """
         timestamp = self.get_timestamp()
+        # Escape username and password to prevent XML injection
+        safe_username = escape(username)
+        safe_password = escape(password)
         payload = (
             f'<nfo v="SYR Connect" version="3.7.10" osv="15.8.3" '
             f'os="iOS" dn="iPhone" ts="{timestamp}" tzo="01:00:00" '
             f'lng="de" reg="DE" />'
-            f'<usr n="{username}" v="{password}" />'
+            f'<usr n="{safe_username}" v="{safe_password}" />'
         )
         return f'<?xml version="1.0" encoding="utf-8"?><sc><api version="1.0">{payload}</api></sc>'
 
@@ -60,11 +64,13 @@ class PayloadBuilder:
         Returns:
             XML string with checksum
         """
+        safe_session = escape(session_id)
+        safe_project = escape(project_id)
         payload = (
             f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{self.app_version}"/>'
-            f'<us ug="{session_id}"/>'
-            f'<prs><pr pg="{project_id}"/></prs>'
+            f'<si v="{escape(self.app_version)}"/>'
+            f'<us ug="{safe_session}"/>'
+            f'<prs><pr pg="{safe_project}"/></prs>'
             f'</sc>'
         )
         return self._add_checksum(payload)
@@ -79,11 +85,13 @@ class PayloadBuilder:
         Returns:
             XML string with checksum
         """
+        safe_session = escape(session_id)
+        safe_device = escape(device_id)
         payload = (
             f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{self.app_version}"/>'
-            f'<us ug="{session_id}"/>'
-            f'<col><dcl dclg="{device_id}" fref="1"/></col>'
+            f'<si v="{escape(self.app_version)}"/>'
+            f'<us ug="{safe_session}"/>'
+            f'<col><dcl dclg="{safe_device}" fref="1"/></col>'
             f'</sc>'
         )
         return self._add_checksum(payload)
@@ -102,12 +110,16 @@ class PayloadBuilder:
         Returns:
             XML string with checksum
         """
+        safe_session = escape(session_id)
+        safe_device = escape(device_id)
+        safe_command = escape(command)
+        safe_value = escape(str(value))
         payload = (
             f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{self.app_version}"/>'
-            f'<us ug="{session_id}"/>'
-            f'<col><dcl dclg="{device_id}" fref="1">'
-            f'<c n="{command}" v="{value}"/>'
+            f'<si v="{escape(self.app_version)}"/>'
+            f'<us ug="{safe_session}"/>'
+            f'<col><dcl dclg="{safe_device}" fref="1">'
+            f'<c n="{safe_command}" v="{safe_value}"/>'
             f'</dcl></col>'
             f'</sc>'
         )
@@ -126,11 +138,13 @@ class PayloadBuilder:
         Returns:
             XML string with checksum
         """
+        safe_session = escape(session_id)
+        safe_device = escape(device_id)
         base_payload = (
             f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{self.app_version}"/>'
-            f'<us ug="{session_id}"/>'
-            f'<col><dcl dclg="{device_id}"></dcl></col>'
+            f'<si v="{escape(self.app_version)}"/>'
+            f'<us ug="{safe_session}"/>'
+            f'<col><dcl dclg="{safe_device}"></dcl></col>'
             f'</sc>'
         )
         

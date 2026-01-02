@@ -16,6 +16,7 @@ from homeassistant.helpers import selector
 
 from .const import DOMAIN, _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
 from .api import SyrConnectAPI
+from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,11 +50,14 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     _LOGGER.debug("Testing API authentication...")
     try:
         await api.login()
+    except SyrConnectAuthError as err:
+        _LOGGER.error("Authentication failed: %s", err)
+        raise InvalidAuth from err
+    except SyrConnectConnectionError as err:
+        _LOGGER.error("Connection failed: %s", err)
+        raise CannotConnect from err
     except Exception as err:
-        _LOGGER.error("Login failed: %s", err)
-        error_msg = str(err).lower()
-        if "login" in error_msg or "auth" in error_msg or "invalid" in error_msg or "credentials" in error_msg:
-            raise InvalidAuth from err
+        _LOGGER.error("Unexpected error during validation: %s", err)
         raise CannotConnect from err
     
     _LOGGER.info("API authentication successful for user: %s", data[CONF_USERNAME])
@@ -81,7 +85,6 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
         Returns:
             FlowResult with the configuration entry or form
         """
-        """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
@@ -119,7 +122,9 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> config_entries.OptionsFlow:
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> SyrConnectOptionsFlow:
         """Get the options flow for this handler.
         
         Args:
@@ -128,7 +133,6 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         Returns:
             The options flow handler instance
         """
-        """Get the options flow for this handler."""
         return SyrConnectOptionsFlow()
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
