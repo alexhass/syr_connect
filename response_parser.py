@@ -110,7 +110,7 @@ class ResponseParser:
         
         # Validate response structure
         if not self.validate_structure(parsed, ['sc', 'api', '#text']):
-            raise ValueError("Invalid login response structure")
+            raise ValueError("Authentication failed: Invalid login response structure")
         
         return parsed['sc']['api']['#text'], parsed
 
@@ -131,13 +131,13 @@ class ResponseParser:
         
         # Validate session structure
         if not self.validate_structure(parsed, ['xml', 'usr', '@id']):
-            raise ValueError("Invalid decrypted response structure")
+            raise ValueError("Authentication failed: Invalid credentials or session data")
         
         session_id = parsed['xml']['usr']['@id']
         
         # Validate projects structure
         if not self.validate_structure(parsed, ['xml', 'prs', 'pre']):
-            raise ValueError("No projects found in response")
+            raise ValueError("Authentication succeeded but no projects found in account")
         
         projects_data = parsed['xml']['prs']['pre']
         

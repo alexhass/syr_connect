@@ -50,7 +50,9 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     try:
         await api.login()
     except Exception as err:
-        if "login" in str(err).lower() or "auth" in str(err).lower():
+        _LOGGER.error("Login failed: %s", err)
+        error_msg = str(err).lower()
+        if "login" in error_msg or "auth" in error_msg or "invalid" in error_msg or "credentials" in error_msg:
             raise InvalidAuth from err
         raise CannotConnect from err
     
