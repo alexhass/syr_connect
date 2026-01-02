@@ -4,35 +4,12 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.repairs import RepairFlow, ConfirmRepairFlow
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
-from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-
-
-async def async_create_fix_flow(
-    hass: HomeAssistant,
-    issue_id: str,
-    data: dict[str, Any] | None,
-) -> RepairFlow:
-    """Create flow for repair issues.
-    
-    Args:
-        hass: Home Assistant instance
-        issue_id: The repair issue ID
-        data: Optional data associated with the issue
-        
-    Returns:
-        RepairFlow instance for the specific issue
-    """
-    if issue_id == "deprecated_entity":
-        return ConfirmRepairFlow()
-    
-    return ConfirmRepairFlow()
 
 
 def create_issue(
