@@ -69,8 +69,7 @@ class SyrConnectAPI:
             
             # Parse decrypted data
             self.session_data, self.projects = self.response_parser.parse_decrypted_login(decrypted)
-            _LOGGER.info("Login successful, session ID: %s", self.session_data)
-            _LOGGER.info("Found %d project(s)", len(self.projects))
+            _LOGGER.info("Login successful, found %d project(s)", len(self.projects))
             
             for project in self.projects:
                 _LOGGER.debug("Project: %s (ID: %s)", project['name'], project['id'])
