@@ -23,7 +23,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
 
-from . import SyrConnectConfigEntry
 from .const import (
     DOMAIN,
     SENSOR_DEVICE_CLASS,
@@ -80,7 +79,7 @@ _SENSOR_UNITS = {
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SyrConnectConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SYR Connect sensors.
