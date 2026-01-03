@@ -314,7 +314,7 @@ class ResponseParser:
                             result[f"{name}_dt"] = value['@dt']
 
                 # Handle nested structures
-                elif isinstance(value, (dict, list)):
+                elif isinstance(value, dict | list):
                     nested = ResponseParser._flatten_attributes(value, prefix)
                     result.update(nested)
 
