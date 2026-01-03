@@ -1,0 +1,9 @@
+{
+  "name": "SYR Connect",
+  "content_in_root": false,
+  "domain": "syr_connect",
+  "codeowners": ["@alexhass"],
+  "requirements": ["pycryptodomex==3.19.0"],
+  "config_flow": true,
+  "iot_class": "cloud_polling"
+}
