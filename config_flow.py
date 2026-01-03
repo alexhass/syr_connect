@@ -115,7 +115,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 
 class ConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for SYR Connect."""
-    DOMAIN = DOMAIN
+
     VERSION = 1
 
     @staticmethod
