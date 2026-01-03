@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
+from .const import _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_DEFAULT_SCAN_INTERVAL
 from .coordinator import SyrConnectDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
 
     # Get scan interval from options, fall back to default
-    scan_interval = entry.options.get(_CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL)
+    scan_interval = entry.options.get(_SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_DEFAULT_SCAN_INTERVAL)
 
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
@@ -72,7 +72,7 @@ async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry)
     through the Options Flow (e.g., updates the scan interval).
     """
     old_scan_interval = entry.runtime_data.update_interval.total_seconds()
-    new_scan_interval = entry.options.get(_CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL)
+    new_scan_interval = entry.options.get(_SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_DEFAULT_SCAN_INTERVAL)
 
     if old_scan_interval != new_scan_interval:
         _LOGGER.info(

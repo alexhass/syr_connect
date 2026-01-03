@@ -21,10 +21,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    _SENSOR_DEVICE_CLASS,
-    _SENSOR_ICONS,
-    _SENSOR_STATE_CLASS,
-    _STRING_SENSORS,
+    _SYR_CONNECT_SENSOR_DEVICE_CLASS,
+    _SYR_CONNECT_SENSOR_ICONS,
+    _SYR_CONNECT_SENSOR_STATE_CLASS,
+    _SYR_CONNECT_STRING_SENSORS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
@@ -32,7 +32,7 @@ from .helpers import build_device_info, build_entity_id
 _LOGGER = logging.getLogger(__name__)
 
 # Diagnostic sensors (configuration, technical info, firmware)
-_DIAGNOSTIC_SENSORS = {
+_SYR_CONNECT_DIAGNOSTIC_SENSORS = {
     'getSRN',  # Serial Number
     'getVER',  # Firmware Version
     'getFIR',  # Firmware Model
@@ -49,7 +49,7 @@ _DIAGNOSTIC_SENSORS = {
 }
 
 # Sensor units mapping (units are standardized and not translated)
-_SENSOR_UNITS = {
+_SYR_CONNECT_SENSOR_UNITS = {
     "getIWH": "°dH",
     "getOWH": "°dH",
     "getRES": UnitOfVolume.LITERS,
@@ -70,7 +70,7 @@ _SENSOR_UNITS = {
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed)
-_EXCLUDED_SENSORS = {
+_SYR_CONNECT_EXCLUDED_SENSORS = {
     'p1883', 'p1883rd', 'p8883', 'p8883rd',
     'sbt', 'sta', 'dst', 'ast', 'so',
     'dclg', 'clb', 'nrs',  # Device collection metadata
@@ -95,7 +95,7 @@ _EXCLUDED_SENSORS = {
 }
 
 # Sensors to exclude only when value is 0
-_EXCLUDE_WHEN_ZERO = {
+_SYR_CONNECT_EXCLUDE_WHEN_ZERO = {
     'getSV1', 'getSV2', 'getSV3',  # Salt amount containers
     'getSS1', 'getSS2', 'getSS3',  # Salt supply containers
     'getCS1', 'getCS2', 'getCS3',  # Configuration stages
@@ -104,7 +104,7 @@ _EXCLUDE_WHEN_ZERO = {
 }
 
 # Sensors that are disabled by default (less frequently used)
-_DISABLED_BY_DEFAULT_SENSORS = {
+_SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCYN',  # Cycle Counter - technical metric
     'getCYT',  # Cycle Time - technical metric
     'getNOT',  # Notes - rarely used
@@ -153,11 +153,11 @@ async def async_setup_entry(
         sensor_count = 0
         for key, value in status.items():
             # Skip sensors that are always excluded
-            if key in _EXCLUDED_SENSORS or key.startswith('_'):
+            if key in _SYR_CONNECT_EXCLUDED_SENSORS or key.startswith('_'):
                 continue
 
             # Skip specific sensors only when value is 0
-            if key in _EXCLUDE_WHEN_ZERO:
+            if key in _SYR_CONNECT_EXCLUDE_WHEN_ZERO:
                 if isinstance(value, int | float) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
@@ -225,30 +225,30 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = build_entity_id("sensor", device_id, sensor_key)
 
         # Set entity category for diagnostic sensors
-        if sensor_key in _DIAGNOSTIC_SENSORS:
+        if sensor_key in _SYR_CONNECT_DIAGNOSTIC_SENSORS:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         # Set unit of measurement if available
-        if sensor_key in _SENSOR_UNITS:
-            self._attr_native_unit_of_measurement = _SENSOR_UNITS[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_UNITS:
+            self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNITS[sensor_key]
 
         # Set device class if available
-        if sensor_key in _SENSOR_DEVICE_CLASS:
-            self._attr_device_class = _SENSOR_DEVICE_CLASS[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_DEVICE_CLASS:
+            self._attr_device_class = _SYR_CONNECT_SENSOR_DEVICE_CLASS[sensor_key]
 
         # Set state class if available
-        if sensor_key in _SENSOR_STATE_CLASS:
-            self._attr_state_class = _SENSOR_STATE_CLASS[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_STATE_CLASS:
+            self._attr_state_class = _SYR_CONNECT_SENSOR_STATE_CLASS[sensor_key]
 
         # Set icon if available
-        if sensor_key in _SENSOR_ICONS:
-            self._attr_icon = _SENSOR_ICONS[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_ICONS:
+            self._attr_icon = _SYR_CONNECT_SENSOR_ICONS[sensor_key]
 
         # Store base icon for state-based icon changes
         self._base_icon = self._attr_icon
 
         # Disable sensors by default based on configuration
-        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _DISABLED_BY_DEFAULT_SENSORS:
+        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS:
             self._attr_entity_registry_enabled_default = False
 
         # Build device info from coordinator data
@@ -344,7 +344,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 value = status.get(self._sensor_key)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
-                if self._sensor_key in _STRING_SENSORS:
+                if self._sensor_key in _SYR_CONNECT_STRING_SENSORS:
                     return str(value) if value is not None else None
 
                 # Try to convert to number if possible for other sensors

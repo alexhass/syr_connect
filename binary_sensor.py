@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SENSOR_ICONS
+from .const import _SYR_CONNECT_SENSOR_ICONS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
@@ -111,8 +111,8 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self.entity_id = build_entity_id("binary_sensor", device_id, sensor_key)
 
         # Set icon if available
-        if sensor_key in _SENSOR_ICONS:
-            self._attr_icon = _SENSOR_ICONS[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_ICONS:
+            self._attr_icon = _SYR_CONNECT_SENSOR_ICONS[sensor_key]
 
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)

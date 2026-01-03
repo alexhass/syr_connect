@@ -2,8 +2,8 @@
 
 DOMAIN = "syr_connect"
 
-_CONF_SCAN_INTERVAL = "scan_interval"
-_DEFAULT_SCAN_INTERVAL = 60  # seconds
+_SYR_CONNECT_CONF_SCAN_INTERVAL = "scan_interval"
+_SYR_CONNECT_DEFAULT_SCAN_INTERVAL = 60  # seconds
 
 # Platform update limits
 PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
@@ -29,13 +29,13 @@ _SYR_CONNECT_CLIENT_APP_VERSION = "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft
 _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 
 # Sensor device classes (for Home Assistant) - internal
-_SENSOR_DEVICE_CLASS = {
+_SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getPRS": "pressure",
     "getFLO": "volume_flow_rate",
 }
 
 # Sensor state classes (for Home Assistant) - internal
-_SENSOR_STATE_CLASS = {
+_SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getRES": "measurement",
     "getTOR": "measurement",
     "getPRS": "measurement",
@@ -45,7 +45,7 @@ _SENSOR_STATE_CLASS = {
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
-_STRING_SENSORS = {
+_SYR_CONNECT_STRING_SENSORS = {
     "getVER",  # Version
     "getFIR",  # Firmware
     "getSRN",  # Serial number
@@ -59,7 +59,7 @@ _STRING_SENSORS = {
 }
 
 # Sensor icons (Material Design Icons) - internal
-_SENSOR_ICONS = {
+_SYR_CONNECT_SENSOR_ICONS = {
     # Water & Hardness
     "getIWH": "mdi:water-percent",
     "getOWH": "mdi:water-percent",
