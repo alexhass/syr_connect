@@ -16,7 +16,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SyrConnectAPI
-from .const import DOMAIN, _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
+from .const import DOMAIN, _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
         current_scan_interval = _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
         if self.config_entry and self.config_entry.options:
             current_scan_interval = self.config_entry.options.get(
-                _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
+                _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
             )
 
         return self.async_show_form(
@@ -103,7 +103,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
-                        _SYR_CONNECT_CONF_SCAN_INTERVAL,
+                        _SYR_CONNECT_SCAN_INTERVAL_CONF,
                         default=current_scan_interval,
                     ): selector.NumberSelector(
                         selector.NumberSelectorConfig(

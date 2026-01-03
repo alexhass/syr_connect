@@ -2,7 +2,7 @@
 
 DOMAIN = "syr_connect"
 
-_SYR_CONNECT_CONF_SCAN_INTERVAL = "scan_interval"
+_SYR_CONNECT_SCAN_INTERVAL_CONF = "scan_interval"
 _SYR_CONNECT_SCAN_INTERVAL_DEFAULT = 60  # seconds
 
 # Platform update limits
