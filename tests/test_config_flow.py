@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 from syr_connect.const import DOMAIN
+from .conftest import MockConfigEntry
 
 
 async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
@@ -149,28 +150,3 @@ async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
 
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["data"] == {"scan_interval": 120}
-
-
-# Helper for config entries
-class MockConfigEntry(config_entries.ConfigEntry):
-    """Mock ConfigEntry."""
-
-    def __init__(
-        self,
-        *,
-        domain: str,
-        data: dict,
-        unique_id: str | None = None,
-        options: dict | None = None,
-    ) -> None:
-        """Initialize mock config entry."""
-        super().__init__(
-            version=1,
-            minor_version=1,
-            domain=domain,
-            title="",
-            data=data,
-            source=config_entries.SOURCE_USER,
-            options=options or {},
-            unique_id=unique_id,
-        )

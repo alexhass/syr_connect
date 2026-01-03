@@ -2,12 +2,13 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
 from syr_connect.const import DOMAIN
+from .conftest import MockConfigEntry
 
 
 async def test_setup_entry(hass: HomeAssistant) -> None:
@@ -153,30 +154,3 @@ async def test_reload_entry(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
 
         assert entry.state == ConfigEntryState.LOADED
-
-
-# Helper class
-class MockConfigEntry(ConfigEntry):
-    """Mock ConfigEntry."""
-
-    def __init__(
-        self,
-        *,
-        domain: str,
-        data: dict,
-        unique_id: str | None = None,
-        options: dict | None = None,
-    ) -> None:
-        """Initialize mock config entry."""
-        from homeassistant.config_entries import SOURCE_USER
-        
-        super().__init__(
-            version=1,
-            minor_version=1,
-            domain=domain,
-            title="",
-            data=data,
-            source=SOURCE_USER,
-            options=options or {},
-            unique_id=unique_id,
-        )

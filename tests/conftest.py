@@ -3,7 +3,11 @@ from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+
+pytest_plugins = "pytest_homeassistant_custom_component"
 
 
 @pytest.fixture
@@ -25,6 +29,8 @@ def mock_syr_api():
         api_instance.projects = [
             {"id": "project1", "name": "Test Project"}
         ]
+        api_instance.get_devices = AsyncMock(return_value=[])
+        api_instance.get_device_status = AsyncMock(return_value={})
         mock_api.return_value = api_instance
         yield api_instance
 
@@ -36,3 +42,27 @@ def mock_config_entry():
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "test_password",
     }
+
+
+class MockConfigEntry(ConfigEntry):
+    """Mock ConfigEntry for testing."""
+
+    def __init__(
+        self,
+        *,
+        domain: str,
+        data: dict,
+        unique_id: str | None = None,
+        options: dict | None = None,
+    ) -> None:
+        """Initialize mock config entry."""
+        super().__init__(
+            version=1,
+            minor_version=1,
+            domain=domain,
+            title="",
+            data=data,
+            source=config_entries.SOURCE_USER,
+            options=options or {},
+            unique_id=unique_id,
+        )
