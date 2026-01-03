@@ -16,7 +16,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SyrConnectAPI
-from .const import DOMAIN, _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_DEFAULT_SCAN_INTERVAL
+from .const import DOMAIN, _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
@@ -92,10 +92,10 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         # Get current scan interval with safe fallback
-        current_scan_interval = _SYR_CONNECT_DEFAULT_SCAN_INTERVAL
+        current_scan_interval = _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
         if self.config_entry and self.config_entry.options:
             current_scan_interval = self.config_entry.options.get(
-                _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_DEFAULT_SCAN_INTERVAL
+                _SYR_CONNECT_CONF_SCAN_INTERVAL, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
             )
 
         return self.async_show_form(

@@ -3,7 +3,7 @@
 DOMAIN = "syr_connect"
 
 _SYR_CONNECT_CONF_SCAN_INTERVAL = "scan_interval"
-_SYR_CONNECT_DEFAULT_SCAN_INTERVAL = 60  # seconds
+_SYR_CONNECT_SCAN_INTERVAL_DEFAULT = 60  # seconds
 
 # Platform update limits
 PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
