@@ -121,7 +121,7 @@ automation:
   - alias: "SYR: Low Salt Alert"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.SERIAL_NUMBER_getSS1
+        entity_id: sensor.syr_connect_<serial_number>_getSS1
         below: 2  # Less than 2 weeks of salt remaining
     action:
       - service: notify.mobile_app
@@ -144,9 +144,9 @@ automation:
         data:
           title: "Water Softener Daily Report"
           message: >
-            Regenerations today: {{ states('sensor.SERIAL_NUMBER_getNOR') }}
-            Remaining capacity: {{ states('sensor.SERIAL_NUMBER_getRES') }}L
-            Salt supply: {{ states('sensor.SERIAL_NUMBER_getSS1') }} weeks
+            Regenerations today: {{ states('sensor.syr_connect_<serial_number>_getNOR') }}
+            Remaining capacity: {{ states('sensor.syr_connect_<serial_number>_getRES') }}L
+            Salt supply: {{ states('sensor.syr_connect_<serial_number>_getSS1') }} weeks
 ```
 
 #### Alarm Notification
@@ -157,7 +157,7 @@ automation:
   - alias: "SYR: Alarm Notification"
     trigger:
       - platform: state
-        entity_id: binary_sensor.SERIAL_NUMBER_getALM
+        entity_id: binary_sensor.syr_connect_<serial_number>_getALM
         to: "on"
     action:
       - service: notify.mobile_app
@@ -176,7 +176,7 @@ automation:
   - alias: "SYR: High Flow Alert"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.SERIAL_NUMBER_getFLO
+        entity_id: sensor.syr_connect_<serial_number>_getFLO
         above: 20  # Flow rate above 20 L/min
         for:
           minutes: 5
@@ -204,10 +204,10 @@ automation:
     action:
       - service: button.press
         target:
-          entity_id: button.SERIAL_NUMBER_setSIR
+          entity_id: button.syr_connect_<serial_number>_setSIR
 ```
 
-**Note**: Replace `SERIAL_NUMBER` with your actual device serial number in all examples.
+**Note**: Replace `<serial_number>` with your actual device serial number in all examples.
 
 ## Configuration Options
 
