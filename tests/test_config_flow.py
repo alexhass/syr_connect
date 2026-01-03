@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
 from syr_connect.const import DOMAIN
-from .conftest import MockConfigEntry
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 async def test_form(hass: HomeAssistant, mock_syr_api) -> None:

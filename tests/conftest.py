@@ -44,25 +44,3 @@ def mock_config_entry():
     }
 
 
-class MockConfigEntry(ConfigEntry):
-    """Mock ConfigEntry for testing."""
-
-    def __init__(
-        self,
-        *,
-        domain: str,
-        data: dict,
-        unique_id: str | None = None,
-        options: dict | None = None,
-    ) -> None:
-        """Initialize mock config entry."""
-        super().__init__(
-            version=1,
-            minor_version=1,
-            domain=domain,
-            title="",
-            data=data,
-            source=config_entries.SOURCE_USER,
-            options=options or {},
-            unique_id=unique_id,
-        )
