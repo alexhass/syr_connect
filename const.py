@@ -9,24 +9,24 @@ _DEFAULT_SCAN_INTERVAL = 60  # seconds
 PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
 
 # API URLs (internal)
-_API_BASE_URL = "https://syrconnect.de/WebServices"
-_API_LOGIN_URL = f"{_API_BASE_URL}/Api/SyrApiService.svc/REST/GetProjects"
-_API_DEVICE_LIST_URL = f"{_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
-_API_DEVICE_STATUS_URL = f"{_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
-_API_SET_STATUS_URL = f"{_API_BASE_URL}/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
-_API_STATISTICS_URL = f"{_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+_SYR_CONNECT_API_BASE_URL = "https://syrconnect.de/WebServices"
+_SYR_CONNECT_API_LOGIN_URL = f"{_SYR_CONNECT_API_BASE_URL}/Api/SyrApiService.svc/REST/GetProjects"
+_SYR_CONNECT_API_DEVICE_LIST_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+_SYR_CONNECT_API_DEVICE_STATUS_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
+_SYR_CONNECT_API_SET_STATUS_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
+_SYR_CONNECT_API_STATISTICS_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
 
 # Encryption keys (from original adapter) - internal
-_ENCRYPTION_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
-_ENCRYPTION_IV = "408a42beb8a1cefad990098584ed51a5"
+_SYR_CONNECT_CLIENT_ENCRYPTION_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
+_SYR_CONNECT_CLIENT_ENCRYPTION_IV = "408a42beb8a1cefad990098584ed51a5"
 
 # Checksum keys - internal
-_CHECKSUM_KEY1 = "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP"
-_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
+_SYR_CONNECT_CLIENT_CHECKSUM_KEY1 = "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP"
+_SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 
 # Device info - internal
-_APP_VERSION = "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
-_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
+_SYR_CONNECT_CLIENT_APP_VERSION = "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
+_SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 
 # Sensor device classes (for Home Assistant) - internal
 _SENSOR_DEVICE_CLASS = {

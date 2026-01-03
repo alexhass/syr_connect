@@ -9,17 +9,17 @@ import aiohttp
 
 from .checksum import SyrChecksum
 from .const import (
-    _API_DEVICE_LIST_URL,
-    _API_DEVICE_STATUS_URL,
-    _API_LOGIN_URL,
-    _API_SET_STATUS_URL,
-    _API_STATISTICS_URL,
-    _APP_VERSION,
-    _CHECKSUM_KEY1,
-    _CHECKSUM_KEY2,
-    _ENCRYPTION_IV,
-    _ENCRYPTION_KEY,
-    _USER_AGENT,
+    _SYR_CONNECT_API_DEVICE_LIST_URL,
+    _SYR_CONNECT_API_DEVICE_STATUS_URL,
+    _SYR_CONNECT_API_LOGIN_URL,
+    _SYR_CONNECT_API_SET_STATUS_URL,
+    _SYR_CONNECT_API_STATISTICS_URL,
+    _SYR_CONNECT_CLIENT_APP_VERSION,
+    _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
+    _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+    _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
+    _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
+    _SYR_CONNECT_CLIENT_USER_AGENT,
 )
 from .encryption import SyrEncryption
 from .exceptions import (
@@ -54,11 +54,11 @@ class SyrConnectAPI:
         self.projects: list[dict[str, Any]] = []
 
         # Initialize helper components
-        self.encryption = SyrEncryption(_ENCRYPTION_KEY, _ENCRYPTION_IV)
-        self.checksum = SyrChecksum(_CHECKSUM_KEY1, _CHECKSUM_KEY2)
-        self.payload_builder = PayloadBuilder(_APP_VERSION, self.checksum)
+        self.encryption = SyrEncryption(_SYR_CONNECT_CLIENT_ENCRYPTION_KEY, _SYR_CONNECT_CLIENT_ENCRYPTION_IV)
+        self.checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
+        self.payload_builder = PayloadBuilder(_SYR_CONNECT_CLIENT_APP_VERSION, self.checksum)
         self.response_parser = ResponseParser()
-        self.http_client = HTTPClient(session, _USER_AGENT)
+        self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT)
 
     def _is_session_valid(self) -> bool:
         """Check if current session is valid.
@@ -97,7 +97,7 @@ class SyrConnectAPI:
         try:
             # Make login request
             xml_response = await self.http_client.post(
-                _API_LOGIN_URL,
+                _SYR_CONNECT_API_LOGIN_URL,
                 xml_data,
                 content_type='text/xml'
             )
@@ -154,7 +154,7 @@ class SyrConnectAPI:
         try:
             # Make request
             xml_response = await self.http_client.post(
-                _API_DEVICE_LIST_URL,
+                _SYR_CONNECT_API_DEVICE_LIST_URL,
                 {'xml': payload}
             )
             _LOGGER.debug("Device list XML response: %s", xml_response)
@@ -205,7 +205,7 @@ class SyrConnectAPI:
         try:
             # Make request
             xml_response = await self.http_client.post(
-                _API_DEVICE_STATUS_URL,
+                _SYR_CONNECT_API_DEVICE_STATUS_URL,
                 {'xml': payload}
             )
             _LOGGER.debug("Status XML response: %s", xml_response)
@@ -254,7 +254,7 @@ class SyrConnectAPI:
         try:
             # Make request
             xml_response = await self.http_client.post(
-                _API_SET_STATUS_URL,
+                _SYR_CONNECT_API_SET_STATUS_URL,
                 {'xml': payload}
             )
             _LOGGER.debug("Set status XML response: %s", xml_response)
@@ -286,7 +286,7 @@ class SyrConnectAPI:
         try:
             # Make request
             xml_response = await self.http_client.post(
-                _API_STATISTICS_URL,
+                _SYR_CONNECT_API_STATISTICS_URL,
                 {'xml': payload}
             )
             _LOGGER.debug("Statistics XML response: %s", xml_response)
