@@ -119,7 +119,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
         )
 
 
-class SyrConnectConfigFlow(config_entries.ConfigFlow):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SYR Connect."""
 
     VERSION = 1
