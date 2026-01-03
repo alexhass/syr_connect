@@ -14,7 +14,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SyrConnectAPI
-from .const import _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
@@ -113,10 +113,9 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             ),
         )
 
-
 class ConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for SYR Connect."""
-
+    DOMAIN = DOMAIN
     VERSION = 1
 
     @staticmethod
