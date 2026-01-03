@@ -39,8 +39,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         Dictionary with title for the config entry
 
     Raises:
-        CannotConnect: If connection to API fails
-        InvalidAuth: If authentication fails
+        CannotConnectError: If connection to API fails
+        InvalidAuthError: If authentication fails
     """
     _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
@@ -52,24 +52,24 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         await api.login()
     except SyrConnectAuthError as err:
         _LOGGER.error("Authentication failed: %s", err)
-        raise InvalidAuth from err
+        raise InvalidAuthError from err
     except SyrConnectConnectionError as err:
         _LOGGER.error("Connection failed: %s", err)
-        raise CannotConnect from err
+        raise CannotConnectError from err
     except Exception as err:
         _LOGGER.error("Unexpected error during validation: %s", err)
-        raise CannotConnect from err
+        raise CannotConnectError from err
 
     _LOGGER.info("API authentication successful for user: %s", data[CONF_USERNAME])
 
     return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
 
 
-class CannotConnect(HomeAssistantError):
+class CannotConnectError(HomeAssistantError):
     """Error to indicate we cannot connect."""
 
 
-class InvalidAuth(HomeAssistantError):
+class InvalidAuthError(HomeAssistantError):
     """Error to indicate there is invalid auth."""
 
 
@@ -189,9 +189,9 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
 
                 return self.async_abort(reason="reauth_successful")
 
-            except CannotConnect:
+            except CannotConnectError:
                 errors["base"] = "cannot_connect"
-            except InvalidAuth:
+            except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reauth: %s", err)
@@ -240,9 +240,9 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
 
                 return self.async_abort(reason="reconfigure_successful")
 
-            except CannotConnect:
+            except CannotConnectError:
                 errors["base"] = "cannot_connect"
-            except InvalidAuth:
+            except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
@@ -284,9 +284,9 @@ class SyrConnectConfigFlow(config_entries.ConfigFlow):
             try:
                 info = await validate_input(self.hass, user_input)
                 _LOGGER.debug("Validation successful")
-            except CannotConnect:
+            except CannotConnectError:
                 errors["base"] = "cannot_connect"
-            except InvalidAuth:
+            except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during config flow: %s", err)
