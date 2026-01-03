@@ -19,7 +19,7 @@ from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
-__all__ = ["SyrConnectConfigFlow", "SyrConnectOptionsFlow"]
+__all__ = ["ConfigFlow", "SyrConnectOptionsFlow"]
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -115,7 +115,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             ),
         )
 
-class SyrConnectConfigFlow(config_entries.ConfigFlow):
+class ConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for SYR Connect."""
 
     VERSION = 1
