@@ -1,5 +1,6 @@
 """Fixtures for SYR Connect tests."""
 from collections.abc import Generator
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -8,6 +9,18 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 pytest_plugins = "pytest_homeassistant_custom_component"
+
+
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    """Enable custom integrations for all tests."""
+    return enable_custom_integrations
+
+
+@pytest.fixture(autouse=True)
+def expected_lingering_timers() -> bool:
+    """Temporarily allow lingering timers."""
+    return True
 
 
 @pytest.fixture
