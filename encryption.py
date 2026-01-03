@@ -32,8 +32,11 @@ class SyrEncryption:
             Decrypted string
 
         Raises:
-            ValueError: If decryption fails
+            ValueError: If decryption fails or payload is empty
         """
+        if not encrypted_payload:
+            raise ValueError("Encrypted payload cannot be empty")
+
         _LOGGER.debug("Decrypting payload (length: %d bytes)", len(encrypted_payload))
         try:
             encrypted_data = base64.b64decode(encrypted_payload)
