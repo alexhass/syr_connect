@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN, _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
+from .const import _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
 from .coordinator import SyrConnectDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)

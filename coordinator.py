@@ -2,23 +2,22 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
+import aiohttp
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-import aiohttp
 
-from .const import _DEFAULT_SCAN_INTERVAL, DOMAIN, _CONF_SCAN_INTERVAL
 from .api import SyrConnectAPI
-from .repairs import create_issue, delete_issue
+from .const import _DEFAULT_SCAN_INTERVAL, DOMAIN
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 

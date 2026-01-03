@@ -1,7 +1,7 @@
 """Checksum calculation for SYR Connect API."""
 from __future__ import annotations
+
 import xml.etree.ElementTree as ET
-from typing import Any
 
 
 class SyrChecksum:

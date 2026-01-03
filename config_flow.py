@@ -5,17 +5,16 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN, _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL
 from .api import SyrConnectAPI
+from .const import _CONF_SCAN_INTERVAL, _DEFAULT_SCAN_INTERVAL, DOMAIN
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)

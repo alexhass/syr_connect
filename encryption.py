@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import logging
+
 from Cryptodome.Cipher import AES
 
 _LOGGER = logging.getLogger(__name__)

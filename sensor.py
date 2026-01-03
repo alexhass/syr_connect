@@ -4,9 +4,7 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components.sensor import (
-    SensorDeviceClass,
     SensorEntity,
-    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -18,17 +16,14 @@ from homeassistant.const import (
     UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity import EntityCategory
 
 from .const import (
-    DOMAIN,
-    PARALLEL_UPDATES,
     _SENSOR_DEVICE_CLASS,
-    _SENSOR_STATE_CLASS,
     _SENSOR_ICONS,
+    _SENSOR_STATE_CLASS,
     _STRING_SENSORS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator

@@ -88,7 +88,7 @@ class HTTPClient:
                     _LOGGER.debug("Response received (length: %d)", len(text))
                     return text
 
-            except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            except (TimeoutError, aiohttp.ClientError) as err:
                 is_last_attempt = attempt == self.max_retries - 1
 
                 if is_last_attempt:

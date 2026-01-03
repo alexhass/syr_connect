@@ -1,35 +1,34 @@
 """SYR Connect API client."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 from typing import Any
 
 import aiohttp
 
+from .checksum import SyrChecksum
 from .const import (
-    _API_LOGIN_URL,
     _API_DEVICE_LIST_URL,
     _API_DEVICE_STATUS_URL,
+    _API_LOGIN_URL,
     _API_SET_STATUS_URL,
     _API_STATISTICS_URL,
-    _ENCRYPTION_KEY,
-    _ENCRYPTION_IV,
+    _APP_VERSION,
     _CHECKSUM_KEY1,
     _CHECKSUM_KEY2,
-    _APP_VERSION,
+    _ENCRYPTION_IV,
+    _ENCRYPTION_KEY,
     _USER_AGENT,
 )
-from .checksum import SyrChecksum
 from .encryption import SyrEncryption
-from .payload_builder import PayloadBuilder
-from .response_parser import ResponseParser
-from .http_client import HTTPClient
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
-    SyrConnectSessionExpiredError,
 )
+from .http_client import HTTPClient
+from .payload_builder import PayloadBuilder
+from .response_parser import ResponseParser
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -98,8 +97,8 @@ class SyrConnectAPI:
         try:
             # Make login request
             xml_response = await self.http_client.post(
-                _API_LOGIN_URL, 
-                xml_data, 
+                _API_LOGIN_URL,
+                xml_data,
                 content_type='text/xml'
             )
             _LOGGER.debug("Login XML response received")
@@ -170,7 +169,7 @@ class SyrConnectAPI:
                 if 'id' not in device and 'serial_number' in device:
                     device['id'] = device['serial_number']
                 _LOGGER.debug(
-                    "Device found: %s (ID: %s, DCLG: %s)", 
+                    "Device found: %s (ID: %s, DCLG: %s)",
                     device['name'], device.get('id'), device.get('dclg')
                 )
 
