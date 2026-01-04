@@ -1,3 +1,4 @@
+# Configuration URL for device info
 """Constants for the SYR Connect integration."""
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
@@ -20,6 +21,7 @@ _SYR_CONNECT_SCAN_INTERVAL_DEFAULT = 60  # seconds
 PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
 
 # API URLs (internal)
+_SYR_CONNECT_CONFIGURATION_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_BASE_URL = "https://syrconnect.de/WebServices"
 _SYR_CONNECT_API_LOGIN_URL = f"{_SYR_CONNECT_API_BASE_URL}/Api/SyrApiService.svc/REST/GetProjects"
 _SYR_CONNECT_API_DEVICE_LIST_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"

@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import DOMAIN
+from .const import DOMAIN, _SYR_CONNECT_CONFIGURATION_URL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,6 +71,7 @@ def build_device_info(
         hw_version=hw_version,
         serial_number=device_id,
         connections=connections if connections else None,
+        configuration_url=_SYR_CONNECT_CONFIGURATION_URL,
     )
 
 
