@@ -8,6 +8,3 @@ ruff==0.6.2
 mypy==1.7.1
 josepy==1.13.0
 acme==2.10.0
-
-# Required for HACS integration tests
-hacs
