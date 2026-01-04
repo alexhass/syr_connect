@@ -70,7 +70,6 @@
       "getrpw": { "name": "Regeneration pro Woche" },
       "getrti": { "name": "Regenerationsuhrzeit" },
       "getsir": { "name": "Sofortregeneration" },
-      "getsre": { "name": "Regeneration aktiv" },
       "getnor": { "name": "Anzahl Regenerationen" },
       "getsv1": { "name": "Salzmenge Behälter 1" },
       "getsv2": { "name": "Salzmenge Behälter 2" },
@@ -82,11 +81,8 @@
       "getflo": { "name": "Durchfluss" },
       "getfco": { "name": "Durchflusszähler" },
       "getdwf": { "name": "Durchflusswarnwert" },
-      "getalm": { "name": "Alarm" },
       "getsta": { "name": "Status" },
-      "getpst": { "name": "Betriebszustand" },
       "getcde": { "name": "Konfigurationscode" },
-      "getcs1": { "name": "Konfiguration Stufe 1" },
       "getcs2": { "name": "Konfiguration Stufe 2" },
       "getcs3": { "name": "Konfiguration Stufe 3" },
       "getden": { "name": "Gerät aktiviert" },
@@ -98,11 +94,14 @@
       "getrg1": { "name": "Regenerationsgruppe 1" },
       "getrg2": { "name": "Regenerationsgruppe 2" },
       "getrg3": { "name": "Regenerationsgruppe 3" },
-      "getvs1": { "name": "Volumenschwelle 1" },
       "getvs2": { "name": "Volumenschwelle 2" },
-      "getvs3": { "name": "Volumenschwelle 3" },
-      "getrdo": { "name": "Restlaufzeit" },
-      "getscr": { "name": "Bildschirmsperre" }
+      "getrdo": { "name": "Restlaufzeit" }
+    },
+    "binary_sensor": {
+      "getsre": { "name": "Regeneration aktiv" },
+      "getpst": { "name": "Betriebszustand" },
+      "getscr": { "name": "Bildschirmsperre" },
+      "getalm": { "name": "Alarm" }
     },
     "button": {
       "setsir": { "name": "Sofort regenerieren" },

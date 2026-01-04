@@ -72,7 +72,6 @@
       "getrtm": { "name": "Hora de regeneración (Minuto)" },
       "getrti": { "name": "Hora de regeneración" },
       "getsir": { "name": "Regeneración inmediata" },
-      "getsre": { "name": "Regeneración activa" },
       "getnor": { "name": "Número de regeneraciones" },
       "getsv1": { "name": "Cantidad de sal depósito 1" },
       "getsv2": { "name": "Cantidad de sal depósito 2" },
@@ -84,9 +83,7 @@
       "getflo": { "name": "Caudal" },
       "getfco": { "name": "Contador de caudal" },
       "getdwf": { "name": "Valor de advertencia de caudal" },
-      "getalm": { "name": "Alarma" },
       "getsta": { "name": "Estado" },
-      "getpst": { "name": "Estado de funcionamiento" },
       "getcde": { "name": "Código de configuración" },
       "getcs1": { "name": "Nivel de configuración 1" },
       "getcs2": { "name": "Nivel de configuración 2" },
@@ -96,21 +93,23 @@
       "getcyt": { "name": "Tiempo de ciclo" },
       "getnot": { "name": "Notas" },
       "getinr": { "name": "Referencia interna" },
-      "getlar": { "name": "Última acción" },
       "getrg1": { "name": "Grupo de regeneración 1" },
-      "getrg2": { "name": "Grupo de regeneración 2" },
       "getrg3": { "name": "Grupo de regeneración 3" },
       "getvs1": { "name": "Umbral de volumen 1" },
       "getvs2": { "name": "Umbral de volumen 2" },
       "getvs3": { "name": "Umbral de volumen 3" },
-      "getrdo": { "name": "Tiempo restante" },
-      "getscr": { "name": "Bloqueo de pantalla" }
+      "getrdo": { "name": "Tiempo restante" }
+    },
+    "binary_sensor": {
+      "getsre": { "name": "Regeneración activa" },
+      "getpst": { "name": "Estado de funcionamiento" },
+      "getscr": { "name": "Bloqueo de pantalla" },
+      "getalm": { "name": "Alarma" }
     },
     "button": {
       "setsir": { "name": "Regenerar ahora" },
       "setsmr": { "name": "Regeneración múltiple" },
       "setrst": { "name": "Reiniciar dispositivo" }
-    }
   },
   "issues": {
     "device_offline": {

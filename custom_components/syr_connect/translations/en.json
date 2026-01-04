@@ -72,7 +72,6 @@
       "getrtm": { "name": "Regeneration Time (Minute)" },
       "getrti": { "name": "Regeneration Time" },
       "getsir": { "name": "Immediate Regeneration" },
-      "getsre": { "name": "Regeneration Active" },
       "getnor": { "name": "Number of Regenerations" },
       "getsv1": { "name": "Salt Volume Container 1" },
       "getsv2": { "name": "Salt Volume Container 2" },
@@ -84,9 +83,7 @@
       "getflo": { "name": "Flow" },
       "getfco": { "name": "Flow Counter" },
       "getdwf": { "name": "Flow Warning Value" },
-      "getalm": { "name": "Alarm" },
       "getsta": { "name": "Status" },
-      "getpst": { "name": "Operating State" },
       "getcde": { "name": "Configuration Code" },
       "getcs1": { "name": "Configuration Level 1" },
       "getcs2": { "name": "Configuration Level 2" },
@@ -103,8 +100,13 @@
       "getvs1": { "name": "Volume Threshold 1" },
       "getvs2": { "name": "Volume Threshold 2" },
       "getvs3": { "name": "Volume Threshold 3" },
-      "getrdo": { "name": "Remaining Runtime" },
-      "getscr": { "name": "Screen Lock" }
+      "getrdo": { "name": "Remaining Runtime" }
+    },
+    "binary_sensor": {
+      "getsre": { "name": "Regeneration Active" },
+      "getpst": { "name": "Operating State" },
+      "getscr": { "name": "Screen Lock" },
+      "getalm": { "name": "Alarm" }
     },
     "button": {
       "setsir": { "name": "Regenerate Now" },

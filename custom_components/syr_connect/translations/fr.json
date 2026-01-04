@@ -72,7 +72,6 @@
       "getrtm": { "name": "Heure de régénération (Minute)" },
       "getrti": { "name": "Heure de régénération" },
       "getsir": { "name": "Régénération immédiate" },
-      "getsre": { "name": "Régénération active" },
       "getnor": { "name": "Nombre de régénérations" },
       "getsv1": { "name": "Quantité de sel réservoir 1" },
       "getsv2": { "name": "Quantité de sel réservoir 2" },
@@ -84,7 +83,6 @@
       "getflo": { "name": "Débit" },
       "getfco": { "name": "Compteur de débit" },
       "getdwf": { "name": "Valeur d'alerte de débit" },
-      "getalm": { "name": "Alarme" },
       "getsta": { "name": "Statut" },
       "getpst": { "name": "État de fonctionnement" },
       "getcde": { "name": "Code de configuration" },
@@ -103,8 +101,13 @@
       "getvs1": { "name": "Seuil de volume 1" },
       "getvs2": { "name": "Seuil de volume 2" },
       "getvs3": { "name": "Seuil de volume 3" },
-      "getrdo": { "name": "Durée restante" },
-      "getscr": { "name": "Verrouillage de l'écran" }
+      "getrdo": { "name": "Durée restante" }
+    },
+    "binary_sensor": {
+      "getsre": { "name": "Régénération active" },
+      "getpst": { "name": "État de fonctionnement" },
+      "getscr": { "name": "Verrouillage d'écran" },
+      "getalm": { "name": "Alarme" }
     },
     "button": {
       "setsir": { "name": "Régénérer maintenant" },
