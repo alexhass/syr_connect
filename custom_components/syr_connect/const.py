@@ -1,5 +1,6 @@
 """Constants for the SYR Connect integration."""
 
+from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import (
     PERCENTAGE,
     UnitOfMass,
@@ -39,8 +40,8 @@ _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
-    "getPRS": "pressure",
-    "getFLO": "volume_flow_rate",
+    "getPRS": SensorDeviceClass.PRESSURE,
+    "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
 }
 
 # Sensor state classes (for Home Assistant) - internal
