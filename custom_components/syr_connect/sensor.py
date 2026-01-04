@@ -64,7 +64,8 @@ async def async_setup_entry(
         sensor_count = 0
         for key, value in status.items():
             # Skip sensors that are always excluded
-            if key in _SYR_CONNECT_EXCLUDED_SENSORS or key.startswith('_'):
+            #if key in _SYR_CONNECT_EXCLUDED_SENSORS or key.startswith('_'):
+            if key in _SYR_CONNECT_EXCLUDED_SENSORS:
                 continue
 
             # Skip specific sensors only when value is 0
@@ -237,20 +238,15 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
                     value = status.get(self._sensor_key)
-                    unit_map = {
-                        0: "°dH",
-                        1: "°fH",
-                        2: "ppm",
-                        3: "mmol/l"
-                    }
+                    from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
                     if isinstance(value, int | float):
-                        return unit_map.get(int(value), "°dH")
+                        return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
                     elif isinstance(value, str):
                         try:
-                            return unit_map.get(int(value), "°dH")
+                            return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
                         except (ValueError, TypeError):
-                            return "°dH"
-                    return "°dH"
+                            return None
+                    return None
 
                 value = status.get(self._sensor_key)
 
