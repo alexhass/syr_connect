@@ -140,8 +140,23 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if sensor_key in _SYR_CONNECT_DIAGNOSTIC_SENSORS:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
-        # Set unit of measurement if available
-        if sensor_key in _SYR_CONNECT_SENSOR_UNITS:
+        # Set unit of measurement for water hardness sensors dynamically
+        if sensor_key in ("getIWH", "getOWH"):
+            # Try to get WHU value from device status
+            whu_value = None
+            for device in coordinator.data.get('devices', []):
+                if device['id'] == device_id:
+                    whu_value = device.get('status', {}).get('getWHU')
+                    break
+            from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
+            if whu_value is not None:
+                try:
+                    self._attr_native_unit_of_measurement = _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(whu_value), None)
+                except (ValueError, TypeError):
+                    self._attr_native_unit_of_measurement = None
+            else:
+                self._attr_native_unit_of_measurement = None
+        elif sensor_key in _SYR_CONNECT_SENSOR_UNITS:
             self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNITS[sensor_key]
 
         # Set device class if available
