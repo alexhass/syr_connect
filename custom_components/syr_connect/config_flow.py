@@ -78,10 +78,6 @@ class InvalidAuthError(HomeAssistantError):
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for SYR Connect."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
-
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options for scan interval configuration.
 
@@ -138,7 +134,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         Returns:
             The options flow handler instance
         """
-        return SyrConnectOptionsFlow(config_entry)
+        return SyrConnectOptionsFlow()
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
         """Handle reauth flow when credentials are invalid.
