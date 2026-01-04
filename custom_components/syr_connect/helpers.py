@@ -26,9 +26,12 @@ def build_device_info(
     Returns:
         DeviceInfo object with device metadata
     """
+
     model = None
     sw_version = None
     hw_version = None
+    mac = None
+    connections = set()
 
     # Extract device information from coordinator data
     for device in coordinator_data.get('devices', []):
@@ -47,6 +50,11 @@ def build_device_info(
             if 'getFIR' in status and status['getFIR']:
                 hw_version = str(status['getFIR'])
 
+            # Get MAC address from getMAC
+            if 'getMAC' in status and status['getMAC']:
+                mac = str(status['getMAC'])
+                connections.add(("mac", mac))
+
             break
 
     # Use fallback if no model found
@@ -62,6 +70,7 @@ def build_device_info(
         sw_version=sw_version,
         hw_version=hw_version,
         serial_number=device_id,
+        connections=connections if connections else None,
     )
 
 
