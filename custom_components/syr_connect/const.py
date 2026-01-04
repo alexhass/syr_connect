@@ -1,5 +1,14 @@
 """Constants for the SYR Connect integration."""
 
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfMass,
+    UnitOfPressure,
+    UnitOfTime,
+    UnitOfVolume,
+    UnitOfVolumeFlowRate,
+)
+
 DOMAIN = "syr_connect"
 
 _SYR_CONNECT_SCAN_INTERVAL_CONF = "scan_interval"
@@ -135,21 +144,21 @@ _SYR_CONNECT_DIAGNOSTIC_SENSORS = {
 _SYR_CONNECT_SENSOR_UNITS = {
     "getIWH": "°dH",
     "getOWH": "°dH",
-    "getRES": "L",
-    "getTOR": "L",
-    "getRPD": "d",
-    "getRTH": "h",
-    "getSV1": "kg",
-    "getSV2": "kg",
-    "getSV3": "kg",
-    "getSS1": "wk",
-    "getSS2": "wk",
-    "getSS3": "wk",
-    "getPRS": "bar",
-    "getFLO": "L/min",
-    "getFCO": "L",
-    "getDWF": "L/min",
-    "getRDO": "%",
+    "getRES": UnitOfVolume.LITERS,
+    "getTOR": UnitOfVolume.LITERS,
+    "getRPD": UnitOfTime.DAYS,
+    "getRTH": UnitOfTime.HOURS,
+    "getSV1": UnitOfMass.KILOGRAMS,
+    "getSV2": UnitOfMass.KILOGRAMS,
+    "getSV3": UnitOfMass.KILOGRAMS,
+    "getSS1": UnitOfTime.WEEKS,
+    "getSS2": UnitOfTime.WEEKS,
+    "getSS3": UnitOfTime.WEEKS,
+    "getPRS": UnitOfPressure.BAR,
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
+    "getFCO": UnitOfVolume.LITERS,
+    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
+    "getRDO": PERCENTAGE,
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
