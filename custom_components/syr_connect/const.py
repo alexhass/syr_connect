@@ -78,19 +78,12 @@ _SYR_CONNECT_STRING_SENSORS = {
 }
 
 # Water hardness unit mapping (for getWHU)
-# Water hardness units (custom for SYR Connect)
-class UnitsOfHardness:
-    DEGREES_GERMAN = "°dH"
-    DEGREES_FRENCH = "°fH"
-    PPM = "ppm"
-    MMOL_L = "mmol/l"
-
-# Water hardness unit mapping (for getWHU)
+# According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
 _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP = {
-    0: UnitsOfHardness.DEGREES_GERMAN,
-    1: UnitsOfHardness.DEGREES_FRENCH,
-    2: UnitsOfHardness.PPM,
-    3: UnitsOfHardness.MMOL_L,
+    0: "°dH",
+    1: "°fH",
+    2: "ppm",
+    3: "mmol/l"
 }
 
 # Sensor icons (Material Design Icons) - internal
