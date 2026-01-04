@@ -1,16 +1,42 @@
+# --- Python ---
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.env
-.vscode/
-.idea/
-.DS_Store
-build/
-dist/
-.eggs/
+*.pdb
 *.egg-info/
+*.egg
+*.log
+
+# --- Virtual Environments ---
+venv/
+env/
+.venv/
+
+# --- Home Assistant runtime files ---
+home-assistant.log
+home-assistant_v2.db
+*.db-shm
+*.db-wal
+.storage/
+
+# --- Test / Coverage ---
 .coverage
 htmlcov/
-.cache/
 pytest_cache/
+.cache/
+
+# --- Build / Packaging ---
+build/
+dist/
+*.whl
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
