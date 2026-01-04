@@ -1,5 +1,6 @@
 """Constants for the SYR Connect integration."""
 
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import (
     PERCENTAGE,
@@ -37,6 +38,14 @@ _SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 # Device info - internal
 _SYR_CONNECT_CLIENT_APP_VERSION = "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
 _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
+
+# Binary sensors mapping with their device classes - internal
+_SYR_CONNECT_BINARY_SENSORS = {
+    "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
+    "getPST": BinarySensorDeviceClass.RUNNING,  # Operating state
+    "getSCR": BinarySensorDeviceClass.LOCK,     # Screen lock
+    "getALM": BinarySensorDeviceClass.PROBLEM,  # Alarm
+}
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
