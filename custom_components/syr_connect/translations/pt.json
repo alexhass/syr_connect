@@ -1,0 +1,123 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SYR Connect",
+        "description": "Insira suas credenciais do aplicativo SYR Connect",
+        "data": {
+          "username": "Nome de usuário",
+          "password": "Senha"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar SYR Connect",
+        "description": "As credenciais para {username} não são mais válidas. Insira novas credenciais.",
+        "data": {
+          "username": "Nome de usuário",
+          "password": "Senha"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar SYR Connect",
+        "description": "Atualize suas credenciais do SYR Connect.",
+        "data": {
+          "username": "Nome de usuário",
+          "password": "Senha"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Não foi possível conectar ao SYR Connect. Verifique sua conexão com a Internet e tente novamente.",
+      "invalid_auth": "Nome de usuário ou senha inválidos. Verifique suas credenciais.",
+      "unknown": "Ocorreu um erro inesperado. Tente novamente mais tarde."
+    },
+    "abort": {
+      "already_configured": "Esta conta já está configurada",
+      "reauth_successful": "Reautenticação bem-sucedida",
+      "reauth_failed": "Falha na reautenticação. Tente novamente.",
+      "reconfigure_successful": "Reconfiguração bem-sucedida",
+      "reconfigure_failed": "Falha na reconfiguração. Tente novamente."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções do SYR Connect",
+        "description": "Define o intervalo de tempo entre chamadas à API.",
+        "data": {
+          "scan_interval": "Intervalo de atualização"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "getsrn": { "name": "Número de série" },
+      "getver": { "name": "Versão do firmware" },
+      "getfir": { "name": "Modelo do firmware" },
+      "gettyp": { "name": "Tipo" },
+      "getcna": { "name": "Nome do dispositivo" },
+      "getman": { "name": "Fabricante" },
+      "getmac": { "name": "Endereço MAC" },
+      "getipa": { "name": "Endereço IP" },
+      "getdgw": { "name": "Gateway" },
+      "getiwh": { "name": "Dureza da água de entrada" },
+      "getowh": { "name": "Dureza da água de saída" },
+      "getwhu": { "name": "Unidade de dureza da água" },
+      "getres": { "name": "Capacidade restante" },
+      "gettor": { "name": "Capacidade total" },
+      "getrpd": { "name": "Intervalo de regeneração" },
+      "getrpw": { "name": "Regenerações por semana" },
+      "getrth": { "name": "Hora da regeneração (Hora)" },
+      "getrtm": { "name": "Hora da regeneração (Minuto)" },
+      "getrti": { "name": "Hora da regeneração" },
+      "getsir": { "name": "Regeneração imediata" },
+      "getnor": { "name": "Número de regenerações" },
+      "getsv1": { "name": "Quantidade de sal reservatório 1" },
+      "getsv2": { "name": "Quantidade de sal reservatório 2" },
+      "getsv3": { "name": "Quantidade de sal reservatório 3" },
+      "getss1": { "name": "Estoque de sal reservatório 1" },
+      "getss2": { "name": "Estoque de sal reservatório 2" },
+      "getss3": { "name": "Estoque de sal reservatório 3" },
+      "getprs": { "name": "Pressão" },
+      "getflo": { "name": "Fluxo" },
+      "getfco": { "name": "Contador de fluxo" },
+      "getdwf": { "name": "Valor de alerta de fluxo" },
+      "getsta": { "name": "Status" },
+      "getcde": { "name": "Código de configuração" },
+      "getcs1": { "name": "Nível de configuração 1" },
+      "getcs2": { "name": "Nível de configuração 2" },
+      "getcs3": { "name": "Nível de configuração 3" },
+      "getden": { "name": "Dispositivo ativado" },
+      "getcyn": { "name": "Contador de ciclos" },
+      "getcyt": { "name": "Tempo de ciclo" },
+      "getnot": { "name": "Notas" },
+      "getinr": { "name": "Referência interna" },
+      "getlar": { "name": "Última ação" },
+      "getrg1": { "name": "Grupo de regeneração 1" },
+      "getrg2": { "name": "Grupo de regeneração 2" },
+      "getrg3": { "name": "Grupo de regeneração 3" },
+      "getvs1": { "name": "Limite de volume 1" },
+      "getvs2": { "name": "Limite de volume 2" },
+      "getvs3": { "name": "Limite de volume 3" },
+      "getrdo": { "name": "Tempo restante" }
+    },
+    "binary_sensor": {
+      "getsre": { "name": "Regeneração ativa" },
+      "getpst": { "name": "Estado operacional" },
+      "getscr": { "name": "Bloqueio de tela" },
+      "getalm": { "name": "Alarme" }
+    },
+    "button": {
+      "setsir": { "name": "Regenerar agora" },
+      "setsmr": { "name": "Regeneração múltipla" },
+      "setrst": { "name": "Redefinir dispositivo" }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "title": "Dispositivo offline: {device_name}",
+      "description": "O dispositivo SYR Connect \"{device_name}\" está atualmente offline e não pode ser acessado. Verifique:\n\n- Fonte de alimentação do dispositivo\n- Conexão de rede\n- Status do serviço em nuvem SYR Connect\n\nO dispositivo será reconectado automaticamente quando voltar a ficar online."
+    }
+  }
+}
