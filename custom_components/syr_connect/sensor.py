@@ -129,7 +129,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # device_id is the serial number - use it for technical entity IDs
         self._attr_unique_id = f"{device_id}_{sensor_key}"
         self._attr_has_entity_name = True
-        self._attr_translation_key = sensor_key
+        self._attr_translation_key = sensor_key.lower()
 
         # Override the entity_id to use technical name (serial number) with domain prefix
         # This prevents entity IDs from using aliases like "weichwasser"
