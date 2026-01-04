@@ -1,5 +1,4 @@
 """Config flow for SYR Connect integration."""
-
 from __future__ import annotations
 
 import logging
