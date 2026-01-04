@@ -110,6 +110,7 @@
       "setsir": { "name": "Regenerar ahora" },
       "setsmr": { "name": "Regeneración múltiple" },
       "setrst": { "name": "Reiniciar dispositivo" }
+	}
   },
   "issues": {
     "device_offline": {
