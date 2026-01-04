@@ -26,6 +26,9 @@ htmlcov/
 pytest_cache/
 .cache/
 
+# --- Ruff ---
+.ruff_cache/
+
 # --- Build / Packaging ---
 build/
 dist/
