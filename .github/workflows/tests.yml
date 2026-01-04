@@ -24,7 +24,11 @@ jobs:
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
+        run: |
+          echo "PYTHONPATH=$PYTHONPATH:$(pwd)/custom_components" >> $GITHUB_ENV
+
+      - name: Test Import
+        run: python -c "import syr_connect; print(syr_connect)"
 
       - name: Run unit tests
         run: |
