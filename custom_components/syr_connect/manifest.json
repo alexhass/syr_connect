@@ -10,5 +10,5 @@
   "issue_tracker": "https://github.com/alexhass/syr_connect/issues",
   "loggers": ["custom_components.syr_connect"],
   "requirements": ["pycryptodomex==3.19.0"],
-  "version": "1.0.4"
+  "version": "1.0.5"
 }
