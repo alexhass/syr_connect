@@ -11,10 +11,10 @@ FILES = [
     ("icon@2x.png", (512, 512), True, False),
     ("logo.png", (256, 128), False, False),
     ("logo@2x.png", (512, 256), False, False),
-    # ("dark_icon.png", (256, 256), True, True),
-    # ("dark_icon@2x.png", (512, 512), True, True),
-    # ("dark_logo.png", (256, 128), False, True),
-    # ("dark_logo@2x.png", (512, 256), False, True),
+    ("dark_icon.png", (256, 256), True, True),
+    ("dark_icon@2x.png", (512, 512), True, True),
+    ("dark_logo.png", (256, 128), False, True),
+    ("dark_logo@2x.png", (512, 256), False, True),
 ]
 
 def process_image(src, dest, size, square, dark):
