@@ -257,3 +257,7 @@ _SYR_CONNECT_LEXPLUS10SL_KEYS = [
     "getSLP", "getSLT", "getSLV", "getSRE", "getSRV", "getSS1", "getSTA", "getSV1", "getT2", "getTMP", "getTMZ",
     "getTN", "getTOR", "getVLV", "getVS1", "getWHU", "getYHF"
 ]
+
+# All unique n-keys from LEXplus10S and LEXplus10SL XML
+_SYR_CONNECT_LEX_KEYS = list(set(_SYR_CONNECT_LEXPLUS10S_KEYS) | set(_SYR_CONNECT_LEXPLUS10SL_KEYS))
+_SYR_CONNECT_LEX_KEYS.sort()
