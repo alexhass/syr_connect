@@ -1,5 +1,7 @@
 # SYR Connect - Home Assistant Integration
 
+![Syr](custom_components/syr_connect/logo.png)
+
 This custom integration enables control of SYR Connect devices through Home Assistant.
 
 ## Installation
