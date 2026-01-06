@@ -227,6 +227,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
     'getRPW',  # Regenerations per Week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
+    'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
 }
 
 # All n-keys from <sc><dvs><d><c> in LEXplus10S.xml
