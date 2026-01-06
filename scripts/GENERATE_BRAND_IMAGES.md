@@ -28,10 +28,10 @@ python generate_brand_images.py
 ```
 
 The generated files will be placed in `custom_components/syr_connect`:
-- icon.png
-- icon@2x.png
-- logo.png
-- logo@2x.png
+- `icon.png`
+- `icon@2x.png`
+- `logo.png`
+- `logo@2x.png`
 
 ## Notes
 
