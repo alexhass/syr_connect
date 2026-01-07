@@ -146,6 +146,35 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Regeneration Cycles
     "getCYN": "mdi:numeric",
     "getCYT": "mdi:clock-time-four",
+
+    # Sensors exits in devices:
+    # - LEXplus10SL
+
+    # Leak protection profile sensors
+    "getPF1": "mdi:water-alert",
+    "getPF2": "mdi:water-alert",
+    "getPF3": "mdi:water-alert",
+    "getPF4": "mdi:water-alert",
+    "getPF5": "mdi:water-alert",
+    "getPF6": "mdi:water-alert",
+    "getPF7": "mdi:water-alert",
+    "getPF8": "mdi:water-alert",
+    "getPT1": "mdi:timer-outline",
+    "getPT2": "mdi:timer-outline",
+    "getPT3": "mdi:timer-outline",
+    "getPT4": "mdi:timer-outline",
+    "getPT5": "mdi:timer-outline",
+    "getPT6": "mdi:timer-outline",
+    "getPT7": "mdi:timer-outline",
+    "getPT8": "mdi:timer-outline",
+    "getPV1": "mdi:gauge",
+    "getPV2": "mdi:gauge",
+    "getPV3": "mdi:gauge",
+    "getPV4": "mdi:gauge",
+    "getPV5": "mdi:gauge",
+    "getPV6": "mdi:gauge",
+    "getPV7": "mdi:gauge",
+    "getPV8": "mdi:gauge",
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
@@ -187,6 +216,35 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getFCO": UnitOfVolume.LITERS,
     "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
     "getRDO": PERCENTAGE,
+
+    # Sensors exits in devices:
+    # - LEXplus10SL
+
+    # Leak protection profile sensors
+    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+    "getPT1": UnitOfTime.MINUTES,
+    "getPT2": UnitOfTime.MINUTES,
+    "getPT3": UnitOfTime.MINUTES,
+    "getPT4": UnitOfTime.MINUTES,
+    "getPT5": UnitOfTime.MINUTES,
+    "getPT6": UnitOfTime.MINUTES,
+    "getPT7": UnitOfTime.MINUTES,
+    "getPT8": UnitOfTime.MINUTES,
+    "getPV1": UnitOfVolume.LITERS,
+    "getPV2": UnitOfVolume.LITERS,
+    "getPV3": UnitOfVolume.LITERS,
+    "getPV4": UnitOfVolume.LITERS,
+    "getPV5": UnitOfVolume.LITERS,
+    "getPV6": UnitOfVolume.LITERS,
+    "getPV7": UnitOfVolume.LITERS,
+    "getPV8": UnitOfVolume.LITERS,
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
