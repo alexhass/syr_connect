@@ -172,7 +172,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             self._attr_icon = _SYR_CONNECT_SENSOR_ICONS[sensor_key]
 
         # Store base icon for state-based icon changes
-        self._base_icon = self._attr_icon
+        self._base_icon = getattr(self, '_attr_icon', None)
 
         # Disable sensors by default based on configuration
         if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS:
