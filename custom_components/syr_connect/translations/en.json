@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getprf": { "name": "Active leak protection profile" },
       "getsrn": { "name": "Serial Number" },
       "getver": { "name": "Firmware Version" },
       "getfir": { "name": "Firmware Model" },

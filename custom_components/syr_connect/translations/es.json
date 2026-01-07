@@ -94,11 +94,13 @@
       "getnot": { "name": "Notas" },
       "getinr": { "name": "Referencia interna" },
       "getrg1": { "name": "Grupo de regeneración 1" },
+      "getrg2": { "name": "Grupo de regeneración 2" },
       "getrg3": { "name": "Grupo de regeneración 3" },
       "getvs1": { "name": "Umbral de volumen 1" },
       "getvs2": { "name": "Umbral de volumen 2" },
       "getvs3": { "name": "Umbral de volumen 3" },
-      "getrdo": { "name": "Tiempo restante" }
+      "getrdo": { "name": "Tiempo restante" },
+      "getprf": { "name": "Perfil de protección contra fugas activo" }
     },
     "binary_sensor": {
       "getsre": { "name": "Regeneración activa" },

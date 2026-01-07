@@ -95,7 +95,8 @@
       "getrg2": { "name": "Regenerationsgruppe 2" },
       "getrg3": { "name": "Regenerationsgruppe 3" },
       "getvs2": { "name": "Volumenschwelle 2" },
-      "getrdo": { "name": "Restlaufzeit" }
+      "getrdo": { "name": "Restlaufzeit" },
+      "getprf": { "name": "Aktives Leckagesschutz-Profil" }
     },
     "binary_sensor": {
       "getsre": { "name": "Regeneration aktiv" },

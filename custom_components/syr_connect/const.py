@@ -90,6 +90,10 @@ _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP = {
 
 # Sensor icons (Material Design Icons) - internal
 _SYR_CONNECT_SENSOR_ICONS = {
+    # Sensors exits in devices:
+    # - LEXplus10S
+    # - LEXplus10SL
+
     # Water & Hardness
     "getIWH": "mdi:water-percent",
     "getOWH": "mdi:water-percent",
@@ -163,6 +167,10 @@ _SYR_CONNECT_DIAGNOSTIC_SENSORS = {
 
 # Sensor units mapping (units are standardized and not translated) - internal
 _SYR_CONNECT_SENSOR_UNITS = {
+    # Sensors exits in devices:
+    # - LEXplus10S
+    # - LEXplus10SL
+
     # getIWH and getOWH units are set dynamically from getWHU
     "getRES": UnitOfVolume.LITERS,
     "getTOR": UnitOfVolume.LITERS,
@@ -183,6 +191,10 @@ _SYR_CONNECT_SENSOR_UNITS = {
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
 _SYR_CONNECT_EXCLUDED_SENSORS = {
+    # Sensors exits in devices:
+    # - LEXplus10S
+    # - LEXplus10SL
+
     'p1883', 'p1883rd', 'p8883', 'p8883rd',
     'sbt', 'sta', 'dst', 'ast', 'so',
     'dclg', 'clb', 'nrs',  # Device collection metadata
@@ -204,6 +216,23 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPST',  # Operating state
     'getSCR',  # Screen lock
     'getALM',  # Alarm
+
+    # Sensors exits in devices:
+    # - LEXplus10SL
+
+    # Leak protection - internal flags (unclear meaning)
+    'getPM1', 'getPM2', 'getPM3', 'getPM4', 'getPM5', 'getPM6', 'getPM7', 'getPM8',
+    'getPB1', 'getPB2', 'getPB3', 'getPB4', 'getPB5', 'getPB6', 'getPB7', 'getPB8',
+    'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
+    # Technical values without context
+    'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
+    'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS', 'getCOF',
+    'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
+    'getDRP', 'getDST', 'getDTC', 'getDWF',
+    'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
+    'getNPS', 'getOHF', 'getYHF',
+    'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
+    'getT2', 'getTN', 'getVLV',
 }
 
 # Sensors to exclude only when value is 0 - internal
@@ -217,6 +246,10 @@ _SYR_CONNECT_EXCLUDE_WHEN_ZERO = {
 
 # Sensors that are disabled by default (less frequently used) - internal
 _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
+    # Sensors exits in devices:
+    # - LEXplus10S
+    # - LEXplus10SL
+
     'getCYN',  # Cycle Counter - technical metric
     'getCYT',  # Cycle Time - technical metric
     'getNOT',  # Notes - rarely used
@@ -228,6 +261,18 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getRPW',  # Regenerations per Week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
     'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
+
+    # Sensors exits in devices:
+    # - LEXplus10SL
+
+    # Leak protection profiles (expert setting)
+    'getPA1', 'getPA2', 'getPA3', 'getPA4', 'getPA5', 'getPA6', 'getPA7', 'getPA8',
+    'getPF1', 'getPF2', 'getPF3', 'getPF4', 'getPF5', 'getPF6', 'getPF7', 'getPF8',
+    'getPT1', 'getPT2', 'getPT3', 'getPT4', 'getPT5', 'getPT6', 'getPT7', 'getPT8',
+    'getPV1', 'getPV2', 'getPV3', 'getPV4', 'getPV5', 'getPV6', 'getPV7', 'getPV8',
+    'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
+    'getPRN',  # Duplicate of getPRF
+    'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',    
 }
 
 # All n-keys from <sc><dvs><d><c> in LEXplus10S.xml

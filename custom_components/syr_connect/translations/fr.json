@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getprf": { "name": "Profil de protection contre les fuites actif" },
       "getsrn": { "name": "Numéro de série" },
       "getver": { "name": "Version du firmware" },
       "getfir": { "name": "Modèle du firmware" },
