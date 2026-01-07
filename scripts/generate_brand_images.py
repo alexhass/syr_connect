@@ -44,3 +44,7 @@ if __name__ == "__main__":
         out_path = os.path.join(TARGET_DIR, fname)
         process_image(SOURCE_PATH, out_path, size, square, dark)
     print("All brand images generated in scripts/")
+
+#
+# Credit: SYR IoT-Development-Team
+# Thanks to SYR for sharing the logos for free use.
