@@ -71,6 +71,7 @@
       "getwhu": { "name": "Wasserhärte-Einheit" },
       "getres": { "name": "Restkapazität" },
       "gettor": { "name": "Gesamtkapazität" },
+      "getvol": { "name": "Gesamtkapazität" },
       "getrpd": { "name": "Regenerationsintervall" },
       "getrpw": { "name": "Regeneration pro Woche" },
       "getrti": { "name": "Regenerationsuhrzeit" },

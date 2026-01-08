@@ -57,12 +57,13 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getRES": "measurement",
-    "getTOR": "measurement",
-    "getPRS": "measurement",
-    "getFLO": "measurement",
-    "getFCO": "total_increasing",
-    "getNOR": "total_increasing",
+    "getRES": "measurement",        # Remaining Capacity 
+    "getTOR": "measurement",        # Total Capacity
+    "getVOL": "measurement",        # Total Capacity (older alternative to getTOR)
+    "getPRS": "measurement",        # Pressure
+    "getFLO": "measurement",        # Flow Rate
+    "getFCO": "total_increasing",   # Total Flow Counter
+    "getNOR": "total_increasing",   # Number of Regenerations
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
@@ -82,10 +83,10 @@ _SYR_CONNECT_STRING_SENSORS = {
 # Water hardness unit mapping (for getWHU)
 # According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
 _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP = {
-    0: "°dH",  # German degree of water hardness (Grad deutsche Härte)
-    1: "°fH",  # French degree of water hardness (degré français de dureté)
-    2: "ppm",  # Parts per million (mg/L), common international unit
-    3: "mmol/l",  # Millimoles per liter, SI unit for water hardness
+    0: "°dH",       # German degree of water hardness (Grad deutsche Härte)
+    1: "°fH",       # French degree of water hardness (degré français de dureté)
+    2: "ppm",       # Parts per million (mg/L), common international unit
+    3: "mmol/l",    # Millimoles per liter, SI unit for water hardness
 }
 
 # Sensor icons (Material Design Icons) - internal
@@ -106,6 +107,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Capacity & Supply
     "getRES": "mdi:gauge-empty",
     "getTOR": "mdi:gauge-full",
+    "getVOL": "mdi:gauge-full",
     "getSV1": "mdi:shaker",
     "getSV2": "mdi:shaker",
     "getSV3": "mdi:shaker",
@@ -201,50 +203,51 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # getIWH and getOWH units are set dynamically from getWHU
-    "getRES": UnitOfVolume.LITERS,
-    "getTOR": UnitOfVolume.LITERS,
-    "getRPD": UnitOfTime.DAYS,
-    "getRTH": UnitOfTime.HOURS,
-    "getSV1": UnitOfMass.KILOGRAMS,
-    "getSV2": UnitOfMass.KILOGRAMS,
-    "getSV3": UnitOfMass.KILOGRAMS,
-    "getSS1": UnitOfTime.WEEKS,
-    "getSS2": UnitOfTime.WEEKS,
-    "getSS3": UnitOfTime.WEEKS,
-    "getPRS": UnitOfPressure.BAR,
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
-    "getFCO": UnitOfVolume.LITERS,
-    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
-    "getRDO": PERCENTAGE,
+    "getRES": UnitOfVolume.LITERS,                      # Remaining Capacity
+    "getTOR": UnitOfVolume.LITERS,                      # Total Capacity
+    "getVOL": UnitOfVolume.LITERS,                      # Total Capacity (older alternative to getTOR)
+    "getRPD": UnitOfTime.DAYS,                          # Regeneration Interval
+    "getRTH": UnitOfTime.HOURS,                         # Regeneration Time (Hour)
+    "getSV1": UnitOfMass.KILOGRAMS,                     # Salt amount container 1
+    "getSV2": UnitOfMass.KILOGRAMS,                     # Salt amount container 2
+    "getSV3": UnitOfMass.KILOGRAMS,                     # Salt amount container 3
+    "getSS1": UnitOfTime.WEEKS,                         # Salt supply container 1
+    "getSS2": UnitOfTime.WEEKS,                         # Salt supply container 2
+    "getSS3": UnitOfTime.WEEKS,                         # Salt supply container 3
+    "getPRS": UnitOfPressure.BAR,                       # Pressure
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,   # Flow Rate
+    "getFCO": UnitOfVolume.LITERS,                      # Total Flow Counter
+    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,   # Flow Warning Value
+    "getRDO": PERCENTAGE,                               # Remaining Runtime
 
     # Sensors exits in devices:
     # - LEXplus10SL
 
     # Leak protection profile sensors
-    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-    "getPT1": UnitOfTime.MINUTES,
-    "getPT2": UnitOfTime.MINUTES,
-    "getPT3": UnitOfTime.MINUTES,
-    "getPT4": UnitOfTime.MINUTES,
-    "getPT5": UnitOfTime.MINUTES,
-    "getPT6": UnitOfTime.MINUTES,
-    "getPT7": UnitOfTime.MINUTES,
-    "getPT8": UnitOfTime.MINUTES,
-    "getPV1": UnitOfVolume.LITERS,
-    "getPV2": UnitOfVolume.LITERS,
-    "getPV3": UnitOfVolume.LITERS,
-    "getPV4": UnitOfVolume.LITERS,
-    "getPV5": UnitOfVolume.LITERS,
-    "getPV6": UnitOfVolume.LITERS,
-    "getPV7": UnitOfVolume.LITERS,
-    "getPV8": UnitOfVolume.LITERS,
+    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 1
+    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 2
+    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 3
+    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 4
+    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 5
+    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 6
+    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 7
+    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 8
+    "getPT1": UnitOfTime.MINUTES,                       # Leak Protection Time 1
+    "getPT2": UnitOfTime.MINUTES,                       # Leak Protection Time 2
+    "getPT3": UnitOfTime.MINUTES,                       # Leak Protection Time 3
+    "getPT4": UnitOfTime.MINUTES,                       # Leak Protection Time 4
+    "getPT5": UnitOfTime.MINUTES,                       # Leak Protection Time 5
+    "getPT6": UnitOfTime.MINUTES,                       # Leak Protection Time 6
+    "getPT7": UnitOfTime.MINUTES,                       # Leak Protection Time 7
+    "getPT8": UnitOfTime.MINUTES,                       # Leak Protection Time 8
+    "getPV1": UnitOfVolume.LITERS,                      # Leak Protection Volume 1
+    "getPV2": UnitOfVolume.LITERS,                      # Leak Protection Volume 2
+    "getPV3": UnitOfVolume.LITERS,                      # Leak Protection Volume 3    
+    "getPV4": UnitOfVolume.LITERS,                      # Leak Protection Volume 4
+    "getPV5": UnitOfVolume.LITERS,                      # Leak Protection Volume 5
+    "getPV6": UnitOfVolume.LITERS,                      # Leak Protection Volume 6
+    "getPV7": UnitOfVolume.LITERS,                      # Leak Protection Volume 7
+    "getPV8": UnitOfVolume.LITERS,                      # Leak Protection Volume 8
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal

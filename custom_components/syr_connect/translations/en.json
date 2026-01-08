@@ -107,6 +107,7 @@
       "getwhu": { "name": "Water Hardness Unit" },
       "getres": { "name": "Remaining Capacity" },
       "gettor": { "name": "Total Capacity" },
+      "getvol": { "name": "Total Capacity" },
       "getrpd": { "name": "Regeneration Interval" },
       "getrpw": { "name": "Regenerations per Week" },
       "getrth": { "name": "Regeneration Time (Hour)" },

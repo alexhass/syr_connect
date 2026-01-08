@@ -147,6 +147,7 @@
       "getwhu": { "name": "Unidade de dureza da água" },
       "getres": { "name": "Capacidade restante" },
       "gettor": { "name": "Capacidade total" },
+      "getvol": { "name": "Capacidade total" },
       "getrpd": { "name": "Intervalo de regeneração" },
       "getrpw": { "name": "Regenerações por semana" },
       "getrth": { "name": "Hora da regeneração (Hora)" },
