@@ -113,6 +113,7 @@
       "getrth": { "name": "Regeneration Time (Hour)" },
       "getrtm": { "name": "Regeneration Time (Minute)" },
       "getrti": { "name": "Regeneration Time" },
+      "getrtime": { "name": "Regeneration Time" },
       "getsir": { "name": "Immediate Regeneration" },
       "getnor": { "name": "Number of Regenerations" },
       "getsv1": { "name": "Salt Volume Container 1" },

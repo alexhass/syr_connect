@@ -96,7 +96,7 @@ async def async_setup_entry(
                     device_id,
                     device_name,
                     project_id,
-                    'getRTI',  # Combined regeneration time
+                    'getRTIME',  # Combined regeneration time
                 )
             )
             sensor_count += 1
@@ -242,7 +242,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 status = device.get('status', {})
 
                 # Special handling for combined regeneration time sensor
-                if self._sensor_key == 'getRTI':
+                if self._sensor_key == 'getRTIME':
                     hour = status.get('getRTH', 0)
                     minute = status.get('getRTM', 0)
                     try:

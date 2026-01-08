@@ -153,6 +153,7 @@
       "getrth": { "name": "Heure de régénération (Heure)" },
       "getrtm": { "name": "Heure de régénération (Minute)" },
       "getrti": { "name": "Heure de régénération" },
+      "getrtime": { "name": "Heure de régénération" },
       "getsir": { "name": "Régénération immédiate" },
       "getnor": { "name": "Nombre de régénérations" },
       "getsv1": { "name": "Quantité de sel réservoir 1" },

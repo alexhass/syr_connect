@@ -153,6 +153,7 @@
       "getrth": { "name": "Ora rigenerazione (Ora)" },
       "getrtm": { "name": "Ora rigenerazione (Minuto)" },
       "getrti": { "name": "Ora rigenerazione" },
+      "getrtime": { "name": "Ora rigenerazione" },
       "getsir": { "name": "Rigenerazione immediata" },
       "getnor": { "name": "Numero rigenerazioni" },
       "getsv1": { "name": "Quantità sale contenitore 1" },

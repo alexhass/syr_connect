@@ -76,8 +76,11 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getMAC",  # MAC Address
     "getIPA",  # IP Address
     "getDGW",  # Gateway
-    "getRTI",  # Regeneration time (combined from getRTH and getRTM)
+    "getRTI",  # Regeneration time
     "getWHU",  # Water hardness unit (mapped to unit names)
+
+    # Custom non-API combined sensor
+    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
 }
 
 # Water hardness unit mapping (for getWHU)
@@ -148,6 +151,9 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Regeneration Cycles
     "getCYN": "mdi:numeric",
     "getCYT": "mdi:clock-time-four",
+
+    # Custom non-API combined sensor
+    "getRTIME": "mdi:clock-outline", # Regeneration time (combined from getRTH and getRTM)
 
     # Sensors exits in devices:
     # - LEXplus10SL
@@ -272,6 +278,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getLAR',  # Last action - not useful as sensor
     'getSRN_dt',
     'getALM_dt',
+    'getRTI',  # Value is always 00:00. Not clear what it represents.
     # Boolean sensors - now handled as binary_sensor platform
     'getSRE',  # Regeneration active
     'getPST',  # Operating state

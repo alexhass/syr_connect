@@ -75,6 +75,7 @@
       "getrpd": { "name": "Regenerationsintervall" },
       "getrpw": { "name": "Regeneration pro Woche" },
       "getrti": { "name": "Regenerationsuhrzeit" },
+      "getrtime": { "name": "Regenerationsuhrzeit" },
       "getsir": { "name": "Sofortregeneration" },
       "getnor": { "name": "Anzahl Regenerationen" },
       "getsv1": { "name": "Salzmenge Behälter 1" },
