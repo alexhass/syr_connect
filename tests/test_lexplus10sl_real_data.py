@@ -1,8 +1,8 @@
 """
 Unit tests for SYR Connect with real LEXplus10SL data.
 
-Diese Tests verwenden echte Daten von einem LEXplus10SL (Firmware 2.9, Hardware SLPL)
-um sicherzustellen, dass die Integration mit diesem Gerätetyp funktioniert.
+These tests use real data from a LEXplus10SL (Firmware 2.9, Hardware SLPL)
+to ensure that the integration works with this device type.
 
 Serial Number: 210836887
 Device: LEXplus10SL
@@ -87,7 +87,7 @@ REAL_XML_RESPONSE = """<?xml version="1.0" encoding="utf-8"?>
 
 
 class TestLEXplus10SLRealData(unittest.TestCase):
-    """Tests mit echten Daten vom LEXplus10SL."""
+    """Tests with real data from LEXplus10SL."""
 
     def setUp(self):
         """Parse real XML data."""
@@ -96,7 +96,7 @@ class TestLEXplus10SLRealData(unittest.TestCase):
         self.sensors = {c.get('n'): c.get('v') for c in self.device.findall('c')}
 
     def test_device_identification(self):
-        """Test dass LEXplus10SL korrekt erkannt wird."""
+        """Test that LEXplus10SL is correctly identified."""
         self.assertEqual(self.sensors['getSRN'], '210836887')
         self.assertEqual(self.sensors['getVER'], '2.9')
         self.assertEqual(self.sensors['getFIR'], 'SLPL')
@@ -104,40 +104,40 @@ class TestLEXplus10SLRealData(unittest.TestCase):
         self.assertEqual(self.sensors['getCNA'], 'LEXplus10SL')
 
     def test_flow_sensor_exists(self):
-        """Test dass Durchfluss-Sensor vorhanden ist."""
+        """Test that flow sensor exists."""
         self.assertIn('getFLO', self.sensors)
-        # Im Ruhezustand sollte Durchfluss 0 sein
+        # In idle state, flow should be 0
         self.assertEqual(self.sensors['getFLO'], '0')
 
     def test_pressure_sensor_exists(self):
-        """Test dass Druck-Sensor vorhanden ist."""
+        """Test that pressure sensor exists."""
         self.assertIn('getPRS', self.sensors)
-        # Wert 39 = 3.9 bar
+        # Value 39 = 3.9 bar
         self.assertEqual(self.sensors['getPRS'], '39')
 
     def test_volume_uses_getTOR_not_getVOL(self):
         """
-        WICHTIG: LEXplus10SL verwendet getTOR statt getVOL!
+        IMPORTANT: LEXplus10SL uses getTOR instead of getVOL!
 
-        Das ist ein kritischer Unterschied zu anderen SYR-Geräten.
-        Wenn der Code nur getVOL unterstützt, funktioniert Volume-Anzeige nicht.
+        This is a critical difference to other SYR devices.
+        If the code only supports getVOL, volume display will not work.
         """
         self.assertIn('getTOR', self.sensors)
         self.assertNotIn('getVOL', self.sensors)
         self.assertEqual(self.sensors['getTOR'], '722')
 
     def test_regeneration_sensor_exists(self):
-        """Test dass Regenerations-Sensor vorhanden ist."""
+        """Test that regeneration sensor exists."""
         self.assertIn('getSRE', self.sensors)
-        # 0 = keine Regeneration aktiv
+        # 0 = no regeneration active
         self.assertEqual(self.sensors['getSRE'], '0')
 
     def test_leak_protection_profile_activation(self):
         """
-        Test Leckagesschutz-Profil Aktivierung.
+        Test leak protection profile activation.
 
-        LEXplus10SL hat bis zu 8 Profile, die aktiviert/deaktiviert werden können.
-        Dieses Gerät hat Profile 1-3 aktiviert, 4-8 deaktiviert.
+        LEXplus10SL has up to 8 profiles that can be activated/deactivated.
+        This device has profiles 1-3 activated, 4-8 deactivated.
         """
         # Aktivierte Profile
         self.assertEqual(self.sensors['getPA1'], '1')
@@ -153,78 +153,78 @@ class TestLEXplus10SLRealData(unittest.TestCase):
 
     def test_leak_protection_profile_names(self):
         """
-        Test Leckagesschutz-Profil Namen.
+        Test leak protection profile names.
 
-        Profile können vom Benutzer benannt werden.
-        Dieses Gerät hat: "Anwesend", "Abwesend", "Neues Profil"
+        Profiles can be named by the user.
+        This device has: "Anwesend" (Present), "Abwesend" (Absent), "Neues Profil" (New Profile)
         """
         self.assertEqual(self.sensors['getPN1'], 'Anwesend')
         self.assertEqual(self.sensors['getPN2'], 'Abwesend')
         self.assertEqual(self.sensors['getPN3'], 'Neues Profil')
 
-        # Nicht konfigurierte Profile haben leere Namen
+        # Non-configured profiles have empty names
         self.assertEqual(self.sensors['getPN4'], '')
         self.assertEqual(self.sensors['getPN5'], '')
 
     def test_leak_protection_active_profile(self):
         """
-        Test dass aktives Profil korrekt erkannt wird.
+        Test that active profile is correctly detected.
 
-        getPRF zeigt welches Profil (1-8) gerade aktiv ist.
-        In diesem Fall: Profil 3 "Neues Profil"
+        getPRF shows which profile (1-8) is currently active.
+        In this case: Profile 3 "Neues Profil"
         """
         self.assertEqual(self.sensors['getPRF'], '3')
         self.assertEqual(self.sensors['getPRN'], '3')
 
-        # Das aktive Profil sollte auch aktiviert sein
+        # The active profile should also be activated
         self.assertEqual(self.sensors['getPA3'], '1')
 
-        # Name des aktiven Profils
+        # Name of the active profile
         self.assertEqual(self.sensors['getPN3'], 'Neues Profil')
 
     def test_leak_protection_profile_3_flow_threshold(self):
         """
-        Test Durchflussleckage-Schwellwert von Profil 3.
+        Test flow leakage threshold of profile 3.
 
-        App zeigt: "Durchflussleckage 1999 l/h"
-        XML liefert: getPF3="1999"
+        App shows: "Flow leakage 1999 l/h"
+        XML provides: getPF3="1999"
 
-        Bei Überschreitung dieses Werts wird Alarm ausgelöst.
+        If this value is exceeded, an alarm is triggered.
         """
         self.assertEqual(self.sensors['getPF3'], '1999')
 
     def test_leak_protection_profile_3_time_threshold(self):
         """
-        Test Zeitleckage-Schwellwert von Profil 3.
+        Test time leakage threshold of profile 3.
 
-        App zeigt: "Zeitleckage 0.2 h"
-        XML liefert: getPT3="13" (Minuten)
+        App shows: "Time leakage 0.2 h"
+        XML provides: getPT3="13" (minutes)
 
-        0.2h × 60 = 12 Minuten (Rundungsdifferenz in App)
+        0.2h × 60 = 12 minutes (rounding difference in app)
         """
         self.assertEqual(self.sensors['getPT3'], '13')
 
     def test_leak_protection_profile_3_volume_threshold(self):
         """
-        Test Volumenleckage-Schwellwert von Profil 3.
+        Test volume leakage threshold of profile 3.
 
-        App zeigt: "Volumenleckage 185 L"
-        XML liefert: getPV3="185"
+        App shows: "Volume leakage 185 L"
+        XML provides: getPV3="185"
 
-        Perfekte Übereinstimmung!
+        Perfect match!
         """
         self.assertEqual(self.sensors['getPV3'], '185')
 
     def test_all_leak_protection_profiles_have_all_parameters(self):
         """
-        Test dass ALLE 8 Profile die erforderlichen Parameter haben.
+        Test that ALL 8 profiles have the required parameters.
 
-        Jedes Profil (1-8) muss haben:
-        - getPA: Aktivierung
-        - getPN: Name
-        - getPF: Durchflussleckage
-        - getPT: Zeitleckage
-        - getPV: Volumenleckage
+        Each profile (1-8) must have:
+        - getPA: activation
+        - getPN: name
+        - getPF: flow leakage
+        - getPT: time leakage
+        - getPV: volume leakage
         """
         for i in range(1, 9):
             with self.subTest(profile=i):
@@ -236,12 +236,12 @@ class TestLEXplus10SLRealData(unittest.TestCase):
 
     def test_sensor_creation_should_not_crash_on_missing_icon(self):
         """
-        KRITISCHER TEST: Sensor-Erstellung darf nicht crashen wenn Icon fehlt.
+        CRITICAL TEST: Sensor creation must not crash if icon is missing.
 
-        Das war der ursprüngliche Bug in sensor.py:175
+        This was the original bug in sensor.py:175
 
-        Viele Leckagesschutz-Sensoren haben kein Icon in _SYR_CONNECT_SENSOR_ICONS.
-        Der Code muss damit umgehen können.
+        Many leak protection sensors do not have an icon in _SYR_CONNECT_SENSOR_ICONS.
+        The code must handle this.
         """
         # Simuliere Sensoren ohne Icon
         sensors_without_icon = [
@@ -255,53 +255,53 @@ class TestLEXplus10SLRealData(unittest.TestCase):
 
         for sensor_key in sensors_without_icon:
             with self.subTest(sensor=sensor_key):
-                # Diese Sensoren existieren in den echten Daten
+                # These sensors exist in the real data
                 self.assertIn(sensor_key, self.sensors,
-                             f"Sensor {sensor_key} fehlt in echten XML-Daten")
+                             f"Sensor {sensor_key} missing in real XML data")
 
-                # Simuliere getattr(self, '_attr_icon', None) - darf nicht crashen
+                # Simulate getattr(self, '_attr_icon', None) - must not crash
                 mock_sensor = type('MockSensor', (), {})()
-                # Kein _attr_icon gesetzt (wie bei Sensoren ohne Icon)
+                # No _attr_icon set (as with sensors without icon)
                 base_icon = getattr(mock_sensor, '_attr_icon', None)
-                # Sollte None zurückgeben, nicht crashen
+                # Should return None, not crash
                 self.assertIsNone(base_icon)
 
 
 class TestLEXplus10SLCompatibility(unittest.TestCase):
-    """Tests für Kompatibilität und Rückwärtskompatibilität."""
+    """Tests for compatibility and backward compatibility."""
 
     def test_minimum_required_sensors_for_basic_functionality(self):
         """
-        Test dass Mindestanforderungen für Basis-Funktionalität erfüllt sind.
+        Test that minimum requirements for basic functionality are met.
 
-        Diese Sensoren MÜSSEN funktionieren, sonst ist die Integration unbrauchbar:
-        - getFLO: Durchfluss (kritisch für Wasserverbrauch)
-        - getPRS: Druck (kritisch für Betrieb)
-        - getTOR oder getVOL: Volumen (wichtig für Statistik)
-        - getSRE: Regeneration (wichtig für Wartung)
+        These sensors MUST work, otherwise the integration is unusable:
+        - getFLO: flow (critical for water consumption)
+        - getPRS: pressure (critical for operation)
+        - getTOR or getVOL: volume (important for statistics)
+        - getSRE: regeneration (important for maintenance)
         """
         root = ET.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
-        # Diese Sensoren sind KRITISCH
+        # These sensors are CRITICAL
         critical_sensors = ['getFLO', 'getPRS', 'getSRE']
         for sensor in critical_sensors:
             self.assertIn(sensor, sensors,
-                         f"Kritischer Sensor {sensor} fehlt - Integration nicht nutzbar!")
+                         f"Critical sensor {sensor} missing - integration not usable!")
 
-        # Entweder getTOR oder getVOL muss vorhanden sein
+        # Either getTOR or getVOL must be present
         self.assertTrue('getTOR' in sensors or 'getVOL' in sensors,
-                       "Weder getTOR noch getVOL vorhanden - Volumen-Anzeige unmöglich!")
+                       "Neither getTOR nor getVOL present - volume display impossible!")
 
     def test_backward_compatibility_with_getVOL(self):
         """
-        Test dass Code mit beiden Volume-Sensoren umgehen kann.
+        Test that code can handle both volume sensors.
 
-        Ältere Geräte: getVOL
+        Older devices: getVOL
         LEXplus10SL: getTOR
 
-        Code sollte beide unterstützen (oder getTOR als Alias für getVOL behandeln).
+        Code should support both (or treat getTOR as an alias for getVOL).
         """
         # LEXplus10SL hat getTOR
         root = ET.fromstring(REAL_XML_RESPONSE)
@@ -309,27 +309,27 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
         if 'getTOR' in sensors and 'getVOL' not in sensors:
-            # LEXplus10SL-Modus: getTOR sollte als getVOL behandelt werden
+            # LEXplus10SL mode: getTOR should be treated as getVOL
             volume_value = sensors.get('getTOR') or sensors.get('getVOL')
             self.assertIsNotNone(volume_value,
-                               "Volume-Wert nicht verfügbar (weder getTOR noch getVOL)")
+                               "Volume value not available (neither getTOR nor getVOL)")
             self.assertEqual(volume_value, '722')
 
 
 class TestLEXplus10SLEdgeCases(unittest.TestCase):
-    """Tests für Edge Cases und Sonderfälle."""
+    """Tests for edge cases and special cases."""
 
     def test_empty_profile_names_should_be_handled(self):
         """
-        Test dass leere Profilnamen korrekt behandelt werden.
+        Test that empty profile names are handled correctly.
 
-        Profile 4-8 haben leere Namen ("") - das muss der Code abfangen.
+        Profiles 4-8 have empty names ("") - the code must handle this.
         """
         root = ET.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
-        # Leere Namen bei nicht konfigurierten Profilen
+        # Empty names for non-configured profiles
         for i in range(4, 9):
             profile_name = sensors.get(f'getPN{i}')
             self.assertEqual(profile_name, '',
@@ -337,30 +337,30 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
 
     def test_deactivated_profiles_should_still_have_valid_thresholds(self):
         """
-        Test dass auch deaktivierte Profile gültige Schwellwerte haben.
+        Test that deactivated profiles still have valid thresholds.
 
-        Auch wenn Profil 4-8 deaktiviert sind (getPA=0), haben sie Standardwerte.
-        Diese sollten nicht zu Fehlern führen.
+        Even if profiles 4-8 are deactivated (getPA=0), they have default values.
+        These should not cause errors.
         """
         root = ET.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
-        # Profil 4 ist deaktiviert
+        # Profile 4 is deactivated
         self.assertEqual(sensors['getPA4'], '0')
 
-        # Aber hat trotzdem gültige Schwellwerte
+        # But still has valid thresholds
         self.assertEqual(sensors['getPF4'], '3500')
         self.assertEqual(sensors['getPT4'], '60')
         self.assertEqual(sensors['getPV4'], '300')
 
     def test_active_profile_consistency(self):
         """
-        Test dass aktives Profil konsistent ist.
+        Test that active profile is consistent.
 
-        Wenn getPRF=3, dann muss:
-        - Profil 3 aktiviert sein (getPA3=1)
-        - Profil 3 einen Namen haben (getPN3 nicht leer)
+        If getPRF=3, then:
+        - Profile 3 must be activated (getPA3=1)
+        - Profile 3 must have a name (getPN3 not empty)
         """
         root = ET.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
@@ -368,15 +368,15 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
 
         active_profile = int(sensors['getPRF'])
 
-        # Aktives Profil muss aktiviert sein
+        # Active profile must be activated
         self.assertEqual(sensors[f'getPA{active_profile}'], '1',
                         f"Aktives Profil {active_profile} ist nicht aktiviert!")
 
-        # Aktives Profil sollte einen Namen haben
+        # Active profile should have a name
         self.assertNotEqual(sensors[f'getPN{active_profile}'], '',
                           f"Aktives Profil {active_profile} hat keinen Namen!")
 
 
 if __name__ == '__main__':
-    # Verbose output um zu sehen welche Tests laufen
+    # Verbose output to see which tests are running
     unittest.main(verbosity=2)
