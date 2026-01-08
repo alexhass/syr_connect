@@ -9,7 +9,7 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/alexhass/syr_connect/issues",
   "loggers": ["custom_components.syr_connect"],
-  "requirements": ["pycryptodomex==3.19.0"],
   "quality_scale": "platinum",
+  "requirements": ["pycryptodomex==3.19.0"],
   "version": "1.0.5"
 }
