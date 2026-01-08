@@ -52,6 +52,11 @@
   },
   "entity": {
     "sensor": {
+      "getrth": { "name": "Stunden der Regeneration" },
+      "getrtm": { "name": "Minuten der Regeneration" },
+      "getcs1": { "name": "Konfiguration Stufe 1" },
+      "getvs1": { "name": "Volumenschwelle 1" },
+      "getvs3": { "name": "Volumenschwelle 3" },
       "getsrn": { "name": "Seriennummer" },
       "getver": { "name": "Firmware-Version" },
       "getfir": { "name": "Firmware-Modell" },

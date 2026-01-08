@@ -52,6 +52,8 @@
   },
   "entity": {
     "sensor": {
+      "getrth": { "name": "Hora de regeneración (Hora)" },
+      "getrtm": { "name": "Hora de regeneración (Minuto)" },
       "getsrn": { "name": "Número de serie" },
       "getver": { "name": "Versión de firmware" },
       "getfir": { "name": "Modelo de firmware" },
