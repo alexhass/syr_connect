@@ -53,6 +53,7 @@ _SYR_CONNECT_BINARY_SENSORS = {
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getPRS": SensorDeviceClass.PRESSURE,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
+    "getFCO": SensorDeviceClass.WATER,
 }
 
 # Sensor state classes (for Home Assistant) - internal
@@ -294,7 +295,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
     'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
-    'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS', 'getCOF',
+    'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS',
+    # 'getCOF',  # Removed: needed for getFCO sensor value on LEXplus10SL
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
     'getDRP', 'getDST', 'getDTC', 'getDWF',
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
@@ -328,7 +330,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
     'getRPW',  # Regenerations per Week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
-    'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
+    # 'getFCO',  # Removed: Now uses getCOF value which contains actual data on LEXplus10SL
 
     # Sensors exits in devices:
     # - LEXplus10SL

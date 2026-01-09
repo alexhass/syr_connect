@@ -250,6 +250,17 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError):
                         return "00:00"
 
+                # Special handling for getFCO sensor - use getCOF value instead
+                # getFCO returns 0 on LEXplus10SL, but getCOF contains the actual flow counter
+                if self._sensor_key == 'getFCO':
+                    cof_value = status.get('getCOF')
+                    if cof_value is not None:
+                        try:
+                            return float(cof_value) if isinstance(cof_value, str) else cof_value
+                        except (ValueError, TypeError):
+                            pass
+                    # If getCOF is not available, fall through to default handling
+
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
                     value = status.get(self._sensor_key)

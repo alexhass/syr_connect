@@ -86,7 +86,7 @@
       "getss3": { "name": "Salzvorrat Behälter 3" },
       "getprs": { "name": "Eingangsdruck" },
       "getflo": { "name": "Durchfluss" },
-      "getfco": { "name": "Durchflusszähler" },
+      "getfco": { "name": "Wasserverbrauch Gesamt" },
       "getdwf": { "name": "Durchflusswarnwert" },
       "getsta": { "name": "Status" },
       "getcde": { "name": "Konfigurationscode" },
