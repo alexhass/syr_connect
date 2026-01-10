@@ -265,7 +265,14 @@
         "name": "Número de serie"
       },
       "getsta": {
-        "name": "Estado"
+        "name": "Estado",
+        "state": {
+          "status_backwash": "Retrolavado",
+          "status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
+          "status_slow_rinse": "Enjuague lento",
+          "status_fast_rinse_1": "Enjuague rápido 1",
+          "status_filling": "Llenado"
+        }
       },
       "getss1": {
         "name": "Reserva de sal depósito 1"

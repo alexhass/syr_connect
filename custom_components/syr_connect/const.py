@@ -59,6 +59,16 @@ _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP = {
     "": "no_alarm",
 }
 
+# Mapping for getSTA / status display values -> Polish labels
+# These map observed Polish status descriptions to English translations
+_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
+    "Płukanie wsteczne": "status_backwash",
+    "Płukanie regenerantem (544mA)": "status_regenerant_rinse",
+    "Płukanie wolne": "status_slow_rinse",
+    "Płukanie szybkie 1": "status_fast_rinse_1",
+    "Napełnianie": "status_filling",
+}
+
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getPRS": SensorDeviceClass.PRESSURE,

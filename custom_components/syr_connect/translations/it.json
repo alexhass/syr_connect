@@ -265,7 +265,14 @@
         "name": "Numero di serie"
       },
       "getsta": {
-        "name": "Stato"
+        "name": "Stato",
+        "state": {
+          "status_backwash": "Controlavaggio",
+          "status_regenerant_rinse": "Risciacquo con rigenerante ({resistance_value})",
+          "status_slow_rinse": "Risciacquo lento",
+          "status_fast_rinse_1": "Risciacquo veloce 1",
+          "status_filling": "Riempimento"
+        }
       },
       "getss1": {
         "name": "Scorta sale contenitore 1"

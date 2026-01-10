@@ -265,7 +265,14 @@
         "name": "Numéro de série"
       },
       "getsta": {
-        "name": "Statut"
+        "name": "Statut",
+        "state": {
+          "status_backwash": "Rinçage inverse",
+          "status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
+          "status_slow_rinse": "Rinçage lent",
+          "status_fast_rinse_1": "Rinçage rapide 1",
+          "status_filling": "Remplissage"
+        }
       },
       "getss1": {
         "name": "Stock de sel réservoir 1"

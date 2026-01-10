@@ -268,7 +268,14 @@
         "name": "Serial Number"
       },
       "getsta": {
-        "name": "Status"
+        "name": "Status",
+        "state": {
+          "status_backwash": "Backwash",
+          "status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
+          "status_slow_rinse": "Slow rinse",
+          "status_fast_rinse_1": "Fast rinse 1",
+          "status_filling": "Filling"
+        }
       },
       "getss1": {
         "name": "Salt Stock Container 1"
