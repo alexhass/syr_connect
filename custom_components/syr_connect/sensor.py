@@ -74,13 +74,13 @@ async def async_setup_entry(
 
             # Skip specific sensors only when value is 0
             if key in _SYR_CONNECT_EXCLUDE_WHEN_ZERO:
-                if isinstance(value, int | float) and value == 0:
+                if isinstance(value, (int, float)) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
                     continue
 
             # Create sensor if value is valid
-            if isinstance(value, int | float | str):
+            if isinstance(value, (int, float, str)):
                 entities.append(
                     SyrConnectSensor(
                         coordinator,
@@ -185,6 +185,32 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
+        # Initialize translation placeholders for getSTA so Home Assistant
+        # receives placeholders immediately (per HA entity translations guidance)
+        if sensor_key == "getSTA":
+            try:
+                raw = None
+                for device in coordinator.data.get('devices', []):
+                    if device['id'] == device_id:
+                        raw = device.get('status', {}).get('getSTA', '')
+                        break
+                placeholders: dict = {}
+                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
+                if m:
+                    placeholders['resistance_value'] = m.group(1)
+                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
+                if m2:
+                    placeholders['rinse_round'] = m2.group(1)
+                if placeholders:
+                    _LOGGER.debug("Setting initial translation_placeholders for %s: %s", self._attr_unique_id, placeholders)
+                    self._attr_translation_placeholders = placeholders
+                else:
+                    # Home Assistant expects a mapping when formatting names; use empty dict
+                    self._attr_translation_placeholders = {}
+            except Exception:  # pragma: no cover - defensive
+                _LOGGER.exception("Failed to initialize translation placeholders for %s", self._attr_unique_id)
+                self._attr_translation_placeholders = None
+
     @property
     def icon(self) -> str | None:
         """Return the icon to use in the frontend, if any.
@@ -264,7 +290,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if self._sensor_key == 'getWHU':
                     value = status.get(self._sensor_key)
                     from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
-                    if isinstance(value, int | float):
+                    if isinstance(value, (int, float)):
                         return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
                     elif isinstance(value, str):
                         try:
@@ -324,7 +350,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return value
 
                 # Handle numeric values directly
-                if isinstance(value, int | float):
+                if isinstance(value, (int, float)):
                     # Divide pressure by 10 to convert to correct unit
                     if self._sensor_key == 'getPRS':
                         return value / 10
@@ -370,7 +396,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 raw = device.get('status', {}).get('getSTA', '')
                 attrs: dict = {}
                 if raw is None:
-                    return None
+                    return {}
                 # resistance_value: inside parentheses for regenerant rinse
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
@@ -381,4 +407,42 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     attrs['rinse_round'] = m2.group(1)
 
                 return attrs if attrs else None
+
+    @property
+    def translation_placeholders(self) -> dict:
+        """Return translation placeholders for the frontend translations.
+
+        Always return a mapping (possibly empty) because Home Assistant will
+        call `name.format(**translation_placeholders)` when building entity
+        names; passing None causes a TypeError.
+        """
+        if self._sensor_key != 'getSTA':
+            return {}
+
+        for device in self.coordinator.data.get('devices', []):
+            if device['id'] == self._device_id:
+                raw = device.get('status', {}).get('getSTA', '')
+                if raw is None:
+                    return {}
+                placeholders: dict = {}
+                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
+                if m:
+                    placeholders['resistance_value'] = m.group(1)
+                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
+                if m2:
+                    placeholders['rinse_round'] = m2.group(1)
+
+                return placeholders if placeholders else {}
+
+    def _handle_coordinator_update(self) -> None:
+        """Update translation placeholders on coordinator update and propagate state."""
+        try:
+            new_placeholders = self.translation_placeholders or {}
+            if new_placeholders != getattr(self, '_attr_translation_placeholders', {}):
+                _LOGGER.debug("Updating translation_placeholders for %s: %s", self._attr_unique_id, new_placeholders)
+            self._attr_translation_placeholders = new_placeholders
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Failed to update translation_placeholders for %s", self._attr_unique_id)
+            self._attr_translation_placeholders = {}
+        super()._handle_coordinator_update()
 
