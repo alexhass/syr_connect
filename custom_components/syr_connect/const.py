@@ -53,7 +53,7 @@ _SYR_CONNECT_BINARY_SENSORS = {
 # - "NoSalt"  -> device reports salt empty <= 2kg
 # - "LowSalt" -> device reports low salt <= 4kg
 # - ""        -> no alarm >= 5kg
-_SYR_CONNECT_ALARM_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_ALARM_VALUE_MAP = {
     "NoSalt": "no_salt",
     "LowSalt": "low_salt",
     "": "no_alarm",

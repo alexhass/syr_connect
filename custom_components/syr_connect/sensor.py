@@ -23,7 +23,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_STRING_SENSORS,
-    _SYR_CONNECT_ALARM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
@@ -201,7 +201,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if device['id'] == self._device_id:
                     raw_value = device.get('status', {}).get('getALM')
                     break
-            mapped = _SYR_CONNECT_ALARM_VALUE_MAP.get(raw_value)
+            mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(raw_value)
             if mapped in ("no_salt", "low_salt"):
                 return "mdi:bell-alert"
             return "mdi:bell-outline"
@@ -276,7 +276,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
-                    mapped = _SYR_CONNECT_ALARM_VALUE_MAP.get(value)
+                    mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(value)
                     # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
 
