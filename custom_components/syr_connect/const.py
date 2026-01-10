@@ -326,8 +326,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSCR',  # Screen lock
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
 
-    # BUG: Exclude until the bug is found that these are not showing with translation strings.
-    # They seem to exists as sensor and binary_sensor.
+    # BUG: Exclude until the bug is found that these are not showing with translated strings.
+    # They also seem to exists as sensor and binary_sensor.
     'getSRE',  # Regeneration active - now handled as binary_sensor platform
     'getPST',  # Operating state - now handled as binary_sensor platform
 
