@@ -228,7 +228,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 
     # getIWH and getOWH units are set dynamically from getWHU
     "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
-    "getVOL": UnitOfVolume.LITERS,                          # Total capacity (older alternative to getTOR)
+    "getVOL": UnitOfVolume.LITERS,                          # Total capacity
     "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
     "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
     "getSV1": UnitOfMass.KILOGRAMS,                         # Salt amount container 1
