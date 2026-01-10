@@ -77,12 +77,12 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getRES": "measurement",        # Remaining Capacity 
-    "getVOL": "measurement",        # Total Capacity
+    "getRES": "measurement",        # Remaining capacity 
+    "getVOL": "measurement",        # Total capacity
     "getPRS": "measurement",        # Pressure
-    "getFLO": "measurement",        # Flow Rate
-    "getINR": "total_increasing",   # Incomplete Regenerations
-    "getFCO": "total_increasing",   # Total Flow Counter
+    "getFLO": "measurement",        # Flow rate
+    "getINR": "total_increasing",   # Incomplete regenerations
+    "getFCO": "total_increasing",   # Total flow counter
     "getNOR": "total_increasing",   # Regenerations (normal operation)
     "getTOR": "total_increasing",   # Total regenerations
 }
@@ -94,8 +94,8 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getSRN",  # Serial number
     "getCNA",  # Device name
     "getMAN",  # Manufacturer
-    "getMAC",  # MAC Address
-    "getIPA",  # IP Address
+    "getMAC",  # MAC address
+    "getIPA",  # IP address
     "getDGW",  # Gateway
     "getRTI",  # Regeneration time
     "getWHU",  # Water hardness unit (mapped to unit names)
@@ -209,14 +209,14 @@ _SYR_CONNECT_SENSOR_ICONS = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_DIAGNOSTIC_SENSORS = {
-    'getSRN',  # Serial Number
-    'getVER',  # Firmware Version
-    'getFIR',  # Firmware Model
+    'getSRN',  # Serial number
+    'getVER',  # Firmware version
+    'getFIR',  # Firmware model
     'getTYP',  # Type
-    'getCNA',  # Device Name
+    'getCNA',  # Device name
     'getMAN',  # Manufacturer
-    'getMAC',  # MAC Address
-    'getIPA',  # IP Address
+    'getMAC',  # MAC address
+    'getIPA',  # IP address
     'getDGW',  # Gateway
 }
 
@@ -227,10 +227,10 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # getIWH and getOWH units are set dynamically from getWHU
-    "getRES": UnitOfVolume.LITERS,                          # Remaining Capacity
-    "getVOL": UnitOfVolume.LITERS,                          # Total Capacity (older alternative to getTOR)
-    "getRPD": UnitOfTime.DAYS,                              # Regeneration Interval
-    "getRTH": UnitOfTime.HOURS,                             # Regeneration Time (Hour)
+    "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
+    "getVOL": UnitOfVolume.LITERS,                          # Total capacity (older alternative to getTOR)
+    "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
+    "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
     "getSV1": UnitOfMass.KILOGRAMS,                         # Salt amount container 1
     "getSV2": UnitOfMass.KILOGRAMS,                         # Salt amount container 2
     "getSV3": UnitOfMass.KILOGRAMS,                         # Salt amount container 3
@@ -238,10 +238,10 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getSS2": UnitOfTime.WEEKS,                             # Salt supply container 2
     "getSS3": UnitOfTime.WEEKS,                             # Salt supply container 3
     "getPRS": UnitOfPressure.BAR,                           # Pressure
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow Rate
-    "getFCO": UnitOfVolume.LITERS,                          # Total Flow Counter
-    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow Warning Value
-    "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt Dosing (g/L)
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
+    "getFCO": UnitOfVolume.LITERS,                          # Total flow counter
+    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow warning value
+    "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
 
     # Sensors exits in devices:
     # - LEXplus10SL
@@ -278,26 +278,26 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
-    "getCFO": 0,  # Cycle Flow Offset: show as whole number by default
-    "getCYN": 0,  # Cycle Counter: show as whole number by default
-    "getINR": 0,  # Incomplete Regenerations: show as whole number by default
-    "getIWH": 0,  # Incoming Water Hardness: show as whole number by default
-    "getFCO": 0,  # Total Flow Counter: show as whole number by default
-    "getFLO": 0,  # Flow Rate: show as whole number by default
+    "getCFO": 0,  # Cycle flow offset: show as whole number by default
+    "getCYN": 0,  # Regeneration cycle counter: show as whole number by default
+    "getINR": 0,  # Incomplete regenerations: show as whole number by default
+    "getIWH": 0,  # Incoming water hardness: show as whole number by default
+    "getFCO": 0,  # Total flow counter: show as whole number by default
+    "getFLO": 0,  # Flow rate: show as whole number by default
     "getNOR": 0,  # Regenerations (normal operation): show as whole number by default
-    "getRDO": 0,  # Salt Dosing: show as whole number by default
-    "getRPD": 0,  # Regeneration Interval: show as whole days by default
-    "getRPW": 0,  # Regenerations per Week: show as whole number by default
+    "getRDO": 0,  # Salt dosing: show as whole number by default
+    "getRPD": 0,  # Regeneration interval: show as whole days by default
+    "getRPW": 0,  # Regenerations per week: show as whole number by default
     "getPRS": 1,  # Pressure: show with 1 decimal place by default
-    "getRES": 0,  # Remaining Capacity: show as whole number by default
-    "getSS1": 0,  # Salt Supply Container 1: show as whole number by default
-    "getSS2": 0,  # Salt Supply Container 2: show as whole number by default
-    "getSS3": 0,  # Salt Supply Container 2: show as whole number by default
-    "getSV1": 0,  # Salt Supply Volume 1: show as whole number by default
-    "getSV2": 0,  # Salt Supply Volume 2: show as whole number by default
-    "getSV3": 0,  # Salt Supply Volume 3: show as whole number by default
+    "getRES": 0,  # Remaining capacity: show as whole number by default
+    "getSS1": 0,  # Salt supply container 1: show as whole number by default
+    "getSS2": 0,  # Salt supply container 2: show as whole number by default
+    "getSS3": 0,  # Salt supply container 3: show as whole number by default
+    "getSV1": 0,  # Salt supply volume 1: show as whole number by default
+    "getSV2": 0,  # Salt supply volume 2: show as whole number by default
+    "getSV3": 0,  # Salt supply volume 3: show as whole number by default
     "getTOR": 0,  # Total regenerations: show as whole number by default
-    "getOWH": 0,  # Outgoing Water Hardness: show as whole number by default
+    "getOWH": 0,  # Outgoing water hardness: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
@@ -361,14 +361,14 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     # - LEXplus10S
     # - LEXplus10SL
 
-    'getCYN',  # Cycle Counter - technical metric - Shows remaining time during regeneration runs
-    'getCYT',  # Cycle Time - technical metric - Shows remaining process cycles during regeneration runs
+    'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
+    'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     'getNOT',  # Notes - rarely used
-    'getLAR',  # Last Action - technical log
-    'getRG1', 'getRG2', 'getRG3',  # Regeneration Groups - advanced config
-    'getVS1', 'getVS2', 'getVS3',  # Volume Thresholds - advanced config
-    'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
-    'getRPW',  # Regenerations per Week - less useful than count
+    'getLAR',  # Last action - technical log
+    'getRG1', 'getRG2', 'getRG3',  # Regeneration groups - advanced config
+    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
+    'getCS1', 'getCS2', 'getCS3',  # Configuration levels - advanced config
+    'getRPW',  # Regenerations per week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
     'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
 
