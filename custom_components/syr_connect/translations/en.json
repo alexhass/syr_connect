@@ -75,6 +75,9 @@
       "getcs3": {
         "name": "Configuration level 3"
       },
+      "getcof": {
+        "name": "Total water consumption"
+      },      
       "getcyn": {
         "name": "Regeneration cycle counter"
       },

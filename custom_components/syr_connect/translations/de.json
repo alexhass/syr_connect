@@ -75,6 +75,9 @@
       "getcs3": {
         "name": "Konfiguration Stufe 3"
       },
+      "getcof": {
+        "name": "Wasserverbrauch Gesamt"
+      },      
       "getcyn": {
         "name": "Regenerationszyklen Anzahl"
       },

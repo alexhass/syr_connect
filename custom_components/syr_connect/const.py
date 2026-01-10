@@ -73,6 +73,7 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getPRS": SensorDeviceClass.PRESSURE,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
+    "getCOF": SensorDeviceClass.WATER,
 }
 
 # Sensor state classes (for Home Assistant) - internal
@@ -83,6 +84,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getFLO": "measurement",        # Flow rate
     "getINR": "total_increasing",   # Incomplete regenerations
     "getFCO": "total_increasing",   # Total flow counter
+    "getCOF": "total_increasing",   # Total water consumption counter
     "getNOR": "total_increasing",   # Regenerations (normal operation)
     "getTOR": "total_increasing",   # Total regenerations
 }
@@ -124,6 +126,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getOWH": "mdi:water-percent",
     "getWHU": "mdi:water-opacity",
     # Pressure & Flow
+    "getCOF": "mdi:counter",
     "getPRS": "mdi:gauge",
     "getFLO": "mdi:waves-arrow-right",
     "getFCO": "mdi:counter",
@@ -247,6 +250,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # Leak protection profile sensors
+    "getCOF": UnitOfVolume.LITERS,                      # Total water consumption counter
     "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 1
     "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 2
     "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 3
@@ -279,6 +283,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
     "getCFO": 0,  # Cycle flow offset: show as whole number by default
+    "getCOF": 0,  # Total water consumption counter: show as whole number by default
     "getCYN": 0,  # Regeneration cycle counter: show as whole number by default
     "getINR": 0,  # Incomplete regenerations: show as whole number by default
     "getIWH": 0,  # Incoming water hardness: show as whole number by default
@@ -340,7 +345,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
     'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
-    'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS', 'getCOF',
+    'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
     'getDRP', 'getDST', 'getDTC', 'getDWF',
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
