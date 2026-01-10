@@ -53,11 +53,11 @@ _SYR_CONNECT_BINARY_SENSORS = {
 # API values observed:
 # - "NoSalt"  -> device reports salt empty <= 2kg
 # - "LowSalt" -> device reports low salt <= 4kg
-# - ""        -> None / no alarm >= 5kg
+# - ""        -> no alarm >= 5kg
 _SYR_CONNECT_ALARM_VALUE_MAP = {
     "NoSalt": "no_salt",
     "LowSalt": "low_salt",
-    "": "none",
+    "": "no_alarm",
 }
 
 # Sensor device classes (for Home Assistant) - internal
