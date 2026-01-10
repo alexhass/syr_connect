@@ -216,13 +216,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if m2:
                     placeholders['rinse_round'] = m2.group(1)
                 if placeholders:
-                    _LOGGER.debug("Setting initial translation_placeholders for %s: %s", self._attr_unique_id, placeholders)
+                    _LOGGER.debug("Setting initial translation_placeholders for %s: %s", self.entity_id, placeholders)
                     self._attr_translation_placeholders = placeholders
                 else:
                     # Home Assistant expects a mapping when formatting names; use empty dict
                     self._attr_translation_placeholders = {}
             except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Failed to initialize translation placeholders for %s", self._attr_unique_id)
+                _LOGGER.exception("Failed to initialize translation placeholders for %s", self.entity_id)
                 self._attr_translation_placeholders = None
 
     @property
@@ -408,9 +408,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 raw = device.get('status', {}).get('getSTA', '')
-                attrs: dict = {}
+                # Always provide keys so frontend translators can format safely
+                attrs: dict = {"resistance_value": "", "rinse_round": ""}
                 if raw is None:
-                    return {}
+                    return attrs
                 # resistance_value: inside parentheses for regenerant rinse
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
@@ -420,7 +421,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if m2:
                     attrs['rinse_round'] = m2.group(1)
 
-                return attrs if attrs else None
+                return attrs
 
     @property
     def translation_placeholders(self) -> dict:
@@ -433,12 +434,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if self._sensor_key != 'getSTA':
             return {}
 
+        # Default placeholders always include keys to avoid missing-variable errors
+        placeholders = {"resistance_value": "", "rinse_round": ""}
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 raw = device.get('status', {}).get('getSTA', '')
                 if raw is None:
-                    return {}
-                placeholders: dict = {}
+                    return placeholders
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
                     placeholders['resistance_value'] = m.group(1)
@@ -446,7 +448,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if m2:
                     placeholders['rinse_round'] = m2.group(1)
 
-                return placeholders if placeholders else {}
+                return placeholders
 
     def _handle_coordinator_update(self) -> None:
         """Update translation placeholders on coordinator update and propagate state."""
