@@ -100,7 +100,7 @@
         "name": "Firmware-Modell"
       },
       "getflo": {
-        "name": "Durchfluss"
+        "name": "Wasserdurchfluss"
       },
       "getinr": {
         "name": "Unvollständige Regenerationen"
