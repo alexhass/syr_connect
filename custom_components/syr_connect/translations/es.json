@@ -271,9 +271,11 @@
         "name": "Regeneración",
         "state": {
           "status_backwash": "Retrolavado",
-          "status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
+          "_status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
+          "status_regenerant_rinse": "Enjuague con regenerante",
           "status_slow_rinse": "Enjuague lento",
-          "status_fast_rinse": "Enjuague rápido {rinse_round}",
+          "_status_fast_rinse": "Enjuague rápido {rinse_round}",
+          "status_fast_rinse": "Enjuague rápido",
           "status_filling": "Llenado",
           "status_inactive": "Inactivo"
         }

@@ -291,9 +291,11 @@
         "name": "Regeneração",
         "state": {
           "status_backwash": "Retrolavagem",
-          "status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
+          "_status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
+          "status_regenerant_rinse": "Enxágue com regenerante",
           "status_slow_rinse": "Enxágue lento",
-          "status_fast_rinse": "Enxágue rápido {rinse_round}",
+          "_status_fast_rinse": "Enxágue rápido {rinse_round}",
+          "status_fast_rinse": "Enxágue rápido",
           "status_filling": "Enchimento",
           "status_inactive": "Inativo"
         }
