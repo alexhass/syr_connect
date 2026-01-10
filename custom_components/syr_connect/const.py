@@ -332,6 +332,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     # Boolean sensors - now handled as binary_sensor platform
     'getSCR',  # Screen lock
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
+    'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
+    'getCS1', 'getCS2', 'getCS3',  # Configuration levels - advanced config
 
     # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
@@ -358,10 +360,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
 
 # Sensors to exclude only when value is 0 - internal
 _SYR_CONNECT_EXCLUDE_WHEN_ZERO = {
-    'getSV1', 'getSV2', 'getSV3',  # Salt amount containers
-    'getSS1', 'getSS2', 'getSS3',  # Salt supply containers
-    'getCS1', 'getCS2', 'getCS3',  # Configuration stages
-    'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
+    'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
+    'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
 }
 
@@ -375,9 +375,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     'getNOT',  # Notes - rarely used
     'getLAR',  # Last action - technical log
-    'getRG1', 'getRG2', 'getRG3',  # Regeneration groups - advanced config
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
-    'getCS1', 'getCS2', 'getCS3',  # Configuration levels - advanced config
     'getRPW',  # Regenerations per week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
     'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
