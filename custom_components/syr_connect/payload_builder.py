@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from xml.sax.saxutils import escape
+import re
 
 from .checksum import SyrChecksum
 
@@ -170,3 +171,14 @@ class PayloadBuilder:
         self.checksum.add_xml_to_checksum(payload)
         checksum_value = self.checksum.get_checksum()
         return payload.replace('</sc>', f'<cs v="{checksum_value}"/></sc>')
+
+    @staticmethod
+    def redact_sensitive(payload: str) -> str:
+        """Return payload with sensitive attributes redacted for logging.
+
+        Currently redacts the session attribute `ug` used for the user/session id.
+        """
+        if not payload:
+            return payload
+        # Replace ug="..." with a redacted placeholder
+        return re.sub(r'(ug=")([^"]+)(")', r"\1***REDACTED***\3", payload)
