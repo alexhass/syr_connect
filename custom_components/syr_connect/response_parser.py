@@ -241,7 +241,44 @@ class ResponseParser:
 
         if 'sc' not in parsed:
             _LOGGER.warning("No 'sc' element in status response")
-            return {}
+            return None
+
+        # Prefer responses that include the detailed device entries under
+        # <dvs><d>...<c n="..." v="..."/>...</d></dvs>. If that detailed
+        # structure is missing (e.g. response only contains <col><dcl .../>),
+        # treat the response as incomplete and skip updating sensors.
+        sc = parsed['sc']
+        if 'dvs' not in sc:
+            _LOGGER.debug("Status response missing 'dvs' element; treating as incomplete: %s", sc.get('col'))
+            return None
+
+        dvs = sc['dvs']
+        # Normalize device list
+        device_list = None
+        if isinstance(dvs, dict) and 'd' in dvs:
+            device_list = dvs['d']
+        elif isinstance(dvs, list):
+            device_list = dvs
+        elif isinstance(dvs, dict) and '@dclg' in dvs:
+            device_list = [dvs]
+
+        if not device_list:
+            _LOGGER.warning("Status response 'dvs' element contains no device entries; skipping update: %s", dvs)
+            return None
+
+        # Ensure at least one device entry contains detailed <c> children
+        has_c = False
+        if isinstance(device_list, list):
+            for d in device_list:
+                if isinstance(d, dict) and 'c' in d:
+                    has_c = True
+                    break
+        elif isinstance(device_list, dict) and 'c' in device_list:
+            has_c = True
+
+        if not has_c:
+            _LOGGER.warning("Device entries in 'dvs' lack <c> children; skipping update")
+            return None
 
         return self._flatten_attributes(parsed['sc'])
 

@@ -180,7 +180,7 @@ class SyrConnectAPI:
             _LOGGER.error("Failed to get devices: %s", err)
             raise
 
-    async def get_device_status(self, device_id: str) -> dict[str, Any]:
+    async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Get status of a device.
 
         Args:
@@ -210,8 +210,15 @@ class SyrConnectAPI:
             )
             _LOGGER.debug("Status XML response: %s", xml_response)
 
-            # Parse response
+            # Parse response. The parser may return None to signal that the
+            # response did not contain the detailed structure we expect. In
+            # that case, propagate None to the caller so the coordinator can
+            # preserve previous state instead of raising an exception here.
             status_data = self.response_parser.parse_device_status_response(xml_response)
+            if status_data is None:
+                _LOGGER.debug("Status parser returned None for device %s", device_id)
+                return None
+
             _LOGGER.debug("Status data parsed: %d attributes", len(status_data))
             return status_data
 

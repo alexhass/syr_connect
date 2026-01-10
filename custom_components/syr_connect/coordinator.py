@@ -161,6 +161,33 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Use DCLG for API calls
             dclg = device.get('dclg', device['id'])
             status = await self.api.get_device_status(dclg)
+
+            # If parser signalled that the response did not contain the
+            # expected sc>dvs>d structure, it returns None. In this case we
+            # SHOULD NOT overwrite the existing sensor values. Try to reuse
+            # the previous device entry from coordinator data if available
+            # (keep existing status). Otherwise mark device unavailable.
+            if status is None:
+                _LOGGER.warning(
+                    "Device %s returned unexpected status structure; preserving previous status if present",
+                    device.get('id'),
+                )
+                # Try to find previous device data and return it unchanged
+                if getattr(self, 'data', None) and isinstance(self.data.get('devices', None), list):
+                    for prev in self.data.get('devices', []):
+                        if prev.get('id') == device.get('id'):
+                            _LOGGER.debug("Reusing previous status for device %s", device.get('id'))
+                            return prev
+                # No previous data available: keep empty status but do NOT mark
+                # the device as unavailable to avoid clearing sensors in HA.
+                device['status'] = {}
+                device['available'] = True
+                _LOGGER.debug(
+                    "No previous status for device %s; keeping device available with empty status",
+                    device.get('id'),
+                )
+                return device
+
             device['status'] = status
             device['available'] = True
 
