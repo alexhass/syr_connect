@@ -382,24 +382,3 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 return attrs if attrs else None
 
-    @property
-    def translation_placeholders(self) -> dict | None:
-        """Return translation placeholders for the frontend translations."""
-        if self._sensor_key != 'getSTA':
-            return None
-
-        for device in self.coordinator.data.get('devices', []):
-            if device['id'] == self._device_id:
-                raw = device.get('status', {}).get('getSTA', '')
-                if raw is None:
-                    return None
-                placeholders: dict = {}
-                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
-                if m:
-                    placeholders['resistance_value'] = m.group(1)
-                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
-                if m2:
-                    placeholders['rinse_round'] = m2.group(1)
-
-                return placeholders if placeholders else None
-
