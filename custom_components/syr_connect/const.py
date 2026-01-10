@@ -4,7 +4,6 @@
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import (
-    PERCENTAGE,
     UnitOfMass,
     UnitOfPressure,
     UnitOfTime,
