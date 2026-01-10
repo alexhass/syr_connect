@@ -270,7 +270,7 @@
           "status_backwash": "Controlavaggio",
           "status_regenerant_rinse": "Risciacquo con rigenerante ({resistance_value})",
           "status_slow_rinse": "Risciacquo lento",
-          "status_fast_rinse_1": "Risciacquo veloce 1",
+            "status_fast_rinse": "Risciacquo veloce {rinse_round}",
           "status_filling": "Riempimento"
         }
       },

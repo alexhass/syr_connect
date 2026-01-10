@@ -290,7 +290,7 @@
           "status_backwash": "Retrolavagem",
           "status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
           "status_slow_rinse": "Enxágue lento",
-          "status_fast_rinse_1": "Enxágue rápido 1",
+          "status_fast_rinse": "Enxágue rápido {rinse_round}",
           "status_filling": "Enchimento"
         }
       },

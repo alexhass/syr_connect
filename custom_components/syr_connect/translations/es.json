@@ -270,7 +270,7 @@
           "status_backwash": "Retrolavado",
           "status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
           "status_slow_rinse": "Enjuague lento",
-          "status_fast_rinse_1": "Enjuague rápido 1",
+          "status_fast_rinse": "Enjuague rápido {rinse_round}",
           "status_filling": "Llenado"
         }
       },

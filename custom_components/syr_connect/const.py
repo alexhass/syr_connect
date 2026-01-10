@@ -59,8 +59,8 @@ _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP = {
     "": "no_alarm",
 }
 
-# Mapping for getSTA / status display values -> Polish labels
-# These map observed Polish status descriptions to English translations
+# Mapping for getSTA / status values -> Polish values
+# These map observed Polish status to internal translations
 _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
     "Płukanie wsteczne": "status_backwash",
     "Płukanie regenerantem (544mA)": "status_regenerant_rinse",
