@@ -158,14 +158,13 @@ Immediate notification when an alarm is triggered:
 automation:
   - alias: "SYR: Alarm Notification"
     trigger:
-      - platform: state
-        entity_id: binary_sensor.syr_connect_<serial_number>_getALM
-        to: "on"
+      - platform: template
+        value_template: "{{ states('sensor.syr_connect_<serial_number>_getALM') != 'no_alarm' }}"
     action:
       - service: notify.mobile_app
         data:
           title: "⚠️ Water Softener Alarm"
-          message: "Check your SYR device - alarm detected!"
+          message: "Check your SYR device - alarm detected! Current alarm: {{ states('sensor.syr_connect_<serial_number>_getALM') }}"
           data:
             priority: high
 ```
