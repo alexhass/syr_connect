@@ -1,48 +1,56 @@
-# Home Assistant Brand Images Generator
+## Home Assistant Brand Images Generator
 
-This script generates all required PNG logos and icons for the Home Assistant integration according to the [brands repository](https://github.com/home-assistant/brands) guidelines.
+This script generates PNG logos and icons suitable for Home Assistant integrations according to the [brands repository](https://github.com/home-assistant/brands) guidelines.
 
 ## Requirements
 
 - Python 3.7 or newer
 - Pillow library (for image processing)
-- Source file: The logo must be a PNG file in the `scripts` folder, e.g. `syr_logo_cmyk.original.png`
 
-## Installation
-
-1. Install Pillow:
+Install the dependency:
 
 ```bash
 pip install Pillow
 ```
 
-2. Copy your logo file to the `scripts` folder and adjust the filename in the script (`generate_brand_images.py`) if necessary.
-   The default source path in the script is `syr_logo_cmyk.original.png`.
-
 ## Usage
 
-Run the script from the `scripts` folder:
+Run the script from the repository root (recommended) or from the `scripts` folder. Provide the source image path and the target directory where the generated images should be written.
+
+POSIX example:
 
 ```bash
-python generate_brand_images.py
+python scripts/generate_brand_images.py scripts/example.png custom_integrations/DOMAIN
 ```
 
-The generated files will be placed in `custom_components/syr_connect`:
-- `icon.png`
-- `icon@2x.png`
-- `logo.png`
-- `logo@2x.png`
+Windows (PowerShell) example:
 
-## Notes
+```powershell
+python .\scripts\generate_brand_images.py .\scripts\example.png ..\custom_integrations\DOMAIN
+```
 
-- Image sizes and filenames follow Home Assistant requirements.
-- The script can be customized for other filenames or sizes if needed.
+Notes:
+- `source` can be any existing image file; PNG is recommended.
+- `target_dir` will be created with `parents=True` if missing.
+
+## Output files
+
+By default the script generates the following files in the `target_dir`:
+- `icon.png` (256×256)
+- `icon@2x.png` (512×512)
+- `logo.png` (256×128)
+- `logo@2x.png` (512×256)
+
+These sizes and filenames are defined in the `FILES` list inside `scripts/generate_brand_images.py` and can be adjusted there if you need different sizes.
+
+There are commented-out entries for dark-mode variants (`dark_icon.png`, etc.) which you can enable as needed.
 
 ## Troubleshooting
 
-- If you get a `FileNotFoundError`, check that the filename in `SOURCE_PATH` is set to `syr_logo_cmyk.original.png` and the file exists in the `scripts` folder.
-- If you get a Pillow import error, make sure Pillow is installed in your Python environment.
+- If you see `Source image not found`, verify the `source` path you passed is correct and readable.
+- If Pillow import fails, ensure you installed it into the same Python environment you use to run the script.
+- To inspect or change the sizes/filenames edit the `FILES` array inside `scripts/generate_brand_images.py`.
 
 ---
 
-For questions or details, see the [brands repository](https://github.com/home-assistant/brands) for requirements.
+For details on required image conventions, see the [brands repository](https://github.com/home-assistant/brands).

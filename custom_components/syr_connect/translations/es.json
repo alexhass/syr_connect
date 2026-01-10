@@ -52,111 +52,293 @@
   },
   "entity": {
     "sensor": {
-      "getrth": { "name": "Hora de regeneración (Hora)" },
-      "getrtm": { "name": "Hora de regeneración (Minuto)" },
-      "getsrn": { "name": "Número de serie" },
-      "getver": { "name": "Versión de firmware" },
-      "getfir": { "name": "Modelo de firmware" },
-      "gettyp": { "name": "Tipo" },
-      "getcna": { "name": "Nombre del dispositivo" },
-      "getman": { "name": "Fabricante" },
-      "getmac": { "name": "Dirección MAC" },
-      "getipa": { "name": "Dirección IP" },
-      "getdgw": { "name": "Puerta de enlace" },
-      "getiwh": { "name": "Dureza del agua de entrada" },
-      "getowh": { "name": "Dureza del agua de salida" },
-      "getwhu": { "name": "Unidad de dureza del agua" },
-      "getres": { "name": "Capacidad restante" },
-      "gettor": { "name": "Capacidad total" },
-      "getvol": { "name": "Capacidad total" },
-      "getrpd": { "name": "Intervalo de regeneración" },
-      "getrpw": { "name": "Regeneraciones por semana" },
-      "getrth": { "name": "Hora de regeneración (Hora)" },
-      "getrtm": { "name": "Hora de regeneración (Minuto)" },
-      "getrti": { "name": "Hora de regeneración" },
-      "getrtime": { "name": "Hora de regeneración" },
-      "getsir": { "name": "Regeneración inmediata" },
-      "getnor": { "name": "Número de regeneraciones" },
-      "getsv1": { "name": "Cantidad de sal depósito 1" },
-      "getsv2": { "name": "Cantidad de sal depósito 2" },
-      "getsv3": { "name": "Cantidad de sal depósito 3" },
-      "getss1": { "name": "Reserva de sal depósito 1" },
-      "getss2": { "name": "Reserva de sal depósito 2" },
-      "getss3": { "name": "Reserva de sal depósito 3" },
-      "getprs": { "name": "Presión" },
-      "getflo": { "name": "Caudal" },
-      "getfco": { "name": "Contador de caudal" },
-      "getdwf": { "name": "Valor de advertencia de caudal" },
-      "getsta": { "name": "Estado" },
-      "getcde": { "name": "Código de configuración" },
-      "getcs1": { "name": "Nivel de configuración 1" },
-      "getcs2": { "name": "Nivel de configuración 2" },
-      "getcs3": { "name": "Nivel de configuración 3" },
-      "getden": { "name": "Dispositivo activado" },
-      "getcyn": { "name": "Contador de ciclos" },
-      "getcyt": { "name": "Tiempo de ciclo" },
-      "getnot": { "name": "Notas" },
-      "getinr": { "name": "Referencia interna" },
-      "getrg1": { "name": "Grupo de regeneración 1" },
-      "getrg2": { "name": "Grupo de regeneración 2" },
-      "getrg3": { "name": "Grupo de regeneración 3" },
-      "getvs1": { "name": "Umbral de volumen 1" },
-      "getvs2": { "name": "Umbral de volumen 2" },
-      "getvs3": { "name": "Umbral de volumen 3" },
-      "getrdo": { "name": "Tiempo restante" },
-      "getprf": { "name": "Perfil de protección contra fugas activo" },
-      "getpa1": { "name": "Perfil de protección contra fugas 1 activado" },
-      "getpa2": { "name": "Perfil de protección contra fugas 2 activado" },
-      "getpa3": { "name": "Perfil de protección contra fugas 3 activado" },
-      "getpa4": { "name": "Perfil de protección contra fugas 4 activado" },
-      "getpa5": { "name": "Perfil de protección contra fugas 5 activado" },
-      "getpa6": { "name": "Perfil de protección contra fugas 6 activado" },
-      "getpa7": { "name": "Perfil de protección contra fugas 7 activado" },
-      "getpa8": { "name": "Perfil de protección contra fugas 8 activado" },
-      "getpn1": { "name": "Nombre del perfil de protección contra fugas 1" },
-      "getpn2": { "name": "Nombre del perfil de protección contra fugas 2" },
-      "getpn3": { "name": "Nombre del perfil de protección contra fugas 3" },
-      "getpn4": { "name": "Nombre del perfil de protección contra fugas 4" },
-      "getpn5": { "name": "Nombre del perfil de protección contra fugas 5" },
-      "getpn6": { "name": "Nombre del perfil de protección contra fugas 6" },
-      "getpn7": { "name": "Nombre del perfil de protección contra fugas 7" },
-      "getpn8": { "name": "Nombre del perfil de protección contra fugas 8" },
-      "getpf1": { "name": "Umbral de fuga de caudal 1" },
-      "getpf2": { "name": "Umbral de fuga de caudal 2" },
-      "getpf3": { "name": "Umbral de fuga de caudal 3" },
-      "getpf4": { "name": "Umbral de fuga de caudal 4" },
-      "getpf5": { "name": "Umbral de fuga de caudal 5" },
-      "getpf6": { "name": "Umbral de fuga de caudal 6" },
-      "getpf7": { "name": "Umbral de fuga de caudal 7" },
-      "getpf8": { "name": "Umbral de fuga de caudal 8" },
-      "getpt1": { "name": "Umbral de fuga temporal 1" },
-      "getpt2": { "name": "Umbral de fuga temporal 2" },
-      "getpt3": { "name": "Umbral de fuga temporal 3" },
-      "getpt4": { "name": "Umbral de fuga temporal 4" },
-      "getpt5": { "name": "Umbral de fuga temporal 5" },
-      "getpt6": { "name": "Umbral de fuga temporal 6" },
-      "getpt7": { "name": "Umbral de fuga temporal 7" },
-      "getpt8": { "name": "Umbral de fuga temporal 8" },
-      "getpv1": { "name": "Umbral de fuga de volumen 1" },
-      "getpv2": { "name": "Umbral de fuga de volumen 2" },
-      "getpv3": { "name": "Umbral de fuga de volumen 3" },
-      "getpv4": { "name": "Umbral de fuga de volumen 4" },
-      "getpv5": { "name": "Umbral de fuga de volumen 5" },
-      "getpv6": { "name": "Umbral de fuga de volumen 6" },
-      "getpv7": { "name": "Umbral de fuga de volumen 7" },
-      "getpv8": { "name": "Umbral de fuga de volumen 8" }
+      "getalm": {
+        "name": "Alarma",
+        "state": {
+          "low_salt": "Poca sal",
+          "no_alarm": "Ninguna",
+          "no_salt": "Sin sal"
+        }
+      },
+      "getcde": {
+        "name": "Código de configuración"
+      },
+      "getcna": {
+        "name": "Nombre del dispositivo"
+      },
+      "getcs1": {
+        "name": "Nivel de configuración 1"
+      },
+      "getcs2": {
+        "name": "Nivel de configuración 2"
+      },
+      "getcs3": {
+        "name": "Nivel de configuración 3"
+      },
+      "getcyn": {
+        "name": "Contador de ciclos"
+      },
+      "getcyt": {
+        "name": "Tiempo de ciclo"
+      },
+      "getden": {
+        "name": "Dispositivo activado"
+      },
+      "getdgw": {
+        "name": "Puerta de enlace"
+      },
+      "getdwf": {
+        "name": "Valor de advertencia de caudal"
+      },
+      "getfco": {
+        "name": "Contador de caudal"
+      },
+      "getfir": {
+        "name": "Modelo de firmware"
+      },
+      "getflo": {
+        "name": "Caudal"
+      },
+      "getinr": {
+        "name": "Regeneraciones incompletas"
+      },
+      "getiwh": {
+        "name": "Dureza del agua de entrada"
+      },
+      "getipa": {
+        "name": "Dirección IP"
+      },
+      "getlar": {
+        "name": "Última acción"
+      },
+      "getmac": {
+        "name": "Dirección MAC"
+      },
+      "getman": {
+        "name": "Fabricante"
+      },
+      "getnot": {
+        "name": "Notas"
+      },
+      "getnor": {
+        "name": "Regeneraciones en funcionamiento normal"
+      },
+      "getowh": {
+        "name": "Dureza del agua de salida"
+      },
+      "getpa1": {
+        "name": "Perfil de protección contra fugas 1 activado"
+      },
+      "getpa2": {
+        "name": "Perfil de protección contra fugas 2 activado"
+      },
+      "getpa3": {
+        "name": "Perfil de protección contra fugas 3 activado"
+      },
+      "getpa4": {
+        "name": "Perfil de protección contra fugas 4 activado"
+      },
+      "getpa5": {
+        "name": "Perfil de protección contra fugas 5 activado"
+      },
+      "getpa6": {
+        "name": "Perfil de protección contra fugas 6 activado"
+      },
+      "getpa7": {
+        "name": "Perfil de protección contra fugas 7 activado"
+      },
+      "getpa8": {
+        "name": "Perfil de protección contra fugas 8 activado"
+      },
+      "getpf1": {
+        "name": "Umbral de fuga de caudal 1"
+      },
+      "getpf2": {
+        "name": "Umbral de fuga de caudal 2"
+      },
+      "getpf3": {
+        "name": "Umbral de fuga de caudal 3"
+      },
+      "getpf4": {
+        "name": "Umbral de fuga de caudal 4"
+      },
+      "getpf5": {
+        "name": "Umbral de fuga de caudal 5"
+      },
+      "getpf6": {
+        "name": "Umbral de fuga de caudal 6"
+      },
+      "getpf7": {
+        "name": "Umbral de fuga de caudal 7"
+      },
+      "getpf8": {
+        "name": "Umbral de fuga de caudal 8"
+      },
+      "getpn1": {
+        "name": "Nombre del perfil de protección contra fugas 1"
+      },
+      "getpn2": {
+        "name": "Nombre del perfil de protección contra fugas 2"
+      },
+      "getpn3": {
+        "name": "Nombre del perfil de protección contra fugas 3"
+      },
+      "getpn4": {
+        "name": "Nombre del perfil de protección contra fugas 4"
+      },
+      "getpn5": {
+        "name": "Nombre del perfil de protección contra fugas 5"
+      },
+      "getpn6": {
+        "name": "Nombre del perfil de protección contra fugas 6"
+      },
+      "getpn7": {
+        "name": "Nombre del perfil de protección contra fugas 7"
+      },
+      "getpn8": {
+        "name": "Nombre del perfil de protección contra fugas 8"
+      },
+      "getprs": {
+        "name": "Presión"
+      },
+      "getpv1": {
+        "name": "Umbral de fuga de volumen 1"
+      },
+      "getpv2": {
+        "name": "Umbral de fuga de volumen 2"
+      },
+      "getpv3": {
+        "name": "Umbral de fuga de volumen 3"
+      },
+      "getpv4": {
+        "name": "Umbral de fuga de volumen 4"
+      },
+      "getpv5": {
+        "name": "Umbral de fuga de volumen 5"
+      },
+      "getpv6": {
+        "name": "Umbral de fuga de volumen 6"
+      },
+      "getpv7": {
+        "name": "Umbral de fuga de volumen 7"
+      },
+      "getpv8": {
+        "name": "Umbral de fuga de volumen 8"
+      },
+      "getrdo": {
+        "name": "Dosificación de sal"
+      },
+      "getres": {
+        "name": "Capacidad restante"
+      },
+      "getrg1": {
+        "name": "Grupo de regeneración 1"
+      },
+      "getrg2": {
+        "name": "Grupo de regeneración 2"
+      },
+      "getrg3": {
+        "name": "Grupo de regeneración 3"
+      },
+      "getrpd": {
+        "name": "Intervalo de regeneración"
+      },
+      "getrpw": {
+        "name": "Regeneraciones por semana"
+      },
+      "getrth": {
+        "name": "Hora de regeneración (Hora)"
+      },
+      "getrti": {
+        "name": "Hora de regeneración"
+      },
+      "getrtime": {
+        "name": "Hora de regeneración"
+      },
+      "getrtm": {
+        "name": "Hora de regeneración (Minuto)"
+      },
+      "getsir": {
+        "name": "Regeneración inmediata"
+      },
+      "getsrn": {
+        "name": "Número de serie"
+      },
+      "getsta": {
+        "name": "Estado",
+        "state": {
+          "status_backwash": "Retrolavado",
+          "status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
+          "status_slow_rinse": "Enjuague lento",
+          "status_fast_rinse": "Enjuague rápido {rinse_round}",
+          "status_filling": "Llenado"
+        }
+      },
+      "getss1": {
+        "name": "Reserva de sal depósito 1"
+      },
+      "getss2": {
+        "name": "Reserva de sal depósito 2"
+      },
+      "getss3": {
+        "name": "Reserva de sal depósito 3"
+      },
+      "getsv1": {
+        "name": "Cantidad de sal depósito 1"
+      },
+      "getsv2": {
+        "name": "Cantidad de sal depósito 2"
+      },
+      "getsv3": {
+        "name": "Cantidad de sal depósito 3"
+      },
+      "gettor": {
+        "name": "Total de regeneraciones"
+      },
+      "gettyp": {
+        "name": "Tipo"
+      },
+      "getver": {
+        "name": "Versión de firmware"
+      },
+      "getvol": {
+        "name": "Capacidad total"
+      },
+      "getvs1": {
+        "name": "Umbral de volumen 1"
+      },
+      "getvs2": {
+        "name": "Umbral de volumen 2"
+      },
+      "getvs3": {
+        "name": "Umbral de volumen 3"
+      },
+      "getwhu": {
+        "name": "Unidad de dureza del agua"
+      }
     },
     "binary_sensor": {
-      "getsre": { "name": "Regeneración activa" },
-      "getpst": { "name": "Estado de funcionamiento" },
-      "getscr": { "name": "Bloqueo de pantalla" },
-      "getalm": { "name": "Alarma" }
+      "getpst": {
+        "name": "Estado de funcionamiento"
+      },
+      "getscr": {
+        "name": "Bloqueo de pantalla"
+      },
+      "getsre": {
+        "name": "Regeneración activa"
+      }
     },
     "button": {
-      "setsir": { "name": "Regenerar ahora" },
-      "setsmr": { "name": "Regeneración múltiple" },
-      "setrst": { "name": "Reiniciar dispositivo" }
-	}
+      "setrst": {
+        "name": "Reiniciar dispositivo"
+      },
+      "setsir": {
+        "name": "Regenerar ahora"
+      },
+      "setsmr": {
+        "name": "Regeneración múltiple"
+      }
+    }
   },
   "issues": {
     "device_offline": {

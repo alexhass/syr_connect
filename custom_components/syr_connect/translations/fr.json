@@ -52,150 +52,292 @@
   },
   "entity": {
     "sensor": {
-      "getprf": { "name": "Profil de protection contre les fuites actif" },
-      "getpa1": { "name": "Profil de protection contre les fuites 1 activé" },
-      "getpa2": { "name": "Profil de protection contre les fuites 2 activé" },
-      "getpa3": { "name": "Profil de protection contre les fuites 3 activé" },
-      "getpa4": { "name": "Profil de protection contre les fuites 4 activé" },
-      "getpa5": { "name": "Profil de protection contre les fuites 5 activé" },
-      "getpa6": { "name": "Profil de protection contre les fuites 6 activé" },
-      "getpa7": { "name": "Profil de protection contre les fuites 7 activé" },
-      "getpa8": { "name": "Profil de protection contre les fuites 8 activé" },
-      "getpn1": { "name": "Nom du profil de protection contre les fuites 1" },
-      "getpn2": { "name": "Nom du profil de protection contre les fuites 2" },
-      "getpn3": { "name": "Nom du profil de protection contre les fuites 3" },
-      "getpn4": { "name": "Nom du profil de protection contre les fuites 4" },
-      "getpn5": { "name": "Nom du profil de protection contre les fuites 5" },
-      "getpn6": { "name": "Nom du profil de protection contre les fuites 6" },
-      "getpn7": { "name": "Nom du profil de protection contre les fuites 7" },
-      "getpn8": { "name": "Nom du profil de protection contre les fuites 8" },
-      "getpf1": { "name": "Seuil de fuite de débit 1" },
-      "getpf2": { "name": "Seuil de fuite de débit 2" },
-      "getpf3": { "name": "Seuil de fuite de débit 3" },
-      "getpf4": { "name": "Seuil de fuite de débit 4" },
-      "getpf5": { "name": "Seuil de fuite de débit 5" },
-      "getpf6": { "name": "Seuil de fuite de débit 6" },
-      "getpf7": { "name": "Seuil de fuite de débit 7" },
-      "getpf8": { "name": "Seuil de fuite de débit 8" },
-      "getpt1": { "name": "Seuil de fuite temporelle 1" },
-      "getpt2": { "name": "Seuil de fuite temporelle 2" },
-      "getpt3": { "name": "Seuil de fuite temporelle 3" },
-      "getpt4": { "name": "Seuil de fuite temporelle 4" },
-      "getpt5": { "name": "Seuil de fuite temporelle 5" },
-      "getpt6": { "name": "Seuil de fuite temporelle 6" },
-      "getpt7": { "name": "Seuil de fuite temporelle 7" },
-      "getpt8": { "name": "Seuil de fuite temporelle 8" },
-      "getpv1": { "name": "Seuil de fuite de volume 1" },
-      "getpv2": { "name": "Seuil de fuite de volume 2" },
-      "getpv3": { "name": "Seuil de fuite de volume 3" },
-      "getpv4": { "name": "Seuil de fuite de volume 4" },
-      "getpv5": { "name": "Seuil de fuite de volume 5" },
-      "getpv6": { "name": "Seuil de fuite de volume 6" },
-      "getpv7": { "name": "Seuil de fuite de volume 7" },
-      "getpv8": { "name": "Seuil de fuite de volume 8" },
-      "getpa1": { "name": "Profil 1 activé" },
-      "getpa2": { "name": "Profil 2 activé" },
-      "getpa3": { "name": "Profil 3 activé" },
-      "getpa4": { "name": "Profil 4 activé" },
-      "getpa5": { "name": "Profil 5 activé" },
-      "getpa6": { "name": "Profil 6 activé" },
-      "getpa7": { "name": "Profil 7 activé" },
-      "getpa8": { "name": "Profil 8 activé" },
-      "getpn1": { "name": "Nom du profil 1" },
-      "getpn2": { "name": "Nom du profil 2" },
-      "getpn3": { "name": "Nom du profil 3" },
-      "getpn4": { "name": "Nom du profil 4" },
-      "getpn5": { "name": "Nom du profil 5" },
-      "getpn6": { "name": "Nom du profil 6" },
-      "getpn7": { "name": "Nom du profil 7" },
-      "getpn8": { "name": "Nom du profil 8" },
-      "getpf1": { "name": "Seuil de fuite de débit profil 1" },
-      "getpf2": { "name": "Seuil de fuite de débit profil 2" },
-      "getpf3": { "name": "Seuil de fuite de débit profil 3" },
-      "getpf4": { "name": "Seuil de fuite de débit profil 4" },
-      "getpf5": { "name": "Seuil de fuite de débit profil 5" },
-      "getpf6": { "name": "Seuil de fuite de débit profil 6" },
-      "getpf7": { "name": "Seuil de fuite de débit profil 7" },
-      "getpf8": { "name": "Seuil de fuite de débit profil 8" },
-      "getpt1": { "name": "Seuil de fuite temporelle profil 1" },
-      "getpt2": { "name": "Seuil de fuite temporelle profil 2" },
-      "getpt3": { "name": "Seuil de fuite temporelle profil 3" },
-      "getpt4": { "name": "Seuil de fuite temporelle profil 4" },
-      "getpt5": { "name": "Seuil de fuite temporelle profil 5" },
-      "getpt6": { "name": "Seuil de fuite temporelle profil 6" },
-      "getpt7": { "name": "Seuil de fuite temporelle profil 7" },
-      "getpt8": { "name": "Seuil de fuite temporelle profil 8" },
-      "getpv1": { "name": "Seuil de fuite de volume profil 1" },
-      "getpv2": { "name": "Seuil de fuite de volume profil 2" },
-      "getpv3": { "name": "Seuil de fuite de volume profil 3" },
-      "getpv4": { "name": "Seuil de fuite de volume profil 4" },
-      "getpv5": { "name": "Seuil de fuite de volume profil 5" },
-      "getpv6": { "name": "Seuil de fuite de volume profil 6" },
-      "getpv7": { "name": "Seuil de fuite de volume profil 7" },
-      "getpv8": { "name": "Seuil de fuite de volume profil 8" },
-      "getsrn": { "name": "Numéro de série" },
-      "getver": { "name": "Version du firmware" },
-      "getfir": { "name": "Modèle du firmware" },
-      "gettyp": { "name": "Type" },
-      "getcna": { "name": "Nom de l'appareil" },
-      "getman": { "name": "Fabricant" },
-      "getmac": { "name": "Adresse MAC" },
-      "getipa": { "name": "Adresse IP" },
-      "getdgw": { "name": "Passerelle" },
-      "getiwh": { "name": "Dureté de l'eau brute" },
-      "getowh": { "name": "Dureté de l'eau adoucie" },
-      "getwhu": { "name": "Unité de dureté de l'eau" },
-      "getres": { "name": "Capacité restante" },
-      "gettor": { "name": "Capacité totale" },
-      "getvol": { "name": "Capacité totale" },
-      "getrpd": { "name": "Intervalle de régénération" },
-      "getrpw": { "name": "Régénérations par semaine" },
-      "getrth": { "name": "Heure de régénération (Heure)" },
-      "getrtm": { "name": "Heure de régénération (Minute)" },
-      "getrti": { "name": "Heure de régénération" },
-      "getrtime": { "name": "Heure de régénération" },
-      "getsir": { "name": "Régénération immédiate" },
-      "getnor": { "name": "Nombre de régénérations" },
-      "getsv1": { "name": "Quantité de sel réservoir 1" },
-      "getsv2": { "name": "Quantité de sel réservoir 2" },
-      "getsv3": { "name": "Quantité de sel réservoir 3" },
-      "getss1": { "name": "Stock de sel réservoir 1" },
-      "getss2": { "name": "Stock de sel réservoir 2" },
-      "getss3": { "name": "Stock de sel réservoir 3" },
-      "getprs": { "name": "Pression" },
-      "getflo": { "name": "Débit" },
-      "getfco": { "name": "Compteur de débit" },
-      "getdwf": { "name": "Valeur d'alerte de débit" },
-      "getsta": { "name": "Statut" },
-      "getpst": { "name": "État de fonctionnement" },
-      "getcde": { "name": "Code de configuration" },
-      "getcs1": { "name": "Niveau de configuration 1" },
-      "getcs2": { "name": "Niveau de configuration 2" },
-      "getcs3": { "name": "Niveau de configuration 3" },
-      "getden": { "name": "Appareil activé" },
-      "getcyn": { "name": "Compteur de cycles" },
-      "getcyt": { "name": "Durée du cycle" },
-      "getnot": { "name": "Notes" },
-      "getinr": { "name": "Référence interne" },
-      "getlar": { "name": "Dernière action" },
-      "getrg1": { "name": "Groupe de régénération 1" },
-      "getrg2": { "name": "Groupe de régénération 2" },
-      "getrg3": { "name": "Groupe de régénération 3" },
-      "getvs1": { "name": "Seuil de volume 1" },
-      "getvs2": { "name": "Seuil de volume 2" },
-      "getvs3": { "name": "Seuil de volume 3" },
-      "getrdo": { "name": "Durée restante" }
+      "getalm": {
+        "name": "Alarme",
+        "state": {
+          "low_salt": "Sel faible",
+          "no_alarm": "Aucune",
+          "no_salt": "Pas de sel"
+        }
+      },
+      "getcde": {
+        "name": "Code de configuration"
+      },
+      "getcna": {
+        "name": "Nom de l'appareil"
+      },
+      "getcs1": {
+        "name": "Niveau de configuration 1"
+      },
+      "getcs2": {
+        "name": "Niveau de configuration 2"
+      },
+      "getcs3": {
+        "name": "Niveau de configuration 3"
+      },
+      "getcyn": {
+        "name": "Compteur de cycles"
+      },
+      "getcyt": {
+        "name": "Durée du cycle"
+      },
+      "getden": {
+        "name": "Appareil activé"
+      },
+      "getdgw": {
+        "name": "Passerelle"
+      },
+      "getdwf": {
+        "name": "Valeur d'alerte de débit"
+      },
+      "getfco": {
+        "name": "Compteur de débit"
+      },
+      "getfir": {
+        "name": "Modèle du firmware"
+      },
+      "getflo": {
+        "name": "Débit"
+      },
+      "getinr": {
+        "name": "Régénérations incomplètes"
+      },
+      "getiwh": {
+        "name": "Dureté de l'eau brute"
+      },
+      "getipa": {
+        "name": "Adresse IP"
+      },
+      "getlar": {
+        "name": "Dernière action"
+      },
+      "getmac": {
+        "name": "Adresse MAC"
+      },
+      "getman": {
+        "name": "Fabricant"
+      },
+      "getnot": {
+        "name": "Notes"
+      },
+      "getnor": {
+        "name": "Régénérations en fonctionnement normal"
+      },
+      "getowh": {
+        "name": "Dureté de l'eau adoucie"
+      },
+      "getpa1": {
+        "name": "Profil 1 activé"
+      },
+      "getpa2": {
+        "name": "Profil 2 activé"
+      },
+      "getpa3": {
+        "name": "Profil 3 activé"
+      },
+      "getpa4": {
+        "name": "Profil 4 activé"
+      },
+      "getpa5": {
+        "name": "Profil 5 activé"
+      },
+      "getpa6": {
+        "name": "Profil 6 activé"
+      },
+      "getpa7": {
+        "name": "Profil 7 activé"
+      },
+      "getpa8": {
+        "name": "Profil 8 activé"
+      },
+      "getpf1": {
+        "name": "Seuil de fuite de débit 1"
+      },
+      "getpf2": {
+        "name": "Seuil de fuite de débit 2"
+      },
+      "getpf3": {
+        "name": "Seuil de fuite de débit 3"
+      },
+      "getpf4": {
+        "name": "Seuil de fuite de débit 4"
+      },
+      "getpf5": {
+        "name": "Seuil de fuite de débit 5"
+      },
+      "getpf6": {
+        "name": "Seuil de fuite de débit 6"
+      },
+      "getpf7": {
+        "name": "Seuil de fuite de débit 7"
+      },
+      "getpf8": {
+        "name": "Seuil de fuite de débit 8"
+      },
+      "getpn1": {
+        "name": "Nom du profil 1"
+      },
+      "getpn2": {
+        "name": "Nom du profil 2"
+      },
+      "getpn3": {
+        "name": "Nom du profil 3"
+      },
+      "getpn4": {
+        "name": "Nom du profil 4"
+      },
+      "getpn5": {
+        "name": "Nom du profil 5"
+      },
+      "getpn6": {
+        "name": "Nom du profil 6"
+      },
+      "getpn7": {
+        "name": "Nom du profil 7"
+      },
+      "getpn8": {
+        "name": "Nom du profil 8"
+      },
+      "getprs": {
+        "name": "Pression"
+      },
+      "getpv1": {
+        "name": "Seuil de fuite de volume 1"
+      },
+      "getpv2": {
+        "name": "Seuil de fuite de volume 2"
+      },
+      "getpv3": {
+        "name": "Seuil de fuite de volume 3"
+      },
+      "getpv4": {
+        "name": "Seuil de fuite de volume 4"
+      },
+      "getpv5": {
+        "name": "Seuil de fuite de volume 5"
+      },
+      "getpv6": {
+        "name": "Seuil de fuite de volume 6"
+      },
+      "getpv7": {
+        "name": "Seuil de fuite de volume 7"
+      },
+      "getpv8": {
+        "name": "Seuil de fuite de volume 8"
+      },
+      "getrdo": {
+        "name": "Dosage du sel"
+      },
+      "getres": {
+        "name": "Capacité restante"
+      },
+      "getrg1": {
+        "name": "Groupe de régénération 1"
+      },
+      "getrg2": {
+        "name": "Groupe de régénération 2"
+      },
+      "getrg3": {
+        "name": "Groupe de régénération 3"
+      },
+      "getrpd": {
+        "name": "Intervalle de régénération"
+      },
+      "getrpw": {
+        "name": "Régénérations par semaine"
+      },
+      "getrth": {
+        "name": "Heure de régénération (Heure)"
+      },
+      "getrti": {
+        "name": "Heure de régénération"
+      },
+      "getrtime": {
+        "name": "Heure de régénération"
+      },
+      "getrtm": {
+        "name": "Heure de régénération (Minute)"
+      },
+      "getsir": {
+        "name": "Régénération immédiate"
+      },
+      "getsrn": {
+        "name": "Numéro de série"
+      },
+      "getsta": {
+        "name": "Statut",
+        "state": {
+          "status_backwash": "Rinçage inverse",
+          "status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
+          "status_slow_rinse": "Rinçage lent",
+          "status_fast_rinse": "Rinçage rapide {rinse_round}",
+          "status_filling": "Remplissage"
+        }
+      },
+      "getss1": {
+        "name": "Stock de sel réservoir 1"
+      },
+      "getss2": {
+        "name": "Stock de sel réservoir 2"
+      },
+      "getss3": {
+        "name": "Stock de sel réservoir 3"
+      },
+      "getsv1": {
+        "name": "Quantité de sel réservoir 1"
+      },
+      "getsv2": {
+        "name": "Quantité de sel réservoir 2"
+      },
+      "getsv3": {
+        "name": "Quantité de sel réservoir 3"
+      },
+      "gettor": {
+        "name": "Total des régénérations"
+      },
+      "gettyp": {
+        "name": "Type"
+      },
+      "getver": {
+        "name": "Version du firmware"
+      },
+      "getvol": {
+        "name": "Capacité totale"
+      },
+      "getvs1": {
+        "name": "Seuil de volume 1"
+      },
+      "getvs2": {
+        "name": "Seuil de volume 2"
+      },
+      "getvs3": {
+        "name": "Seuil de volume 3"
+      },
+      "getwhu": {
+        "name": "Unité de dureté de l'eau"
+      }
     },
     "binary_sensor": {
-      "getsre": { "name": "Régénération active" },
-      "getpst": { "name": "État de fonctionnement" },
-      "getscr": { "name": "Verrouillage d'écran" },
-      "getalm": { "name": "Alarme" }
+      "getpst": {
+        "name": "État de fonctionnement"
+      },
+      "getscr": {
+        "name": "Verrouillage d'écran"
+      },
+      "getsre": {
+        "name": "Régénération active"
+      }
     },
     "button": {
-      "setsir": { "name": "Régénérer maintenant" },
-      "setsmr": { "name": "Régénération multiple" },
-      "setrst": { "name": "Réinitialiser l'appareil" }
+      "setrst": {
+        "name": "Réinitialiser l'appareil"
+      },
+      "setsir": {
+        "name": "Régénérer maintenant"
+      },
+      "setsmr": {
+        "name": "Régénération multiple"
+      }
     }
   },
   "issues": {

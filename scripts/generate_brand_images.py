@@ -1,9 +1,7 @@
 import os
+import argparse
+from pathlib import Path
 from PIL import Image
-
-# Path to source logo
-SOURCE_PATH = r"syr_logo_cmyk.original.png"
-TARGET_DIR = r"..\\custom_components\\syr_connect"
 
 # Output file definitions: (filename, size, square, dark)
 FILES = [
@@ -39,8 +37,27 @@ def process_image(src, dest, size, square, dark):
         img = Image.alpha_composite(img, overlay)
     img.save(dest, format="PNG", optimize=True)
 
+def parse_args():
+    p = argparse.ArgumentParser(
+        description="Generate brand images from a source logo into a target directory"
+    )
+    p.add_argument("source", help="Path to the source image file (PNG preferred)")
+    p.add_argument("target_dir", help="Target directory to write generated images")
+    return p.parse_args()
+
+
 if __name__ == "__main__":
+    args = parse_args()
+    src_path = Path(args.source)
+    target_dir = Path(args.target_dir)
+
+    if not src_path.exists():
+        raise SystemExit(f"Source image not found: {src_path}")
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+
     for fname, size, square, dark in FILES:
-        out_path = os.path.join(TARGET_DIR, fname)
-        process_image(SOURCE_PATH, out_path, size, square, dark)
-    print("All brand images generated in scripts/")
+        out_path = target_dir / fname
+        process_image(str(src_path), str(out_path), size, square, dark)
+
+    print(f"All brand images generated in {target_dir}")

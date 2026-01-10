@@ -1,206 +1,349 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "title": "SYR Connect",
-        "description": "Insira suas credenciais do aplicativo SYR Connect",
-        "data": {
-          "username": "Nome de usuário",
-          "password": "Senha"
-        }
-      },
-      "reauth_confirm": {
-        "title": "Reautenticar SYR Connect",
-        "description": "As credenciais para {username} não são mais válidas. Insira novas credenciais.",
-        "data": {
-          "username": "Nome de usuário",
-          "password": "Senha"
-        }
-      },
-      "reconfigure": {
-        "title": "Reconfigurar SYR Connect",
-        "description": "Atualize suas credenciais do SYR Connect.",
-        "data": {
-          "username": "Nome de usuário",
-          "password": "Senha"
-        }
-      }
+    "abort": {
+      "already_configured": "Esta conta já está configurada",
+      "reauth_failed": "Falha na reautenticação. Tente novamente.",
+      "reauth_successful": "Reautenticação bem-sucedida",
+      "reconfigure_failed": "Falha na reconfiguração. Tente novamente.",
+      "reconfigure_successful": "Reconfiguração bem-sucedida"
     },
     "error": {
       "cannot_connect": "Não foi possível conectar ao SYR Connect. Verifique sua conexão com a Internet e tente novamente.",
       "invalid_auth": "Nome de usuário ou senha inválidos. Verifique suas credenciais.",
       "unknown": "Ocorreu um erro inesperado. Tente novamente mais tarde."
     },
-    "abort": {
-      "already_configured": "Esta conta já está configurada",
-      "reauth_successful": "Reautenticação bem-sucedida",
-      "reauth_failed": "Falha na reautenticação. Tente novamente.",
-      "reconfigure_successful": "Reconfiguração bem-sucedida",
-      "reconfigure_failed": "Falha na reconfiguração. Tente novamente."
+    "step": {
+      "reauth_confirm": {
+        "data": {
+          "password": "Senha",
+          "username": "Nome de usuário"
+        },
+        "description": "As credenciais para {username} não são mais válidas. Insira novas credenciais.",
+        "title": "Reautenticar SYR Connect"
+      },
+      "reconfigure": {
+        "data": {
+          "password": "Senha",
+          "username": "Nome de usuário"
+        },
+        "description": "Atualize suas credenciais do SYR Connect.",
+        "title": "Reconfigurar SYR Connect"
+      },
+      "user": {
+        "data": {
+          "password": "Senha",
+          "username": "Nome de usuário"
+        },
+        "description": "Insira suas credenciais do aplicativo SYR Connect",
+        "title": "SYR Connect"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "getpst": {
+        "name": "Estado operacional"
+      },
+      "getscr": {
+        "name": "Bloqueio de tela"
+      },
+      "getsre": {
+        "name": "Regeneração ativa"
+      }
+    },
+    "button": {
+      "setrst": {
+        "name": "Redefinir dispositivo"
+      },
+      "setsir": {
+        "name": "Regenerar agora"
+      },
+      "setsmr": {
+        "name": "Regeneração múltipla"
+      }
+    },
+    "sensor": {
+      "getalm": {
+        "name": "Alarm",
+        "state": {
+          "low_salt": "Pouca sal",
+          "no_alarm": "Nenhuma",
+          "no_salt": "Sem sal"
+        }
+      },
+      "getcde": {
+        "name": "Código de configuração"
+      },
+      "getcna": {
+        "name": "Nome do dispositivo"
+      },
+      "getcs1": {
+        "name": "Nível de configuração 1"
+      },
+      "getcs2": {
+        "name": "Nível de configuração 2"
+      },
+      "getcs3": {
+        "name": "Nível de configuração 3"
+      },
+      "getcyn": {
+        "name": "Contador de ciclo"
+      },
+      "getcyt": {
+        "name": "Tempo de ciclo"
+      },
+      "getden": {
+        "name": "Dispositivo ativado"
+      },
+      "getdgw": {
+        "name": "Gateway"
+      },
+      "getdwf": {
+        "name": "Valor de aviso de fluxo"
+      },
+      "getfco": {
+        "name": "Contador de fluxo"
+      },
+      "getfir": {
+        "name": "Modelo de firmware"
+      },
+      "getflo": {
+        "name": "Fluxo"
+      },
+      "getinr": {
+          "name": "Regenerações incompletas"
+      },
+      "getipa": {
+        "name": "Endereço IP"
+      },
+      "getiwh": {
+        "name": "Dureza da água de entrada"
+      },
+      "getlar": {
+        "name": "Última ação"
+      },
+      "getmac": {
+        "name": "Endereço MAC"
+      },
+      "getman": {
+        "name": "Fabricante"
+      },
+      "getnor": {
+        "name": "Regenerações em funcionamento normal"
+      },
+      "getnot": {
+        "name": "Notas"
+      },
+      "getowh": {
+        "name": "Dureza da água de saída"
+      },
+      "getpa1": {
+        "name": "Perfil de proteção contra vazamento 1 ativado"
+      },
+      "getpa2": {
+        "name": "Perfil de proteção contra vazamento 2 ativado"
+      },
+      "getpa3": {
+        "name": "Perfil de proteção contra vazamento 3 ativado"
+      },
+      "getpa4": {
+        "name": "Perfil de proteção contra vazamento 4 ativado"
+      },
+      "getpa5": {
+        "name": "Perfil de proteção contra vazamento 5 ativado"
+      },
+      "getpa6": {
+        "name": "Perfil de proteção contra vazamento 6 ativado"
+      },
+      "getpa7": {
+        "name": "Perfil de proteção contra vazamento 7 ativado"
+      },
+      "getpa8": {
+        "name": "Perfil de proteção contra vazamento 8 ativado"
+      },
+      "getpf1": {
+        "name": "Limiar de vazamento de fluxo 1"
+      },
+      "getpf2": {
+        "name": "Limiar de vazamento de fluxo 2"
+      },
+      "getpf3": {
+        "name": "Limiar de vazamento de fluxo 3"
+      },
+      "getpf4": {
+        "name": "Limiar de vazamento de fluxo 4"
+      },
+      "getpf5": {
+        "name": "Limiar de vazamento de fluxo 5"
+      },
+      "getpf6": {
+        "name": "Limiar de vazamento de fluxo 6"
+      },
+      "getpf7": {
+        "name": "Limiar de vazamento de fluxo 7"
+      },
+      "getpf8": {
+        "name": "Limiar de vazamento de fluxo 8"
+      },
+      "getpn1": {
+        "name": "Nome do perfil de proteção contra vazamento 1"
+      },
+      "getpn2": {
+        "name": "Nome do perfil de proteção contra vazamento 2"
+      },
+      "getpn3": {
+        "name": "Nome do perfil de proteção contra vazamento 3"
+      },
+      "getpn4": {
+        "name": "Nome do perfil de proteção contra vazamento 4"
+      },
+      "getpn5": {
+        "name": "Nome do perfil de proteção contra vazamento 5"
+      },
+      "getpn6": {
+        "name": "Nome do perfil de proteção contra vazamento 6"
+      },
+      "getpn7": {
+        "name": "Nome do perfil de proteção contra vazamento 7"
+      },
+      "getpn8": {
+        "name": "Nome do perfil de proteção contra vazamento 8"
+      },
+      "getprs": {
+        "name": "Pressão"
+      },
+      "getpv1": {
+        "name": "Limiar de vazamento de volume 1"
+      },
+      "getpv2": {
+        "name": "Limiar de vazamento de volume 2"
+      },
+      "getpv3": {
+        "name": "Limiar de vazamento de volume 3"
+      },
+      "getpv4": {
+        "name": "Limiar de vazamento de volume 4"
+      },
+      "getpv5": {
+        "name": "Limiar de vazamento de volume 5"
+      },
+      "getpv6": {
+        "name": "Limiar de vazamento de volume 6"
+      },
+      "getpv7": {
+        "name": "Limiar de vazamento de volume 7"
+      },
+      "getpv8": {
+        "name": "Limiar de vazamento de volume 8"
+      },
+      "getrdo": {
+        "name": "Dosagem de sal"
+      },
+      "getres": {
+        "name": "Capacidade restante"
+      },
+      "getrg1": {
+        "name": "Grupo de regeneração 1"
+      },
+      "getrg2": {
+        "name": "Grupo de regeneração 2"
+      },
+      "getrg3": {
+        "name": "Grupo de regeneração 3"
+      },
+      "getrpd": {
+        "name": "Intervalo de regeneração"
+      },
+      "getrpw": {
+        "name": "Regenerações por semana"
+      },
+      "getrth": {
+        "name": "Hora de regeneração (Hora)"
+      },
+      "getrti": {
+        "name": "Hora de regeneração"
+      },
+      "getrtime": {
+        "name": "Hora de regeneração"
+      },
+      "getrtm": {
+        "name": "Hora de regeneração (Minuto)"
+      },
+      "getsir": {
+        "name": "Regeneração imediata"
+      },
+      "getsrn": {
+        "name": "Número de série"
+      },
+      "getss1": {
+        "name": "Reserva de sal recipiente 1"
+      },
+      "getss2": {
+        "name": "Reserva de sal recipiente 2"
+      },
+      "getss3": {
+        "name": "Reserva de sal recipiente 3"
+      },
+      "getsta": {
+        "name": "Estado",
+        "state": {
+          "status_backwash": "Retrolavagem",
+          "status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
+          "status_slow_rinse": "Enxágue lento",
+          "status_fast_rinse": "Enxágue rápido {rinse_round}",
+          "status_filling": "Enchimento"
+        }
+      },
+      "getsv1": {
+        "name": "Quantidade de sal recipiente 1"
+      },
+      "getsv2": {
+        "name": "Quantidade de sal recipiente 2"
+      },
+      "getsv3": {
+        "name": "Quantidade de sal recipiente 3"
+      },
+      "gettor": {
+        "name": "Total de regenerações"
+      },
+      "gettyp": {
+        "name": "Tipo"
+      },
+      "getver": {
+        "name": "Versão do firmware"
+      },
+      "getvol": {
+        "name": "Capacidade total"
+      },
+      "getvs1": {
+        "name": "Limiar de volume 1"
+      },
+      "getvs2": {
+        "name": "Limiar de volume 2"
+      },
+      "getvs3": {
+        "name": "Limiar de volume 3"
+      },
+      "getwhu": {
+        "name": "Unidade de dureza da água"
+      }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "description": "O dispositivo SYR Connect \"{device_name}\" está atualmente offline e não pode ser acessado. Verifique:\n\n- Fonte de alimentação do dispositivo\n- Conexão de rede\n- Status do serviço em nuvem SYR Connect\n\nO dispositivo será reconectado automaticamente quando voltar a ficar online.",
+      "title": "Dispositivo offline: {device_name}"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opções do SYR Connect",
-        "description": "Define o intervalo de tempo entre chamadas à API.",
         "data": {
           "scan_interval": "Intervalo de atualização"
-        }
+        },
+        "description": "Define o intervalo de tempo entre chamadas à API.",
+        "title": "Opções do SYR Connect"
       }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "getprf": { "name": "Perfil de proteção contra vazamentos ativo" },
-      "getpa1": { "name": "Perfil de proteção contra vazamentos 1 ativado" },
-      "getpa2": { "name": "Perfil de proteção contra vazamentos 2 ativado" },
-      "getpa3": { "name": "Perfil de proteção contra vazamentos 3 ativado" },
-      "getpa4": { "name": "Perfil de proteção contra vazamentos 4 ativado" },
-      "getpa5": { "name": "Perfil de proteção contra vazamentos 5 ativado" },
-      "getpa6": { "name": "Perfil de proteção contra vazamentos 6 ativado" },
-      "getpa7": { "name": "Perfil de proteção contra vazamentos 7 ativado" },
-      "getpa8": { "name": "Perfil de proteção contra vazamentos 8 ativado" },
-      "getpn1": { "name": "Nome do perfil de proteção contra vazamentos 1" },
-      "getpn2": { "name": "Nome do perfil de proteção contra vazamentos 2" },
-      "getpn3": { "name": "Nome do perfil de proteção contra vazamentos 3" },
-      "getpn4": { "name": "Nome do perfil de proteção contra vazamentos 4" },
-      "getpn5": { "name": "Nome do perfil de proteção contra vazamentos 5" },
-      "getpn6": { "name": "Nome do perfil de proteção contra vazamentos 6" },
-      "getpn7": { "name": "Nome do perfil de proteção contra vazamentos 7" },
-      "getpn8": { "name": "Nome do perfil de proteção contra vazamentos 8" },
-      "getpf1": { "name": "Limite de vazamento de fluxo 1" },
-      "getpf2": { "name": "Limite de vazamento de fluxo 2" },
-      "getpf3": { "name": "Limite de vazamento de fluxo 3" },
-      "getpf4": { "name": "Limite de vazamento de fluxo 4" },
-      "getpf5": { "name": "Limite de vazamento de fluxo 5" },
-      "getpf6": { "name": "Limite de vazamento de fluxo 6" },
-      "getpf7": { "name": "Limite de vazamento de fluxo 7" },
-      "getpf8": { "name": "Limite de vazamento de fluxo 8" },
-      "getpt1": { "name": "Limite de vazamento temporal 1" },
-      "getpt2": { "name": "Limite de vazamento temporal 2" },
-      "getpt3": { "name": "Limite de vazamento temporal 3" },
-      "getpt4": { "name": "Limite de vazamento temporal 4" },
-      "getpt5": { "name": "Limite de vazamento temporal 5" },
-      "getpt6": { "name": "Limite de vazamento temporal 6" },
-      "getpt7": { "name": "Limite de vazamento temporal 7" },
-      "getpt8": { "name": "Limite de vazamento temporal 8" },
-      "getpv1": { "name": "Limite de vazamento de volume 1" },
-      "getpv2": { "name": "Limite de vazamento de volume 2" },
-      "getpv3": { "name": "Limite de vazamento de volume 3" },
-      "getpv4": { "name": "Limite de vazamento de volume 4" },
-      "getpv5": { "name": "Limite de vazamento de volume 5" },
-      "getpv6": { "name": "Limite de vazamento de volume 6" },
-      "getpv7": { "name": "Limite de vazamento de volume 7" },
-      "getpv8": { "name": "Limite de vazamento de volume 8" },
-      "getpa1": { "name": "Perfil 1 ativado" },
-      "getpa2": { "name": "Perfil 2 ativado" },
-      "getpa3": { "name": "Perfil 3 ativado" },
-      "getpa4": { "name": "Perfil 4 ativado" },
-      "getpa5": { "name": "Perfil 5 ativado" },
-      "getpa6": { "name": "Perfil 6 ativado" },
-      "getpa7": { "name": "Perfil 7 ativado" },
-      "getpa8": { "name": "Perfil 8 ativado" },
-      "getpn1": { "name": "Nome do perfil 1" },
-      "getpn2": { "name": "Nome do perfil 2" },
-      "getpn3": { "name": "Nome do perfil 3" },
-      "getpn4": { "name": "Nome do perfil 4" },
-      "getpn5": { "name": "Nome do perfil 5" },
-      "getpn6": { "name": "Nome do perfil 6" },
-      "getpn7": { "name": "Nome do perfil 7" },
-      "getpn8": { "name": "Nome do perfil 8" },
-      "getpf1": { "name": "Limite de vazamento de fluxo perfil 1" },
-      "getpf2": { "name": "Limite de vazamento de fluxo perfil 2" },
-      "getpf3": { "name": "Limite de vazamento de fluxo perfil 3" },
-      "getpf4": { "name": "Limite de vazamento de fluxo perfil 4" },
-      "getpf5": { "name": "Limite de vazamento de fluxo perfil 5" },
-      "getpf6": { "name": "Limite de vazamento de fluxo perfil 6" },
-      "getpf7": { "name": "Limite de vazamento de fluxo perfil 7" },
-      "getpf8": { "name": "Limite de vazamento de fluxo perfil 8" },
-      "getpt1": { "name": "Limite de vazamento temporal perfil 1" },
-      "getpt2": { "name": "Limite de vazamento temporal perfil 2" },
-      "getpt3": { "name": "Limite de vazamento temporal perfil 3" },
-      "getpt4": { "name": "Limite de vazamento temporal perfil 4" },
-      "getpt5": { "name": "Limite de vazamento temporal perfil 5" },
-      "getpt6": { "name": "Limite de vazamento temporal perfil 6" },
-      "getpt7": { "name": "Limite de vazamento temporal perfil 7" },
-      "getpt8": { "name": "Limite de vazamento temporal perfil 8" },
-      "getpv1": { "name": "Limite de vazamento de volume perfil 1" },
-      "getpv2": { "name": "Limite de vazamento de volume perfil 2" },
-      "getpv3": { "name": "Limite de vazamento de volume perfil 3" },
-      "getpv4": { "name": "Limite de vazamento de volume perfil 4" },
-      "getpv5": { "name": "Limite de vazamento de volume perfil 5" },
-      "getpv6": { "name": "Limite de vazamento de volume perfil 6" },
-      "getpv7": { "name": "Limite de vazamento de volume perfil 7" },
-      "getpv8": { "name": "Limite de vazamento de volume perfil 8" },
-      "getsrn": { "name": "Número de série" },
-      "getver": { "name": "Versão do firmware" },
-      "getfir": { "name": "Modelo do firmware" },
-      "gettyp": { "name": "Tipo" },
-      "getcna": { "name": "Nome do dispositivo" },
-      "getman": { "name": "Fabricante" },
-      "getmac": { "name": "Endereço MAC" },
-      "getipa": { "name": "Endereço IP" },
-      "getdgw": { "name": "Gateway" },
-      "getiwh": { "name": "Dureza da água de entrada" },
-      "getowh": { "name": "Dureza da água de saída" },
-      "getwhu": { "name": "Unidade de dureza da água" },
-      "getres": { "name": "Capacidade restante" },
-      "gettor": { "name": "Capacidade total" },
-      "getvol": { "name": "Capacidade total" },
-      "getrpd": { "name": "Intervalo de regeneração" },
-      "getrpw": { "name": "Regenerações por semana" },
-      "getrth": { "name": "Hora da regeneração (Hora)" },
-      "getrtm": { "name": "Hora da regeneração (Minuto)" },
-      "getrti": { "name": "Hora da regeneração" },
-      "getrtime": { "name": "Hora da regeneração" },
-      "getsir": { "name": "Regeneração imediata" },
-      "getnor": { "name": "Número de regenerações" },
-      "getsv1": { "name": "Quantidade de sal reservatório 1" },
-      "getsv2": { "name": "Quantidade de sal reservatório 2" },
-      "getsv3": { "name": "Quantidade de sal reservatório 3" },
-      "getss1": { "name": "Estoque de sal reservatório 1" },
-      "getss2": { "name": "Estoque de sal reservatório 2" },
-      "getss3": { "name": "Estoque de sal reservatório 3" },
-      "getprs": { "name": "Pressão" },
-      "getflo": { "name": "Fluxo" },
-      "getfco": { "name": "Contador de fluxo" },
-      "getdwf": { "name": "Valor de alerta de fluxo" },
-      "getsta": { "name": "Status" },
-      "getcde": { "name": "Código de configuração" },
-      "getcs1": { "name": "Nível de configuração 1" },
-      "getcs2": { "name": "Nível de configuração 2" },
-      "getcs3": { "name": "Nível de configuração 3" },
-      "getden": { "name": "Dispositivo ativado" },
-      "getcyn": { "name": "Contador de ciclos" },
-      "getcyt": { "name": "Tempo de ciclo" },
-      "getnot": { "name": "Notas" },
-      "getinr": { "name": "Referência interna" },
-      "getlar": { "name": "Última ação" },
-      "getrg1": { "name": "Grupo de regeneração 1" },
-      "getrg2": { "name": "Grupo de regeneração 2" },
-      "getrg3": { "name": "Grupo de regeneração 3" },
-      "getvs1": { "name": "Limite de volume 1" },
-      "getvs2": { "name": "Limite de volume 2" },
-      "getvs3": { "name": "Limite de volume 3" },
-      "getrdo": { "name": "Tempo restante" }
-    },
-    "binary_sensor": {
-      "getsre": { "name": "Regeneração ativa" },
-      "getpst": { "name": "Estado operacional" },
-      "getscr": { "name": "Bloqueio de tela" },
-      "getalm": { "name": "Alarme" }
-    },
-    "button": {
-      "setsir": { "name": "Regenerar agora" },
-      "setsmr": { "name": "Regeneração múltipla" },
-      "setrst": { "name": "Redefinir dispositivo" }
-    }
-  },
-  "issues": {
-    "device_offline": {
-      "title": "Dispositivo offline: {device_name}",
-      "description": "O dispositivo SYR Connect \"{device_name}\" está atualmente offline e não pode ser acessado. Verifique:\n\n- Fonte de alimentação do dispositivo\n- Conexão de rede\n- Status do serviço em nuvem SYR Connect\n\nO dispositivo será reconectado automaticamente quando voltar a ficar online."
     }
   }
 }
