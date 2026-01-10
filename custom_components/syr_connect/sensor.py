@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers import entity_registry as er
 
 from .const import (
     _SYR_CONNECT_DIAGNOSTIC_SENSORS,
@@ -51,6 +52,20 @@ async def async_setup_entry(
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for sensors")
         return
+
+    # Remove previously-registered entities that are now excluded
+    try:
+        registry = er.async_get(hass)
+        for device in coordinator.data.get('devices', []):
+            device_id = device['id']
+            for excluded_key in _SYR_CONNECT_EXCLUDED_SENSORS:
+                entity_id = build_entity_id("sensor", device_id, excluded_key)
+                entry = registry.async_get(entity_id)
+                if entry:
+                    _LOGGER.debug("Removing excluded sensor from registry: %s", entity_id)
+                    await registry.async_remove(entry.entity_id)
+    except Exception:  # pragma: no cover - defensive
+        _LOGGER.exception("Failed to cleanup excluded sensors from entity registry")
 
     entities = []
 
