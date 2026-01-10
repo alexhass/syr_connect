@@ -67,6 +67,7 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
     "Płukanie wolne": "status_slow_rinse",
     "Płukanie szybkie 1": "status_fast_rinse",
     "Napełnianie": "status_filling",
+    "": "status_inactive",
 }
 
 # Sensor device classes (for Home Assistant) - internal

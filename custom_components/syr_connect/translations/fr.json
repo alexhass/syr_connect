@@ -274,7 +274,8 @@
           "status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
           "status_slow_rinse": "Rinçage lent",
           "status_fast_rinse": "Rinçage rapide {rinse_round}",
-          "status_filling": "Remplissage"
+          "status_filling": "Remplissage",
+          "status_inactive": ""
         }
       },
       "getss1": {
