@@ -218,10 +218,6 @@ _SYR_CONNECT_DIAGNOSTIC_SENSORS = {
     'getMAC',  # MAC Address
     'getIPA',  # IP Address
     'getDGW',  # Gateway
-    'getCDE',  # Configuration Code
-    'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
-    'getINR',  # Incomplete regenerations
-    'getNOT',  # Notes
 }
 
 # Sensor units mapping (units are standardized and not translated) - internal
@@ -330,6 +326,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSRE',  # Regeneration active
     'getPST',  # Operating state
     'getSCR',  # Screen lock
+    'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
 
     # Sensors exits in devices:
     # - LEXplus10SL
