@@ -53,109 +53,283 @@
   "entity": {
     "sensor": {
       "getalm": {
-        "name": "Allarme"
+        "name": "Allarme",
+        "state": {
+          "low_salt": "Sale basso",
+          "no_alarm": "Nessuno",
+          "no_salt": "Senza sale"
+        }
       },
-      "getcde": { "name": "Codice configurazione" },
-      "getcna": { "name": "Nome dispositivo" },
-      "getcs1": { "name": "Livello configurazione 1" },
-      "getcs2": { "name": "Livello configurazione 2" },
-      "getcs3": { "name": "Livello configurazione 3" },
-      "getcyn": { "name": "Contatore cicli" },
-      "getcyt": { "name": "Tempo ciclo" },
-      "getden": { "name": "Dispositivo attivato" },
-      "getdgw": { "name": "Gateway" },
-      "getdwf": { "name": "Valore di allerta flusso" },
-      "getfco": { "name": "Contatore flusso" },
-      "getfir": { "name": "Modello firmware" },
-      "getflo": { "name": "Flusso" },
-      "getinr": { "name": "Riferimento interno" },
-      "getiwh": { "name": "Durezza acqua in ingresso" },
-      "getipa": { "name": "Indirizzo IP" },
-      "getlar": { "name": "Ultima azione" },
-      "getmac": { "name": "Indirizzo MAC" },
-      "getman": { "name": "Produttore" },
-      "getnot": { "name": "Note" },
-      "getnor": { "name": "Numero rigenerazioni" },
-      "getowh": { "name": "Durezza acqua in uscita" },
-      "getpa1": { "name": "Profilo 1 attivato" },
-      "getpa2": { "name": "Profilo 2 attivato" },
-      "getpa3": { "name": "Profilo 3 attivato" },
-      "getpa4": { "name": "Profilo 4 attivato" },
-      "getpa5": { "name": "Profilo 5 attivato" },
-      "getpa6": { "name": "Profilo 6 attivato" },
-      "getpa7": { "name": "Profilo 7 attivato" },
-      "getpa8": { "name": "Profilo 8 attivato" },
-      "getpf1": { "name": "Soglia perdita di flusso 1" },
-      "getpf2": { "name": "Soglia perdita di flusso 2" },
-      "getpf3": { "name": "Soglia perdita di flusso 3" },
-      "getpf4": { "name": "Soglia perdita di flusso 4" },
-      "getpf5": { "name": "Soglia perdita di flusso 5" },
-      "getpf6": { "name": "Soglia perdita di flusso 6" },
-      "getpf7": { "name": "Soglia perdita di flusso 7" },
-      "getpf8": { "name": "Soglia perdita di flusso 8" },
-      "getpn1": { "name": "Nome profilo 1" },
-      "getpn2": { "name": "Nome profilo 2" },
-      "getpn3": { "name": "Nome profilo 3" },
-      "getpn4": { "name": "Nome profilo 4" },
-      "getpn5": { "name": "Nome profilo 5" },
-      "getpn6": { "name": "Nome profilo 6" },
-      "getpn7": { "name": "Nome profilo 7" },
-      "getpn8": { "name": "Nome profilo 8" },
-      "getprs": { "name": "Pressione" },
-      "getpv1": { "name": "Soglia perdita di volume 1" },
-      "getpv2": { "name": "Soglia perdita di volume 2" },
-      "getpv3": { "name": "Soglia perdita di volume 3" },
-      "getpv4": { "name": "Soglia perdita di volume 4" },
-      "getpv5": { "name": "Soglia perdita di volume 5" },
-      "getpv6": { "name": "Soglia perdita di volume 6" },
-      "getpv7": { "name": "Soglia perdita di volume 7" },
-      "getpv8": { "name": "Soglia perdita di volume 8" },
-      "getrdo": { "name": "Dosaggio del sale" },
-      "getres": { "name": "Capacità residua" },
-      "getrg1": { "name": "Gruppo rigenerazione 1" },
-      "getrg2": { "name": "Gruppo rigenerazione 2" },
-      "getrg3": { "name": "Gruppo rigenerazione 3" },
-      "getrpd": { "name": "Intervallo rigenerazione" },
-      "getrpw": { "name": "Rigenerazioni per settimana" },
-      "getrth": { "name": "Ora rigenerazione (Ora)" },
-      "getrti": { "name": "Ora rigenerazione" },
-      "getrtime": { "name": "Ora rigenerazione" },
-      "getrtm": { "name": "Ora rigenerazione (Minuto)" },
-      "getsir": { "name": "Rigenerazione immediata" },
-      "getsrn": { "name": "Numero di serie" },
-      "getsta": { "name": "Stato" },
-      "getss1": { "name": "Scorta sale contenitore 1" },
-      "getss2": { "name": "Scorta sale contenitore 2" },
-      "getss3": { "name": "Scorta sale contenitore 3" },
-      "getsv1": { "name": "Quantità sale contenitore 1" },
-      "getsv2": { "name": "Quantità sale contenitore 2" },
-      "getsv3": { "name": "Quantità sale contenitore 3" },
-      "gettor": { "name": "Capacità totale" },
-      "gettyp": { "name": "Tipo" },
-      "getver": { "name": "Versione firmware" },
-      "getvol": { "name": "Capacità totale" },
-      "getvs1": { "name": "Soglia volume 1" },
-      "getvs2": { "name": "Soglia volume 2" },
-      "getvs3": { "name": "Soglia volume 3" },
-      "getwhu": { "name": "Unità durezza acqua" }
+      "getcde": {
+        "name": "Codice configurazione"
+      },
+      "getcna": {
+        "name": "Nome dispositivo"
+      },
+      "getcs1": {
+        "name": "Livello configurazione 1"
+      },
+      "getcs2": {
+        "name": "Livello configurazione 2"
+      },
+      "getcs3": {
+        "name": "Livello configurazione 3"
+      },
+      "getcyn": {
+        "name": "Contatore cicli"
+      },
+      "getcyt": {
+        "name": "Tempo ciclo"
+      },
+      "getden": {
+        "name": "Dispositivo attivato"
+      },
+      "getdgw": {
+        "name": "Gateway"
+      },
+      "getdwf": {
+        "name": "Valore di allerta flusso"
+      },
+      "getfco": {
+        "name": "Contatore flusso"
+      },
+      "getfir": {
+        "name": "Modello firmware"
+      },
+      "getflo": {
+        "name": "Flusso"
+      },
+      "getinr": {
+        "name": "Riferimento interno"
+      },
+      "getiwh": {
+        "name": "Durezza acqua in ingresso"
+      },
+      "getipa": {
+        "name": "Indirizzo IP"
+      },
+      "getlar": {
+        "name": "Ultima azione"
+      },
+      "getmac": {
+        "name": "Indirizzo MAC"
+      },
+      "getman": {
+        "name": "Produttore"
+      },
+      "getnot": {
+        "name": "Note"
+      },
+      "getnor": {
+        "name": "Numero rigenerazioni"
+      },
+      "getowh": {
+        "name": "Durezza acqua in uscita"
+      },
+      "getpa1": {
+        "name": "Profilo 1 attivato"
+      },
+      "getpa2": {
+        "name": "Profilo 2 attivato"
+      },
+      "getpa3": {
+        "name": "Profilo 3 attivato"
+      },
+      "getpa4": {
+        "name": "Profilo 4 attivato"
+      },
+      "getpa5": {
+        "name": "Profilo 5 attivato"
+      },
+      "getpa6": {
+        "name": "Profilo 6 attivato"
+      },
+      "getpa7": {
+        "name": "Profilo 7 attivato"
+      },
+      "getpa8": {
+        "name": "Profilo 8 attivato"
+      },
+      "getpf1": {
+        "name": "Soglia perdita di flusso 1"
+      },
+      "getpf2": {
+        "name": "Soglia perdita di flusso 2"
+      },
+      "getpf3": {
+        "name": "Soglia perdita di flusso 3"
+      },
+      "getpf4": {
+        "name": "Soglia perdita di flusso 4"
+      },
+      "getpf5": {
+        "name": "Soglia perdita di flusso 5"
+      },
+      "getpf6": {
+        "name": "Soglia perdita di flusso 6"
+      },
+      "getpf7": {
+        "name": "Soglia perdita di flusso 7"
+      },
+      "getpf8": {
+        "name": "Soglia perdita di flusso 8"
+      },
+      "getpn1": {
+        "name": "Nome profilo 1"
+      },
+      "getpn2": {
+        "name": "Nome profilo 2"
+      },
+      "getpn3": {
+        "name": "Nome profilo 3"
+      },
+      "getpn4": {
+        "name": "Nome profilo 4"
+      },
+      "getpn5": {
+        "name": "Nome profilo 5"
+      },
+      "getpn6": {
+        "name": "Nome profilo 6"
+      },
+      "getpn7": {
+        "name": "Nome profilo 7"
+      },
+      "getpn8": {
+        "name": "Nome profilo 8"
+      },
+      "getprs": {
+        "name": "Pressione"
+      },
+      "getpv1": {
+        "name": "Soglia perdita di volume 1"
+      },
+      "getpv2": {
+        "name": "Soglia perdita di volume 2"
+      },
+      "getpv3": {
+        "name": "Soglia perdita di volume 3"
+      },
+      "getpv4": {
+        "name": "Soglia perdita di volume 4"
+      },
+      "getpv5": {
+        "name": "Soglia perdita di volume 5"
+      },
+      "getpv6": {
+        "name": "Soglia perdita di volume 6"
+      },
+      "getpv7": {
+        "name": "Soglia perdita di volume 7"
+      },
+      "getpv8": {
+        "name": "Soglia perdita di volume 8"
+      },
+      "getrdo": {
+        "name": "Dosaggio del sale"
+      },
+      "getres": {
+        "name": "Capacità residua"
+      },
+      "getrg1": {
+        "name": "Gruppo rigenerazione 1"
+      },
+      "getrg2": {
+        "name": "Gruppo rigenerazione 2"
+      },
+      "getrg3": {
+        "name": "Gruppo rigenerazione 3"
+      },
+      "getrpd": {
+        "name": "Intervallo rigenerazione"
+      },
+      "getrpw": {
+        "name": "Rigenerazioni per settimana"
+      },
+      "getrth": {
+        "name": "Ora rigenerazione (Ora)"
+      },
+      "getrti": {
+        "name": "Ora rigenerazione"
+      },
+      "getrtime": {
+        "name": "Ora rigenerazione"
+      },
+      "getrtm": {
+        "name": "Ora rigenerazione (Minuto)"
+      },
+      "getsir": {
+        "name": "Rigenerazione immediata"
+      },
+      "getsrn": {
+        "name": "Numero di serie"
+      },
+      "getsta": {
+        "name": "Stato"
+      },
+      "getss1": {
+        "name": "Scorta sale contenitore 1"
+      },
+      "getss2": {
+        "name": "Scorta sale contenitore 2"
+      },
+      "getss3": {
+        "name": "Scorta sale contenitore 3"
+      },
+      "getsv1": {
+        "name": "Quantità sale contenitore 1"
+      },
+      "getsv2": {
+        "name": "Quantità sale contenitore 2"
+      },
+      "getsv3": {
+        "name": "Quantità sale contenitore 3"
+      },
+      "gettor": {
+        "name": "Capacità totale"
+      },
+      "gettyp": {
+        "name": "Tipo"
+      },
+      "getver": {
+        "name": "Versione firmware"
+      },
+      "getvol": {
+        "name": "Capacità totale"
+      },
+      "getvs1": {
+        "name": "Soglia volume 1"
+      },
+      "getvs2": {
+        "name": "Soglia volume 2"
+      },
+      "getvs3": {
+        "name": "Soglia volume 3"
+      },
+      "getwhu": {
+        "name": "Unità durezza acqua"
+      }
     },
     "binary_sensor": {
-      "getpst": { "name": "Stato operativo" },
-      "getscr": { "name": "Blocco schermo" },
-      "getsre": { "name": "Rigenerazione attiva" }
+      "getpst": {
+        "name": "Stato operativo"
+      },
+      "getscr": {
+        "name": "Blocco schermo"
+      },
+      "getsre": {
+        "name": "Rigenerazione attiva"
+      }
     },
     "button": {
-      "setrst": { "name": "Reset dispositivo" },
-      "setsir": { "name": "Rigenera ora" },
-      "setsmr": { "name": "Rigenerazione multipla" }
-    }
-  },
-  "state": {
-    "sensor": {
-      "getalm": {
-        "no_salt": "Senza sale",
-        "low_salt": "Poco sale",
-        "no_alarm": "Nessuna"
+      "setrst": {
+        "name": "Reset dispositivo"
+      },
+      "setsir": {
+        "name": "Rigenera ora"
+      },
+      "setsmr": {
+        "name": "Rigenerazione multipla"
       }
     }
   },
