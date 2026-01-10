@@ -288,14 +288,14 @@
         "name": "Reserva de sal recipiente 3"
       },
       "getsta": {
-        "name": "Estado",
+        "name": "Regeneração",
         "state": {
           "status_backwash": "Retrolavagem",
           "status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
           "status_slow_rinse": "Enxágue lento",
           "status_fast_rinse": "Enxágue rápido {rinse_round}",
           "status_filling": "Enchimento",
-          "status_inactive": ""
+          "status_inactive": "Inativo"
         }
       },
       "getsv1": {

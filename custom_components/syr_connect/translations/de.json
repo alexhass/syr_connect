@@ -271,14 +271,14 @@
         "name": "Seriennummer"
       },
       "getsta": {
-        "name": "Status",
+        "name": "Regeneration",
         "state": {
           "status_backwash": "Rückspülung",
           "status_regenerant_rinse": "Spülen mit Regeneriermittel ({resistance_value})",
           "status_slow_rinse": "Langsames Spülen",
           "status_fast_rinse": "Schnelles Spülen {rinse_round}",
           "status_filling": "Befüllen",
-          "status_inactive": ""
+          "status_inactive": "Inaktiv"
         }
       },
       "getss1": {

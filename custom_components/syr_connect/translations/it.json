@@ -52,16 +52,16 @@
   },
   "entity": {
     "sensor": {
-      "getalm": {
-        "name": "Allarme",
+      "getsta": {
+        "name": "Rigenerazione",
         "state": {
-          "low_salt": "Sale basso",
-          "no_alarm": "Nessuno",
-          "no_salt": "Senza sale"
+          "status_backwash": "Controlavaggio",
+          "status_regenerant_rinse": "Risciacquo rigenerante ({resistance_value})",
+          "status_slow_rinse": "Risciacquo lento",
+          "status_fast_rinse": "Risciacquo veloce {rinse_round}",
+          "status_filling": "Riempimento",
+          "status_inactive": "Inattivo"
         }
-      },
-      "getcde": {
-        "name": "Codice configurazione"
       },
       "getcna": {
         "name": "Nome dispositivo"

@@ -268,14 +268,14 @@
         "name": "Numéro de série"
       },
       "getsta": {
-        "name": "Statut",
+        "name": "Régénération",
         "state": {
           "status_backwash": "Rinçage inverse",
           "status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
           "status_slow_rinse": "Rinçage lent",
           "status_fast_rinse": "Rinçage rapide {rinse_round}",
           "status_filling": "Remplissage",
-          "status_inactive": ""
+          "status_inactive": "Inactif"
         }
       },
       "getss1": {
