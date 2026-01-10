@@ -135,9 +135,9 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Capacity & Supply
     "getRES": "mdi:gauge-empty",
     "getVOL": "mdi:gauge-full",
-    "getSV1": "mdi:cup",
-    "getSV2": "mdi:cup",
-    "getSV3": "mdi:cup",
+    "getSV1": "mdi:delete-variant",
+    "getSV2": "mdi:delete-variant",
+    "getSV3": "mdi:delete-variant",
     "getSS1": "mdi:cup-water",
     "getSS2": "mdi:cup-water",
     "getSS3": "mdi:cup-water",
