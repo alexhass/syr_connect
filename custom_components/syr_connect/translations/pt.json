@@ -86,6 +86,9 @@
       "getcs3": {
         "name": "Nível de configuração 3"
       },
+      "getcof": {
+        "name": "Consumo total de água"
+      },
       "getcyn": {
         "name": "Contador de ciclo"
       },
