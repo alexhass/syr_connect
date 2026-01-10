@@ -1,6 +1,5 @@
 [![GitHub Release](https://img.shields.io/github/release/alexhass/syr_connect.svg?style=flat)](https://github.com/alexhass/syr_connect/releases)
-[![hassfest](https://github.com/alexhass/syr_connect/actions/workflows/validate.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/validate.yaml)
-[![HACS](https://github.com/alexhass/syr_connect/actions/workflows/validate.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/validate.yaml)
+[![Validate](https://github.com/alexhass/syr_connect/actions/workflows/validate.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/validate.yaml)
 
 # SYR Connect - Home Assistant Integration
 
