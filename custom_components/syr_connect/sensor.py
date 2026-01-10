@@ -280,11 +280,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if self._sensor_key == 'getSTA':
                     raw = value if value is not None else ""
                     # Default attributes
-                    # Check for regenerant rinse pattern with value in parentheses, e.g. "Płukanie regenerantem (544mA)"
+                    # Check for regenerant rinse pattern with value in parentheses, e.g. "Płukanie regenerantem (0mA)"
                     m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                     if m:
                         # set attribute resistance_value and return mapped key
-                        return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie regenerantem (544mA)", "status_regenerant_rinse")
+                        return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie regenerantem (0mA)", "status_regenerant_rinse")
                     # Check for fast rinse pattern with a round number, e.g. "Płukanie szybkie 1"
                     m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
                     if m2:

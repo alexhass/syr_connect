@@ -63,7 +63,7 @@ _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP = {
 # These map observed Polish status to internal translations
 _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
     "Płukanie wsteczne": "status_backwash",
-    "Płukanie regenerantem (544mA)": "status_regenerant_rinse",
+    "Płukanie regenerantem (0mA)": "status_regenerant_rinse",
     "Płukanie wolne": "status_slow_rinse",
     "Płukanie szybkie 1": "status_fast_rinse",
     "Napełnianie": "status_filling",
