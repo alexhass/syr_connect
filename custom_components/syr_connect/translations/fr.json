@@ -100,7 +100,7 @@
         "name": "Modèle du firmware"
       },
       "getflo": {
-        "name": "Débit"
+        "name": "Débit d'eau"
       },
       "getinr": {
         "name": "Régénérations incomplètes"

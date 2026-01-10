@@ -100,7 +100,7 @@
         "name": "Modelo de firmware"
       },
       "getflo": {
-        "name": "Caudal"
+        "name": "Caudal de agua"
       },
       "getinr": {
         "name": "Regeneraciones incompletas"

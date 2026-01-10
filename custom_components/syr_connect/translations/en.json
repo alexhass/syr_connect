@@ -100,7 +100,7 @@
         "name": "Firmware model"
       },
       "getflo": {
-        "name": "Flow"
+        "name": "Water flow"
       },
       "getinr": {
         "name": "Incomplete regenerations"
