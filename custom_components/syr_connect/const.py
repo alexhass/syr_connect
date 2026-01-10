@@ -310,7 +310,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getCDE',  # Configuration code - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
-    'getSTA',  # Status - redundant with other status sensors
+    'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
     'getTYP',  # Type - not helpful for users
     'getLAR',  # Last action - not useful as sensor
     'getSRN_dt',

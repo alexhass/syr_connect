@@ -23,12 +23,9 @@ _TO_REDACT = {
     CONF_PASSWORD,
     CONF_USERNAME,
     "session_data",
-    "mac",
     "getMAC",
     "getIPA",
     "getDGW",
-    "ip",
-    "gateway",
 }
 
 
