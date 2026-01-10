@@ -2,6 +2,7 @@
 
 import pytest
 from unittest.mock import Mock
+
 from custom_components.syr_connect.sensor import SyrConnectSensor
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
