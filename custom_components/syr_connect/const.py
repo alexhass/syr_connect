@@ -231,12 +231,12 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getVOL": UnitOfVolume.LITERS,                          # Total capacity
     "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
     "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
-    "getSV1": UnitOfMass.KILOGRAMS,                         # Salt amount container 1
-    "getSV2": UnitOfMass.KILOGRAMS,                         # Salt amount container 2
-    "getSV3": UnitOfMass.KILOGRAMS,                         # Salt amount container 3
-    "getSS1": UnitOfTime.WEEKS,                             # Salt supply container 1
-    "getSS2": UnitOfTime.WEEKS,                             # Salt supply container 2
-    "getSS3": UnitOfTime.WEEKS,                             # Salt supply container 3
+    "getSV1": UnitOfMass.KILOGRAMS,                         # Salt container amount 1
+    "getSV2": UnitOfMass.KILOGRAMS,                         # Salt container amount 2
+    "getSV3": UnitOfMass.KILOGRAMS,                         # Salt container amount 3
+    "getSS1": UnitOfTime.WEEKS,                             # Salt container supply 1
+    "getSS2": UnitOfTime.WEEKS,                             # Salt container supply 2
+    "getSS3": UnitOfTime.WEEKS,                             # Salt container supply 3
     "getPRS": UnitOfPressure.BAR,                           # Pressure
     "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
     "getFCO": UnitOfVolume.LITERS,                          # Total flow counter
@@ -247,30 +247,30 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # Leak protection profile sensors
-    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 1
-    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 2
-    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 3
-    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 4
-    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 5
-    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 6
-    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 7
-    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak Protection Flow Rate 8
-    "getPT1": UnitOfTime.MINUTES,                       # Leak Protection Time 1
-    "getPT2": UnitOfTime.MINUTES,                       # Leak Protection Time 2
-    "getPT3": UnitOfTime.MINUTES,                       # Leak Protection Time 3
-    "getPT4": UnitOfTime.MINUTES,                       # Leak Protection Time 4
-    "getPT5": UnitOfTime.MINUTES,                       # Leak Protection Time 5
-    "getPT6": UnitOfTime.MINUTES,                       # Leak Protection Time 6
-    "getPT7": UnitOfTime.MINUTES,                       # Leak Protection Time 7
-    "getPT8": UnitOfTime.MINUTES,                       # Leak Protection Time 8
-    "getPV1": UnitOfVolume.LITERS,                      # Leak Protection Volume 1
-    "getPV2": UnitOfVolume.LITERS,                      # Leak Protection Volume 2
-    "getPV3": UnitOfVolume.LITERS,                      # Leak Protection Volume 3    
-    "getPV4": UnitOfVolume.LITERS,                      # Leak Protection Volume 4
-    "getPV5": UnitOfVolume.LITERS,                      # Leak Protection Volume 5
-    "getPV6": UnitOfVolume.LITERS,                      # Leak Protection Volume 6
-    "getPV7": UnitOfVolume.LITERS,                      # Leak Protection Volume 7
-    "getPV8": UnitOfVolume.LITERS,                      # Leak Protection Volume 8
+    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 1
+    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 2
+    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 3
+    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 4
+    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 5
+    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 6
+    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 7
+    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 8
+    "getPT1": UnitOfTime.MINUTES,                       # Leak protection time 1
+    "getPT2": UnitOfTime.MINUTES,                       # Leak protection time 2
+    "getPT3": UnitOfTime.MINUTES,                       # Leak protection time 3
+    "getPT4": UnitOfTime.MINUTES,                       # Leak protection time 4
+    "getPT5": UnitOfTime.MINUTES,                       # Leak protection time 5
+    "getPT6": UnitOfTime.MINUTES,                       # Leak protection time 6
+    "getPT7": UnitOfTime.MINUTES,                       # Leak protection time 7
+    "getPT8": UnitOfTime.MINUTES,                       # Leak protection time 8
+    "getPV1": UnitOfVolume.LITERS,                      # Leak protection volume 1
+    "getPV2": UnitOfVolume.LITERS,                      # Leak protection volume 2
+    "getPV3": UnitOfVolume.LITERS,                      # Leak protection volume 3    
+    "getPV4": UnitOfVolume.LITERS,                      # Leak protection volume 4
+    "getPV5": UnitOfVolume.LITERS,                      # Leak protection volume 5
+    "getPV6": UnitOfVolume.LITERS,                      # Leak protection volume 6
+    "getPV7": UnitOfVolume.LITERS,                      # Leak protection volume 7
+    "getPV8": UnitOfVolume.LITERS,                      # Leak protection volume 8
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -290,12 +290,12 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getRPW": 0,  # Regenerations per week: show as whole number by default
     "getPRS": 1,  # Pressure: show with 1 decimal place by default
     "getRES": 0,  # Remaining capacity: show as whole number by default
-    "getSS1": 0,  # Salt supply container 1: show as whole number by default
-    "getSS2": 0,  # Salt supply container 2: show as whole number by default
-    "getSS3": 0,  # Salt supply container 3: show as whole number by default
-    "getSV1": 0,  # Salt supply volume 1: show as whole number by default
-    "getSV2": 0,  # Salt supply volume 2: show as whole number by default
-    "getSV3": 0,  # Salt supply volume 3: show as whole number by default
+    "getSS1": 0,  # Salt container supply 1: show as whole number by default
+    "getSS2": 0,  # Salt container supply 2: show as whole number by default
+    "getSS3": 0,  # Salt container supply 3: show as whole number by default
+    "getSV1": 0,  # Salt container volume 1: show as whole number by default
+    "getSV2": 0,  # Salt container volume 2: show as whole number by default
+    "getSV3": 0,  # Salt container volume 3: show as whole number by default
     "getTOR": 0,  # Total regenerations: show as whole number by default
     "getOWH": 0,  # Outgoing water hardness: show as whole number by default
 }
