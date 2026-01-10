@@ -361,8 +361,8 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     # - LEXplus10S
     # - LEXplus10SL
 
-    'getCYN',  # Cycle Counter - technical metric
-    'getCYT',  # Cycle Time - technical metric
+    'getCYN',  # Cycle Counter - technical metric - Shows remaining time during regeneration runs
+    'getCYT',  # Cycle Time - technical metric - Shows remaining regeneration cycles during regeneration runs
     'getNOT',  # Notes - rarely used
     'getLAR',  # Last Action - technical log
     'getRG1', 'getRG2', 'getRG3',  # Regeneration Groups - advanced config

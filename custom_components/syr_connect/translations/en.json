@@ -61,40 +61,40 @@
         }
       },
       "getcde": {
-        "name": "Configuration Code"
+        "name": "Configuration code"
       },
       "getcna": {
-        "name": "Device Name"
+        "name": "Device name"
       },
       "getcs1": {
-        "name": "Configuration Level 1"
+        "name": "Configuration level 1"
       },
       "getcs2": {
-        "name": "Configuration Level 2"
+        "name": "Configuration level 2"
       },
       "getcs3": {
-        "name": "Configuration Level 3"
+        "name": "Configuration level 3"
       },
       "getcyn": {
-        "name": "Cycle Counter"
+        "name": "Regeneration cycle counter"
       },
       "getcyt": {
-        "name": "Cycle Time"
+        "name": "Regeneration cycle time"
       },
       "getden": {
-        "name": "Device Enabled"
+        "name": "Device enabled"
       },
       "getdgw": {
         "name": "Gateway"
       },
       "getdwf": {
-        "name": "Flow Warning Value"
+        "name": "Flow warning value"
       },
       "getfco": {
-        "name": "Flow Counter"
+        "name": "Flow counter"
       },
       "getfir": {
-        "name": "Firmware Model"
+        "name": "Firmware model"
       },
       "getflo": {
         "name": "Flow"
@@ -106,13 +106,13 @@
         "name": "IP Address"
       },
       "getiwh": {
-        "name": "Input Water Hardness"
+        "name": "Input water hardness"
       },
       "getlar": {
-        "name": "Last Action"
+        "name": "Last action"
       },
       "getmac": {
-        "name": "MAC Address"
+        "name": "MAC address"
       },
       "getman": {
         "name": "Manufacturer"
@@ -124,7 +124,7 @@
         "name": "Regenerations (normal operation)"
       },
       "getowh": {
-        "name": "Output Water Hardness"
+        "name": "Output water hardness"
       },
       "getpa1": {
         "name": "Leak protection profile 1 activated"
@@ -229,43 +229,43 @@
         "name": "Volume leakage threshold 8"
       },
       "getrdo": {
-        "name": "Salt Dosing"
+        "name": "Salt dosing"
       },
       "getres": {
-        "name": "Remaining Capacity"
+        "name": "Remaining capacity"
       },
       "getrg1": {
-        "name": "Regeneration Group 1"
+        "name": "Regeneration group 1"
       },
       "getrg2": {
-        "name": "Regeneration Group 2"
+        "name": "Regeneration group 2"
       },
       "getrg3": {
-        "name": "Regeneration Group 3"
+        "name": "Regeneration group 3"
       },
       "getrpd": {
-        "name": "Regeneration Interval"
+        "name": "Regeneration interval"
       },
       "getrpw": {
-        "name": "Regenerations per Week"
+        "name": "Regenerations per week"
       },
       "getrth": {
-        "name": "Regeneration Time (Hour)"
+        "name": "Regeneration time (hour)"
       },
       "getrti": {
-        "name": "Regeneration Time"
+        "name": "Regeneration time"
       },
       "getrtime": {
-        "name": "Regeneration Time"
+        "name": "Regeneration time"
       },
       "getrtm": {
-        "name": "Regeneration Time (Minute)"
+        "name": "Regeneration time (minute)"
       },
       "getsir": {
-        "name": "Immediate Regeneration"
+        "name": "Immediate regeneration"
       },
       "getsrn": {
-        "name": "Serial Number"
+        "name": "Serial number"
       },
       "getsta": {
         "name": "Status",
@@ -278,22 +278,22 @@
         }
       },
       "getss1": {
-        "name": "Salt Stock Container 1"
+        "name": "Salt stock container 1"
       },
       "getss2": {
-        "name": "Salt Stock Container 2"
+        "name": "Salt stock container 2"
       },
       "getss3": {
-        "name": "Salt Stock Container 3"
+        "name": "Salt stock container 3"
       },
       "getsv1": {
-        "name": "Salt Volume Container 1"
+        "name": "Salt volume container 1"
       },
       "getsv2": {
-        "name": "Salt Volume Container 2"
+        "name": "Salt volume container 2"
       },
       "getsv3": {
-        "name": "Salt Volume Container 3"
+        "name": "Salt volume container 3"
       },
       "gettor": {
         "name": "Total regenerations"
@@ -302,50 +302,50 @@
         "name": "Type"
       },
       "getver": {
-        "name": "Firmware Version"
+        "name": "Firmware version"
       },
       "getvol": {
-        "name": "Total Capacity"
+        "name": "Total capacity"
       },
       "getvs1": {
-        "name": "Volume Threshold 1"
+        "name": "Volume threshold 1"
       },
       "getvs2": {
-        "name": "Volume Threshold 2"
+        "name": "Volume threshold 2"
       },
       "getvs3": {
-        "name": "Volume Threshold 3"
+        "name": "Volume threshold 3"
       },
       "getwhu": {
-        "name": "Water Hardness Unit"
+        "name": "Water hardness unit"
       }
     },
     "binary_sensor": {
       "getpst": {
-        "name": "Operating State"
+        "name": "Operating state"
       },
       "getscr": {
-        "name": "Screen Lock"
+        "name": "Screen lock"
       },
       "getsre": {
-        "name": "Regeneration Active"
+        "name": "Regeneration active"
       }
     },
     "button": {
       "setrst": {
-        "name": "Reset Device"
+        "name": "Reset device"
       },
       "setsir": {
-        "name": "Regenerate Now"
+        "name": "Regenerate now"
       },
       "setsmr": {
-        "name": "Multi Regenerate"
+        "name": "Multi regenerate"
       }
     }
   },
   "issues": {
     "device_offline": {
-      "title": "Device Offline: {device_name}",
+      "title": "Device offline: {device_name}",
       "description": "The SYR Connect device \"{device_name}\" is currently offline and cannot be reached. Please check:\n\n- Device power supply\n- Network connection\n- SYR Connect cloud service status\n\nThe device will automatically reconnect when it comes back online."
     }
   }
