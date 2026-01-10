@@ -121,7 +121,7 @@
         "name": "Notes"
       },
       "getnor": {
-        "name": "Number of Regenerations"
+        "name": "Regenerations (normal operation)"
       },
       "getowh": {
         "name": "Output Water Hardness"
@@ -289,7 +289,7 @@
         "name": "Salt Volume Container 3"
       },
       "gettor": {
-        "name": "Total Capacity"
+        "name": "Total regenerations"
       },
       "gettyp": {
         "name": "Type"

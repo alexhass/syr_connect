@@ -121,7 +121,7 @@
         "name": "Notes"
       },
       "getnor": {
-        "name": "Nombre de régénérations"
+        "name": "Régénérations en fonctionnement normal"
       },
       "getowh": {
         "name": "Dureté de l'eau adoucie"
@@ -286,7 +286,7 @@
         "name": "Quantité de sel réservoir 3"
       },
       "gettor": {
-        "name": "Capacité totale"
+        "name": "Total des régénérations"
       },
       "gettyp": {
         "name": "Type"

@@ -121,7 +121,7 @@
         "name": "Note"
       },
       "getnor": {
-        "name": "Numero rigenerazioni"
+        "name": "Rigenerazioni in funzionamento normale"
       },
       "getowh": {
         "name": "Durezza acqua in uscita"
@@ -286,7 +286,7 @@
         "name": "Quantità sale contenitore 3"
       },
       "gettor": {
-        "name": "Capacità totale"
+        "name": "Rigenerazioni totali"
       },
       "gettyp": {
         "name": "Tipo"

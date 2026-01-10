@@ -69,12 +69,13 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getRES": "measurement",        # Remaining Capacity 
-    "getTOR": "measurement",        # Total Capacity
-    "getVOL": "measurement",        # Total Capacity (older alternative to getTOR)
+    "getVOL": "measurement",        # Total Capacity
     "getPRS": "measurement",        # Pressure
     "getFLO": "measurement",        # Flow Rate
+    "getINR": "total_increasing",   # Incomplete Regenerations
     "getFCO": "total_increasing",   # Total Flow Counter
-    "getNOR": "total_increasing",   # Number of Regenerations
+    "getNOR": "total_increasing",   # Regenerations (normal operation)
+    "getTOR": "total_increasing",   # Total regenerations
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
@@ -120,7 +121,6 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getDWF": "mdi:water-alert",
     # Capacity & Supply
     "getRES": "mdi:gauge-empty",
-    "getTOR": "mdi:gauge-full",
     "getVOL": "mdi:gauge-full",
     "getSV1": "mdi:shaker",
     "getSV2": "mdi:shaker",
@@ -129,11 +129,13 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getSS2": "mdi:cup-water",
     "getSS3": "mdi:cup-water",
     # Regeneration
-    "getSRE": "mdi:autorenew",
+    "getINR": "mdi:counter",
     "getNOR": "mdi:counter",
     "getRTI": "mdi:clock-outline",
     "getRPD": "mdi:calendar-clock",
     "getRPW": "mdi:calendar-week",
+    "getSRE": "mdi:autorenew",
+    "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
     # System & Status
     "getALM": "mdi:bell-alert",
@@ -209,7 +211,7 @@ _SYR_CONNECT_DIAGNOSTIC_SENSORS = {
     'getDGW',  # Gateway
     'getCDE',  # Configuration Code
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
-    'getINR',  # Internal Reference
+    'getINR',  # Incomplete regenerations
     'getNOT',  # Notes
 }
 
@@ -221,7 +223,6 @@ _SYR_CONNECT_SENSOR_UNITS = {
 
     # getIWH and getOWH units are set dynamically from getWHU
     "getRES": UnitOfVolume.LITERS,                          # Remaining Capacity
-    "getTOR": UnitOfVolume.LITERS,                          # Total Capacity
     "getVOL": UnitOfVolume.LITERS,                          # Total Capacity (older alternative to getTOR)
     "getRPD": UnitOfTime.DAYS,                              # Regeneration Interval
     "getRTH": UnitOfTime.HOURS,                             # Regeneration Time (Hour)
@@ -274,10 +275,11 @@ _SYR_CONNECT_SENSOR_UNITS = {
 _SYR_CONNECT_SENSOR_PRECISION = {
     "getCFO": 0,  # Cycle Flow Offset: show as whole number by default
     "getCYN": 0,  # Cycle Counter: show as whole number by default
+    "getINR": 0,  # Incomplete Regenerations: show as whole number by default
     "getIWH": 0,  # Incoming Water Hardness: show as whole number by default
     "getFCO": 0,  # Total Flow Counter: show as whole number by default
     "getFLO": 0,  # Flow Rate: show as whole number by default
-    "getNOR": 0,  # Number of Regenerations: show as whole number by default
+    "getNOR": 0,  # Regenerations (normal operation): show as whole number by default
     "getRDO": 0,  # Salt Dosing: show as whole number by default
     "getRPD": 0,  # Regeneration Interval: show as whole days by default
     "getRPW": 0,  # Regenerations per Week: show as whole number by default
@@ -289,7 +291,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV1": 0,  # Salt Supply Volume 1: show as whole number by default
     "getSV2": 0,  # Salt Supply Volume 2: show as whole number by default
     "getSV3": 0,  # Salt Supply Volume 3: show as whole number by default
-    "getTOR": 0,  # Total Capacity: show as whole number by default
+    "getTOR": 0,  # Total regenerations: show as whole number by default
     "getOWH": 0,  # Outgoing Water Hardness: show as whole number by default
 }
 
@@ -311,7 +313,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSIR',  # Immediate regeneration control
     'getSTA',  # Status - redundant with other status sensors
     'getTYP',  # Type - not helpful for users
-    'getINR',  # Internal reference - not useful
     'getLAR',  # Last action - not useful as sensor
     'getSRN_dt',
     'getALM_dt',
@@ -357,7 +358,6 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCYN',  # Cycle Counter - technical metric
     'getCYT',  # Cycle Time - technical metric
     'getNOT',  # Notes - rarely used
-    'getINR',  # Internal Reference - technical
     'getLAR',  # Last Action - technical log
     'getRG1', 'getRG2', 'getRG3',  # Regeneration Groups - advanced config
     'getVS1', 'getVS2', 'getVS3',  # Volume Thresholds - advanced config

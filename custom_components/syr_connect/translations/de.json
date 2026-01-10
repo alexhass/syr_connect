@@ -121,7 +121,7 @@
         "name": "Notizen"
       },
       "getnor": {
-        "name": "Anzahl Regenerationen"
+        "name": "Regenerationen im Normalbetrieb"
       },
       "getowh": {
         "name": "Weichwasserhärte"
@@ -289,7 +289,7 @@
         "name": "Salzmenge Behälter 3"
       },
       "gettor": {
-        "name": "Gesamtkapazität"
+        "name": "Summe aller Regenerationen"
       },
       "gettyp": {
         "name": "Typ"

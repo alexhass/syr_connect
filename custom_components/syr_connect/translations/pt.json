@@ -129,7 +129,7 @@
         "name": "Fabricante"
       },
       "getnor": {
-        "name": "Número de regenerações"
+        "name": "Regenerações em funcionamento normal"
       },
       "getnot": {
         "name": "Notas"
@@ -297,7 +297,7 @@
         "name": "Quantidade de sal recipiente 3"
       },
       "gettor": {
-        "name": "Capacidade total"
+        "name": "Total de regenerações"
       },
       "gettyp": {
         "name": "Tipo"

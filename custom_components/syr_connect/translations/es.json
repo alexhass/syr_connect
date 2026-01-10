@@ -121,7 +121,7 @@
         "name": "Notas"
       },
       "getnor": {
-        "name": "Número de regeneraciones"
+        "name": "Regeneraciones en funcionamiento normal"
       },
       "getowh": {
         "name": "Dureza del agua de salida"
@@ -286,7 +286,7 @@
         "name": "Cantidad de sal depósito 3"
       },
       "gettor": {
-        "name": "Capacidad total"
+        "name": "Total de regeneraciones"
       },
       "gettyp": {
         "name": "Tipo"
