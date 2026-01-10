@@ -56,7 +56,7 @@
         "name": "Alarm",
         "state": {
           "low_salt": "Salz gering",
-          "no_alarm": "Keine",
+          "no_alarm": "Keiner",
           "no_salt": "Salz leer"
         }
       },
