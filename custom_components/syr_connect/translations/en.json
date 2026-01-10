@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getalm": { "name": "Alarm" },
       "getprf": { "name": "Active leak protection profile" },
       "getpa1": { "name": "Leak protection profile 1 activated" },
       "getpa2": { "name": "Leak protection profile 2 activated" },
@@ -148,13 +149,21 @@
     "binary_sensor": {
       "getsre": { "name": "Regeneration Active" },
       "getpst": { "name": "Operating State" },
-      "getscr": { "name": "Screen Lock" },
-      "getalm": { "name": "Alarm" }
+      "getscr": { "name": "Screen Lock" }
     },
     "button": {
       "setsir": { "name": "Regenerate Now" },
       "setsmr": { "name": "Multi Regenerate" },
       "setrst": { "name": "Reset Device" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "getalm": {
+        "no_salt": "No salt",
+        "low_salt": "Low salt",
+        "none": "None"
+      }
     }
   },
   "issues": {

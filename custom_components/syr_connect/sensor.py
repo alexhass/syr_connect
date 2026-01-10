@@ -23,6 +23,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_STRING_SENSORS,
+    _SYR_CONNECT_ALARM_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
@@ -192,10 +193,16 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         - Salt stock: full/half/empty cup based on level
         - Remaining capacity: gauge-empty/low/full based on percentage
         """
-        # Dynamic icon for alarm sensor
+        # Dynamic icon for alarm sensor (getALM is not a binary sensor)
         if self._sensor_key == "getALM":
-            value = self.native_value
-            if value and str(value).lower() in ("1", "true", "on", "active"):
+            # Read raw status value to decide icon (avoid translated display)
+            raw_value = None
+            for device in self.coordinator.data.get('devices', []):
+                if device['id'] == self._device_id:
+                    raw_value = device.get('status', {}).get('getALM')
+                    break
+            mapped = _SYR_CONNECT_ALARM_VALUE_MAP.get(raw_value)
+            if mapped in ("no_salt", "low_salt"):
                 return "mdi:bell-alert"
             return "mdi:bell-outline"
 
@@ -264,7 +271,14 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return None
                     return None
 
+                # Raw value from device
                 value = status.get(self._sensor_key)
+
+                # Special handling for alarm sensor: map raw API values to internal keys
+                if self._sensor_key == 'getALM':
+                    mapped = _SYR_CONNECT_ALARM_VALUE_MAP.get(value)
+                    # Return mapped key (e.g. 'no_salt', 'low_salt', 'ok') or raw value as fallback
+                    return mapped if mapped is not None else (value if value is not None else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
                 if self._sensor_key in _SYR_CONNECT_STRING_SENSORS:

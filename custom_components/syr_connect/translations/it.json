@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getalm": { "name": "Allarme" },
       "getprf": { "name": "Profilo protezione perdite attivo" },
       "getpa1": { "name": "Profilo protezione perdite 1 attivato" },
       "getpa2": { "name": "Profilo protezione perdite 2 attivato" },
@@ -188,13 +189,21 @@
     "binary_sensor": {
       "getsre": { "name": "Rigenerazione attiva" },
       "getpst": { "name": "Stato operativo" },
-      "getscr": { "name": "Blocco schermo" },
-      "getalm": { "name": "Allarme" }
+      "getscr": { "name": "Blocco schermo" }
     },
     "button": {
       "setsir": { "name": "Rigenera ora" },
       "setsmr": { "name": "Rigenerazione multipla" },
       "setrst": { "name": "Reset dispositivo" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "getalm": {
+        "no_salt": "Senza sale",
+        "low_salt": "Poco sale",
+        "none": "Nessuna"
+      }
     }
   },
   "issues": {

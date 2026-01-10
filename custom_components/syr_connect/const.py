@@ -46,7 +46,18 @@ _SYR_CONNECT_BINARY_SENSORS = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
     "getPST": BinarySensorDeviceClass.RUNNING,  # Operating state
     "getSCR": BinarySensorDeviceClass.LOCK,     # Screen lock
-    "getALM": BinarySensorDeviceClass.PROBLEM,  # Alarm
+}
+
+# Mapping for getALM sensor values
+# Maps raw API value -> internal key
+# API values observed:
+# - "NoSalt"  -> device reports salt empty <= 2kg
+# - "LowSalt" -> device reports low salt <= 4kg
+# - ""        -> None / no alarm >= 5kg
+_SYR_CONNECT_ALARM_VALUE_MAP = {
+    "NoSalt": "no_salt",
+    "LowSalt": "low_salt",
+    "": "none",
 }
 
 # Sensor device classes (for Home Assistant) - internal
@@ -309,7 +320,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSRE',  # Regeneration active
     'getPST',  # Operating state
     'getSCR',  # Screen lock
-    'getALM',  # Alarm
 
     # Sensors exits in devices:
     # - LEXplus10SL

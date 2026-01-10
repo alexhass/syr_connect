@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getalm": { "name": "Alarma" },
       "getrth": { "name": "Hora de regeneración (Hora)" },
       "getrtm": { "name": "Hora de regeneración (Minuto)" },
       "getsrn": { "name": "Número de serie" },
@@ -149,14 +150,22 @@
     "binary_sensor": {
       "getsre": { "name": "Regeneración activa" },
       "getpst": { "name": "Estado de funcionamiento" },
-      "getscr": { "name": "Bloqueo de pantalla" },
-      "getalm": { "name": "Alarma" }
+      "getscr": { "name": "Bloqueo de pantalla" }
     },
     "button": {
       "setsir": { "name": "Regenerar ahora" },
       "setsmr": { "name": "Regeneración múltiple" },
       "setrst": { "name": "Reiniciar dispositivo" }
 	}
+  },
+  "state": {
+    "sensor": {
+      "getalm": {
+        "no_salt": "Sin sal",
+        "low_salt": "Poca sal",
+        "none": "Ninguna"
+      }
+    }
   },
   "issues": {
     "device_offline": {

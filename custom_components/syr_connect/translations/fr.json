@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getalm": { "name": "Alarme" },
       "getprf": { "name": "Profil de protection contre les fuites actif" },
       "getpa1": { "name": "Profil de protection contre les fuites 1 activé" },
       "getpa2": { "name": "Profil de protection contre les fuites 2 activé" },
@@ -189,13 +190,21 @@
     "binary_sensor": {
       "getsre": { "name": "Régénération active" },
       "getpst": { "name": "État de fonctionnement" },
-      "getscr": { "name": "Verrouillage d'écran" },
-      "getalm": { "name": "Alarme" }
+      "getscr": { "name": "Verrouillage d'écran" }
     },
     "button": {
       "setsir": { "name": "Régénérer maintenant" },
       "setsmr": { "name": "Régénération multiple" },
       "setrst": { "name": "Réinitialiser l'appareil" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "getalm": {
+        "no_salt": "Sans sel",
+        "low_salt": "Faible en sel",
+        "none": "Aucune"
+      }
     }
   },
   "issues": {

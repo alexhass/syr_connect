@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getalm": { "name": "Alarme" },
       "getprf": { "name": "Perfil de proteção contra vazamentos ativo" },
       "getpa1": { "name": "Perfil de proteção contra vazamentos 1 ativado" },
       "getpa2": { "name": "Perfil de proteção contra vazamentos 2 ativado" },
@@ -188,13 +189,21 @@
     "binary_sensor": {
       "getsre": { "name": "Regeneração ativa" },
       "getpst": { "name": "Estado operacional" },
-      "getscr": { "name": "Bloqueio de tela" },
-      "getalm": { "name": "Alarme" }
+      "getscr": { "name": "Bloqueio de tela" }
     },
     "button": {
       "setsir": { "name": "Regenerar agora" },
       "setsmr": { "name": "Regeneração múltipla" },
       "setrst": { "name": "Redefinir dispositivo" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "getalm": {
+        "no_salt": "Sem sal",
+        "low_salt": "Pouca sal",
+        "none": "Nenhuma"
+      }
     }
   },
   "issues": {

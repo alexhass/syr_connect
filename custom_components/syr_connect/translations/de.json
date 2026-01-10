@@ -52,6 +52,7 @@
   },
   "entity": {
     "sensor": {
+      "getalm": { "name": "Alarm" },
       "getrth": { "name": "Stunden der Regeneration" },
       "getrtm": { "name": "Minuten der Regeneration" },
       "getcs1": { "name": "Konfiguration Stufe 1" },
@@ -148,13 +149,21 @@
     "binary_sensor": {
       "getsre": { "name": "Regeneration aktiv" },
       "getpst": { "name": "Betriebszustand" },
-      "getscr": { "name": "Bildschirmsperre" },
-      "getalm": { "name": "Alarm" }
+      "getscr": { "name": "Bildschirmsperre" }
     },
     "button": {
       "setsir": { "name": "Sofort regenerieren" },
       "setsmr": { "name": "Mehrfach regenerieren" },
       "setrst": { "name": "Gerät zurücksetzen" }
+    }
+  },
+  "state": {
+    "sensor": {
+      "getalm": {
+        "no_salt": "Salz leer",
+        "low_salt": "Salz gering",
+        "none": "Keine"
+      }
     }
   },
   "issues": {
