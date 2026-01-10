@@ -312,7 +312,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'nrdt', 'dg',  # Additional device metadata attributes
     'dt',  # Timestamp attributes (getSRN_dt, getALM_dt, etc.)
     'getDEN',  # Boolean sensor - device enabled/disabled
-    'getRTH', 'getRTM',  # Regeneration time - combined into getRTI
+    'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
     'getCDE',  # Configuration code - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
@@ -323,8 +323,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getALM_dt',
     'getRTI',  # Value is always 00:00. Not clear what it represents.
     # Boolean sensors - now handled as binary_sensor platform
-    'getSRE',  # Regeneration active
-    'getPST',  # Operating state
     'getSCR',  # Screen lock
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
 
@@ -371,6 +369,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getRPW',  # Regenerations per week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
     'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
+    'getSRE',  # Regeneration active
 
     # Sensors exits in devices:
     # - LEXplus10SL

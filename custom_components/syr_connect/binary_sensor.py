@@ -12,7 +12,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_BINARY_SENSORS, _SYR_CONNECT_SENSOR_ICONS
+from .const import (
+    _SYR_CONNECT_BINARY_SENSORS,
+    _SYR_CONNECT_SENSOR_ICONS,
+    _SYR_CONNECT_EXCLUDED_SENSORS,
+)
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
@@ -48,6 +52,10 @@ async def async_setup_entry(
 
         # Create binary sensors for boolean status values
         for sensor_key, device_class in _SYR_CONNECT_BINARY_SENSORS.items():
+            # Skip sensors excluded globally
+            if sensor_key in _SYR_CONNECT_EXCLUDED_SENSORS:
+                continue
+
             if sensor_key in status:
                 entities.append(
                     SyrConnectBinarySensor(
@@ -122,7 +130,7 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 value = status.get(self._sensor_key)
 
                 # Convert value to boolean
-                if isinstance(value, int | float):
+                if isinstance(value, (int, float)):
                     return value != 0
                 elif isinstance(value, str):
                     return value not in ("0", "false", "False", "")

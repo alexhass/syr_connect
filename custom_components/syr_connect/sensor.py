@@ -67,8 +67,7 @@ async def async_setup_entry(
         # Create sensors for all status values
         sensor_count = 0
         for key, value in status.items():
-            # Skip sensors that are always excluded
-            #if key in _SYR_CONNECT_EXCLUDED_SENSORS or key.startswith('_'):
+            # Skip sensors excluded globally
             if key in _SYR_CONNECT_EXCLUDED_SENSORS:
                 continue
 
