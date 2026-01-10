@@ -134,9 +134,9 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Capacity & Supply
     "getRES": "mdi:gauge-empty",
     "getVOL": "mdi:gauge-full",
-    "getSV1": "mdi:salt",
-    "getSV2": "mdi:salt",
-    "getSV3": "mdi:salt",
+    "getSV1": "mdi:cup",
+    "getSV2": "mdi:cup",
+    "getSV3": "mdi:cup",
     "getSS1": "mdi:cup-water",
     "getSS2": "mdi:cup-water",
     "getSS3": "mdi:cup-water",
@@ -153,6 +153,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getALM": "mdi:bell-alert",
     "getPST": "mdi:power",
     "getSCR": "mdi:lock",
+    "getSTA": "mdi:list-status",
     "getRDO": "mdi:shaker",
     # Device Info
     "getSRN": "mdi:identifier",
@@ -321,7 +322,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getCDE',  # Configuration code - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
-    'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
+    #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
     'getTYP',  # Type - not helpful for users
     'getLAR',  # Last action - not useful as sensor
     'getSRN_dt',
@@ -331,7 +332,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSCR',  # Screen lock
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
 
-    # BUG: Exclude until the bug is found that these are not showing with translated strings.
+    # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
     'getSRE',  # Regeneration active - now handled as binary_sensor platform
     'getPST',  # Operating state - now handled as binary_sensor platform
