@@ -167,6 +167,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if sensor_key in _SYR_CONNECT_SENSOR_STATE_CLASS:
             self._attr_state_class = _SYR_CONNECT_SENSOR_STATE_CLASS[sensor_key]
 
+        # Set display precision for sensors that should show whole numbers
+        # getCOF (water consumption) is measured in whole liters by the device
+        if sensor_key == "getCOF":
+            self._attr_suggested_display_precision = 0
+
         # Set icon if available
         if sensor_key in _SYR_CONNECT_SENSOR_ICONS:
             self._attr_icon = _SYR_CONNECT_SENSOR_ICONS[sensor_key]
@@ -249,17 +254,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return f"{int(hour):02d}:{int(minute):02d}"
                     except (ValueError, TypeError):
                         return "00:00"
-
-                # Special handling for getFCO sensor - use getCOF value instead
-                # getFCO returns 0 on LEXplus10SL, but getCOF contains the actual flow counter
-                if self._sensor_key == 'getFCO':
-                    cof_value = status.get('getCOF')
-                    if cof_value is not None:
-                        try:
-                            return float(cof_value) if isinstance(cof_value, str) else cof_value
-                        except (ValueError, TypeError):
-                            pass
-                    # If getCOF is not available, fall through to default handling
 
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':

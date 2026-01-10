@@ -53,7 +53,7 @@ _SYR_CONNECT_BINARY_SENSORS = {
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getPRS": SensorDeviceClass.PRESSURE,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
-    "getFCO": SensorDeviceClass.WATER,
+    "getCOF": SensorDeviceClass.WATER,
 }
 
 # Sensor state classes (for Home Assistant) - internal
@@ -63,7 +63,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getVOL": "measurement",        # Total Capacity (older alternative to getTOR)
     "getPRS": "measurement",        # Pressure
     "getFLO": "measurement",        # Flow Rate
-    "getFCO": "total_increasing",   # Total Flow Counter
+    "getCOF": "total_increasing",   # Total Water Consumption Counter
     "getNOR": "total_increasing",   # Number of Regenerations
 }
 
@@ -106,7 +106,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Pressure & Flow
     "getPRS": "mdi:gauge",
     "getFLO": "mdi:waves-arrow-right",
-    "getFCO": "mdi:counter",
+    "getCOF": "mdi:counter",
     "getDWF": "mdi:water-alert",
     # Capacity & Supply
     "getRES": "mdi:gauge-empty",
@@ -223,7 +223,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getSS3": UnitOfTime.WEEKS,                         # Salt supply container 3
     "getPRS": UnitOfPressure.BAR,                       # Pressure
     "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,   # Flow Rate
-    "getFCO": UnitOfVolume.LITERS,                      # Total Flow Counter
+    "getCOF": UnitOfVolume.LITERS,                      # Total Water Consumption Counter
     "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,   # Flow Warning Value
     "getRDO": PERCENTAGE,                               # Remaining Runtime
 
@@ -296,7 +296,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     # Technical values without context
     'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
     'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS',
-    # 'getCOF',  # Removed: needed for getFCO sensor value on LEXplus10SL
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
     'getDRP', 'getDST', 'getDTC', 'getDWF',
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
@@ -330,7 +329,6 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels - advanced config
     'getRPW',  # Regenerations per Week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
-    # 'getFCO',  # Removed: Now uses getCOF value which contains actual data on LEXplus10SL
 
     # Sensors exits in devices:
     # - LEXplus10SL

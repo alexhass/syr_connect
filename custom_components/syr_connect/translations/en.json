@@ -124,7 +124,7 @@
       "getss3": { "name": "Salt Stock Container 3" },
       "getprs": { "name": "Pressure" },
       "getflo": { "name": "Flow" },
-      "getfco": { "name": "Total Water Consumption" },
+      "getcof": { "name": "Total Water Consumption" },
       "getdwf": { "name": "Flow Warning Value" },
       "getsta": { "name": "Status" },
       "getcde": { "name": "Configuration Code" },
