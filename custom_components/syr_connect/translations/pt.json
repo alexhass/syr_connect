@@ -183,7 +183,7 @@
       "getvs1": { "name": "Limite de volume 1" },
       "getvs2": { "name": "Limite de volume 2" },
       "getvs3": { "name": "Limite de volume 3" },
-      "getrdo": { "name": "Tempo restante" }
+      "getrdo": { "name": "Dosagem de sal" }
     },
     "binary_sensor": {
       "getsre": { "name": "Regeneração ativa" },

@@ -102,7 +102,7 @@
       "getrg2": { "name": "Regenerationsgruppe 2" },
       "getrg3": { "name": "Regenerationsgruppe 3" },
       "getvs2": { "name": "Volumenschwelle 2" },
-      "getrdo": { "name": "Restlaufzeit" },
+      "getrdo": { "name": "Salzdosierung" },
       "getprf": { "name": "Aktives Leckagesschutz-Profil" },
       "getpa1": { "name": "Leckagesschutz-Profil 1 aktiviert" },
       "getpa2": { "name": "Leckagesschutz-Profil 2 aktiviert" },

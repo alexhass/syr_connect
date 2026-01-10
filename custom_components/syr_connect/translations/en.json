@@ -143,7 +143,7 @@
       "getvs1": { "name": "Volume Threshold 1" },
       "getvs2": { "name": "Volume Threshold 2" },
       "getvs3": { "name": "Volume Threshold 3" },
-      "getrdo": { "name": "Remaining Runtime" }
+      "getrdo": { "name": "Salt Dosing" }
     },
     "binary_sensor": {
       "getsre": { "name": "Regeneration Active" },

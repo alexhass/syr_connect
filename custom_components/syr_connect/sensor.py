@@ -21,6 +21,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_ICONS,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_UNITS,
+    _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_STRING_SENSORS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -276,6 +277,15 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         # Divide pressure by 10 to convert to correct unit
                         if self._sensor_key == 'getPRS':
                             numeric_value = numeric_value / 10
+                        # Apply configured precision if available
+                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
+                        if precision is not None:
+                            try:
+                                numeric_value = round(numeric_value, precision)
+                                if precision == 0:
+                                    numeric_value = int(numeric_value)
+                            except (TypeError, ValueError):
+                                pass
                         return numeric_value
                     except (ValueError, TypeError):
                         return value
@@ -285,6 +295,17 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # Divide pressure by 10 to convert to correct unit
                     if self._sensor_key == 'getPRS':
                         return value / 10
+                    # Apply configured precision if available
+                    precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
+                    if precision is not None:
+                        try:
+                            val = float(value)
+                            val = round(val, precision)
+                            if precision == 0:
+                                return int(val)
+                            return val
+                        except (TypeError, ValueError):
+                            return value
                     return value
 
                 return value

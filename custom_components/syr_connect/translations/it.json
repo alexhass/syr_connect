@@ -183,7 +183,7 @@
       "getvs1": { "name": "Soglia volume 1" },
       "getvs2": { "name": "Soglia volume 2" },
       "getvs3": { "name": "Soglia volume 3" },
-      "getrdo": { "name": "Tempo residuo" }
+      "getrdo": { "name": "Dosaggio del sale" }
     },
     "binary_sensor": {
       "getsre": { "name": "Rigenerazione attiva" },

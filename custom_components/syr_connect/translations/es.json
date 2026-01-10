@@ -103,7 +103,7 @@
       "getvs1": { "name": "Umbral de volumen 1" },
       "getvs2": { "name": "Umbral de volumen 2" },
       "getvs3": { "name": "Umbral de volumen 3" },
-      "getrdo": { "name": "Tiempo restante" },
+      "getrdo": { "name": "Dosificación de sal" },
       "getprf": { "name": "Perfil de protección contra fugas activo" },
       "getpa1": { "name": "Perfil de protección contra fugas 1 activado" },
       "getpa2": { "name": "Perfil de protección contra fugas 2 activado" },

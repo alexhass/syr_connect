@@ -128,7 +128,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getALM": "mdi:bell-alert",
     "getPST": "mdi:power",
     "getSCR": "mdi:lock",
-    "getRDO": "mdi:timer-sand",
+    "getRDO": "mdi:shaker",
     # Device Info
     "getSRN": "mdi:identifier",
     "getVER": "mdi:chip",
@@ -209,22 +209,22 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # getIWH and getOWH units are set dynamically from getWHU
-    "getRES": UnitOfVolume.LITERS,                      # Remaining Capacity
-    "getTOR": UnitOfVolume.LITERS,                      # Total Capacity
-    "getVOL": UnitOfVolume.LITERS,                      # Total Capacity (older alternative to getTOR)
-    "getRPD": UnitOfTime.DAYS,                          # Regeneration Interval
-    "getRTH": UnitOfTime.HOURS,                         # Regeneration Time (Hour)
-    "getSV1": UnitOfMass.KILOGRAMS,                     # Salt amount container 1
-    "getSV2": UnitOfMass.KILOGRAMS,                     # Salt amount container 2
-    "getSV3": UnitOfMass.KILOGRAMS,                     # Salt amount container 3
-    "getSS1": UnitOfTime.WEEKS,                         # Salt supply container 1
-    "getSS2": UnitOfTime.WEEKS,                         # Salt supply container 2
-    "getSS3": UnitOfTime.WEEKS,                         # Salt supply container 3
-    "getPRS": UnitOfPressure.BAR,                       # Pressure
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,   # Flow Rate
-    "getFCO": UnitOfVolume.LITERS,                      # Total Flow Counter
-    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,   # Flow Warning Value
-    "getRDO": PERCENTAGE,                               # Remaining Runtime
+    "getRES": UnitOfVolume.LITERS,                          # Remaining Capacity
+    "getTOR": UnitOfVolume.LITERS,                          # Total Capacity
+    "getVOL": UnitOfVolume.LITERS,                          # Total Capacity (older alternative to getTOR)
+    "getRPD": UnitOfTime.DAYS,                              # Regeneration Interval
+    "getRTH": UnitOfTime.HOURS,                             # Regeneration Time (Hour)
+    "getSV1": UnitOfMass.KILOGRAMS,                         # Salt amount container 1
+    "getSV2": UnitOfMass.KILOGRAMS,                         # Salt amount container 2
+    "getSV3": UnitOfMass.KILOGRAMS,                         # Salt amount container 3
+    "getSS1": UnitOfTime.WEEKS,                             # Salt supply container 1
+    "getSS2": UnitOfTime.WEEKS,                             # Salt supply container 2
+    "getSS3": UnitOfTime.WEEKS,                             # Salt supply container 3
+    "getPRS": UnitOfPressure.BAR,                           # Pressure
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow Rate
+    "getFCO": UnitOfVolume.LITERS,                          # Total Flow Counter
+    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow Warning Value
+    "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt Dosing (g/L)
 
     # Sensors exits in devices:
     # - LEXplus10SL
@@ -254,6 +254,32 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getPV6": UnitOfVolume.LITERS,                      # Leak Protection Volume 6
     "getPV7": UnitOfVolume.LITERS,                      # Leak Protection Volume 7
     "getPV8": UnitOfVolume.LITERS,                      # Leak Protection Volume 8
+}
+
+# Sensor display precision mapping (number of decimals to show)
+# Use integers for whole-number display (0), or >0 for decimal places.
+# This allows configuring how many decimals Home Assistant should show
+# for specific sensors when the integration formats the value.
+_SYR_CONNECT_SENSOR_PRECISION = {
+    "getCFO": 0,  # Cycle Flow Offset: show as whole number by default
+    "getCYN": 0,  # Cycle Counter: show as whole number by default
+    "getIWH": 0,  # Incoming Water Hardness: show as whole number by default
+    "getFCO": 0,  # Total Flow Counter: show as whole number by default
+    "getFLO": 0,  # Flow Rate: show as whole number by default
+    "getNOR": 0,  # Number of Regenerations: show as whole number by default
+    "getRDO": 0,  # Salt Dosing: show as whole number by default
+    "getRPD": 0,  # Regeneration Interval: show as whole days by default
+    "getRPW": 0,  # Regenerations per Week: show as whole number by default
+    "getPRS": 1,  # Pressure: show with 1 decimal place by default
+    "getRES": 0,  # Remaining Capacity: show as whole number by default
+    "getSS1": 0,  # Salt Supply Container 1: show as whole number by default
+    "getSS2": 0,  # Salt Supply Container 2: show as whole number by default
+    "getSS3": 0,  # Salt Supply Container 2: show as whole number by default
+    "getSV1": 0,  # Salt Supply Volume 1: show as whole number by default
+    "getSV2": 0,  # Salt Supply Volume 2: show as whole number by default
+    "getSV3": 0,  # Salt Supply Volume 3: show as whole number by default
+    "getTOR": 0,  # Total Capacity: show as whole number by default
+    "getOWH": 0,  # Outgoing Water Hardness: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal

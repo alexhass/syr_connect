@@ -184,7 +184,7 @@
       "getvs1": { "name": "Seuil de volume 1" },
       "getvs2": { "name": "Seuil de volume 2" },
       "getvs3": { "name": "Seuil de volume 3" },
-      "getrdo": { "name": "Durée restante" }
+      "getrdo": { "name": "Dosage du sel" }
     },
     "binary_sensor": {
       "getsre": { "name": "Régénération active" },
