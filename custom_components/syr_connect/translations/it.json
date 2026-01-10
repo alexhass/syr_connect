@@ -100,7 +100,7 @@
         "name": "Flusso"
       },
       "getinr": {
-        "name": "Riferimento interno"
+        "name": "Rigenerazioni incomplete"
       },
       "getiwh": {
         "name": "Durezza acqua in ingresso"

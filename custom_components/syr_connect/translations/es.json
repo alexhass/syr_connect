@@ -100,7 +100,7 @@
         "name": "Caudal"
       },
       "getinr": {
-        "name": "Referencia interna"
+        "name": "Regeneraciones incompletas"
       },
       "getiwh": {
         "name": "Dureza del agua de entrada"

@@ -100,7 +100,7 @@
         "name": "Durchfluss"
       },
       "getinr": {
-        "name": "Interne Referenz"
+        "name": "Unvollständige Regenerationen"
       },
       "getiwh": {
         "name": "Rohwasserhärte"

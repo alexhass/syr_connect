@@ -100,7 +100,7 @@
         "name": "Débit"
       },
       "getinr": {
-        "name": "Référence interne"
+        "name": "Régénérations incomplètes"
       },
       "getiwh": {
         "name": "Dureté de l'eau brute"

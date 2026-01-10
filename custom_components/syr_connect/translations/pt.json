@@ -111,7 +111,7 @@
         "name": "Fluxo"
       },
       "getinr": {
-        "name": "Referência interna"
+          "name": "Regenerações incompletas"
       },
       "getipa": {
         "name": "Endereço IP"
