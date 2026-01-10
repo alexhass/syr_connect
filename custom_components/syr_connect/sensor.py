@@ -193,7 +193,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         - Salt stock: full/half/empty cup based on level
         - Remaining capacity: gauge-empty/low/full based on percentage
         """
-        # Dynamic icon for alarm sensor (getALM is not a binary sensor)
+        # Dynamic icon for alarm sensor
         if self._sensor_key == "getALM":
             # Read raw status value to decide icon (avoid translated display)
             raw_value = None
