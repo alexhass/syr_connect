@@ -162,7 +162,7 @@
       "getalm": {
         "no_salt": "No salt",
         "low_salt": "Low salt",
-        "none": "None"
+        "no_alarm": "None"
       }
     }
   },

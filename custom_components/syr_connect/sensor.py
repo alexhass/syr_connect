@@ -277,7 +277,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
                     mapped = _SYR_CONNECT_ALARM_VALUE_MAP.get(value)
-                    # Return mapped key (e.g. 'no_salt', 'low_salt', 'ok') or raw value as fallback
+                    # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)

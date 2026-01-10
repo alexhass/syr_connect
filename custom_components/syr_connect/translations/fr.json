@@ -203,7 +203,7 @@
       "getalm": {
         "no_salt": "Sans sel",
         "low_salt": "Faible en sel",
-        "none": "Aucune"
+        "no_alarm": "Aucune"
       }
     }
   },

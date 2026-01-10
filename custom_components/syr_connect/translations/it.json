@@ -202,7 +202,7 @@
       "getalm": {
         "no_salt": "Senza sale",
         "low_salt": "Poco sale",
-        "none": "Nessuna"
+        "no_alarm": "Nessuna"
       }
     }
   },

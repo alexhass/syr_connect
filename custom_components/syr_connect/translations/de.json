@@ -162,7 +162,7 @@
       "getalm": {
         "no_salt": "Salz leer",
         "low_salt": "Salz gering",
-        "none": "Keine"
+        "no_alarm": "Keine"
       }
     }
   },
