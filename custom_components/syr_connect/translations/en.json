@@ -278,22 +278,22 @@
         }
       },
       "getss1": {
-        "name": "Salt stock container 1"
+        "name": "Salt container stock 1"
       },
       "getss2": {
-        "name": "Salt stock container 2"
+        "name": "Salt container stock 2"
       },
       "getss3": {
-        "name": "Salt stock container 3"
+        "name": "Salt container stock 3"
       },
       "getsv1": {
-        "name": "Salt volume container 1"
+        "name": "Salt container volume 1"
       },
       "getsv2": {
-        "name": "Salt volume container 2"
+        "name": "Salt container volume 2"
       },
       "getsv3": {
-        "name": "Salt volume container 3"
+        "name": "Salt container volume 3"
       },
       "gettor": {
         "name": "Total regenerations"
