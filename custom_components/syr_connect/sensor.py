@@ -24,11 +24,13 @@ from .const import (
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_STRING_SENSORS,
     _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
+import re
 
 
 async def async_setup_entry(
@@ -274,6 +276,23 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Raw value from device
                 value = status.get(self._sensor_key)
 
+                # Special handling for status sensor (getSTA): map Polish strings to internal keys
+                if self._sensor_key == 'getSTA':
+                    raw = value if value is not None else ""
+                    # Default attributes
+                    # Check for regenerant rinse pattern with value in parentheses, e.g. "Płukanie regenerantem (544mA)"
+                    m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
+                    if m:
+                        # set attribute resistance_value and return mapped key
+                        return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie regenerantem (544mA)", "status_regenerant_rinse")
+                    # Check for fast rinse pattern with a round number, e.g. "Płukanie szybkie 1"
+                    m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
+                    if m2:
+                        return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie szybkie 1", "status_fast_rinse")
+                    # Fallback to exact map lookup
+                    mapped = _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(raw)
+                    return mapped if mapped is not None else (raw if raw != "" else None)
+
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
                     mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(value)
@@ -338,3 +357,28 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return device.get('available', True)
 
         return True
+
+    @property
+    def extra_state_attributes(self) -> dict | None:
+        """Return additional state attributes used by translations."""
+        # Only provide attributes for getSTA to fill translation placeholders
+        if self._sensor_key != 'getSTA':
+            return None
+
+        for device in self.coordinator.data.get('devices', []):
+            if device['id'] == self._device_id:
+                raw = device.get('status', {}).get('getSTA', '')
+                attrs: dict = {}
+                if raw is None:
+                    return None
+                # resistance_value: inside parentheses for regenerant rinse
+                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
+                if m:
+                    attrs['resistance_value'] = m.group(1)
+                # rinse_round: number after "Płukanie szybkie"
+                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
+                if m2:
+                    attrs['rinse_round'] = m2.group(1)
+
+                return attrs if attrs else None
+
