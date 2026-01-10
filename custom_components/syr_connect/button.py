@@ -115,7 +115,9 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         Raises:
             HomeAssistantError: If the button press fails
         """
-        _LOGGER.debug("Button pressed: %s (device: %s)", self._attr_name, self._device_id)
+        # Avoid accessing possibly unset internal name attribute; use translation key or unique id
+        button_id = getattr(self, "_attr_translation_key", None) or getattr(self, "_attr_unique_id", None)
+        _LOGGER.debug("Button pressed: %s (device: %s)", button_id, self._device_id)
 
         try:
             # Send command with value 1 (trigger action)
