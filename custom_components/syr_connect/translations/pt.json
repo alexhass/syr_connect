@@ -52,7 +52,9 @@
   },
   "entity": {
     "sensor": {
-      "getalm": { "name": "Alarm" },
+      "getalm": {
+        "name": "Alarm"
+      },
       "getcde": { "name": "Código de configuração" },
       "getcna": { "name": "Nome do dispositivo" },
       "getcs1": { "name": "Nível de configuração 1" },
@@ -135,8 +137,7 @@
       "getvs1": { "name": "Limiar de volume 1" },
       "getvs2": { "name": "Limiar de volume 2" },
       "getvs3": { "name": "Limiar de volume 3" },
-      "getwhu": { "name": "Unidade de dureza da água" }
-    },
+      "getwhu": { "name": "Unidade de dureza da água" },
       "getwhu": { "name": "Unidade de dureza da água" },
       "getres": { "name": "Capacidade restante" },
       "gettor": { "name": "Capacidade total" },

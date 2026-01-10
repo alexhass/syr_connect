@@ -52,7 +52,9 @@
   },
   "entity": {
     "sensor": {
-      "getalm": { "name": "Alarm" },
+      "getalm": {
+        "name": "Alarm"
+      },
       "getcde": { "name": "Configuration Code" },
       "getcna": { "name": "Device Name" },
       "getcs1": { "name": "Configuration Level 1" },

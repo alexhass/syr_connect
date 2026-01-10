@@ -52,7 +52,9 @@
   },
   "entity": {
     "sensor": {
-      "getalm": { "name": "Alarma" },
+      "getalm": {
+        "name": "Alarma"
+      },
       "getcde": { "name": "Código de configuración" },
       "getcna": { "name": "Nombre del dispositivo" },
       "getcs1": { "name": "Nivel de configuración 1" },
@@ -146,7 +148,7 @@
       "setrst": { "name": "Reiniciar dispositivo" },
       "setsir": { "name": "Regenerar ahora" },
       "setsmr": { "name": "Regeneración múltiple" }
-	}
+	  }
   },
   "state": {
     "sensor": {
