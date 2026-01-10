@@ -201,29 +201,28 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
         # Initialize translation placeholders for getSTA so Home Assistant
         # receives placeholders immediately (per HA entity translations guidance)
-        if sensor_key == "getSTA":
+        # Use translation key (case-insensitive) to cover different casings
+        if getattr(self, '_attr_translation_key', '').lower() == "getsta":
             try:
                 raw = None
                 for device in coordinator.data.get('devices', []):
                     if device['id'] == device_id:
                         raw = device.get('status', {}).get('getSTA', '')
                         break
-                placeholders: dict = {}
+                # Always provide the required placeholder keys (may be empty strings)
+                placeholders: dict = {"resistance_value": "", "rinse_round": ""}
+                _LOGGER.debug("Initial raw getSTA for %s: %s", self.entity_id, raw)
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
                     placeholders['resistance_value'] = m.group(1)
                 m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
                 if m2:
                     placeholders['rinse_round'] = m2.group(1)
-                if placeholders:
-                    _LOGGER.debug("Setting initial translation_placeholders for %s: %s", self.entity_id, placeholders)
-                    self._attr_translation_placeholders = placeholders
-                else:
-                    # Home Assistant expects a mapping when formatting names; use empty dict
-                    self._attr_translation_placeholders = {}
+                _LOGGER.debug("Setting initial translation_placeholders for %s: %s", self.entity_id, placeholders)
+                self._attr_translation_placeholders = placeholders
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to initialize translation placeholders for %s", self.entity_id)
-                self._attr_translation_placeholders = None
+                self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": ""}
 
     @property
     def icon(self) -> str | None:
@@ -402,25 +401,32 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
     def extra_state_attributes(self) -> dict | None:
         """Return additional state attributes used by translations."""
         # Only provide attributes for getSTA to fill translation placeholders
-        if self._sensor_key != 'getSTA':
+        is_getsta = (
+            getattr(self, '_attr_translation_key', '').lower() == 'getsta' or
+            self.entity_id.endswith('_getsta')
+        )
+        if not is_getsta:
             return None
+        # Debug: log every time attributes are computed for getSTA
+        _LOGGER.debug("[getSTA debug] Entity: %s, device_id: %s, coordinator.data: %s", self.entity_id, self._device_id, self.coordinator.data)
 
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 raw = device.get('status', {}).get('getSTA', '')
-                # Always provide keys so frontend translators can format safely
                 attrs: dict = {"resistance_value": "", "rinse_round": ""}
+                _LOGGER.debug("[getSTA debug] Entity: %s, raw getSTA: %s", self.entity_id, raw)
                 if raw is None:
+                    _LOGGER.debug("[getSTA debug] Entity: %s, raw is None, returning attrs: %s", self.entity_id, attrs)
                     return attrs
-                # resistance_value: inside parentheses for regenerant rinse
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
                     attrs['resistance_value'] = m.group(1)
-                # rinse_round: number after "Płukanie szybkie"
+                    _LOGGER.debug("[getSTA debug] Entity: %s, resistance_value matched: %s", self.entity_id, attrs['resistance_value'])
                 m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
                 if m2:
                     attrs['rinse_round'] = m2.group(1)
-
+                    _LOGGER.debug("[getSTA debug] Entity: %s, rinse_round matched: %s", self.entity_id, attrs['rinse_round'])
+                _LOGGER.debug("[getSTA debug] Entity: %s, returning attrs: %s", self.entity_id, attrs)
                 return attrs
 
     @property
@@ -431,34 +437,49 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         call `name.format(**translation_placeholders)` when building entity
         names; passing None causes a TypeError.
         """
-        if self._sensor_key != 'getSTA':
+        is_getsta = (
+            getattr(self, '_attr_translation_key', '').lower() == 'getsta' or
+            self.entity_id.endswith('_getsta')
+        )
+        if not is_getsta:
             return {}
+        _LOGGER.debug("[getSTA debug] Entity: %s, _attr_translation_placeholders: %s", self.entity_id, self._attr_translation_placeholders)
 
-        # Default placeholders always include keys to avoid missing-variable errors
         placeholders = {"resistance_value": "", "rinse_round": ""}
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 raw = device.get('status', {}).get('getSTA', '')
+                _LOGGER.debug("[getSTA debug] Entity: %s, raw getSTA: %s", self.entity_id, raw)
                 if raw is None:
+                    _LOGGER.debug("[getSTA debug] Entity: %s, raw is None, returning placeholders: %s", self.entity_id, placeholders)
                     return placeholders
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
                     placeholders['resistance_value'] = m.group(1)
+                    _LOGGER.debug("[getSTA debug] Entity: %s, resistance_value matched: %s", self.entity_id, placeholders['resistance_value'])
                 m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
                 if m2:
                     placeholders['rinse_round'] = m2.group(1)
-
+                    _LOGGER.debug("[getSTA debug] Entity: %s, rinse_round matched: %s", self.entity_id, placeholders['rinse_round'])
+                _LOGGER.debug("[getSTA debug] Entity: %s, returning placeholders: %s", self.entity_id, placeholders)
                 return placeholders
 
     def _handle_coordinator_update(self) -> None:
         """Update translation placeholders on coordinator update and propagate state."""
         try:
-            new_placeholders = self.translation_placeholders or {}
+            # Only update translation_placeholders for getSTA entities
+            if getattr(self, '_attr_translation_key', '').lower() != 'getsta':
+                super()._handle_coordinator_update()
+                return
+
+            new_placeholders = self.translation_placeholders
             if new_placeholders != getattr(self, '_attr_translation_placeholders', {}):
-                _LOGGER.debug("Updating translation_placeholders for %s: %s", self._attr_unique_id, new_placeholders)
-            self._attr_translation_placeholders = new_placeholders
+                _LOGGER.debug("Updating translation_placeholders for %s: %s", self.entity_id, new_placeholders)
+                # Also log extra state attributes to confirm frontend receives them
+                _LOGGER.debug("extra_state_attributes for %s: %s", self.entity_id, self.extra_state_attributes)
+            self._attr_translation_placeholders = new_placeholders or {"resistance_value": "", "rinse_round": ""}
         except Exception:  # pragma: no cover - defensive
-            _LOGGER.exception("Failed to update translation_placeholders for %s", self._attr_unique_id)
-            self._attr_translation_placeholders = {}
+            _LOGGER.exception("Failed to update translation_placeholders for %s", self.entity_id)
+            self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": ""}
         super()._handle_coordinator_update()
 
