@@ -88,7 +88,6 @@ The integration provides comprehensive monitoring of your water softener:
 #### Binary Sensors
 - Regeneration active status
 - Operating state
-- Screen lock status
 - Alarm status
 
 #### Buttons (Actions)
