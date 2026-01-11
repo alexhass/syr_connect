@@ -24,6 +24,8 @@ home-assistant_v2.db
 .coverage
 htmlcov/
 pytest_cache/
+.pytest_cache/
+.mypy_cache/
 .cache/
 
 # --- Ruff ---
