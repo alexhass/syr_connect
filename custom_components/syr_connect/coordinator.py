@@ -48,6 +48,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
             update_interval=timedelta(seconds=scan_interval),
         )
+        # Some Home Assistant helper methods expect a ``config_entry``
+        # attribute to be present when calling ``async_config_entry_first_refresh``.
+        # Tests construct the coordinator directly without a config entry;
+        # set a dummy value so the helper does not raise ConfigEntryError.
+        self.config_entry = object()
 
         self.api = SyrConnectAPI(session, username, password)
         self._username = username
