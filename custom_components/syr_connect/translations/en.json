@@ -274,10 +274,10 @@
         "name": "Regeneration",
         "state": {
           "status_backwash": "Backwash",
-          "_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
+          "backup_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
           "status_regenerant_rinse": "Regenerant rinse",
           "status_slow_rinse": "Slow rinse",
-          "_status_fast_rinse": "Fast rinse {rinse_round}",
+          "backup_status_fast_rinse": "Fast rinse {rinse_round}",
           "status_fast_rinse": "Fast rinse",
           "status_filling": "Filling",
           "status_inactive": "Inactive"

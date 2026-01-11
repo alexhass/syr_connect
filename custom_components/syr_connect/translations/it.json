@@ -271,10 +271,10 @@
         "name": "Stato",
         "state": {
           "status_backwash": "Controlavaggio",
-          "_status_regenerant_rinse": "Risciacquo con rigenerante ({resistance_value})",
+          "backup_status_regenerant_rinse": "Risciacquo con rigenerante ({resistance_value})",
           "status_regenerant_rinse": "Risciacquo con rigenerante",
           "status_slow_rinse": "Risciacquo lento",
-          "_status_fast_rinse": "Risciacquo veloce {rinse_round}",
+          "backup_status_fast_rinse": "Risciacquo veloce {rinse_round}",
           "status_fast_rinse": "Risciacquo veloce",
           "status_filling": "Riempimento",
           "status_inactive": ""

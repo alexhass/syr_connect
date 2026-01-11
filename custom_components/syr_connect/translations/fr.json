@@ -271,10 +271,10 @@
         "name": "Régénération",
         "state": {
           "status_backwash": "Rinçage inverse",
-          "_status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
+          "backup_status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
           "status_regenerant_rinse": "Rinçage régénérant",
           "status_slow_rinse": "Rinçage lent",
-          "_status_fast_rinse": "Rinçage rapide {rinse_round}",
+          "backup_status_fast_rinse": "Rinçage rapide {rinse_round}",
           "status_fast_rinse": "Rinçage rapide",
           "status_filling": "Remplissage",
           "status_inactive": "Inactif"

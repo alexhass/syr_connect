@@ -274,10 +274,10 @@
         "name": "Regeneration",
         "state": {
           "status_backwash": "Rückspülung",
-          "_status_regenerant_rinse": "Spülen mit Regeneriermittel ({resistance_value})",
+          "backup_status_regenerant_rinse": "Spülen mit Regeneriermittel ({resistance_value})",
           "status_regenerant_rinse": "Spülen mit Regeneriermittel",
           "status_slow_rinse": "Langsames Spülen",
-          "_status_fast_rinse": "Schnelles Spülen {rinse_round}",
+          "backup_status_fast_rinse": "Schnelles Spülen {rinse_round}",
           "status_fast_rinse": "Schnelles Spülen",
           "status_filling": "Befüllen",
           "status_inactive": "Inaktiv"
