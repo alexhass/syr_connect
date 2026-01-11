@@ -354,11 +354,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         if precision is not None:
                             try:
                                 numeric_value = round(numeric_value, precision)
-                                # Preserve float type for values originally
-                                # received as strings to avoid changing
-                                # test expectations (return float even when
-                                # precision==0).
-                                # Do not cast to int here.
+                                if precision == 0:
+                                    numeric_value = int(numeric_value)
                             except (TypeError, ValueError):
                                 pass
                         return numeric_value
