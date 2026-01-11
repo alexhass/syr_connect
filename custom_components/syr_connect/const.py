@@ -393,36 +393,3 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getPRN',  # Duplicate of getPRF
     'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',    
 }
-
-# All n-keys from <sc><dvs><d><c> in LEXplus10S.xml
-_SYR_CONNECT_LEXPLUS10S_KEYS = [
-    "getSRN", "getVER", "getFIR", "getTYP", "getCNA", "getALM", "getCDE", "getCS1", "getCS2", "getCS3",
-    "getCYN", "getCYT", "getDEN", "getDGW", "getDWF", "getFCO", "getFLO", "getINR", "getIPA", "getIWH",
-    "getLAR", "getMAC", "getMAN", "getNOR", "getNOT", "getOWH", "getPRS", "getPST", "getRDO", "getRES",
-    "getRG1", "getRG2", "getRG3", "getRPD", "getRPW", "getRTH", "getRTI", "getRTM", "getSCR", "getSIR",
-    "getSRE", "getSS1", "getSS2", "getSS3", "getSTA", "getSV1", "getSV2", "getSV3", "getTOR", "getVS1",
-    "getVS2", "getVS3", "getWHU"
-]
-
-# All n-keys from <sc><dvs><d><c> in LEXplus10SL.xml
-_SYR_CONNECT_LEXPLUS10SL_KEYS = [
-    "getSRN", "getVER", "getFIR", "getTYP", "getCNA", "get71", "getAB", "getALA", "getAVO", "getBSA", "getBUZ",
-    "getCDE", "getCDF", "getCEL", "getCES", "getCND", "getCNO", "getCNS", "getCOF", "getCS1", "getCYN", "getCYT",
-    "getDAT", "getDBD", "getDBT", "getDCM", "getDEN", "getDGW", "getDMA", "getDOM", "getDPL", "getDRP", "getDST",
-    "getDTC", "getDWF", "getFCO", "getFLO", "getFSL", "getIDS", "getINR", "getIPA", "getIWH", "getLAN", "getLAR",
-    "getLDF", "getLWT", "getMAC", "getMAN", "getMTF", "getNOR", "getNOT", "getNPS", "getOHF", "getOWH", "getPA1",
-    "getPA2", "getPA3", "getPA4", "getPA5", "getPA6", "getPA7", "getPA8", "getPB1", "getPB2", "getPB3", "getPB4",
-    "getPB5", "getPB6", "getPB7", "getPB8", "getPF1", "getPF2", "getPF3", "getPF4", "getPF5", "getPF6", "getPF7",
-    "getPF8", "getPM1", "getPM2", "getPM3", "getPM4", "getPM5", "getPM6", "getPM7", "getPM8", "getPN1", "getPN2",
-    "getPN3", "getPN4", "getPN5", "getPN6", "getPN7", "getPN8", "getPR1", "getPR2", "getPR3", "getPR4", "getPR5",
-    "getPR6", "getPR7", "getPR8", "getPRF", "getPRN", "getPRS", "getPST", "getPT1", "getPT2", "getPT3", "getPT4",
-    "getPT5", "getPT6", "getPT7", "getPT8", "getPV1", "getPV2", "getPV3", "getPV4", "getPV5", "getPV6", "getPV7",
-    "getPV8", "getPW1", "getPW2", "getPW3", "getPW4", "getPW5", "getPW6", "getPW7", "getPW8", "getRDO", "getRES",
-    "getRG1", "getRPD", "getRPW", "getRTH", "getRTI", "getRTM", "getSCR", "getSIR", "getSLE", "getSLF", "getSLO",
-    "getSLP", "getSLT", "getSLV", "getSRE", "getSRV", "getSS1", "getSTA", "getSV1", "getT2", "getTMP", "getTMZ",
-    "getTN", "getTOR", "getVLV", "getVS1", "getWHU", "getYHF"
-]
-
-# All unique n-keys from LEXplus10S and LEXplus10SL XML
-_SYR_CONNECT_LEX_KEYS = list(set(_SYR_CONNECT_LEXPLUS10S_KEYS) | set(_SYR_CONNECT_LEXPLUS10SL_KEYS))
-_SYR_CONNECT_LEX_KEYS.sort()
