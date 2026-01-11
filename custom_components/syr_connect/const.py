@@ -333,7 +333,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSCR',  # Screen lock
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
     'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
-    'getCS1', 'getCS2', 'getCS3',  # Configuration levels - advanced config
 
     # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
