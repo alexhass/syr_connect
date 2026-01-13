@@ -42,13 +42,31 @@ The integration automatically creates entities for all your SYR Connect devices.
 
 ### Supported Devices
 
-This integration works with SYR water softeners that appear in the SYR Connect cloud (via the SYR Connect app). Tested and reported working:
-- SYR LEX Plus 10 Connect / SLIM
+This integration works with SYR water softeners that appear in the SYR Connect cloud (via the SYR Connect app). 
+
+Tested and reported working:
 - SYR LEX Plus 10 S Connect
+- SYR LEX Plus 10 SL Connect
+
+Not tested, but should work (please report):
+- NeoSoft 2500 Connect
+- NeoSoft 5000 Connect
+- SYR LEX Plus 10 Connect / SLIM
 - SYR LEX Plus 10 IP (when linked through SYR Connect)
+- SYR LEX 1500 Connect Single
+- SYR LEX 1500 Connect Duplex
+- SYR LEX 1500 Connect Alternating
+- SYR LEX 1500 Connect Triple
+- SYR IT 3000 Pendulum system
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
-**Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically.
+Leakage detection devices are also of interrest, but may require additonal work:
+- TRIO DFR/LS Connect 2425
+- SafeTech Connect
+- SafeTech plus Connect
+- SafeFloor Connect
+
+**Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
 
 ### Supported Functionality
 
@@ -62,7 +80,7 @@ The integration provides comprehensive monitoring of your water softener:
 - Water hardness unit display
 
 **Regeneration Information**
-- Regeneration status (active/inactive)
+- Regeneration status
 - Number of regenerations performed
 - Regeneration interval settings
 - Regeneration time schedule
@@ -88,7 +106,6 @@ The integration provides comprehensive monitoring of your water softener:
 #### Binary Sensors
 - Regeneration active status
 - Operating state
-- Alarm status
 
 #### Buttons (Actions)
 - **Regenerate Now (setSIR)**: Start immediate regeneration
@@ -126,7 +143,7 @@ automation:
   - alias: "SYR: Low Salt Alert"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.syr_connect_<serial_number>_getSS1
+        entity_id: sensor.syr_connect_<serial_number>_getss1
         below: 2  # Less than 2 weeks of salt remaining
     action:
       - service: notify.mobile_app
@@ -149,9 +166,9 @@ automation:
         data:
           title: "Water Softener Daily Report"
           message: >
-            Regenerations today: {{ states('sensor.syr_connect_<serial_number>_getNOR') }}
-            Remaining capacity: {{ states('sensor.syr_connect_<serial_number>_getRES') }}L
-            Salt supply: {{ states('sensor.syr_connect_<serial_number>_getSS1') }} weeks
+            Regenerations today: {{ states('sensor.syr_connect_<serial_number>_getnor') }}
+            Remaining capacity: {{ states('sensor.syr_connect_<serial_number>_getres') }}L
+            Salt supply: {{ states('sensor.syr_connect_<serial_number>_getss1') }} weeks
 ```
 
 #### Alarm Notification
@@ -162,12 +179,12 @@ automation:
   - alias: "SYR: Alarm Notification"
     trigger:
       - platform: template
-        value_template: "{{ states('sensor.syr_connect_<serial_number>_getALM') != 'no_alarm' }}"
+        value_template: "{{ states('sensor.syr_connect_<serial_number>_getalm') != 'no_alarm' }}"
     action:
       - service: notify.mobile_app
         data:
           title: "⚠️ Water Softener Alarm"
-          message: "Check your SYR device - alarm detected! Current alarm: {{ states('sensor.syr_connect_<serial_number>_getALM') }}"
+          message: "Check your SYR device - alarm detected! Current alarm: {{ states('sensor.syr_connect_<serial_number>_getalm') }}"
           data:
             priority: high
 ```
@@ -180,7 +197,7 @@ automation:
   - alias: "SYR: High Flow Alert"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.syr_connect_<serial_number>_getFLO
+        entity_id: sensor.syr_connect_<serial_number>_getflo
         above: 20  # Flow rate above 20 L/min
         for:
           minutes: 5
@@ -208,7 +225,7 @@ automation:
     action:
       - service: button.press
         target:
-          entity_id: button.syr_connect_<serial_number>_setSIR
+          entity_id: button.syr_connect_<serial_number>_setsir
 ```
 
 **Note**: Replace `<serial_number>` with your actual device serial number in all examples.
