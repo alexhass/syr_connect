@@ -51,8 +51,7 @@ Tested and reported working:
 Not tested, but should work (please report):
 - NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
-- SYR LEX Plus 10 Connect / SLIM
-- SYR LEX Plus 10 IP (when linked through SYR Connect)
+- SYR LEX Plus 10 Connect
 - SYR LEX 1500 Connect Single
 - SYR LEX 1500 Connect Duplex
 - SYR LEX 1500 Connect Alternating
