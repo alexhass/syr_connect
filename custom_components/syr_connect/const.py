@@ -138,9 +138,9 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getSV1": "mdi:delete-variant",
     "getSV2": "mdi:delete-variant",
     "getSV3": "mdi:delete-variant",
-    "getSS1": "mdi:cup-water",
-    "getSS2": "mdi:cup-water",
-    "getSS3": "mdi:cup-water",
+    "getSS1": "mdi:calendar-week",
+    "getSS2": "mdi:calendar-week",
+    "getSS3": "mdi:calendar-week",
     # Regeneration
     "getINR": "mdi:counter",
     "getNOR": "mdi:counter",
@@ -177,7 +177,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getVS3": "mdi:gauge",
     # Regeneration Cycles
     "getCYN": "mdi:numeric",
-    "getCYT": "mdi:clock-time-four",
+    "getCYT": "mdi:timer-sync",
 
     # Custom non-API combined sensor
     "getRTIME": "mdi:clock-outline", # Regeneration time (combined from getRTH and getRTM)
