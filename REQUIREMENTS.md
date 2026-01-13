@@ -91,21 +91,36 @@ pip install pycryptodomex==3.19.0
 ```
 config/
 └── custom_components/
-    └── syr_connect/
-        ├── __init__.py
-        ├── manifest.json
-        ├── config_flow.py
-        ├── const.py
-        ├── api.py
-        ├── checksum.py
-        ├── coordinator.py
-        ├── sensor.py
-        ├── button.py
-        └── translations/
-            ├── de.json
-            ├── en.json
-            ├── es.json
-            └── fr.json
+   └── syr_connect/
+      ├── __init__.py
+      ├── manifest.json
+      ├── config_flow.py
+      ├── const.py
+      ├── api.py
+      ├── checksum.py
+      ├── coordinator.py
+      ├── sensor.py
+      ├── button.py
+      ├── binary_sensor.py
+      ├── diagnostics.py
+      ├── encryption.py
+      ├── exceptions.py
+      ├── helpers.py
+      ├── http_client.py
+      ├── payload_builder.py
+      ├── repairs.py
+      ├── response_parser.py
+      ├── icon.png
+      ├── icon@2x.png
+      ├── logo.png
+      ├── logo@2x.png
+      └── translations/
+         ├── de.json
+         ├── en.json
+         ├── es.json
+         ├── fr.json
+         ├── it.json
+         └── pt.json
 ```
 
 All files must be present for the integration to work correctly.
