@@ -51,13 +51,12 @@ Testati e segnalati funzionanti:
 Non testati, ma dovrebbero funzionare:
 - NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
-- SYR LEX Plus 10 Connect / SLIM
-- SYR LEX Plus 10 IP (quando collegato tramite SYR Connect)
-- SYR LEX 1500 Connect Einzel
-- SYR LEX 1500 Connect Doppel
-- SYR LEX 1500 Connect Pendel
-- SYR LEX 1500 Connect Dreifach
-- SYR IT 3000 Pendelanlage
+- SYR LEX Plus 10 Connect
+- SYR LEX 1500 Connect Singolo
+- SYR LEX 1500 Connect Doppio
+- SYR LEX 1500 Connect Alternante
+- SYR LEX 1500 Connect Triplo
+- SYR IT 3000 Sistema pendolare
 - Altri modelli SYR con funzionalità Connect o gateway retrofit
 
 **Nota**: Se il dispositivo è visibile nel tuo account SYR Connect, l'integrazione lo rileverà automaticamente. Per dispositivi non testati, condividere i dati diagnostici aiuta a espandere il supporto.

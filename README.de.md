@@ -51,8 +51,7 @@ Getestet und berichtet funktionierend:
 Nicht getestet, sollte aber funktionieren:
 - NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
-- SYR LEX Plus 10 Connect / SLIM
-- SYR LEX Plus 10 IP (wenn mit SYR Connect verknüpft)
+- SYR LEX Plus 10 Connect
 - SYR LEX 1500 Connect Einzel
 - SYR LEX 1500 Connect Doppel
 - SYR LEX 1500 Connect Pendel
