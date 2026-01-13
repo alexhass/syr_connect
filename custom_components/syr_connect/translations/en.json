@@ -273,14 +273,15 @@
       "getsta": {
         "name": "Regeneration",
         "state": {
-          "status_backwash": "Backwash",
-          "backup_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
-          "status_regenerant_rinse": "Regenerant rinse",
-          "status_slow_rinse": "Slow rinse",
           "backup_status_fast_rinse": "Fast rinse {rinse_round}",
+          "backup_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
+          "status_backwash": "Backwash",
           "status_fast_rinse": "Fast rinse",
           "status_filling": "Filling",
-          "status_inactive": "Inactive"
+          "status_inactive": "Inactive",
+          "status_regenerant_rinse": "Regenerant rinse",
+          "status_refill_salt": "Please refill salt",
+          "status_slow_rinse": "Slow rinse"
         }
       },
       "getss1": {

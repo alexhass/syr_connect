@@ -55,12 +55,15 @@
       "getsta": {
         "name": "Rigenerazione",
         "state": {
+          "backup_status_fast_rinse": "Risciacquo veloce {rinse_round}",
+          "backup_status_regenerant_rinse": "Risciacquo rigenerante ({resistance_value})",
           "status_backwash": "Controlavaggio",
-          "status_regenerant_rinse": "Risciacquo rigenerante ({resistance_value})",
-          "status_slow_rinse": "Risciacquo lento",
-          "status_fast_rinse": "Risciacquo veloce {rinse_round}",
+          "status_fast_rinse": "Risciacquo veloce",
           "status_filling": "Riempimento",
-          "status_inactive": "Inattivo"
+          "status_inactive": "Inattivo",
+          "status_regenerant_rinse": "Risciacquo rigenerante",
+          "status_refill_salt": "Si prega di aggiungere il sale",
+          "status_slow_rinse": "Risciacquo lento"
         }
       },
       "getcna": {

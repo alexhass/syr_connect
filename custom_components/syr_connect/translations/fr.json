@@ -270,14 +270,15 @@
       "getsta": {
         "name": "Régénération",
         "state": {
-          "status_backwash": "Rinçage inverse",
-          "backup_status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
-          "status_regenerant_rinse": "Rinçage régénérant",
-          "status_slow_rinse": "Rinçage lent",
           "backup_status_fast_rinse": "Rinçage rapide {rinse_round}",
+          "backup_status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
+          "status_backwash": "Rinçage inverse",
           "status_fast_rinse": "Rinçage rapide",
           "status_filling": "Remplissage",
-          "status_inactive": "Inactif"
+          "status_inactive": "Inactif",
+          "status_regenerant_rinse": "Rinçage régénérant",
+          "status_refill_salt": "Veuillez ajouter du sel",
+          "status_slow_rinse": "Rinçage lent"
         }
       },
       "getss1": {

@@ -290,14 +290,15 @@
       "getsta": {
         "name": "Regeneração",
         "state": {
-          "status_backwash": "Retrolavagem",
-          "backup_status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
-          "status_regenerant_rinse": "Enxágue com regenerante",
-          "status_slow_rinse": "Enxágue lento",
           "backup_status_fast_rinse": "Enxágue rápido {rinse_round}",
+          "backup_status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",
+          "status_backwash": "Retrolavagem",
           "status_fast_rinse": "Enxágue rápido",
           "status_filling": "Enchimento",
-          "status_inactive": "Inativo"
+          "status_inactive": "Inativo",
+          "status_regenerant_rinse": "Enxágue com regenerante",
+          "status_refill_salt": "Por favor, reponha o sal",
+          "status_slow_rinse": "Enxágue lento"
         }
       },
       "getsv1": {

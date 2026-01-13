@@ -270,14 +270,15 @@
       "getsta": {
         "name": "Regeneración",
         "state": {
-          "status_backwash": "Retrolavado",
-          "backup_status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
-          "status_regenerant_rinse": "Enjuague con regenerante",
-          "status_slow_rinse": "Enjuague lento",
           "backup_status_fast_rinse": "Enjuague rápido {rinse_round}",
+          "backup_status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
+          "status_backwash": "Retrolavado",
           "status_fast_rinse": "Enjuague rápido",
           "status_filling": "Llenado",
-          "status_inactive": "Inactivo"
+          "status_inactive": "Inactivo",
+          "status_regenerant_rinse": "Enjuague con regenerante",
+          "status_refill_salt": "Por favor, reponga la sal",
+          "status_slow_rinse": "Enjuague lento"
         }
       },
       "getss1": {
