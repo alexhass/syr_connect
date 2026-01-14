@@ -112,7 +112,7 @@
         "name": "Input water hardness"
       },
       "getlar": {
-        "name": "Last action"
+        "name": "Last regeneration"
       },
       "getmac": {
         "name": "MAC address"
@@ -271,6 +271,9 @@
           "1": "Do not start"
         }
       },
+      "getscr": {
+        "name": "Service regeneration cycles"
+      },
       "getsrn": {
         "name": "Serial number"
       },
@@ -334,9 +337,6 @@
     "binary_sensor": {
       "getpst": {
         "name": "Operating state"
-      },
-      "getscr": {
-        "name": "Screen lock"
       },
       "getsre": {
         "name": "Regeneration active"

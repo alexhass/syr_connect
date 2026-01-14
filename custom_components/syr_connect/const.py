@@ -75,6 +75,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getPRS": SensorDeviceClass.PRESSURE,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getCOF": SensorDeviceClass.WATER,
+    "getLAR": SensorDeviceClass.TIMESTAMP,
 }
 
 # Sensor state classes (for Home Assistant) - internal
@@ -150,6 +151,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getSRE": "mdi:autorenew",
     "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
+    "getLAR": "mdi:calendar-clock",
     # System & Status
     "getALM": "mdi:bell-alert",
     "getPST": "mdi:power",
@@ -247,6 +249,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getFCO": UnitOfVolume.LITERS,                          # Total flow counter
     "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow warning value
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
+    "getLAR": UnitOfTime.SECONDS,                           # Last action timestamp (unix seconds)
 
     # Sensors exits in devices:
     # - LEXplus10SL
@@ -305,6 +308,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV3": 0,  # Salt container volume 3: show as whole number by default
     "getTOR": 0,  # Total regenerations: show as whole number by default
     "getOWH": 0,  # Outgoing water hardness: show as whole number by default
+    "getSCR": 0,  # Service regeneration cycles: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
@@ -323,6 +327,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getCDE',  # Configuration code - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
+    'getSMR',  # Manual regeneration control
+    'setRST',  # Reset device control
     #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
     'getTYP',  # Type - not helpful for users
     'getLAR',  # Last action - not useful as sensor
@@ -330,7 +336,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getALM_dt',
     'getRTI',  # Value is always 00:00. Not clear what it represents.
     # Boolean sensors - now handled as binary_sensor platform
-    'getSCR',  # Screen lock
+    'getSCR',  # unknown, likely number of service regeneration cycles
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
     'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
 

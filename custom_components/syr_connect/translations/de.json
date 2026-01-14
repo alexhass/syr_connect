@@ -112,7 +112,7 @@
         "name": "IP Adresse"
       },
       "getlar": {
-        "name": "Letzte Aktion"
+        "name": "Letzte Regeneration"
       },
       "getmac": {
         "name": "MAC Adresse"
@@ -271,6 +271,9 @@
           "1": "Nicht starten"
         }
       },
+      "getscr": {
+        "name": "Service-Regenerationszyklen"
+      },
       "getsrn": {
         "name": "Seriennummer"
       },
@@ -334,9 +337,6 @@
     "binary_sensor": {
       "getpst": {
         "name": "Betriebszustand"
-      },
-      "getscr": {
-        "name": "Bildschirmsperre"
       },
       "getsre": {
         "name": "Regeneration aktiv"

@@ -312,6 +312,19 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return None
                     return None
 
+                # Special handling for last action timestamp (getLAR): convert unix seconds to ISO-8601
+                if self._sensor_key == 'getLAR':
+                    raw_value = status.get(self._sensor_key)
+                    if raw_value is None or raw_value == "":
+                        return None
+                    try:
+                        from datetime import datetime, timezone
+
+                        ts = int(float(raw_value))
+                        return datetime.fromtimestamp(ts, timezone.utc).isoformat()
+                    except (ValueError, TypeError, OverflowError):
+                        return None
+
                 # Raw value from device
                 value = status.get(self._sensor_key)
 

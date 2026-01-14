@@ -44,9 +44,6 @@
       "getpst": {
         "name": "Estado operacional"
       },
-      "getscr": {
-        "name": "Bloqueio de tela"
-      },
       "getsre": {
         "name": "Regeneração ativa"
       }
@@ -123,7 +120,7 @@
         "name": "Dureza da água de entrada"
       },
       "getlar": {
-        "name": "Última ação"
+        "name": "Última regeneração"
       },
       "getmac": {
         "name": "Endereço MAC"
@@ -278,6 +275,9 @@
           "0": "Iniciar imediatamente",
           "1": "Não iniciar"
         }
+      },
+      "getscr": {
+        "name": "Ciclos de regeneração de serviço"
       },
       "getsrn": {
         "name": "Número de série"

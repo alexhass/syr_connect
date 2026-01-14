@@ -115,7 +115,7 @@
         "name": "Indirizzo IP"
       },
       "getlar": {
-        "name": "Ultima azione"
+        "name": "Ultima rigenerazione"
       },
       "getmac": {
         "name": "Indirizzo MAC"
@@ -271,6 +271,9 @@
           "1": "Non avviare"
         }
       },
+      "getscr": {
+        "name": "Cicli di rigenerazione del servizio"
+      },
       "getsrn": {
         "name": "Numero di serie"
       },
@@ -333,9 +336,6 @@
     "binary_sensor": {
       "getpst": {
         "name": "Stato operativo"
-      },
-      "getscr": {
-        "name": "Blocco schermo"
       },
       "getsre": {
         "name": "Rigenerazione attiva"
