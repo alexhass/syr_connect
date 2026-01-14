@@ -42,7 +42,7 @@ async def async_setup_entry(
         device_name = device['name']
         project_id = device['project_id']
 
-        # Add action buttons based on the ioBroker adapter
+        # Add action buttons
         action_buttons = [
             ("setSIR", "Regenerate Now"),
             ("setSMR", "Multi Regenerate"),
