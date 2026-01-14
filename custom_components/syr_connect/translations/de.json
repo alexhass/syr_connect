@@ -64,7 +64,12 @@
         "name": "Konfigurationscode"
       },
       "getcna": {
-        "name": "Gerätename"
+        "name": "Gerätename",
+        "state": {
+          "LEXplus10": "LEX Plus 10 Connect",
+          "LEXplus10S": "LEX Plus 10 S Connect",
+          "LEXplus10SL": "LEX Plus 10 SL Connect"
+        }
       },
       "getcs1": {
         "name": "Konfiguration Stufe 1"
