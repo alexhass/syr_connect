@@ -110,7 +110,7 @@ async def test_set_device_status_value_conversion(api_client):
     api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
     
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>') as mock_post:
-        await api_client.set_device_status("device1", "setSIR", True)
+        await api_client.set_device_status("device1", "setSIR", 0)
         
         # Verify the payload contains '1' not 'True'
         call_args = mock_post.call_args

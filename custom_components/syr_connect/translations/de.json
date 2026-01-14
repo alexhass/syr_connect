@@ -265,13 +265,17 @@
         "name": "Minuten der Regeneration"
       },
       "getsir": {
-        "name": "Sofortregeneration"
+        "name": "Sofortregeneration",
+        "state": {
+          "0": "Sofort starten",
+          "1": "Nicht starten"
+        }
       },
       "getsrn": {
         "name": "Seriennummer"
       },
       "getsta": {
-        "name": "Regeneration",
+        "name": "Status",
         "state": {
           "backup_status_fast_rinse": "Schnelles Spülen {rinse_round}",
           "backup_status_regenerant_rinse": "Spülen mit Regeneriermittel ({resistance_value})",
