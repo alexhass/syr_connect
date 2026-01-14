@@ -324,13 +324,13 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'dt',  # Timestamp attributes (getSRN_dt, getALM_dt, etc.)
     'getDEN',  # Boolean sensor - device enabled/disabled
     'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
-    'getCDE',  # Configuration code - not useful for users
+    'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control
     'setRST',  # Reset device control
     #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
-    'getTYP',  # Type - not helpful for users
+    'getTYP',  # Type of device (always 80?) - not helpful for users
     'getLAR',  # Last action - not useful as sensor
     'getSRN_dt',
     'getALM_dt',
