@@ -60,12 +60,12 @@ def test_build_device_status_payload(payload_builder):
 
 def test_build_set_status_payload(payload_builder):
     """Test building set status payload."""
-    payload = payload_builder.build_set_status_payload("session123", "device789", "setSIR", 1)
+    payload = payload_builder.build_set_status_payload("session123", "device789", "setSIR", 0)
     
     assert "session123" in payload
     assert "device789" in payload
     assert "setSIR" in payload
-    assert 'v="1"' in payload
+    assert 'v="0"' in payload
 
 
 def test_build_set_status_payload_with_string_value(payload_builder):

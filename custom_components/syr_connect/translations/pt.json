@@ -273,7 +273,11 @@
         "name": "Hora de regeneração (Minuto)"
       },
       "getsir": {
-        "name": "Regeneração imediata"
+        "name": "Regeneração imediata",
+        "state": {
+          "0": "Iniciar imediatamente",
+          "1": "Não iniciar"
+        }
       },
       "getsrn": {
         "name": "Número de série"

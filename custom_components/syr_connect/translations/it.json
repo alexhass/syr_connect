@@ -265,7 +265,11 @@
         "name": "Ora rigenerazione (Minuto)"
       },
       "getsir": {
-        "name": "Rigenerazione immediata"
+        "name": "Rigenerazione immediata",
+        "state": {
+          "0": "Avvia subito",
+          "1": "Non avviare"
+        }
       },
       "getsrn": {
         "name": "Numero di serie"

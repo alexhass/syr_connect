@@ -110,7 +110,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Press the button.
 
-        Sends the command to the device with value 1 to trigger the action.
+        Sends the command to the device with value 0 to trigger the action.
 
         Raises:
             HomeAssistantError: If the button press fails
@@ -120,9 +120,10 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         _LOGGER.debug("Button pressed: %s (device: %s)", button_id, self._device_id)
 
         try:
-            # Send command with value 1 (trigger action)
+            # Send value: 0 for `setSIR` (documentation: 0 = immediate), otherwise 1
+            value = 0 if self._command == "setSIR" else 1
             await self.coordinator.async_set_device_value(
-                self._device_id, self._command, 1
+                self._device_id, self._command, value
             )
         except ValueError as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err

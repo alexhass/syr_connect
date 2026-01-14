@@ -265,7 +265,11 @@
         "name": "Regeneration time (minute)"
       },
       "getsir": {
-        "name": "Immediate regeneration"
+        "name": "Immediate regeneration",
+        "state": {
+          "0": "Start immediately",
+          "1": "Do not start"
+        }
       },
       "getsrn": {
         "name": "Serial number"

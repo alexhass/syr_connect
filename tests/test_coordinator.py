@@ -123,7 +123,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant) -> None:
         await coordinator.async_config_entry_first_refresh()
 
         # Set device value
-        await coordinator.async_set_device_value("device1", "setSIR", 1)
+        await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
-        mock_api.set_device_status.assert_called_once_with("dclg1", "setSIR", 1)
+        mock_api.set_device_status.assert_called_once_with("dclg1", "setSIR", 0)
