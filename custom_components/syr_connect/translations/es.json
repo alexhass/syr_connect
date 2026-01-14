@@ -272,7 +272,7 @@
         "name": "Número de serie"
       },
       "getsta": {
-        "name": "Regeneración",
+        "name": "Estado",
         "state": {
           "backup_status_fast_rinse": "Enjuague rápido {rinse_round}",
           "backup_status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",

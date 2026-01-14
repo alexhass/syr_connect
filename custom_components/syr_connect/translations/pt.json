@@ -292,7 +292,7 @@
         "name": "Reserva de sal recipiente 3"
       },
       "getsta": {
-        "name": "Regeneração",
+        "name": "Estado",
         "state": {
           "backup_status_fast_rinse": "Enxágue rápido {rinse_round}",
           "backup_status_regenerant_rinse": "Enxágue com regenerante ({resistance_value})",

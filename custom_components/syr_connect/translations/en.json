@@ -275,7 +275,7 @@
         "name": "Serial number"
       },
       "getsta": {
-        "name": "Regeneration",
+        "name": "Status",
         "state": {
           "backup_status_fast_rinse": "Fast rinse {rinse_round}",
           "backup_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",

@@ -272,7 +272,7 @@
         "name": "Numéro de série"
       },
       "getsta": {
-        "name": "Régénération",
+        "name": "Statut",
         "state": {
           "backup_status_fast_rinse": "Rinçage rapide {rinse_round}",
           "backup_status_regenerant_rinse": "Rinçage régénérant ({resistance_value})",
