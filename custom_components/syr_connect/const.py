@@ -167,9 +167,9 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getIPA": "mdi:ip-network",
     "getDGW": "mdi:router-network",
     # Configuration
-    "getCS1": "mdi:cog",
-    "getCS2": "mdi:cog",
-    "getCS3": "mdi:cog",
+    "getCS1": "mdi:beaker",
+    "getCS2": "mdi:beaker",
+    "getCS3": "mdi:beaker",
     "getRG1": "mdi:group",
     "getRG2": "mdi:group",
     "getRG3": "mdi:group",
@@ -377,6 +377,7 @@ _SYR_CONNECT_EXCLUDE_WHEN_ZERO = {
     'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
     'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
+    "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
