@@ -84,8 +84,6 @@ Die Integration bietet umfangreiche Überwachung, z. B.:
 
 #### Buttons (Aktionen)
 - Sofort regenerieren (`setSIR`)
-- Mehrfach regenerieren (`setSMR`)
-- Gerät zurücksetzen (`setRST`)
 
 ### Bekannte Einschränkungen
 

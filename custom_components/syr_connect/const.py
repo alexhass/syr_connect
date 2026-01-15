@@ -337,9 +337,9 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
-    'getSMR',  # Manual regeneration control
+    'getSMR',  # Manual regeneration control - per documentation unknown what values do
     'getRPW',  # Days on which regeneration is allowed, stored as a bit mask
-    'setRST',  # Reset device control
+    'setRST',  # Reset device control - per documentation unknown what values do
     #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
     'getTYP',  # Type of device (always 80?) - not helpful for users
     'getSRN_dt',

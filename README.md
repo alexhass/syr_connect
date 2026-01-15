@@ -108,8 +108,6 @@ The integration provides comprehensive monitoring of your water softener:
 
 #### Buttons (Actions)
 - **Regenerate Now (setSIR)**: Start immediate regeneration
-- **Multi Regenerate (setSMR)**: Multiple regeneration cycle
-- **Reset Device (setRST)**: Reset device settings
 
 ### Known Limitations
 
