@@ -304,7 +304,6 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getRDO": 0,    # Salt dosing: show as whole number by default
     "getRPD": 0,    # Regeneration interval: show as whole days by default
-    "getRPW": 0,    # Regenerations per week: show as whole number by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
     "getSS1": 0,    # Salt container supply 1: show as whole number by default
@@ -335,6 +334,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control
+    'getRPW',  # Days on which regeneration is allowed, stored as a bit mask
     'setRST',  # Reset device control
     #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
     'getTYP',  # Type of device (always 80?) - not helpful for users
@@ -387,7 +387,6 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getNOT',  # Notes - rarely used
     'getLAR',  # Last action - technical log
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
-    'getRPW',  # Regenerations per week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
     'getSRE',  # Regeneration active
 

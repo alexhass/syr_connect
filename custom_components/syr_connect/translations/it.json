@@ -262,7 +262,7 @@
         "name": "Intervallo rigenerazione"
       },
       "getrpw": {
-        "name": "Rigenerazioni per settimana"
+        "name": "Giorni di rigenerazione"
       },
       "getrth": {
         "name": "Ora rigenerazione (Ora)"
