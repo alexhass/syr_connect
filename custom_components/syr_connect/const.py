@@ -9,6 +9,7 @@ from homeassistant.const import (
     UnitOfTime,
     UnitOfVolume,
     UnitOfVolumeFlowRate,
+    PERCENTAGE,
 )
 
 DOMAIN = "syr_connect"
@@ -249,6 +250,11 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
     "getLAR": UnitOfTime.SECONDS,                           # Last action timestamp (unix seconds)
 
+    # Configuration/resin capacity sensors are percentage values
+    "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)
+    "getCS2": PERCENTAGE,                                 # Remaining resin capacity 2 (percent)
+    "getCS3": PERCENTAGE,                                 # Remaining resin capacity 3 (percent)
+
     # Sensors exits in devices:
     # - LEXplus10SL
 
@@ -285,28 +291,31 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
-    "getCFO": 0,  # Cycle flow offset: show as whole number by default
-    "getCOF": 0,  # Total water consumption counter: show as whole number by default
-    "getCYN": 0,  # Regeneration cycle counter: show as whole number by default
-    "getINR": 0,  # Incomplete regenerations: show as whole number by default
-    "getIWH": 0,  # Incoming water hardness: show as whole number by default
-    "getFCO": 0,  # Iron content: show as whole number by default
-    "getFLO": 0,  # Flow rate: show as whole number by default
-    "getNOR": 0,  # Regenerations (normal operation): show as whole number by default
-    "getRDO": 0,  # Salt dosing: show as whole number by default
-    "getRPD": 0,  # Regeneration interval: show as whole days by default
-    "getRPW": 0,  # Regenerations per week: show as whole number by default
-    "getPRS": 1,  # Pressure: show with 1 decimal place by default
-    "getRES": 0,  # Remaining capacity: show as whole number by default
-    "getSS1": 0,  # Salt container supply 1: show as whole number by default
-    "getSS2": 0,  # Salt container supply 2: show as whole number by default
-    "getSS3": 0,  # Salt container supply 3: show as whole number by default
-    "getSV1": 0,  # Salt container volume 1: show as whole number by default
-    "getSV2": 0,  # Salt container volume 2: show as whole number by default
-    "getSV3": 0,  # Salt container volume 3: show as whole number by default
-    "getTOR": 0,  # Total regenerations: show as whole number by default
-    "getOWH": 0,  # Outgoing water hardness: show as whole number by default
-    "getSCR": 0,  # Service regeneration cycles: show as whole number by default
+    "getCFO": 0,    # Cycle flow offset: show as whole number by default
+    "getCOF": 0,    # Total water consumption counter: show as whole number by default
+    "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
+    "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
+    "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
+    "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getINR": 0,    # Incomplete regenerations: show as whole number by default
+    "getIWH": 0,    # Incoming water hardness: show as whole number by default
+    "getFCO": 0,    # Iron content: show as whole number by default
+    "getFLO": 0,    # Flow rate: show as whole number by default
+    "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
+    "getRDO": 0,    # Salt dosing: show as whole number by default
+    "getRPD": 0,    # Regeneration interval: show as whole days by default
+    "getRPW": 0,    # Regenerations per week: show as whole number by default
+    "getPRS": 1,    # Pressure: show with 1 decimal place by default
+    "getRES": 0,    # Remaining capacity: show as whole number by default
+    "getSS1": 0,    # Salt container supply 1: show as whole number by default
+    "getSS2": 0,    # Salt container supply 2: show as whole number by default
+    "getSS3": 0,    # Salt container supply 3: show as whole number by default
+    "getSV1": 0,    # Salt container volume 1: show as whole number by default
+    "getSV2": 0,    # Salt container volume 2: show as whole number by default
+    "getSV3": 0,    # Salt container volume 3: show as whole number by default
+    "getTOR": 0,    # Total regenerations: show as whole number by default
+    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
+    "getSCR": 0,    # Service regeneration cycles: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
@@ -336,7 +345,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getFCO',  # Iron content (always 0) - not useful
     # Boolean sensors - now handled as binary_sensor platform
     'getSCR',  # unknown, likely number of service regeneration cycles
-    'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
     'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
 
     # BUG: Exclude until the bug is found why these are not shown as translated strings.

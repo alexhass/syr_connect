@@ -79,13 +79,13 @@
         }
       },
       "getcs1": {
-        "name": "Konfiguration Stufe 1"
+        "name": "Restkapazität des Harzes 1"
       },
       "getcs2": {
-        "name": "Konfiguration Stufe 2"
+        "name": "Restkapazität des Harzes 2"
       },
       "getcs3": {
-        "name": "Konfiguration Stufe 3"
+        "name": "Restkapazität des Harzes 3"
       },
       "getcof": {
         "name": "Wasserverbrauch Gesamt"

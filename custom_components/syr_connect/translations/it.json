@@ -82,13 +82,13 @@
         }
       },
       "getcs1": {
-        "name": "Livello configurazione 1"
+        "name": "Capacità residua della resina 1"
       },
       "getcs2": {
-        "name": "Livello configurazione 2"
+        "name": "Capacità residua della resina 2"
       },
       "getcs3": {
-        "name": "Livello configurazione 3"
+        "name": "Capacità residua della resina 3"
       },
       "getcof": {
         "name": "Consumo totale d'acqua"
