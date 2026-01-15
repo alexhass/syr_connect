@@ -249,7 +249,6 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getFCO": "ppm",                                        # Iron content (parts per million)
     "getDWF": UnitOfVolume.LITERS,                          # Expected daily water consumption
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
-    "getLAR": UnitOfTime.SECONDS,                           # Last action timestamp (unix seconds)
 
     # Configuration/resin capacity sensors are percentage values
     "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)

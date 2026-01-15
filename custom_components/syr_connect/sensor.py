@@ -331,7 +331,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return None
                     return None
 
-                # Special handling for last action timestamp (getLAR): convert unix seconds to ISO-8601
+                # Special handling for last regeneration timestamp (getLAR): convert unix seconds to datetime object
                 if self._sensor_key == 'getLAR':
                     raw_value = status.get(self._sensor_key)
                     if raw_value is None or raw_value == "":
@@ -340,7 +340,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         from datetime import datetime, timezone
 
                         ts = int(float(raw_value))
-                        return datetime.fromtimestamp(ts, timezone.utc).isoformat()
+                        # Return an aware datetime object (UTC). Home Assistant
+                        # will format this according to the user's timezone/locale.
+                        return datetime.fromtimestamp(ts, timezone.utc)
                     except (ValueError, TypeError, OverflowError):
                         return None
 
