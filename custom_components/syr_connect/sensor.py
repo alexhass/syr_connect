@@ -378,7 +378,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(value, str):
                     try:
                         numeric_value = float(value)
-                        # Divide pressure by 10 to convert to correct unit
+                        # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
                         if self._sensor_key == 'getPRS':
                             numeric_value = numeric_value / 10
                         # Apply configured precision if available
@@ -396,7 +396,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Handle numeric values directly
                 if isinstance(value, (int, float)):
-                    # Divide pressure by 10 to convert to correct unit
+                    # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
                     if self._sensor_key == 'getPRS':
                         return value / 10
                     # Apply configured precision if available
