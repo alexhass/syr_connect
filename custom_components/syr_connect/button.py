@@ -45,8 +45,8 @@ async def async_setup_entry(
         # Add action buttons
         action_buttons = [
             ("setSIR", "Regenerate Now"),
-            ("setSMR", "Multi Regenerate"),
-            ("setRST", "Reset Device"),
+            # ("setSMR", "Multi Regenerate"),
+            # ("setRST", "Reset Device"),
         ]
 
         for command, name in action_buttons:
