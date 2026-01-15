@@ -103,7 +103,7 @@
         "name": "Gateway"
       },
       "getdwf": {
-        "name": "Durchflusswarnwert"
+        "name": "Erwarteter täglicher Wasserverbrauch"
       },
       "getfco": {
         "name": "Eisengehalt"

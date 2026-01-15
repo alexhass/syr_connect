@@ -103,7 +103,7 @@
         "name": "Gateway"
       },
       "getdwf": {
-        "name": "Flow warning value"
+        "name": "Expected daily water consumption"
       },
       "getfco": {
         "name": "Iron content"

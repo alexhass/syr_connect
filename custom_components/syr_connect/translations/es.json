@@ -103,7 +103,7 @@
         "name": "Puerta de enlace"
       },
       "getdwf": {
-        "name": "Valor de advertencia de caudal"
+        "name": "Consumo diario de agua esperado"
       },
       "getfco": {
         "name": "Contenido de hierro"

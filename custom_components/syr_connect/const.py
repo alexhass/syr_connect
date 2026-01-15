@@ -246,7 +246,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getPRS": UnitOfPressure.BAR,                           # Pressure
     "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
     "getFCO": "ppm",                                        # Iron content (parts per million)
-    "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow warning value
+    "getDWF": UnitOfVolume.LITERS,                          # Expected daily water consumption
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
     "getLAR": UnitOfTime.SECONDS,                           # Last action timestamp (unix seconds)
 
@@ -297,6 +297,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDWF": 0,    # Expected daily water consumption: show as whole number by default
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
@@ -362,7 +363,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
     'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
-    'getDRP', 'getDST', 'getDTC', 'getDWF',
+    'getDRP', 'getDST', 'getDTC', 
+    'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
     'getNPS', 'getOHF', 'getYHF',
     'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',

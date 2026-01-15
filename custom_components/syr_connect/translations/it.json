@@ -106,7 +106,7 @@
         "name": "Gateway"
       },
       "getdwf": {
-        "name": "Valore di allerta flusso"
+        "name": "Consumo giornaliero d'acqua previsto"
       },
       "getfco": {
         "name": "Contenuto di ferro"

@@ -103,7 +103,7 @@
         "name": "Passerelle"
       },
       "getdwf": {
-        "name": "Valeur d'alerte de débit"
+        "name": "Consommation d'eau quotidienne prévue"
       },
       "getfco": {
         "name": "Teneur en fer"
