@@ -347,7 +347,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getFCO',  # Iron content (always 0) - not useful
     # Boolean sensors - now handled as binary_sensor platform
     'getSCR',  # unknown, likely number of service regeneration cycles
-    'getRG1', 'getRG2', 'getRG3',  # Regeneration groups
 
     # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
@@ -393,6 +392,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
     'getDWF',  # Flow Warning Value - advanced setting
     'getSRE',  # Regeneration active
+    'getRG1', 'getRG2', 'getRG3',  # Regeneration running for tank
 
     # Sensors exits in devices:
     # - LEXplus10SL
