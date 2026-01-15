@@ -9,6 +9,7 @@ from homeassistant.const import (
     UnitOfTime,
     UnitOfVolume,
     UnitOfVolumeFlowRate,
+    UnitOfTemperature,
     PERCENTAGE,
 )
 
