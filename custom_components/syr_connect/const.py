@@ -43,7 +43,6 @@ _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 # Binary sensors mapping with their device classes - internal
 _SYR_CONNECT_BINARY_SENSORS = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
-    "getPST": BinarySensorDeviceClass.RUNNING,  # Operating state
     "getSCR": BinarySensorDeviceClass.LOCK,     # Screen lock
 }
 
@@ -154,7 +153,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getLAR": "mdi:calendar-clock",
     # System & Status
     "getALM": "mdi:bell-alert",
-    "getPST": "mdi:power",
+    "getPST": "mdi:check-circle",
     "getSCR": "mdi:lock",
     "getSTA": "mdi:list-status",
     "getRDO": "mdi:shaker",
@@ -343,7 +342,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
     'getSRE',  # Regeneration active - now handled as binary_sensor platform
-    'getPST',  # Operating state - now handled as binary_sensor platform
 
     # Sensors exits in devices:
     # - LEXplus10SL

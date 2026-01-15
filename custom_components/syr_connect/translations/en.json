@@ -52,6 +52,13 @@
   },
   "entity": {
     "sensor": {
+      "getpst": {
+        "name": "Pressure sensor",
+        "state": {
+          "1": "Not available",
+          "2": "Available"
+        }
+      },
       "getalm": {
         "name": "Alarm",
         "state": {
@@ -340,9 +347,6 @@
       }
     },
     "binary_sensor": {
-      "getpst": {
-        "name": "Operating state"
-      },
       "getsre": {
         "name": "Regeneration active"
       }

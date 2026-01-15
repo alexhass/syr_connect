@@ -52,6 +52,13 @@
   },
   "entity": {
     "sensor": {
+      "getpst": {
+        "name": "Drucksensor",
+        "state": {
+          "1": "Nicht verfügbar",
+          "2": "Verfügbar"
+        }
+      },
       "getalm": {
         "name": "Alarm",
         "state": {
@@ -340,9 +347,6 @@
       }
     },
     "binary_sensor": {
-      "getpst": {
-        "name": "Betriebszustand"
-      },
       "getsre": {
         "name": "Regeneration aktiv"
       }

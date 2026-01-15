@@ -52,6 +52,13 @@
   },
   "entity": {
     "sensor": {
+      "getpst": {
+        "name": "Sensore di pressione",
+        "state": {
+          "1": "Non disponibile",
+          "2": "Disponibile"
+        }
+      },
       "getsta": {
         "name": "Stato",
         "state": {
@@ -339,9 +346,6 @@
       }
     },
     "binary_sensor": {
-      "getpst": {
-        "name": "Stato operativo"
-      },
       "getsre": {
         "name": "Rigenerazione attiva"
       }

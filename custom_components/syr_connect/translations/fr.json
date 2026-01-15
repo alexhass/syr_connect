@@ -52,6 +52,13 @@
   },
   "entity": {
     "sensor": {
+      "getpst": {
+        "name": "Capteur de pression",
+        "state": {
+          "1": "Indisponible",
+          "2": "Disponible"
+        }
+      },
       "getalm": {
         "name": "Alarme",
         "state": {
@@ -337,9 +344,6 @@
       }
     },
     "binary_sensor": {
-      "getpst": {
-        "name": "État de fonctionnement"
-      },
       "getsre": {
         "name": "Régénération active"
       }
