@@ -73,9 +73,9 @@
       "getcna": {
         "name": "Nombre del dispositivo",
         "state": {
-          "LEXplus10": "LEX Plus 10 Connect",
-          "LEXplus10S": "LEX Plus 10 S Connect",
-          "LEXplus10SL": "LEX Plus 10 SL Connect"
+          "lexplus10": "LEX Plus 10 Connect",
+          "lexplus10s": "LEX Plus 10 S Connect",
+          "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
       "getcs1": {
