@@ -59,19 +59,16 @@
           "2": "Disponibile"
         }
       },
-      "getsta": {
-        "name": "Stato",
+      "getalm": {
+        "name": "Allarme",
         "state": {
-          "backup_status_fast_rinse": "Risciacquo veloce {rinse_round}",
-          "backup_status_regenerant_rinse": "Risciacquo rigenerante ({resistance_value})",
-          "status_backwash": "Controlavaggio",
-          "status_fast_rinse": "Risciacquo veloce",
-          "status_filling": "Riempimento",
-          "status_inactive": "Inattivo",
-          "status_regenerant_rinse": "Risciacquo rigenerante",
-          "status_refill_salt": "Si prega di aggiungere il sale",
-          "status_slow_rinse": "Risciacquo lento"
+          "low_salt": "Sale basso",
+          "no_alarm": "Nessuno",
+          "no_salt": "Nessun sale"
         }
+      },
+      "getcde": {
+        "name": "Codice di configurazione"
       },
       "getcna": {
         "name": "Nome dispositivo",
@@ -97,7 +94,7 @@
         "name": "Contatore cicli"
       },
       "getcyt": {
-        "name": "Tempo ciclo"
+        "name": "Durata del ciclo"
       },
       "getden": {
         "name": "Dispositivo attivato"
@@ -120,11 +117,11 @@
       "getinr": {
         "name": "Rigenerazioni incomplete"
       },
-      "getiwh": {
-        "name": "Durezza acqua in ingresso"
-      },
       "getipa": {
         "name": "Indirizzo IP"
+      },
+      "getiwh": {
+        "name": "Durezza acqua in ingresso"
       },
       "getlar": {
         "name": "Ultima rigenerazione"
@@ -216,6 +213,9 @@
       "getpn8": {
         "name": "Nome profilo 8"
       },
+      "getprf": {
+        "name": "Giorno attivo del profilo"
+      },
       "getprs": {
         "name": "Pressione"
       },
@@ -250,13 +250,25 @@
         "name": "Capacità residua"
       },
       "getrg1": {
-        "name": "Gruppo rigenerazione 1"
+        "name": "Serbatoio di rigenerazione 1",
+        "state": {
+          "0": "Inattivo",
+          "1": "In funzione"
+        }
       },
       "getrg2": {
-        "name": "Gruppo rigenerazione 2"
+        "name": "Serbatoio di rigenerazione 2",
+        "state": {
+          "0": "Inattivo",
+          "1": "In funzione"
+        }
       },
       "getrg3": {
-        "name": "Gruppo rigenerazione 3"
+        "name": "Serbatoio di rigenerazione 3",
+        "state": {
+          "0": "Inattivo",
+          "1": "In funzione"
+        }
       },
       "getrpd": {
         "name": "Intervallo rigenerazione"
@@ -292,14 +304,15 @@
       "getsta": {
         "name": "Stato",
         "state": {
-          "status_backwash": "Controlavaggio",
-          "backup_status_regenerant_rinse": "Risciacquo con rigenerante ({resistance_value})",
-          "status_regenerant_rinse": "Risciacquo con rigenerante",
-          "status_slow_rinse": "Risciacquo lento",
           "backup_status_fast_rinse": "Risciacquo veloce {rinse_round}",
+          "backup_status_regenerant_rinse": "Risciacquo rigenerante ({resistance_value})",
+          "status_backwash": "Controlavaggio",
           "status_fast_rinse": "Risciacquo veloce",
           "status_filling": "Riempimento",
-          "status_inactive": ""
+          "status_inactive": "Inattivo",
+          "status_regenerant_rinse": "Risciacquo rigenerante",
+          "status_refill_salt": "Si prega di aggiungere il sale",
+          "status_slow_rinse": "Risciacquo lento"
         }
       },
       "getss1": {
@@ -365,7 +378,7 @@
   "issues": {
     "device_offline": {
       "title": "Dispositivo offline: {device_name}",
-      "description": "Il dispositivo SYR Connect \"{device_name}\" è attualmente offline e non può essere raggiunto. Verifica:\n\n- Alimentazione del dispositivo\n- Connessione di rete\n- Stato del servizio cloud SYR Connect\n\nIl dispositivo si riconnetterà automaticamente quando tornerà online."
+      "description": "Il dispositivo SYR Connect \"{device_name}\" è attualmente offline e non può essere contattato. Verificare:\n\n- L'alimentazione del dispositivo\n- La connessione di rete\n- Lo stato del servizio cloud SYR Connect\n\nIl dispositivo si riconnetterà automaticamente quando tornerà online."
     }
   }
 }
