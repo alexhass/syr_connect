@@ -247,13 +247,25 @@
         "name": "Capacité restante"
       },
       "getrg1": {
-        "name": "Groupe de régénération 1"
+        "name": "Réservoir de régénération 1",
+        "state": {
+          "0": "Inactif",
+          "1": "En cours"
+        }
       },
       "getrg2": {
-        "name": "Groupe de régénération 2"
+        "name": "Réservoir de régénération 2",
+        "state": {
+          "0": "Inactif",
+          "1": "En cours"
+        }
       },
       "getrg3": {
-        "name": "Groupe de régénération 3"
+        "name": "Réservoir de régénération 3",
+        "state": {
+          "0": "Inactif",
+          "1": "En cours"
+        }
       },
       "getrpd": {
         "name": "Intervalle de régénération"

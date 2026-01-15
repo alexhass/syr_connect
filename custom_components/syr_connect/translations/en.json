@@ -250,13 +250,25 @@
         "name": "Remaining capacity"
       },
       "getrg1": {
-        "name": "Regeneration group 1"
+        "name": "Regeneration tank 1",
+        "state": {
+          "0": "Inactive",
+          "1": "Running"
+        }
       },
       "getrg2": {
-        "name": "Regeneration group 2"
+        "name": "Regeneration tank 2",
+        "state": {
+          "0": "Inactive",
+          "1": "Running"
+        }
       },
       "getrg3": {
-        "name": "Regeneration group 3"
+        "name": "Regeneration tank 3",
+        "state": {
+          "0": "Inactive",
+          "1": "Running"
+        }
       },
       "getrpd": {
         "name": "Regeneration interval"

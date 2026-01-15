@@ -252,13 +252,25 @@
         "name": "Capacidade restante"
       },
       "getrg1": {
-        "name": "Grupo de regeneração 1"
+        "name": "Tanque de regeneração 1",
+        "state": {
+          "0": "Inativo",
+          "1": "Em funcionamento"
+        }
       },
       "getrg2": {
-        "name": "Grupo de regeneração 2"
+        "name": "Tanque de regeneração 2",
+        "state": {
+          "0": "Inativo",
+          "1": "Em funcionamento"
+        }
       },
       "getrg3": {
-        "name": "Grupo de regeneração 3"
+        "name": "Tanque de regeneração 3",
+        "state": {
+          "0": "Inativo",
+          "1": "Em funcionamento"
+        }
       },
       "getrpd": {
         "name": "Intervalo de regeneração"

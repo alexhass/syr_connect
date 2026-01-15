@@ -339,7 +339,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'setRST',  # Reset device control
     #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
     'getTYP',  # Type of device (always 80?) - not helpful for users
-    'getLAR',  # Last action - not useful as sensor
     'getSRN_dt',
     'getALM_dt',
     'getRTI',  # Value is always 00:00. Not clear what it represents.
@@ -387,7 +386,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
     'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     'getNOT',  # Notes - rarely used
-    'getLAR',  # Last action - technical log
+    'getLAR',  # Last regeneration as UNIX timestamp (seconds since 1.1.1970)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
     'getDWF',  # Flow Warning Value - advanced setting
     'getSRE',  # Regeneration active
