@@ -250,21 +250,21 @@
         "name": "Restkapazität"
       },
       "getrg1": {
-        "name": "Regenerationsbehälter 1",
+        "name": "Regeneration im Behälter 1",
         "state": {
           "0": "Inaktiv",
           "1": "Läuft"
         }
       },
       "getrg2": {
-        "name": "Regenerationsbehälter 2",
+        "name": "Regeneration im Behälter 2",
         "state": {
           "0": "Inaktiv",
           "1": "Läuft"
         }
       },
       "getrg3": {
-        "name": "Regenerationsbehälter 3",
+        "name": "Regeneration im Behälter 3",
         "state": {
           "0": "Inaktiv",
           "1": "Läuft"
