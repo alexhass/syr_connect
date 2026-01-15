@@ -254,6 +254,25 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return "mdi:autorenew"
             return "mdi:timer-outline"
 
+        # Dynamic icon for pressure sensor availability (getPST)
+        if self._sensor_key == "getPST":
+            try:
+                val = self.native_value
+                # native_value may be numeric or string; normalize to int when possible
+                if val is None:
+                    return self._base_icon
+                try:
+                    ival = int(float(val))
+                except (TypeError, ValueError):
+                    ival = None
+                # 2 -> Available, 1 -> Not available
+                if ival == 2:
+                    return "mdi:check-circle"
+                if ival == 1:
+                    return "mdi:close-circle"
+            except Exception:
+                pass
+
         # Dynamic icon for salt stock sensors (percentage based)
         if self._sensor_key in ("getSS1", "getSS2", "getSS3"):
             try:
