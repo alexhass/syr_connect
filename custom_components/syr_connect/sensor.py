@@ -381,6 +381,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
                         if self._sensor_key == 'getPRS':
                             numeric_value = numeric_value / 10
+                        # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
+                        if self._sensor_key == 'getCEL':
+                            numeric_value = numeric_value / 10
                         # Apply configured precision if available
                         precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
                         if precision is not None:
@@ -398,6 +401,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(value, (int, float)):
                     # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
                     if self._sensor_key == 'getPRS':
+                        return value / 10
+                    # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
+                    if self._sensor_key == 'getCEL':
                         return value / 10
                     # Apply configured precision if available
                     precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
