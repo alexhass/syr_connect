@@ -259,6 +259,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # Leak protection profile sensors
+    "getCEL": UnitOfTemperature.CELSIUS,                # Water temperature
     "getCOF": UnitOfVolume.LITERS,                      # Total water consumption counter
     "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 1
     "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 2
@@ -291,6 +292,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
+    "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default
     "getCOF": 0,    # Total water consumption counter: show as whole number by default
     "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
@@ -360,7 +362,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
     'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
-    'getCDF', 'getCEL', 'getCES', 'getCND', 'getCNO', 'getCNS',
+    'getCDF', 
+    'getCES', 'getCND', 'getCNO', 'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
     'getDRP', 'getDST', 'getDTC', 
     'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
