@@ -254,6 +254,25 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return "mdi:autorenew"
             return "mdi:timer-outline"
 
+        # Dynamic icon for regeneration relay sensors (getRG1/getRG2/getRG3)
+        if self._sensor_key in ("getRG1", "getRG2", "getRG3"):
+            try:
+                val = self.native_value
+                if val is None:
+                    return self._base_icon
+                try:
+                    ival = int(float(val))
+                except (TypeError, ValueError):
+                    sval = str(val).lower()
+                    if sval in ("1", "true", "on", "active"):
+                        ival = 1
+                    else:
+                        ival = 0
+                # 1 -> open valve icon, 0 -> closed valve icon
+                return "mdi:valve" if ival == 1 else "mdi:valve-closed"
+            except Exception:
+                pass
+
         # Dynamic icon for pressure sensor availability (getPST)
         if self._sensor_key == "getPST":
             try:

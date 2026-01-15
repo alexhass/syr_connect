@@ -171,9 +171,9 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getCS1": "mdi:beaker",
     "getCS2": "mdi:beaker",
     "getCS3": "mdi:beaker",
-    "getRG1": "mdi:group",
-    "getRG2": "mdi:group",
-    "getRG3": "mdi:group",
+    "getRG1": "mdi:valve-closed",
+    "getRG2": "mdi:valve-closed",
+    "getRG3": "mdi:valve-closed",
     "getVS1": "mdi:gauge",
     "getVS2": "mdi:gauge",
     "getVS3": "mdi:gauge",
@@ -309,6 +309,9 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getRPD": 0,    # Regeneration interval: show as whole days by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
+    "getRG1": 0,    # Regeneration 1: show as whole number by default
+    "getRG2": 0,    # Regeneration 2: show as whole number by default
+    "getRG3": 0,    # Regeneration 3: show as whole number by default
     "getSS1": 0,    # Salt container supply 1: show as whole number by default
     "getSS2": 0,    # Salt container supply 2: show as whole number by default
     "getSS3": 0,    # Salt container supply 3: show as whole number by default
