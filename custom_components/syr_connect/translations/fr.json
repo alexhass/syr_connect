@@ -106,7 +106,7 @@
         "name": "Valeur d'alerte de débit"
       },
       "getfco": {
-        "name": "Compteur de débit"
+        "name": "Teneur en fer"
       },
       "getfir": {
         "name": "Modèle du firmware"

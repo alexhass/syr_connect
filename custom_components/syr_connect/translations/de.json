@@ -106,7 +106,7 @@
         "name": "Durchflusswarnwert"
       },
       "getfco": {
-        "name": "Durchflusszähler"
+        "name": "Eisengehalt"
       },
       "getfir": {
         "name": "Firmware-Modell"

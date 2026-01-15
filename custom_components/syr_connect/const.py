@@ -84,7 +84,6 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getPRS": "measurement",        # Pressure
     "getFLO": "measurement",        # Flow rate
     "getINR": "total_increasing",   # Incomplete regenerations
-    "getFCO": "total_increasing",   # Total flow counter
     "getCOF": "total_increasing",   # Total water consumption counter
     "getNOR": "total_increasing",   # Regenerations (normal operation)
     "getTOR": "total_increasing",   # Total regenerations
@@ -245,7 +244,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getSS3": UnitOfTime.WEEKS,                             # Salt container supply 3
     "getPRS": UnitOfPressure.BAR,                           # Pressure
     "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
-    "getFCO": UnitOfVolume.LITERS,                          # Total flow counter
+    "getFCO": "ppm",                                        # Iron content (parts per million)
     "getDWF": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow warning value
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
     "getLAR": UnitOfTime.SECONDS,                           # Last action timestamp (unix seconds)
@@ -291,7 +290,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getCYN": 0,  # Regeneration cycle counter: show as whole number by default
     "getINR": 0,  # Incomplete regenerations: show as whole number by default
     "getIWH": 0,  # Incoming water hardness: show as whole number by default
-    "getFCO": 0,  # Total flow counter: show as whole number by default
+    "getFCO": 0,  # Iron content: show as whole number by default
     "getFLO": 0,  # Flow rate: show as whole number by default
     "getNOR": 0,  # Regenerations (normal operation): show as whole number by default
     "getRDO": 0,  # Salt dosing: show as whole number by default
@@ -334,6 +333,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSRN_dt',
     'getALM_dt',
     'getRTI',  # Value is always 00:00. Not clear what it represents.
+    'getFCO',  # Iron content (always 0) - not useful
     # Boolean sensors - now handled as binary_sensor platform
     'getSCR',  # unknown, likely number of service regeneration cycles
     'getCS1', 'getCS2', 'getCS3',  # Configuration Levels
@@ -381,7 +381,6 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
     'getRPW',  # Regenerations per week - less useful than count
     'getDWF',  # Flow Warning Value - advanced setting
-    'getFCO',  # Total Flow Counter - defined in XML, but does not provide any values (always 0)
     'getSRE',  # Regeneration active
 
     # Sensors exits in devices:
