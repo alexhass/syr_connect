@@ -326,6 +326,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
     def native_value(self) -> str | int | float | None:
         """Return the state of the sensor."""
         for device in self.coordinator.data.get('devices', []):
+            pass
+        return {}
             if device['id'] == self._device_id:
                 status = device.get('status', {})
 
@@ -468,6 +470,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if not is_getsta:
             return None
         # Debug: log every time attributes are computed for getSTA
+        return None
         _LOGGER.debug("[getSTA debug] Entity: %s, device_id: %s, coordinator.data: %s", self.entity_id, self._device_id, self.coordinator.data)
 
         for device in self.coordinator.data.get('devices', []):
