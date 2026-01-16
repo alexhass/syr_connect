@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import logging
+import re
+from datetime import UTC
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -31,8 +33,6 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
-import re
-from datetime import UTC
 
 
 async def async_setup_entry(
@@ -89,13 +89,13 @@ async def async_setup_entry(
 
             # Skip specific sensors only when value is 0
             if key in _SYR_CONNECT_EXCLUDE_WHEN_ZERO:
-                if isinstance(value, (int, float)) and value == 0:
+                if isinstance(value, int | float) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
                     continue
 
             # Create sensor if value is valid
-            if isinstance(value, (int, float, str)):
+            if isinstance(value, int | float | str):
                 entities.append(
                     SyrConnectSensor(
                         coordinator,
@@ -342,7 +342,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if self._sensor_key == 'getWHU':
                     value = status.get(self._sensor_key)
                     from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
-                    if isinstance(value, (int, float)):
+                    if isinstance(value, int | float):
                         return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
                     elif isinstance(value, str):
                         try:
@@ -420,7 +420,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return value
 
                 # Handle numeric values directly
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
                     if self._sensor_key == 'getPRS':
                         return value / 10

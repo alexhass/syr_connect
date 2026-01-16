@@ -145,7 +145,7 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 value = status.get(self._sensor_key)
 
                 # Convert value to boolean
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     return value != 0
                 elif isinstance(value, str):
                     return value not in ("0", "false", "False", "")
