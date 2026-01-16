@@ -83,7 +83,6 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
     "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
-    "getCYT": SensorStateClass.MEASUREMENT,        # Regeneration cycle time
     "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
     "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
