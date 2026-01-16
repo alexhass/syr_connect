@@ -308,6 +308,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getRDO": 0,    # Salt dosing: show as whole number by default
     "getRPD": 0,    # Regeneration interval: show as whole days by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
+    "getPST": 0,    # Pressure sensor installed: show as whole number by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
@@ -398,6 +399,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getRG1',  # Regeneration 1 - enabled by default
     'getSRE',  # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
+    "getPST",  # Pressure sensor installed: 1 = not available, 2 = available
 
     # Sensors exits in devices:
     # - LEXplus10SL
