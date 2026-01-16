@@ -72,56 +72,52 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
-    "getPRS": SensorDeviceClass.PRESSURE,
-    "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getCOF": SensorDeviceClass.WATER,
+    "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
+    "getPRS": SensorDeviceClass.PRESSURE,
 }
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity 
-    "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
-    "getPRS": SensorStateClass.MEASUREMENT,        # Pressure
-    "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
     "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
+    "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
+    "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
+    "getCYT": SensorStateClass.MEASUREMENT,        # Regeneration cycle time
+    "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
+    "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
+    "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
-    "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
-    "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
-    "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
+    "getPRS": SensorStateClass.MEASUREMENT,        # Pressure
+    "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
+    "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity
     "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
     "getSS2": SensorStateClass.MEASUREMENT,        # Salt container supply 2 (weeks)
     "getSS3": SensorStateClass.MEASUREMENT,        # Salt container supply 3 (weeks)
+    "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
+    "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
+    "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
+    "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
+    "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
     "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
-    "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
-    "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
-    "getCYT": SensorStateClass.MEASUREMENT,        # Regeneration cycle time
-
-    # Cumulative counters
-    "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
-    "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
-    "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
-    "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
 _SYR_CONNECT_STRING_SENSORS = {
-    "getVER",  # Version
-    "getFIR",  # Firmware
-    "getSRN",  # Serial number
     "getCNA",  # Device name
-    "getMAN",  # Manufacturer
-    "getMAC",  # MAC address
-    "getIPA",  # IP address
     "getDGW",  # Gateway
+    "getFIR",  # Firmware
+    "getIPA",  # IP address
+    "getMAC",  # MAC address
+    "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
-    "getWHU",  # Water hardness unit (mapped to unit names)
-
-    # Custom non-API combined sensor
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
+    "getSRN",  # Serial number
+    "getVER",  # Version
+    "getWHU",  # Water hardness unit (mapped to unit names)
 }
 
 # Water hardness unit mapping (for getWHU)
@@ -231,15 +227,15 @@ _SYR_CONNECT_SENSOR_ICONS = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_DIAGNOSTIC_SENSORS = {
-    'getSRN',  # Serial number
-    'getVER',  # Firmware version
-    'getFIR',  # Firmware model
-    'getTYP',  # Type
     'getCNA',  # Device name
-    'getMAN',  # Manufacturer
-    'getMAC',  # MAC address
-    'getIPA',  # IP address
     'getDGW',  # Gateway
+    'getFIR',  # Firmware model
+    'getIPA',  # IP address
+    'getMAC',  # MAC address
+    'getMAN',  # Manufacturer
+    'getSRN',  # Serial number
+    'getTYP',  # Type
+    'getVER',  # Firmware version
 }
 
 # Sensor units mapping (units are standardized and not translated) - internal
@@ -315,15 +311,16 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default
-    "getINR": 0,    # Incomplete regenerations: show as whole number by default
-    "getIWH": 0,    # Incoming water hardness: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
     "getFLO": 0,    # Flow rate: show as whole number by default
+    "getINR": 0,    # Incomplete regenerations: show as whole number by default
+    "getIWH": 0,    # Incoming water hardness: show as whole number by default
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
-    "getRDO": 0,    # Salt dosing: show as whole number by default
-    "getRPD": 0,    # Regeneration interval: show as whole days by default
+    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
+    "getRDO": 0,    # Salt dosing: show as whole number by default
+    "getRPD": 0,    # Regeneration interval: show as whole days by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
@@ -335,7 +332,6 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
-    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
@@ -391,10 +387,10 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
 
 # Sensors to exclude only when value is 0 - internal
 _SYR_CONNECT_EXCLUDE_WHEN_ZERO = {
-    'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
+    'getCS1', 'getCS2', 'getCS3',  # Remaining resin capacity (percent)
     'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
+    'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
-    "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
