@@ -70,7 +70,7 @@ def build_device_info(
         sw_version=sw_version,
         hw_version=hw_version,
         serial_number=device_id,
-        connections=connections if connections else None,
+        connections=connections if connections else set(),
         configuration_url=_SYR_CONNECT_CONFIGURATION_URL,
     )
 
