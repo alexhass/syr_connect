@@ -185,8 +185,9 @@ async def async_get_config_entry_diagnostics(
                     for res in results:
                         if isinstance(res, Exception):
                             continue
-                        did, xmls = res
-                        projects_raw[pid]["devices"][did] = xmls
+                        if isinstance(res, tuple) and len(res) == 2:
+                            did, xmls = res
+                            projects_raw[pid]["devices"][did] = xmls
 
             raw_xml = projects_raw
 
