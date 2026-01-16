@@ -84,8 +84,6 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
     "getPRS": SensorStateClass.MEASUREMENT,        # Pressure
     "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
-
-    # Additional measured values
     "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
