@@ -45,7 +45,6 @@ _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 # Binary sensors mapping with their device classes - internal
 _SYR_CONNECT_BINARY_SENSORS = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
-    "getSCR": BinarySensorDeviceClass.LOCK,     # Screen lock
 }
 
 # Mapping for getALM sensor values
@@ -155,7 +154,6 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # System & Status
     "getALM": "mdi:bell-alert",
     "getPST": "mdi:check-circle",
-    "getSCR": "mdi:lock",
     "getSTA": "mdi:list-status",
     "getRDO": "mdi:shaker",
     # Device Info
@@ -321,7 +319,6 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
-    "getSCR": 0,    # Service regeneration cycles: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
@@ -335,6 +332,9 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'dclg', 'clb', 'nrs',  # Device collection metadata
     'nrdt', 'dg',  # Additional device metadata attributes
     'dt',  # Timestamp attributes (getSRN_dt, getALM_dt, etc.)
+    'getSRN_dt',
+    'getALM_dt',
+
     'getDEN',  # Boolean sensor - device enabled/disabled
     'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
     'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
@@ -342,15 +342,11 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control - per documentation unknown what values do
     'getRPW',  # Days on which regeneration is allowed, stored as a bit mask
-    'setRST',  # Reset device control - per documentation unknown what values do
-    #'getSTA',  # Status – What the system is currently doing during maintenance, in Polish
+    'getRST',  # Reset device control - per documentation unknown what values do
     'getTYP',  # Type of device (always 80?) - not helpful for users
-    'getSRN_dt',
-    'getALM_dt',
     'getRTI',  # Value is always 00:00. Not clear what it represents.
     'getFCO',  # Iron content (always 0) - not useful
-    # Boolean sensors - now handled as binary_sensor platform
-    'getSCR',  # unknown, likely number of service regeneration cycles
+    'getSCR',  # Unknown, likely number of service regeneration
 
     # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
