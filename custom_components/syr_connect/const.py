@@ -2,7 +2,7 @@
 """Constants for the SYR Connect integration."""
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
     UnitOfMass,
     UnitOfPressure,
@@ -80,14 +80,14 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getRES": "measurement",        # Remaining capacity 
-    "getVOL": "measurement",        # Total capacity
-    "getPRS": "measurement",        # Pressure
-    "getFLO": "measurement",        # Flow rate
-    "getINR": "total_increasing",   # Incomplete regenerations
-    "getCOF": "total_increasing",   # Total water consumption counter
-    "getNOR": "total_increasing",   # Regenerations (normal operation)
-    "getTOR": "total_increasing",   # Total regenerations
+    "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity 
+    "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
+    "getPRS": SensorStateClass.MEASUREMENT,        # Pressure
+    "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
+    "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
+    "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
+    "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
+    "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
