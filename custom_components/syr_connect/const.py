@@ -4,13 +4,13 @@
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
+    PERCENTAGE,
     UnitOfMass,
     UnitOfPressure,
+    UnitOfTemperature,
     UnitOfTime,
     UnitOfVolume,
     UnitOfVolumeFlowRate,
-    UnitOfTemperature,
-    PERCENTAGE,
 )
 
 DOMAIN = "syr_connect"
@@ -289,7 +289,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getPT8": UnitOfTime.MINUTES,                       # Leak protection time 8
     "getPV1": UnitOfVolume.LITERS,                      # Leak protection volume 1
     "getPV2": UnitOfVolume.LITERS,                      # Leak protection volume 2
-    "getPV3": UnitOfVolume.LITERS,                      # Leak protection volume 3    
+    "getPV3": UnitOfVolume.LITERS,                      # Leak protection volume 3
     "getPV4": UnitOfVolume.LITERS,                      # Leak protection volume 4
     "getPV5": UnitOfVolume.LITERS,                      # Leak protection volume 5
     "getPV6": UnitOfVolume.LITERS,                      # Leak protection volume 6
@@ -373,10 +373,10 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
     'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
-    'getCDF', 
+    'getCDF',
     'getCES', 'getCND', 'getCNO', 'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
-    'getDRP', 'getDST', 'getDTC', 
+    'getDRP', 'getDST', 'getDTC',
     'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
     'getNPS', 'getOHF', 'getYHF',
@@ -419,5 +419,5 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getPV1', 'getPV2', 'getPV3', 'getPV4', 'getPV5', 'getPV6', 'getPV7', 'getPV8',
     'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
     'getPRN',  # Duplicate of getPRF
-    'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',    
+    'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',
 }

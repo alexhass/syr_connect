@@ -1,6 +1,6 @@
-import os
 import argparse
 from pathlib import Path
+
 from PIL import Image
 
 # Output file definitions: (filename, size, square, dark)

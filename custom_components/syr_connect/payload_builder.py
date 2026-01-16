@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from xml.sax.saxutils import escape
-import re
 
 from .checksum import SyrChecksum
 

@@ -1,22 +1,20 @@
 """Diagnostics support for SYR Connect."""
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Optional
-
-from .api import SyrConnectAPI
-from .const import (
-    _SYR_CONNECT_API_DEVICE_LIST_URL,
-    _SYR_CONNECT_API_DEVICE_STATUS_URL,
-)
-from typing import Any
 import re
+from datetime import datetime
+from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
+from .api import SyrConnectAPI
+from .const import (
+    _SYR_CONNECT_API_DEVICE_LIST_URL,
+    _SYR_CONNECT_API_DEVICE_STATUS_URL,
+)
 from .coordinator import SyrConnectDataUpdateCoordinator
 
 _TO_REDACT = {
@@ -68,7 +66,7 @@ async def async_get_config_entry_diagnostics(
     # This collects data for ALL projects and their devices but uses
     # limited concurrency and truncates very large responses to avoid
     # excessive load or extremely large diagnostics payloads.
-    def _redact_xml(xml: str, api: Optional[SyrConnectAPI]) -> str:
+    def _redact_xml(xml: str, api: SyrConnectAPI | None) -> str:
         """Redact sensitive keys inside an XML string using patterns.
 
         This will replace attribute values, <c n="..." v="..."/> entries,

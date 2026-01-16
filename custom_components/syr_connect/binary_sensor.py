@@ -9,14 +9,14 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers import entity_registry as er
 
 from .const import (
     _SYR_CONNECT_BINARY_SENSORS,
-    _SYR_CONNECT_SENSOR_ICONS,
     _SYR_CONNECT_EXCLUDED_SENSORS,
+    _SYR_CONNECT_SENSOR_ICONS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id

@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import DOMAIN, _SYR_CONNECT_CONFIGURATION_URL
+from .const import _SYR_CONNECT_CONFIGURATION_URL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

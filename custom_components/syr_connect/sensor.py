@@ -8,30 +8,31 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers import entity_registry as er
 
 from .const import (
     _SYR_CONNECT_DIAGNOSTIC_SENSORS,
     _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS,
     _SYR_CONNECT_EXCLUDE_WHEN_ZERO,
     _SYR_CONNECT_EXCLUDED_SENSORS,
+    _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_ICONS,
-    _SYR_CONNECT_SENSOR_STATE_CLASS,
-    _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_SENSOR_PRECISION,
-    _SYR_CONNECT_STRING_SENSORS,
-    _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_UNITS,
+    _SYR_CONNECT_STRING_SENSORS,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 import re
+from datetime import UTC
 
 
 async def async_setup_entry(
@@ -356,12 +357,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if raw_value is None or raw_value == "":
                         return None
                     try:
-                        from datetime import datetime, timezone
+                        from datetime import datetime
 
                         ts = int(float(raw_value))
                         # Return an aware datetime object (UTC). Home Assistant
                         # will format this according to the user's timezone/locale.
-                        return datetime.fromtimestamp(ts, timezone.utc)
+                        return datetime.fromtimestamp(ts, UTC)
                     except (ValueError, TypeError, OverflowError):
                         return None
 
