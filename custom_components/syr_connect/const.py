@@ -84,6 +84,25 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
     "getPRS": SensorStateClass.MEASUREMENT,        # Pressure
     "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
+
+    # Additional measured values
+    "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
+    "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
+    "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
+    "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
+    "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
+    "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
+    "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
+    "getSS2": SensorStateClass.MEASUREMENT,        # Salt container supply 2 (weeks)
+    "getSS3": SensorStateClass.MEASUREMENT,        # Salt container supply 3 (weeks)
+    "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
+    "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
+    "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
+    "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
+    "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
+    "getCYT": SensorStateClass.MEASUREMENT,        # Regeneration cycle time
+
+    # Cumulative counters
     "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
