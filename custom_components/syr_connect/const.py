@@ -344,7 +344,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'dclg', 'clb', 'nrs',  # Device collection metadata
     'nrdt', 'dg',  # Additional device metadata attributes
 
-    # Other values than "n" = name / "v" = value in XML response
+    # Other attributes than "n" = "name" / "v" = "value" in XML response
     'getSRN_dt',    # Serial number timestamp
     'getALM_dt',    # Alarm timestamp
     'getALM_m',     # Alarm message e.g. LowSalt
