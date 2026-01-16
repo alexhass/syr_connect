@@ -343,9 +343,13 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'sbt', 'sta', 'dst', 'ast', 'so',
     'dclg', 'clb', 'nrs',  # Device collection metadata
     'nrdt', 'dg',  # Additional device metadata attributes
-    'dt',  # Timestamp attributes (getSRN_dt, getALM_dt, etc.)
-    'getSRN_dt',
-    'getALM_dt',
+
+    # Other values than "n" = name / "v" = value in XML response
+    'getSRN_dt',    # Serial number timestamp
+    'getALM_dt',    # Alarm timestamp
+    'getALM_m',     # Alarm message e.g. LowSalt
+    'getALM_acd',   # Active alarm since timestamp
+    'getALM_ih',    # Alarm inhibit flag (unlcear purpose)
 
     'getDEN',  # Boolean sensor - device enabled/disabled
     'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME

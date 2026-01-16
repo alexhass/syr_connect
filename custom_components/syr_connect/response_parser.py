@@ -228,14 +228,14 @@ class ResponseParser:
 
         return devices
 
-    def parse_device_status_response(self, xml_response: str) -> dict[str, Any]:
+    def parse_device_status_response(self, xml_response: str) -> dict[str, Any] | None:
         """Parse device status response.
 
         Args:
             xml_response: XML response string
 
         Returns:
-            Dictionary of status attributes
+            Dictionary of status attributes or None if response is incomplete
         """
         parsed = self.parse_xml(xml_response)
 
@@ -342,13 +342,15 @@ class ResponseParser:
                             if isinstance(item, dict) and '@n' in item and '@v' in item:
                                 name = item['@n']
                                 result[name] = item['@v']
-                                if '@dt' in item:
-                                    result[f"{name}_dt"] = item['@dt']
+                                for extra in ("dt", "m", "acd", "ih"):
+                                    if f"@{extra}" in item:
+                                        result[f"{name}_{extra}"] = item[f"@{extra}"]
                     elif isinstance(value, dict) and '@n' in value and '@v' in value:
                         name = value['@n']
                         result[name] = value['@v']
-                        if '@dt' in value:
-                            result[f"{name}_dt"] = value['@dt']
+                        for extra in ("dt", "m", "acd", "ih"):
+                            if f"@{extra}" in value:
+                                result[f"{name}_{extra}"] = value[f"@{extra}"]
 
                 # Handle nested structures
                 elif isinstance(value, dict | list):
