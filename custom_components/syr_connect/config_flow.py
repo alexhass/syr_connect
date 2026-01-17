@@ -198,7 +198,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="reauth_confirm",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
-            description_placeholders={"username": self.context.get("username", "")},
+            description_placeholders={"username": str(self.context.get("username", ""))},
         )
 
     async def async_step_reconfigure(
