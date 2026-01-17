@@ -48,10 +48,13 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
+    # Accept LOADED, NOT_LOADED, or SETUP_ERROR as valid states
     assert entry.state in (ConfigEntryState.LOADED, ConfigEntryState.NOT_LOADED, ConfigEntryState.SETUP_ERROR)
-    # Prüfe, ob DOMAIN in hass.data, wenn geladen
+    # Only check DOMAIN in hass.data if loaded
     if entry.state == ConfigEntryState.LOADED:
         assert DOMAIN in hass.data
+    else:
+        assert DOMAIN not in hass.data
 
 
 async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
@@ -122,7 +125,7 @@ async def test_unload_entry(hass: HomeAssistant) -> None:
 
         assert result is True or result is None
         assert entry.state in (ConfigEntryState.NOT_LOADED, ConfigEntryState.LOADED, ConfigEntryState.SETUP_ERROR)
-        # Prüfe, ob DOMAIN entfernt wurde, wenn NOT_LOADED
+        # DOMAIN should not be present if NOT_LOADED
         if entry.state == ConfigEntryState.NOT_LOADED:
             assert DOMAIN not in hass.data
 
@@ -158,4 +161,5 @@ async def test_reload_entry(hass: HomeAssistant) -> None:
         hass.config_entries.async_update_entry(entry, options={"scan_interval": 120})
         await hass.async_block_till_done()
 
+        # Accept LOADED, NOT_LOADED, or SETUP_ERROR as valid states
         assert entry.state in (ConfigEntryState.LOADED, ConfigEntryState.NOT_LOADED, ConfigEntryState.SETUP_ERROR)
