@@ -3,8 +3,8 @@ import pytest
 from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetProjectDeviceCollections.xml")
-FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
-FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
 
 @pytest.fixture
 def lexplus10s_project_collections_xml():
@@ -13,12 +13,12 @@ def lexplus10s_project_collections_xml():
 
 @pytest.fixture
 def lexplus10s_xml():
-    with open(FIXTURE_PATH_10S, encoding="utf-8") as f:
+    with open(FIXTURE_PATH_10S_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
 
 @pytest.fixture
 def lexplus10sl_xml():
-    with open(FIXTURE_PATH_10SL, encoding="utf-8") as f:
+    with open(FIXTURE_PATH_10SL_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
 
 
