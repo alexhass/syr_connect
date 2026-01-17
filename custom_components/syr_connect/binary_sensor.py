@@ -55,7 +55,7 @@ async def async_setup_entry(
                 registry_entry = registry.async_get(entity_id)
                 if registry_entry is not None and hasattr(registry_entry, "entity_id"):
                     _LOGGER.debug("Removing excluded binary sensor from registry: %s", entity_id)
-                    await registry.async_remove(registry_entry.entity_id)
+                    registry.async_remove(registry_entry.entity_id)
     except Exception:  # pragma: no cover - defensive
         _LOGGER.exception("Failed to cleanup excluded binary sensors from entity registry")
 
