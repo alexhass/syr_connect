@@ -3,15 +3,21 @@ import os
 import pytest
 from custom_components.syr_connect.response_parser import parse_device_status_response
 
-FIXTURE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S.xml")
+FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S.xml")
+FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL.xml")
 
 @pytest.fixture
 def lexplus10s_xml():
-    with open(FIXTURE_PATH, encoding="utf-8") as f:
+    with open(FIXTURE_PATH_10S, encoding="utf-8") as f:
+        return f.read()
+
+@pytest.fixture
+def lexplus10sl_xml():
+    with open(FIXTURE_PATH_10SL, encoding="utf-8") as f:
         return f.read()
 
 
-def test_parse_device_status_response(lexplus10s_xml):
+def test_parse_device_status_response_10s(lexplus10s_xml):
     """Test parsing of LEXplus10S device status XML."""
     result = parse_device_status_response(lexplus10s_xml)
     assert isinstance(result, dict)
@@ -48,4 +54,18 @@ def test_parse_device_status_response(lexplus10s_xml):
     # Check alarm meta
     # The parser should expose alarm meta if implemented
     # If not, this can be extended
+
+def test_parse_device_status_response_10sl(lexplus10sl_xml):
+    """Test parsing of LEXplus10SL device status XML."""
+    result = parse_device_status_response(lexplus10sl_xml)
+    assert isinstance(result, dict)
+    assert "getCNA" in result
+    assert result["getCNA"] == "LEXplus10SL"
+    assert "getSRN" in result
+    assert "getFLO" in result
+    assert "getPRS" in result
+    assert "getSS1" in result
+    # Check some typical values (adjust as needed for your fixture)
+    assert int(result["getPRS"]) >= 0
+    assert int(result["getFLO"]) >= 0
     # assert result["getALM_meta"]["m"] == "LowSalt"
