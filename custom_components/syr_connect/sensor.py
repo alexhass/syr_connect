@@ -102,11 +102,11 @@ async def async_setup_entry(
             # - If getSVx cannot be converted to float: fallback to standard logic (hide if getCSx is zero).
             # This prevents hiding getCSx when salt is present, but still hides it if both are zero or missing.
             if key in ("getCS1", "getCS2", "getCS3"):
-                sv_key = "getSV" + key[-1]
-                sv_value = status.get(sv_key)
-                if sv_value is not None:
+                getsv_key = "getSV" + key[-1]
+                getsv_value = status.get(getsv_key)
+                if getsv_value is not None:
                     try:
-                        if float(sv_value) != 0:
+                        if float(getsv_value) != 0:
                             pass  # show getCSx even if value == 0
                         else:
                             if isinstance(value, int | float) and value == 0:
@@ -114,13 +114,13 @@ async def async_setup_entry(
                             elif isinstance(value, str) and value == "0":
                                 continue
                     except (ValueError, TypeError):
-                        # If sv_value is not convertible, use standard logic
+                        # If getSVx value is not convertible, use standard logic
                         if isinstance(value, int | float) and value == 0:
                             continue
                         elif isinstance(value, str) and value == "0":
                             continue
                 else:
-                    # If sv_value is missing, use standard logic
+                    # If getSVx value is missing, use standard logic
                     if isinstance(value, int | float) and value == 0:
                         continue
                     elif isinstance(value, str) and value == "0":
