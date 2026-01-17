@@ -14,13 +14,9 @@ This custom integration enables control of SYR Connect devices through Home Assi
 
 1. Open HACS in Home Assistant
 2. Go to "Integrations"
-3. Click the three dots in the top right
-4. Select "Custom repositories"
-5. Add the repository URL
-6. Select "Integration" as category
-7. Click "Add"
-8. Search for "SYR Connect" and install it
-9. Restart Home Assistant
+3. Search for "SYR Connect"
+4. Click "Install"
+5. Restart Home Assistant
 
 ### Manual Installation
 
