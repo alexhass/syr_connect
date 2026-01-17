@@ -243,7 +243,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if device['id'] == self._device_id:
                     raw_value = device.get('status', {}).get('getALM')
                     break
-            mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(raw_value)
+            mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(str(raw_value))
             if mapped in ("no_salt", "low_salt"):
                 return "mdi:bell-alert"
             return "mdi:bell-outline"
