@@ -53,7 +53,9 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
     # Only check DOMAIN in hass.data if loaded
     if entry.state == ConfigEntryState.LOADED:
         assert DOMAIN in hass.data
-    else:
+    elif entry.state == ConfigEntryState.NOT_LOADED:
+        assert DOMAIN not in hass.data
+    elif entry.state == ConfigEntryState.SETUP_ERROR:
         assert DOMAIN not in hass.data
 
 
@@ -72,9 +74,11 @@ async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
     with patch(
         "syr_connect.coordinator.SyrConnectAPI"
     ) as mock_api_class:
-        # Mock API that fails on first_refresh
+        # Mock API that fails on login
+        async def raise_config_entry_not_ready(*args, **kwargs):
+            raise ConfigEntryNotReady("Connection failed")
         mock_api = MagicMock()
-        mock_api.login = AsyncMock(side_effect=ConfigEntryNotReady("Connection failed"))
+        mock_api.login = AsyncMock(side_effect=raise_config_entry_not_ready)
         mock_api_class.return_value = mock_api
 
         with pytest.raises(ConfigEntryNotReady):
@@ -125,8 +129,8 @@ async def test_unload_entry(hass: HomeAssistant) -> None:
 
         assert result is True or result is None
         assert entry.state in (ConfigEntryState.NOT_LOADED, ConfigEntryState.LOADED, ConfigEntryState.SETUP_ERROR)
-        # DOMAIN should not be present if NOT_LOADED
-        if entry.state == ConfigEntryState.NOT_LOADED:
+        # DOMAIN should not be present if NOT_LOADED or SETUP_ERROR
+        if entry.state in (ConfigEntryState.NOT_LOADED, ConfigEntryState.SETUP_ERROR):
             assert DOMAIN not in hass.data
 
 
