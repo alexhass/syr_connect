@@ -55,6 +55,7 @@ async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progr
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.login = AsyncMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[])
+        mock_api._is_session_valid = MagicMock(return_value=False)
         mock_api_class.return_value = mock_api
 
         coordinator = SyrConnectDataUpdateCoordinator(
@@ -80,6 +81,7 @@ async def test_coordinator_update_failure(hass: HomeAssistant, setup_in_progress
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.get_devices = AsyncMock(side_effect=Exception("API Error"))
+        mock_api._is_session_valid = MagicMock(return_value=True)
         mock_api_class.return_value = mock_api
 
         coordinator = SyrConnectDataUpdateCoordinator(
@@ -110,6 +112,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
         ])
         mock_api.get_device_status = AsyncMock(return_value={})
         mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api._is_session_valid = MagicMock(return_value=True)
         mock_api_class.return_value = mock_api
 
         coordinator = SyrConnectDataUpdateCoordinator(
