@@ -61,10 +61,10 @@ async def async_setup_entry(
             device_id = device['id']
             for excluded_key in _SYR_CONNECT_EXCLUDED_SENSORS:
                 entity_id = build_entity_id("sensor", device_id, excluded_key)
-                entry = registry.async_get(entity_id)
-                if entry:
+                registry_entry = registry.async_get(entity_id)
+                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
                     _LOGGER.debug("Removing excluded sensor from registry: %s", entity_id)
-                    await registry.async_remove(entry.entity_id)
+                    registry.async_remove(registry_entry.entity_id)
     except Exception:  # pragma: no cover - defensive
         _LOGGER.exception("Failed to cleanup excluded sensors from entity registry")
 
