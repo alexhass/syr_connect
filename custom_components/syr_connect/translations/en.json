@@ -304,13 +304,13 @@
       "getsta": {
         "name": "Status",
         "state": {
-          "backup_status_fast_rinse": "Fast rinse {rinse_round}",
-          "backup_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
+          "status_fast_rinse": "Fast rinse {rinse_round}",
+          "status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
           "status_backwash": "Backwash",
-          "status_fast_rinse": "Fast rinse",
+          "backup_status_fast_rinse": "Fast rinse",
           "status_filling": "Filling",
           "status_inactive": "Inactive",
-          "status_regenerant_rinse": "Regenerant rinse",
+          "backup_status_regenerant_rinse": "Regenerant rinse",
           "status_refill_salt": "Please refill salt",
           "status_slow_rinse": "Slow rinse"
         }

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from datetime import UTC
 
 from homeassistant.components.sensor import (
@@ -25,7 +24,6 @@ from .const import (
     _SYR_CONNECT_SENSOR_ICONS,
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
-    _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_STRING_SENSORS,
 )
@@ -237,31 +235,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
-        # Initialize translation placeholders for getSTA so Home Assistant
-        # receives placeholders immediately (per HA entity translations guidance)
-        # Use translation key (case-insensitive) to cover different casings
-        if getattr(self, '_attr_translation_key', '').lower() == "getsta":
-            try:
-                raw = None
-                for device in coordinator.data.get('devices', []):
-                    if device['id'] == device_id:
-                        raw = device.get('status', {}).get('getSTA', '')
-                        break
-                # Always provide the required placeholder keys (may be empty strings)
-                placeholders: dict = {"resistance_value": "", "rinse_round": ""}
-                _LOGGER.debug("Initial raw getSTA for %s: %s", self.entity_id, raw)
-                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
-                if m:
-                    placeholders['resistance_value'] = m.group(1)
-                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
-                if m2:
-                    placeholders['rinse_round'] = m2.group(1)
-                _LOGGER.debug("Setting initial translation_placeholders for %s: %s", self.entity_id, placeholders)
-                self._attr_translation_placeholders = placeholders
-            except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Failed to initialize translation placeholders for %s", self.entity_id)
-                self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": ""}
-
     @property
     def icon(self) -> str | None:
         """Return the icon to use in the frontend, if any.
@@ -382,18 +355,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Raw value from device
                 value = status.get(self._sensor_key)
 
-                # Special handling for status sensor (getSTA): map Polish strings to internal keys
-                if self._sensor_key == 'getSTA':
-                    placeholders = self._compute_translation_placeholders()
-                    raw = value if value is not None else ""
-                    # Priorisiere Mapping anhand der Platzhalter
-                    if placeholders['resistance_value']:
-                        return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie regenerantem (0mA)", "status_regenerant_rinse")
-                    if placeholders['rinse_round']:
-                        return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie szybkie 1", "status_fast_rinse")
-                    mapped = _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(raw)
-                    return mapped if mapped is not None else (raw if raw != "" else None)
-
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
                     mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(value)
@@ -464,77 +425,3 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return device.get('available', True)
 
         return True
-
-    @property
-    def extra_state_attributes(self) -> dict | None:
-        """Return additional state attributes used by translations."""
-        # Only provide attributes for getSTA to fill translation placeholders
-        is_getsta = (
-            getattr(self, '_attr_translation_key', '').lower() == 'getsta' or
-            self.entity_id.endswith('_getsta')
-        )
-        if not is_getsta:
-            return None
-
-        # Debug: log every time attributes are computed for getSTA
-        _LOGGER.debug("[getSTA debug] Entity: %s, device_id: %s, coordinator.data: %s", self.entity_id, self._device_id, self.coordinator.data)
-
-        for device in self.coordinator.data.get('devices', []):
-            if device['id'] == self._device_id:
-                raw = device.get('status', {}).get('getSTA', '')
-                attrs: dict = {"resistance_value": "", "rinse_round": ""}
-                _LOGGER.debug("[getSTA debug] Entity: %s, raw getSTA: %s", self.entity_id, raw)
-                if raw is None:
-                    _LOGGER.debug("[getSTA debug] Entity: %s, raw is None, returning attrs: %s", self.entity_id, attrs)
-                    return attrs
-                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
-                if m:
-                    attrs['resistance_value'] = m.group(1)
-                    _LOGGER.debug("[getSTA debug] Entity: %s, resistance_value matched: %s", self.entity_id, attrs['resistance_value'])
-                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
-                if m2:
-                    attrs['rinse_round'] = m2.group(1)
-                    _LOGGER.debug("[getSTA debug] Entity: %s, rinse_round matched: %s", self.entity_id, attrs['rinse_round'])
-                _LOGGER.debug("[getSTA debug] Entity: %s, returning attrs: %s", self.entity_id, attrs)
-                return attrs
-        return None
-
-
-    def _compute_translation_placeholders(self) -> dict:
-        """Compute translation placeholders for getSTA sensors."""
-        is_getsta = (
-            getattr(self, '_attr_translation_key', '').lower() == 'getsta' or
-            self.entity_id.endswith('_getsta')
-        )
-        if not is_getsta:
-            return {"resistance_value": "", "rinse_round": ""}
-        placeholders = {"resistance_value": "", "rinse_round": ""}
-        for device in self.coordinator.data.get('devices', []):
-            if device['id'] == self._device_id:
-                raw = device.get('status', {}).get('getSTA', '')
-                if raw is None:
-                    return placeholders
-                m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
-                if m:
-                    placeholders['resistance_value'] = m.group(1)
-                m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
-                if m2:
-                    placeholders['rinse_round'] = m2.group(1)
-                return placeholders
-        return placeholders
-
-    def _handle_coordinator_update(self) -> None:
-        """Update translation placeholders on coordinator update and propagate state."""
-        try:
-            # Only update translation_placeholders for getSTA entities
-            if getattr(self, '_attr_translation_key', '').lower() == 'getsta' or self.entity_id.endswith('_getsta'):
-                new_placeholders = self._compute_translation_placeholders()
-                if new_placeholders != getattr(self, '_attr_translation_placeholders', {}):
-                    _LOGGER.debug("Updating translation_placeholders for %s: %s", self.entity_id, new_placeholders)
-                    _LOGGER.debug("extra_state_attributes for %s: %s", self.entity_id, self.extra_state_attributes)
-                self._attr_translation_placeholders = new_placeholders or {"resistance_value": "", "rinse_round": ""}
-        except Exception:  # pragma: no cover - defensive
-            _LOGGER.exception("Failed to update translation_placeholders for %s", self.entity_id)
-            self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": ""}
-        super()._handle_coordinator_update()
-
