@@ -31,7 +31,6 @@ async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress
         })
         mock_api_class.return_value = mock_api
 
-        from tests.conftest import setup_in_progress_config_entry
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
@@ -58,7 +57,6 @@ async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progr
         mock_api.get_devices = AsyncMock(return_value=[])
         mock_api_class.return_value = mock_api
 
-        from tests.conftest import setup_in_progress_config_entry
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
