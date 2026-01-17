@@ -443,8 +443,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         )
         if not is_getsta:
             return None
+
         # Debug: log every time attributes are computed for getSTA
-        return None
         _LOGGER.debug("[getSTA debug] Entity: %s, device_id: %s, coordinator.data: %s", self.entity_id, self._device_id, self.coordinator.data)
 
         for device in self.coordinator.data.get('devices', []):
@@ -465,6 +465,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     _LOGGER.debug("[getSTA debug] Entity: %s, rinse_round matched: %s", self.entity_id, attrs['rinse_round'])
                 _LOGGER.debug("[getSTA debug] Entity: %s, returning attrs: %s", self.entity_id, attrs)
                 return attrs
+        return None
 
     @property
     def translation_placeholders(self) -> dict:
@@ -480,6 +481,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         )
         if not is_getsta:
             return {}
+
+        # Debug: log every time attributes are computed for getSTA
         _LOGGER.debug("[getSTA debug] Entity: %s, _attr_translation_placeholders: %s", self.entity_id, self._attr_translation_placeholders)
 
         placeholders = {"resistance_value": "", "rinse_round": ""}
@@ -500,6 +503,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     _LOGGER.debug("[getSTA debug] Entity: %s, rinse_round matched: %s", self.entity_id, placeholders['rinse_round'])
                 _LOGGER.debug("[getSTA debug] Entity: %s, returning placeholders: %s", self.entity_id, placeholders)
                 return placeholders
+        return {}
 
     def _handle_coordinator_update(self) -> None:
         """Update translation placeholders on coordinator update and propagate state."""
