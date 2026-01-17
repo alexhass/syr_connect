@@ -285,7 +285,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     ival = int(float(val))
                 except (TypeError, ValueError):
                     ival = 1
-                # 2 -> Available, 1 -> Not available
+                # Values:
+                # 1 -> Not available
+                # 2 -> Available
                 if ival == 2:
                     return "mdi:check-circle"
                 if ival == 1:
