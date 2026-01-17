@@ -82,13 +82,50 @@ async def async_setup_entry(
 
         # Create sensors for all status values
         sensor_count = 0
+
         for key, value in status.items():
             # Skip sensors excluded globally
             if key in _SYR_CONNECT_EXCLUDED_SENSORS:
                 continue
 
-            # Skip specific sensors only when value is 0
-            if key in _SYR_CONNECT_EXCLUDE_WHEN_ZERO:
+            # Special logic for getCS1/2/3:
+            # These sensors represent the remaining resin capacity in percent (getCSx),
+            # while getSVx represents the salt amount in kg for the same compartment.
+            # By default, sensors in _SYR_CONNECT_EXCLUDE_WHEN_ZERO are hidden if their value is 0.
+            # However, for getCS1/2/3, we want to show them if the corresponding getSV1/2/3 is not zero,
+            # even if getCSx itself is zero. This ensures that users see the resin capacity as long as
+            # there is salt present, which is relevant for maintenance and monitoring.
+            #
+            # Logic:
+            # - If getSVx exists and is not zero: always show getCSx, regardless of its value.
+            # - If getSVx is missing or zero: only show getCSx if its value is not zero.
+            # - If getSVx cannot be converted to float: fallback to standard logic (hide if getCSx is zero).
+            # This prevents hiding getCSx when salt is present, but still hides it if both are zero or missing.
+            if key in ("getCS1", "getCS2", "getCS3"):
+                sv_key = "getSV" + key[-1]
+                sv_value = status.get(sv_key)
+                if sv_value is not None:
+                    try:
+                        if float(sv_value) != 0:
+                            pass  # show getCSx even if value == 0
+                        else:
+                            if isinstance(value, int | float) and value == 0:
+                                continue
+                            elif isinstance(value, str) and value == "0":
+                                continue
+                    except (ValueError, TypeError):
+                        # If sv_value is not convertible, use standard logic
+                        if isinstance(value, int | float) and value == 0:
+                            continue
+                        elif isinstance(value, str) and value == "0":
+                            continue
+                else:
+                    # If sv_value is missing, use standard logic
+                    if isinstance(value, int | float) and value == 0:
+                        continue
+                    elif isinstance(value, str) and value == "0":
+                        continue
+            elif key in _SYR_CONNECT_EXCLUDE_WHEN_ZERO:
                 if isinstance(value, int | float) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
@@ -347,18 +384,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for status sensor (getSTA): map Polish strings to internal keys
                 if self._sensor_key == 'getSTA':
+                    placeholders = self._compute_translation_placeholders()
                     raw = value if value is not None else ""
-                    # Default attributes
-                    # Check for regenerant rinse pattern with value in parentheses, e.g. "Płukanie regenerantem (0mA)"
-                    m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
-                    if m:
-                        # set attribute resistance_value and return mapped key
+                    # Priorisiere Mapping anhand der Platzhalter
+                    if placeholders['resistance_value']:
                         return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie regenerantem (0mA)", "status_regenerant_rinse")
-                    # Check for fast rinse pattern with a round number, e.g. "Płukanie szybkie 1"
-                    m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
-                    if m2:
+                    if placeholders['rinse_round']:
                         return _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get("Płukanie szybkie 1", "status_fast_rinse")
-                    # Fallback to exact map lookup
                     mapped = _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(raw)
                     return mapped if mapped is not None else (raw if raw != "" else None)
 
@@ -467,58 +499,40 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return attrs
         return None
 
-    @property
-    def translation_placeholders(self) -> dict:
-        """Return translation placeholders for the frontend translations.
 
-        Always return a mapping (possibly empty) because Home Assistant will
-        call `name.format(**translation_placeholders)` when building entity
-        names; passing None causes a TypeError.
-        """
+    def _compute_translation_placeholders(self) -> dict:
+        """Compute translation placeholders for getSTA sensors."""
         is_getsta = (
             getattr(self, '_attr_translation_key', '').lower() == 'getsta' or
             self.entity_id.endswith('_getsta')
         )
         if not is_getsta:
-            return {}
-
-        # Debug: log every time attributes are computed for getSTA
-        _LOGGER.debug("[getSTA debug] Entity: %s, _attr_translation_placeholders: %s", self.entity_id, self._attr_translation_placeholders)
-
+            return {"resistance_value": "", "rinse_round": ""}
         placeholders = {"resistance_value": "", "rinse_round": ""}
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 raw = device.get('status', {}).get('getSTA', '')
-                _LOGGER.debug("[getSTA debug] Entity: %s, raw getSTA: %s", self.entity_id, raw)
                 if raw is None:
-                    _LOGGER.debug("[getSTA debug] Entity: %s, raw is None, returning placeholders: %s", self.entity_id, placeholders)
                     return placeholders
                 m = re.search(r"Płukanie regenerantem\s*\(([^)]+)\)", str(raw))
                 if m:
                     placeholders['resistance_value'] = m.group(1)
-                    _LOGGER.debug("[getSTA debug] Entity: %s, resistance_value matched: %s", self.entity_id, placeholders['resistance_value'])
                 m2 = re.search(r"Płukanie szybkie\s*(\d+)", str(raw))
                 if m2:
                     placeholders['rinse_round'] = m2.group(1)
-                    _LOGGER.debug("[getSTA debug] Entity: %s, rinse_round matched: %s", self.entity_id, placeholders['rinse_round'])
-                _LOGGER.debug("[getSTA debug] Entity: %s, returning placeholders: %s", self.entity_id, placeholders)
                 return placeholders
-        return {}
+        return placeholders
 
     def _handle_coordinator_update(self) -> None:
         """Update translation placeholders on coordinator update and propagate state."""
         try:
             # Only update translation_placeholders for getSTA entities
-            if getattr(self, '_attr_translation_key', '').lower() != 'getsta':
-                super()._handle_coordinator_update()
-                return
-
-            new_placeholders = self.translation_placeholders
-            if new_placeholders != getattr(self, '_attr_translation_placeholders', {}):
-                _LOGGER.debug("Updating translation_placeholders for %s: %s", self.entity_id, new_placeholders)
-                # Also log extra state attributes to confirm frontend receives them
-                _LOGGER.debug("extra_state_attributes for %s: %s", self.entity_id, self.extra_state_attributes)
-            self._attr_translation_placeholders = new_placeholders or {"resistance_value": "", "rinse_round": ""}
+            if getattr(self, '_attr_translation_key', '').lower() == 'getsta' or self.entity_id.endswith('_getsta'):
+                new_placeholders = self._compute_translation_placeholders()
+                if new_placeholders != getattr(self, '_attr_translation_placeholders', {}):
+                    _LOGGER.debug("Updating translation_placeholders for %s: %s", self.entity_id, new_placeholders)
+                    _LOGGER.debug("extra_state_attributes for %s: %s", self.entity_id, self.extra_state_attributes)
+                self._attr_translation_placeholders = new_placeholders or {"resistance_value": "", "rinse_round": ""}
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to update translation_placeholders for %s", self.entity_id)
             self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": ""}
