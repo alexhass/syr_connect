@@ -1,9 +1,26 @@
+import os
+import pytest
+from custom_components.syr_connect.response_parser import ResponseParser
+
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetProjectDeviceCollections.xml")
+FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
 
 @pytest.fixture
 def lexplus10s_project_collections_xml():
     with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
         return f.read()
+
+@pytest.fixture
+def lexplus10s_xml():
+    with open(FIXTURE_PATH_10S, encoding="utf-8") as f:
+        return f.read()
+
+@pytest.fixture
+def lexplus10sl_xml():
+    with open(FIXTURE_PATH_10SL, encoding="utf-8") as f:
+        return f.read()
+
 
 def test_parse_device_list_alias_reference(lexplus10s_project_collections_xml):
     """Test parsing device list and alias extraction via references."""
@@ -16,25 +33,6 @@ def test_parse_device_list_alias_reference(lexplus10s_project_collections_xml):
     assert device["name"] == "Water Softener"
     assert device["dclg"] == "0b09f7ce-41a0-4085-9e69-fa8827a32b6f"
     assert device["serial_number"] == "123456789"
-
-
-"""Unit tests for SYR Connect XML response parser."""
-import os
-import pytest
-from custom_components.syr_connect.response_parser import ResponseParser
-
-FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
-FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
-
-@pytest.fixture
-def lexplus10s_xml():
-    with open(FIXTURE_PATH_10S, encoding="utf-8") as f:
-        return f.read()
-
-@pytest.fixture
-def lexplus10sl_xml():
-    with open(FIXTURE_PATH_10SL, encoding="utf-8") as f:
-        return f.read()
 
 
 def test_parse_device_status_response_10s(lexplus10s_xml):
