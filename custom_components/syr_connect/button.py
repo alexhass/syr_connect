@@ -29,7 +29,8 @@ async def async_setup_entry(
         async_add_entities: Callback to add entities
     """
     _LOGGER.debug("Setting up SYR Connect buttons")
-    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
+    coordinator = entry.runtime_data
+    assert isinstance(coordinator, SyrConnectDataUpdateCoordinator), "runtime_data must be SyrConnectDataUpdateCoordinator"
 
     entities = []
 
