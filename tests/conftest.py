@@ -1,9 +1,3 @@
-@pytest.fixture
-def setup_in_progress_config_entry():
-    """Mock ConfigEntry im State SETUP_IN_PROGRESS."""
-    entry = MagicMock()
-    entry.state = config_entries.ConfigEntryState.SETUP_IN_PROGRESS
-    return entry
 
 import pytest
 from collections.abc import Generator
@@ -14,6 +8,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 pytest_plugins = "pytest_homeassistant_custom_component"
+
+@pytest.fixture
+def setup_in_progress_config_entry():
+    """Mock ConfigEntry im State SETUP_IN_PROGRESS."""
+    entry = MagicMock()
+    entry.state = config_entries.ConfigEntryState.SETUP_IN_PROGRESS
+    return entry
 
 
 @pytest.fixture(autouse=True)
