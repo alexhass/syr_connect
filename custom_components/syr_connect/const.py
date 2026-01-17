@@ -67,7 +67,7 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
     "Płukanie wsteczne": "status_backwash",
     "Płukanie regenerantem": "status_regenerant_rinse",
     "Płukanie wolne": "status_slow_rinse",
-    "Płukanie szybkie 1": "status_fast_rinse",
+    "Płukanie szybkie": "status_fast_rinse",
     "Napełnianie": "status_filling",
     "": "status_inactive",
 }
