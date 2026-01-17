@@ -1,3 +1,9 @@
+@pytest.fixture
+def setup_in_progress_config_entry():
+    """Mock ConfigEntry im State SETUP_IN_PROGRESS."""
+    entry = MagicMock()
+    entry.state = config_entries.ConfigEntryState.SETUP_IN_PROGRESS
+    return entry
 """Fixtures for SYR Connect tests."""
 from collections.abc import Generator
 from pathlib import Path

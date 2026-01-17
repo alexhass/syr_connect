@@ -31,6 +31,7 @@ async def test_coordinator_update_success(hass: HomeAssistant) -> None:
         })
         mock_api_class.return_value = mock_api
 
+        from tests.conftest import setup_in_progress_config_entry
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
@@ -38,8 +39,7 @@ async def test_coordinator_update_success(hass: HomeAssistant) -> None:
             "password",
             60,
         )
-        # Dummy ConfigEntry für Test
-        coordinator.config_entry = MagicMock()
+        coordinator.config_entry = setup_in_progress_config_entry()
         await coordinator.async_config_entry_first_refresh()
 
         assert coordinator.data is not None
@@ -58,6 +58,7 @@ async def test_coordinator_update_no_session(hass: HomeAssistant) -> None:
         mock_api.get_devices = AsyncMock(return_value=[])
         mock_api_class.return_value = mock_api
 
+        from tests.conftest import setup_in_progress_config_entry
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
@@ -65,7 +66,7 @@ async def test_coordinator_update_no_session(hass: HomeAssistant) -> None:
             "password",
             60,
         )
-        coordinator.config_entry = MagicMock()
+        coordinator.config_entry = setup_in_progress_config_entry()
         # Simulate login being called
         mock_api.session_data = "new_session"
         await coordinator.async_config_entry_first_refresh()
@@ -83,6 +84,7 @@ async def test_coordinator_update_failure(hass: HomeAssistant) -> None:
         mock_api.get_devices = AsyncMock(side_effect=Exception("API Error"))
         mock_api_class.return_value = mock_api
 
+        from tests.conftest import setup_in_progress_config_entry
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
@@ -90,7 +92,7 @@ async def test_coordinator_update_failure(hass: HomeAssistant) -> None:
             "password",
             60,
         )
-        coordinator.config_entry = MagicMock()
+        coordinator.config_entry = setup_in_progress_config_entry()
         with pytest.raises(UpdateFailed):
             await coordinator.async_config_entry_first_refresh()
 
@@ -113,6 +115,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant) -> None:
         mock_api.set_device_status = AsyncMock(return_value=True)
         mock_api_class.return_value = mock_api
 
+        from tests.conftest import setup_in_progress_config_entry
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
@@ -120,7 +123,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant) -> None:
             "password",
             60,
         )
-        coordinator.config_entry = MagicMock()
+        coordinator.config_entry = setup_in_progress_config_entry()
         await coordinator.async_config_entry_first_refresh()
 
         # Set device value
