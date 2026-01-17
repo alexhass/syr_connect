@@ -1,7 +1,7 @@
 """Unit tests for SYR Connect XML response parser."""
 import os
 import pytest
-from custom_components.syr_connect.response_parser import parse_device_status_response
+from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
 FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
@@ -19,7 +19,8 @@ def lexplus10sl_xml():
 
 def test_parse_device_status_response_10s(lexplus10s_xml):
     """Test parsing of LEXplus10S device status XML."""
-    result = parse_device_status_response(lexplus10s_xml)
+    parser = ResponseParser()
+    result = parser.parse_device_status_response(lexplus10s_xml)
     assert isinstance(result, dict)
     # Check some key values
     assert "getALM" in result
@@ -57,7 +58,8 @@ def test_parse_device_status_response_10s(lexplus10s_xml):
 
 def test_parse_device_status_response_10sl(lexplus10sl_xml):
     """Test parsing of LEXplus10SL device status XML."""
-    result = parse_device_status_response(lexplus10sl_xml)
+    parser = ResponseParser()
+    result = parser.parse_device_status_response(lexplus10sl_xml)
     assert isinstance(result, dict)
     assert "getCNA" in result
     assert result["getCNA"] == "LEXplus10SL"
