@@ -3,8 +3,8 @@ import os
 import pytest
 from custom_components.syr_connect.response_parser import parse_device_status_response
 
-FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S.xml")
-FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL.xml")
+FIXTURE_PATH_10S = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10SL = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
 
 @pytest.fixture
 def lexplus10s_xml():
