@@ -71,7 +71,7 @@ async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
     ) as mock_api_class:
         # Mock API that fails on first_refresh
         mock_api = MagicMock()
-        mock_api.login = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_api.login = AsyncMock(side_effect=ConfigEntryNotReady("Connection failed"))
         mock_api_class.return_value = mock_api
 
         with pytest.raises(ConfigEntryNotReady):
