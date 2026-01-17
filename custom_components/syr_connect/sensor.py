@@ -293,31 +293,33 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except Exception:
                 pass
 
-        # Dynamic icon for salt stock sensors (percentage based)
-        if self._sensor_key in ("getSS1", "getSS2", "getSS3"):
-            try:
-                value = float(self.native_value) if self.native_value is not None else 0
-                if value >= 66:
-                    return "mdi:cup-water"
-                elif value >= 33:
-                    return "mdi:cup"
-                else:
-                    return "mdi:cup-outline"
-            except (ValueError, TypeError):
-                pass
+        # Dynamic icon for salt container volume (percentage based)
+        # NOTE: Remove code as long as we have no idea how many KG the salt containers have.
+        #if self._sensor_key in ("getSV1", "getSv2", "getSV3"):
+        #    try:
+        #        value = float(self.native_value) if self.native_value is not None else 0
+        #        if value >= 66:
+        #            return "mdi:cup-water"
+        #        elif value >= 33:
+        #            return "mdi:cup"
+        #        else:
+        #            return "mdi:cup-outline"
+        #    except (ValueError, TypeError):
+        #        pass
 
         # Dynamic icon for remaining capacity (percentage based)
-        if self._sensor_key == "getRES":
-            try:
-                value = float(self.native_value) if self.native_value is not None else 0
-                if value >= 66:
-                    return "mdi:gauge-full"
-                elif value >= 33:
-                    return "mdi:gauge"
-                else:
-                    return "mdi:gauge-low"
-            except (ValueError, TypeError):
-                pass
+        # NOTE: Remove code as long as we have no idea how many L the devices have.
+        #if self._sensor_key == "getRES":
+        #    try:
+        #        value = float(self.native_value) if self.native_value is not None else 0
+        #        if value >= 66:
+        #            return "mdi:gauge-full"
+        #        elif value >= 33:
+        #            return "mdi:gauge"
+        #        else:
+        #            return "mdi:gauge-low"
+        #    except (ValueError, TypeError):
+        #        pass
 
         # Return base icon for all other sensors
         return self._base_icon

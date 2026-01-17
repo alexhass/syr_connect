@@ -145,7 +145,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getFCO": "mdi:counter",
     "getDWF": "mdi:water-alert",
     # Capacity & Supply
-    "getRES": "mdi:gauge-empty",
+    "getRES": "mdi:mdi:gauge",
     "getVOL": "mdi:gauge-full",
     "getSV1": "mdi:delete-variant",
     "getSV2": "mdi:delete-variant",
