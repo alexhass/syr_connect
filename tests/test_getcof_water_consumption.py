@@ -76,7 +76,7 @@ def test_getcof_handles_string_values():
         sensor_key="getCOF",
     )
 
-    # Sollte String zu Zahl konvertieren (int oder float akzeptieren)
+    # Should convert string to number (accept int or float)
     assert float(sensor.native_value) == 888518.0
     assert isinstance(sensor.native_value, (int, float))
 

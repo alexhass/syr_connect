@@ -80,7 +80,8 @@ async def test_coordinator_update_failure(hass: HomeAssistant, setup_in_progress
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.get_devices = AsyncMock(side_effect=Exception("API Error"))
+        # get_devices throws an error for each project
+        mock_api.get_devices = AsyncMock(side_effect=[Exception("API Error")])
         mock_api._is_session_valid = MagicMock(return_value=True)
         mock_api_class.return_value = mock_api
 
