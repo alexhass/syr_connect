@@ -304,13 +304,13 @@
       "getsta": {
         "name": "Status",
         "state": {
-          "status_fast_rinse": "Schnelles Spülen {rinse_round}",
-          "status_regenerant_rinse": "Spülen mit Regeneriermittel ({resistance_value})",
+          "backup_status_fast_rinse": "Schnelles Spülen {rinse_round}",
+          "backup_status_regenerant_rinse": "Spülen mit Regeneriermittel ({resistance_value})",
           "status_backwash": "Rückspülung",
-          "backup_status_fast_rinse": "Schnelles Spülen",
+          "status_fast_rinse": "Schnelles Spülen",
           "status_filling": "Befüllen",
           "status_inactive": "Inaktiv",
-          "backup_status_regenerant_rinse": "Spülen mit Regeneriermittel",
+          "status_regenerant_rinse": "Spülen mit Regeneriermittel",
           "status_refill_salt": "Bitte Salz nachfüllen",
           "status_slow_rinse": "Langsames Spülen"
         }

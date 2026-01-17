@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC
+import re
+from datetime import UTC, datetime
 
-from homeassistant.components.sensor import (
-    SensorEntity,
-)
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -24,6 +23,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_ICONS,
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
+    _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_STRING_SENSORS,
 )
@@ -315,6 +315,15 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             if device['id'] == self._device_id:
                 status = device.get('status', {})
 
+                # Defensive: always set value before use in string sensors
+                value = status.get(self._sensor_key) if self._sensor_key in status else None
+
+                # TEST: Override getSTA value for manual testing
+                #if self._sensor_key == 'getSTA':
+                    #status['getSTA'] = "Płukanie regenerantem (587mA)"
+                    #status['getSTA'] = "Płukanie szybkie 1"
+                    #status['getSTA'] = "Płukanie wsteczne"
+
                 # Special handling for combined regeneration time sensor
                 if self._sensor_key == 'getRTIME':
                     hour = status.get('getRTH', 0)
@@ -326,7 +335,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
-                    value = status.get(self._sensor_key)
                     from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
                     if isinstance(value, int | float):
                         return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
@@ -339,30 +347,65 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for last regeneration timestamp (getLAR): convert unix seconds to datetime object
                 if self._sensor_key == 'getLAR':
-                    raw_value = status.get(self._sensor_key)
-                    if raw_value is None or raw_value == "":
+                    if value is None or value == "":
+                        # Return default datetime: 1970-01-01 00:00:00+00:00
                         return None
                     try:
-                        from datetime import datetime
-
-                        ts = int(float(raw_value))
+                        ts = int(float(value))
                         # Return an aware datetime object (UTC). Home Assistant
                         # will format this according to the user's timezone/locale.
                         return datetime.fromtimestamp(ts, UTC)
                     except (ValueError, TypeError, OverflowError):
                         return None
 
-                # Raw value from device
-                value = status.get(self._sensor_key)
+                # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key/placeholders
+                # MAXIMUM DEBUGGING: Log all relevant variables and branches for getSTA
+                if self._sensor_key == 'getSTA':
+                    raw = str(status.get('getSTA') or "")
+                    _LOGGER.debug("[getSTA debug] Entity: %s, device_id: %s, raw: %s", self.entity_id, self._device_id, raw)
+                    resistance_value = ""
+                    rinse_round = ""
+                    m = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
+                    _LOGGER.debug("[getSTA debug] regex1 match: %s", m)
+                    if m:
+                        resistance_value = str(m.group(1) or "")
+                        normalized = "Płukanie regenerantem"
+                        mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
+                        self._attr_translation_key = mapped
+                        self._attr_translation_placeholders = {"resistance_value": resistance_value, "rinse_round": ""}
+                        _LOGGER.debug("[getSTA debug] normalized: %s, mapped: %s, resistance_value: %s", normalized, mapped, resistance_value)
+                        _LOGGER.debug("[getSTA debug] translation_key: %s, placeholders: %s", self._attr_translation_key, self._attr_translation_placeholders)
+                        return mapped
+                    m2 = re.match(r"Płukanie szybkie\s*(\d+)", raw)
+                    _LOGGER.debug("[getSTA debug] regex2 match: %s", m2)
+                    if m2:
+                        rinse_round = str(m2.group(1) or "")
+                        normalized = "Płukanie schnelle"
+                        mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_fast_rinse"))
+                        self._attr_translation_key = mapped
+                        self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": rinse_round}
+                        _LOGGER.debug("[getSTA debug] normalized: %s, mapped: %s, rinse_round: %s", normalized, mapped, rinse_round)
+                        _LOGGER.debug("[getSTA debug] translation_key: %s, placeholders: %s", self._attr_translation_key, self._attr_translation_placeholders)
+                        return mapped
+                    normalized = raw
+                    mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, normalized))
+                    self._attr_translation_key = mapped
+                    self._attr_translation_placeholders = {"resistance_value": resistance_value, "rinse_round": rinse_round}
+                    _LOGGER.debug("[getSTA debug] fallback mapping, normalized: %s, mapped: %s", normalized, mapped)
+                    _LOGGER.debug("[getSTA debug] translation_key: %s, placeholders: %s", self._attr_translation_key, self._attr_translation_placeholders)
+                    return mapped
 
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
-                    mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(value)
+                    raw = str(status.get('getALM') or "")
+                    mapped = str(_SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(raw))
+                    self._attr_translation_key = mapped if mapped is not None else value
                     # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
                 if self._sensor_key in _SYR_CONNECT_STRING_SENSORS:
+                    _LOGGER.debug("String sensor key: %s, value: %s", self._sensor_key, value)
                     return str(value) if value is not None else None
 
                 # Try to convert to number if possible for other sensors
