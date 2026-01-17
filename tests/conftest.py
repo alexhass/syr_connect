@@ -4,12 +4,11 @@ def setup_in_progress_config_entry():
     entry = MagicMock()
     entry.state = config_entries.ConfigEntryState.SETUP_IN_PROGRESS
     return entry
-"""Fixtures for SYR Connect tests."""
+
+import pytest
 from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
-
-import pytest
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
