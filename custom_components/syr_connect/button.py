@@ -1,7 +1,9 @@
 """Button platform for SYR Connect."""
 from __future__ import annotations
 
+
 import logging
+from typing import cast
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
@@ -29,8 +31,7 @@ async def async_setup_entry(
         async_add_entities: Callback to add entities
     """
     _LOGGER.debug("Setting up SYR Connect buttons")
-    coordinator = entry.runtime_data
-    assert isinstance(coordinator, SyrConnectDataUpdateCoordinator), "runtime_data must be SyrConnectDataUpdateCoordinator"
+    coordinator = cast(SyrConnectDataUpdateCoordinator, entry.runtime_data)
 
     entities = []
 
@@ -120,10 +121,11 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         button_id = getattr(self, "_attr_translation_key", None) or getattr(self, "_attr_unique_id", None)
         _LOGGER.debug("Button pressed: %s (device: %s)", button_id, self._device_id)
 
+        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
             # Send value: 0 for `setSIR` (documentation: 0 = immediate), otherwise 1
             value = 0 if self._command == "setSIR" else 1
-            await self.coordinator.async_set_device_value(
+            await coordinator.async_set_device_value(
                 self._device_id, self._command, value
             )
         except ValueError as err:
