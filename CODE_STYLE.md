@@ -109,4 +109,54 @@ class WaterSensor(SensorEntity):
 
 ---
 
-**This file is binding for all contributions to this project. Changes to the rules require review.**
+
+---
+
+## 8. Home Assistant Integration Best Practices (copilot-instructions.md)
+
+- **Integration Quality Scale:**
+  - Define your integration's quality level (Bronze/Silver/Gold/Platinum) in `manifest.json` and track rule status in `quality_scale.yaml`.
+
+- **Unique IDs:**
+  - Every entity must have a unique ID (serial number, MAC, physical identifier). Never use names, IPs, or user data.
+
+- **Translatable Entity Names & Errors:**
+  - Entity names and error messages must be managed via `strings.json` and translation files.
+
+- **Polling Interval:**
+  - Polling intervals are not user-configurable. Set intervals in code (e.g., `SCAN_INTERVAL` in `const.py`).
+
+- **Error Handling:**
+  - Use specific exception types (`ServiceValidationError`, `HomeAssistantError`, etc.).
+  - Avoid bare `except:` blocks except in config flows or background tasks.
+
+- **Logging:**
+  - Use lazy logging (`_LOGGER.debug("Message %s", var)`).
+  - Never log sensitive data.
+  - Log messages do not end with a period.
+
+- **Entity Availability:**
+  - Implement the `available` property for entities instead of using special state values.
+
+- **Device Registry:**
+  - Group entities under devices and provide complete metadata (`manufacturer`, `model`, `sw_version`, etc.).
+
+- **Diagnostics:**
+  - Implement diagnostics functions that redact sensitive data.
+
+- **Testing:**
+  - Tests must achieve >95% coverage, mock external dependencies, and use snapshots for complex data.
+
+- **No User-Configurable Entity Names:**
+  - Entity names are automatically assigned, not set by the user in config flows.
+
+- **Code Comments & Documentation:**
+  - Write comments and docstrings in American English, using sentence case.
+
+- **No Blocking Operations:**
+  - Never use blocking I/O in the event loop; always use async operations.
+
+- **Commit & Workflow:**
+  - Use descriptive commit messages, feature branches, and pre-commit hooks (`ruff`, `mypy`, `pytest`).
+
+---
