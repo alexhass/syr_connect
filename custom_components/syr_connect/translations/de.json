@@ -373,6 +373,17 @@
       "setsmr": {
         "name": "Mehrfach regenerieren"
       }
+    },
+    "number": {
+      "getsv1": {
+        "name": "Salzmenge Behälter 1"
+      },
+      "getsv2": {
+        "name": "Salzmenge Behälter 2"
+      },
+      "getsv3": {
+        "name": "Salzmenge Behälter 3"
+      }
     }
   },
   "issues": {

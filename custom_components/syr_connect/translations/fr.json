@@ -370,6 +370,17 @@
       "setsmr": {
         "name": "Régénération multiple"
       }
+    },
+    "number": {
+      "getsv1": {
+        "name": "Quantité de sel réservoir 1"
+      },
+      "getsv2": {
+        "name": "Quantité de sel réservoir 2"
+      },
+      "getsv3": {
+        "name": "Quantité de sel réservoir 3"
+      }
     }
   },
   "issues": {

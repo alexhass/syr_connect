@@ -373,7 +373,18 @@
       "setsmr": {
         "name": "Multi regenerate"
       }
-    }
+    },
+    "number": {
+      "getsv1": {
+        "name": "Salt container volume 1"
+      },
+      "getsv2": {
+        "name": "Salt container volume 2"
+      },
+      "getsv3": {
+        "name": "Salt container volume 3"
+      }
+     }
   },
   "issues": {
     "device_offline": {

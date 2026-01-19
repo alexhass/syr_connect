@@ -56,6 +56,17 @@
         "name": "Regeneração múltipla"
       }
     },
+    "number": {
+      "getsv1": {
+        "name": "Quantidade de sal recipiente 1"
+      },
+      "getsv2": {
+        "name": "Quantidade de sal recipiente 2"
+      },
+      "getsv3": {
+        "name": "Quantidade de sal recipiente 3"
+      }
+    },
     "sensor": {
       "getpst": {
         "name": "Sensor de pressão",
@@ -340,21 +351,6 @@
       },
       "gettyp": {
         "name": "Tipo"
-      },
-      "getver": {
-        "name": "Versão do firmware"
-      },
-      "getvol": {
-        "name": "Capacidade total"
-      },
-      "getvs1": {
-        "name": "Limiar de volume 1"
-      },
-      "getvs2": {
-        "name": "Limiar de volume 2"
-      },
-      "getvs3": {
-        "name": "Limiar de volume 3"
       },
       "getwhu": {
         "name": "Unidade de dureza da água"

@@ -370,6 +370,17 @@
       "setsmr": {
         "name": "Regeneración múltiple"
       }
+    },
+    "number": {
+      "getsv1": {
+        "name": "Cantidad de sal depósito 1"
+      },
+      "getsv2": {
+        "name": "Cantidad de sal depósito 2"
+      },
+      "getsv3": {
+        "name": "Cantidad de sal depósito 3"
+      }
     }
   },
   "issues": {
