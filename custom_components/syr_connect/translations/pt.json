@@ -65,6 +65,9 @@
       },
       "getsv3": {
         "name": "Quantidade de sal recipiente 3"
+      },
+      "getrpd": {
+        "name": "Intervalo de regeneração"
       }
     },
     "sensor": {

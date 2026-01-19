@@ -380,6 +380,9 @@
       },
       "getsv3": {
         "name": "Quantité de sel réservoir 3"
+      },
+      "getrpd": {
+        "name": "Intervalle de régénération"
       }
     }
   },

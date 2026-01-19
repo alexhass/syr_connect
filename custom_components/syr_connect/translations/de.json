@@ -383,6 +383,9 @@
       },
       "getsv3": {
         "name": "Salzmenge Behälter 3"
+      },
+      "getrpd": {
+        "name": "Regenerationsintervall"
       }
     }
   },

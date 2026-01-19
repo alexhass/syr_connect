@@ -163,6 +163,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getNOR": "mdi:counter",
     "getRTI": "mdi:clock-outline",
     "getRPD": "mdi:calendar-clock",
+    "setRPD": "mdi:calendar-clock",
     "getRPW": "mdi:calendar-week",
     "getSRE": "mdi:autorenew",
     "getTOR": "mdi:counter",

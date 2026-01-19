@@ -383,6 +383,9 @@
       },
       "getsv3": {
         "name": "Salt container volume 3"
+      },
+      "getrpd": {
+        "name": "Regeneration interval"
       }
      }
   },

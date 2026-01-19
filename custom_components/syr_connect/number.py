@@ -43,7 +43,7 @@ async def async_setup_entry(
             for device in coordinator.data.get('devices', []):
                 device_id = device['id']
                 status = device.get('status', {})
-                for sv_key in ("getSV1", "getSV2", "getSV3"):
+                for sv_key in ("getSV1", "getSV2", "getSV3", "getRPD"):
                     # entity is named after the getSV key
                     entity_id = build_entity_id("number", device_id, sv_key)
                     registry_entry = registry.async_get(entity_id)
@@ -81,8 +81,8 @@ async def async_setup_entry(
         device_name = device['name']
         status = device.get('status', {})
 
-        # Create numbers for getSV1/getSV2/getSV3 only when the device reports a non-zero value
-        for sv_key in ("getSV1", "getSV2", "getSV3"):
+        # Create numbers for getSV1/getSV2/getSV3 and getRPD only when the device reports a non-zero value
+        for sv_key in ("getSV1", "getSV2", "getSV3", "getRPD"):
             sv_value = status.get(sv_key)
             if sv_value is None or sv_value == "":
                 continue
@@ -131,10 +131,17 @@ class SyrConnectNumber(CoordinatorEntity, NumberEntity):
         # Override entity_id to use technical naming based on the getSVx key
         self.entity_id = build_entity_id("number", device_id, sensor_key)
 
-        # Native numeric range: 0..25 kg (integers)
-        self._attr_native_min_value = 0
-        self._attr_native_max_value = 25
-        self._attr_native_step = 1
+        # Set min/max/step based on sensor key
+        if self._sensor_key.lower() == "getrpd":
+            # For getRPD (regeneration interval) use 0..4 days (integers)
+            self._attr_native_min_value = 0
+            self._attr_native_max_value = 4
+            self._attr_native_step = 1
+        else:
+            # For getSV1/getSV2/getSV3 use 0..25 kg (integers)
+            self._attr_native_min_value = 0
+            self._attr_native_max_value = 25
+            self._attr_native_step = 1
 
         # Unit from const mapping if available
         self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNITS.get(sensor_key)

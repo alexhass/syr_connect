@@ -380,6 +380,9 @@
       },
       "getsv3": {
         "name": "Cantidad de sal depósito 3"
+      },
+      "getrpd": {
+        "name": "Intervalo de regeneración"
       }
     }
   },
