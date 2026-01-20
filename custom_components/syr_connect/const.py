@@ -47,6 +47,15 @@ _SYR_CONNECT_BINARY_SENSORS = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
 }
 
+# Sensors that are represented by control entities (numbers/text/buttons)
+# These sensors should be hidden from the regular sensor platform.
+_SYR_CONNECT_CONTROLLED_SENSORS = {
+    "getSV1",
+    "getSV2",
+    "getSV3",
+    "getRPD",
+}
+
 # Mapping for getALM sensor values
 # Maps raw API value -> internal key
 # API values observed:

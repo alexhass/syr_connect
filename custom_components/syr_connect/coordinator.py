@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
 from datetime import timedelta
 from typing import Any
 
 import aiohttp
-import copy
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
@@ -266,7 +266,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         status[get_key] = str(value)
                         dev['available'] = True
                         break
-                await self.async_set_updated_data(new_data)
+                # async_set_updated_data is not awaitable; call directly to update data
+                self.async_set_updated_data(new_data)
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to apply optimistic update to coordinator data")
 
