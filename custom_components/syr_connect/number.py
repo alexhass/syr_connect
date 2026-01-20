@@ -202,8 +202,12 @@ class SyrConnectNumber(CoordinatorEntity, NumberEntity):
         coordinator: SyrConnectDataUpdateCoordinator = cast(
             SyrConnectDataUpdateCoordinator, self.coordinator
         )
-        # Send setSVx command to API (e.g., setSV1) while reading comes from getSVx
-        await coordinator.async_set_device_value(self._device_id, f"set{self._sensor_key[3:]}", set_value)
+        # Send setSVx command to API (e.g., setSV1) while reading comes from getSVx.
+        # The coordinator's `async_set_device_value` performs an immediate refresh,
+        # so do not refresh again here to avoid duplicate fetches.
+        await coordinator.async_set_device_value(
+            self._device_id, f"set{self._sensor_key[3:]}", set_value
+        )
 
     @property
     def mode(self) -> NumberMode:

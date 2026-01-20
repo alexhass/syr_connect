@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import Any
 
 import aiohttp
+import copy
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
@@ -250,4 +251,27 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             raise ValueError(f"Device {device_id} not found")
 
         await self.api.set_device_status(dclg, command, value)
-        await self.async_request_refresh()
+
+        # Optimistically update the in-memory coordinator data so entities show
+        # the new value immediately, then schedule a background refresh to
+        # retrieve authoritative data from the API.
+        try:
+            if isinstance(self.data, dict):
+                new_data = copy.deepcopy(self.data)
+                get_key = f"get{command[3:]}"
+                for dev in new_data.get('devices', []):
+                    if dev.get('id') == device_id:
+                        status = dev.setdefault('status', {})
+                        # Store as string to match API-parsed values
+                        status[get_key] = str(value)
+                        dev['available'] = True
+                        break
+                await self.async_set_updated_data(new_data)
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Failed to apply optimistic update to coordinator data")
+
+        # Schedule an immediate refresh in the background to reconcile with API
+        try:
+            self.hass.async_create_task(self.async_refresh())
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Failed to schedule coordinator refresh after setting device value")
