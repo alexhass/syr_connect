@@ -472,6 +472,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getRG2', 'getRG3',  # Regeneration running for tank
     'getRPD',  # Regeneration interval (days) as bit mask
     "getPST",  # Pressure sensor installed: 1 = not available, 2 = available
+    "getWHU",  # Water hardness unit
 
     # Sensors exits in devices:
     # - LEXplus10SL
