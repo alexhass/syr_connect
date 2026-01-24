@@ -86,17 +86,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 for project in self.api.projects
             ]
 
-            projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
-
-            # If any project device fetch returned an exception, propagate
-            # it as UpdateFailed so the coordinator refresh/setup fails fast.
-            for result in projects_devices:
-                if isinstance(result, Exception):
-                    _LOGGER.error("Failed to fetch devices for a project: %s", result)
-                    # Preserve existing UpdateFailed if present, else wrap.
-                    if isinstance(result, UpdateFailed):
-                        raise result
-                    raise UpdateFailed(f"Error fetching devices: {result}") from result
+            try:
+                projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
+            except Exception as err:
+                _LOGGER.error("Failed to fetch devices: %s", err)
+                raise UpdateFailed(f"Error fetching devices: {err}") from err
 
             # Process each project's devices
             for project_idx, result in enumerate(projects_devices):
