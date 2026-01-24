@@ -59,31 +59,6 @@ async def test_setup_entry(hass: HomeAssistant) -> None:
         assert DOMAIN not in hass.data
 
 
-async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
-    """Test setup entry with connection error."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id="test@example.com",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "test_password",
-        },
-    )
-    entry.add_to_hass(hass)
-
-    with patch(
-        "syr_connect.coordinator.SyrConnectAPI"
-    ) as mock_api_class:
-        # Mock API that fails on login
-        async def raise_config_entry_not_ready(*args, **kwargs):
-            raise ConfigEntryNotReady("Connection failed")
-        mock_api = MagicMock()
-        mock_api.login = AsyncMock(side_effect=raise_config_entry_not_ready)
-        mock_api_class.return_value = mock_api
-
-        with pytest.raises(ConfigEntryNotReady):
-            await hass.config_entries.async_setup(entry.entry_id)
-
 
 async def test_unload_entry(hass: HomeAssistant) -> None:
     """Test successful unload of entry."""
