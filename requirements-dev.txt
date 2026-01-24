@@ -8,3 +8,4 @@ ruff==0.6.2
 mypy==1.7.1
 josepy==2.2.0
 acme==5.1.0
+Babel>=2.12.1
