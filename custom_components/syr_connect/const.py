@@ -140,6 +140,31 @@ _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP = {
     3: "mmol/l",    # Millimoles per liter, SI unit for water hardness
 }
 
+# Device model mapping for salt capacity per salt container (kg).
+# Keys are normalized to uppercase when looked up.
+#
+# Known models:
+# - LEXplus10, LEXplus10S, LEXplus10SL -> 25 kg per container
+#
+# Unknown models with similar names can have up to 300 kg per container.
+# Fallback to 25 kg when unknown.
+_SYR_CONNECT_MODEL_SALT_CAPACITY = {
+    "LEXPLUS10": 25,
+    "LEXPLUS10S": 25,
+    "LEXPLUS10SL": 25,
+    # TODO: Below names are not confirmed models.
+    # Names are guessed from data sheets with similar pattern, values are documented in data sheets.
+    "UNKNOWN_LEX10": 25,
+    "UNKNOWN_LEX20": 70,
+    "UNKNOWN_LEX30": 70,
+    "UNKNOWN_LEX40": 75,
+    "UNKNOWN_LEX60": 110,
+    "UNKNOWN_LEX80": 200,
+    "UNKNOWN_LEX100": 300,
+    "UNKNOWN_NEOSOFT2500": 40,
+    "UNKNOWN_NEOSOFT5000": 35,
+}
+
 # Sensor icons (Material Design Icons) - internal
 _SYR_CONNECT_SENSOR_ICONS = {
     # Sensors exits in devices:

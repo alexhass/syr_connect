@@ -10,7 +10,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_SENSOR_ICONS, _SYR_CONNECT_SENSOR_UNITS
+from .const import (
+    _SYR_CONNECT_MODEL_SALT_CAPACITY,
+    _SYR_CONNECT_SENSOR_ICONS,
+    _SYR_CONNECT_SENSOR_UNITS,
+)
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
@@ -57,7 +61,9 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        # Salt amount selects (0..25 kg)
+        # Salt amount selects (max depends on device model)
+        model = status.get("getCNA") or device.get("type") or ""
+        max_capacity = int(_SYR_CONNECT_MODEL_SALT_CAPACITY.get(str(model).upper(), 25))
         for sv_key in ("getSV1", "getSV2", "getSV3"):
             sv_value = status.get(sv_key)
             if sv_value is None or sv_value == "":
@@ -68,7 +74,11 @@ async def async_setup_entry(
                     continue
             except (ValueError, TypeError):
                 continue
-            entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, sv_key, 0, 25, 1))
+            entities.append(
+                SyrConnectNumericSelect(
+                    coordinator, device_id, device_name, sv_key, 0, max_capacity, 1
+                )
+            )
 
         # Regeneration interval select (0..4 days)
         rpd_value = status.get("getRPD")
