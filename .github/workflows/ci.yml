@@ -33,9 +33,16 @@ jobs:
       - name: Test Import
         run: python -c "import syr_connect; print(syr_connect)"
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         run: |
-          pytest -q tests || pytest -q
+          pip install pytest-cov
+          pytest --cov=custom_components --cov-report=xml -q tests || pytest --cov=custom_components --cov-report=xml -q
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true
 
   lint:
     runs-on: ubuntu-latest
