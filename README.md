@@ -89,7 +89,6 @@ The integration provides comprehensive monitoring of your water softener:
 - Water pressure monitoring
 - Flow rate (current)
 - Flow counter (total consumption)
-- Operating state
 - Alarm status
 
 **Device Information** (disabled by default, available in diagnostics category)
@@ -100,7 +99,6 @@ The integration provides comprehensive monitoring of your water softener:
 
 #### Binary Sensors
 - Regeneration active status
-- Operating state
 
 #### Buttons (Actions)
 - **Regenerate Now (setSIR)**: Start immediate regeneration
