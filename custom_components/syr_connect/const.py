@@ -24,11 +24,26 @@ PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
 # API URLs (internal)
 _SYR_CONNECT_CONFIGURATION_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_BASE_URL = "https://syrconnect.de/WebServices"
-_SYR_CONNECT_API_LOGIN_URL = f"{_SYR_CONNECT_API_BASE_URL}/Api/SyrApiService.svc/REST/GetProjects"
-_SYR_CONNECT_API_DEVICE_LIST_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
-_SYR_CONNECT_API_DEVICE_STATUS_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
-_SYR_CONNECT_API_SET_STATUS_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
-_SYR_CONNECT_API_STATISTICS_URL = f"{_SYR_CONNECT_API_BASE_URL}/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+_SYR_CONNECT_API_LOGIN_URL = (
+    _SYR_CONNECT_API_BASE_URL
+    + "/Api/SyrApiService.svc/REST/GetProjects"
+)
+_SYR_CONNECT_API_DEVICE_LIST_URL = (
+    _SYR_CONNECT_API_BASE_URL
+    + "/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+)
+_SYR_CONNECT_API_DEVICE_STATUS_URL = (
+    _SYR_CONNECT_API_BASE_URL
+    + "/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
+)
+_SYR_CONNECT_API_SET_STATUS_URL = (
+    _SYR_CONNECT_API_BASE_URL
+    + "/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
+)
+_SYR_CONNECT_API_STATISTICS_URL = (
+    _SYR_CONNECT_API_BASE_URL
+    + "/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+)
 
 # Encryption keys (from original adapter) - internal
 _SYR_CONNECT_CLIENT_ENCRYPTION_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
@@ -436,7 +451,9 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getCES', 'getCND', 'getCNO', 'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
     'getDRP', 'getDST', 'getDTC',
-    'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
+    # Expected daily water consumption. If at the regeneration
+    # time getRES() < getDWF() a regeneration will start
+    'getDWF',
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
     'getNPS', 'getOHF', 'getYHF',
     'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
