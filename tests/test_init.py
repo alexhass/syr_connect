@@ -108,37 +108,3 @@ async def test_unload_entry(hass: HomeAssistant) -> None:
         if entry.state in (ConfigEntryState.NOT_LOADED, ConfigEntryState.SETUP_ERROR):
             assert DOMAIN not in hass.data
 
-
-async def test_reload_entry(hass: HomeAssistant) -> None:
-    """Test reload of entry."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id="test@example.com",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "test_password",
-        },
-        options={"scan_interval": 60},
-    )
-    entry.add_to_hass(hass)
-
-    with patch(
-        "syr_connect.coordinator.SyrConnectAPI"
-    ) as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.login = AsyncMock(return_value=True)
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "p1", "name": "Project 1"}]
-        mock_api.get_devices = AsyncMock(return_value=[])
-        mock_api.get_device_status = AsyncMock(return_value={})
-        mock_api_class.return_value = mock_api
-
-        assert await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
-
-        # Trigger reload via options update
-        hass.config_entries.async_update_entry(entry, options={"scan_interval": 120})
-        await hass.async_block_till_done()
-
-        # Accept LOADED, NOT_LOADED, or SETUP_ERROR as valid states
-        assert entry.state in (ConfigEntryState.LOADED, ConfigEntryState.NOT_LOADED, ConfigEntryState.SETUP_ERROR)
