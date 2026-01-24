@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_SENSOR_ICONS
+from .const import _SYR_CONNECT_SENSOR_ICONS, _SYR_CONNECT_SENSOR_UNITS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
 
@@ -51,6 +51,33 @@ async def async_setup_entry(
         if "getRTH" not in status and "getRTM" not in status:
             continue
         entities.append(SyrConnectRegenerationSelect(coordinator, device_id, device_name))
+
+    # Add numeric-controlled selects for salt amounts and regeneration interval
+    for device in coordinator.data.get("devices", []):
+        device_id = device.get("id")
+        device_name = device.get("name", device_id)
+        status = device.get("status", {})
+        # Salt amount selects (0..25 kg)
+        for sv_key in ("getSV1", "getSV2", "getSV3"):
+            sv_value = status.get(sv_key)
+            if sv_value is None or sv_value == "":
+                continue
+            try:
+                if float(sv_value) == 0:
+                    # Skip creating when zero reported (keeps parity with previous logic)
+                    continue
+            except (ValueError, TypeError):
+                continue
+            entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, sv_key, 0, 25, 1))
+
+        # Regeneration interval select (0..4 days)
+        rpd_value = status.get("getRPD")
+        if rpd_value is not None and rpd_value != "":
+            try:
+                if float(rpd_value) != 0:
+                    entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 0, 4, 1))
+            except (ValueError, TypeError):
+                pass
 
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
@@ -138,6 +165,114 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.debug("Requested setRTH/setRTM for device %s (h=%s m=%s)", self._device_id, h, m)
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to set regeneration time for device %s", self._device_id)
+
+    @property
+    def available(self) -> bool:
+        if not self.coordinator.last_update_success:
+            return False
+        for device in self.coordinator.data.get("devices", []):
+            if device.get("id") == self._device_id:
+                return device.get("available", True)
+        return True
+
+
+class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
+    """Select entity representing a numeric control.
+
+    Options are stringified integers between min_value and max_value
+    with the given step. Selecting an option sends `set<KEY>` via the coordinator.
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        sensor_key: str,
+        min_value: int,
+        max_value: int,
+        step: int = 1,
+    ) -> None:
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._device_name = device_name
+        self._sensor_key = sensor_key
+
+        self._attr_has_entity_name = True
+        self._attr_translation_key = sensor_key.lower()
+        self.entity_id = build_entity_id("select", device_id, sensor_key)
+        self._attr_unique_id = f"{device_id}_{sensor_key}_select"
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        # Icon mapping if present
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICONS.get(sensor_key)
+
+        # Determine unit label (if available) and build options (append unit for readability)
+        unit_label = None
+        unit = _SYR_CONNECT_SENSOR_UNITS.get(self._sensor_key)
+        if unit is not None:
+            try:
+                unit_label = str(unit)
+            except Exception:
+                unit_label = None
+
+        opts: list[str] = []
+        v = min_value
+        while v <= max_value:
+            if unit_label:
+                opts.append(f"{int(v)} {unit_label}")
+            else:
+                opts.append(str(int(v)))
+            v += step
+        self._options = opts
+
+        _LOGGER.debug(
+            "Created SyrConnectNumericSelect object: device=%s key=%s unique_id=%s",
+            self._device_id,
+            self._sensor_key,
+            self._attr_unique_id,
+        )
+
+    @property
+    def options(self) -> list[str]:
+        return self._options
+
+    @property
+    def current_option(self) -> str | None:
+        for dev in self.coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            status = dev.get("status", {})
+            val = status.get(self._sensor_key)
+            if val is None or val == "":
+                return None
+            try:
+                num = int(float(val))
+                # Return the option that starts with the numeric value (preserves unit if present)
+                for opt in self._options:
+                    if opt.startswith(f"{num}"):
+                        return opt
+                return str(num)
+            except Exception:
+                return None
+        return None
+
+    async def async_select_option(self, option: str) -> None:  # type: ignore[override]
+        try:
+            # Option may include a unit suffix (e.g., '2 days'), so parse first token
+            token = str(option).split()[0]
+            val = int(token)
+        except Exception as err:
+            _LOGGER.error("Invalid option for %s: %s", self._sensor_key, err)
+            return
+
+        coordinator = cast(Any, self.coordinator)
+        # key for setting: remove leading 'get' and prefix with 'set'
+        set_key = f"set{self._sensor_key[3:]}"
+        try:
+            await coordinator.async_set_device_value(self._device_id, set_key, val)
+            _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
 
     @property
     def available(self) -> bool:

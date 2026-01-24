@@ -368,7 +368,10 @@
         "name": "Régénération multiple"
       }
     },
-    "number": {
+    "select": {
+      "getrtime": {
+        "name": "Heure de régénération"
+      },
       "getsv1": {
         "name": "Quantité de sel réservoir 1"
       },
@@ -380,11 +383,6 @@
       },
       "getrpd": {
         "name": "Intervalle de régénération"
-      }
-    },
-    "select": {
-      "getrtime": {
-        "name": "Heure de régénération"
       }
     }
   },

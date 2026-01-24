@@ -368,7 +368,10 @@
         "name": "Regeneración múltiple"
       }
     },
-    "number": {
+    "select": {
+      "getrtime": {
+        "name": "Hora de regeneración"
+      },
       "getsv1": {
         "name": "Cantidad de sal depósito 1"
       },
@@ -380,11 +383,6 @@
       },
       "getrpd": {
         "name": "Intervalo de regeneración"
-      }
-    },
-    "select": {
-      "getrtime": {
-        "name": "Hora de regeneración"
       }
     }
   },

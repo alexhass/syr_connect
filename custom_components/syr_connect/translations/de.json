@@ -371,7 +371,10 @@
         "name": "Mehrfach regenerieren"
       }
     },
-    "number": {
+    "select": {
+      "getrtime": {
+        "name": "Regenerationsuhrzeit"
+      },
       "getsv1": {
         "name": "Salzmenge Behälter 1"
       },
@@ -383,11 +386,6 @@
       },
       "getrpd": {
         "name": "Regenerationsintervall"
-      }
-    },
-    "select": {
-      "getrtime": {
-        "name": "Regenerationsuhrzeit"
       }
     }
   },

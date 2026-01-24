@@ -371,7 +371,10 @@
         "name": "Multi regenerate"
       }
     },
-    "number": {
+    "select": {
+      "getrtime": {
+        "name": "Regeneration time"
+      },
       "getsv1": {
         "name": "Salt container volume 1"
       },
@@ -383,11 +386,6 @@
       },
       "getrpd": {
         "name": "Regeneration interval"
-      }
-    },
-    "select": {
-      "getrtime": {
-        "name": "Regeneration time"
       }
     }
   },

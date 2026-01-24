@@ -47,7 +47,7 @@ _SYR_CONNECT_BINARY_SENSORS = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
 }
 
-# Sensors that are represented by control entities (numbers/text/buttons)
+# Sensors that are represented by control entities (select/text/buttons)
 # These sensors should be hidden from the regular sensor platform.
 _SYR_CONNECT_CONTROLLED_SENSORS = {
     "getSV1",

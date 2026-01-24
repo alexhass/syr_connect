@@ -19,7 +19,6 @@ PLATFORMS: list[str | Platform] = [
     Platform.BINARY_SENSOR,
     Platform.SENSOR,
     Platform.BUTTON,
-    Platform.NUMBER,
     Platform.SELECT,
 ]
 

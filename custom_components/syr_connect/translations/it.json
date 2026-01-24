@@ -371,7 +371,10 @@
         "name": "Rigenerazione multipla"
       }
     },
-    "number": {
+    "select": {
+      "getrtime": {
+        "name": "Ora di rigenerazione"
+      },
       "getsv1": {
         "name": "Quantità sale contenitore 1"
       },
@@ -383,11 +386,6 @@
       },
       "getrpd": {
         "name": "Intervallo di rigenerazione"
-      }
-    },
-    "select": {
-      "getrtime": {
-        "name": "Ora di rigenerazione"
       }
     }
   },

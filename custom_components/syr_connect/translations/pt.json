@@ -56,7 +56,10 @@
         "name": "Regeneração múltipla"
       }
     },
-    "number": {
+    "select": {
+      "getrtime": {
+        "name": "Hora de regeneração"
+      },
       "getsv1": {
         "name": "Quantidade de sal recipiente 1"
       },
@@ -68,11 +71,6 @@
       },
       "getrpd": {
         "name": "Intervalo de regeneração"
-      }
-    },
-    "select": {
-      "getrtime": {
-        "name": "Hora de regeneração"
       }
     },
     "sensor": {
