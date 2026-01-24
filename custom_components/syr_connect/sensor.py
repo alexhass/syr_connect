@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
+from babel.dates import format_datetime
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -360,6 +361,46 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return datetime.fromtimestamp(ts, UTC)
                     except (ValueError, TypeError, OverflowError):
                         return None
+
+                # Special handling for regeneration permitted weekdays (getRPW):
+                # The device returns a bitmask where bit 0 = Monday, bit 1 = Tuesday, ... bit 6 = Sunday.
+                # - mask == 0 -> "Jederzeit"
+                # - other masks -> comma-separated short weekday names using strftime('%a')
+                if self._sensor_key == 'getRPW':
+                    raw_mask = status.get('getRPW')
+                    if raw_mask is None or raw_mask == "":
+                        return None
+                    try:
+                        mask = int(float(raw_mask))
+                    except (ValueError, TypeError):
+                        try:
+                            mask = int(str(raw_mask).strip())
+                        except Exception:
+                            return None
+
+                    if mask == 0:
+                        return None
+
+                    parts: list[str] = []
+                    # Localize short weekday names using the Home Assistant language setting.
+                    # Use a reference Monday date so weekday offsets map correctly.
+                    ref_monday = datetime(2024, 1, 1)
+                    locale = None
+                    try:
+                        locale = getattr(self.hass.config, "language", None)
+                    except Exception:
+                        locale = None
+
+                    for idx in range(7):
+                        if mask & (1 << idx):
+                            try:
+                                name = format_datetime(ref_monday + timedelta(days=idx), "EEE", locale=locale)
+                            except Exception:
+                                # Fallback to system short name if Babel/localization fails
+                                name = (ref_monday + timedelta(days=idx)).strftime("%a")
+                            parts.append(name)
+
+                    return ",".join(parts)
 
                 # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key.
                 # NOTE: Translation placeholders are not supported for entity state strings in the frontend (they are only

@@ -165,6 +165,25 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
     "UNKNOWN_NEOSOFT5000": 35,
 }
 
+# getRPW: Days on which regeneration is allowed, stored as a bit mask.
+#
+# This maps a single-bit mask value to the corresponding weekday index
+# (0 = Monday .. 6 = Sunday). A mask value of 0 indicates "no days configured"
+# Example: mask 5 (0b0000101) means Monday (1<<0) and Wednesday (1<<2).
+#
+# Use this mapping to decode device `getRPW` bitmasks where each bit
+# represents a weekday.
+_SYR_CONNECT_SENSOR_RPW_BITS = {
+    0: None,    # No days configured
+    1: 0,       # Monday
+    2: 1,       # Tuesday
+    4: 2,       # Wednesday
+    8: 3,       # Thursday
+    16: 4,      # Friday
+    32: 5,      # Saturday
+    64: 6,      # Sunday
+}
+
 # Sensor icons (Material Design Icons) - internal
 _SYR_CONNECT_SENSOR_ICONS = {
     # Sensors exits in devices:
@@ -197,7 +216,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getINR": "mdi:counter",
     "getNOR": "mdi:counter",
     "getRTI": "mdi:clock-outline",
-    "getRPD": "mdi:calendar-clock",
+    "getRPD": "mdi:calendar-filter-outline",
     "setRPD": "mdi:calendar-clock",
     "getRPW": "mdi:calendar-week",
     "getSRE": "mdi:autorenew",
@@ -398,7 +417,6 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control - per documentation unknown what values do
-    'getRPW',  # Days on which regeneration is allowed, stored as a bit mask
     'getRST',  # Reset device control - per documentation unknown what values do
     'getTYP',  # Type of device (always 80?) - not helpful for users
     'getRTI',  # Value is always 00:00. Not clear what it represents.
@@ -452,6 +470,7 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getRG1',  # Regeneration 1 - enabled by default
     'getSRE',  # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
+    'getRPD',  # Regeneration interval (days) as bit mask
     "getPST",  # Pressure sensor installed: 1 = not available, 2 = available
 
     # Sensors exits in devices:
