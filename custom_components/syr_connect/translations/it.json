@@ -301,8 +301,6 @@
       "getsta": {
         "name": "Stato",
         "state": {
-          "backup_status_fast_rinse": "Risciacquo veloce {rinse_round}",
-          "backup_status_regenerant_rinse": "Risciacquo rigenerante ({resistance_value})",
           "status_backwash": "Controlavaggio",
           "status_fast_rinse": "Risciacquo veloce",
           "status_filling": "Riempimento",

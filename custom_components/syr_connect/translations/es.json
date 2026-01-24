@@ -298,8 +298,6 @@
       "getsta": {
         "name": "Estado",
         "state": {
-          "backup_status_fast_rinse": "Enjuague rápido {rinse_round}",
-          "backup_status_regenerant_rinse": "Enjuague con regenerante ({resistance_value})",
           "status_backwash": "Retrolavado",
           "status_fast_rinse": "Enjuague rápido",
           "status_filling": "Llenado",

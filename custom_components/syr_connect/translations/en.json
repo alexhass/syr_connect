@@ -301,8 +301,6 @@
       "getsta": {
         "name": "Status",
         "state": {
-          "backup_status_fast_rinse": "Fast rinse {rinse_round}",
-          "backup_status_regenerant_rinse": "Regenerant rinse ({resistance_value})",
           "status_backwash": "Backwash",
           "status_fast_rinse": "Fast rinse",
           "status_filling": "Filling",

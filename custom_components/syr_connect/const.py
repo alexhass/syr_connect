@@ -70,7 +70,7 @@ _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP = {
 }
 
 # Mapping for getSTA / status values -> Polish values
-# These map observed Polish status to internal translations
+# This assigns the observed Polish status to the internal translations.
 # - "Płukanie regenerantem (5mA)"
 # - "Płukanie szybkie 1"
 _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {

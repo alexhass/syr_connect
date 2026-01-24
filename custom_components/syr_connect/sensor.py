@@ -361,41 +361,39 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError, OverflowError):
                         return None
 
-                # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key/placeholders
-                # MAXIMUM DEBUGGING: Log all relevant variables and branches for getSTA
+                # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key.
+                # NOTE: Translation placeholders are not supported for entity state strings in the frontend (they are only
+                # available for entity names / labels). See: https://github.com/home-assistant/frontend/issues/29064
                 if self._sensor_key == 'getSTA':
                     raw = str(status.get('getSTA') or "")
-                    _LOGGER.debug("[getSTA debug] Entity: %s, device_id: %s, raw: %s", self.entity_id, self._device_id, raw)
-                    resistance_value = ""
-                    rinse_round = ""
+                    _LOGGER.debug("getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw)
+
+                    # Try known patterns and map to internal translation keys.
+                    # Keep placeholder values local for debugging only (frontend
+                    # states do not support placeholders).
                     m = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
-                    _LOGGER.debug("[getSTA debug] regex1 match: %s", m)
                     if m:
                         resistance_value = str(m.group(1) or "")
                         normalized = "Płukanie regenerantem"
                         mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
                         self._attr_translation_key = mapped
-                        self._attr_translation_placeholders = {"resistance_value": resistance_value, "rinse_round": ""}
-                        _LOGGER.debug("[getSTA debug] normalized: %s, mapped: %s, resistance_value: %s", normalized, mapped, resistance_value)
-                        _LOGGER.debug("[getSTA debug] translation_key: %s, placeholders: %s", self._attr_translation_key, self._attr_translation_placeholders)
+                        _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
                         return mapped
+
                     m2 = re.match(r"Płukanie szybkie\s*(\d+)", raw)
-                    _LOGGER.debug("[getSTA debug] regex2 match: %s", m2)
                     if m2:
                         rinse_round = str(m2.group(1) or "")
-                        normalized = "Płukanie schnelle"
+                        normalized = "Płukanie rapide"
                         mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_fast_rinse"))
                         self._attr_translation_key = mapped
-                        self._attr_translation_placeholders = {"resistance_value": "", "rinse_round": rinse_round}
-                        _LOGGER.debug("[getSTA debug] normalized: %s, mapped: %s, rinse_round: %s", normalized, mapped, rinse_round)
-                        _LOGGER.debug("[getSTA debug] translation_key: %s, placeholders: %s", self._attr_translation_key, self._attr_translation_placeholders)
+                        _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": rinse_round})
                         return mapped
+
+                    # Fallback: use raw string as normalized mapping key
                     normalized = raw
                     mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, normalized))
                     self._attr_translation_key = mapped
-                    self._attr_translation_placeholders = {"resistance_value": resistance_value, "rinse_round": rinse_round}
-                    _LOGGER.debug("[getSTA debug] fallback mapping, normalized: %s, mapped: %s", normalized, mapped)
-                    _LOGGER.debug("[getSTA debug] translation_key: %s, placeholders: %s", self._attr_translation_key, self._attr_translation_placeholders)
+                    _LOGGER.debug("getSTA mapped=%s", mapped)
                     return mapped
 
                 # Special handling for alarm sensor: map raw API values to internal keys
