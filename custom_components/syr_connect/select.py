@@ -80,12 +80,12 @@ async def async_setup_entry(
                 )
             )
 
-        # Regeneration interval select (0..4 days)
+        # Regeneration interval select (1..4 days)
         rpd_value = status.get("getRPD")
         if rpd_value is not None and rpd_value != "":
             try:
                 if float(rpd_value) != 0:
-                    entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 0, 4, 1))
+                    entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 1, 4, 1))
             except (ValueError, TypeError):
                 pass
 
