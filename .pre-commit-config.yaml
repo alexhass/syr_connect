@@ -9,3 +9,11 @@ repos:
           "--extend-ignore=E501",
           ".",
         ]
+  - repo: local
+    hooks:
+      - id: ruff-local
+        name: ruff (venv)
+        entry: .venv\\Scripts\\ruff.exe
+        language: script
+        pass_filenames: false
+        args: ["check", "--select=E,F,W,B,B9", "--extend-ignore=E501", "."]
