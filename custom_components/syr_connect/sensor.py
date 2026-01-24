@@ -276,7 +276,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if val is None:
                     return self._base_icon
                 try:
-                    ival = int(float(val))
+                    if isinstance(val, datetime):
+                        ival = int(val.timestamp())
+                    else:
+                        ival = int(float(val))
                 except (TypeError, ValueError):
                     sval = str(val).lower()
                     if sval in ("1", "true", "on", "active"):
@@ -296,7 +299,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if val is None:
                     return self._base_icon
                 try:
-                    ival = int(float(val))
+                    if isinstance(val, datetime):
+                        ival = int(val.timestamp())
+                    else:
+                        ival = int(float(val))
                 except (TypeError, ValueError):
                     ival = 1
                 # Values:
@@ -313,7 +319,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         return self._base_icon
 
     @property
-    def native_value(self) -> str | int | float | None:
+    def native_value(self) -> str | int | float | datetime | None:
         """Return the state of the sensor."""
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
