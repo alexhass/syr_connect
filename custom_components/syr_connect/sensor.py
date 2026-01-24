@@ -72,7 +72,7 @@ async def async_setup_entry(
                 controlled_entity_id = build_entity_id("sensor", device_id, controlled_key)
                 controlled_entry = registry.async_get(controlled_entity_id)
                 if controlled_entry is not None and hasattr(controlled_entry, "entity_id"):
-                    _LOGGER.debug("Removing sensor registry entry: %s", controlled_entity_id)
+                    _LOGGER.debug("Removing sensor registry entry because control entity exists: %s", controlled_entity_id)
                     registry.async_remove(controlled_entry.entity_id)
     except Exception:  # pragma: no cover - defensive
         _LOGGER.exception("Failed to cleanup excluded sensors from entity registry")
@@ -209,8 +209,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
             if whu_value is not None:
                 try:
-                    mapping = _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
-                    self._attr_native_unit_of_measurement = mapping.get(int(whu_value), None)
+                    self._attr_native_unit_of_measurement = _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(whu_value), None)
                 except (ValueError, TypeError):
                     self._attr_native_unit_of_measurement = None
             else:
@@ -409,11 +408,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                     return ",".join(parts)
 
-                # Special handling for status sensor (getSTA): map Polish strings
-                # to internal keys and set translation key.
-                # NOTE: Translation placeholders are not supported for entity
-                # state strings in the frontend (they are only available for
-                # entity names / labels). See: https://github.com/home-assistant/frontend/issues/29064
+                # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key.
+                # NOTE: Translation placeholders are not supported for entity state strings in the frontend (they are only
+                # available for entity names / labels). See: https://github.com/home-assistant/frontend/issues/29064
                 if self._sensor_key == 'getSTA':
                     raw = str(status.get('getSTA') or "")
                     _LOGGER.debug("getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw)
@@ -425,26 +422,18 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if m:
                         resistance_value = str(m.group(1) or "")
                         normalized = "Płukanie regenerantem"
-                        mapped = str(
-                            _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(
-                                normalized, "status_regenerant_rinse"
-                            )
-                        )
+                        mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
                         self._attr_translation_key = mapped
-                        _LOGGER.debug("getSTA mapped=%s", mapped)
-                        _LOGGER.debug("getSTA placeholders=%s", {"resistance_value": resistance_value})
+                        _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
                         return mapped
 
                     m2 = re.match(r"Płukanie szybkie\s*(\d+)", raw)
                     if m2:
                         rinse_round = str(m2.group(1) or "")
                         normalized = "Płukanie rapide"
-                        mapped = str(
-                            _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_fast_rinse")
-                        )
+                        mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_fast_rinse"))
                         self._attr_translation_key = mapped
-                        _LOGGER.debug("getSTA mapped=%s", mapped)
-                        _LOGGER.debug("getSTA placeholders=%s", {"rinse_round": rinse_round})
+                        _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": rinse_round})
                         return mapped
 
                     # Fallback: use raw string as normalized mapping key
@@ -478,12 +467,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         if self._sensor_key == 'getCEL':
                             numeric_value = numeric_value / 10
                         # Apply configured precision if available
-                        precision_map = (
-                            _SYR_CONNECT_SENSOR_PRECISION
-                            if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict)
-                            else None
-                        )
-                        precision = precision_map.get(self._sensor_key) if precision_map else None
+                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
                         if precision is not None:
                             try:
                                 numeric_value = round(numeric_value, precision)
@@ -504,12 +488,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if self._sensor_key == 'getCEL':
                         return value / 10
                     # Apply configured precision if available
-                    precision_map = (
-                        _SYR_CONNECT_SENSOR_PRECISION
-                        if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict)
-                        else None
-                    )
-                    precision = precision_map.get(self._sensor_key) if precision_map else None
+                    precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
                     if precision is not None:
                         try:
                             val = float(value)
