@@ -3,4 +3,9 @@ repos:
     rev: main
     hooks:
       - id: ruff
-        args: ["check", "--select=E,F,W,B,B9", "."]
+        args: [
+          "check",
+          "--select=E,F,W,B,B9",
+          "--extend-ignore=E501",
+          ".",
+        ]
