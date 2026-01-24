@@ -282,9 +282,6 @@
       "getrti": {
         "name": "Regeneration time"
       },
-      "getrtime": {
-        "name": "Regeneration time"
-      },
       "getrtm": {
         "name": "Regeneration time (minute)"
       },
@@ -387,7 +384,12 @@
       "getrpd": {
         "name": "Regeneration interval"
       }
-     }
+    },
+    "select": {
+      "getrtime": {
+        "name": "Regeneration time"
+      }
+    }
   },
   "issues": {
     "device_offline": {

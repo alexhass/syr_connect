@@ -49,6 +49,7 @@ async def async_setup_entry(
                     registry_entry = registry.async_get(entity_id)
 
                     sv_value = status.get(sv_key)
+
                     # Remove entity when value is missing or explicitly zero
                     remove = False
                     if sv_value is None or sv_value == "":
@@ -189,19 +190,21 @@ class SyrConnectNumber(CoordinatorEntity, NumberEntity):
 
         The coordinator will refresh data after the API call.
         """
-        # Normalize to integer if step is 1
+        coordinator: SyrConnectDataUpdateCoordinator = cast(
+            SyrConnectDataUpdateCoordinator, self.coordinator
+        )
+
+        # Default numeric handling for SVx and RPD
+
         try:
             if self._attr_native_step == 1:
                 set_value: Any = int(round(value))
             else:
                 set_value = value
         except Exception as err:
-            _LOGGER.error("Invalid value type for setSV1: %s", err)
+            _LOGGER.error("Invalid value type for %s: %s", self._sensor_key, err)
             raise
 
-        coordinator: SyrConnectDataUpdateCoordinator = cast(
-            SyrConnectDataUpdateCoordinator, self.coordinator
-        )
         # Send setSVx command to API (e.g., setSV1) while reading comes from getSVx.
         # The coordinator's `async_set_device_value` performs an immediate refresh,
         # so do not refresh again here to avoid duplicate fetches.

@@ -156,18 +156,7 @@ async def async_setup_entry(
                 )
                 sensor_count += 1
 
-        # Create combined regeneration time sensor from getRTH and getRTM
-        if 'getRTH' in status and 'getRTM' in status:
-            entities.append(
-                SyrConnectSensor(
-                    coordinator,
-                    device_id,
-                    device_name,
-                    project_id,
-                    'getRTIME',  # Combined regeneration time
-                )
-            )
-            sensor_count += 1
+
 
         _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
 

@@ -279,9 +279,6 @@
       "getrti": {
         "name": "Hora de regeneración"
       },
-      "getrtime": {
-        "name": "Hora de regeneración"
-      },
       "getrtm": {
         "name": "Hora de regeneración (Minuto)"
       },
@@ -383,6 +380,11 @@
       },
       "getrpd": {
         "name": "Intervalo de regeneración"
+      }
+    },
+    "select": {
+      "getrtime": {
+        "name": "Hora de regeneración"
       }
     }
   },

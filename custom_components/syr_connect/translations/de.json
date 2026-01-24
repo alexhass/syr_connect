@@ -282,9 +282,6 @@
       "getrti": {
         "name": "Regenerationsuhrzeit"
       },
-      "getrtime": {
-        "name": "Regenerationsuhrzeit"
-      },
       "getrtm": {
         "name": "Minuten der Regeneration"
       },
@@ -386,6 +383,11 @@
       },
       "getrpd": {
         "name": "Regenerationsintervall"
+      }
+    },
+    "select": {
+      "getrtime": {
+        "name": "Regenerationsuhrzeit"
       }
     }
   },

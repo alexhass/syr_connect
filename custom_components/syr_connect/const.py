@@ -54,6 +54,7 @@ _SYR_CONNECT_CONTROLLED_SENSORS = {
     "getSV2",
     "getSV3",
     "getRPD",
+    "getRTIME",
 }
 
 # Mapping for getALM sensor values

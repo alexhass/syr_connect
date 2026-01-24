@@ -282,9 +282,6 @@
       "getrti": {
         "name": "Ora rigenerazione"
       },
-      "getrtime": {
-        "name": "Ora rigenerazione"
-      },
       "getrtm": {
         "name": "Ora rigenerazione (Minuto)"
       },
@@ -386,6 +383,11 @@
       },
       "getrpd": {
         "name": "Intervallo di rigenerazione"
+      }
+    },
+    "select": {
+      "getrtime": {
+        "name": "Ora di rigenerazione"
       }
     }
   },
