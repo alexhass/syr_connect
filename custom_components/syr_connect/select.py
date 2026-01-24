@@ -156,7 +156,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             return f"{h:02d}:{m:02d}"
         return None
 
-    async def async_select_option(self, option: str) -> None:  # type: ignore[override]
+    async def async_select_option(self, option: str) -> None:
         """Called when user selects a time option from the UI."""
         try:
             parts = option.split(":")
@@ -266,7 +266,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                 return None
         return None
 
-    async def async_select_option(self, option: str) -> None:  # type: ignore[override]
+    async def async_select_option(self, option: str) -> None:
         try:
             # Option may include a unit suffix (e.g., '2 days'), so parse first token
             token = str(option).split()[0]
