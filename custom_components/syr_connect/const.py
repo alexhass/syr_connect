@@ -467,7 +467,6 @@ _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
     'getLAR',  # Last regeneration as UNIX timestamp (seconds since 1.1.1970)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
     'getDWF',  # Flow Warning Value - advanced setting
-    'getRG1',  # Regeneration 1 - enabled by default
     'getSRE',  # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
     'getRPD',  # Regeneration interval (days) as bit mask
