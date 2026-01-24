@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.5.255
+    rev: main
     hooks:
       - id: ruff
         args: ["check", "--select=E,F,W,B,B9", "."]
