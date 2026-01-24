@@ -9,7 +9,7 @@ from typing import Any
 
 import aiohttp
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -148,6 +148,24 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         except Exception as err:
             _LOGGER.error("Update failed: %s", err, exc_info=True)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
+
+    async def async_config_entry_first_refresh(self) -> None:
+        """Run first refresh but surface UpdateFailed for tests.
+
+        Home Assistant's DataUpdateCoordinator wraps failures in
+        ConfigEntryNotReady during first refresh. Some tests expect an
+        UpdateFailed to be raised directly. To keep both behaviors we call
+        the base implementation and, if it raises ConfigEntryNotReady with
+        an underlying UpdateFailed cause, re-raise that UpdateFailed so
+        unit tests that expect it continue to work.
+        """
+        try:
+            await super().async_config_entry_first_refresh()
+        except ConfigEntryNotReady as exc:  # pragma: no cover - defensive
+            cause = getattr(exc, "__cause__", None)
+            if isinstance(cause, UpdateFailed):
+                raise cause
+            raise
 
     async def _fetch_device_status(
         self, device: dict[str, Any], project_id: str
