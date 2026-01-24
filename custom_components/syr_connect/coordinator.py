@@ -9,7 +9,7 @@ from typing import Any
 
 import aiohttp
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -86,17 +86,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 for project in self.api.projects
             ]
 
-            projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
-
-            # If any project device fetch returned an exception, propagate
-            # it as UpdateFailed so the coordinator refresh/setup fails fast.
-            for result in projects_devices:
-                if isinstance(result, Exception):
-                    _LOGGER.error("Failed to fetch devices for a project: %s", result)
-                    # Preserve existing UpdateFailed if present, else wrap.
-                    if isinstance(result, UpdateFailed):
-                        raise result
-                    raise UpdateFailed(f"Error fetching devices: {result}") from result
+            try:
+                projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
+            except Exception as err:
+                _LOGGER.error("Failed to fetch devices: %s", err)
+                raise UpdateFailed(f"Error fetching devices: {err}") from err
 
             # Process each project's devices
             for project_idx, result in enumerate(projects_devices):
@@ -149,23 +143,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.error("Update failed: %s", err, exc_info=True)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-    async def async_config_entry_first_refresh(self) -> None:
-        """Run first refresh but surface UpdateFailed for tests.
-
-        Home Assistant's DataUpdateCoordinator wraps failures in
-        ConfigEntryNotReady during first refresh. Some tests expect an
-        UpdateFailed to be raised directly. To keep both behaviors we call
-        the base implementation and, if it raises ConfigEntryNotReady with
-        an underlying UpdateFailed cause, re-raise that UpdateFailed so
-        unit tests that expect it continue to work.
-        """
-        try:
-            await super().async_config_entry_first_refresh()
-        except ConfigEntryNotReady as exc:  # pragma: no cover - defensive
-            cause = getattr(exc, "__cause__", None)
-            if isinstance(cause, UpdateFailed):
-                raise cause
-            raise
+    
 
     async def _fetch_device_status(
         self, device: dict[str, Any], project_id: str
