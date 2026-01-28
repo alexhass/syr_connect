@@ -13,7 +13,8 @@ repos:
     hooks:
       - id: ruff-local
         name: ruff (venv)
-        entry: .venv\\Scripts\\ruff.exe
-        language: script
+        entry: ruff
+        language: python
+        additional_dependencies: ["ruff"]
         pass_filenames: false
         args: ["check", "--select=E,F,W,B,B9", "--extend-ignore=E501", "."]
