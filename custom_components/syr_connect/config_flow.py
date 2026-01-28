@@ -77,6 +77,11 @@ class InvalidAuthError(HomeAssistantError):
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for SYR Connect."""
 
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize the options flow handler and store the config entry."""
+        # Avoid assigning to the read-only `config_entry` property; store privately.
+        self._config_entry = config_entry
+
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options for scan interval configuration.
 
@@ -90,11 +95,12 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         # Get current scan interval with safe fallback
-        current_scan_interval = _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
-        if self.config_entry and self.config_entry.options:
-            current_scan_interval = self.config_entry.options.get(
-                _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
-            )
+        entry = getattr(self, "_config_entry", None)
+        current_scan_interval = (
+            entry.options.get(_SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT)
+            if entry and entry.options
+            else _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
+        )
 
         return self.async_show_form(
             step_id="init",
@@ -133,7 +139,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         Returns:
             The options flow handler instance
         """
-        return SyrConnectOptionsFlow()
+        return SyrConnectOptionsFlow(config_entry)
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle reauth flow when credentials are invalid.
