@@ -133,7 +133,7 @@ async def async_get_config_entry_diagnostics(
         if api:
             # Ensure we have a valid session for read-only calls
             try:
-                if not api._is_session_valid():
+                if not api.is_session_valid():
                     await api.login()
             except Exception:
                 # don't fail diagnostics if login fails

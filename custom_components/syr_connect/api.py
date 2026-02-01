@@ -60,7 +60,7 @@ class SyrConnectAPI:
         self.response_parser = ResponseParser()
         self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT)
 
-    def _is_session_valid(self) -> bool:
+    def is_session_valid(self) -> bool:
         """Check if current session is valid.
 
         Returns:
@@ -141,7 +141,7 @@ class SyrConnectAPI:
         Raises:
             SyrConnectSessionExpiredError: If session expired
         """
-        if not self._is_session_valid():
+        if not self.is_session_valid():
             _LOGGER.warning("Session expired, re-authenticating...")
             await self.login()
 
@@ -192,7 +192,7 @@ class SyrConnectAPI:
         Raises:
             SyrConnectSessionExpiredError: If session expired
         """
-        if not self._is_session_valid():
+        if not self.is_session_valid():
             _LOGGER.warning("Session expired, re-authenticating...")
             await self.login()
 
@@ -240,7 +240,7 @@ class SyrConnectAPI:
         Raises:
             SyrConnectSessionExpiredError: If session expired
         """
-        if not self._is_session_valid():
+        if not self.is_session_valid():
             _LOGGER.warning("Session expired, re-authenticating...")
             await self.login()
 

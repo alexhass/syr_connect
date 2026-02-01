@@ -65,7 +65,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """
         try:
             # Login if not already logged in or session expired
-            if not self.api._is_session_valid():
+            if not self.api.is_session_valid():
                 _LOGGER.debug("No valid session, logging in...")
                 try:
                     await self.api.login()

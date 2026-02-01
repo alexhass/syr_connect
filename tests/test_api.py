@@ -27,19 +27,19 @@ def api_client(mock_session):
 async def test_session_valid_check(api_client):
     """Test session validity checking."""
     # No session data
-    assert not api_client._is_session_valid()
+    assert not api_client.is_session_valid()
     
     # Has session but no expiry
     api_client.session_data = "test_session"
-    assert not api_client._is_session_valid()
+    assert not api_client.is_session_valid()
     
     # Has session with future expiry
     api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
-    assert api_client._is_session_valid()
+    assert api_client.is_session_valid()
     
     # Has session with past expiry
     api_client.session_expires_at = datetime.now() - timedelta(minutes=10)
-    assert not api_client._is_session_valid()
+    assert not api_client.is_session_valid()
 
 
 async def test_login_success(api_client):
