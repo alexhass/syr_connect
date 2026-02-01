@@ -7,12 +7,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 
 
 async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test successful coordinator update."""
-    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -49,7 +49,7 @@ async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress
 
 async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator update without session triggers login."""
-    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = None  # No session initially
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -77,7 +77,7 @@ async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progr
 
 async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test setting device value through coordinator."""
-    with patch("syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]

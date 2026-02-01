@@ -5,11 +5,10 @@ from datetime import datetime, timedelta
 import pytest
 import aiohttp
 
-from syr_connect.api import SyrConnectAPI
-from syr_connect.exceptions import (
+from custom_components.syr_connect.api import SyrConnectAPI
+from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
-    SyrConnectSessionExpiredError,
 )
 
 

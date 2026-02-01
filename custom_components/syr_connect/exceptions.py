@@ -16,9 +16,5 @@ class SyrConnectConnectionError(SyrConnectError):
     """Connection error."""
 
 
-class SyrConnectSessionExpiredError(SyrConnectError):
-    """Session expired error."""
-
-
 class SyrConnectInvalidResponseError(SyrConnectError):
     """Invalid response error."""

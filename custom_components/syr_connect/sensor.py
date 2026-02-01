@@ -28,6 +28,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_STRING_SENSORS,
+    _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
@@ -206,7 +207,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if device['id'] == device_id:
                     whu_value = device.get('status', {}).get('getWHU')
                     break
-            from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
             if whu_value is not None:
                 try:
                     self._attr_native_unit_of_measurement = _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(whu_value), None)
@@ -345,7 +345,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
-                    from .const import _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP
                     if isinstance(value, int | float):
                         return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
                     elif isinstance(value, str):

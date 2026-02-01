@@ -1,5 +1,5 @@
-# Configuration URL for device info
 """Constants for the SYR Connect integration."""
+# Configuration URL for device info
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass

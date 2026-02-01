@@ -19,8 +19,6 @@ from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
-__all__ = ["ConfigFlow", "SyrConnectOptionsFlow"]
-
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
