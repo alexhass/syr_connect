@@ -217,6 +217,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         elif sensor_key in _SYR_CONNECT_SENSOR_UNITS:
             self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNITS[sensor_key]
 
+        # Set suggested display precision if available
+        if sensor_key in _SYR_CONNECT_SENSOR_PRECISION:
+            self._attr_suggested_display_precision = _SYR_CONNECT_SENSOR_PRECISION[sensor_key]
+
         # Set device class if available
         if sensor_key in _SYR_CONNECT_SENSOR_DEVICE_CLASS:
             self._attr_device_class = _SYR_CONNECT_SENSOR_DEVICE_CLASS[sensor_key]
