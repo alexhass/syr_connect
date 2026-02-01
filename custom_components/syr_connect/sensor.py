@@ -243,6 +243,35 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
+    def _apply_numeric_conversion(self, value: float) -> float | int:
+        """Apply sensor-specific unit conversion and precision.
+
+        Args:
+            value: The raw numeric value
+
+        Returns:
+            The converted value with appropriate precision
+        """
+        # Apply sensor-specific conversions
+        if self._sensor_key == 'getPRS':
+            # Divide pressure by 10 to convert from "dbar" to "bar"
+            value = value / 10
+        elif self._sensor_key == 'getCEL':
+            # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
+            value = value / 10
+
+        # Apply configured precision if available
+        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key)
+        if precision is not None:
+            try:
+                value = round(value, precision)
+                if precision == 0:
+                    return int(value)
+            except (TypeError, ValueError):
+                pass
+
+        return value
+
     @property
     def icon(self) -> str | None:
         """Return the icon to use in the frontend, if any.
@@ -463,45 +492,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if isinstance(value, str):
                     try:
                         numeric_value = float(value)
-                        # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
-                        if self._sensor_key == 'getPRS':
-                            numeric_value = numeric_value / 10
-                        # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
-                        if self._sensor_key == 'getCEL':
-                            numeric_value = numeric_value / 10
-                        # Apply configured precision if available
-                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
-                        if precision is not None:
-                            try:
-                                numeric_value = round(numeric_value, precision)
-                                if precision == 0:
-                                    numeric_value = int(numeric_value)
-                            except (TypeError, ValueError):
-                                pass
-                        return numeric_value
+                        return self._apply_numeric_conversion(numeric_value)
                     except (ValueError, TypeError):
                         return value
 
                 # Handle numeric values directly
                 if isinstance(value, int | float):
-                    # Divide pressure by 10 to convert from "dbar" to "bar" to correct unit
-                    if self._sensor_key == 'getPRS':
-                        return value / 10
-                    # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
-                    if self._sensor_key == 'getCEL':
-                        return value / 10
-                    # Apply configured precision if available
-                    precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key) if isinstance(_SYR_CONNECT_SENSOR_PRECISION, dict) else None
-                    if precision is not None:
-                        try:
-                            val = float(value)
-                            val = round(val, precision)
-                            if precision == 0:
-                                return int(val)
-                            return val
-                        except (TypeError, ValueError):
-                            return value
-                    return value
+                    return self._apply_numeric_conversion(float(value))
 
                 return value
 
