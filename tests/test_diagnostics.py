@@ -887,10 +887,9 @@ async def test_diagnostics_redact_obj_dict_key_matches_redact(hass: HomeAssistan
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    # Should have redacted the sensitive keys in coordinator_data
-    assert "coordinator_data" in diagnostics
-    assert "devices" in diagnostics["coordinator_data"]
-    assert len(diagnostics["coordinator_data"]["devices"]) > 0
+    # Should have redacted the sensitive keys
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) > 0
 
 
 async def test_diagnostics_redact_obj_list_processing(hass: HomeAssistant) -> None:
@@ -928,10 +927,9 @@ async def test_diagnostics_redact_obj_list_processing(hass: HomeAssistant) -> No
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    # Should process all list items in coordinator_data
-    assert "coordinator_data" in diagnostics
-    assert "devices" in diagnostics["coordinator_data"]
-    assert len(diagnostics["coordinator_data"]["devices"]) == 2
+    # Should process all list items
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) == 2
 
 
 async def test_diagnostics_redact_obj_string_processing(hass: HomeAssistant) -> None:

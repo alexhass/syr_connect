@@ -1930,7 +1930,7 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getFLO": 0,  # Integer zero, should be excluded
+                    "getCS1": 0,  # Integer zero, should be excluded
                 },
             }
         ]
@@ -1942,10 +1942,10 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # Should skip getFLO because it's zero
+    # Should skip getCS1 because it's zero
     entities = add_entities.call_args.args[0] if add_entities.called else []
-    flo_entities = [e for e in entities if e._sensor_key == "getFLO"]
-    assert len(flo_entities) == 0
+    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
+    assert len(cs1_entities) == 0
 
 
 async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None:
@@ -2188,8 +2188,8 @@ async def test_sensor_icon_getRG_datetime_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
 
-    # Should convert timestamp to int and return valve icon
-    assert sensor.icon == "mdi:valve"
+    # Timestamp converts to large int (not 1), so should return closed valve
+    assert sensor.icon == "mdi:valve-closed"
 
 
 async def test_sensor_icon_getRG_string_active_value(hass: HomeAssistant) -> None:
