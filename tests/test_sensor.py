@@ -2439,7 +2439,7 @@ async def test_sensor_icon_alarm_low_salt(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getALM": "1",  # low_salt value
+                    "getALM": "LowSalt",  # low_salt value
                 },
             }
         ]
