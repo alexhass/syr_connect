@@ -1,4 +1,4 @@
-name: CI - Tests
+name: ci
 
 permissions:
   contents: read
