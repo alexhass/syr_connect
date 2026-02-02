@@ -320,7 +320,7 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "unknown"}
+    assert result2["errors"] == {"base": "cannot_connect"}
 
 
 async def test_reconfigure_flow(hass: HomeAssistant, mock_syr_api) -> None:
@@ -471,7 +471,7 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "unknown"}
+    assert result2["errors"] == {"base": "cannot_connect"}
 
 
 async def test_validate_input_auth_error(hass: HomeAssistant) -> None:
