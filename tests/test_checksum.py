@@ -154,8 +154,8 @@ def test_compute_checksum_value_with_unicode():
 
 def test_checksum_value_wrapping():
     """Test checksum value wrapping when sum >= base_characters length."""
-    # Use production-like base_characters (32 chars) and test wrapping logic
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "TESTKEY")
+    # Use actual production constants from const.py to ensure valid operation
+    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     result = checksum.compute_checksum_value("test")
     assert isinstance(result, int)
     assert result > 0
