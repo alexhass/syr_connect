@@ -550,20 +550,23 @@ async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
             data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
         )
 
-        # Remove the entry before submitting new credentials
-        await hass.config_entries.async_remove(entry.entry_id)
+        # Mock async_get_entry to return None (simulating deleted entry)
+        with patch.object(
+            hass.config_entries,
+            "async_get_entry",
+            return_value=None,
+        ):
+            # Submit credentials - entry lookup will return None
+            result2 = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_USERNAME: "test@example.com",
+                    CONF_PASSWORD: "new_password",
+                },
+            )
 
-        # Submit credentials - entry no longer exists
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            {
-                CONF_USERNAME: "test@example.com",
-                CONF_PASSWORD: "new_password",
-            },
-        )
-
-        assert result2["type"] == FlowResultType.ABORT
-        assert result2["reason"] == "reauth_failed"
+            assert result2["type"] == FlowResultType.ABORT
+            assert result2["reason"] == "reauth_failed"
 
 
 async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
