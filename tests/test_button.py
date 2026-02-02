@@ -250,3 +250,44 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
 
     # Should return True when device not found (default availability)
     assert button.available is True
+
+
+async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
+    """Test async_setup_entry with no coordinator data."""
+    mock_config_entry = MockConfigEntry()
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_config_entry.runtime_data = mock_coordinator
+    
+    entities = []
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    
+    # Should not add any entities when no data
+    async_add_entities.assert_not_called()
+
+
+async def test_button_initialization_attributes(hass: HomeAssistant) -> None:
+    """Test button initialization sets correct attributes."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR", "Regenerate Now")
+
+    # Check attributes
+    assert button._attr_unique_id == "device1_setSIR"
+    assert button._attr_has_entity_name is True
+    assert button._attr_translation_key == "setsir"
+    assert button._device_id == "device1"
+    assert button._command == "setSIR"
