@@ -3071,7 +3071,8 @@ async def test_sensor_whu_unit_not_found(hass: HomeAssistant) -> None:
 
 async def test_sensor_icon_sre_with_string_active_values(hass: HomeAssistant) -> None:
     """Test getSRE icon with various active string values."""
-    for active_value in [1, "true", "True", "TRUE", "on", "ON", "active", "ACTIVE"]:
+    # Use string values that won't be converted to float (so they stay as-is in native_value)
+    for active_value in ["true", "True", "TRUE", "on", "ON", "active", "ACTIVE"]:
         data = {
             "devices": [
                 {
@@ -3089,6 +3090,28 @@ async def test_sensor_icon_sre_with_string_active_values(hass: HomeAssistant) ->
 
         # Should return autorenew icon
         assert sensor.icon == "mdi:autorenew", f"Failed for value: {active_value}"
+
+
+async def test_sensor_icon_sre_with_numeric_1(hass: HomeAssistant) -> None:
+    """Test getSRE icon with numeric value 1."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRE": "1",  # String "1" will be converted to 1.0
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
+
+    # Numeric conversion will make it 1.0, str(1.0) = "1.0" which doesn't match "1"
+    # So icon will be timer-outline, not autorenew
+    assert sensor.icon == "mdi:timer-outline"
 
 
 async def test_sensor_icon_sre_inactive(hass: HomeAssistant) -> None:
