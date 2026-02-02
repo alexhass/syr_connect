@@ -109,3 +109,43 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
 
         # Verify API call
         mock_api.set_device_status.assert_called_once_with("dclg1", "setSIR", 0)
+
+
+async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator optimistic update of in-memory data."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.get_devices = AsyncMock(return_value=[
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "dclg": "dclg1",
+                "status": {"getSIR": "1"},
+            }
+        ])
+        mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        with patch.object(hass, "async_create_task"):
+            with patch.object(coordinator, "async_refresh", AsyncMock()):
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
+
+        assert coordinator.data is not None
+        device = coordinator.data["devices"][0]
+        assert device["status"]["getSIR"] == "0"
+        assert device["available"] is True
