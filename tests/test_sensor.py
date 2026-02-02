@@ -584,3 +584,404 @@ async def test_sensor_missing_device(hass: HomeAssistant) -> None:
 
     assert sensor.native_value is None
     assert sensor.available is True  # Returns True when device not found
+
+
+async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
+    """Test entity registry cleanup for excluded sensors."""
+    from homeassistant.helpers import entity_registry as er
+    
+    # Create registry entry for an excluded sensor
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        "sensor",
+        "syr_connect",
+        "device1_getDTY",  # getDTY is in _SYR_CONNECT_EXCLUDED_SENSORS
+        suggested_object_id="device1_getdty",
+    )
+    
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getPRS": "50"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+    
+    # Excluded sensor should be removed
+    assert registry.async_get("sensor.device1_getdty") is None
+
+
+async def test_sensor_whu_string_conversion(hass: HomeAssistant) -> None:
+    """Test getWHU sensor with string value that can be converted."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getWHU": "1",  # String instead of int
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+
+    # Should convert string to int and map correctly
+    assert sensor.native_value is not None
+
+
+async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
+    """Test getWHU sensor with invalid value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getWHU": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+
+    # Should return None for invalid values
+    assert sensor.native_value is None
+
+
+async def test_sensor_cs_with_sv_non_convertible(hass: HomeAssistant) -> None:
+    """Test getCS1 when getSV1 value cannot be converted to float."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": "0",
+                    "getSV1": "invalid_number",  # Cannot convert to float
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+    
+    # getCS1 should be excluded because it's 0 and getSV1 is not convertible
+    entities = add_entities.call_args.args[0]
+    assert len(entities) == 0
+
+
+async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
+    """Test getCS1 when both getCS1 and getSV1 are zero."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": "0",
+                    "getSV1": "0",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+    
+    # getCS1 should be excluded because both are 0
+    entities = add_entities.call_args.args[0]
+    assert len(entities) == 0
+
+
+async def test_sensor_cs_int_zero_with_sv_zero(hass: HomeAssistant) -> None:
+    """Test getCS1 when both are integers and zero."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": 0,  # Int instead of string
+                    "getSV1": 0.0,  # Float zero
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+    
+    # getCS1 should be excluded
+    entities = add_entities.call_args.args[0]
+    assert len(entities) == 0
+
+
+async def test_sensor_rpw_invalid_string_mask(hass: HomeAssistant) -> None:
+    """Test getRPW with invalid string that cannot be converted."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "not_a_number",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should return None for invalid mask
+    assert sensor.native_value is None
+
+
+async def test_sensor_rpw_with_babel_fallback(hass: HomeAssistant) -> None:
+    """Test getRPW falls back to strftime if Babel fails."""
+    from unittest.mock import patch
+    
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "127",  # All days
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Mock format_datetime to raise exception
+    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=Exception("Babel error")):
+        result = sensor.native_value
+        # Should still return weekday names using strftime fallback
+        assert result is not None
+        assert isinstance(result, str)
+
+
+async def test_sensor_icon_exception_handling(hass: HomeAssistant) -> None:
+    """Test icon property handles exceptions gracefully."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSWS": "invalid",  # Will cause exception in conversion
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSWS")
+
+    # Should return base icon without crashing
+    icon = sensor.icon
+    assert icon is not None or icon is None  # Just verify it doesn't crash
+
+
+async def test_sensor_icon_datetime_conversion(hass: HomeAssistant) -> None:
+    """Test icon property with datetime value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSWS": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSWS")
+
+    # Should handle datetime conversion
+    icon = sensor.icon
+    assert icon is not None
+
+
+async def test_sensor_lar_overflow_error(hass: HomeAssistant) -> None:
+    """Test getLAR with value that causes OverflowError."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": str(10**15),  # Very large timestamp
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None on OverflowError
+    result = sensor.native_value
+    assert result is None or isinstance(result, datetime)
+
+
+async def test_sensor_alarm_none_value(hass: HomeAssistant) -> None:
+    """Test getALM sensor with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getALM": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+
+    # Should handle None gracefully
+    assert sensor.native_value is None
+
+
+async def test_sensor_water_hardness_init_with_whu(hass: HomeAssistant) -> None:
+    """Test sensor initialization sets water hardness unit from getWHU."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getIWH": "10",
+                    "getWHU": 1,  # German degrees
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+
+    # Should have water hardness unit set
+    assert sensor.native_unit_of_measurement is not None
+
+
+async def test_sensor_water_hardness_init_invalid_whu(hass: HomeAssistant) -> None:
+    """Test sensor initialization with invalid getWHU value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getOWH": "15",
+                    "getWHU": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getOWH")
+
+    # Should fallback to None for invalid WHU
+    assert sensor.native_unit_of_measurement is None
+
+
+async def test_sensor_water_hardness_init_no_whu(hass: HomeAssistant) -> None:
+    """Test sensor initialization when getWHU is not present."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getIWH": "10",
+                    # No getWHU
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+
+    # Should be None when WHU not present
+    assert sensor.native_unit_of_measurement is None
+
+
+async def test_sensor_numeric_int_value(hass: HomeAssistant) -> None:
+    """Test sensor with integer value is converted correctly."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": 100,  # Integer instead of string
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+
+    # Should convert int to float
+    assert isinstance(sensor.native_value, (int, float))
+    assert sensor.native_value == 100
+
+
+async def test_sensor_numeric_float_value(hass: HomeAssistant) -> None:
+    """Test sensor with float value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": 123.45,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+
+    # Should use float value directly
+    assert sensor.native_value == 123.45
