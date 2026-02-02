@@ -556,3 +556,205 @@ async def test_diagnostics_exception_in_raw_xml_collection(hass: HomeAssistant) 
     assert "raw_xml" in diagnostics
     # Exception during is_session_valid causes api to be set to None, so raw_xml will be {}
     assert diagnostics["raw_xml"] == {} or "error" in diagnostics["raw_xml"]
+
+
+async def test_diagnostics_redact_obj_with_raw_xml(hass: HomeAssistant) -> None:
+    """Test that raw_xml is preserved in redaction."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    # Create simple mock to trigger raw_xml preservation
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value='<test>data</test>')
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # raw_xml should exist and be preserved
+    assert "raw_xml" in diagnostics
+    assert diagnostics["raw_xml"] != {}
+
+
+async def test_diagnostics_redact_xml_empty_input(hass: HomeAssistant) -> None:
+    """Test XML redaction with empty/None input."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Data with empty status
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "1",
+                "name": "Device 1",
+                "available": True,
+                "project_id": "proj1",
+                "status": {},
+            }
+        ],
+        "projects": []
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should handle empty data gracefully
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) > 0
+
+
+async def test_diagnostics_device_without_dclg_or_id(hass: HomeAssistant) -> None:
+    """Test diagnostics with device that has neither dclg nor id."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value='<xml/>')
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    
+    # Return device without dclg or id
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(
+        return_value=[{"name": "Device without ID"}]
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should skip device without ID
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_status_fetch_exception(hass: HomeAssistant) -> None:
+    """Test diagnostics when status fetch returns exception."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    # HTTP client that fails on second call (status fetch)
+    call_count = 0
+    async def post_side_effect(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return '<xml/>'
+        raise Exception("Status fetch failed")
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(side_effect=post_side_effect)
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    mock_api.payload_builder.build_device_status_payload = MagicMock(return_value="p2")
+    
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(
+        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should handle exception in gather
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "raw_xml" in diagnostics
+
