@@ -1008,7 +1008,7 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
     
     # Mock the async setup
     mock_coordinator = _build_coordinator(hass, data_non_zero)
-    mock_entry = _build_config_entry(hass, "device1", mock_coordinator)
+    mock_entry = _build_entry(mock_coordinator)
 
     with (
         patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry,
@@ -1211,8 +1211,8 @@ async def test_sensor_sta_empty_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
 
-    # Empty string should be handled
-    assert sensor.native_value == ""
+    # Empty string maps to 'status_inactive' per const.py mapping
+    assert sensor.native_value == "status_inactive"
 
 
 async def test_sensor_icon_value_conversion_error(hass: HomeAssistant) -> None:
