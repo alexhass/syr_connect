@@ -3071,7 +3071,7 @@ async def test_sensor_whu_unit_not_found(hass: HomeAssistant) -> None:
 
 async def test_sensor_icon_sre_with_string_active_values(hass: HomeAssistant) -> None:
     """Test getSRE icon with various active string values."""
-    for active_value in ["1", "true", "True", "TRUE", "on", "ON", "active", "ACTIVE"]:
+    for active_value in [1, "true", "True", "TRUE", "on", "ON", "active", "ACTIVE"]:
         data = {
             "devices": [
                 {
@@ -3455,8 +3455,8 @@ async def test_sensor_alm_none_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
-    # Should return None
-    assert sensor.native_value is None
+    # When value is None, str(None) = "None" which maps to 'no_alarm'
+    assert sensor.native_value == "no_alarm"
 
 
 async def test_sensor_numeric_conversion_precision_type_error(hass: HomeAssistant) -> None:

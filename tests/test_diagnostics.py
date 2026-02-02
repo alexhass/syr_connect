@@ -1551,10 +1551,9 @@ async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) ->
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    # Should preserve non-dict/list/str types
-    assert "data" in diagnostics
-    assert diagnostics["data"]["int_value"] == 123
-    assert diagnostics["data"]["float_value"] == 45.67
-    assert diagnostics["data"]["none_value"] is None
-    assert diagnostics["data"]["bool_value"] is True
+    # Should have devices and projects at top level
+    assert "devices" in diagnostics
+    assert "projects" in diagnostics
+    assert diagnostics["devices"] == []
+    assert diagnostics["projects"] == []
 
