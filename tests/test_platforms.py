@@ -1,7 +1,7 @@
 """Platform smoke tests for SYR Connect."""
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock, Mock
 
 from homeassistant.core import HomeAssistant
 
@@ -55,7 +55,7 @@ async def test_binary_sensor_platform_creates_entities(hass: HomeAssistant) -> N
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
-    add_entities = AsyncMock()
+    add_entities = Mock()
     await async_setup_binary_sensor(hass, entry, add_entities)
 
     # getSRE is excluded, so no entities should be created
@@ -83,7 +83,7 @@ async def test_button_platform_creates_entities(hass: HomeAssistant) -> None:
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
-    add_entities = AsyncMock()
+    add_entities = Mock()
     await async_setup_button(hass, entry, add_entities)
 
     add_entities.assert_called_once()
@@ -112,7 +112,7 @@ async def test_select_platform_creates_entities(hass: HomeAssistant) -> None:
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
-    add_entities = AsyncMock()
+    add_entities = Mock()
     await async_setup_select(hass, entry, add_entities)
 
     add_entities.assert_called_once()
