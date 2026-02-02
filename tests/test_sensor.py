@@ -1014,8 +1014,9 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
     with (
         patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry_getter,
     ):
-        mock_registry = MagicMock()
+        mock_registry = Mock()
         mock_registry.async_get.return_value = None
+        mock_registry.async_remove = Mock()
         mock_registry_getter.return_value = mock_registry
         
         entities = []
