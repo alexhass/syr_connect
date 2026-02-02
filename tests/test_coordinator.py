@@ -577,8 +577,9 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
         # Mock async_set_updated_data to raise exception
         with patch.object(coordinator, "async_set_updated_data", side_effect=Exception("Update failed")):
             with patch.object(hass, "async_create_task", return_value=None):
-                # Should not raise, exception is caught and logged
-                await coordinator.async_set_device_value("device1", "setSIR", 0)
+                with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
+                    # Should not raise, exception is caught and logged
+                    await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # API call should still have been made
         mock_api.set_device_status.assert_called_once()
@@ -610,8 +611,9 @@ async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssista
 
         # Mock async_create_task to raise exception
         with patch.object(hass, "async_create_task", side_effect=Exception("Task creation failed")):
-            # Should not raise, exception is caught and logged
-            await coordinator.async_set_device_value("device1", "setSIR", 0)
+            with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
+                # Should not raise, exception is caught and logged
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # API call should still have been made
         mock_api.set_device_status.assert_called_once()
@@ -670,7 +672,8 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         await coordinator.async_config_entry_first_refresh()
 
         with patch.object(hass, "async_create_task", return_value=None):
-            await coordinator.async_set_device_value("device1", "setSIR", 0)
+            with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Should use device ID as fallback
         mock_api.set_device_status.assert_called_once_with("device1", "setSIR", 0)
