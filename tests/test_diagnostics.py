@@ -24,6 +24,9 @@ async def test_diagnostics(hass: HomeAssistant) -> None:
         source="test",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
     )
     
     # Create mock coordinator
@@ -60,6 +63,9 @@ async def test_diagnostics_with_coordinator_data(hass: HomeAssistant) -> None:
         source="test",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
     )
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
