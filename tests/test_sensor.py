@@ -1009,11 +1009,14 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
     # Mock the async setup
     mock_coordinator = _build_coordinator(hass, data_non_zero)
     mock_entry = _build_entry(mock_coordinator)
+    mock_entry.add_to_hass(hass)
 
     with (
-        patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry,
+        patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry_getter,
     ):
-        mock_registry.return_value.async_get.return_value = None
+        mock_registry = MagicMock()
+        mock_registry.async_get.return_value = None
+        mock_registry_getter.return_value = mock_registry
         
         entities = []
         await async_setup_entry(
