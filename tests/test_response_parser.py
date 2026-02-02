@@ -139,7 +139,7 @@ def test_parse_xml_list_elements(parser):
 
 def test_parse_xml_invalid(parser):
     """Test parsing invalid XML raises ValueError."""
-    with pytest.raises(ValueError, match="Failed to parse XML"):
+    with pytest.raises(ValueError, match="Invalid XML response"):
         parser.parse_xml("not valid xml")
 
 
