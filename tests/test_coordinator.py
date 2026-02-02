@@ -514,3 +514,223 @@ async def test_coordinator_delete_offline_issue_on_recovery(hass: HomeAssistant,
         # Verify delete_issue was called when device status was successfully fetched
         mock_delete_issue.assert_called_once_with(hass, "device_offline_device1")
 
+
+async def test_coordinator_device_without_cna_fallback_to_id(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator uses device ID as fallback when cna is missing."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+         patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[
+            {"id": "device1", "dclg": "dclg1"}  # No 'cna' field
+        ])
+        mock_api.get_device_status = AsyncMock(side_effect=Exception("Device offline"))
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Verify create_issue was called with device ID as fallback
+        mock_create_issue.assert_called_once_with(
+            hass,
+            "device_offline_device1",
+            "device_offline",
+            translation_placeholders={"device_name": "device1"},
+        )
+
+
+async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator handles exceptions during optimistic update gracefully."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.get_devices = AsyncMock(return_value=[
+            {"id": "device1", "dclg": "dclg1"}
+        ])
+        mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Mock async_set_updated_data to raise exception
+        with patch.object(coordinator, "async_set_updated_data", side_effect=Exception("Update failed")):
+            with patch.object(hass, "async_create_task"):
+                # Should not raise, exception is caught and logged
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
+
+        # API call should still have been made
+        mock_api.set_device_status.assert_called_once()
+
+
+async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator handles exceptions when scheduling refresh."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.get_devices = AsyncMock(return_value=[
+            {"id": "device1", "dclg": "dclg1"}
+        ])
+        mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Mock async_create_task to raise exception
+        with patch.object(hass, "async_create_task", side_effect=Exception("Task creation failed")):
+            # Should not raise, exception is caught and logged
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
+
+        # API call should still have been made
+        mock_api.set_device_status.assert_called_once()
+
+
+async def test_coordinator_device_without_dclg_uses_id(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator uses device ID when dclg is missing."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[
+            {"id": "device1"}  # No 'dclg' field
+        ])
+        mock_api.get_device_status = AsyncMock(return_value={"getPRS": "50"})
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Verify get_device_status was called with device id (fallback)
+        mock_api.get_device_status.assert_called_once_with("device1")
+        assert coordinator.data["devices"][0]["available"] is True
+
+
+async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test setting value for device without dclg uses device id."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.get_devices = AsyncMock(return_value=[
+            {"id": "device1"}  # No 'dclg' field
+        ])
+        mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        with patch.object(hass, "async_create_task"):
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
+
+        # Should use device ID as fallback
+        mock_api.set_device_status.assert_called_once_with("device1", "setSIR", 0)
+
+
+async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator handles exception from gather for device tasks."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        
+        # Create an exception that will be returned by gather
+        test_exception = Exception("Device fetch failed")
+        mock_api.get_devices = AsyncMock(side_effect=test_exception)
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        
+        # Should handle exception gracefully
+        await coordinator.async_config_entry_first_refresh()
+        
+        # Should have no devices
+        assert coordinator.data is not None
+        assert len(coordinator.data["devices"]) == 0
+
+
+async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator data structure when projects have no devices."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [
+            {"id": "project1", "name": "Empty Project 1"},
+            {"id": "project2", "name": "Empty Project 2"},
+        ]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[])
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Verify data structure is correct
+        assert coordinator.data is not None
+        assert "devices" in coordinator.data
+        assert "projects" in coordinator.data
+        assert coordinator.data["devices"] == []
+        assert coordinator.data["projects"] == mock_api.projects
+
