@@ -37,6 +37,9 @@ _LOGGER = logging.getLogger(__name__)
 
 # Controlled sensors are defined in `const.py` as _SYR_CONNECT_CONTROLLED_SENSORS
 
+# Limit parallel updates to avoid overwhelming the API
+PARALLEL_UPDATES = 1
+
 
 async def async_setup_entry(
     hass: HomeAssistant,

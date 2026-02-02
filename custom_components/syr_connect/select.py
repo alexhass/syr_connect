@@ -20,6 +20,9 @@ from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
+# Limit parallel updates to avoid overwhelming the API
+PARALLEL_UPDATES = 1
+
 
 def _build_time_options(step_minutes: int = 15) -> list[str]:
     """Build list of time strings (HH:MM) for a 24h day with given step."""

@@ -18,9 +18,6 @@ DOMAIN = "syr_connect"
 _SYR_CONNECT_SCAN_INTERVAL_CONF = "scan_interval"
 _SYR_CONNECT_SCAN_INTERVAL_DEFAULT = 60  # seconds
 
-# Platform update limits
-PARALLEL_UPDATES = 1  # Limit parallel updates to avoid overwhelming the API
-
 # API URLs (internal)
 _SYR_CONNECT_CONFIGURATION_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_BASE_URL = "https://syrconnect.de/WebServices"
