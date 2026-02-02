@@ -266,7 +266,7 @@ async def test_async_setup_entry_with_input_datetime_sync(hass: HomeAssistant) -
         
         with (
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=AsyncMock()),
-            patch("custom_components.syr_connect.async_track_state_change") as mock_track,
+            patch("homeassistant.helpers.event.async_track_state_change") as mock_track,
         ):
             result = await async_setup_entry(hass, config_entry)
     

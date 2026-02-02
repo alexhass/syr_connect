@@ -154,8 +154,8 @@ def test_compute_checksum_value_with_unicode():
 
 def test_checksum_value_wrapping():
     """Test checksum value wrapping when sum >= base_characters length."""
-    # Use small base_characters to force wrapping
-    checksum = SyrChecksum("ABC", "XY")
+    # Use base_characters and key that could trigger wrapping logic
+    checksum = SyrChecksum("ABCDEFGHIJ", "ZYXWVU")
     result = checksum.compute_checksum_value("test")
     assert isinstance(result, int)
     assert result > 0
