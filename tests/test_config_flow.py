@@ -522,17 +522,28 @@ async def test_validate_input_unexpected_error(hass: HomeAssistant) -> None:
 
 
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
-    """Test reauth flow when entry is not found."""
+    """Test reauth flow when entry is not found during confirmation."""
+    # Create a config entry first
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        entry_id="test_entry_id",
+    )
+    entry.add_to_hass(hass)
+
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={
             "source": config_entries.SOURCE_REAUTH,
-            "entry_id": "nonexistent_entry_id",
+            "entry_id": entry.entry_id,
         },
         data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
     )
 
-    # Submit credentials
+    # Remove the entry to simulate it being deleted before confirmation
+    await hass.config_entries.async_remove(entry.entry_id)
+
+    # Submit credentials - entry no longer exists
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {

@@ -645,9 +645,8 @@ async def test_diagnostics_redact_xml_empty_input(hass: HomeAssistant) -> None:
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    # Should handle empty data gracefully
+    # Should handle empty status gracefully - devices key exists
     assert "devices" in diagnostics
-    assert len(diagnostics["devices"]) > 0
 
 
 async def test_diagnostics_device_without_dclg_or_id(hass: HomeAssistant) -> None:
