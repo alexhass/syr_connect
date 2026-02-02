@@ -523,6 +523,8 @@ async def test_validate_input_unexpected_error(hass: HomeAssistant) -> None:
 
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
     """Test reauth flow when entry is not found during confirmation."""
+    from unittest.mock import patch
+    
     # Create a config entry first
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -540,20 +542,25 @@ async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
         data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
     )
 
-    # Remove the entry to simulate it being deleted before confirmation
-    await hass.config_entries.async_remove(entry.entry_id)
+    # Mock validate_input to succeed
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input",
+        return_value={"title": "SYR Connect"},
+    ):
+        # Remove the entry to simulate it being deleted before confirmation
+        await hass.config_entries.async_remove(entry.entry_id)
 
-    # Submit credentials - entry no longer exists
-    result2 = await hass.config_entries.flow.async_configure(
-        result["flow_id"],
-        {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "new_password",
-        },
-    )
+        # Submit credentials - entry no longer exists
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "new_password",
+            },
+        )
 
-    assert result2["type"] == FlowResultType.ABORT
-    assert result2["reason"] == "reauth_failed"
+        assert result2["type"] == FlowResultType.ABORT
+        assert result2["reason"] == "reauth_failed"
 
 
 async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
