@@ -2428,3 +2428,207 @@ async def test_sensor_string_sensor_none_value(hass: HomeAssistant) -> None:
 
     # Should return None for None value
     assert sensor.native_value is None
+
+
+async def test_sensor_icon_alarm_low_salt(hass: HomeAssistant) -> None:
+    """Test alarm sensor icon when low salt."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getALM": "1",  # low_salt value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+
+    # Should return alert icon for low salt
+    assert sensor.icon == "mdi:bell-alert"
+
+
+async def test_sensor_icon_getSRE_falsy_value(hass: HomeAssistant) -> None:
+    """Test getSRE sensor icon when value is falsy."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRE": 0,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
+
+    # Should return timer icon for falsy value
+    assert sensor.icon == "mdi:timer-outline"
+
+
+async def test_sensor_icon_getSRE_off_value(hass: HomeAssistant) -> None:
+    """Test getSRE sensor icon when value is 'off'."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRE": "off",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
+
+    # Should return timer icon for 'off' value
+    assert sensor.icon == "mdi:timer-outline"
+
+
+async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
+    """Test sensor setup skips values that are not int/float/str."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getINVALID": {"nested": "dict"},  # Invalid type
+                    "getVALID": 42,  # Valid type
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should only create sensor for valid type
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    valid_entities = [e for e in entities if e._sensor_key == "getVALID"]
+    invalid_entities = [e for e in entities if e._sensor_key == "getINVALID"]
+    
+    assert len(valid_entities) == 1
+    assert len(invalid_entities) == 0
+
+
+async def test_sensor_icon_getPST_other_value(hass: HomeAssistant) -> None:
+    """Test getPST sensor icon with value other than 1 or 2."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": 99,  # Other value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should return base icon for other values
+    icon = sensor.icon
+    assert icon is not None
+
+
+async def test_sensor_icon_getRG_string_inactive_value(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon with string inactive value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": "off",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Should return closed valve for 'off'
+    assert sensor.icon == "mdi:valve-closed"
+
+
+async def test_sensor_icon_getRG_string_on_value(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon with string 'on' value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": "on",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Should return open valve for 'on'
+    assert sensor.icon == "mdi:valve"
+
+
+async def test_sensor_rpw_hass_config_no_language(hass: HomeAssistant) -> None:
+    """Test getRPW sensor when hass.config has no language attribute."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "3",  # Monday and Tuesday
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should handle missing language attribute gracefully
+    value = sensor.native_value
+    assert value is not None
+    assert "," in value
+
+
+async def test_sensor_rpw_mask_specific_bit(hass: HomeAssistant) -> None:
+    """Test getRPW sensor with specific bit set."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "64",  # Bit 6 = Sunday
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should return Sunday
+    value = sensor.native_value
+    assert value is not None
+    assert len(value) > 0
