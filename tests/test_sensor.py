@@ -1765,3 +1765,667 @@ async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
 
     # Should return string value when rounding fails
     assert sensor.native_value == "invalid"
+
+
+async def test_sensor_setup_no_data(hass: HomeAssistant) -> None:
+    """Test sensor platform setup with no coordinator data."""
+    coordinator = _build_coordinator(hass, {})
+    coordinator.data = None
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should not call add_entities
+    add_entities.assert_not_called()
+
+
+async def test_sensor_getcs_with_zero_getsv_string(hass: HomeAssistant) -> None:
+    """Test getCS sensor with getSV as zero string."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": "0",  # Zero value
+                    "getSV1": "0",  # Zero getSV as string
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getCS1 because getSV1 is zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
+    assert len(cs1_entities) == 0
+
+
+async def test_sensor_getcs_with_invalid_getsv_float(hass: HomeAssistant) -> None:
+    """Test getCS sensor with getSV value that can't be converted to float."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": "0",  # Zero value
+                    "getSV1": "invalid",  # Invalid value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getCS1 due to ValueError in float conversion
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
+    assert len(cs1_entities) == 0
+
+
+async def test_sensor_getcs2_with_nonzero_sv(hass: HomeAssistant) -> None:
+    """Test getCS2 sensor shown even when zero if getSV2 is non-zero."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS2": "0",  # Zero value
+                    "getSV2": "5",  # Non-zero getSV
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should include getCS2 because getSV2 is non-zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    cs2_entities = [e for e in entities if e._sensor_key == "getCS2"]
+    assert len(cs2_entities) == 1
+
+
+async def test_sensor_getcs_int_value_zero(hass: HomeAssistant) -> None:
+    """Test getCS sensor with int zero value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": 0,  # Integer zero
+                    "getSV1": 0,  # Integer zero getSV
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getCS1 because both are zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
+    assert len(cs1_entities) == 0
+
+
+async def test_sensor_getcs_float_value_zero(hass: HomeAssistant) -> None:
+    """Test getCS sensor with float zero value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": 0.0,  # Float zero
+                    "getSV1": 0.0,  # Float zero getSV
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getCS1 because both are zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
+    assert len(cs1_entities) == 0
+
+
+async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
+    """Test sensor excluded when zero with int value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": 0,  # Integer zero, should be excluded
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getFLO because it's zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    flo_entities = [e for e in entities if e._sensor_key == "getFLO"]
+    assert len(flo_entities) == 0
+
+
+async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None:
+    """Test sensor excluded when zero with float value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": 0.0,  # Float zero, should be excluded
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getFLO because it's zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    flo_entities = [e for e in entities if e._sensor_key == "getFLO"]
+    assert len(flo_entities) == 0
+
+
+async def test_sensor_exclude_when_zero_string_value(hass: HomeAssistant) -> None:
+    """Test sensor excluded when zero with string value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": "0",  # String zero, should be excluded
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should skip getFLO because it's zero
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    flo_entities = [e for e in entities if e._sensor_key == "getFLO"]
+    assert len(flo_entities) == 0
+
+
+async def test_sensor_icon_getPST_value_2(hass: HomeAssistant) -> None:
+    """Test getPST sensor icon when value is 2 (available)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": "2",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should return check-circle icon for value 2
+    assert sensor.icon == "mdi:check-circle"
+
+
+async def test_sensor_icon_getPST_value_1(hass: HomeAssistant) -> None:
+    """Test getPST sensor icon when value is 1 (not available)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should return close-circle icon for value 1
+    assert sensor.icon == "mdi:close-circle"
+
+
+async def test_sensor_icon_getPST_none_value(hass: HomeAssistant) -> None:
+    """Test getPST sensor icon when value is None."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should return base icon when value is None
+    assert sensor.icon == sensor._base_icon
+
+
+async def test_sensor_icon_getPST_datetime_value(hass: HomeAssistant) -> None:
+    """Test getPST sensor icon with datetime value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": "1704067200",  # Timestamp
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should convert timestamp and check value
+    icon = sensor.icon
+    assert icon is not None
+
+
+async def test_sensor_icon_getPST_invalid_conversion(hass: HomeAssistant) -> None:
+    """Test getPST sensor icon with value that can't be converted."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should default to ival=1 and return close-circle
+    assert sensor.icon is not None
+
+
+async def test_sensor_icon_getRG_valve_open(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon when valve is open (value 1)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Should return valve icon for value 1
+    assert sensor.icon == "mdi:valve"
+
+
+async def test_sensor_icon_getRG_valve_closed(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon when valve is closed (value 0)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": "0",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Should return valve-closed icon for value 0
+    assert sensor.icon == "mdi:valve-closed"
+
+
+async def test_sensor_icon_getRG_none_value(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon when value is None."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Should return base icon when value is None
+    assert sensor.icon == sensor._base_icon
+
+
+async def test_sensor_icon_getRG_datetime_value(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon with datetime value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG2": "1704067200",  # Timestamp (non-zero)
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
+
+    # Should convert timestamp to int and return valve icon
+    assert sensor.icon == "mdi:valve"
+
+
+async def test_sensor_icon_getRG_string_active_value(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon with string active values."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG3": "true",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG3")
+
+    # Should recognize "true" as active
+    assert sensor.icon == "mdi:valve"
+
+
+async def test_sensor_icon_getRG_exception_handling(hass: HomeAssistant) -> None:
+    """Test getRG sensor icon handles exceptions gracefully."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Mock native_value to raise an exception
+    with patch.object(sensor, 'native_value', new_callable=lambda: property(lambda self: (_ for _ in ()).throw(Exception("Test error")))):
+        # Should handle exception and return base icon
+        icon = sensor.icon
+        assert icon is not None
+
+
+async def test_sensor_rpw_mask_invalid_int_conversion(hass: HomeAssistant) -> None:
+    """Test getRPW sensor with value that can't be converted to int."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "not_a_number",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should return None when conversion fails
+    assert sensor.native_value is None
+
+
+async def test_sensor_rpw_mask_empty_string(hass: HomeAssistant) -> None:
+    """Test getRPW sensor with empty string value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should return None for empty string
+    assert sensor.native_value is None
+
+
+async def test_sensor_rpw_format_datetime_exception(hass: HomeAssistant) -> None:
+    """Test getRPW sensor handles format_datetime exception."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "127",  # All days
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Mock format_datetime to raise exception
+    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=Exception("Test error")):
+        result = sensor.native_value
+        # Should fallback to strftime and still return weekday names
+        assert result is not None
+        assert isinstance(result, str)
+
+
+async def test_sensor_lar_none_value(hass: HomeAssistant) -> None:
+    """Test getLAR sensor with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None for None value
+    assert sensor.native_value is None
+
+
+async def test_sensor_lar_empty_string(hass: HomeAssistant) -> None:
+    """Test getLAR sensor with empty string value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None for empty string
+    assert sensor.native_value is None
+
+
+async def test_sensor_lar_overflow_error(hass: HomeAssistant) -> None:
+    """Test getLAR sensor with timestamp that causes overflow."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": "9999999999999999999",  # Very large timestamp
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None when overflow occurs
+    assert sensor.native_value is None
+
+
+async def test_sensor_lar_invalid_value(hass: HomeAssistant) -> None:
+    """Test getLAR sensor with invalid value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None when value is invalid
+    assert sensor.native_value is None
+
+
+async def test_sensor_rtime_invalid_hour(hass: HomeAssistant) -> None:
+    """Test getRTIME sensor with invalid hour value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": "invalid",
+                    "getRTM": "30",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+
+    # Should return "00:00" when conversion fails
+    assert sensor.native_value == "00:00"
+
+
+async def test_sensor_string_sensor_none_value(hass: HomeAssistant) -> None:
+    """Test string sensor with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRN": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRN")
+
+    # Should return None for None value
+    assert sensor.native_value is None
