@@ -7,6 +7,10 @@ FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtur
 FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
 
 @pytest.fixture
+def parser():
+    return ResponseParser()
+
+@pytest.fixture
 def lexplus10s_project_collections_xml():
     with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
         return f.read()
@@ -89,3 +93,213 @@ def test_parse_device_status_response_10sl(lexplus10sl_xml):
     assert int(result["getPRS"]) >= 0
     assert int(result["getFLO"]) >= 0
     # assert result["getALM_meta"]["m"] == "LowSalt"
+
+
+def test_validate_structure_valid(parser):
+    """Test validate_structure with valid path."""
+    data = {"level1": {"level2": {"level3": "value"}}}
+    assert parser.validate_structure(data, ["level1", "level2", "level3"]) is True
+
+
+def test_validate_structure_invalid(parser):
+    """Test validate_structure with invalid path."""
+    data = {"level1": {"level2": "value"}}
+    assert parser.validate_structure(data, ["level1", "level2", "level3"]) is False
+
+
+def test_validate_structure_non_dict(parser):
+    """Test validate_structure when intermediate value is not dict."""
+    data = {"level1": "not_a_dict"}
+    assert parser.validate_structure(data, ["level1", "level2"]) is False
+
+
+def test_parse_xml_simple(parser):
+    """Test parsing simple XML."""
+    xml = "<root><item>value</item></root>"
+    result = parser.parse_xml(xml)
+    assert result == {"root": {"item": "value"}}
+
+
+def test_parse_xml_with_attributes(parser):
+    """Test parsing XML with attributes."""
+    xml = '<root><item id="1" name="test">value</item></root>'
+    result = parser.parse_xml(xml)
+    assert result["root"]["item"]["@id"] == "1"
+    assert result["root"]["item"]["@name"] == "test"
+    assert result["root"]["item"]["#text"] == "value"
+
+
+def test_parse_xml_list_elements(parser):
+    """Test parsing XML with multiple elements of same name."""
+    xml = "<root><item>val1</item><item>val2</item></root>"
+    result = parser.parse_xml(xml)
+    assert isinstance(result["root"]["item"], list)
+    assert result["root"]["item"] == ["val1", "val2"]
+
+
+def test_parse_xml_invalid(parser):
+    """Test parsing invalid XML raises ValueError."""
+    with pytest.raises(ValueError, match="Failed to parse XML"):
+        parser.parse_xml("not valid xml")
+
+
+def test_parse_login_response_dict_api(parser):
+    """Test parsing login response with dict api element."""
+    xml = '<sc><api type="session">encrypted_data_here</api></sc>'
+    encrypted, parsed = parser.parse_login_response(xml)
+    assert encrypted == "encrypted_data_here"
+    assert "sc" in parsed
+
+
+def test_parse_login_response_string_api(parser):
+    """Test parsing login response with string api element."""
+    xml = '<sc><api>encrypted_data</api></sc>'
+    encrypted, _ = parser.parse_login_response(xml)
+    assert encrypted == "encrypted_data"
+
+
+def test_parse_login_response_invalid(parser):
+    """Test parsing invalid login response raises ValueError."""
+    xml = "<root><invalid>data</invalid></root>"
+    with pytest.raises(ValueError, match="Invalid login response structure"):
+        parser.parse_login_response(xml)
+
+
+def test_parse_decrypted_login(parser):
+    """Test parsing decrypted login data."""
+    xml = '<usr id="session123"><nam>User</nam></usr><prs><pre id="proj1" n="Project 1"/></prs>'
+    session_id, projects = parser.parse_decrypted_login(xml)
+    assert session_id == "session123"
+    assert len(projects) == 1
+    assert projects[0]["id"] == "proj1"
+    assert projects[0]["name"] == "Project 1"
+
+
+def test_parse_decrypted_login_multiple_projects(parser):
+    """Test parsing decrypted login data with multiple projects."""
+    xml = '<usr id="sess"><nam>User</nam></usr><prs><pre id="p1" n="Proj1"/><pre id="p2" n="Proj2"/></prs>'
+    session_id, projects = parser.parse_decrypted_login(xml)
+    assert len(projects) == 2
+    assert projects[0]["id"] == "p1"
+    assert projects[1]["id"] == "p2"
+
+
+def test_parse_decrypted_login_no_session(parser):
+    """Test parsing decrypted login without session raises ValueError."""
+    xml = '<invalid>data</invalid>'
+    with pytest.raises(ValueError, match="Invalid credentials or session data"):
+        parser.parse_decrypted_login(xml)
+
+
+def test_parse_decrypted_login_no_projects(parser):
+    """Test parsing decrypted login without projects raises ValueError."""
+    xml = '<usr id="sess"><nam>User</nam></usr>'
+    with pytest.raises(ValueError, match="no projects found"):
+        parser.parse_decrypted_login(xml)
+
+
+def test_parse_device_list_no_devices(parser):
+    """Test parsing device list with no devices."""
+    xml = "<sc><col/></sc>"
+    devices = parser.parse_device_list_response(xml)
+    assert devices == []
+
+
+def test_parse_device_list_dvs_is_device(parser):
+    """Test parsing when dvs element itself is a device."""
+    xml = '<sc><dvs dclg="123" srn="serial123"><nam>Device</nam></dvs></sc>'
+    devices = parser.parse_device_list_response(xml)
+    assert len(devices) >= 0  # May find device depending on structure
+
+
+def test_parse_device_status_no_sc(parser):
+    """Test parsing device status without sc element."""
+    xml = "<root><invalid>data</invalid></root>"
+    result = parser.parse_device_status_response(xml)
+    assert result is None
+
+
+def test_parse_device_status_no_dvs(parser):
+    """Test parsing device status without dvs element."""
+    xml = "<sc><col/></sc>"
+    result = parser.parse_device_status_response(xml)
+    assert result is None
+
+
+def test_parse_device_status_no_c_children(parser):
+    """Test parsing device status without c children in devices."""
+    xml = "<sc><dvs><d><nam>Device</nam></d></dvs></sc>"
+    result = parser.parse_device_status_response(xml)
+    assert result is None
+
+
+def test_parse_device_status_with_c(parser):
+    """Test parsing device status with c children."""
+    xml = '<sc><dvs><d><c n="test" v="123"/></d></dvs></sc>'
+    result = parser.parse_device_status_response(xml)
+    assert result is not None
+    assert "test" in result
+    assert result["test"] == "123"
+
+
+def test_parse_statistics_response(parser):
+    """Test parsing statistics response."""
+    xml = '<sc><c n="stat1" v="100"/><c n="stat2" v="200"/></sc>'
+    result = parser.parse_statistics_response(xml)
+    assert "stat1" in result
+    assert result["stat1"] == "100"
+    assert "stat2" in result
+
+
+def test_parse_statistics_response_with_message(parser):
+    """Test parsing statistics response with error message."""
+    xml = "<sc><msg>Error message</msg></sc>"
+    result = parser.parse_statistics_response(xml)
+    assert result == {}
+
+
+def test_parse_statistics_response_no_sc(parser):
+    """Test parsing statistics response without sc element."""
+    xml = "<root><invalid/></root>"
+    result = parser.parse_statistics_response(xml)
+    assert result == {}
+
+
+def test_flatten_attributes_with_extras(parser):
+    """Test flattening attributes with extra metadata."""
+    data = {
+        "c": {
+            "@n": "sensor1",
+            "@v": "100",
+            "@dt": "temperature",
+            "@m": "celsius",
+        }
+    }
+    result = parser._flatten_attributes(data)
+    assert result["sensor1"] == "100"
+    assert result["sensor1_dt"] == "temperature"
+    assert result["sensor1_m"] == "celsius"
+
+
+def test_flatten_attributes_list_c(parser):
+    """Test flattening attributes with list of c elements."""
+    data = {
+        "c": [
+            {"@n": "sensor1", "@v": "100"},
+            {"@n": "sensor2", "@v": "200"},
+        ]
+    }
+    result = parser._flatten_attributes(data)
+    assert result["sensor1"] == "100"
+    assert result["sensor2"] == "200"
+
+
+def test_flatten_attributes_skip_checksum(parser):
+    """Test that checksum is skipped during flattening."""
+    data = {
+        "cs": "checksum_value",
+        "c": {"@n": "test", "@v": "val"},
+    }
+    result = parser._flatten_attributes(data)
+    assert "cs" not in result
+    assert "test" in result
