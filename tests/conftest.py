@@ -33,8 +33,9 @@ def expected_lingering_timers() -> bool:
 def mock_setup_entry() -> Generator[AsyncMock, None, None]:
     """Override async_setup_entry."""
     with patch(
-        "custom_components.syr_connect.async_setup_entry", return_value=True
+        "custom_components.syr_connect.async_setup_entry", new_callable=AsyncMock
     ) as mock_setup_entry:
+        mock_setup_entry.return_value = True
         yield mock_setup_entry
 
 
@@ -42,8 +43,7 @@ def mock_setup_entry() -> Generator[AsyncMock, None, None]:
 def mock_syr_api():
     """Mock SyrConnectAPI."""
     with patch("custom_components.syr_connect.config_flow.SyrConnectAPI") as mock_api:
-        # Use spec_set to prevent automatic mock creation for undefined attributes
-        api_instance = MagicMock(spec_set=['login', 'session_data', 'projects', 'get_devices', 'get_device_status', 'http_client', 'payload_builder', 'response_parser', 'is_session_valid'])
+        api_instance = MagicMock()
         api_instance.login = AsyncMock(return_value=True)
         api_instance.session_data = "test_session_id"
         api_instance.projects = [
@@ -52,6 +52,8 @@ def mock_syr_api():
         api_instance.get_devices = AsyncMock(return_value=[])
         api_instance.get_device_status = AsyncMock(return_value={})
         api_instance.is_session_valid = MagicMock(return_value=True)
+        # Prevent accidental async mock creation
+        api_instance._is_coroutine = False
         mock_api.return_value = api_instance
         yield api_instance
 
