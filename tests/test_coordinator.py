@@ -147,7 +147,7 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
         await coordinator.async_config_entry_first_refresh()
 
         with patch.object(hass, "async_create_task", return_value=None) as mock_task:
-            with patch.object(coordinator, "async_refresh", return_value=None) as mock_refresh:
+            with patch.object(coordinator, "async_refresh", new_callable=AsyncMock) as mock_refresh:
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
                 # Verify refresh was scheduled
                 mock_task.assert_called_once()
