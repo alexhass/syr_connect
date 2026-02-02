@@ -615,3 +615,105 @@ async def test_options_flow_with_existing_interval(hass: HomeAssistant, mock_syr
     assert result["step_id"] == "init"
     # The form should have the existing scan_interval as default
 
+
+async def test_options_flow_entry_none_attribute(hass: HomeAssistant) -> None:
+    """Test options flow when _config_entry attribute is None."""
+    from custom_components.syr_connect.config_flow import SyrConnectOptionsFlow
+    
+    # Create options flow without proper config entry
+    options_flow = SyrConnectOptionsFlow(None)
+    # Manually set the _config_entry to None to test the fallback
+    options_flow._config_entry = None
+    
+    result = await options_flow.async_step_init(user_input=None)
+    
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "init"
+    # Should use default scan interval when entry is None
+
+
+async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
+    """Test reconfigure flow when entry is None during form display."""
+    # Initialize flow with nonexistent entry
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": "nonexistent_id",
+        },
+    )
+    
+    # Form should be shown with empty default (no crash)
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+
+async def test_form_with_auth_error_exception(hass: HomeAssistant) -> None:
+    """Test config flow with SyrConnectAuthError."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+    
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        side_effect=SyrConnectAuthError("Invalid credentials"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "wrong_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "invalid_auth"}
+
+
+async def test_form_with_connection_error_exception(hass: HomeAssistant) -> None:
+    """Test config flow with SyrConnectConnectionError."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+    
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        side_effect=SyrConnectConnectionError("Network error"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "cannot_connect"}
+
+
+async def test_form_with_generic_exception(hass: HomeAssistant) -> None:
+    """Test config flow with generic exception."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        side_effect=RuntimeError("Unexpected error"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
+
