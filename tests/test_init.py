@@ -40,7 +40,7 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
         
-        with patch.object(hass.config_entries, "async_forward_entry_setups", return_value=AsyncMock()):
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
             result = await async_setup_entry(hass, config_entry)
     
     assert result is True
@@ -96,7 +96,7 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
         
-        with patch.object(hass.config_entries, "async_forward_entry_setups", return_value=AsyncMock()):
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
             result = await async_setup_entry(hass, config_entry)
     
     assert result is True
@@ -221,7 +221,7 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         subentries_data={},
     )
     
-    with patch.object(hass.config_entries, "async_reload", return_value=AsyncMock()) as mock_reload:
+    with patch.object(hass.config_entries, "async_reload", new_callable=AsyncMock) as mock_reload:
         await async_reload_entry(hass, config_entry)
         
         mock_reload.assert_called_once_with("test_entry_id")
