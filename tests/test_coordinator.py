@@ -146,9 +146,11 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(hass, "async_create_task"):
-            with patch.object(coordinator, "async_refresh", AsyncMock()):
+        with patch.object(hass, "async_create_task", return_value=None) as mock_task:
+            with patch.object(coordinator, "async_refresh", return_value=None) as mock_refresh:
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
+                # Verify refresh was scheduled
+                mock_task.assert_called_once()
 
         assert coordinator.data is not None
         device = coordinator.data["devices"][0]
@@ -574,7 +576,7 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
 
         # Mock async_set_updated_data to raise exception
         with patch.object(coordinator, "async_set_updated_data", side_effect=Exception("Update failed")):
-            with patch.object(hass, "async_create_task"):
+            with patch.object(hass, "async_create_task", return_value=None):
                 # Should not raise, exception is caught and logged
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
 
@@ -667,7 +669,7 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(hass, "async_create_task"):
+        with patch.object(hass, "async_create_task", return_value=None):
             await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Should use device ID as fallback

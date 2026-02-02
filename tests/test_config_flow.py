@@ -582,7 +582,6 @@ async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
     # Submit credentials
     with patch(
         "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
-        return_value=AsyncMock(),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
