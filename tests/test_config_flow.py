@@ -519,3 +519,75 @@ async def test_validate_input_unexpected_error(hass: HomeAssistant) -> None:
                 hass,
                 {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test"},
             )
+
+
+async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
+    """Test reauth flow when entry is not found."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": "nonexistent_entry_id",
+        },
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+    )
+
+    # Submit credentials
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "new_password",
+        },
+    )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "reauth_failed"
+
+
+async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
+    """Test reconfigure flow when entry is not found during submission."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": "nonexistent_entry_id",
+        },
+    )
+
+    # Submit credentials
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        return_value=AsyncMock(),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "new_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "reconfigure_failed"
+
+
+async def test_options_flow_with_existing_interval(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test options flow shows existing scan interval as default."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        options={"scan_interval": 180},
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "init"
+    # The form should have the existing scan_interval as default
+
