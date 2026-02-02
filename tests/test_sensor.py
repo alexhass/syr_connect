@@ -332,7 +332,7 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_icon_dynamic(hass: HomeAssistant) -> None:
-    """Test dynamic icon for getSAV sensor."""
+    """Test dynamic icon for getPST sensor when available."""
     data = {
         "devices": [
             {
@@ -340,19 +340,19 @@ async def test_sensor_icon_dynamic(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSAV": "2",  # Available
+                    "getPST": "2",  # Available
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSAV")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
 
     assert sensor.icon == "mdi:check-circle"
 
 
 async def test_sensor_icon_unavailable(hass: HomeAssistant) -> None:
-    """Test dynamic icon for getSAV sensor when unavailable."""
+    """Test dynamic icon for getPST sensor when unavailable."""
     data = {
         "devices": [
             {
@@ -360,13 +360,13 @@ async def test_sensor_icon_unavailable(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSAV": "1",  # Not available
+                    "getPST": "1",  # Not available
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSAV")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
 
     assert sensor.icon == "mdi:close-circle"
 
@@ -529,7 +529,8 @@ async def test_sensor_string_value_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
 
-    assert sensor.native_value == 123.45
+    # getFLO has precision 0, so 123.45 is rounded to 123 (int)
+    assert sensor.native_value == 123
 
 
 async def test_sensor_string_value_non_numeric(hass: HomeAssistant) -> None:
