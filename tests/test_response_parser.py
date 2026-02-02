@@ -480,3 +480,92 @@ def test_parse_decrypted_login_single_project_not_list(parser):
     assert len(projects) == 1
     assert projects[0]["id"] == "single"
     assert projects[0]["name"] == "SingleProject"
+
+
+def test_parse_device_status_list_no_c_children(parser):
+    """Test parsing device status when device_list is a list without c children."""
+    xml = '<sc><dvs><d><name>Device1</name></d><d><name>Device2</name></d></dvs></sc>'
+    result = parser.parse_device_status_response(xml)
+    # Should return None because no device has 'c' children
+    assert result is None
+
+
+def test_parse_device_status_empty_device_list(parser):
+    """Test parsing device status when device_list evaluates to empty/falsy."""
+    xml = '<sc><dvs></dvs></sc>'
+    result = parser.parse_device_status_response(xml)
+    # Empty dvs should return None
+    assert result is None
+
+
+def test_parse_device_list_no_sc(parser):
+    """Test parsing device list without sc element."""
+    xml = '<root><invalid/></root>'
+    devices = parser.parse_device_list_response(xml)
+    # Should return empty list when no 'sc' element
+    assert devices == []
+
+
+def test_element_to_dict_multiple_same_tag(parser):
+    """Test _element_to_dict with multiple children of same tag name."""
+    import xml.etree.ElementTree as ET
+    element = ET.fromstring("<parent><item>val1</item><item>val2</item><item>val3</item></parent>")
+    result = parser._element_to_dict(element)
+    # Should create a list for multiple children with same tag
+    assert isinstance(result["item"], list)
+    assert len(result["item"]) == 3
+    assert result["item"][0] == "val1"
+    assert result["item"][1] == "val2"
+    assert result["item"][2] == "val3"
+
+
+def test_flatten_attributes_list_input(parser):
+    """Test _flatten_attributes when input is a list at root level."""
+    data = [
+        {"c": {"@n": "sensor1", "@v": "100"}},
+        {"c": {"@n": "sensor2", "@v": "200"}},
+    ]
+    result = parser._flatten_attributes(data)
+    # Should flatten all items in list
+    assert "sensor1" in result
+    assert "sensor2" in result
+    assert result["sensor1"] == "100"
+    assert result["sensor2"] == "200"
+
+
+def test_parse_device_status_list_with_multiple_devices_one_has_c(parser):
+    """Test device status parsing with list where only one device has 'c'."""
+    xml = '<sc><dvs><d><name>NoC</name></d><d><c n="sensor" v="42"/></d></dvs></sc>'
+    result = parser.parse_device_status_response(xml)
+    # Should succeed if at least one device has 'c'
+    assert result is not None
+    assert "sensor" in result
+
+
+def test_parse_login_response_api_with_empty_text(parser):
+    """Test parsing login response when api element has empty text."""
+    xml = '<sc><api attr="value"></api></sc>'
+    encrypted, parsed = parser.parse_login_response(xml)
+    # Empty text should be extracted as empty string
+    assert encrypted == ""
+    assert "sc" in parsed
+
+
+def test_flatten_attributes_c_list_with_all_extras(parser):
+    """Test flattening list of c elements with all possible extra attributes."""
+    data = {
+        "c": [
+            {"@n": "s1", "@v": "1", "@dt": "d1", "@m": "m1", "@acd": "a1", "@ih": "i1"},
+            {"@n": "s2", "@v": "2", "@dt": "d2"},
+        ]
+    }
+    result = parser._flatten_attributes(data)
+    # Should include all extras for s1
+    assert result["s1"] == "1"
+    assert result["s1_dt"] == "d1"
+    assert result["s1_m"] == "m1"
+    assert result["s1_acd"] == "a1"
+    assert result["s1_ih"] == "i1"
+    # Should only include dt for s2
+    assert result["s2"] == "2"
+    assert result["s2_dt"] == "d2"
