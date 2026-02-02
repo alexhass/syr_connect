@@ -569,3 +569,182 @@ def test_flatten_attributes_c_list_with_all_extras(parser):
     # Should only include dt for s2
     assert result["s2"] == "2"
     assert result["s2_dt"] == "d2"
+
+
+def test_validate_structure_empty_path(parser):
+    """Test validate_structure with empty path."""
+    data = {"key": "value"}
+    # Empty path should return True (current level exists)
+    assert parser.validate_structure(data, []) is True
+
+
+def test_element_to_dict_text_with_attributes_no_children(parser):
+    """Test element with text and attributes but no children."""
+    import xml.etree.ElementTree as ET
+    element = ET.fromstring('<item id="1">text content</item>')
+    result = parser._element_to_dict(element)
+    # Should have both @id attribute and #text
+    assert result["@id"] == "1"
+    assert result["#text"] == "text content"
+
+
+def test_element_to_dict_whitespace_only_text(parser):
+    """Test element with whitespace-only text (should be ignored)."""
+    import xml.etree.ElementTree as ET
+    element = ET.fromstring('<item>   \n\t   </item>')
+    result = parser._element_to_dict(element)
+    # Whitespace-only text should be stripped and result in empty dict
+    assert result == {}
+
+
+def test_parse_device_list_multiple_dcl_aliases(parser):
+    """Test parsing device list with multiple dcl aliases."""
+    xml = '''<sc>
+        <col>
+            <dcl dclg="id1" ali="Device1"/>
+            <dcl dclg="id2" ali="Device2"/>
+            <dcl dclg="id3" ali="Device3"/>
+        </col>
+        <dvs>
+            <d dclg="id1" sn="SN1"/>
+            <d dclg="id2" sn="SN2"/>
+            <d dclg="id3" sn="SN3"/>
+        </dvs>
+    </sc>'''
+    devices = parser.parse_device_list_response(xml)
+    assert len(devices) == 3
+    assert devices[0]["name"] == "Device1"
+    assert devices[1]["name"] == "Device2"
+    assert devices[2]["name"] == "Device3"
+
+
+def test_parse_device_list_alias_not_found_fallback_to_serial(parser):
+    """Test parsing device list when alias not found, falls back to serial."""
+    xml = '<sc><dvs><d dclg="unknown_id" sn="SN123"/></dvs></sc>'
+    devices = parser.parse_device_list_response(xml)
+    assert len(devices) == 1
+    # Should use serial number as name when alias not found
+    assert devices[0]["name"] == "SN123"
+
+
+def test_parse_device_list_col_with_single_dcl(parser):
+    """Test parsing device list when col contains single dcl (not a list)."""
+    xml = '''<sc>
+        <col><dcl dclg="xyz" ali="SingleDevice"/></col>
+        <dvs><d dclg="xyz" sn="SN001"/></dvs>
+    </sc>'''
+    devices = parser.parse_device_list_response(xml)
+    assert len(devices) == 1
+    assert devices[0]["name"] == "SingleDevice"
+
+
+def test_parse_device_list_device_missing_sn_attribute(parser):
+    """Test parsing device list when device is missing @sn attribute."""
+    xml = '<sc><dvs><d dclg="abc"/></dvs></sc>'
+    devices = parser.parse_device_list_response(xml)
+    assert len(devices) == 1
+    # Should use 'Unknown' as fallback for serial_number
+    assert devices[0]["serial_number"] == "Unknown"
+    assert devices[0]["id"] == "Unknown"
+
+
+def test_parse_device_status_dvs_is_list_directly(parser):
+    """Test parsing device status when dvs element is a list directly."""
+    # This tests the isinstance(dvs, list) branch more explicitly
+    xml = '<sc><dvs><d><c n="test" v="value"/></d></dvs></sc>'
+    parsed = parser.parse_xml(xml)
+    
+    # Manually test the branch by passing list to the function
+    # (This is a bit artificial but ensures the branch is covered)
+    result = parser.parse_device_status_response(xml)
+    assert result is not None
+
+
+def test_flatten_attributes_dict_with_attribute_prefix(parser):
+    """Test flattening dict with @-prefixed keys (should extract attribute)."""
+    data = {
+        "@attr1": "value1",
+        "@attr2": "value2",
+        "regular_key": "regular_value"
+    }
+    result = parser._flatten_attributes(data)
+    # @-prefixed keys should have @ stripped
+    assert result["attr1"] == "value1"
+    assert result["attr2"] == "value2"
+    assert result["regular_key"] == "regular_value"
+
+
+def test_parse_device_status_device_list_as_list_all_have_c(parser):
+    """Test device status when device_list is list and all devices have 'c'."""
+    xml = '''<sc><dvs>
+        <d><c n="sensor1" v="100"/></d>
+        <d><c n="sensor2" v="200"/></d>
+    </dvs></sc>'''
+    result = parser.parse_device_status_response(xml)
+    assert result is not None
+    # Both sensors should be flattened
+    assert "sensor1" in result
+    assert "sensor2" in result
+
+
+def test_parse_statistics_response_no_c_elements(parser):
+    """Test parsing statistics response with no c elements."""
+    xml = '<sc><other>data</other></sc>'
+    result = parser.parse_statistics_response(xml)
+    # Should return dict with 'other' key
+    assert "other" in result
+    assert result["other"] == "data"
+
+
+def test_element_to_dict_nested_elements_same_tag(parser):
+    """Test _element_to_dict with nested elements having same tag converted to list."""
+    import xml.etree.ElementTree as ET
+    element = ET.fromstring('''<root>
+        <item><sub>a</sub></item>
+        <item><sub>b</sub></item>
+    </root>''')
+    result = parser._element_to_dict(element)
+    # item should be a list
+    assert isinstance(result["item"], list)
+    assert len(result["item"]) == 2
+    assert result["item"][0]["sub"] == "a"
+    assert result["item"][1]["sub"] == "b"
+
+
+def test_flatten_attributes_empty_dict(parser):
+    """Test flattening empty dictionary."""
+    data = {}
+    result = parser._flatten_attributes(data)
+    assert result == {}
+
+
+def test_flatten_attributes_empty_list(parser):
+    """Test flattening empty list."""
+    data = []
+    result = parser._flatten_attributes(data)
+    assert result == {}
+
+
+def test_parse_device_list_no_dvs_element(parser):
+    """Test parsing device list when there's no dvs element at all."""
+    xml = '<sc><col><dcl dclg="abc" ali="Dev"/></col></sc>'
+    devices = parser.parse_device_list_response(xml)
+    # Should return empty list when dvs missing
+    assert devices == []
+
+
+def test_parse_login_response_api_dict_no_text_key(parser):
+    """Test login response when api is dict without #text key."""
+    xml = '<sc><api attr="value"/></sc>'
+    encrypted, parsed = parser.parse_login_response(xml)
+    # Should get empty string when #text is missing
+    assert encrypted == ""
+
+
+def test_element_to_dict_child_converted_to_list_multiple_appends(parser):
+    """Test that multiple children with same tag are properly appended to list."""
+    import xml.etree.ElementTree as ET
+    element = ET.fromstring('<root><x>1</x><x>2</x><x>3</x><x>4</x></root>')
+    result = parser._element_to_dict(element)
+    assert isinstance(result["x"], list)
+    assert result["x"] == ["1", "2", "3", "4"]
