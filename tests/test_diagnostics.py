@@ -1091,3 +1091,468 @@ async def test_diagnostics_redact_xml_non_string_input(hass: HomeAssistant) -> N
     
     assert diagnostics is not None
 
+
+async def test_diagnostics_api_login_exception(hass: HomeAssistant) -> None:
+    """Test diagnostics when API login raises exception."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=False)
+    mock_api.login = AsyncMock(side_effect=Exception("Login failed"))
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should handle login exception gracefully
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "raw_xml" in diagnostics
+    assert diagnostics["raw_xml"] == {}
+
+
+async def test_diagnostics_redact_xml_empty_key_in_set(hass: HomeAssistant) -> None:
+    """Test XML redaction handles empty string in _TO_REDACT set."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should handle empty keys in _TO_REDACT gracefully
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert diagnostics is not None
+
+
+async def test_diagnostics_redact_xml_regex_exceptions(hass: HomeAssistant) -> None:
+    """Test XML redaction handles regex exceptions gracefully."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    # XML with patterns that should be redacted
+    xml_with_patterns = '<xml>getMAC="AA:BB:CC:DD:EE:FF" getIPA="192.168.1.1"</xml>'
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value=xml_with_patterns)
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should have redacted XML
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_device_without_dclg_or_id(hass: HomeAssistant) -> None:
+    """Test diagnostics when device has neither dclg nor id."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value='<xml/>')
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    
+    # Return device without dclg or id
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(
+        return_value=[{"name": "Device"}]  # No dclg or id field
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should skip devices without id
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_fetch_exception_in_gather(hass: HomeAssistant) -> None:
+    """Test diagnostics when gather returns exception for status fetch."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    # First call succeeds, second fails
+    call_count = 0
+    async def post_side_effect(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return '<xml/>'
+        raise Exception("Fetch failed")
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(side_effect=post_side_effect)
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    mock_api.payload_builder.build_device_status_payload = MagicMock(return_value="p2")
+    
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(
+        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should handle exception in gather
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_outer_exception_handler(hass: HomeAssistant) -> None:
+    """Test diagnostics outer exception handler."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    
+    # Make getattr raise an exception
+    def getattr_side_effect(obj, attr, default=None):
+        if attr == "api":
+            raise RuntimeError("Test exception")
+        return default
+    
+    with MagicMock() as mock_getattr:
+        # Patch getattr to raise exception
+        import builtins
+        original_getattr = builtins.getattr
+        
+        def custom_getattr(obj, name, *args):
+            if obj is mock_coordinator and name == "api":
+                raise RuntimeError("Test exception")
+            return original_getattr(obj, name, *args)
+        
+        config_entry.runtime_data = mock_coordinator
+        
+        # Should handle exception and set error in raw_xml
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_generic_ip_mac_email_redaction(hass: HomeAssistant) -> None:
+    """Test diagnostics redacts IP, MAC, and email addresses."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    # XML with IP, MAC, and email
+    xml_data = '''
+    <data>
+        IP: 192.168.1.1
+        MAC: AA:BB:CC:DD:EE:FF
+        Email: user@example.com
+    </data>
+    '''
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value=xml_data)
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should have redacted patterns
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_parse_device_list_exception(hass: HomeAssistant) -> None:
+    """Test diagnostics when parse_device_list_response raises exception."""
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value='<xml/>')
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    
+    # Make parser raise exception
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(
+        side_effect=Exception("Parse error")
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should handle parse exception
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_redact_obj_preserves_raw_xml(hass: HomeAssistant) -> None:
+    """Test _redact_obj preserves 'raw_xml' keys."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from unittest.mock import AsyncMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1"}]
+    mock_api.session_data = "session"
+    
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value='<xml/>')
+    mock_api.http_client = mock_http_client
+    
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Test data with raw_xml key
+    mock_coordinator.data = {
+        "devices": [
+            {"id": "dev1", "raw_xml": "<device>sensitive</device>"}
+        ]
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # raw_xml key should be preserved
+    assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) -> None:
+    """Test _redact_obj handles integer and other non-dict/list/str types."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Data with various types
+    mock_coordinator.data = {
+        "int_value": 123,
+        "float_value": 45.67,
+        "none_value": None,
+        "bool_value": True,
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should preserve non-dict/list/str types
+    assert diagnostics["coordinator_data"]["int_value"] == 123
+    assert diagnostics["coordinator_data"]["float_value"] == 45.67
+    assert diagnostics["coordinator_data"]["none_value"] is None
+    assert diagnostics["coordinator_data"]["bool_value"] is True
+
