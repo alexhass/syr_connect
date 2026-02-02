@@ -749,14 +749,15 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
 
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
-            MagicMock(),
+            mock_api,
             "test@example.com",
             "password",
             60,
         )
         coordinator.config_entry = setup_in_progress_config_entry
 
-        # Should raise UpdateFailed wrapping the unexpected exception
-        with pytest.raises(UpdateFailed, match="Error communicating with API"):
+        # Should raise ConfigEntryNotReady for unexpected errors during first refresh
+        from homeassistant.exceptions import ConfigEntryNotReady
+        with pytest.raises(ConfigEntryNotReady, match="Error communicating with API"):
             await coordinator.async_config_entry_first_refresh()
 

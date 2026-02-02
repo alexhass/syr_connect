@@ -1538,6 +1538,7 @@ async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) ->
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     # Data with various types
     mock_coordinator.data = {
+        "devices": [],
         "int_value": 123,
         "float_value": 45.67,
         "none_value": None,
@@ -1551,8 +1552,9 @@ async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) ->
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
     # Should preserve non-dict/list/str types
-    assert diagnostics["coordinator_data"]["int_value"] == 123
-    assert diagnostics["coordinator_data"]["float_value"] == 45.67
-    assert diagnostics["coordinator_data"]["none_value"] is None
-    assert diagnostics["coordinator_data"]["bool_value"] is True
+    assert "data" in diagnostics
+    assert diagnostics["data"]["int_value"] == 123
+    assert diagnostics["data"]["float_value"] == 45.67
+    assert diagnostics["data"]["none_value"] is None
+    assert diagnostics["data"]["bool_value"] is True
 

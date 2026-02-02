@@ -696,13 +696,13 @@ async def test_form_with_connection_error_exception(hass: HomeAssistant) -> None
 
 
 async def test_form_with_generic_exception(hass: HomeAssistant) -> None:
-    """Test config flow with generic exception."""
+    """Test config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectAPI.login",
+        "custom_components.syr_connect.config_flow.SyrConnectAPI",
         side_effect=RuntimeError("Unexpected error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(

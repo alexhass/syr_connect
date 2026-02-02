@@ -2691,7 +2691,7 @@ async def test_sensor_rpw_getattr_exception(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getRPW": "3",  # Monday and Tuesday
+                    "getRPW": 3,  # Monday and Tuesday (bitmask)
                 },
             }
         ]
@@ -2699,22 +2699,11 @@ async def test_sensor_rpw_getattr_exception(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
 
-    # Mock hass.config to raise exception on attribute access
-    original_config = sensor.hass.config
-    
-    class ConfigWithException:
-        @property
-        def language(self):
-            raise AttributeError("Test exception")
-    
-    sensor.hass.config = ConfigWithException()
-    
-    # Should handle exception and use None locale
-    value = sensor.native_value
-    assert value is not None
-    
-    # Restore
-    sensor.hass.config = original_config
+    # Mock getattr on hass.config to raise exception
+    with patch("custom_components.syr_connect.sensor.getattr", side_effect=AttributeError("Test exception")):
+        # Should handle exception and use None locale
+        value = sensor.native_value
+        assert value is not None
 
 
 async def test_sensor_sta_with_rapide_variant(hass: HomeAssistant) -> None:
