@@ -734,3 +734,27 @@ async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant
         assert coordinator.data["devices"] == []
         assert coordinator.data["projects"] == mock_api.projects
 
+
+async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Test coordinator handles unexpected exceptions in update cycle."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        # Make projects property raise an exception when accessed
+        type(mock_api).projects = property(lambda self: (_ for _ in ()).throw(RuntimeError("Unexpected error")))
+        mock_api_class.return_value = mock_api
+
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            "test@example.com",
+            "password",
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Should raise UpdateFailed wrapping the unexpected exception
+        with pytest.raises(UpdateFailed, match="Error communicating with API"):
+            await coordinator.async_config_entry_first_refresh()
+
