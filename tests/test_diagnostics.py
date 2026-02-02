@@ -1,6 +1,7 @@
 """Tests for diagnostics platform."""
 from __future__ import annotations
 
+from datetime import datetime
 from unittest.mock import MagicMock
 
 from homeassistant.config_entries import ConfigEntry
@@ -19,9 +20,9 @@ async def test_diagnostics(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Test",
+        title="Test Device",
         data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="test",
+        source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
         discovery_keys={},
@@ -35,13 +36,21 @@ async def test_diagnostics(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "1",
-                "serial": "SYR12345",
                 "name": "LEXplus10 S/SL",
-                "sensors": {},
+                "available": True,
+                "project_id": "project1",
+                "status": {"getSRE": {"value": 1}},
             },
-        ]
+        ],
+        "projects": [
+            {
+                "id": "project1",
+                "name": "Test Project",
+            },
+        ],
     }
-    mock_coordinator.last_update_success_time = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
     
     # Attach coordinator to config entry
     config_entry.runtime_data = mock_coordinator
@@ -49,18 +58,51 @@ async def test_diagnostics(hass: HomeAssistant) -> None:
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
     assert "entry" in diagnostics
-    assert "coordinator_data" in diagnostics
+    assert diagnostics["entry"]["title"] == "Test Device"
+    assert "coordinator" in diagnostics
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) == 1
 
 
-async def test_diagnostics_with_coordinator_data(hass: HomeAssistant) -> None:
-    """Test diagnostics includes coordinator data."""
+async def test_diagnostics_no_coordinator_data(hass: HomeAssistant) -> None:
+    """Test diagnostics when coordinator has no data."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
         title="Test",
         data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="test",
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = False
+    mock_coordinator.last_update_success_time = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "entry" in diagnostics
+    assert "coordinator" in diagnostics
+    assert diagnostics["coordinator"]["last_update_time"] is None
+
+
+async def test_diagnostics_multiple_devices(hass: HomeAssistant) -> None:
+    """Test diagnostics with multiple devices and projects."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
         discovery_keys={},
@@ -73,23 +115,32 @@ async def test_diagnostics_with_coordinator_data(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "1",
-                "serial": "SYR12345",
-                "name": "LEXplus10 S/SL",
-                "sensors": {"getWVI": {"value": 100}},
+                "name": "Device 1",
+                "available": True,
+                "project_id": "project1",
+                "status": {"getSRE": {"value": 1}, "getWVI": {"value": 100}},
             },
             {
                 "id": "2",
-                "serial": "SYR67890",
-                "name": "LEXplus20",
-                "sensors": {"getWVI": {"value": 200}},
+                "name": "Device 2",
+                "available": False,
+                "project_id": "project2",
+                "status": {},
             },
-        ]
+        ],
+        "projects": [
+            {"id": "project1", "name": "Project 1"},
+            {"id": "project2", "name": "Project 2"},
+        ],
     }
+    mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = None
     
     config_entry.runtime_data = mock_coordinator
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    assert "coordinator_data" in diagnostics
-    assert diagnostics["coordinator_data"] == mock_coordinator.data
+    assert len(diagnostics["devices"]) == 2
+    assert diagnostics["devices"][0]["status_count"] == 2
+    assert diagnostics["devices"][1]["status_count"] == 0
+    assert len(diagnostics["projects"]) == 2
