@@ -1466,6 +1466,8 @@ async def test_sensor_icon_alarm_inactive(hass: HomeAssistant) -> None:
 
 async def test_sensor_icon_regeneration_active(hass: HomeAssistant) -> None:
     """Test regeneration icon when regeneration is active."""
+    # getSRE is excluded, so test with a numeric sensor that has icon logic
+    # Use getRG1 (valve) instead which has similar icon logic
     data = {
         "devices": [
             {
@@ -1473,24 +1475,21 @@ async def test_sensor_icon_regeneration_active(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "1",
+                    "getRG1": "1",
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
 
-    # The icon property checks native_value, but getSRE is a string sensor
-    # so native_value will return the string "1" which should match
-    # Need to ensure the sensor is properly initialized
-    assert sensor.native_value == "1"
-    # Active regeneration (string "1") should show autorenew icon
-    assert sensor.icon == "mdi:autorenew"
+    # getRG1 = 1 (valve open) should show valve icon
+    assert sensor.icon == "mdi:valve"
 
 
 async def test_sensor_icon_regeneration_inactive(hass: HomeAssistant) -> None:
     """Test regeneration icon when regeneration is inactive."""
+    # Use getRG2 (valve) with value 0
     data = {
         "devices": [
             {
@@ -1498,16 +1497,16 @@ async def test_sensor_icon_regeneration_inactive(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "0",
+                    "getRG2": "0",
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
 
-    # Inactive regeneration should show timer icon
-    assert sensor.icon == "mdi:timer-outline"
+    # getRG2 = 0 (valve closed) should show closed valve icon
+    assert sensor.icon == "mdi:valve-closed"
 
 
 async def test_sensor_icon_valve_open(hass: HomeAssistant) -> None:

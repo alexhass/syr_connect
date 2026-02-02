@@ -522,8 +522,8 @@ async def test_validate_input_unexpected_error(hass: HomeAssistant) -> None:
 
 
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
-    """Test reauth flow when entry is not found during confirmation."""
-    from unittest.mock import patch
+    """Test reauth flow when entry is deleted during confirmation."""
+    from unittest.mock import patch, AsyncMock
     
     # Create a config entry first
     entry = MockConfigEntry(
@@ -533,21 +533,24 @@ async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
     )
     entry.add_to_hass(hass)
 
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={
-            "source": config_entries.SOURCE_REAUTH,
-            "entry_id": entry.entry_id,
-        },
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-    )
+    # Mock the API to avoid actual connections
+    mock_api = AsyncMock()
+    mock_api.login = AsyncMock()
 
-    # Mock validate_input to succeed
     with patch(
-        "custom_components.syr_connect.config_flow.validate_input",
-        return_value={"title": "SYR Connect"},
+        "custom_components.syr_connect.config_flow.SyrConnectAPI",
+        return_value=mock_api,
     ):
-        # Remove the entry to simulate it being deleted before confirmation
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={
+                "source": config_entries.SOURCE_REAUTH,
+                "entry_id": entry.entry_id,
+            },
+            data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        )
+
+        # Remove the entry before submitting new credentials
         await hass.config_entries.async_remove(entry.entry_id)
 
         # Submit credentials - entry no longer exists
