@@ -823,13 +823,13 @@ async def test_sensor_icon_datetime_conversion(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSWS": "2",  # Value 2 = Available
+                    "getPST": "2",  # Value 2 = Available for pressure sensor
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSWS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
 
     # Should return check-circle icon for value 2 (Available)
     icon = sensor.icon
