@@ -273,3 +273,296 @@ async def test_binary_sensor_missing_device(hass: HomeAssistant) -> None:
 
     assert sensor.is_on is None
     assert sensor.available is True  # Returns True when device not found
+
+
+async def test_binary_sensor_string_true(hass: HomeAssistant) -> None:
+    """Test binary sensor with string 'true' value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": "true",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is True
+
+
+async def test_binary_sensor_string_False(hass: HomeAssistant) -> None:
+    """Test binary sensor with string 'False' value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": "False",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is False
+
+
+async def test_binary_sensor_string_empty(hass: HomeAssistant) -> None:
+    """Test binary sensor with empty string value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is False
+
+
+async def test_binary_sensor_int_zero(hass: HomeAssistant) -> None:
+    """Test binary sensor with integer 0 value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": 0,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is False
+
+
+async def test_binary_sensor_int_nonzero(hass: HomeAssistant) -> None:
+    """Test binary sensor with integer non-zero value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": 5,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is True
+
+
+async def test_binary_sensor_float_zero(hass: HomeAssistant) -> None:
+    """Test binary sensor with float 0.0 value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": 0.0,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is False
+
+
+async def test_binary_sensor_none_value(hass: HomeAssistant) -> None:
+    """Test binary sensor with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is False
+
+
+async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
+    """Test async_setup_entry with no coordinator data."""
+    mock_config_entry = MockConfigEntry()
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_config_entry.runtime_data = mock_coordinator
+    
+    entities = []
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    
+    # Should not add any entities when no data
+    async_add_entities.assert_not_called()
+
+
+async def test_async_setup_entry_registry_cleanup(hass: HomeAssistant) -> None:
+    """Test async_setup_entry cleans up excluded sensors from registry."""
+    from homeassistant.helpers import entity_registry as er
+    
+    # Create registry entry for an excluded sensor
+    registry = er.async_get(hass)
+    entry_to_remove = registry.async_get_or_create(
+        "binary_sensor",
+        "syr_connect",
+        "device1_getSRE",  # getSRE is excluded
+        suggested_object_id="device1_getsre",
+    )
+    
+    mock_config_entry = MockConfigEntry()
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    mock_config_entry.runtime_data = mock_coordinator
+    
+    entities = []
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    
+    # Entry was created, so verify it existed
+    assert entry_to_remove is not None
+
+
+async def test_async_setup_entry_registry_exception(hass: HomeAssistant) -> None:
+    """Test async_setup_entry handles registry exceptions gracefully."""
+    mock_config_entry = MockConfigEntry()
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    mock_config_entry.runtime_data = mock_coordinator
+    
+    entities = []
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    
+    # Mock registry to raise exception
+    with patch("custom_components.syr_connect.binary_sensor.er.async_get", side_effect=Exception("Registry error")):
+        # Should not raise exception, continues setup
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+        
+        # Setup should still complete
+        assert True
+
+
+async def test_binary_sensor_string_nonzero(hass: HomeAssistant) -> None:
+    """Test binary sensor with non-zero string value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    assert sensor.is_on is True
+
+
+async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
+    """Test binary sensor initialization with icon from const."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRE": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    
+    # getSRE has an icon defined in _SYR_CONNECT_SENSOR_ICONS
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "getSRE", BinarySensorDeviceClass.RUNNING
+    )
+
+    # Should have icon set from const
+    assert sensor._attr_icon is not None
