@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, cast
+from typing import Any
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -39,9 +39,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up select entities for SYR Connect."""
     _LOGGER.debug("Setting up SYR Connect select entities")
-    coordinator: SyrConnectDataUpdateCoordinator = cast(
-        SyrConnectDataUpdateCoordinator, entry.runtime_data
-    )
+    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for select platform")
@@ -168,7 +166,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
 
         _LOGGER.debug("Setting regeneration time for device %s to %02d:%02d via select", self._device_id, h, m)
 
-        coordinator = cast(Any, self.coordinator)
+        coordinator: SyrConnectDataUpdateCoordinator = self.coordinator  # type: ignore[assignment]
         try:
             await coordinator.async_set_device_value(self._device_id, "setRTH", h)
             await coordinator.async_set_device_value(self._device_id, "setRTM", m)
@@ -275,7 +273,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Invalid option for %s: %s", self._sensor_key, err)
             return
 
-        coordinator = cast(Any, self.coordinator)
+        coordinator: SyrConnectDataUpdateCoordinator = self.coordinator  # type: ignore[assignment]
         # key for setting: remove leading 'get' and prefix with 'set'
         set_key = f"set{self._sensor_key[3:]}"
         try:
