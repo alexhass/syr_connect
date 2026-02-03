@@ -159,12 +159,9 @@ def test_build_time_options_30min():
     assert len(options) == 48  # 24 hours * 2
 
 
-async def test_async_setup_entry(hass: HomeAssistant) -> None:
+async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry creates select entities."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -180,10 +177,8 @@ async def test_async_setup_entry(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -191,12 +186,9 @@ async def test_async_setup_entry(hass: HomeAssistant) -> None:
     assert len(entities) >= 3
 
 
-async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_no_entities(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry with no valid select entities."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -206,10 +198,8 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -453,12 +443,9 @@ async def test_numeric_select_device_unavailable(hass: HomeAssistant) -> None:
     assert select.available is False
 
 
-async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips zero salt values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -471,10 +458,8 @@ async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -486,16 +471,10 @@ async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant) -> None:
     assert len(sv2_entities) == 1  # Created
 
 
-async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry with no coordinator data."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(None)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -665,12 +644,9 @@ async def test_numeric_select_available_device_not_found(hass: HomeAssistant) ->
     assert select.available is True
 
 
-async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips empty salt values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -683,10 +659,8 @@ async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant) -> No
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -698,12 +672,9 @@ async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant) -> No
     assert len(sv2_entities) == 1
 
 
-async def test_async_setup_entry_skip_none_sv_values(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_none_sv_values(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips None salt values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -716,10 +687,8 @@ async def test_async_setup_entry_skip_none_sv_values(hass: HomeAssistant) -> Non
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -760,12 +729,9 @@ async def test_async_setup_entry_skip_invalid_float_sv_values(hass: HomeAssistan
     assert len(sv1_entities) == 0
 
 
-async def test_async_setup_entry_skip_zero_rpd(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_zero_rpd(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips zero RPD values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -777,10 +743,8 @@ async def test_async_setup_entry_skip_zero_rpd(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -789,12 +753,9 @@ async def test_async_setup_entry_skip_zero_rpd(hass: HomeAssistant) -> None:
     assert len(rpd_entities) == 0
 
 
-async def test_async_setup_entry_skip_empty_rpd(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_empty_rpd(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips empty RPD values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -806,10 +767,8 @@ async def test_async_setup_entry_skip_empty_rpd(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -818,12 +777,9 @@ async def test_async_setup_entry_skip_empty_rpd(hass: HomeAssistant) -> None:
     assert len(rpd_entities) == 0
 
 
-async def test_async_setup_entry_skip_none_rpd(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_none_rpd(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips None RPD values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -835,10 +791,8 @@ async def test_async_setup_entry_skip_none_rpd(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -847,12 +801,9 @@ async def test_async_setup_entry_skip_none_rpd(hass: HomeAssistant) -> None:
     assert len(rpd_entities) == 0
 
 
-async def test_async_setup_entry_skip_invalid_rpd(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skip_invalid_rpd(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry skips invalid RPD values."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -864,10 +815,8 @@ async def test_async_setup_entry_skip_invalid_rpd(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -876,12 +825,9 @@ async def test_async_setup_entry_skip_invalid_rpd(hass: HomeAssistant) -> None:
     assert len(rpd_entities) == 0
 
 
-async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry uses model-specific salt capacity."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -895,10 +841,8 @@ async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant) -> N
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -907,12 +851,9 @@ async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant) -> N
     assert len(sv1_entities) == 1
 
 
-async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry gets model from type field when getCNA missing."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -925,10 +866,8 @@ async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant) -> N
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -968,12 +907,9 @@ async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> No
         assert select.options[0] == "0"
 
 
-async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry creates entities for all SV keys."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -987,10 +923,8 @@ async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     

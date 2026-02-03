@@ -67,3 +67,41 @@ def mock_config_entry():
     }
 
 
+@pytest.fixture
+def create_mock_coordinator():
+    """Create a mock coordinator with given data."""
+    from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+    
+    def _create(data: dict | None = None) -> MagicMock:
+        mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+        mock_coordinator.data = data
+        return mock_coordinator
+    
+    return _create
+
+
+@pytest.fixture
+def create_mock_entry_with_coordinator(create_mock_coordinator):
+    """Create a mock config entry with coordinator."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+    
+    def _create(data: dict | None = None) -> tuple[MockConfigEntry, MagicMock]:
+        mock_config_entry = MockConfigEntry()
+        mock_coordinator = create_mock_coordinator(data)
+        mock_config_entry.runtime_data = mock_coordinator
+        return mock_config_entry, mock_coordinator
+    
+    return _create
+
+
+@pytest.fixture
+def mock_add_entities():
+    """Create a mock add_entities function that captures entities."""
+    def _create() -> tuple[list, Mock]:
+        entities = []
+        async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+        return entities, async_add_entities
+    
+    return _create
+
+

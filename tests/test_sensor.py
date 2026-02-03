@@ -59,7 +59,17 @@ async def test_sensor_setup(hass: HomeAssistant) -> None:
     assert len(entities) == 3
 
 
-async def test_sensor_native_value_numeric(hass: HomeAssistant) -> None:
+@pytest.mark.parametrize(
+    ("sensor_key", "raw_value", "expected_value", "description"),
+    [
+        ("getPRS", "50", 5.0, "Pressure is divided by 10"),
+        ("getCEL", "220", 22.0, "Temperature is divided by 10"),
+        ("getFLO", "100", 10, "Flow is divided by 10"),
+    ],
+)
+async def test_sensor_native_value_numeric(
+    hass: HomeAssistant, sensor_key: str, raw_value: str, expected_value: float | int, description: str
+) -> None:
     """Test sensor native value for numeric sensors."""
     data = {
         "devices": [
@@ -68,37 +78,15 @@ async def test_sensor_native_value_numeric(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getPRS": "50",
+                    sensor_key: raw_value,
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", sensor_key)
 
-    # Pressure is divided by 10
-    assert sensor.native_value == 5.0
-
-
-async def test_sensor_native_value_temperature(hass: HomeAssistant) -> None:
-    """Test sensor native value for temperature (getCEL)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCEL": "220",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getCEL")
-
-    # Temperature is divided by 10
-    assert sensor.native_value == 22.0
+    assert sensor.native_value == expected_value
 
 
 async def test_sensor_native_value_timestamp(hass: HomeAssistant) -> None:
@@ -143,7 +131,17 @@ async def test_sensor_native_value_string(hass: HomeAssistant) -> None:
     assert sensor.native_value == "123456789"
 
 
-async def test_sensor_available(hass: HomeAssistant) -> None:
+@pytest.mark.parametrize(
+    ("available", "last_success", "expected"),
+    [
+        (True, True, True),
+        (False, False, False),
+        (True, False, False),
+    ],
+)
+async def test_sensor_availability(
+    hass: HomeAssistant, available: bool, last_success: bool, expected: bool
+) -> None:
     """Test sensor availability."""
     data = {
         "devices": [
@@ -151,7 +149,7 @@ async def test_sensor_available(hass: HomeAssistant) -> None:
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "available": True,
+                "available": available,
                 "status": {
                     "getPRS": "50",
                 },
@@ -159,31 +157,10 @@ async def test_sensor_available(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = last_success
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
 
-    assert sensor.available is True
-
-
-async def test_sensor_unavailable(hass: HomeAssistant) -> None:
-    """Test sensor unavailability."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "available": False,
-                "status": {
-                    "getPRS": "50",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.last_update_success = False
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
-
-    assert sensor.available is False
+    assert sensor.available is expected
 
 
 async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:

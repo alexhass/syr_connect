@@ -88,12 +88,9 @@ async def test_button_available(hass: HomeAssistant) -> None:
     assert button.available is True
 
 
-async def test_async_setup_entry(hass: HomeAssistant) -> None:
+async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry creates button entities."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -103,10 +100,8 @@ async def test_async_setup_entry(hass: HomeAssistant) -> None:
             }
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -114,12 +109,9 @@ async def test_async_setup_entry(hass: HomeAssistant) -> None:
     assert len(entities) >= 1
 
 
-async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry with multiple devices."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -135,10 +127,8 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
             },
         ]
     }
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
@@ -252,16 +242,10 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
     assert button.available is True
 
 
-async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry with no coordinator data."""
-    mock_config_entry = MockConfigEntry()
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_config_entry.runtime_data = mock_coordinator
-    
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(None)
+    entities, async_add_entities = mock_add_entities()
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
