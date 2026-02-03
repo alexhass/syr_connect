@@ -43,8 +43,9 @@ class ResponseParser:
             ValueError: If XML parsing fails
         """
         try:
-            root = ET.fromstring(xml_string)
-            # Wrap in root tag like xmltodict does
+            # Secure XML parser configuration to prevent XXE attacks
+            parser = ET.XMLParser(resolve_entities=False)
+            root = ET.fromstring(xml_string, parser=parser)
             return {root.tag: ResponseParser._element_to_dict(root)}
         except ET.ParseError as err:
             _LOGGER.error("Failed to parse XML: %s", err)
