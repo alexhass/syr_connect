@@ -64,7 +64,7 @@ async def test_sensor_setup(hass: HomeAssistant) -> None:
     [
         ("getPRS", "50", 5.0, "Pressure is divided by 10"),
         ("getCEL", "220", 22.0, "Temperature is divided by 10"),
-        ("getFLO", "100", 10, "Flow is divided by 10"),
+        ("getFLO", "100", 100, "Flow rate is not divided"),
     ],
 )
 async def test_sensor_native_value_numeric(
