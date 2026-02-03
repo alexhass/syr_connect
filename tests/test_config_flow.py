@@ -21,8 +21,9 @@ async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
-        return_value=True,
+        new_callable=AsyncMock,
     ) as mock_setup_entry:
+        mock_setup_entry.return_value = True
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -99,8 +100,9 @@ async def test_form_already_configured(hass: HomeAssistant, mock_syr_api) -> Non
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
-        return_value=True,
-    ):
+        new_callable=AsyncMock,
+    ) as mock_setup:
+        mock_setup.return_value = True
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -129,8 +131,9 @@ async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
-        return_value=True,
-    ):
+        new_callable=AsyncMock,
+    ) as mock_setup:
+        mock_setup.return_value = True
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
@@ -194,8 +197,9 @@ async def test_reauth_flow(hass: HomeAssistant, mock_syr_api) -> None:
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
-        return_value=True,
-    ):
+        new_callable=AsyncMock,
+    ) as mock_setup:
+        mock_setup.return_value = True
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
@@ -348,8 +352,9 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_syr_api) -> None:
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
-        return_value=True,
-    ):
+        new_callable=AsyncMock,
+    ) as mock_setup:
+        mock_setup.return_value = True
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
