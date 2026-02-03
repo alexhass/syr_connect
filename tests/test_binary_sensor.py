@@ -495,7 +495,10 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
     
     # Mock registry to raise exception
-    with patch("custom_components.syr_connect.binary_sensor.er.async_get", new_callable=AsyncMock, side_effect=Exception("Registry error")):
+    def raise_registry_error(*args, **kwargs):
+        raise Exception("Registry error")
+    
+    with patch("custom_components.syr_connect.binary_sensor.er.async_get", side_effect=raise_registry_error):
         # Should not raise exception, continues setup
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
         

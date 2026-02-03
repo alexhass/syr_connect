@@ -993,7 +993,7 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
     ):
         mock_registry = Mock()
         mock_registry.async_get.return_value = None
-        mock_registry.async_remove = AsyncMock()
+        mock_registry.async_remove = Mock()
         mock_registry_getter.return_value = mock_registry
         
         entities = []
@@ -1614,7 +1614,10 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     add_entities = Mock()
     
     # Mock registry to raise exception
-    with patch("custom_components.syr_connect.sensor.er.async_get", new_callable=AsyncMock, side_effect=Exception("Registry error")):
+    def raise_registry_error(*args, **kwargs):
+        raise Exception("Registry error")
+    
+    with patch("custom_components.syr_connect.sensor.er.async_get", side_effect=raise_registry_error):
         # Should not raise exception, continues setup
         await async_setup_entry(hass, entry, add_entities)
         
@@ -2779,7 +2782,10 @@ async def test_sensor_setup_registry_exception(hass: HomeAssistant) -> None:
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.sensor.er.async_get", new_callable=AsyncMock, side_effect=Exception("Registry error")):
+    def raise_registry_error(*args, **kwargs):
+        raise Exception("Registry error")
+    
+    with patch("custom_components.syr_connect.sensor.er.async_get", side_effect=raise_registry_error):
         add_entities = Mock()
         # Should not raise exception
         await async_setup_entry(hass, entry, add_entities)
