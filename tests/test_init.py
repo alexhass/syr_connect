@@ -122,7 +122,8 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
         subentries_data={},
     )
     
-    with patch.object(hass.config_entries, "async_unload_platforms", return_value=True):
+    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+        mock_unload.return_value = True
         result = await async_unload_entry(hass, config_entry)
     
     assert result is True
@@ -144,7 +145,8 @@ async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
         subentries_data={},
     )
     
-    with patch.object(hass.config_entries, "async_unload_platforms", return_value=False):
+    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+        mock_unload.return_value = False
         result = await async_unload_entry(hass, config_entry)
     
     assert result is False
