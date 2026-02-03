@@ -3564,3 +3564,255 @@ async def test_sensor_native_value_device_not_found(hass: HomeAssistant) -> None
     # Should return None
     assert sensor.native_value is None
 
+
+async def test_sensor_value_not_in_status(hass: HomeAssistant) -> None:
+    """Test sensor when key is not in device status."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": "10",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+
+    # Should return None when key not in status
+    assert sensor.native_value is None
+
+
+async def test_sensor_icon_alarm_raw_value_not_found(hass: HomeAssistant) -> None:
+    """Test getALM icon when device not found in coordinator data."""
+    data = {
+        "devices": [
+            {
+                "id": "other_device",
+                "name": "Other Device",
+                "project_id": "project1",
+                "status": {"getALM": "LowSalt"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+
+    # Should return base icon when device not found
+    icon = sensor.icon
+    assert icon is not None
+
+
+async def test_sensor_icon_rg_none_value(hass: HomeAssistant) -> None:
+    """Test getRG icon with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRG1": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    # Should return base icon
+    assert sensor.icon == sensor._base_icon
+
+
+async def test_sensor_icon_pst_none_value(hass: HomeAssistant) -> None:
+    """Test getPST icon with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPST": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+
+    # Should return base icon
+    assert sensor.icon == sensor._base_icon
+
+
+async def test_sensor_rtime_type_error(hass: HomeAssistant) -> None:
+    """Test getRTIME with TypeError."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": None,
+                    "getRTM": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+
+    # Should return 00:00
+    assert sensor.native_value == "00:00"
+
+
+async def test_sensor_whu_int_value(hass: HomeAssistant) -> None:
+    """Test getWHU with integer value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getWHU": 0,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+
+    # Should return mapped value
+    assert sensor.native_value == "°dH"
+
+
+async def test_sensor_whu_float_value(hass: HomeAssistant) -> None:
+    """Test getWHU with float value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getWHU": 1.0,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+
+    # Should return mapped value
+    assert sensor.native_value == "°fH"
+
+
+async def test_sensor_lar_value_error(hass: HomeAssistant) -> None:
+    """Test getLAR with ValueError."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None
+    assert sensor.native_value is None
+
+
+async def test_sensor_lar_type_error(hass: HomeAssistant) -> None:
+    """Test getLAR with TypeError."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+
+    # Should return None
+    assert sensor.native_value is None
+
+
+async def test_sensor_rpw_zero_mask(hass: HomeAssistant) -> None:
+    """Test getRPW with zero mask."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": 0,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should return None for mask == 0
+    assert sensor.native_value is None
+
+
+async def test_sensor_rpw_value_error_on_float(hass: HomeAssistant) -> None:
+    """Test getRPW when float conversion fails."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "not_a_number_at_all",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+
+    # Should return None
+    assert sensor.native_value is None
+
+
+async def test_sensor_available_coordinator_not_successful(hass: HomeAssistant) -> None:
+    """Test sensor availability when coordinator update not successful."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getPRS": "50"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+
+    # Should not be available
+    assert sensor.available is False
+
+
