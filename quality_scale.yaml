@@ -26,7 +26,7 @@ rules:
   
   config-flow-test-coverage:
     status: done
-    comment: Tests available in tests/test_config_flow.py (6 test cases)
+    comment: Comprehensive tests in tests/test_config_flow.py (26 test cases covering user flow, options, reauth, reconfigure, error handling)
   
   config-flow:
     status: done
@@ -122,8 +122,27 @@ rules:
     comment: Reauth flow implemented, ConfigEntryAuthFailed on login failures
   
   test-coverage:
-    status: not_done
-    comment: Unit tests exist (config_flow, api, payload_builder, encryption, exceptions), but coverage is not measured
+    status: done
+    comment: |
+      Comprehensive test suite with 200+ test cases:
+      - tests/test_config_flow.py (26 tests)
+      - tests/test_coordinator.py (28 tests)  
+      - tests/test_diagnostics.py (35 tests)
+      - tests/test_sensor.py (extensive coverage)
+      - tests/test_binary_sensor.py (22 tests)
+      - tests/test_select.py (comprehensive)
+      - tests/test_button.py (13 tests)
+      - tests/test_api.py (28 tests)
+      - tests/test_encryption.py (8 tests)
+      - tests/test_payload_builder.py
+      - tests/test_response_parser.py
+      - tests/test_checksum.py (15 tests)
+      - tests/test_http_client.py (11 tests)
+      - tests/test_helpers.py (3 tests)
+      - tests/test_init.py (8 tests)
+      - tests/test_repairs.py
+      - tests/test_platforms.py
+      Code coverage tracked via pytest-cov and reported to codecov
 
   # GOLD TIER
   devices:
