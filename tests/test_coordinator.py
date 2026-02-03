@@ -110,8 +110,8 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
         await coordinator.async_config_entry_first_refresh()
 
         # Set device value
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock):
+        with patch.object(coordinator, "async_set_updated_data"):
+            with patch.object(hass, "async_create_task"):
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
@@ -148,8 +148,8 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock) as mock_task:
+        with patch.object(coordinator, "async_set_updated_data"):
+            with patch.object(hass, "async_create_task") as mock_task:
                 mock_task.return_value = None
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock) as mock_refresh:
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
@@ -184,8 +184,8 @@ async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_
         await coordinator.async_config_entry_first_refresh()
 
         # Try to set value for non-existent device
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock):
+        with patch.object(coordinator, "async_set_updated_data"):
+            with patch.object(hass, "async_create_task"):
                 with pytest.raises(ValueError, match="Device unknown_device not found"):
                     await coordinator.async_set_device_value("unknown_device", "setSIR", 0)
 
@@ -205,8 +205,8 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
         )
 
         # Try to set value when coordinator has no data
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock):
+        with patch.object(coordinator, "async_set_updated_data"):
+            with patch.object(hass, "async_create_task"):
                 with pytest.raises(ValueError, match="Coordinator data not available"):
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
 
@@ -583,8 +583,8 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
         await coordinator.async_config_entry_first_refresh()
 
         # Mock async_set_updated_data to raise exception
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock, side_effect=Exception("Update failed")):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock) as mock_task:
+        with patch.object(coordinator, "async_set_updated_data", side_effect=Exception("Update failed")):
+            with patch.object(hass, "async_create_task") as mock_task:
                 mock_task.return_value = None
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
                     # Should not raise, exception is caught and logged
@@ -619,8 +619,8 @@ async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssista
         await coordinator.async_config_entry_first_refresh()
 
         # Mock async_create_task to raise exception
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock, side_effect=Exception("Task creation failed")):
+        with patch.object(coordinator, "async_set_updated_data"):
+            with patch.object(hass, "async_create_task", side_effect=Exception("Task creation failed")):
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
                     # Should not raise, exception is caught and logged
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
@@ -681,8 +681,8 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(coordinator, "async_set_updated_data", new_callable=AsyncMock):
-            with patch.object(hass, "async_create_task", new_callable=AsyncMock) as mock_task:
+        with patch.object(coordinator, "async_set_updated_data"):
+            with patch.object(hass, "async_create_task") as mock_task:
                 mock_task.return_value = None
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
