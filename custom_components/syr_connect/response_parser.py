@@ -46,6 +46,7 @@ class ResponseParser:
             # Secure XML parser configuration to prevent XXE attacks
             parser = ET.XMLParser(resolve_entities=False)
             root = ET.fromstring(xml_string, parser=parser)
+            # Wrap in root tag like xmltodict does
             return {root.tag: ResponseParser._element_to_dict(root)}
         except ET.ParseError as err:
             _LOGGER.error("Failed to parse XML: %s", err)
