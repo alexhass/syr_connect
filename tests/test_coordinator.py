@@ -148,13 +148,12 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task") as mock_task:
-                mock_task.return_value = None
-                with patch.object(coordinator, "async_refresh", new_callable=AsyncMock) as mock_refresh:
-                    await coordinator.async_set_device_value("device1", "setSIR", 0)
-                    # Verify refresh was scheduled
-                    mock_task.assert_called_once()
+        with patch.object(hass, "async_create_task") as mock_task:
+            mock_task.return_value = None
+            with patch.object(coordinator, "async_refresh", new_callable=AsyncMock) as mock_refresh:
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
+                # Verify refresh was scheduled
+                mock_task.assert_called_once()
 
         assert coordinator.data is not None
         device = coordinator.data["devices"][0]
