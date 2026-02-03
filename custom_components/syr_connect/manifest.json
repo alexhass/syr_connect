@@ -11,5 +11,5 @@
   "loggers": ["custom_components.syr_connect"],
   "quality_scale": "platinum",
   "requirements": ["pycryptodomex==3.19.0"],
-  "version": "1.0.10"
+  "version": "1.0.11"
 }
