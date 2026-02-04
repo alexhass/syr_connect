@@ -9,9 +9,10 @@ Device: LEXplus10SL
 Firmware: 2.9 (SLPL)
 """
 
-import defusedxml.ElementTree as ET
 import unittest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
+
+import defusedxml.ElementTree as etree
 
 
 # Real XML response from LEXplus10SL
@@ -91,7 +92,7 @@ class TestLEXplus10SLRealData(unittest.TestCase):
 
     def setUp(self):
         """Parse real XML data."""
-        self.root = ET.fromstring(REAL_XML_RESPONSE)
+        self.root = etree.fromstring(REAL_XML_RESPONSE)
         self.device = self.root.find('.//d')
         self.sensors = {c.get('n'): c.get('v') for c in self.device.findall('c')}
 

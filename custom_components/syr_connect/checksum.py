@@ -1,7 +1,7 @@
 """Checksum calculation for SYR Connect API."""
 from __future__ import annotations
 
-import defusedxml.ElementTree as ET
+import defusedxml.ElementTree as etree
 
 
 class SyrChecksum:
@@ -115,10 +115,10 @@ class SyrChecksum:
         """
         try:
             # Parse XML using ElementTree
-            root = ET.fromstring(xml_string)
+            root = etree.fromstring(xml_string)
             values: list[str] = []
 
-            def extract_values(element: ET.Element) -> None:
+            def extract_values(element: etree.Element) -> None:
                 """Recursively extract all attribute values from XML element.
 
                 Args:
@@ -139,7 +139,7 @@ class SyrChecksum:
             for value in values:
                 self.add_to_checksum(value)
 
-        except ET.ParseError:
+        except etree.ParseError:
             # In case of error, silently continue
             pass
 
