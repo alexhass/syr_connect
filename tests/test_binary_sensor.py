@@ -553,3 +553,51 @@ async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
 
     # Should have icon set from const
     assert sensor._attr_icon is not None
+
+
+async def test_binary_sensor_string_active(hass: HomeAssistant) -> None:
+    """Test binary sensor with string value 'active' (not in exclusion list)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": "active",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    # String values not in ("0", "false", "False", "") should be True
+    assert sensor.is_on is True
+
+
+async def test_binary_sensor_string_yes(hass: HomeAssistant) -> None:
+    """Test binary sensor with string value 'yes' (not in exclusion list)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "test": "yes",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    sensor = SyrConnectBinarySensor(
+        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+    )
+
+    # String values not in ("0", "false", "False", "") should be True
+    assert sensor.is_on is True

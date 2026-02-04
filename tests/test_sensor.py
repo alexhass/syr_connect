@@ -3799,3 +3799,87 @@ async def test_sensor_available_coordinator_not_successful(hass: HomeAssistant) 
     assert sensor.available is False
 
 
+async def test_sensor_sta_backwash(hass: HomeAssistant) -> None:
+    """Test getSTA with backwash status."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSTA": "Płukanie wsteczne",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+
+    # Should map to status_backwash
+    assert sensor.native_value == "status_backwash"
+
+
+async def test_sensor_sta_slow_rinse(hass: HomeAssistant) -> None:
+    """Test getSTA with slow rinse status."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSTA": "Płukanie wolne",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+
+    # Should map to status_slow_rinse
+    assert sensor.native_value == "status_slow_rinse"
+
+
+async def test_sensor_sta_filling(hass: HomeAssistant) -> None:
+    """Test getSTA with filling status."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSTA": "Napełnianie",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+
+    # Should map to status_filling
+    assert sensor.native_value == "status_filling"
+
+
+async def test_sensor_sta_inactive_empty_string(hass: HomeAssistant) -> None:
+    """Test getSTA with empty string (inactive status)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSTA": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+
+    # Should map to status_inactive
+    assert sensor.native_value == "status_inactive"
+
+
