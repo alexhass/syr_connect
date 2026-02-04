@@ -580,7 +580,7 @@ def test_validate_structure_empty_path(parser):
 def test_element_to_dict_text_with_attributes_no_children(parser):
     """Test element with text and attributes but no children."""
 
-    element = ET.fromstring('<item id="1">text content</item>')
+    element = etree.fromstring('<item id="1">text content</item>')
     result = parser._element_to_dict(element)
     # Should have both @id attribute and #text
     assert result["@id"] == "1"
@@ -590,7 +590,7 @@ def test_element_to_dict_text_with_attributes_no_children(parser):
 def test_element_to_dict_whitespace_only_text(parser):
     """Test element with whitespace-only text (should be ignored)."""
 
-    element = ET.fromstring('<item>   \n\t   </item>')
+    element = etree.fromstring('<item>   \n\t   </item>')
     result = parser._element_to_dict(element)
     # Whitespace-only text should be stripped and result in empty dict
     assert result == {}
@@ -698,7 +698,7 @@ def test_parse_statistics_response_no_c_elements(parser):
 def test_element_to_dict_nested_elements_same_tag(parser):
     """Test _element_to_dict with nested elements having same tag converted to list."""
 
-    element = ET.fromstring('''<root>
+    element = etree.fromstring('''<root>
         <item><sub>a</sub></item>
         <item><sub>b</sub></item>
     </root>''')
@@ -743,7 +743,7 @@ def test_parse_login_response_api_dict_no_text_key(parser):
 def test_element_to_dict_child_converted_to_list_multiple_appends(parser):
     """Test that multiple children with same tag are properly appended to list."""
 
-    element = ET.fromstring('<root><x>1</x><x>2</x><x>3</x><x>4</x></root>')
+    element = etree.fromstring('<root><x>1</x><x>2</x><x>3</x><x>4</x></root>')
     result = parser._element_to_dict(element)
     assert isinstance(result["x"], list)
     assert result["x"] == ["1", "2", "3", "4"]
