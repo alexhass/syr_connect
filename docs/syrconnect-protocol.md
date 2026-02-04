@@ -298,8 +298,8 @@ Some further data about the device
 
 | Property        | Example                          | Unit   | Description
 |-----------------|----------------------------------|--------|-------------------------------------------------------
-| getALM          | ""                               |        | Alarm code, a human readable message can be received via getSTA()
-| getSTA          | "Bitte Salz nachfüllen"          |        | Status messages of the regeneration, in this case in German: "Please refill salt"
+| getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()
+| getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"           |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.
 
 ### Network
 
@@ -338,13 +338,14 @@ These settings can be set by the user.
 | getRTH / setRTH | "16"         | hour      | Regeneration time (hour)
 | getRTM / setRTM | "0"          | minute    | Regeneration time (minute)
 | getRPD / setRPD | "4"          | days      | Regeneration interval
-| getRPW / setRPW | "0"          | bits      | Days on which regeneration is allowed stored as a bit mask
+| getRPW / setRPW | "0"          | bits      | Days on which regeneration is allowed stored as a bit mask (bit 0 = Mon .. bit 6 = Sun); mask `0` indicates no days configured.
 | getRTY / setRTY | "0"          |           | 0 = Delayed regeneration, 1 = Immediate regeneration
 | getCHG / setCHG | "0"          |           | Type of chlor generator: 0 = Chlor generator, 1 = Salt sensor, 2 = not available
 | getPST / setPST | "1"          |           | Pressure sensor installed: 1 = not available, 2 = available
 | getMPR / setMPR | "40"         | 1/10 bar  | The set water pressure
 | getDWF / setDWF | "200"        | L         | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
 | getFCO / setFCO | "0"          | ppm       | Iron content (always 0?)
+| getCFO          | "0"          |           | Cycle flow offset, numeric counter
 
 ### Measurements
 
@@ -356,6 +357,7 @@ These settings can be set by the user.
 | getFLO                                                | "0"                | L/min    | Measured water flow
 | getMXF                                                | "22"               | L/min    | Maximum flow within this hour
 | getRES                                                | "1982"             | L        | Remaining capacity of water that can be treated
+| getVOL                                                | "2000"             | L        | Total capacity
 | getCS1<br>getCS2<br>getCS3                            | "63"<br>"0"<br>"0" | %        | Remaining capacity of the resin in tank 1, 2 or 3
 | getSV1 / setSV1<br>getSV2 / setSV1<br>getSV3 / setSV1 | "7"<br>"0"<br>"0"  | kg       | Salt stored in tank 1, 2 or 3 (can also be set, e.g. on refill)
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
@@ -410,6 +412,9 @@ These properties are only available on devices that contain leakage protection, 
 | getUL / setUL   | "0"          |         | User profile Leakage protection mode: 0 = present, 1 = absent
 | getCEL          | "203"        | 1/10 °C | Water temperature, e.g. 203 = 20.3°C
 | getNPS          | "22"         |         | Microleakage count
+| getPF1<br>getPF2<br>getPF3<br>getPF4<br>getPF5<br>getPF6<br>getPF7<br>getPF8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L/h | Leak protection flow rate 1-8
+| getPT1<br>getPT2<br>getPT3<br>getPT4<br>getPT5<br>getPT6<br>getPT7<br>getPT8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | minutes | Leak protection time 1-8
+| getPV1<br>getPV2<br>getPV3<br>getPV4<br>getPV5<br>getPV6<br>getPV7<br>getPV8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L | Leak protection volume 1-8
 
 ### Unknown leakage protection
 
