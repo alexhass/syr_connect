@@ -281,7 +281,7 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         - getTOR or getVOL: volume (important for statistics)
         - getSRE: regeneration (important for maintenance)
         """
-        root = ET.fromstring(REAL_XML_RESPONSE)
+        root = etree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -305,7 +305,7 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         Code should support both (or treat getTOR as an alias for getVOL).
         """
         # LEXplus10SL hat getTOR
-        root = ET.fromstring(REAL_XML_RESPONSE)
+        root = etree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -326,7 +326,7 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
 
         Profiles 4-8 have empty names ("") - the code must handle this.
         """
-        root = ET.fromstring(REAL_XML_RESPONSE)
+        root = etree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -343,7 +343,7 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         Even if profiles 4-8 are deactivated (getPA=0), they have default values.
         These should not cause errors.
         """
-        root = ET.fromstring(REAL_XML_RESPONSE)
+        root = etree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -363,7 +363,7 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         - Profile 3 must be activated (getPA3=1)
         - Profile 3 must have a name (getPN3 not empty)
         """
-        root = ET.fromstring(REAL_XML_RESPONSE)
+        root = etree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
