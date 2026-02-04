@@ -5,10 +5,12 @@ The SYR water softening units of the LEX Plus series, e.g. LEX Plus 10 Connect o
 The protocol between SYR water softening unit and SYR Connect cloud is partially reverse engineered through analyzing the exchanged messages. A LEX Plus 10 S Connect with firmware SLPS 1.7 was used for this analysis; later SLSP 1.9 was analysed. Additionally, a LEX Plus 10 SL Connect was analyzed that contains an integrated leakage detection device, called Safeconnect.  
 
 ## Communication
-The communication happens for firmware version 1.7 via http to syrconnect.consoft.de and connect.saocal.pl. Both domains seem to use the same protocol, but only the former seems to be used for the SYR Connect cloud. Both domains are resolved via DNS, which means the communication can easily be redirected by using a DNS server (either via DHCP or via static configuration) that resolves these domains to the desired server IP. With firmware version 1.9 https is used instead of http, but no certificate checking seems to happen. The 
+
+The communication happens for firmware version 1.7 via http to syrconnect.consoft.de and connect.saocal.pl. Both domains seem to use the same protocol, but only the former seems to be used for the SYR Connect cloud. Both domains are resolved via DNS, which means the communication can easily be redirected by using a DNS server (either via DHCP or via static configuration) that resolves these domains to the desired server IP. With firmware version 1.9 https is used instead of http, but no certificate checking seems to happen. The
 used domains changed to syrconnect.de and maintenance.syrconnect.de but the communication protocol is still the same.
 
 The water softening unit is querying two webservices via the request method 'POST' and parameter 'xml':
+
 - GetBasicCommands:  
   Full address (SLSP 1.7): syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetBasicCommands  
   Full address (SLSP 1.9): syrconnect.de/WebServices/SyrConnectLimexWebService.asmx/GetBasicCommands  
@@ -25,10 +27,13 @@ The water softening unit is asking the server in an interval of ~10s for new com
 The following shows a sample conversation between unit and server (confidential values like SRN and MAC have been replaced by dummy values):
 
 #### First request
+
 The first request is to the web service GetBasicCommands which basically requests the unit to identify:
-- Queried URL: http://syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetBasicCommands
+
+- Queried URL: <http://syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetBasicCommands>
 - POST-Parameters: *nothing*
 - Server response:  
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <sc version="1.0">
@@ -41,10 +46,14 @@ The first request is to the web service GetBasicCommands which basically request
     </d>
   </sc>
   ```
+
 #### Second Request
+
 The second request is to the web service GetAllCommands and answers the previous request:
-- Queried URL: http://syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetAllCommands
+
+- Queried URL: <http://syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetAllCommands>
 - POST-Parameters 'xml' (url-encoded):
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <sc version="1.0">
@@ -56,7 +65,9 @@ The second request is to the web service GetAllCommands and answers the previous
     </d>
   </sc>
   ```
+
 - Server response:  
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <sc version="1.0">
@@ -119,9 +130,12 @@ The second request is to the web service GetAllCommands and answers the previous
   ```
 
 #### Third and following requests
+
 The third request and all following requests are also to GetAllCommands answering the previous requests:
-- Queried URL: http://syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetAllCommands
+
+- Queried URL: <http://syrconnect.consoft.de/WebServices/SyrConnectLimexWebService.asmx/GetAllCommands>
 - POST-Parameters 'xml' (url-encoded):
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <sc version="1.0">
@@ -188,7 +202,9 @@ The third request and all following requests are also to GetAllCommands answerin
     </d>
   </sc>
   ```
+
 - Server response:  
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <sc version="1.0">
@@ -249,21 +265,24 @@ The third request and all following requests are also to GetAllCommands answerin
     </d>
   </sc>
   ```
-## Getters and Setters
-All known properties have 2-character names, e.g. XY or 3-character names, e.g. XYZ. The SYR Connect cloud can either call "getXYZ" to receive the property value during the next request, or it can call "setXYZ" with an appropriate value. Currently, most analysis focussed on the getters. In is currently unknown if for each getter also a setter is working. If setters have been found to work, they are listed in below tables. 
 
+## Getters and Setters
+
+All known properties have 2-character names, e.g. XY or 3-character names, e.g. XYZ. The SYR Connect cloud can either call "getXYZ" to receive the property value during the next request, or it can call "setXYZ" with an appropriate value. Currently, most analysis focussed on the getters. In is currently unknown if for each getter also a setter is working. If setters have been found to work, they are listed in below tables.
 
 ### Basic Device data
+
 This data is used to "register" the device in the SYR Connect cloud via GetBasicCommands.
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
-| getSRN          | "123456789"  |        | Serial number of the water softening unit. Used to identify the unit in the SYR Connect cloud 
+| getSRN          | "123456789"  |        | Serial number of the water softening unit. Used to identify the unit in the SYR Connect cloud
 | getVER          | "1.7"        |        | Firmware version
 | getTYP          | "80"         |        | Type of device (always 80?)
 | getCNA          | "LEXplus10S" |        | Name of device. Known values: "LEXplus10", "LEXplus10S", "LEXplus10SL"
 
 ### Further Device data
+
 Some further data about the device
 
 | Property        | Example                          | Unit   | Description
@@ -283,6 +302,7 @@ Some further data about the device
 | getSTA          | "Bitte Salz nachfüllen"          |        | Status messages of the regeneration, in this case in German: "Please refill salt"
 
 ### Network
+
 | Property        | Example               | Unit   | Description
 |-----------------|-----------------------|--------|-------------------------------------------------------
 | getMAC          | "01:23:45:67:89:AB"   |        | MAC address of the network port
@@ -293,6 +313,7 @@ Some further data about the device
 | getNET          | "po��czono"           |        | *unknown constant (some Polish text)*
 
 ### Holiday
+
 Some devices seem to support setting holidays. The consequences for the water softening unit are unknown. For devices with leakage detection it makes the device more sensitive to consumed water. On the SYR Lex Plus 10 S Connect that was analysed the system automatically sets the holiday end to the current date.
 
 | Property        | Example      | Unit   | Description
@@ -304,8 +325,8 @@ Some devices seem to support setting holidays. The consequences for the water so
 | getHEM          | "9"          |        | Holiday end month
 | getHEY          | "2023"       |        | Holiday end **year**
 
-
 ### Settings
+
 These settings can be set by the user.
 
 | Property        | Example      | Unit      | Description
@@ -325,9 +346,8 @@ These settings can be set by the user.
 | getDWF / setDWF | "200"        | L         | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
 | getFCO / setFCO | "0"          | ppm       | Iron content (always 0?)
 
-
-
 ### Measurements
+
 | Property                                              | Example            | Unit     | Description
 |-------------------------------------------------------|--------------------|----------|-------------------------------------------------------
 | getPRS                                                | "40"               | 1/10 bar | Measured water pressure if sensor is available (getPST() = 2), otherwise same as getMPR()<br>255 indicates an invalid values, e.g. when no pressure sensor is available but getPST() = 2
@@ -342,7 +362,6 @@ These settings can be set by the user.
 | getPA1<br>getPA2<br>getPA3                            | "0"<br>"0"<br>"0"  |          | *unknown*
 | getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  |          | *unknown*
 
-
 ### Regeneration
 
 | Property                   | Example                 | Unit     | Description
@@ -350,14 +369,13 @@ These settings can be set by the user.
 | getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0"       |          | "1" if regeneration is running for tank 1, 2 or 3
 | getCYN                     | "0"                     |          | Number of the running program
 | getCYT                     | "00:00"                 |          | Duration of the running program
-| getRTI                     | "00:00"                 |          | Total duration of the regeneration cylce 
+| getRTI                     | "00:00"                 |          | Total duration of the regeneration cylce
 | getLAR                     | "1694501839"            |          | Last regeneration as UNIX timestamp (seconds since 1.1.1970)
 | getTOR                     | "429"                   |          | Number of total regeneration cycles
 | getNOR                     | "427"                   |          | Number of regeneration cycles in normal mode
 | getSCR                     | "0"                     |          | *unknown, likely number of service regeneration cycles*
 | getINR                     | "2"                     |          | Number of incomplete regeneration cycles
-| setSIR                     | "1"                     |          | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this) 
-
+| setSIR                     | "1"                     |          | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this)
 
 ### Statistics
 
@@ -378,15 +396,15 @@ These settings can be set by the user.
 | getLMF          | "37998"                                                                                           | L      | Water consumption last month
 | getCOF          | "583939"                                                                                          | L      | Cumulated water consumption in the past (continuously updated)<br>In theory this should reflect the numbers on your water metering device but the precision seems to be low.
 
-
 ### Leakage protection
+
 These properties are only available on devices that contain leakage protection, e.g. LEX Plus 10 SL Connect.
 
 | Property        | Example      | Unit    | Description
 |-----------------|--------------|---------|-------------------------------------------------------
-| getAB / setAB   | "1"          |         | Valve shut-off: 1 = open, 2 = closed 
+| getAB / setAB   | "1"          |         | Valve shut-off: 1 = open, 2 = closed
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
-| getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L 
+| getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L
 | getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h
 | getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds
 | getUL / setUL   | "0"          |         | User profile Leakage protection mode: 0 = present, 1 = absent
@@ -394,6 +412,7 @@ These properties are only available on devices that contain leakage protection, 
 | getNPS          | "22"         |         | Microleakage count
 
 ### Unknown leakage protection
+
 These properties are only available on devices that contain leakage protection, e.g. LEX Plus 10 SL Connect.
 
 | Property        | Example      | Unit   | Description
@@ -416,7 +435,6 @@ These properties are only available on devices that contain leakage protection, 
 | getVAC          | "0"          |        | *unknown*
 | getVAT          | "3"          |        | *unknown*
 
-
 ### Unknown statistics
 
 | Property        | Example      | Unit   | Description
@@ -429,7 +447,6 @@ These properties are only available on devices that contain leakage protection, 
 | getSUF          | "1168"       |        | Somewhat related to water consumption. Updated on day change Saturday -> Sunday **and** Sunday -> Monday (seems to be a bug)
 | getTFO          | "9508"       |        | *unknown*
 | getUWF          | "15599"      |        | *unknown*
-
 
 ### Unknown
 
@@ -458,12 +475,12 @@ These properties are only available on devices that contain leakage protection, 
 ## Further information
 
 - SYR Connect Protocol
-  https://github.com/Richard-Schaller/syrlex2mqtt/blob/main/doc/syrconnect-protocol.md
+  <https://github.com/Richard-Schaller/syrlex2mqtt/blob/main/doc/syrconnect-protocol.md>
 - Brief description of the Webservices offered by SYR Connect:  
-  http://syrconnect.de/WebServices/SyrConnectLimexWebService.asmx
+  <http://syrconnect.de/WebServices/SyrConnectLimexWebService.asmx>
 - Githup repository of a project that simulates the SYR Connect cloud for usage in iobroker (German):  
-  https://github.com/eifel-tech/ioBroker.syrconnect
+  <https://github.com/eifel-tech/ioBroker.syrconnect>
 - Analysis of the network traffic of a SYR LexPlus 10 with the SYR Connect cloud:  
-  https://www.msxfaq.de/sonst/iot/syr_lexplus_10.htm (German)
+  <https://www.msxfaq.de/sonst/iot/syr_lexplus_10.htm> (German)
 - Analysis of the network traffic of a Syr Safe-T Connect with the SYR Connect cloud:  
-  https://www.msxfaq.de/sonst/iot/syr_safe-t_connect.htm (German)
+  <https://www.msxfaq.de/sonst/iot/syr_safe-t_connect.htm> (German)

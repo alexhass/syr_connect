@@ -1,4 +1,4 @@
-## Home Assistant Brand Images Generator
+# Home Assistant Brand Images Generator
 
 This script generates PNG logos and icons suitable for Home Assistant integrations according to the [brands repository](https://github.com/home-assistant/brands) guidelines.
 
@@ -30,12 +30,14 @@ python .\scripts\generate_brand_images.py .\scripts\example.png ..\custom_integr
 ```
 
 Notes:
+
 - `source` can be any existing image file; PNG is recommended.
 - `target_dir` will be created with `parents=True` if missing.
 
 ## Output files
 
 By default the script generates the following files in the `target_dir`:
+
 - `icon.png` (256×256)
 - `icon@2x.png` (512×512)
 - `logo.png` (256×128)

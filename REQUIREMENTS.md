@@ -1,6 +1,7 @@
 # System Requirements for SYR Connect Integration
 
 ## Home Assistant Requirements
+
 - **Home Assistant Version**: 2023.1.0 or higher (recommended: latest stable)
 - **Python Version**: 3.11 or higher (included in Home Assistant)
 
@@ -13,11 +14,13 @@ pip install pytest pytest-homeassistant-custom-component pytest-cov
 ```
 
 Run tests with:
+
 ```bash
 pytest tests/
 ```
 
 Run tests with coverage:
+
 ```bash
 pytest --cov=custom_components.syr_connect --cov-report=term-missing tests/
 ```
@@ -27,6 +30,7 @@ pytest --cov=custom_components.syr_connect --cov-report=term-missing tests/
 The following packages will be automatically installed by Home Assistant:
 
 ### Required Packages
+
 1. **pycryptodomex** (==3.19.0)
    - Purpose: AES encryption/decryption for API communication
    - License: BSD, Public Domain
@@ -38,8 +42,9 @@ The following packages will be automatically installed by Home Assistant:
    - Note: Replaces the built-in `xml.etree.ElementTree` with a hardened version
 
 ## Network Requirements
+
 - **Internet Connection**: Required for cloud API access
-- **API Endpoint**: https://syrconnect.de/WebServices/
+- **API Endpoint**: <https://syrconnect.de/WebServices/>
 - **Ports**: 443 (HTTPS)
 
 ## Installation Verification
@@ -64,13 +69,17 @@ After installing the integration in Home Assistant:
 ## Common Issues
 
 ### Issue: `ModuleNotFoundError: No module named 'Cryptodome'` or `No module named 'defusedxml'`
+
 **Solution**: Restart Home Assistant to trigger automatic installation of required packages (pycryptodomex and defusedxml)
 
 ### Issue: `ImportError: cannot import name 'AES' from 'Crypto.Cipher'`
+
 **Solution**: This indicates a conflict with the old pycryptodome package. The integration now uses pycryptodomex which avoids this conflict.
 
 ### Issue: Integration not appearing in list
-**Solution**: 
+
+**Solution**:
+
 1. Verify the folder structure is correct: `config/custom_components/syr_connect/`
 2. Check that all required files are present
 3. Restart Home Assistant

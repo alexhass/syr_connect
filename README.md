@@ -40,13 +40,15 @@ The integration automatically creates entities for all your SYR Connect devices.
 
 ### Supported Devices
 
-This integration works with SYR water softeners that appear in the SYR Connect cloud (via the SYR Connect app). 
+This integration works with SYR water softeners that appear in the SYR Connect cloud (via the SYR Connect app).
 
 Tested and reported working:
+
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 
 Not tested, but should work (please report):
+
 - NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
 - SYR LEX Plus 10 Connect
@@ -58,6 +60,7 @@ Not tested, but should work (please report):
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
 Leakage detection devices are also of interrest, but may require additonal work:
+
 - TRIO DFR/LS Connect 2425
 - SafeTech Connect
 - SafeTech plus Connect
@@ -68,41 +71,49 @@ Leakage detection devices are also of interrest, but may require additonal work:
 ### Supported Functionality
 
 #### Sensors
+
 The integration provides comprehensive monitoring of your water softener:
 
-**Water Quality & Capacity**
+#### Water Quality & Capacity
+
 - Input/Output water hardness monitoring
 - Remaining capacity tracking
 - Total capacity information
 - Water hardness unit display
 
-**Regeneration Information**
+#### Regeneration Information
+
 - Regeneration status
 - Number of regenerations performed
 - Regeneration interval settings
 - Regeneration time schedule
 
-**Salt Management**
+#### Salt Management
+
 - Salt volume in containers (1-3)
 - Salt stock levels
 - Estimated salt supply duration
 
-**System Monitoring**
+#### System Monitoring
+
 - Water pressure monitoring
 - Flow rate (current)
 - Flow counter (total consumption)
 - Alarm status
 
-**Device Information** (disabled by default, available in diagnostics category)
+#### Device Information (disabled by default, available in diagnostics category)
+
 - Serial number
 - Firmware version and model
 - Device type and manufacturer
 - Network information (IP, MAC, Gateway)
 
 #### Binary Sensors
+
 - Regeneration active status
 
 #### Buttons (Actions)
+
 - **Regenerate Now (setSIR)**: Start immediate regeneration
 
 ### Known Limitations
@@ -129,6 +140,7 @@ If a device becomes unavailable (e.g., offline or communication error), its enti
 ### Automation Examples
 
 #### Low Salt Alert
+
 Get notified when salt supply is running low:
 
 ```yaml
@@ -146,6 +158,7 @@ automation:
 ```
 
 #### Daily Regeneration Report
+
 Get a daily summary of regeneration activity:
 
 ```yaml
@@ -165,6 +178,7 @@ automation:
 ```
 
 #### Alarm Notification
+
 Immediate notification when an alarm is triggered:
 
 ```yaml
@@ -183,6 +197,7 @@ automation:
 ```
 
 #### Water Flow Monitoring
+
 Alert on unusually high water flow (possible leak):
 
 ```yaml
@@ -202,6 +217,7 @@ automation:
 ```
 
 #### Scheduled Regeneration Override
+
 Trigger regeneration at a specific time:
 
 ```yaml
@@ -226,6 +242,7 @@ automation:
 ## Configuration Options
 
 ### Scan Interval
+
 Data is updated every 60 seconds by default. You can configure this in the integration options:
 
 1. Go to Settings > Devices & Services
@@ -260,13 +277,16 @@ If you encounter issues, you can download diagnostic information:
 This file contains helpful information for troubleshooting (sensitive data like passwords are automatically redacted).
 
 ### Connection fails
+
 - **Check credentials**: Verify your SYR Connect App username and password
 - **Test the app**: Make sure you can log in to the SYR Connect mobile app
 - **Check logs**: Go to Settings > System > Logs and search for "syr_connect" errors
 - **Network issues**: Ensure your Home Assistant instance has internet access
 
 ### Authentication errors
+
 If you see "Authentication failed" errors:
+
 1. Verify your credentials are correct
 2. The integration will prompt for reauthentication
 3. Go to Settings > Devices & Services
@@ -274,30 +294,35 @@ If you see "Authentication failed" errors:
 5. Enter your credentials again
 
 ### No devices found
+
 - **App setup**: Ensure devices are properly configured in the SYR Connect App
 - **Account access**: Verify you're using the same account that has the devices
 - **Device status**: Check if devices are online in the SYR Connect App
 - **Logs**: Check Home Assistant logs for specific error messages
 
 ### Entities show as unavailable
+
 - **Device offline**: Check if the device is online in the SYR Connect App
 - **Network issues**: Verify internet connectivity
 - **Cloud service**: The SYR Connect cloud service might be temporarily unavailable
 - **Wait for update**: Entities will become available again on the next successful update
 
 ### High CPU/Memory usage
+
 - **Increase scan interval**: Set a higher value (e.g., 120-300 seconds) in integration options
 - This reduces API calls and system load
 
 ## Dependencies
 
 The integration requires the following Python packages:
+
 - `pycryptodomex==3.19.0`: For AES encryption/decryption
 - `defusedxml==0.7.1`: For secure XML parsing (prevents XXE attacks)
 
 **Note**: The integration uses `defusedxml` for secure XML parsing and `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's built-in crypto libraries.
 
 This package is **automatically installed** by Home Assistant when you:
+
 1. Add the integration through the UI
 2. Restart Home Assistant after installation
 

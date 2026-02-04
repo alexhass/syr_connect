@@ -43,10 +43,12 @@ Die Integration erstellt automatisch Entitäten für alle SYR Connect Geräte in
 Diese Integration funktioniert mit SYR-Wasserenthärtern, die im SYR Connect-Cloud-Portal (über die SYR Connect App) sichtbar sind.
 
 Getestet und gemeldet funktionierend:
+
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 
 Nicht getestet, sollte aber funktionieren (bitte melden):
+
 - NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
 - SYR LEX Plus 10 Connect
@@ -58,6 +60,7 @@ Nicht getestet, sollte aber funktionieren (bitte melden):
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
 Auch Leckage-Erkennungsgeräte sind interessant, können aber zusätzlichen Aufwand erfordern:
+
 - TRIO DFR/LS Connect 2425
 - SafeTech Connect
 - SafeTech plus Connect
@@ -68,41 +71,49 @@ Auch Leckage-Erkennungsgeräte sind interessant, können aber zusätzlichen Aufw
 ### Unterstützte Funktionen
 
 #### Sensoren
+
 Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 
-**Wasserqualität & Kapazität**
+#### Wasserqualität & Kapazität
+
 - Überwachung Ein-/Ausgangswasserhärte
 - Verbleibende Kapazität
 - Gesamtvolumen
 - Anzeige der Einheit der Wasserhärte
 
-**Regenerationsinformationen**
+#### Regenerationsinformationen
+
 - Regenerationsstatus
 - Anzahl durchgeführter Regenerationen
 - Einstellung des Regenerationsintervalls
 - Regenerationszeitplan
 
-**Salzverwaltung**
+#### Salzverwaltung
+
 - Salzmenge in Behältern (1–3)
 - Salzvorrat
 - Geschätzte Vorratsdauer
 
-**Systemüberwachung**
+#### Systemüberwachung
+
 - Wasserdruck
 - Durchflussrate (aktuell)
 - Durchflusszähler (Gesamtverbrauch)
 - Alarmstatus
 
-**Geräteinformationen** (standardmäßig deaktiviert, in der Diagnostik-Kategorie)
+#### Geräteinformationen (standardmäßig deaktiviert, in der Diagnostik-Kategorie)
+
 - Seriennummer
 - Firmware-Version und Modell
 - Gerätetyp und Hersteller
 - Netzwerk-Informationen (IP, MAC, Gateway)
 
 #### Binärsensoren
+
 - Regeneration aktiv
 
 #### Buttons (Aktionen)
+
 - **Sofort regenerieren (setSIR)**: Sofortige Regeneration starten
 
 ### Bekannte Einschränkungen
@@ -129,6 +140,7 @@ Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten bi
 ### Automation Beispiele
 
 #### Niedriger Salz-Alarm
+
 Benachrichtigung, wenn der Salzvorrat niedrig ist:
 
 ```yaml
@@ -222,6 +234,7 @@ automation:
 ## Konfigurationsoptionen
 
 ### Scan-Intervall
+
 Standardmäßig werden Daten alle 60 Sekunden aktualisiert. Du kannst dies in den Integrations-Optionen anpassen:
 
 1. Gehe zu Einstellungen > Geräte & Dienste
@@ -256,13 +269,16 @@ Wenn Probleme auftreten, kannst du Diagnosedaten herunterladen:
 Die Datei enthält hilfreiche Informationen zur Fehlersuche (sensible Daten wie Passwörter werden automatisch entfernt).
 
 ### Verbindungsprobleme
+
 - **Zugangsdaten prüfen**: Überprüfe Benutzername und Passwort für die SYR Connect App
 - **App testen**: Melde dich in der SYR Connect App an, um zu prüfen, ob der Account funktioniert
 - **Logs prüfen**: Gehe zu Einstellungen > System > Protokolle und suche nach Fehlern mit "syr_connect"
 - **Netzwerk**: Stelle sicher, dass Home Assistant Internetzugang hat
 
 ### Authentifizierungsfehler
+
 Wenn du "Authentication failed" siehst:
+
 1. Überprüfe deine Zugangsdaten
 2. Die Integration fordert zur erneuten Authentifizierung auf
 3. Gehe zu Einstellungen > Geräte & Dienste
@@ -270,29 +286,34 @@ Wenn du "Authentication failed" siehst:
 5. Gib deine Zugangsdaten erneut ein
 
 ### Keine Geräte gefunden
+
 - **App-Einrichtung**: Stelle sicher, dass Geräte in der SYR Connect App richtig konfiguriert sind
 - **Konto**: Verwende dasselbe Konto, das deine Geräte enthält
 - **Gerätestatus**: Prüfe, ob Geräte in der SYR Connect App online sind
 - **Logs**: Prüfe Home Assistant-Logs auf spezifische Fehlermeldungen
 
 ### Entitäten sind als nicht verfügbar markiert
+
 - **Gerät offline**: Prüfe, ob das Gerät in der SYR Connect App online ist
 - **Netzwerkprobleme**: Verifiziere die Internetverbindung
 - **Cloud-Dienst**: Der SYR Connect-Cloud-Dienst könnte vorübergehend nicht verfügbar sein
 - **Warte auf Update**: Entitäten werden nach dem nächsten erfolgreichen Update wieder verfügbar
 
 ### Hohe CPU-/Speicherauslastung
+
 - **Scan-Intervall erhöhen**: Setze einen höheren Wert (z. B. 120–300 Sekunden) in den Integrations-Optionen
 
 ## Abhängigkeiten
 
 Die Integration benötigt folgende Python-Pakete:
+
 - `pycryptodomex==3.19.0`: Für AES-Verschlüsselung/-Entschlüsselung
 - `defusedxml==0.7.1`: Für sichere XML-Verarbeitung (verhindert XXE-Angriffe)
 
 **Hinweis**: Die Integration verwendet `defusedxml` für sichere XML-Verarbeitung und `pycryptodomex` (nicht `pycryptodome`), um Konflikte mit Home Assistants internen Kryptobibliotheken zu vermeiden.
 
 Dieses Paket wird von Home Assistant automatisch installiert, wenn du:
+
 1. Die Integration über die UI hinzufügst
 2. Home Assistant nach der Installation neu startest
 
