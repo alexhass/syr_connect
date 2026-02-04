@@ -172,13 +172,11 @@ async def async_get_config_entry_diagnostics(
                     devices = []
 
                 # fetch status for each device (limited concurrency by semaphore)
-                status_tasks = []
-                for device in devices:
-                    device_id = device.get("dclg") or device.get("id")
-                    if not device_id:
-                        continue
-
-                    status_tasks.append(_fetch_status(device_id))
+                status_tasks = [
+                    _fetch_status(device.get("dclg") or device.get("id"))
+                    for device in devices
+                    if device.get("dclg") or device.get("id")
+                ]
 
                 if status_tasks:
                     results = await asyncio.gather(*status_tasks, return_exceptions=True)
