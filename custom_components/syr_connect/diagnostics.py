@@ -151,6 +151,11 @@ async def async_get_config_entry_diagnostics(
                 except Exception:
                     return ""
 
+            async def _fetch_status(did: str) -> tuple[str, str]:
+                payload2 = api.payload_builder.build_device_status_payload(api.session_data, did)
+                xml_status = await _fetch(_SYR_CONNECT_API_DEVICE_STATUS_URL, {"xml": payload2})
+                return did, _redact_xml(xml_status, api)
+
             # iterate all projects
             projects_raw: dict[str, Any] = {}
             for project in api.projects:
@@ -172,11 +177,6 @@ async def async_get_config_entry_diagnostics(
                     device_id = device.get("dclg") or device.get("id")
                     if not device_id:
                         continue
-
-                    async def _fetch_status(did: str):
-                        payload2 = api.payload_builder.build_device_status_payload(api.session_data, did)
-                        xml_status = await _fetch(_SYR_CONNECT_API_DEVICE_STATUS_URL, {"xml": payload2})
-                        return did, _redact_xml(xml_status, api)
 
                     status_tasks.append(_fetch_status(device_id))
 
