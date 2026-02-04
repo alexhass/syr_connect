@@ -1,9 +1,10 @@
 """Response parser and validator for SYR Connect API."""
 from __future__ import annotations
 
-import defusedxml.ElementTree as etree  # noqa: N813
 import logging
 from typing import Any
+
+import defusedxml.ElementTree as etree  # noqa: N813
 
 _LOGGER = logging.getLogger(__name__)
 
