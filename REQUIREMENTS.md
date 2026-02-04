@@ -24,7 +24,7 @@ pytest --cov=custom_components.syr_connect --cov-report=term-missing tests/
 
 ## Python Package Requirements
 
-The following package will be automatically installed by Home Assistant:
+The following packages will be automatically installed by Home Assistant:
 
 ### Required Packages
 1. **pycryptodomex** (==3.19.0)
@@ -32,7 +32,10 @@ The following package will be automatically installed by Home Assistant:
    - License: BSD, Public Domain
    - Note: Uses `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's crypto libraries
 
-**XML Parsing**: The integration uses Python's built-in `xml.etree.ElementTree` module (no external dependency needed).
+2. **defusedxml** (==0.7.1)
+   - Purpose: Secure XML parsing to prevent XXE (XML External Entity) attacks
+   - License: Python Software Foundation License
+   - Note: Replaces the built-in `xml.etree.ElementTree` with a hardened version
 
 ## Network Requirements
 - **Internet Connection**: Required for cloud API access
@@ -60,8 +63,8 @@ After installing the integration in Home Assistant:
 
 ## Common Issues
 
-### Issue: `ModuleNotFoundError: No module named 'Cryptodome'`
-**Solution**: Restart Home Assistant to trigger automatic installation of pycryptodomex
+### Issue: `ModuleNotFoundError: No module named 'Cryptodome'` or `No module named 'defusedxml'`
+**Solution**: Restart Home Assistant to trigger automatic installation of required packages (pycryptodomex and defusedxml)
 
 ### Issue: `ImportError: cannot import name 'AES' from 'Crypto.Cipher'`
 **Solution**: This indicates a conflict with the old pycryptodome package. The integration now uses pycryptodomex which avoids this conflict.
@@ -75,15 +78,15 @@ After installing the integration in Home Assistant:
 
 ## Manual Dependency Installation (Advanced)
 
-If automatic installation fails, you can manually install the dependency:
+If automatic installation fails, you can manually install the dependencies:
 
 ```bash
 # For Home Assistant Container/OS
-docker exec -it homeassistant pip install pycryptodomex==3.19.0
+docker exec -it homeassistant pip install pycryptodomex==3.19.0 defusedxml==0.7.1
 
 # For Home Assistant Core
 source /srv/homeassistant/bin/activate
-pip install pycryptodomex==3.19.0
+pip install pycryptodomex==3.19.0 defusedxml==0.7.1
 ```
 
 ## File Structure Requirements

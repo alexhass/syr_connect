@@ -9,9 +9,9 @@ Device: LEXplus10SL
 Firmware: 2.9 (SLPL)
 """
 
+import defusedxml.ElementTree as ET
 import unittest
 from unittest.mock import Mock, MagicMock, patch
-from xml.etree import ElementTree as ET
 
 
 # Real XML response from LEXplus10SL

@@ -1,9 +1,10 @@
 """Response parser and validator for SYR Connect API."""
 from __future__ import annotations
 
+import defusedxml.ElementTree as ET
 import logging
-import xml.etree.ElementTree as ET
 from typing import Any
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,9 +44,8 @@ class ResponseParser:
             ValueError: If XML parsing fails
         """
         try:
-            # Secure XML parser configuration to prevent XXE attacks
-            parser = ET.XMLParser(resolve_entities=False)
-            root = ET.fromstring(xml_string, parser=parser)
+            # defusedxml provides secure XML parsing by default (prevents XXE attacks)
+            root = ET.fromstring(xml_string)
             # Wrap in root tag like xmltodict does
             return {root.tag: ResponseParser._element_to_dict(root)}
         except ET.ParseError as err:

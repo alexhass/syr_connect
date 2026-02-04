@@ -232,7 +232,7 @@ rules:
   # PLATINUM TIER
   async-dependency:
     status: done
-    comment: All dependencies are async - aiohttp for HTTP, native xml.etree.ElementTree for XML parsing (removed xmltodict), pycryptodomex for crypto
+    comment: All dependencies are async - aiohttp for HTTP, defusedxml for secure XML parsing, pycryptodomex for crypto
   
   inject-websession:
     status: done
