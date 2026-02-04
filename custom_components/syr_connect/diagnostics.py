@@ -172,20 +172,26 @@ async def async_get_config_entry_diagnostics(
                     devices = []
 
                 # fetch status for each device (limited concurrency by semaphore)
-                status_tasks = [
-                    _fetch_status(device.get("dclg") or device.get("id"))
-                    for device in devices
-                    if device.get("dclg") or device.get("id")
-                ]
-
-                if status_tasks:
-                    results = await asyncio.gather(*status_tasks, return_exceptions=True)
-                    for res in results:
-                        if isinstance(res, Exception):
-                            continue
-                        if isinstance(res, tuple) and len(res) == 2:
-                            did, xmls = res
-                            projects_raw[pid]["devices"][did] = xmls
+                status_tasks = []
+                try:
+                    for device in devices:
+                        device_id = device.get("dclg") or device.get("id")
+                        if device_id:
+                            status_tasks.append(_fetch_status(device_id))
+                    
+                    if status_tasks:
+                        results = await asyncio.gather(*status_tasks, return_exceptions=True)
+                        for res in results:
+                            if isinstance(res, Exception):
+                                continue
+                            if isinstance(res, tuple) and len(res) == 2:
+                                did, xmls = res
+                                projects_raw[pid]["devices"][did] = xmls
+                except Exception:
+                    # Ensure any created coroutines are awaited even on error
+                    if status_tasks:
+                        await asyncio.gather(*status_tasks, return_exceptions=True)
+                    raise
 
             raw_xml = projects_raw
 
