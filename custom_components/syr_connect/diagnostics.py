@@ -139,7 +139,7 @@ async def async_get_config_entry_diagnostics(
                 # don't fail diagnostics if login fails
                 api = None
 
-        if api and api.projects:
+        if api and isinstance(api.projects, list) and api.projects:
             import asyncio
 
             semaphore = asyncio.Semaphore(5)
