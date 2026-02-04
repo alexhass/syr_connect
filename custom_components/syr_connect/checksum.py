@@ -1,7 +1,7 @@
 """Checksum calculation for SYR Connect API."""
 from __future__ import annotations
 
-import defusedxml.ElementTree as etree
+import defusedxml.ElementTree as etree  # noqa: N813
 
 
 class SyrChecksum:

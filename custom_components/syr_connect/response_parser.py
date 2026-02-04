@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import defusedxml.ElementTree as etree
+import defusedxml.ElementTree as etree  # noqa: N813
 
 
 _LOGGER = logging.getLogger(__name__)
