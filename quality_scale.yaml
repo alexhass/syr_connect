@@ -26,7 +26,7 @@ rules:
   
   config-flow-test-coverage:
     status: done
-    comment: Comprehensive tests in tests/test_config_flow.py (26 test cases covering user flow, options, reauth, reconfigure, error handling)
+    comment: Comprehensive tests in tests/test_config_flow.py (25 test cases covering user flow, options, reauth, reconfigure, error handling)
   
   config-flow:
     status: done
@@ -115,7 +115,7 @@ rules:
   
   parallel-updates:
     status: done
-    comment: PARALLEL_UPDATES = 1 set in sensor.py, binary_sensor.py, button.py
+    comment: PARALLEL_UPDATES = 1 set in sensor.py, binary_sensor.py, button.py, select.py
   
   reauthentication-flow:
     status: done
@@ -125,8 +125,8 @@ rules:
     status: done
     comment: |
       Comprehensive test suite with 200+ test cases:
-      - tests/test_config_flow.py (26 tests)
-      - tests/test_coordinator.py (28 tests)  
+      - tests/test_config_flow.py (25 tests)
+      - tests/test_coordinator.py (24 tests)  
       - tests/test_diagnostics.py (35 tests)
       - tests/test_sensor.py (extensive coverage)
       - tests/test_binary_sensor.py (22 tests)
@@ -203,11 +203,11 @@ rules:
   
   entity-disabled-by-default:
     status: done
-    comment: 13 less-used sensors disabled by default (cycle metrics, advanced config)
+    comment: 63 sensors disabled by default (14 basic sensors: cycle metrics, regeneration settings, advanced config; 49 leak protection profile sensors)
   
   entity-translations:
     status: done
-    comment: Translations available in de.json, en.json, es.json, fr.json
+    comment: Translations available in 6 languages: de.json, en.json, es.json, fr.json, it.json, pt.json
   
   exception-translations:
     status: done
