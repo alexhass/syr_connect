@@ -38,7 +38,7 @@ dist/
 .pip-downloads/
 
 # --- IDE / Editor ---
-#.vscode/
+.vscode/settings.json
 .idea/
 *.swp
 *.swo

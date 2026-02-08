@@ -5,14 +5,45 @@
   "python.testing.pytestArgs": ["--no-cov", "tests"],
   // https://code.visualstudio.com/docs/python/testing#_pytest-configuration-settings
   "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
   // https://code.visualstudio.com/docs/python/linting#_general-settings
   "pylint.importStrategy": "fromEnvironment",
   // Pyright type checking is not compatible with mypy which Home Assistant uses for type checking
   "python.analysis.typeCheckingMode": "off",
+  // Auto-save and formatting
+  "files.autoSave": "onFocusChange",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  // Python-specific settings
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.rulers": [120],
+    "editor.tabSize": 4
   },
+  // JSON/YAML formatting
   "[json][jsonc][yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  // Exclude patterns for file watcher and search
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.ruff_cache/**": true,
+    "**/htmlcov/**": true,
+    "**/.coverage": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/.coverage": true
+  }
 }
