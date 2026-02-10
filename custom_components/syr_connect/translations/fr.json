@@ -67,6 +67,12 @@
           "no_salt": "Pas de sel"
         }
       },
+      "getbat": {
+        "name": "Tension de batterie"
+      },
+      "getcel": {
+        "name": "Température de l'eau"
+      },
       "getcde": {
         "name": "Code de configuration"
       },

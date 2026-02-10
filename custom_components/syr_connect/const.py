@@ -5,6 +5,7 @@ from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
     PERCENTAGE,
+    UnitOfElectricPotential,
     UnitOfMass,
     UnitOfPressure,
     UnitOfTemperature,
@@ -81,6 +82,7 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
+    "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
@@ -89,6 +91,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
+    "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
     "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
@@ -126,6 +129,7 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getSRN",  # Serial number
     "getVER",  # Version
     "getWHU",  # Water hardness unit (mapped to unit names)
+    # Note: getBAT is handled specially - extracts first numeric value from space-separated string
 }
 
 # Water hardness unit mapping (for getWHU)
@@ -186,6 +190,10 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Sensors exits in devices:
     # - LEXplus10S
     # - LEXplus10SL
+    # - Safe-T+
+
+    # Safe-T+ specific
+    "getBAT": "mdi:battery",
 
     # Water & Hardness
     "getIWH": "mdi:water-percent",
@@ -348,6 +356,11 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getPV6": UnitOfVolume.LITERS,                      # Leak protection volume 6
     "getPV7": UnitOfVolume.LITERS,                      # Leak protection volume 7
     "getPV8": UnitOfVolume.LITERS,                      # Leak protection volume 8
+
+    # Sensors exits in devices:
+    # - Safe-T+
+
+    "getBAT": UnitOfElectricPotential.VOLT,
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -355,6 +368,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
+    "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default
     "getCOF": 0,    # Total water consumption counter: show as whole number by default

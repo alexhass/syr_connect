@@ -67,6 +67,12 @@
           "no_salt": "No salt"
         }
       },
+      "getbat": {
+        "name": "Battery voltage"
+      },
+      "getcel": {
+        "name": "Water temperature"
+      },
       "getcde": {
         "name": "Configuration code"
       },

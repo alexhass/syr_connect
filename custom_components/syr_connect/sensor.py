@@ -374,6 +374,20 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     #status['getSTA'] = "Płukanie szybkie 1"
                     #status['getSTA'] = "Płukanie wsteczne"
 
+                # Special handling for battery voltage (getBAT) - Safe-T+ device
+                # Format: "6,12 4,38 3,90" where first value is battery voltage in V
+                if self._sensor_key == 'getBAT':
+                    if value is None or value == "":
+                        return None
+                    try:
+                        # Extract first value from space-separated string
+                        first_value = str(value).split()[0]
+                        # Replace comma with dot for proper float conversion
+                        voltage = float(first_value.replace(',', '.'))
+                        return round(voltage, 2)
+                    except (ValueError, TypeError, IndexError):
+                        return None
+
                 # Special handling for combined regeneration time sensor
                 if self._sensor_key == 'getRTIME':
                     hour = status.get('getRTH', 0)

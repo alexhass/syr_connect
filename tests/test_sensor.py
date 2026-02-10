@@ -3860,4 +3860,84 @@ async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
     assert vol_sensor.native_value == 6530
 
 
+async def test_sensor_getbat_with_multiple_values(hass: HomeAssistant) -> None:
+    """Test getBAT sensor extracts first voltage value from Safe-T+ format."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "6,12 4,38 3,90",  # Safe-T+ battery format
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    assert bat_sensor.native_value == 6.12
+
+
+async def test_sensor_getbat_with_single_value(hass: HomeAssistant) -> None:
+    """Test getBAT sensor with single value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "5,87",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    assert bat_sensor.native_value == 5.87
+
+
+async def test_sensor_getbat_empty_value(hass: HomeAssistant) -> None:
+    """Test getBAT sensor with empty value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    assert bat_sensor.native_value is None
+
+
+async def test_sensor_getbat_invalid_value(hass: HomeAssistant) -> None:
+    """Test getBAT sensor with invalid value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    assert bat_sensor.native_value is None
+
+
 

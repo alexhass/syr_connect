@@ -67,6 +67,12 @@
           "no_salt": "Salz leer"
         }
       },
+      "getbat": {
+        "name": "Batteriespannung"
+      },
+      "getcel": {
+        "name": "Wassertemperatur"
+      },
       "getcde": {
         "name": "Konfigurationscode"
       },
