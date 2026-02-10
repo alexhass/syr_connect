@@ -3799,3 +3799,65 @@ async def test_sensor_available_coordinator_not_successful(hass: HomeAssistant) 
     assert sensor.available is False
 
 
+async def test_sensor_getvol_with_prefix(hass: HomeAssistant) -> None:
+    """Test getVOL sensor when device sends value with prefix like 'Vol[L]6530'."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVOL": "Vol[L]6530",  # Value with prefix
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    # Test getVOL sensor - should extract numeric value
+    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    assert vol_sensor.native_value == 6530
+
+
+async def test_sensor_getvol_normal_value(hass: HomeAssistant) -> None:
+    """Test getVOL sensor with normal numeric value (backward compatibility)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVOL": "6530",  # Normal value without prefix
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    assert vol_sensor.native_value == 6530
+
+
+async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
+    """Test getVOL sensor with direct numeric value (not string)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVOL": 6530,  # Direct numeric value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    assert vol_sensor.native_value == 6530
+
+
+

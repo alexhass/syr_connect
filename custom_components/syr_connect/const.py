@@ -384,6 +384,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
+    "getVOL": 0,    # Total water volume: show as whole number by default
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -87,3 +88,31 @@ def build_entity_id(platform: str, device_id: str, key: str) -> str:
         Formatted entity ID
     """
     return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
+
+
+def clean_sensor_value(value: str | int | float) -> str | int | float:
+    """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
+
+    Some devices send values with prefixes that include the parameter name
+    and unit in brackets, e.g., 'Vol[L]6530', 'Temp[C]25', etc.
+    This function extracts the numeric value from such strings.
+
+    Args:
+        value: The raw sensor value
+
+    Returns:
+        Cleaned value with prefix removed if applicable
+    """
+    # Only process string values
+    if not isinstance(value, str):
+        return value
+
+    # Pattern to match values like 'Vol[L]6530', 'Temp[C]25', etc.
+    # Format: word characters, optional brackets with content, then the actual value
+    match = re.match(r'^[A-Za-z]+\[[^\]]+\](.+)$', value)
+    if match:
+        cleaned = match.group(1).strip()
+        _LOGGER.debug("Cleaned sensor value from '%s' to '%s'", value, cleaned)
+        return cleaned
+
+    return value

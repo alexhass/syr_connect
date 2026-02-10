@@ -31,7 +31,7 @@ from .const import (
     _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id
+from .helpers import build_device_info, build_entity_id, clean_sensor_value
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -363,6 +363,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Defensive: always set value before use in string sensors
                 value = status.get(self._sensor_key) if self._sensor_key in status else None
+
+                # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
+                if self._sensor_key == 'getVOL' and value is not None:
+                    value = clean_sensor_value(value)
 
                 # TEST: Override getSTA value for manual testing
                 #if self._sensor_key == 'getSTA':
