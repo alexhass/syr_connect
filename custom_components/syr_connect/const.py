@@ -101,7 +101,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
-    "getNPS": SensorStateClass.TOTAL_INCREASING,   # Microleakage count
+    "getNPS": SensorStateClass.MEASUREMENT,        # Microleakage count
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
     "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
     "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
