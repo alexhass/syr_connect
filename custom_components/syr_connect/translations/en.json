@@ -67,6 +67,9 @@
           "no_salt": "No salt"
         }
       },
+      "getbar": {
+        "name": "Inlet pressure"
+      },
       "getbat": {
         "name": "Battery voltage"
       },
@@ -223,7 +226,7 @@
         "name": "Active leak protection profile"
       },
       "getprs": {
-        "name": "Pressure"
+        "name": "Inlet pressure"
       },
       "getpv1": {
         "name": "Volume leakage threshold 1"

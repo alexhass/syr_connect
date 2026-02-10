@@ -67,6 +67,9 @@
           "no_salt": "Pas de sel"
         }
       },
+      "getbar": {
+        "name": "Pression d'entrée"
+      },
       "getbat": {
         "name": "Tension de batterie"
       },

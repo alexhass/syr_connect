@@ -3940,4 +3940,104 @@ async def test_sensor_getbat_invalid_value(hass: HomeAssistant) -> None:
     assert bat_sensor.native_value is None
 
 
+async def test_sensor_getbar_with_unit(hass: HomeAssistant) -> None:
+    """Test getBAR sensor with 'mbar' unit suffix."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAR": "4077 mbar",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    assert bar_sensor.native_value == 4.077
+
+
+async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
+    """Test getBAR sensor with numeric value only."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAR": "4077",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    assert bar_sensor.native_value == 4.077
+
+
+async def test_sensor_getbar_with_comma_decimal(hass: HomeAssistant) -> None:
+    """Test getBAR sensor with comma decimal separator."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAR": "4077,5 mbar",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    assert bar_sensor.native_value == 4.078
+
+
+async def test_sensor_getbar_empty_value(hass: HomeAssistant) -> None:
+    """Test getBAR sensor with empty value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAR": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    assert bar_sensor.native_value is None
+
+
+async def test_sensor_getbar_invalid_value(hass: HomeAssistant) -> None:
+    """Test getBAR sensor with invalid value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAR": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    assert bar_sensor.native_value is None
+
+
 

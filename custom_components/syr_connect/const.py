@@ -82,6 +82,7 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
+    "getBAR": SensorDeviceClass.PRESSURE,
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
@@ -91,6 +92,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
+    "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
@@ -100,7 +102,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
-    "getPRS": SensorStateClass.MEASUREMENT,        # Pressure
+    "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
     "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
     "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity
     "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
@@ -193,6 +195,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # - Safe-T+
 
     # Safe-T+ specific
+    "getBAR": "mdi:gauge",
     "getBAT": "mdi:battery",
 
     # Water & Hardness
@@ -360,6 +363,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # Sensors exits in devices:
     # - Safe-T+
 
+    "getBAR": UnitOfPressure.BAR,
     "getBAT": UnitOfElectricPotential.VOLT,
 }
 
@@ -368,6 +372,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
+    "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default

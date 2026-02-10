@@ -368,6 +368,25 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if self._sensor_key == 'getVOL' and value is not None:
                     value = clean_sensor_value(value)
 
+                # Special handling for pressure sensor (getBAR) - Safe-T+ device
+                # Format: "4077 mbar" - extract numeric value and convert to bar
+                if self._sensor_key == 'getBAR':
+                    if value is None or value == "":
+                        return None
+                    try:
+                        # Extract integer value from string like "4077 mbar"
+                        match = re.search(r'\d+', str(value))
+                        if not match:
+                            return None
+                        pressure_mbar = float(match.group())
+                        # Convert mbar to bar (divide by 1000)
+                        pressure_bar = pressure_mbar / 1000
+                        # Apply configured precision
+                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key, 3)
+                        return round(pressure_bar, precision)
+                    except (ValueError, TypeError):
+                        return None
+
                 # TEST: Override getSTA value for manual testing
                 #if self._sensor_key == 'getSTA':
                     #status['getSTA'] = "Płukanie regenerantem (587mA)"
@@ -384,7 +403,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         first_value = str(value).split()[0]
                         # Replace comma with dot for proper float conversion
                         voltage = float(first_value.replace(',', '.'))
-                        return round(voltage, 2)
+                        # Apply configured precision
+                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key, 2)
+                        return round(voltage, precision)
                     except (ValueError, TypeError, IndexError):
                         return None
 

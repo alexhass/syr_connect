@@ -67,6 +67,9 @@
           "no_salt": "Salz leer"
         }
       },
+      "getbar": {
+        "name": "Eingangsdruck"
+      },
       "getbat": {
         "name": "Batteriespannung"
       },
