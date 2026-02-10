@@ -327,6 +327,22 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except Exception:
                 pass
 
+        # Dynamic icon for valve status (getVLV)
+        if self._sensor_key == "getVLV":
+            val = self.native_value
+            if val is None:
+                return self._base_icon
+            # Values: 10=closed, 11=closing, 20=open, 21=opening
+            if str(val) == "10":
+                return "mdi:valve-closed"
+            elif str(val) == "11":
+                return "mdi:valve"  # closing in progress
+            elif str(val) == "20":
+                return "mdi:valve-open"
+            elif str(val) == "21":
+                return "mdi:valve"  # opening in progress
+            return self._base_icon
+
         # Dynamic icon for pressure sensor availability (getPST)
         if self._sensor_key == "getPST":
             try:

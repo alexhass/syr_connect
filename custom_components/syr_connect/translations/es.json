@@ -355,6 +355,15 @@
       "getvs3": {
         "name": "Umbral de volumen 3"
       },
+      "getvlv": {
+        "name": "Estado de válvula",
+        "state": {
+          "10": "Cerrada",
+          "11": "Cerrando",
+          "20": "Abierta",
+          "21": "Abriendo"
+        }
+      },
       "getwhu": {
         "name": "Unidad de dureza del agua"
       }

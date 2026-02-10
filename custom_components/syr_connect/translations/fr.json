@@ -355,6 +355,15 @@
       "getvs3": {
         "name": "Seuil de volume 3"
       },
+      "getvlv": {
+        "name": "État de vanne",
+        "state": {
+          "10": "Fermée",
+          "11": "Fermeture",
+          "20": "Ouverte",
+          "21": "Ouverture"
+        }
+      },
       "getwhu": {
         "name": "Unité de dureté de l'eau"
       }

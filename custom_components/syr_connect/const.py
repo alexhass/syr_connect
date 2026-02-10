@@ -130,6 +130,7 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
     "getSRN",  # Serial number
     "getVER",  # Version
+    "getVLV",  # Valve status (10=closed, 11=closing, 20=open, 21=opening)
     "getWHU",  # Water hardness unit (mapped to unit names)
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
 }
@@ -197,6 +198,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Safe-T+ specific
     "getBAR": "mdi:gauge",
     "getBAT": "mdi:battery",
+    "getVLV": "mdi:valve",
 
     # Water & Hardness
     "getIWH": "mdi:water-percent",

@@ -362,6 +362,15 @@
       "gettyp": {
         "name": "Tipo"
       },
+      "getvlv": {
+        "name": "Estado da válvula",
+        "state": {
+          "10": "Fechada",
+          "11": "Fechando",
+          "20": "Aberta",
+          "21": "Abrindo"
+        }
+      },
       "getwhu": {
         "name": "Unidade de dureza da água"
       }

@@ -358,6 +358,15 @@
       "getvs3": {
         "name": "Volumenschwelle 3"
       },
+      "getvlv": {
+        "name": "Ventilstatus",
+        "state": {
+          "10": "Geschlossen",
+          "11": "Schließt",
+          "20": "Offen",
+          "21": "Öffnet"
+        }
+      },
       "getwhu": {
         "name": "Wasserhärte-Einheit"
       }

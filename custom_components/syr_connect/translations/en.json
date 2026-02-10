@@ -358,6 +358,15 @@
       "getvs3": {
         "name": "Volume threshold 3"
       },
+      "getvlv": {
+        "name": "Valve status",
+        "state": {
+          "10": "Closed",
+          "11": "Closing",
+          "20": "Open",
+          "21": "Opening"
+        }
+      },
       "getwhu": {
         "name": "Water hardness unit"
       }
