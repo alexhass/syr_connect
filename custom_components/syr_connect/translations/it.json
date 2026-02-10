@@ -141,6 +141,9 @@
       "getman": {
         "name": "Produttore"
       },
+      "getnps": {
+        "name": "Conteggio microleaks"
+      },
       "getnot": {
         "name": "Note"
       },

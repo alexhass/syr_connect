@@ -141,6 +141,9 @@
       "getman": {
         "name": "Fabricant"
       },
+      "getnps": {
+        "name": "Nombre de microfuites"
+      },
       "getnot": {
         "name": "Notes"
       },

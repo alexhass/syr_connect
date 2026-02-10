@@ -141,6 +141,9 @@
       "getman": {
         "name": "Fabricante"
       },
+      "getnps": {
+        "name": "Recuento de microfugas"
+      },
       "getnot": {
         "name": "Notas"
       },

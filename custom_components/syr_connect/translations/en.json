@@ -141,6 +141,9 @@
       "getman": {
         "name": "Manufacturer"
       },
+      "getnps": {
+        "name": "Microleakage count"
+      },
       "getnot": {
         "name": "Notes"
       },

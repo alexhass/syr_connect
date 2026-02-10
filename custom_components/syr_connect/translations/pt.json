@@ -163,6 +163,9 @@
       "getman": {
         "name": "Fabricante"
       },
+      "getnps": {
+        "name": "Contagem de microvazamentos"
+      },
       "getnor": {
         "name": "Regenerações em funcionamento normal"
       },

@@ -141,6 +141,9 @@
       "getman": {
         "name": "Hersteller"
       },
+      "getnps": {
+        "name": "Mikroleckagen-Anzahl"
+      },
       "getnot": {
         "name": "Notizen"
       },

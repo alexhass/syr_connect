@@ -101,6 +101,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
+    "getNPS": SensorStateClass.TOTAL_INCREASING,   # Microleakage count
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
     "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
     "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
@@ -264,6 +265,8 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # - LEXplus10SL
 
     # Leak protection profile sensors
+    "getCEL": "mdi:thermometer",
+    "getNPS": "mdi:pipe-leak",
     "getPF1": "mdi:water-alert",
     "getPF2": "mdi:water-alert",
     "getPF3": "mdi:water-alert",
@@ -389,6 +392,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
+    "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
@@ -457,7 +461,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getDRP', 'getDST', 'getDTC',
     'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
-    'getNPS', 'getOHF', 'getYHF',
+    'getOHF', 'getYHF',
     'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
     'getT2', 'getTN', 'getVLV',
 }
