@@ -105,7 +105,7 @@
       },
       "getcof": {
         "name": "Wasserverbrauch Gesamt"
-      },      
+      },
       "getcyn": {
         "name": "Regenerationszyklen Anzahl"
       },
@@ -369,7 +369,7 @@
         "name": "Firmware-Version"
       },
       "getvol": {
-        "name": "Gesamtkapazität"
+        "name": "Gesamtvolumen"
       },
       "getvs1": {
         "name": "Volumenschwelle 1"

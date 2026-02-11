@@ -384,6 +384,21 @@
       "gettyp": {
         "name": "Tipo"
       },
+      "getver": {
+        "name": "Versão do firmware"
+      },
+      "getvol": {
+        "name": "Volume total"
+      },
+      "getvs1": {
+        "name": "Limite de volume 1"
+      },
+      "getvs2": {
+        "name": "Limite de volume 2"
+      },
+      "getvs3": {
+        "name": "Limite de volume 3"
+      },
       "getvlv": {
         "name": "Estado da válvula",
         "state": {

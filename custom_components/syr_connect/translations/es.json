@@ -366,7 +366,7 @@
         "name": "Versión de firmware"
       },
       "getvol": {
-        "name": "Capacidad total"
+        "name": "Volumen total"
       },
       "getvs1": {
         "name": "Umbral de volumen 1"

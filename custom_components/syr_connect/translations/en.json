@@ -98,7 +98,7 @@
       },
       "getcof": {
         "name": "Total water consumption"
-      },      
+      },
       "getcyn": {
         "name": "Regeneration cycle counter"
       },
@@ -366,7 +366,7 @@
         "name": "Firmware version"
       },
       "getvol": {
-        "name": "Total capacity"
+        "name": "Total volume"
       },
       "getvs1": {
         "name": "Volume threshold 1"

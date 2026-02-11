@@ -369,7 +369,7 @@
         "name": "Versione firmware"
       },
       "getvol": {
-        "name": "Capacità totale"
+        "name": "Volume totale"
       },
       "getvs1": {
         "name": "Soglia volume 1"
