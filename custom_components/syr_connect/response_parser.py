@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree  # noqa: N813
 
@@ -188,7 +189,8 @@ class ResponseParser:
                 dcl_list = col['dcl'] if isinstance(col['dcl'], list) else [col['dcl']]
                 for dcl in dcl_list:
                     if '@dclg' in dcl and '@ali' in dcl:
-                        device_aliases[dcl['@dclg']] = dcl['@ali']
+                        # URL-decode the alias (replace + with space and decode %XX sequences)
+                        device_aliases[dcl['@dclg']] = unquote_plus(dcl['@ali'])
 
         # Extract devices
         if not self.validate_structure(parsed, ['sc', 'dvs']):
