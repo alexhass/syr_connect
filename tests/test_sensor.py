@@ -4159,7 +4159,8 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
-    assert le_sensor.native_value == "300"  # Mapped display value
+    # Mapped display value (matches mapping in const.py)
+    assert le_sensor.native_value == "250"  # Mapped display value
 
 
 async def test_sensor_getle_unmapped_value(hass: HomeAssistant) -> None:
