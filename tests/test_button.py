@@ -117,13 +117,13 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mo
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {},
+                "status": {"getSIR": 1},
             },
             {
                 "id": "device2",
                 "name": "Device 2",
                 "project_id": "project1",
-                "status": {},
+                "status": {"getSIR": 1},
             },
         ]
     }
