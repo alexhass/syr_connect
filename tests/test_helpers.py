@@ -3,7 +3,11 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.syr_connect.helpers import build_device_info, build_entity_id
+from custom_components.syr_connect.helpers import (
+    build_device_info,
+    build_entity_id,
+    extract_flow_value,
+)
 
 
 def test_build_entity_id() -> None:
@@ -59,3 +63,30 @@ def test_build_device_info_minimal() -> None:
     assert device_info["manufacturer"] == "SYR"
     assert device_info["model"] == "SYR Connect"  # Fallback
     assert device_info["serial_number"] == "DEVICE123"
+
+
+def test_extract_flow_value() -> None:
+    """Test flow value extraction from strings."""
+    # Test standard format - values in mL converted to L
+    assert extract_flow_value("1655mL") == 1.655
+    assert extract_flow_value("0mL") == 0.0
+    assert extract_flow_value("999mL") == 0.999
+    assert extract_flow_value("1000mL") == 1.0
+    
+    # Test numeric inputs - treated as mL and converted to L
+    assert extract_flow_value(1655) == 1.655
+    assert extract_flow_value(0) == 0.0
+    assert extract_flow_value(100.5) == 0.1005
+    
+    # Test None input
+    assert extract_flow_value(None) is None
+    
+    # Test fallback: extract number at start and convert to L
+    assert extract_flow_value("1655") == 1.655
+    assert extract_flow_value("100abc") == 0.1
+    
+    # Test invalid inputs
+    assert extract_flow_value("mL") is None
+    assert extract_flow_value("abc") is None
+    assert extract_flow_value("") is None
+    assert extract_flow_value("no numbers here") is None

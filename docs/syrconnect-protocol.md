@@ -424,7 +424,7 @@ These properties are only available on devices that contain leakage protection, 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
 | getDMA          | "1"          |        | *unknown*
-| getAVO          | "0mL"        |        | *unknown*
+| getAVO          | "0mL"        | mL     | Current water flow in "mL". Syr Apps show value in "L"
 | getBSA          | "0"          |        | *unknown*
 | getDBD          | "10"         |        | *unknown*
 | getDBT          | "15"         |        | *unknown*

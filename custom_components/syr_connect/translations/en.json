@@ -59,6 +59,9 @@
           "2": "Closed"
         }
       },
+      "getavo": {
+        "name": "Current flow"
+      },
       "getalm": {
         "name": "Alarm",
         "state": {

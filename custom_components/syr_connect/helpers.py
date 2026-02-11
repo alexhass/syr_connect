@@ -116,3 +116,51 @@ def clean_sensor_value(value: str | int | float) -> str | int | float:
         return cleaned
 
     return value
+
+
+def extract_flow_value(value: str | int | float) -> float | None:
+    """Extract numeric flow value from strings like '1655mL' -> 1.655 (L).
+
+    The getAVO sensor returns flow values in the format '1655mL', '0mL', etc.
+    This function extracts the numeric value, converts from mL to L, and returns it as a float.
+
+    Args:
+        value: The raw sensor value (e.g., '1655mL', '0mL')
+
+    Returns:
+        Numeric flow value in L (converted from mL), or None if extraction fails
+    """
+    # Return None for None input
+    if value is None:
+        return None
+
+    # If already numeric, convert from mL to L
+    if isinstance(value, int | float):
+        return float(value) / 1000
+
+    # Only process string values
+    if not isinstance(value, str):
+        return None
+
+    # Pattern to match values like '1655mL', '0mL', etc.
+    # Extract the numeric part before 'mL'
+    match = re.match(r'^(\d+)mL$', value)
+    if match:
+        try:
+            flow_ml = int(match.group(1))
+            flow_l = flow_ml / 1000  # Convert mL to L
+            _LOGGER.debug("Extracted flow value from '%s' to %.3f L", value, flow_l)
+            return flow_l
+        except (ValueError, TypeError):
+            return None
+
+    # If pattern doesn't match, try to extract any number at the start and convert
+    match = re.match(r'^(\d+)', value)
+    if match:
+        try:
+            flow_ml = int(match.group(1))
+            return flow_ml / 1000  # Convert mL to L
+        except (ValueError, TypeError):
+            return None
+
+    return None

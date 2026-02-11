@@ -125,6 +125,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
+    "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
     "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
@@ -242,6 +243,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # - LEXplus10SL
     # - Safe-T+
     "getAB": "mdi:valve",
+    "getAVO": "mdi:waves-arrow-right",
 
     # Water & Hardness
     "getIWH": "mdi:water-percent",
@@ -359,6 +361,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # - LEXplus10SL
 
     # getIWH and getOWH units are set dynamically from getWHU
+    "getAVO": UnitOfVolume.LITERS,                          # Current flow in Liters (e.g. "1655mL" -> 1.655 L)
     "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
     "getVOL": UnitOfVolume.LITERS,                          # Total capacity
     "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
@@ -427,6 +430,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_PRECISION = {
+    "getAVO": 1,    # Current flow: show with 2 decimal places
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
@@ -508,7 +512,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPB1', 'getPB2', 'getPB3', 'getPB4', 'getPB5', 'getPB6', 'getPB7', 'getPB8',
     'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
-    'get71', 'getAVO', 'getBSA', 'getBUZ',
+    'get71', 'getBSA', 'getBUZ',
     'getCDF',
     'getCES', 'getCND',
     'getCNO', # Code number - not useful for users

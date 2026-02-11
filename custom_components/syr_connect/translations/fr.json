@@ -66,6 +66,9 @@
           "2": "Fermé"
         }
       },
+      "getavo": {
+        "name": "Débit actuel"
+      },
       "getalm": {
         "name": "Alarme",
         "state": {

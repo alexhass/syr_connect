@@ -66,6 +66,9 @@
           "2": "Geschlossen"
         }
       },
+      "getavo": {
+        "name": "Aktueller Durchfluss"
+      },
       "getalm": {
         "name": "Alarm",
         "state": {

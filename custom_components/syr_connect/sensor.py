@@ -34,7 +34,12 @@ from .const import (
     _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, clean_sensor_value
+from .helpers import (
+    build_device_info,
+    build_entity_id,
+    clean_sensor_value,
+    extract_flow_value,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -398,6 +403,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
                 if self._sensor_key == 'getVOL' and value is not None:
                     value = clean_sensor_value(value)
+
+                # Special handling for current flow rate (getAVO)
+                # Format: "1655mL" - extract numeric value
+                if self._sensor_key == 'getAVO':
+                    if value is None or value == "":
+                        return None
+                    return extract_flow_value(value)
 
                 # Special handling for pressure sensor (getBAR) - Safe-T+ device
                 # Format: "4077 mbar" - extract numeric value and convert to bar

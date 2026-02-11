@@ -88,6 +88,9 @@
           "2": "Fechada"
         }
       },
+      "getavo": {
+        "name": "Fluxo atual"
+      },
       "getalm": {
         "name": "Alarm",
         "state": {

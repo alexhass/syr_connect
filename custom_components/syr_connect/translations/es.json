@@ -66,6 +66,9 @@
           "2": "Cerrada"
         }
       },
+      "getavo": {
+        "name": "Flujo actual"
+      },
       "getalm": {
         "name": "Alarma",
         "state": {
