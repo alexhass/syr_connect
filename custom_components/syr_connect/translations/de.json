@@ -59,6 +59,13 @@
           "2": "Verfügbar"
         }
       },
+      "getab": {
+        "name": "Ventilabsperrung",
+        "state": {
+          "1": "Offen",
+          "2": "Geschlossen"
+        }
+      },
       "getalm": {
         "name": "Alarm",
         "state": {

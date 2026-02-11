@@ -121,6 +121,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
 
 # Sensors that should remain as strings (not converted to numbers) - internal
 _SYR_CONNECT_STRING_SENSORS = {
+    "getAB",   # Valve shut-off (1=open, 2=closed)
     "getCNA",  # Device name
     "getDGW",  # Gateway
     "getFIR",  # Firmware
@@ -200,6 +201,10 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getBAR": "mdi:gauge",
     "getBAT": "mdi:battery",
     "getVLV": "mdi:valve",
+
+    # - LEXplus10SL
+    # - Safe-T+
+    "getAB": "mdi:valve",
 
     # Water & Hardness
     "getIWH": "mdi:water-percent",
@@ -454,7 +459,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getPB1', 'getPB2', 'getPB3', 'getPB4', 'getPB5', 'getPB6', 'getPB7', 'getPB8',
     'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
-    'get71', 'getAB', 'getAVO', 'getBSA', 'getBUZ',
+    'get71', 'getAVO', 'getBSA', 'getBUZ',
     'getCDF',
     'getCES', 'getCND', 'getCNO', 'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',

@@ -59,6 +59,13 @@
           "2": "Disponibile"
         }
       },
+      "getab": {
+        "name": "Chiusura valvola",
+        "state": {
+          "1": "Aperta",
+          "2": "Chiusa"
+        }
+      },
       "getalm": {
         "name": "Allarme",
         "state": {

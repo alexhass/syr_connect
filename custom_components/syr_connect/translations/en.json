@@ -52,11 +52,11 @@
   },
   "entity": {
     "sensor": {
-      "getpst": {
-        "name": "Pressure sensor",
+      "getab": {
+        "name": "Valve shut-off",
         "state": {
-          "1": "Not available",
-          "2": "Available"
+          "1": "Open",
+          "2": "Closed"
         }
       },
       "getalm": {
@@ -230,6 +230,13 @@
       },
       "getprs": {
         "name": "Inlet pressure"
+      },
+      "getpst": {
+        "name": "Pressure sensor",
+        "state": {
+          "1": "Not available",
+          "2": "Available"
+        }
       },
       "getpv1": {
         "name": "Volume leakage threshold 1"

@@ -327,6 +327,18 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except Exception:
                 pass
 
+        # Dynamic icon for valve shut-off (getAB)
+        if self._sensor_key == "getAB":
+            val = self.native_value
+            if val is None:
+                return self._base_icon
+            # Values: 1=open, 2=closed
+            if str(val) == "1":
+                return "mdi:valve-open"
+            elif str(val) == "2":
+                return "mdi:valve-closed"
+            return self._base_icon
+
         # Dynamic icon for valve status (getVLV)
         if self._sensor_key == "getVLV":
             val = self.native_value

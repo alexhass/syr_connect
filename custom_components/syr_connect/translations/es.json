@@ -59,6 +59,13 @@
           "2": "Disponible"
         }
       },
+      "getab": {
+        "name": "Cierre de válvula",
+        "state": {
+          "1": "Abierta",
+          "2": "Cerrada"
+        }
+      },
       "getalm": {
         "name": "Alarma",
         "state": {

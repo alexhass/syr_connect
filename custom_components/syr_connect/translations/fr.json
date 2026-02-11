@@ -59,6 +59,13 @@
           "2": "Disponible"
         }
       },
+      "getab": {
+        "name": "Coupure de vanne",
+        "state": {
+          "1": "Ouvert",
+          "2": "Fermé"
+        }
+      },
       "getalm": {
         "name": "Alarme",
         "state": {
