@@ -4223,8 +4223,8 @@ async def test_sensor_getul_value_mapping(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
-    # Accept both numeric and string representations due to current implementation
-    assert ul_sensor.native_value in (30, "30")  # Mapped display value
+    # Integration returns scaled integer (value*10)
+    assert ul_sensor.native_value == 30  # Mapped display value as int
 
 
 async def test_sensor_getul_unmapped_value(hass: HomeAssistant) -> None:
@@ -4244,8 +4244,8 @@ async def test_sensor_getul_unmapped_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
-    # Implementation multiplies numeric input by 10; accept both raw string or scaled int
-    assert ul_sensor.native_value in (990, "99")  # Returns scaled value or raw
+    # Implementation multiplies numeric input by 10; expect scaled int
+    assert ul_sensor.native_value == 990  # Returns scaled value as int
 
 
 async def test_sensor_getul_empty_value(hass: HomeAssistant) -> None:
