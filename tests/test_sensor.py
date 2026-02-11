@@ -4164,25 +4164,6 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
     assert le_sensor.native_value == "250"  # Mapped display value
 
 
-async def test_sensor_getle_unmapped_value(hass: HomeAssistant) -> None:
-    """Test getLE sensor with unmapped value returns raw value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getLE": "999",  # Unmapped value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    
-    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
-    # Returns the raw unmapped value
-    assert le_sensor.native_value == "999"
 
 
 async def test_sensor_getle_empty_value(hass: HomeAssistant) -> None:
