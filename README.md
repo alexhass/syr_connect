@@ -47,6 +47,7 @@ Tested and reported working:
 
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
+- Safe-T+
 
 Not tested, but should work (please report):
 
