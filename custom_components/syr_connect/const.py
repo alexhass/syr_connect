@@ -145,6 +145,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
     "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
     "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
+    "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
     "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
@@ -310,6 +311,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getLE": "mdi:water-alert",
     "getNPS": "mdi:pipe-leak",
     "getT1": "mdi:timer-outline",
+    "getTMP": "mdi:timer-off-outline",
     "getUL": "mdi:water-alert",
     "getPF1": "mdi:water-alert",
     "getPF2": "mdi:water-alert",
@@ -416,6 +418,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
     "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
     "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
+    "getTMP": UnitOfTime.SECONDS,                       # Deactivate leakage protection for n seconds
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
 }
 
@@ -456,6 +459,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV1": 0,    # Salt container volume 1: show as whole number by default
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
+    "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
     "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
     "getUL": 0,     # Leakage protection - Absent level: show as whole number by default

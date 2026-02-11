@@ -372,6 +372,9 @@
       "gett1": {
         "name": "Vazamento de tempo"
       },
+      "gettmp": {
+        "name": "Proteção contra vazamentos desativada"
+      },
       "gettor": {
         "name": "Total de regenerações"
       },

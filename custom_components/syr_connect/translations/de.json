@@ -353,6 +353,9 @@
       "gett1": {
         "name": "Zeitleckage"
       },
+      "gettmp": {
+        "name": "Leckageschutz deaktiviert"
+      },
       "gettor": {
         "name": "Summe aller Regenerationen"
       },

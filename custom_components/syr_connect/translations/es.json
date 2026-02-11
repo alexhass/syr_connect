@@ -350,6 +350,9 @@
       "gett1": {
         "name": "Fuga de tiempo"
       },
+      "gettmp": {
+        "name": "Protección contra fugas desactivada"
+      },
       "gettor": {
         "name": "Total de regeneraciones"
       },

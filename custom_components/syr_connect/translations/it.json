@@ -353,6 +353,9 @@
       "gett1": {
         "name": "Perdita di tempo"
       },
+      "gettmp": {
+        "name": "Protezione perdite disattivata"
+      },
       "gettor": {
         "name": "Rigenerazioni totali"
       },
