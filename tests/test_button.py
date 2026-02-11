@@ -275,3 +275,52 @@ async def test_button_initialization_attributes(hass: HomeAssistant) -> None:
     assert button._attr_translation_key == "setsir"
     assert button._device_id == "device1"
     assert button._command == "setSIR"
+
+
+async def test_async_setup_entry_skip_setsir_when_getsir_missing(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry skips setSIR button when getSIR is not available."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getBAR": "4077 mbar",
+                    "getBAT": "6,12 4,38 3,90",
+                    # getSIR is missing - setSIR button should not be created
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+    
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    
+    # Should not create any buttons since getSIR is not available
+    assert len(entities) == 0
+
+
+async def test_async_setup_entry_create_setsir_when_getsir_present(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry creates setSIR button when getSIR is available."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getSIR": "1",  # getSIR is present - setSIR button should be created
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+    
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    
+    # Should create setSIR button
+    assert len(entities) == 1
+    assert entities[0]._command == "setSIR"
