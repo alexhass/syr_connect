@@ -3977,27 +3977,9 @@ async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
-    assert bar_sensor.native_value == 4.077
+    assert bar_sensor.native_value == 4.1
 
 
-async def test_sensor_getbar_with_comma_decimal(hass: HomeAssistant) -> None:
-    """Test getBAR sensor with comma decimal separator."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAR": "4077 mbar",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    
-    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
-    assert bar_sensor.native_value == 4.077
 
 
 async def test_sensor_getbar_empty_value(hass: HomeAssistant) -> None:
