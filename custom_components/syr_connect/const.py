@@ -85,6 +85,11 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
 # 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
 _SYR_CONNECT_SENSOR_T1_VALUE_MAP = {str(i): f"{i * 0.5:.1f}" for i in range(1, 51)}
 
+# Mapping for getLE sensor values (volume leakage - present level)
+# Maps API value (2-30) -> volume in liters
+# 2 = 100L, 3 = 150L, 4 = 200L, ..., 30 = 1500L
+_SYR_CONNECT_SENSOR_LE_VALUE_MAP = {str(i): str(i * 50) for i in range(2, 31)}
+
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAR": SensorDeviceClass.PRESSURE,
@@ -92,6 +97,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getCOF": SensorDeviceClass.WATER,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
+    "getLE": SensorDeviceClass.WATER,
     "getPRS": SensorDeviceClass.PRESSURE,
     "getUL": SensorDeviceClass.WATER,
 }
@@ -133,6 +139,7 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getDGW",  # Gateway
     "getFIR",  # Firmware
     "getIPA",  # IP address
+    "getLE",   # Leakage protection - Present level (mapped to liters)
     "getMAC",  # MAC address
     "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
@@ -279,6 +286,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
 
     # Leak protection profile sensors
     "getCEL": "mdi:thermometer",
+    "getLE": "mdi:water-alert",
     "getNPS": "mdi:pipe-leak",
     "getT1": "mdi:timer-outline",
     "getUL": "mdi:water-alert",
@@ -407,6 +415,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getFLO": 0,    # Flow rate: show as whole number by default
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
+    "getLE": 0,     # Leakage protection - Present level: show as whole number by default
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
@@ -501,6 +510,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getGLE',  # Unknown
     'getGUL',  # Unknown
     'getINT',  # Unknown
+    #'getLE',   # Leakage protection - Present level (now exposed as sensor with states)
     'getREL',  # Unknown
     'getSRV',  # Last service date? unclear format
     #'getT1',   # Time leakage (now exposed as sensor with states)
