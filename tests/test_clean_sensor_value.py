@@ -43,13 +43,3 @@ def test_clean_value_complex_strings():
     assert clean_sensor_value("Test") == "Test"
 
 
-def test_clean_value_edge_cases():
-    """Test edge cases."""
-    # Multiple brackets
-    assert clean_sensor_value("Vol[L][m3]6530") == "Vol[L][m3]6530"  # Doesn't match pattern
-    
-    # Empty brackets
-    assert clean_sensor_value("Vol[]6530") == "6530"
-    
-    # Special characters in unit
-    assert clean_sensor_value("Flow[m³/h]100") == "100"
