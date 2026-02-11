@@ -483,7 +483,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     # Technical values without context
     'get71', 'getAVO', 'getBSA', 'getBUZ',
     'getCDF',
-    'getCES', 'getCND', 
+    'getCES', 'getCND',
     'getCNO', # Code number - not useful for users
     'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
