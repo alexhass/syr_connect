@@ -324,3 +324,22 @@ async def test_async_setup_entry_create_setsir_when_getsir_present(hass: HomeAss
     # Should create setSIR button
     assert len(entities) == 1
     assert entities[0]._command == "setSIR"
+
+
+async def test_async_setup_entry_no_getsir(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry with device that does not support setSIR (no getSIR in status)."""
+    data = {
+        "devices": [
+            {
+                "id": "safe_t_plus",
+                "name": "Safe-T+",
+                "project_id": "project1",
+                "status": {},  # Kein getSIR vorhanden
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    # Es sollte kein Button erstellt werden
+    assert len(entities) == 0
