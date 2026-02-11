@@ -4022,4 +4022,502 @@ async def test_sensor_getbar_invalid_value(hass: HomeAssistant) -> None:
     assert bar_sensor.native_value is None
 
 
+async def test_sensor_getavo_with_ml_suffix(hass: HomeAssistant) -> None:
+    """Test getAVO sensor with 'mL' unit suffix."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAVO": "1655mL",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    assert avo_sensor.native_value == 1.655  # mL converted to L
 
+
+async def test_sensor_getavo_numeric_value(hass: HomeAssistant) -> None:
+    """Test getAVO sensor with numeric value only."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAVO": 1655,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    assert avo_sensor.native_value == 1.655
+
+
+async def test_sensor_getavo_empty_value(hass: HomeAssistant) -> None:
+    """Test getAVO sensor with empty value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAVO": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    assert avo_sensor.native_value is None
+
+
+async def test_sensor_getavo_none_value(hass: HomeAssistant) -> None:
+    """Test getAVO sensor with None value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAVO": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    assert avo_sensor.native_value is None
+
+
+async def test_sensor_gettmp_numeric_value(hass: HomeAssistant) -> None:
+    """Test getTMP sensor with numeric value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getTMP": "300",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getTMP")
+    assert tmp_sensor.native_value == 300.0
+
+
+async def test_sensor_gettmp_zero_value(hass: HomeAssistant) -> None:
+    """Test getTMP sensor with zero value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getTMP": "0",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getTMP")
+    assert tmp_sensor.native_value == 0.0
+
+
+async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
+    """Test getLE sensor value mapping from API value to display value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLE": "5",  # API value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
+    assert le_sensor.native_value == "300"  # Mapped display value
+
+
+async def test_sensor_getle_unmapped_value(hass: HomeAssistant) -> None:
+    """Test getLE sensor with unmapped value returns raw value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLE": "999",  # Unmapped value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
+    assert le_sensor.native_value == "999"  # Returns raw value
+
+
+async def test_sensor_getle_empty_value(hass: HomeAssistant) -> None:
+    """Test getLE sensor with empty value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLE": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
+    assert le_sensor.native_value is None
+
+
+async def test_sensor_getul_value_mapping(hass: HomeAssistant) -> None:
+    """Test getUL sensor value mapping from API value to display value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getUL": "3",  # API value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    assert ul_sensor.native_value == "30"  # Mapped display value
+
+
+async def test_sensor_getul_unmapped_value(hass: HomeAssistant) -> None:
+    """Test getUL sensor with unmapped value returns raw value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getUL": "99",  # Unmapped value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    assert ul_sensor.native_value == "99"  # Returns raw value
+
+
+async def test_sensor_getul_empty_value(hass: HomeAssistant) -> None:
+    """Test getUL sensor with empty value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getUL": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    assert ul_sensor.native_value is None
+
+
+async def test_sensor_gett1_value_mapping(hass: HomeAssistant) -> None:
+    """Test getT1 sensor value mapping from API value to display value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getT1": "10",  # API value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
+    assert t1_sensor.native_value == "5.0"  # Mapped display value
+
+
+async def test_sensor_gett1_unmapped_value(hass: HomeAssistant) -> None:
+    """Test getT1 sensor with unmapped value returns raw value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getT1": "99",  # Unmapped value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
+    assert t1_sensor.native_value == "99"  # Returns raw value
+
+
+async def test_sensor_gett1_empty_value(hass: HomeAssistant) -> None:
+    """Test getT1 sensor with empty value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getT1": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
+    assert t1_sensor.native_value is None
+
+
+async def test_sensor_icon_getab_open_value(hass: HomeAssistant) -> None:
+    """Test getAB sensor icon when valve is open (value=1)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAB": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
+    assert ab_sensor.icon == "mdi:valve-open"
+
+
+async def test_sensor_icon_getab_closed_value(hass: HomeAssistant) -> None:
+    """Test getAB sensor icon when valve is closed (value=2)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAB": "2",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
+    assert ab_sensor.icon == "mdi:valve-closed"
+
+
+async def test_sensor_icon_getab_none_value(hass: HomeAssistant) -> None:
+    """Test getAB sensor icon with None value returns base icon."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAB": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
+    # Should return base icon (from const.py)
+    assert ab_sensor.icon == ab_sensor._base_icon
+
+
+async def test_sensor_icon_getab_unknown_value(hass: HomeAssistant) -> None:
+    """Test getAB sensor icon with unknown value returns base icon."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getAB": "5",  # Unknown value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
+    assert ab_sensor.icon == ab_sensor._base_icon
+
+
+async def test_sensor_icon_getvlv_closed_value(hass: HomeAssistant) -> None:
+    """Test getVLV sensor icon when valve is closed (value=10)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVLV": "10",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+    assert vlv_sensor.icon == "mdi:valve-closed"
+
+
+async def test_sensor_icon_getvlv_closing_value(hass: HomeAssistant) -> None:
+    """Test getVLV sensor icon when valve is closing (value=11)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVLV": "11",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+    assert vlv_sensor.icon == "mdi:valve"
+
+
+async def test_sensor_icon_getvlv_open_value(hass: HomeAssistant) -> None:
+    """Test getVLV sensor icon when valve is open (value=20)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVLV": "20",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+    assert vlv_sensor.icon == "mdi:valve-open"
+
+
+async def test_sensor_icon_getvlv_opening_value(hass: HomeAssistant) -> None:
+    """Test getVLV sensor icon when valve is opening (value=21)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVLV": "21",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+    assert vlv_sensor.icon == "mdi:valve"
+
+
+async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
+    """Test getVLV sensor icon with None value returns base icon."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVLV": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+    assert vlv_sensor.icon == vlv_sensor._base_icon
+
+
+async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
+    """Test getVLV sensor icon with unknown value returns base icon."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVLV": "99",  # Unknown value
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    
+    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+    assert vlv_sensor.icon == vlv_sensor._base_icon

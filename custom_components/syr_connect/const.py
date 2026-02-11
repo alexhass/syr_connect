@@ -523,7 +523,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
     'getOHF', 'getYHF',
     'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
-    'getT2', 'getTN', 'getVLV',
+    'getT2', 'getTN',
 
     # Sensors exits in devices:
     # - Safe-T+
