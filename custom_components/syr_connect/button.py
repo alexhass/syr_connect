@@ -45,6 +45,7 @@ async def async_setup_entry(
         device_id = device['id']
         device_name = device['name']
         project_id = device['project_id']
+        status = device.get('status', {})
 
         # Add action buttons
         action_buttons = [
@@ -54,6 +55,10 @@ async def async_setup_entry(
         ]
 
         for command, name in action_buttons:
+            # Only add setSIR button if getSIR is available in device status
+            if command == "setSIR" and "getSIR" not in status:
+                continue
+
             entities.append(
                 SyrConnectButton(
                     coordinator,
