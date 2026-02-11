@@ -62,6 +62,18 @@ async def async_get_config_entry_diagnostics(
         "projects": projects_info,
     }
 
+    # Redact username in entry title if present, e.g. "SYR Connect (dolles)" ->
+    # "SYR Connect (<REDACTED_USERNAME>)" to avoid leaking usernames in diagnostics.
+    try:
+        if isinstance(diagnostics_data.get("entry", {}).get("title"), str):
+            diagnostics_data["entry"]["title"] = re.sub(
+                r"\(([^)]+)\)",
+                    "(***REDACTED_USERNAME***)",
+                diagnostics_data["entry"]["title"],
+            )
+    except Exception:
+        pass
+
     # Attempt to include raw XML responses (redacted) for diagnostics.
     # This collects data for ALL projects and their devices but uses
     # limited concurrency and truncates very large responses to avoid
@@ -82,7 +94,7 @@ async def async_get_config_entry_diagnostics(
             if not key:
                 continue
             key_str = str(key)
-            placeholder = f"<REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', key_str).upper()}>"
+            placeholder = f"***REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', key_str).upper()}***"
 
             # attributes like mac="..."
             try:
@@ -119,9 +131,9 @@ async def async_get_config_entry_diagnostics(
 
         # Generic redactions
         try:
-            cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "<REDACTED_IP>", cleaned)
-            cleaned = re.sub(r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b", "<REDACTED_MAC>", cleaned)
-            cleaned = re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "<REDACTED_USERNAME>", cleaned)
+            cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "***REDACTED_IP***", cleaned)
+            cleaned = re.sub(r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b", "***REDACTED_MAC***", cleaned)
+            cleaned = re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "***REDACTED_USERNAME***", cleaned)
         except Exception:
             pass
 
@@ -216,7 +228,7 @@ async def async_get_config_entry_diagnostics(
 
                 # If the dict key itself matches a redact key, replace value entirely
                 if any(str(k).lower() == str(r).lower() for r in _TO_REDACT):
-                    placeholder = f"<REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', str(k)).upper()}>"
+                    placeholder = f"***REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', str(k)).upper()}***"
                     out[k] = placeholder
                 else:
                     out[k] = _redact_obj(v)
