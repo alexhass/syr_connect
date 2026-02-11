@@ -350,6 +350,9 @@
       "gettor": {
         "name": "Rigenerazioni totali"
       },
+      "getul": {
+        "name": "Protezione perdite - Livello assente"
+      },
       "gettyp": {
         "name": "Tipo"
       },

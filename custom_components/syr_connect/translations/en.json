@@ -350,6 +350,9 @@
       "gettor": {
         "name": "Total regenerations"
       },
+      "getul": {
+        "name": "Leakage protection - Absent level"
+      },
       "gettyp": {
         "name": "Type"
       },

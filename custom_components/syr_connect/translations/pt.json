@@ -369,6 +369,9 @@
       "gettor": {
         "name": "Total de regenerações"
       },
+      "getul": {
+        "name": "Proteção contra vazamentos - Nível ausente"
+      },
       "gettyp": {
         "name": "Tipo"
       },

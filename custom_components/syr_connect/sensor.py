@@ -437,6 +437,17 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError, IndexError):
                         return None
 
+                # Special handling for leakage protection absent level (getUL)
+                # Format: "5" -> multiply by 10 to get liters (5 -> 50L)
+                if self._sensor_key == 'getUL':
+                    if value is None or value == "":
+                        return None
+                    try:
+                        volume_value = float(value) * 10
+                        return int(volume_value)
+                    except (ValueError, TypeError):
+                        return None
+
                 # Special handling for combined regeneration time sensor
                 if self._sensor_key == 'getRTIME':
                     hour = status.get('getRTH', 0)

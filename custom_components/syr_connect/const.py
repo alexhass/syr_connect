@@ -88,6 +88,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
     "getPRS": SensorDeviceClass.PRESSURE,
+    "getUL": SensorDeviceClass.WATER,
 }
 
 # Sensor state classes (for Home Assistant) - internal
@@ -113,6 +114,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
     "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
+    "getUL": SensorStateClass.MEASUREMENT,         # Leakage protection - Absent level
     "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
@@ -272,6 +274,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Leak protection profile sensors
     "getCEL": "mdi:thermometer",
     "getNPS": "mdi:pipe-leak",
+    "getUL": "mdi:water-alert",
     "getPF1": "mdi:water-alert",
     "getPF2": "mdi:water-alert",
     "getPF3": "mdi:water-alert",
@@ -373,8 +376,9 @@ _SYR_CONNECT_SENSOR_UNITS = {
     # Sensors exits in devices:
     # - Safe-T+
 
-    "getBAR": UnitOfPressure.BAR,
-    "getBAT": UnitOfElectricPotential.VOLT,
+    "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
+    "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
+    "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -414,6 +418,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
+    "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
     "getVOL": 0,    # Total water volume: show as whole number by default
 }
 

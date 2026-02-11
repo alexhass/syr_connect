@@ -347,6 +347,9 @@
       "gettor": {
         "name": "Total de regeneraciones"
       },
+      "getul": {
+        "name": "Protección contra fugas - Nivel ausente"
+      },
       "gettyp": {
         "name": "Tipo"
       },

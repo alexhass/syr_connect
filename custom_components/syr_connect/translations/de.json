@@ -350,6 +350,9 @@
       "gettor": {
         "name": "Summe aller Regenerationen"
       },
+      "getul": {
+        "name": "Leckageschutz - Stufe Abwesend"
+      },
       "gettyp": {
         "name": "Typ"
       },
