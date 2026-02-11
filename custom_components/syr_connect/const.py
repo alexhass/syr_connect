@@ -461,7 +461,9 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     # Technical values without context
     'get71', 'getAVO', 'getBSA', 'getBUZ',
     'getCDF',
-    'getCES', 'getCND', 'getCNO', 'getCNS',
+    'getCES', 'getCND', 
+    'getCNO', # Code number - not useful for users
+    'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
     'getDRP', 'getDST', 'getDTC',
     'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
@@ -469,6 +471,33 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getOHF', 'getYHF',
     'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
     'getT2', 'getTN', 'getVLV',
+
+    # Sensors exits in devices:
+    # - Safe-T+
+
+    # Unknown Safe-T+ specific sensors
+    'f', 'b', 'm', # CI values from API response, unclear purpose
+    'getALA_dt',  # Alarm timestamp?
+    'getALA',  # Alarm timestamp? unclear purpose
+    'getAWY',  # Unknown
+    'getBLT',  # Unknown
+    'getBSI',  # Unknown
+    'getCEO',  # Unknown
+    #'getCNO',  # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
+    'getEXI',  # Unknown
+    'getEXT',  # Unknown
+    'getGLE',  # Unknown
+    'getGUL',  # Unknown
+    'getINT',  # Unknown
+    'getREL',  # Unknown
+    'getSRV',  # Last service date? unclear format
+    'getT1',   # Leakage time? unclear
+    #'getT2',   # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
+    'getTBS',  # Unknown
+    'getTC',   # Unknown
+    'getTO',   # Unknown
+    'getTPA',  # Unknown
+    'getUNI',  # Unknown
 }
 
 # Sensors to exclude only when value is 0 - internal
