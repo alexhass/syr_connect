@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="7dd73e4f-1b46-e911-8112-0cc47a087b23" sta="2" dst="2" ast="1" clb="1" nrdt="09.02.2026 08:49:34" nrs="11"/>
+  </col>
+  <pdvs/>
+  <dvs>
+    <d dg="7fd73e4f-1b46-e911-8112-0cc47a087b23" sbt="" sta="2" dst="2" ast="1" so="1" p1883="0" p1883rd="16.07.2022 17:11:29" p8883="0" p8883rd="16.07.2022 17:11:29">
+      <ci f="1.85" b="3.00" m="aa:bb:cc:dd:ee:ff"/>
+      <c n="getSRN" v="87SPAAA6" dt="09.02.2026 08:49:22"/>
+      <c n="getVER" v="Safe-T+ V2.00e"/>
+      <c n="get71" v="0"/>
+      <c n="getAB" v="1"/>
+      <c n="getALA" v="FF" dt="29.06.2025 12:19:30"/>
+      <c n="getALM" v="Alarms: A5 -&gt;A5 A5 A5 A5 A5 A5 A5" dt="29.06.2025 12:16:52"/>
+      <c n="getAVO" v="1655mL"/>
+      <c n="getAWY" v="5 5 4 0"/>
+      <c n="getBAR" v="4180 mbar"/>
+      <c n="getBAT" v="6,11 4,38 3,90"/>
+      <c n="getBLT" v="10"/>
+      <c n="getBSA" v="1"/>
+      <c n="getBSI" v="2 (16 bar)"/>
+      <c n="getCEL" v="55"/>
+      <c n="getCEO" v="0"/>
+      <c n="getCNO" v="EPFI6860AAPA7S8"/>
+      <c n="getDBD" v="10"/>
+      <c n="getDBT" v="15"/>
+      <c n="getDCM" v="5 min"/>
+      <c n="getDMA" v="1"/>
+      <c n="getDOM" v="1 min"/>
+      <c n="getDPL" v="7"/>
+      <c n="getDRP" v="1"/>
+      <c n="getDST" v="36"/>
+      <c n="getDTC" v="3 3"/>
+      <c n="getEXI" v="0"/>
+      <c n="getEXT" v="1"/>
+      <c n="getGLE" v="3"/>
+      <c n="getGUL" v="4"/>
+      <c n="getINT" v="0 0 0 0 0 0 1 0"/>
+      <c n="getLE" v="2"/>
+      <c n="getNPS" v="967"/>
+      <c n="getREL" v="0"/>
+      <c n="getSRV" v="07.10.18"/>
+      <c n="getT1" v="1"/>
+      <c n="getT2" v="1"/>
+      <c n="getTBS" v="1"/>
+      <c n="getTC" v="30"/>
+      <c n="getTMP" v="0"/>
+      <c n="getTO" v="30"/>
+      <c n="getTPA" v="32"/>
+      <c n="getTYP" v="1"/>
+      <c n="getUL" v="5" iir=""/>
+      <c n="getUNI" v="0"/>
+      <c n="getVLV" v="20"/>
+      <c n="getVOL" v="Vol[L]6404"/>
+    </d>
+  </dvs>
+  <cs v="C192"/>
+</sc>
