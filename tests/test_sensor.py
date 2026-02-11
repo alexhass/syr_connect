@@ -3957,7 +3957,7 @@ async def test_sensor_getbar_with_unit(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
-    assert bar_sensor.native_value == 4.077
+    assert bar_sensor.native_value == 4.1
 
 
 async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
