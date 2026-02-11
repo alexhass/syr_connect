@@ -62,15 +62,14 @@ async def async_get_config_entry_diagnostics(
         "projects": projects_info,
     }
 
-    # Redact username in entry title if present, e.g. "SYR Connect (dolles)" ->
+    # Redact username in entry title if present, e.g. "SYR Connect (username)" ->
     # "SYR Connect (<REDACTED_USERNAME>)" to avoid leaking usernames in diagnostics.
     try:
-        if isinstance(diagnostics_data.get("entry", {}).get("title"), str):
-            diagnostics_data["entry"]["title"] = re.sub(
-                r"\(([^)]+)\)",
-                    "(***REDACTED_USERNAME***)",
-                diagnostics_data["entry"]["title"],
-            )
+        entry_obj = diagnostics_data.get("entry")
+        if isinstance(entry_obj, dict):
+            title_obj = entry_obj.get("title")
+            if isinstance(title_obj, str):
+                entry_obj["title"] = re.sub(r"\(([^)]+)\)", "(***REDACTED_USERNAME***)", title_obj)
     except Exception:
         pass
 
