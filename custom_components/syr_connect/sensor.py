@@ -27,6 +27,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_STRING_SENSORS,
@@ -578,6 +579,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     raw = str(status.get('getUL') or "")
                     mapped = _SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw)
                     # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
+                    return mapped if mapped is not None else (raw if raw else None)
+
+                # Special handling for getT1 sensor: map raw API values to display values
+                if self._sensor_key == 'getT1':
+                    raw = str(status.get('getT1') or "")
+                    mapped = _SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw)
+                    # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
