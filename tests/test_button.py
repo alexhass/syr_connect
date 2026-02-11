@@ -96,7 +96,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "status": {},
+                "status": {"getSIR": 1},
             }
         ]
     }
