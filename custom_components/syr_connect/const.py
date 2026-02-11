@@ -139,7 +139,7 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getDGW",  # Gateway
     "getFIR",  # Firmware
     "getIPA",  # IP address
-    "getLE",   # Leakage protection - Present level (mapped to liters)
+    #"getLE",   # Leakage protection - Present level (mapped to liters)
     "getMAC",  # MAC address
     "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
@@ -393,6 +393,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
 
     "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
+    "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
 }
 
@@ -510,10 +511,8 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getGLE',  # Unknown
     'getGUL',  # Unknown
     'getINT',  # Unknown
-    #'getLE',   # Leakage protection - Present level (now exposed as sensor with states)
     'getREL',  # Unknown
     'getSRV',  # Last service date? unclear format
-    #'getT1',   # Time leakage (now exposed as sensor with states)
     #'getT2',   # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
     'getTBS',  # Unknown
     'getTC',   # Unknown
