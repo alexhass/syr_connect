@@ -80,15 +80,23 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
     "": "status_inactive",
 }
 
-# Mapping for getT1 sensor values (time leakage)
-# Maps API value (1-50) -> time in hours
-# 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
-_SYR_CONNECT_SENSOR_T1_VALUE_MAP = {str(i): f"{i * 0.5:.1f}" for i in range(1, 51)}
+# Mapping for getLE sensor values (Leakage protection - Present level)
+# Maps raw API value -> display value in liters (as shown in translations)
+_SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
+    "2": "100", "3": "150", "4": "200", "5": "250", "6": "300",
+    "7": "350", "8": "400", "9": "450", "10": "500", "11": "550",
+    "12": "600", "13": "650", "14": "700", "15": "750", "16": "800",
+    "17": "850", "18": "900", "19": "950", "20": "1000", "21": "1050",
+    "22": "1100", "23": "1150", "24": "1200", "25": "1250", "26": "1300",
+    "27": "1350", "28": "1400", "29": "1450", "30": "1500",
+}
 
-# Mapping for getLE sensor values (volume leakage - present level)
-# Maps API value (2-30) -> volume in liters
-# 2 = 100L, 3 = 150L, 4 = 200L, ..., 30 = 1500L
-_SYR_CONNECT_SENSOR_LE_VALUE_MAP = {str(i): str(i * 50) for i in range(2, 31)}
+# Mapping for getUL sensor values (Leakage protection - Absent level)
+# Maps raw API value -> display value in liters (as shown in translations)
+_SYR_CONNECT_SENSOR_UL_VALUE_MAP = {
+    "1": "10", "2": "20", "3": "30", "4": "40", "5": "50",
+    "6": "60", "7": "70", "8": "80", "9": "90", "10": "100",
+}
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
@@ -97,9 +105,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getCOF": SensorDeviceClass.WATER,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
-    "getLE": SensorDeviceClass.WATER,
     "getPRS": SensorDeviceClass.PRESSURE,
-    "getUL": SensorDeviceClass.WATER,
 }
 
 # Sensor state classes (for Home Assistant) - internal
@@ -125,7 +131,6 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
     "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
-    "getUL": SensorStateClass.MEASUREMENT,         # Leakage protection - Absent level
     "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
@@ -139,13 +144,14 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getDGW",  # Gateway
     "getFIR",  # Firmware
     "getIPA",  # IP address
-    #"getLE",   # Leakage protection - Present level (mapped to liters)
+    "getLE",   # Leakage protection - Present level (mapped to liters)
     "getMAC",  # MAC address
     "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
     "getSRN",  # Serial number
     "getT1",   # Time leakage (mapped to hours)
+    "getLU",   # Leakage protection - Level (mapped to percentage)
     "getVER",  # Version
     "getVLV",  # Valve status (10=closed, 11=closing, 20=open, 21=opening)
     "getWHU",  # Water hardness unit (mapped to unit names)
@@ -394,6 +400,7 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
     "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
+    "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
 }
 
@@ -435,6 +442,7 @@ _SYR_CONNECT_SENSOR_PRECISION = {
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
+    "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
     "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
     "getVOL": 0,    # Total water volume: show as whole number by default
 }

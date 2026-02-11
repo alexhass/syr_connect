@@ -407,6 +407,7 @@ These properties are only available on devices that contain leakage protection, 
 | getAB / setAB   | "1"          |         | Valve shut-off: 1 = open, 2 = closed
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
 | getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L
+| getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
 | getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h
 | getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds
 | getUL / setUL   | "0"          |         | User profile Leakage protection mode: 0 = present, 1 = absent

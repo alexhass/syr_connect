@@ -23,9 +23,11 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_ICONS,
+    _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UNITS,
     _SYR_CONNECT_STRING_SENSORS,
     _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP,
@@ -563,6 +565,20 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     self._attr_translation_key = mapped if mapped is not None else value
                     # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
+
+                # Special handling for getLE sensor: map raw API values to display values
+                if self._sensor_key == 'getLE':
+                    raw = str(status.get('getLE') or "")
+                    mapped = _SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw)
+                    # Return mapped display value (e.g. '100', '150', etc.) or raw value as fallback
+                    return mapped if mapped is not None else (raw if raw else None)
+
+                # Special handling for getUL sensor: map raw API values to display values
+                if self._sensor_key == 'getUL':
+                    raw = str(status.get('getUL') or "")
+                    mapped = _SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw)
+                    # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
+                    return mapped if mapped is not None else (raw if raw else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
                 if self._sensor_key in _SYR_CONNECT_STRING_SENSORS:
