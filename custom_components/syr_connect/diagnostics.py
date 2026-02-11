@@ -125,6 +125,13 @@ async def async_get_config_entry_diagnostics(
         except Exception:
             pass
 
+        # Remove any whitespace (including newlines) between XML tags: '>   <' -> '><'
+        try:
+            cleaned = re.sub(r">\s+<", "><", cleaned)
+            cleaned = cleaned.strip()
+        except Exception:
+            pass
+
         return cleaned
 
     raw_xml: dict[str, Any] = {}
