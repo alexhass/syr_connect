@@ -75,7 +75,7 @@ async def test_button_platform_creates_entities(hass: HomeAssistant) -> None:
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {},
+                "status": {"getSIR": 1},
             }
         ]
     }
