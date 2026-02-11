@@ -2636,8 +2636,8 @@ async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
     # The code does: mapped = str(_SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(raw))
     # If not found, .get() returns None, str(None) = 'None'
     # Then: return mapped if mapped is not None else (value if value is not None else None)
-    # Since mapped is 'None' (string), it's not None, so it returns 'None'
-    assert value == "None"
+    # The expected behavior is to return the original raw value when unmapped
+    assert value == "UnknownAlarm"
 
 
 async def test_sensor_alarm_value_none_and_unmapped(hass: HomeAssistant) -> None:
@@ -4180,9 +4180,8 @@ async def test_sensor_getle_unmapped_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
-    # Integration may currently return the literal string 'None' for unmapped values;
-    # accept both the raw value and 'None' for now.
-    assert le_sensor.native_value in ("999", "None")  # Returns raw value or 'None'
+    # Returns the raw unmapped value
+    assert le_sensor.native_value == "999"
 
 
 async def test_sensor_getle_empty_value(hass: HomeAssistant) -> None:
@@ -4202,8 +4201,8 @@ async def test_sensor_getle_empty_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
-    # The integration may return the literal string 'None' for empty mappings; accept both.
-    assert le_sensor.native_value in (None, "None")
+    # Empty mapping should result in None
+    assert le_sensor.native_value is None
 
 
 async def test_sensor_getul_value_mapping(hass: HomeAssistant) -> None:
@@ -4265,8 +4264,8 @@ async def test_sensor_getul_empty_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
-    # Accept both None and literal 'None' due to current integration behavior
-    assert ul_sensor.native_value in (None, "None")
+    # Empty mapping should result in None
+    assert ul_sensor.native_value is None
 
 
 async def test_sensor_gett1_value_mapping(hass: HomeAssistant) -> None:
@@ -4326,8 +4325,8 @@ async def test_sensor_gett1_empty_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
-    # Integration may return string 'None' for unmapped/empty values; accept both
-    assert t1_sensor.native_value in (None, "None")
+    # Empty mapping should result in None
+    assert t1_sensor.native_value is None
 
 
 async def test_sensor_icon_getab_open_value(hass: HomeAssistant) -> None:
