@@ -80,6 +80,11 @@ _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
     "": "status_inactive",
 }
 
+# Mapping for getT1 sensor values (time leakage)
+# Maps API value (1-50) -> time in hours
+# 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
+_SYR_CONNECT_SENSOR_T1_VALUE_MAP = {str(i): f"{i * 0.5:.1f}" for i in range(1, 51)}
+
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAR": SensorDeviceClass.PRESSURE,
@@ -133,6 +138,7 @@ _SYR_CONNECT_STRING_SENSORS = {
     "getRTI",  # Regeneration time
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
     "getSRN",  # Serial number
+    "getT1",   # Time leakage (mapped to hours)
     "getVER",  # Version
     "getVLV",  # Valve status (10=closed, 11=closing, 20=open, 21=opening)
     "getWHU",  # Water hardness unit (mapped to unit names)
@@ -274,6 +280,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     # Leak protection profile sensors
     "getCEL": "mdi:thermometer",
     "getNPS": "mdi:pipe-leak",
+    "getT1": "mdi:timer-outline",
     "getUL": "mdi:water-alert",
     "getPF1": "mdi:water-alert",
     "getPF2": "mdi:water-alert",
@@ -496,7 +503,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getINT',  # Unknown
     'getREL',  # Unknown
     'getSRV',  # Last service date? unclear format
-    'getT1',   # Leakage time? unclear
+    #'getT1',   # Time leakage (now exposed as sensor with states)
     #'getT2',   # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
     'getTBS',  # Unknown
     'getTC',   # Unknown
