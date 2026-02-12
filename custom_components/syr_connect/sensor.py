@@ -387,6 +387,19 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except Exception:
                 pass
 
+        # Dynamic icon for battery voltage (getBAT)
+        if self._sensor_key == "getBAT":
+            val = self.native_value
+            if val is None:
+                return self._base_icon
+            # Normalize to string and try converting to float once.
+            sval = str(val).strip()
+            try:
+                if float(sval) == 0:
+                    return "mdi:battery-alert-variant-outline"
+            except (TypeError, ValueError):
+                pass
+
         # Return base icon for all other sensors
         return self._base_icon
 
