@@ -4,7 +4,7 @@
     <pr pg="8625a6fc-3547-45c4-b394-671b5c99b6b9" pn="My+Projekt" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="01:00:00" />
   </prs>
   <col>
-    <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" ali="Water Softener" dkv="25" mod="0" pg="8625a6fc-3547-45c4-b394-671b5c99b6b9" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+    <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" ali="Water+Softener" dkv="25" mod="0" pg="8625a6fc-3547-45c4-b394-671b5c99b6b9" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
   </col>
   <dvs>
     <d dg="cf36f6a5-dc49-4a5d-acae-d64ead9ba0f2" sn="123456789" sbt="2" dfw="LEX+Plus+S+V2.3" dk="80" dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="4f257324-b9f3-4338-8d0c-ff9d4ec98817" so="1" ondt="" mac="" ss="14" owh="7" whu="0" />
