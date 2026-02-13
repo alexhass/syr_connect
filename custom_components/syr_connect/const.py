@@ -530,7 +530,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
 
     # Unknown Safe-T+ specific sensors
     'f', 'b', 'm',  # CI values from API response, unclear purpose
-    'getALA',       # Last alarm e.g. FF ? unclear purpose
+    'getALA',       # Last alarm - e.g. FF ? unclear purpose
     'getALA_acd',   # Last alarm - timestamp - acknowledged?
     'getALA_dt',    # Last alarm - timestamp - occurence?
     'getALA_ih',    # Last alarm - e.g. 0 - Unknown
