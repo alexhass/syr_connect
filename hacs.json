@@ -1,4 +1,5 @@
 {
   "name": "SYR Connect",
-  "content_in_root": false
+  "content_in_root": false,
+  "country": ["DE", "EN", "ES", "FR", "IT", "PT"], 
 }

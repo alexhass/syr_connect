@@ -353,6 +353,9 @@
       "getsv3": {
         "name": "Salt container volume 3"
       },
+      "gett1": {
+        "name": "Leakage time"
+      },
       "gettmp": {
         "name": "Leakage protection deactivated"
       },
@@ -421,9 +424,6 @@
       },
       "getsv3": {
         "name": "Salt container volume 3"
-      },
-      "gett1": {
-        "name": "Leakage time"
       },
       "getrpd": {
         "name": "Regeneration interval"
