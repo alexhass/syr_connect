@@ -45,6 +45,7 @@ Diese Integration funktioniert mit SYR-Wasserenthärtern, die im SYR Connect-Clo
 
 Getestet und gemeldet funktionierend:
 
+- SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 - SYR Safe-T+
@@ -53,7 +54,6 @@ Nicht getestet, sollte aber funktionieren (bitte melden):
 
 - NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
-- SYR LEX Plus 10 Connect
 - SYR LEX 1500 Connect Einzel
 - SYR LEX 1500 Connect Doppel
 - SYR LEX 1500 Connect Pendel

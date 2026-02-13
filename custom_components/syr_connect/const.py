@@ -483,10 +483,10 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
 
     # Other attributes than "n" = "name" / "v" = "value" in XML response
     'getSRN_dt',    # Serial number timestamp
-    'getALM_dt',    # Alarm timestamp
-    'getALM_m',     # Alarm message e.g. LowSalt
     'getALM_acd',   # Active alarm since timestamp
+    'getALM_dt',    # Alarm timestamp
     'getALM_ih',    # Alarm inhibit flag (unlcear purpose)
+    'getALM_m',     # Alarm message e.g. LowSalt
 
     'getDEN',  # Boolean sensor - device enabled/disabled
     'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
@@ -529,27 +529,30 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     # - Safe-T+
 
     # Unknown Safe-T+ specific sensors
-    'f', 'b', 'm', # CI values from API response, unclear purpose
-    'getALA_dt',  # Alarm timestamp?
-    'getALA',  # Alarm timestamp? unclear purpose
-    'getAWY',  # Unknown
-    'getBLT',  # Unknown
-    'getBSI',  # Unknown
-    'getCEO',  # Unknown
-    #'getCNO',  # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
-    'getEXI',  # Unknown
-    'getEXT',  # Unknown
-    'getGLE',  # Unknown
-    'getGUL',  # Unknown
-    'getINT',  # Unknown
-    'getREL',  # Unknown
-    'getSRV',  # Last service date? unclear format
-    #'getT2',   # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
-    'getTBS',  # Unknown
-    'getTC',   # Unknown
-    'getTO',   # Unknown
-    'getTPA',  # Unknown
-    'getUNI',  # Unknown
+    'f', 'b', 'm',  # CI values from API response, unclear purpose
+    'getALA',       # Last alarm - e.g. FF ? unclear purpose
+    'getALA_acd',   # Last alarm - timestamp - acknowledged?
+    'getALA_dt',    # Last alarm - timestamp - occurence?
+    'getALA_ih',    # Last alarm - e.g. 0 - Unknown
+    'getALA_m',     # Last alarm - alarm codes e.g. A5, A6
+    'getAWY',       # Unknown
+    'getBLT',       # Unknown
+    'getBSI',       # Unknown
+    'getCEO',       # Unknown
+    #'getCNO',      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
+    'getEXI',       # Unknown
+    'getEXT',       # Unknown
+    'getGLE',       # Unknown
+    'getGUL',       # Unknown
+    'getINT',       # Unknown
+    'getREL',       # Unknown
+    'getSRV',       # Last service date? unclear format
+    #'getT2',       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
+    'getTBS',       # Unknown
+    'getTC',        # Unknown
+    'getTO',        # Unknown
+    'getTPA',       # Unknown
+    'getUNI',       # Unknown
 }
 
 # Sensors to exclude only when value is 0 - internal
