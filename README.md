@@ -9,6 +9,15 @@
 
 ![Syr](custom_components/syr_connect/logo.png)
 
+## Screenshots
+
+Examples of the device interfaces:
+
+![LEXplus10S screenshot](docs/assets/screenshots/lexplus10s-en.png)
+
+![Safe-T+ screenshot](docs/assets/screenshots/safe-t-en.png)
+
+
 This custom integration enables control of SYR Connect devices through Home Assistant.
 
 ## Installation
