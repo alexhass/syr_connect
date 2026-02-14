@@ -48,11 +48,12 @@ _SYR_CONNECT_BINARY_SENSORS = {
 # Sensors that are represented by control entities (select/text/buttons)
 # These sensors should be hidden from the regular sensor platform.
 _SYR_CONNECT_CONTROLLED_SENSORS = {
-    "getSV1",
-    "getSV2",
-    "getSV3",
-    "getRPD",
-    "getRTIME",
+    "getAB",    # Valve shut-off (1=open, 2=closed) - also represented as select entity
+    "getSV1",   # Salt container amount 1 - also represented as select entity
+    "getSV2",   # Salt container amount 2 - also represented as select entity
+    "getSV3",   # Salt container amount 3 - also represented as select entity
+    "getRPD",   # Regeneration interval - also represented as select entity
+    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM) - also represented as select entity
 }
 
 # Mapping for getALM sensor values

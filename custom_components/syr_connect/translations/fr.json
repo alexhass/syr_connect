@@ -410,6 +410,13 @@
       }
     },
     "select": {
+      "getab": {
+        "name": "Coupure de vanne",
+        "state": {
+          "1": "Ouvert",
+          "2": "Fermé"
+        }
+      },
       "getrtime": {
         "name": "Heure de régénération"
       },

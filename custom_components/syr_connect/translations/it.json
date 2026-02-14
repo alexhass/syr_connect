@@ -413,6 +413,13 @@
       }
     },
     "select": {
+      "getab": {
+        "name": "Chiusura valvola",
+        "state": {
+          "1": "Aperta",
+          "2": "Chiusa"
+        }
+      },
       "getrtime": {
         "name": "Ora di rigenerazione"
       },

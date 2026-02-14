@@ -413,6 +413,13 @@
       }
     },
     "select": {
+      "getab": {
+        "name": "Ventilabsperrung",
+        "state": {
+          "1": "Offen",
+          "2": "Geschlossen"
+        }
+      },
       "getrtime": {
         "name": "Regenerationsuhrzeit"
       },

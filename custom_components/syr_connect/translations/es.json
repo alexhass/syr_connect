@@ -410,6 +410,13 @@
       }
     },
     "select": {
+      "getab": {
+        "name": "Cierre de válvula",
+        "state": {
+          "1": "Abierta",
+          "2": "Cerrada"
+        }
+      },
       "getrtime": {
         "name": "Hora de regeneración"
       },

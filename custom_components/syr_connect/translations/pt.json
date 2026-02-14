@@ -57,6 +57,13 @@
       }
     },
     "select": {
+      "getab": {
+        "name": "Fecho de válvula",
+        "state": {
+          "1": "Aberta",
+          "2": "Fechada"
+        }
+      },
       "getrtime": {
         "name": "Hora de regeneração"
       },

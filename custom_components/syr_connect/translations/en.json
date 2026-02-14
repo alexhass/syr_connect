@@ -413,6 +413,13 @@
       }
     },
     "select": {
+      "getab": {
+        "name": "Valve shut-off",
+        "state": {
+          "1": "Open",
+          "2": "Closed"
+        }
+      },
       "getrtime": {
         "name": "Regeneration time"
       },
