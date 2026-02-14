@@ -15,7 +15,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    _SYR_CONNECT_CONTROLLED_SENSORS,
     _SYR_CONNECT_DIAGNOSTIC_SENSORS,
     _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS,
     _SYR_CONNECT_EXCLUDE_WHEN_ZERO,
