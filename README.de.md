@@ -221,6 +221,30 @@ automation:
           message: "Unusual water flow - check for leaks!"
 ```
 
+#### Lecksensor — Absperrventil schließen (setAB)
+
+Schließt automatisch das Absperrventil (`setAB = 2`), wenn ein Leckmelder einen Wasseraustritt meldet. Dieses Beispiel verwendet den Standard-Dienst `select.select_option`, um die Option `2` für die SYR-`getAB`-Select-Entität auszuwählen. Ersetze die Entity-IDs durch die korrekten IDs in deinem System.
+
+```yaml
+automation:
+  - alias: "SYR: Ventil bei Leck schließen"
+    description: "SYR-Ventil auf geschlossen (setAB = 2) setzen, wenn ein Leckmelder Wasser erkennt."
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.house_leak_sensor
+        to: 'on'
+    action:
+      - service: select.select_option
+        target:
+          entity_id: select.syr_connect_<serial_number>_getab
+        data:
+          option: "2"
+      - service: notify.mobile_app
+        data:
+          title: "SYR: Leck erkannt — Ventil geschlossen"
+          message: "Leck erkannt durch binary_sensor.house_leak_sensor — SYR-Ventil auf geschlossen (2) gesetzt."
+```
+
 #### Geplante Regenerations-Überschreibung
 
 ```yaml
