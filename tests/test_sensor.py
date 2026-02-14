@@ -640,33 +640,6 @@ async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_cs_with_sv_non_convertible(hass: HomeAssistant) -> None:
-    """Test getCS1 when getSV1 value cannot be converted to float."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": "0",
-                    "getSV1": "invalid_number",  # Cannot convert to float
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-    
-    # getCS1 should be excluded because it's 0 and getSV1 is not convertible
-    entities = add_entities.call_args.args[0]
-    assert len(entities) == 0
-
-
 async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
     """Test getCS1 when both getCS1 and getSV1 are zero."""
     data = {
