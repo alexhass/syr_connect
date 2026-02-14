@@ -20,7 +20,7 @@ Run the script from the repository root (recommended) or from the `scripts` fold
 POSIX example:
 
 ```bash
-python scripts/generate_brand_images.py scripts/example.png custom_integrations/DOMAIN
+python scripts/generate_brand_images.py docs/assets/brand/example.png custom_integrations/DOMAIN
 ```
 
 Windows (PowerShell) example:
