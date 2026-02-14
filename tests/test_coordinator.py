@@ -724,6 +724,53 @@ async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_i
         assert len(coordinator.data["devices"]) == 0
 
 
+    async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+        """Test that optimistic `getAB` updates are preserved for the ignore window."""
+        with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+            mock_api = MagicMock()
+            mock_api.session_data = "test_session"
+            mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+            mock_api.is_session_valid = MagicMock(return_value=True)
+            mock_api.get_devices = AsyncMock(return_value=[
+                {"id": "device1", "dclg": "dclg1"}
+            ])
+            # Initial status shows valve open (1)
+            mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
+            mock_api.set_device_status = AsyncMock(return_value=True)
+            mock_api_class.return_value = mock_api
+
+            coordinator = SyrConnectDataUpdateCoordinator(
+                hass,
+                MagicMock(),
+                "test@example.com",
+                "password",
+                60,
+            )
+            coordinator.config_entry = setup_in_progress_config_entry
+            await coordinator.async_config_entry_first_refresh()
+
+            # Ensure initial API value
+            assert coordinator.data is not None
+            assert coordinator.data["devices"][0]["status"]["getAB"] == "1"
+
+            # Set AB to 2 (closed) optimistically
+            with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+                await coordinator.async_set_device_value("device1", "setAB", 2)
+
+            # Ignore window should be set
+            key = ("device1", "getAB")
+            assert key in coordinator._ignore_until
+            assert coordinator._ignore_until[key] - time.time() > 50
+
+            # Now simulate API still reporting old value (1)
+            mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
+            # Run refresh which should preserve optimistic value due to ignore window
+            await coordinator.async_refresh()
+
+            assert coordinator.data is not None
+            assert coordinator.data["devices"][0]["status"]["getAB"] == "2"
+
+
 async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator data structure when projects have no devices."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
