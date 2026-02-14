@@ -11,7 +11,7 @@
 
 ## Screenshots
 
-Examples of the device interfaces:
+Examples of device interfaces:
 
 ![LEXplus10S screenshot](docs/assets/screenshots/lexplus10s-en.png)
 
