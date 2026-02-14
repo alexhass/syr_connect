@@ -496,7 +496,7 @@ _SYR_CONNECT_EXCLUDED_SENSORS = {
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control - per documentation unknown what values do
     'getRST',  # Reset device control - per documentation unknown what values do
-    'getTYP',  # Type of device (always 80?) - not helpful for users
+    'getTYP',  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
     'getRTI',  # Value is always 00:00. Not clear what it represents.
     'getFCO',  # Iron content (always 0) - not useful
     'getSCR',  # Unknown, likely number of service regeneration
