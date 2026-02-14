@@ -214,7 +214,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
                 now = time.time()
                 for key in list(status.keys()):
-                    ignore_key = (device.get('id'), key)
+                    dev_id_str = str(device.get('id') or "")
+                    ignore_key = (dev_id_str, key)
                     expire = self._ignore_until.get(ignore_key)
                     if expire is None:
                         continue
@@ -227,10 +228,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             status.pop(key, None)
                     else:
                         # Clean up expired entry
-                        try:
-                            del self._ignore_until[ignore_key]
-                        except KeyError:
-                            pass
+                        self._ignore_until.pop(ignore_key, None)
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to apply ignore rules to device status for %s", device.get('id'))
 
