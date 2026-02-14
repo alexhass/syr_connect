@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
+import time
 from datetime import timedelta
 from typing import Any
 
@@ -52,6 +53,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         self.api = SyrConnectAPI(session, username, password)
         self._username = username
+        # Map of ((device_id, get_key) -> expire_timestamp) to ignore API
+        # provided values for a short period after we apply an optimistic
+        # update. This is used to avoid immediately overwriting an
+        # optimistic `getAB` change with stale API data.
+        self._ignore_until: dict[tuple[str, str], float] = {}
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
@@ -195,6 +201,39 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
 
+            # If we have any ignore rules for this device, preserve the
+            # optimistic values for keys that are still within their ignore
+            # window (e.g. `getAB`). Replace the API-provided value with the
+            # previously-stored value in coordinator.data so entities retain
+            # the optimistic state until the ignore window expires.
+            try:
+                if getattr(self, 'data', None) and isinstance(self.data, dict):
+                    prev_devices = {d.get('id'): d for d in self.data.get('devices', []) if isinstance(d, dict)}
+                else:
+                    prev_devices = {}
+
+                now = time.time()
+                for key in list(status.keys()):
+                    ignore_key = (device.get('id'), key)
+                    expire = self._ignore_until.get(ignore_key)
+                    if expire is None:
+                        continue
+                    if now < expire:
+                        prev = prev_devices.get(device.get('id'))
+                        if prev and isinstance(prev.get('status'), dict) and key in prev['status']:
+                            status[key] = prev['status'][key]
+                        else:
+                            # Remove the key so we don't overwrite with possibly stale API value
+                            status.pop(key, None)
+                    else:
+                        # Clean up expired entry
+                        try:
+                            del self._ignore_until[ignore_key]
+                        except KeyError:
+                            pass
+            except Exception:  # pragma: no cover - defensive
+                _LOGGER.exception("Failed to apply ignore rules to device status for %s", device.get('id'))
+
             return device
 
         except Exception as err:
@@ -250,11 +289,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if not dclg:
             raise ValueError(f"Device {device_id} not found")
 
-        await self.api.set_device_status(dclg, command, value)
-
         # Optimistically update the in-memory coordinator data so entities show
-        # the new value immediately, then schedule a background refresh to
-        # retrieve authoritative data from the API.
+        # the new value immediately, then attempt to set it via the API and
+        # schedule a background refresh to retrieve authoritative data.
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
@@ -268,11 +305,41 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         break
                 # async_set_updated_data is not awaitable; call directly to update data
                 self.async_set_updated_data(new_data)
+
+                # If this was a valve control change (`getAB`), ignore API
+                # responses for that key for the next 60 seconds so we don't
+                # immediately overwrite the optimistic state with stale data.
+                try:
+                    if get_key.lower() == 'getab':
+                        self._ignore_until[(device_id, get_key)] = time.time() + 60
+                except Exception:
+                    pass
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to apply optimistic update to coordinator data")
 
-        # Schedule an immediate refresh in the background to reconcile with API
         try:
-            self.hass.async_create_task(self.async_refresh())
+            await self.api.set_device_status(dclg, command, value)
         except Exception:  # pragma: no cover - defensive
-            _LOGGER.exception("Failed to schedule coordinator refresh after setting device value")
+            _LOGGER.exception("Failed to set device %s via API", device_id)
+            raise
+        finally:
+            # Schedule a delayed refresh in the background to give the API
+            # time to apply changes server-side before we request authoritative
+            # status. Some SYR devices take up to ~60 seconds to reflect
+            # configuration changes.
+            try:
+                self.hass.async_create_task(self._delayed_refresh())
+            except Exception:  # pragma: no cover - defensive
+                _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
+
+    async def _delayed_refresh(self, delay: int = 60) -> None:
+        """Wait `delay` seconds then refresh coordinator data.
+
+        This gives the SYR API time to process changes so the subsequent
+        refresh will return the authoritative, updated device status.
+        """
+        try:
+            await asyncio.sleep(delay)
+            await self.async_refresh()
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Delayed refresh failed")
