@@ -79,13 +79,6 @@ async def async_setup_entry(
                 if registry_entry is not None and hasattr(registry_entry, "entity_id"):
                     _LOGGER.debug("Removing excluded sensor from registry: %s", entity_id)
                     registry.async_remove(registry_entry.entity_id)
-            # Also remove sensors that are represented by control entities (select/text/buttons)
-            for controlled_key in _SYR_CONNECT_CONTROLLED_SENSORS:
-                controlled_entity_id = build_entity_id("sensor", device_id, controlled_key)
-                controlled_entry = registry.async_get(controlled_entity_id)
-                if controlled_entry is not None and hasattr(controlled_entry, "entity_id"):
-                    _LOGGER.debug("Removing sensor registry entry because control entity exists: %s", controlled_entity_id)
-                    registry.async_remove(controlled_entry.entity_id)
     except Exception:  # pragma: no cover - defensive
         _LOGGER.exception("Failed to cleanup excluded sensors from entity registry")
 
@@ -105,10 +98,6 @@ async def async_setup_entry(
         sensor_count = 0
 
         for key, value in status.items():
-            # Skip sensors that are represented by control entities (select/text/buttons)
-            if key in _SYR_CONNECT_CONTROLLED_SENSORS:
-                continue
-
             # Skip sensors excluded globally
             if key in _SYR_CONNECT_EXCLUDED_SENSORS:
                 continue
@@ -248,7 +237,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         self._base_icon = getattr(self, '_attr_icon', None)
 
         # Disable sensors by default based on configuration
-        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS:
+        # Also disable sensors that are represented by control entities so they
+        # are available if users explicitly enable them, but do not clutter the UI.
+        if (
+            sensor_key in ("getIPA", "getDGW", "getMAC")
+            or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS
+            or sensor_key in _SYR_CONNECT_CONTROLLED_SENSORS
+        ):
             self._attr_entity_registry_enabled_default = False
 
         # Build device info from coordinator data
