@@ -227,6 +227,30 @@ automation:
           message: "Unusual water flow - check for leaks!"
 ```
 
+#### Leak Sensor — Close Water Valve (setAB)
+
+Automatically close the water valve (`setAB = 2`) when a leak sensor reports a water leak. This example uses the standard `select.select_option` service to choose the `2` option on the SYR `getAB` select entity. Replace the entity IDs with the correct IDs from your system.
+
+```yaml
+automation:
+  - alias: "SYR: Close Valve On Leak"
+    description: "Set SYR valve to closed (setAB = 2) when a leak sensor detects water."
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.house_leak_sensor
+        to: 'on'
+    action:
+      - service: select.select_option
+        target:
+          entity_id: select.syr_connect_<serial_number>_getab
+        data:
+          option: "2"
+      - service: notify.mobile_app
+        data:
+          title: "SYR: Leak detected — valve closed"
+          message: "Leak detected by binary_sensor.house_leak_sensor — SYR valve set to closed (2)."
+```
+
 #### Scheduled Regeneration Override
 
 Trigger regeneration at a specific time:
