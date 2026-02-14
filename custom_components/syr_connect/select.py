@@ -183,6 +183,12 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             await coordinator.async_set_device_value(self._device_id, "setRTH", h)
             await coordinator.async_set_device_value(self._device_id, "setRTM", m)
             _LOGGER.debug("Requested setRTH/setRTM for device %s (h=%s m=%s)", self._device_id, h, m)
+            _LOGGER.debug(
+                "Regeneration time select changed for %s to %02d:%02d",
+                self._device_id,
+                h,
+                m,
+            )
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to set regeneration time for device %s", self._device_id)
 
@@ -294,6 +300,12 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
             _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
+            _LOGGER.debug(
+                "Select %s changed for device %s to %s",
+                self._sensor_key,
+                self._device_id,
+                option,
+            )
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
 
