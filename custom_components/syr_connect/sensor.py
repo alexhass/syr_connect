@@ -43,8 +43,6 @@ from .helpers import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# Controlled sensors are defined in `const.py` as _SYR_CONNECT_CONTROLLED_SENSORS
-
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
 
@@ -239,11 +237,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Disable sensors by default based on configuration
         # Also disable sensors that are represented by control entities so they
         # are available if users explicitly enable them, but do not clutter the UI.
-        if (
-            sensor_key in ("getIPA", "getDGW", "getMAC")
-            or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS
-            or sensor_key in _SYR_CONNECT_CONTROLLED_SENSORS
-        ):
+        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS:
             self._attr_entity_registry_enabled_default = False
 
         # Build device info from coordinator data
