@@ -198,4 +198,3 @@ async def test_string_sensor_behavior(hass: HomeAssistant) -> None:
     s = SyrConnectSensor(c, "s1", "S", "p", "getSRN")
     assert s.native_value == "12345"
 
-*** End Patch
