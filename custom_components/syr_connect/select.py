@@ -223,9 +223,6 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         # Icon mapping if present
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
 
-        # Store base icon for state-based icon changes
-        self._base_icon = getattr(self, '_attr_icon', None)
-
         # Determine unit label (if available) and build options (append unit for readability)
         unit_label = None
         unit = _SYR_CONNECT_SENSOR_UNIT.get(self._sensor_key)
