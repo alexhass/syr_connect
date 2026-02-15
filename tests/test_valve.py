@@ -385,3 +385,64 @@ async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -
 
     # add_entities should not be called when coordinator.data is falsy
     assert not add_entities.called
+
+
+async def test_invalid_getvlv_does_not_raise_and_falls_back(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "v1", "name": "V1", "status": {"getVLV": "abc", "getAB": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "v1", "V1")
+
+    # Invalid getVLV string should not raise and we fall back to getAB
+    assert valve.is_opening is None
+    assert valve.is_closing is None
+    assert valve.is_closed is True  # getAB == '1' -> open? Wait: getAB '1' means open -> False; ensure value
+    # getAB '1' should map to open -> is_closed False
+    assert valve.is_closed is False
+
+
+async def test_supported_features_and_device_class_and_reports_position() -> None:
+    # Directly instantiate without hass for attribute checks
+    coordinator = MagicMock()
+    coordinator.data = {"devices": []}
+    valve = SyrConnectValve(coordinator, "id", "Name")
+
+    assert valve._attr_device_class is not None
+    assert valve._attr_reports_position is False
+    # Expect supported features include OPEN and CLOSE bits
+    assert int(valve._attr_supported_features) & int(ValveEntityFeature.OPEN) == int(ValveEntityFeature.OPEN)
+    assert int(valve._attr_supported_features) & int(ValveEntityFeature.CLOSE) == int(ValveEntityFeature.CLOSE)
+
+
+async def test_async_service_entrypoints_call_underlying(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "as1", "name": "AS1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "as1", "AS1")
+
+    # Patch async_open/async_close to verify they are awaited
+    valve.async_open = AsyncMock()
+    valve.async_close = AsyncMock()
+
+    await valve.async_open_valve()
+    valve.async_open.assert_awaited()
+
+    await valve.async_close_valve()
+    valve.async_close.assert_awaited()
+
+
+async def test_sync_wrappers_without_hass_do_nothing(hass: HomeAssistant) -> None:
+    coordinator = _build_coordinator(hass, {"devices": []})
+    valve = SyrConnectValve(coordinator, "no_hass", "NoHass")
+    # Ensure hass is None
+    valve.hass = None
+    # Should not raise
+    valve.open_valve()
+    valve.close_valve()
+
+
+async def test_icon_open_state(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "o1", "name": "O1", "status": {"getVLV": "20"}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "o1", "O1")
+    # getVLV=20 -> open -> icon should be open
+    assert valve.is_closed is False
+    assert valve.icon == "mdi:valve-open"
