@@ -9,6 +9,8 @@
 
 ![Syr](custom_components/syr_connect/logo.png)
 
+Dieses Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant.
+
 ## Screenshots
 
 Beispiele der Geräteoberflächen:
@@ -16,9 +18,6 @@ Beispiele der Geräteoberflächen:
 ![LEXplus10S Screenshot](docs/assets/screenshots/lexplus10s-en.png)
 
 ![Safe-T+ Screenshot](docs/assets/screenshots/safe-t-en.png)
-
-
-Dieses Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant.
 
 ## Installation
 
