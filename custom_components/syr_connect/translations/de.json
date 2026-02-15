@@ -62,7 +62,7 @@
       "getab": {
         "name": "Ventilabsperrung",
         "state": {
-          "1": "Offen",
+          "1": "Geöffnet",
           "2": "Geschlossen"
         }
       },
@@ -398,9 +398,9 @@
         "name": "Ventilstatus",
         "state": {
           "10": "Geschlossen",
-          "11": "Schließt",
-          "20": "Offen",
-          "21": "Öffnet"
+          "11": "Wird geschlossen",
+          "20": "Geöffnet",
+          "21": "Wird geöffnet"
         }
       },
       "getwhu": {
@@ -427,7 +427,7 @@
       "getab": {
         "name": "Ventilabsperrung",
         "state": {
-          "1": "Offen",
+          "1": "Geöffnet",
           "2": "Geschlossen"
         }
       },
@@ -445,6 +445,24 @@
       },
       "getrpd": {
         "name": "Regenerationsintervall"
+      }
+    },
+    "valve": {
+      "getab": {
+        "name": "Ventilabsperrung",
+        "state": {
+          "1": "Geöffnet",
+          "2": "Geschlossen"
+        }
+      },
+      "getvlv": {
+        "name": "Ventilstatus",
+        "state": {
+          "10": "Geschlossen",
+          "11": "Wird geschlossen",
+          "20": "Geöffnet",
+          "21": "Wird geöffnet"
+        }
       }
     }
   },

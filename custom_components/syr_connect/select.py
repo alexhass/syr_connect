@@ -90,15 +90,6 @@ async def async_setup_entry(
             except (ValueError, TypeError):
                 pass
 
-        # Water valve control select (1=open, 2=closed)
-        ab_value = status.get("getAB")
-        if ab_value is not None and ab_value != "":
-            try:
-                if float(ab_value) in (1, 2):
-                    entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getAB", 1, 2, 1))
-            except (ValueError, TypeError):
-                pass
-
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
         async_add_entities(entities)
@@ -308,26 +299,6 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             )
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
-
-    @property
-    def icon(self) -> str | None:
-        """Return dynamic icon for certain numeric selects (e.g. getAB)."""
-        # Dynamic icon for valve shut-off (getAB): 1=open, 2=closed
-        if self._sensor_key == "getAB":
-            for dev in self.coordinator.data.get("devices", []):
-                if dev.get("id") != self._device_id:
-                    continue
-                status = dev.get("status", {})
-                val = status.get("getAB")
-                if val is None or val == "":
-                    return self._base_icon
-                if str(val) == "1":
-                    return "mdi:valve-open"
-                if str(val) == "2":
-                    return "mdi:valve-closed"
-                return self._base_icon
-
-        return self._base_icon
 
     @property
     def available(self) -> bool:

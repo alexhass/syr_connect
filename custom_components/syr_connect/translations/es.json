@@ -443,6 +443,24 @@
       "getrpd": {
         "name": "Intervalo de regeneración"
       }
+    },
+    "valve": {
+      "getab": {
+        "name": "Cierre de válvula",
+        "state": {
+          "1": "Abierta",
+          "2": "Cerrada"
+        }
+      },
+      "getvlv": {
+        "name": "Estado de la válvula",
+        "state": {
+          "10": "Cerrada",
+          "11": "Cerrando",
+          "20": "Abierta",
+          "21": "Abriendo"
+        }
+      }
     }
   },
   "issues": {

@@ -446,6 +446,24 @@
       "getrpd": {
         "name": "Intervallo di rigenerazione"
       }
+    },
+    "valve": {
+      "getab": {
+        "name": "Chiusura valvola",
+        "state": {
+          "1": "Aperta",
+          "2": "Chiusa"
+        }
+      },
+      "getvlv": {
+        "name": "Stato valvola",
+        "state": {
+          "10": "Chiusa",
+          "11": "Chiusura",
+          "20": "Aperta",
+          "21": "Apertura"
+        }
+      }
     }
   },
   "issues": {

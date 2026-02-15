@@ -239,15 +239,13 @@ automation:
         entity_id: binary_sensor.house_leak_sensor
         to: 'on'
     action:
-      - service: select.select_option
+      - service: valve.close
         target:
-          entity_id: select.syr_connect_<serial_number>_getab
-        data:
-          option: "2"
+          entity_id: valve.syr_connect_<serial_number>_getab
       - service: notify.mobile_app
         data:
           title: "SYR: Leak detected — valve closed"
-          message: "Leak detected by binary_sensor.house_leak_sensor — SYR valve set to closed (2)."
+          message: "Leak detected by binary_sensor.house_leak_sensor — SYR valve set to closed."
 ```
 
 #### Scheduled Regeneration Override

@@ -55,7 +55,7 @@
       "getab": {
         "name": "Valve shut-off",
         "state": {
-          "1": "Open",
+          "1": "Opened",
           "2": "Closed"
         }
       },
@@ -399,7 +399,7 @@
         "state": {
           "10": "Closed",
           "11": "Closing",
-          "20": "Open",
+          "20": "Opened",
           "21": "Opening"
         }
       },
@@ -427,7 +427,7 @@
       "getab": {
         "name": "Valve shut-off",
         "state": {
-          "1": "Open",
+          "1": "Opened",
           "2": "Closed"
         }
       },
@@ -445,6 +445,24 @@
       },
       "getrpd": {
         "name": "Regeneration interval"
+      }
+    },
+    "valve": {
+      "getab": {
+        "name": "Valve shut-off",
+        "state": {
+          "1": "Opened",
+          "2": "Closed"
+        }
+      },
+      "getvlv": {
+        "name": "Valve status",
+        "state": {
+          "10": "Closed",
+          "11": "Closing",
+          "20": "Opened",
+          "21": "Opening"
+        }
       }
     }
   },

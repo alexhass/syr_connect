@@ -20,6 +20,7 @@ PLATFORMS: list[str | Platform] = [
     Platform.SENSOR,
     Platform.BUTTON,
     Platform.SELECT,
+    Platform.VALVE,
 ]
 
 

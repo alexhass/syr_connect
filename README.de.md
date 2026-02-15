@@ -233,15 +233,13 @@ automation:
         entity_id: binary_sensor.house_leak_sensor
         to: 'on'
     action:
-      - service: select.select_option
+      - service: valve.close
         target:
-          entity_id: select.syr_connect_<serial_number>_getab
-        data:
-          option: "2"
+          entity_id: valve.syr_connect_<serial_number>_getab
       - service: notify.mobile_app
         data:
           title: "SYR: Leck erkannt — Ventil geschlossen"
-          message: "Leck erkannt durch binary_sensor.house_leak_sensor — SYR-Ventil auf geschlossen (2) gesetzt."
+          message: "Leck erkannt durch binary_sensor.house_leak_sensor — SYR‑Ventil auf geschlossen gesetzt."
 ```
 
 #### Geplante Regenerations-Überschreibung

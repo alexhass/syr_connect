@@ -443,6 +443,24 @@
       "getrpd": {
         "name": "Intervalle de régénération"
       }
+    },
+    "valve": {
+      "getab": {
+        "name": "Coupure de vanne",
+        "state": {
+          "1": "Ouvert",
+          "2": "Fermé"
+        }
+      },
+      "getvlv": {
+        "name": "État de vanne",
+        "state": {
+          "10": "Fermée",
+          "11": "Fermeture",
+          "20": "Ouverte",
+          "21": "Ouverture"
+        }
+      }
     }
   },
   "issues": {
