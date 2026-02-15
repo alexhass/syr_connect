@@ -21,7 +21,7 @@ Examples of device interfaces:
 
 ## Installation
 
-### HACS (recommended)
+### Home Assistant Community Store - HACS (recommended)
 
 1. Open HACS in Home Assistant
 2. Go to "Integrations"

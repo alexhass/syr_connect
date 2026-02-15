@@ -21,7 +21,7 @@ Beispiele der Geräteoberflächen:
 
 ## Installation
 
-### HACS (empfohlen)
+### Home Assistant Community Store - HACS (empfohlen)
 
 1. Öffne HACS in Home Assistant
 2. Gehe zu „Integrationen“
