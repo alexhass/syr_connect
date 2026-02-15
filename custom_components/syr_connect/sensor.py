@@ -597,7 +597,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for getT1 and getT2 sensors: map raw API values to display values
                 if self._sensor_key in ('getT1', 'getT2'):
                     raw = str(status.get(self._sensor_key) or "")
-                    mapped = _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP.get(raw)
+                    mapped = str(_SYR_CONNECT_SENSOR_GETT1_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
                     return str(mapped) if mapped is not None else (raw if raw else None)
 
