@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.components.valve import ValveEntityFeature
+import pytest
 
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -395,9 +397,10 @@ async def test_invalid_getvlv_does_not_raise_and_falls_back(hass: HomeAssistant)
     # Invalid getVLV string should not raise and we fall back to getAB
     assert valve.is_opening is None
     assert valve.is_closing is None
-    assert valve.is_closed is True  # getAB == '1' -> open? Wait: getAB '1' means open -> False; ensure value
-    # getAB '1' should map to open -> is_closed False
-    assert valve.is_closed is False
+    # getAB '1' should be present and maps to open -> is_closed False
+    attrs = valve.extra_state_attributes
+    assert attrs is not None and attrs.get("getAB") == "1"
+    assert valve.is_closed == False
 
 
 async def test_supported_features_and_device_class_and_reports_position() -> None:
@@ -409,8 +412,13 @@ async def test_supported_features_and_device_class_and_reports_position() -> Non
     assert valve._attr_device_class is not None
     assert valve._attr_reports_position is False
     # Expect supported features include OPEN and CLOSE bits
-    assert int(valve._attr_supported_features) & int(ValveEntityFeature.OPEN) == int(ValveEntityFeature.OPEN)
-    assert int(valve._attr_supported_features) & int(ValveEntityFeature.CLOSE) == int(ValveEntityFeature.CLOSE)
+    try:
+        from homeassistant.components.valve import ValveEntityFeature as _VEF
+    except Exception:
+        pytest.skip("ValveEntityFeature not available in this test environment")
+
+    assert int(valve._attr_supported_features) & int(_VEF.OPEN) == int(_VEF.OPEN)
+    assert int(valve._attr_supported_features) & int(_VEF.CLOSE) == int(_VEF.CLOSE)
 
 
 async def test_async_service_entrypoints_call_underlying(hass: HomeAssistant) -> None:
