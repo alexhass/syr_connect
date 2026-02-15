@@ -572,7 +572,7 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     entry_to_remove = registry.async_get_or_create(
         "sensor",
         "syr_connect",
-        "device1_getDTY",  # getDTY is in _SYR_CONNECT_EXCLUDED_SENSORS
+        "device1_getDTY",  # getDTY is in _SYR_CONNECT_SENSOR_EXCLUDED
         suggested_object_id="device1_getdty",
     )
     
@@ -2606,7 +2606,7 @@ async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
 
     # When value is not in map, .get() returns None, should fallback to original value
     value = sensor.native_value
-    # The code does: mapped = str(_SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(raw))
+    # The code does: mapped = str(_SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(raw))
     # If not found, .get() returns None, str(None) = 'None'
     # Then: return mapped if mapped is not None else (value if value is not None else None)
     # The implementation may return None or the string 'None' for unmapped values.

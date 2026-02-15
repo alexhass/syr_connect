@@ -40,151 +40,6 @@ _SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 _SYR_CONNECT_CLIENT_APP_VERSION = "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
 _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 
-# Binary sensors mapping with their device classes - internal
-_SYR_CONNECT_BINARY_SENSORS = {
-    "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
-}
-
-# Sensors that are represented by control entities (select/text/buttons)
-# These sensors should be hidden from the regular sensor platform.
-_SYR_CONNECT_CONTROLLED_SENSORS = {
-    "getAB",    # Valve shut-off (1=open, 2=closed) - also represented as select entity
-    "getSV1",   # Salt container amount 1 - also represented as select entity
-    "getSV2",   # Salt container amount 2 - also represented as select entity
-    "getSV3",   # Salt container amount 3 - also represented as select entity
-    "getRPD",   # Regeneration interval - also represented as select entity
-    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM) - also represented as select entity
-}
-
-# Mapping for getALM sensor values
-# Maps raw API value -> internal key
-# API values observed:
-# - "NoSalt"  -> device reports salt empty <= 2kg
-# - "LowSalt" -> device reports low salt <= 4kg
-# - ""        -> no alarm >= 5kg
-_SYR_CONNECT_SENSOR_ALARM_VALUE_MAP = {
-    "NoSalt": "no_salt",
-    "LowSalt": "low_salt",
-    "": "no_alarm",
-}
-
-# Mapping for getSTA / status values -> Polish values
-# This assigns the observed Polish status to the internal translations.
-# - "Płukanie regenerantem (5mA)"
-# - "Płukanie szybkie 1"
-_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP = {
-    "Płukanie wsteczne": "status_backwash",
-    "Płukanie regenerantem": "status_regenerant_rinse",
-    "Płukanie wolne": "status_slow_rinse",
-    "Płukanie szybkie": "status_fast_rinse",
-    "Napełnianie": "status_filling",
-    "": "status_inactive",
-}
-
-# Mapping for getLE sensor values (Leakage protection - Present level)
-# Maps raw API value -> display value in liters (as shown in translations)
-_SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
-    "2": "100", "3": "150", "4": "200", "5": "250", "6": "300",
-    "7": "350", "8": "400", "9": "450", "10": "500", "11": "550",
-    "12": "600", "13": "650", "14": "700", "15": "750", "16": "800",
-    "17": "850", "18": "900", "19": "950", "20": "1000", "21": "1050",
-    "22": "1100", "23": "1150", "24": "1200", "25": "1250", "26": "1300",
-    "27": "1350", "28": "1400", "29": "1450", "30": "1500",
-}
-
-# Mapping for getUL sensor values (Leakage protection - Absent level)
-# Maps raw API value -> display value in liters (as shown in translations)
-_SYR_CONNECT_SENSOR_UL_VALUE_MAP = {
-    "1": "10", "2": "20", "3": "30", "4": "40", "5": "50",
-    "6": "60", "7": "70", "8": "80", "9": "90", "10": "100",
-}
-
-# Mapping for getT1 sensor values (Time leakage)
-# Maps raw API value -> display value in hours (as shown in translations)
-_SYR_CONNECT_SENSOR_T1_VALUE_MAP = {
-    "1": "0.5", "2": "1.0", "3": "1.5", "4": "2.0", "5": "2.5",
-    "6": "3.0", "7": "3.5", "8": "4.0", "9": "4.5", "10": "5.0",
-    "11": "5.5", "12": "6.0", "13": "6.5", "14": "7.0", "15": "7.5",
-    "16": "8.0", "17": "8.5", "18": "9.0", "19": "9.5", "20": "10.0",
-    "21": "10.5", "22": "11.0", "23": "11.5", "24": "12.0", "25": "12.5",
-    "26": "13.0", "27": "13.5", "28": "14.0", "29": "14.5", "30": "15.0",
-    "31": "15.5", "32": "16.0", "33": "16.5", "34": "17.0", "35": "17.5",
-    "36": "18.0", "37": "18.5", "38": "19.0", "39": "19.5", "40": "20.0",
-    "41": "20.5", "42": "21.0", "43": "21.5", "44": "22.0", "45": "22.5",
-    "46": "23.0", "47": "23.5", "48": "24.0", "49": "24.5", "50": "25.0",
-}
-
-# Sensor device classes (for Home Assistant) - internal
-_SYR_CONNECT_SENSOR_DEVICE_CLASS = {
-    "getBAR": SensorDeviceClass.PRESSURE,
-    "getBAT": SensorDeviceClass.VOLTAGE,
-    "getCOF": SensorDeviceClass.WATER,
-    "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
-    "getLAR": SensorDeviceClass.TIMESTAMP,
-    "getPRS": SensorDeviceClass.PRESSURE,
-}
-
-# Sensor state classes (for Home Assistant) - internal
-_SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
-    "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
-    "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
-    "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
-    "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
-    "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
-    "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
-    "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
-    "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
-    "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
-    "getNPS": SensorStateClass.MEASUREMENT,        # Microleakage count
-    "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
-    "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
-    "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
-    "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity
-    "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
-    "getSS2": SensorStateClass.MEASUREMENT,        # Salt container supply 2 (weeks)
-    "getSS3": SensorStateClass.MEASUREMENT,        # Salt container supply 3 (weeks)
-    "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
-    "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
-    "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
-    "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
-    "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
-    "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
-    "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
-    "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
-    "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
-}
-
-# Sensors that should remain as strings (not converted to numbers) - internal
-_SYR_CONNECT_STRING_SENSORS = {
-    "getAB",   # Valve shut-off (1=open, 2=closed)
-    "getCNA",  # Device name
-    "getDGW",  # Gateway
-    "getFIR",  # Firmware
-    "getIPA",  # IP address
-    "getLE",   # Leakage protection - Present level (mapped to liters)
-    "getMAC",  # MAC address
-    "getMAN",  # Manufacturer
-    "getRTI",  # Regeneration time
-    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
-    "getSRN",  # Serial number
-    "getT1",   # Time leakage (mapped to hours)
-    "getLU",   # Leakage protection - Level (mapped to percentage)
-    "getVER",  # Version
-    "getVLV",  # Valve status (10=closed, 11=closing, 20=open, 21=opening)
-    "getWHU",  # Water hardness unit (mapped to unit names)
-    # Note: getBAT is handled specially - extracts first numeric value from space-separated string
-}
-
-# Water hardness unit mapping (for getWHU)
-# According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
-_SYR_CONNECT_WATER_HARDNESS_UNIT_MAP = {
-    0: "°dH",       # German degree of water hardness (Grad deutsche Härte)
-    1: "°fH",       # French degree of water hardness (degré français de dureté)
-    2: "ppm",       # Parts per million (mg/L), common international unit
-    3: "mmol/l",    # Millimoles per liter, SI unit for water hardness
-}
-
 # Device model mapping for salt capacity per salt container (kg).
 # Keys are normalized to uppercase when looked up.
 #
@@ -210,23 +65,167 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
     "UNKNOWN_NEOSOFT5000": 35,
 }
 
-# getRPW: Days on which regeneration is allowed, stored as a bit mask.
-#
-# This maps a single-bit mask value to the corresponding weekday index
-# (0 = Monday .. 6 = Sunday). A mask value of 0 indicates "no days configured"
-# Example: mask 5 (0b0000101) means Monday (1<<0) and Wednesday (1<<2).
-#
-# Use this mapping to decode device `getRPW` bitmasks where each bit
-# represents a weekday.
-_SYR_CONNECT_SENSOR_RPW_BITS = {
-    0: None,    # No days configured
-    1: 0,       # Monday
-    2: 1,       # Tuesday
-    4: 2,       # Wednesday
-    8: 3,       # Thursday
-    16: 4,      # Friday
-    32: 5,      # Saturday
-    64: 6,      # Sunday
+# Binary sensors mapping with their device classes - internal
+_SYR_CONNECT_SENSOR_BINARY = {
+    "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
+}
+
+# Sensors that are represented by control entities (select/text/buttons)
+# These sensors should be hidden from the regular sensor platform.
+_SYR_CONNECT_SENSOR_CONTROLLED = {
+    "getAB",    # Valve shut-off (1=open, 2=closed) - also represented as select entity
+    "getSV1",   # Salt container amount 1 - also represented as select entity
+    "getSV2",   # Salt container amount 2 - also represented as select entity
+    "getSV3",   # Salt container amount 3 - also represented as select entity
+    "getRPD",   # Regeneration interval - also represented as select entity
+    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM) - also represented as select entity
+}
+
+# Diagnostic sensors (configuration, technical info, firmware) - internal
+_SYR_CONNECT_SENSOR_DIAGNOSTIC = {
+    'getCNA',  # Device name
+    'getDGW',  # Gateway
+    'getFIR',  # Firmware model
+    'getIPA',  # IP address
+    'getMAC',  # MAC address
+    'getMAN',  # Manufacturer
+    'getSRN',  # Serial number
+    'getTYP',  # Type
+    'getVER',  # Firmware version
+}
+
+# Sensors that are disabled by default (less frequently used) - internal
+_SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
+    # Sensors exits in devices:
+    # - LEXplus10S
+    # - LEXplus10SL
+
+    'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
+    'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
+    'getNOT',  # Notes - rarely used
+    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
+    'getDWF',  # Flow Warning Value - advanced setting
+    'getSRE',  # Regeneration active
+    'getRG2', 'getRG3',  # Regeneration running for tank
+    'getRPD',  # Regeneration interval (days)
+    'getRPW',  # Regeneration permitted weekdays as bit mask
+    'getPST',  # Pressure sensor installed: 1 = not available, 2 = available
+    'getWHU',  # Water hardness unit
+
+    # Sensors exits in devices:
+    # - LEXplus10SL
+
+    # Leak protection profiles (expert setting)
+    'getPA1', 'getPA2', 'getPA3', 'getPA4', 'getPA5', 'getPA6', 'getPA7', 'getPA8',
+    'getPF1', 'getPF2', 'getPF3', 'getPF4', 'getPF5', 'getPF6', 'getPF7', 'getPF8',
+    'getPT1', 'getPT2', 'getPT3', 'getPT4', 'getPT5', 'getPT6', 'getPT7', 'getPT8',
+    'getPV1', 'getPV2', 'getPV3', 'getPV4', 'getPV5', 'getPV6', 'getPV7', 'getPV8',
+    'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
+    'getPRN',  # Duplicate of getPRF
+    'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',
+}
+
+# Sensor device classes (for Home Assistant) - internal
+_SYR_CONNECT_SENSOR_DEVICE_CLASS = {
+    "getBAR": SensorDeviceClass.PRESSURE,
+    "getBAT": SensorDeviceClass.VOLTAGE,
+    "getCOF": SensorDeviceClass.WATER,
+    "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
+    "getLAR": SensorDeviceClass.TIMESTAMP,
+    "getPRS": SensorDeviceClass.PRESSURE,
+}
+
+# Sensors to always exclude (parameters from XML that should not be exposed) - internal
+_SYR_CONNECT_SENSOR_EXCLUDED = {
+    # Sensors exits in devices:
+    # - LEXplus10S
+    # - LEXplus10SL
+
+    'p1883', 'p1883rd', 'p8883', 'p8883rd',
+    'sbt', 'sta', 'dst', 'ast', 'so',
+    'dclg', 'clb', 'nrs',  # Device collection metadata
+    'nrdt', 'dg',  # Additional device metadata attributes
+
+    # Other attributes than "n" = "name" / "v" = "value" in XML response
+    'getSRN_dt',    # Serial number timestamp
+    'getALM_acd',   # Active alarm since timestamp
+    'getALM_dt',    # Alarm timestamp
+    'getALM_ih',    # Alarm inhibit flag (unlcear purpose)
+    'getALM_m',     # Alarm message e.g. LowSalt
+
+    'getDEN',  # Boolean sensor - device enabled/disabled
+    'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
+    'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
+    'getNOT',  # Notes field not useful as sensor
+    'getSIR',  # Immediate regeneration control
+    'getSMR',  # Manual regeneration control - per documentation unknown what values do
+    'getRST',  # Reset device control - per documentation unknown what values do
+    'getTYP',  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
+    'getRTI',  # Value is always 00:00. Not clear what it represents.
+    'getFCO',  # Iron content (always 0) - not useful
+    'getSCR',  # Unknown, likely number of service regeneration
+
+    # BUG: Exclude until the bug is found why these are not shown as translated strings.
+    # They also seem to exists as sensor and binary_sensor.
+    'getSRE',  # Regeneration active - now handled as binary_sensor platform
+
+    # Sensors exits in devices:
+    # - LEXplus10SL
+
+    # Leak protection - internal flags (unclear meaning)
+    'getPM1', 'getPM2', 'getPM3', 'getPM4', 'getPM5', 'getPM6', 'getPM7', 'getPM8',
+    'getPB1', 'getPB2', 'getPB3', 'getPB4', 'getPB5', 'getPB6', 'getPB7', 'getPB8',
+    'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
+    # Technical values without context
+    'get71', 'getBSA', 'getBUZ',
+    'getCDF',
+    'getCES', 'getCND',
+    'getCNO', # Code number - not useful for users
+    'getCNS',
+    'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
+    'getDRP', 'getDST', 'getDTC',
+    'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
+    'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
+    'getOHF', 'getYHF',
+    'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
+    'getT2', 'getTN',
+
+    # Sensors exits in devices:
+    # - Safe-T+
+
+    # Unknown Safe-T+ specific sensors
+    'f', 'b', 'm',  # CI values from API response, unclear purpose
+    'getALA',       # Last alarm - e.g. FF ? unclear purpose
+    'getALA_acd',   # Last alarm - timestamp - acknowledged?
+    'getALA_dt',    # Last alarm - timestamp - occurence?
+    'getALA_ih',    # Last alarm - e.g. 0 - Unknown
+    'getALA_m',     # Last alarm - alarm codes e.g. A5, A6
+    'getAWY',       # Unknown
+    'getBLT',       # Unknown
+    'getBSI',       # Unknown
+    'getCEO',       # Unknown
+    #'getCNO',      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
+    'getEXI',       # Unknown
+    'getEXT',       # Unknown
+    'getGLE',       # Unknown
+    'getGUL',       # Unknown
+    'getINT',       # Unknown
+    'getREL',       # Unknown
+    'getSRV',       # Last service date? unclear format
+    #'getT2',       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
+    'getTBS',       # Unknown
+    'getTC',        # Unknown
+    'getTO',        # Unknown
+    'getTPA',       # Unknown
+    'getUNI',       # Unknown
+}
+
+# Sensors to exclude only when value is 0 - internal
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO = {
+    'getCS1', 'getCS2', 'getCS3',  # Remaining resin capacity (percent)
+    'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
+    'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
+    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
 }
 
 # Sensor icons (Material Design Icons) - internal
@@ -342,17 +341,187 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getPV8": "mdi:gauge",
 }
 
-# Diagnostic sensors (configuration, technical info, firmware) - internal
-_SYR_CONNECT_DIAGNOSTIC_SENSORS = {
-    'getCNA',  # Device name
-    'getDGW',  # Gateway
-    'getFIR',  # Firmware model
-    'getIPA',  # IP address
-    'getMAC',  # MAC address
-    'getMAN',  # Manufacturer
-    'getSRN',  # Serial number
-    'getTYP',  # Type
-    'getVER',  # Firmware version
+# Mapping for getALM sensor values
+# Maps raw API value -> internal key
+# API values observed:
+# - "NoSalt"  -> device reports salt empty <= 2kg
+# - "LowSalt" -> device reports low salt <= 4kg
+# - ""        -> no alarm >= 5kg
+_SYR_CONNECT_SENSOR_GETALM_VALUE_MAP = {
+    "NoSalt": "no_salt",
+    "LowSalt": "low_salt",
+    "": "no_alarm",
+}
+
+# Mapping for getLE sensor values (Leakage protection - Present level)
+# Maps raw API value -> display value in liters (as shown in translations)
+_SYR_CONNECT_SENSOR_GETLE_VALUE_MAP = {
+    "2": "100", "3": "150", "4": "200", "5": "250", "6": "300",
+    "7": "350", "8": "400", "9": "450", "10": "500", "11": "550",
+    "12": "600", "13": "650", "14": "700", "15": "750", "16": "800",
+    "17": "850", "18": "900", "19": "950", "20": "1000", "21": "1050",
+    "22": "1100", "23": "1150", "24": "1200", "25": "1250", "26": "1300",
+    "27": "1350", "28": "1400", "29": "1450", "30": "1500",
+}
+
+# getRPW: Days on which regeneration is allowed, stored as a bit mask.
+#
+# This maps a single-bit mask value to the corresponding weekday index
+# (0 = Monday .. 6 = Sunday). A mask value of 0 indicates "no days configured"
+# Example: mask 5 (0b0000101) means Monday (1<<0) and Wednesday (1<<2).
+#
+# Use this mapping to decode device `getRPW` bitmasks where each bit
+# represents a weekday.
+_SYR_CONNECT_SENSOR_GETRPW_BITS = {
+    0: None,    # No days configured
+    1: 0,       # Monday
+    2: 1,       # Tuesday
+    4: 2,       # Wednesday
+    8: 3,       # Thursday
+    16: 4,      # Friday
+    32: 5,      # Saturday
+    64: 6,      # Sunday
+}
+
+# Mapping for getSTA / status values -> Polish values
+# This assigns the observed Polish status to the internal translations.
+# - "Płukanie regenerantem (5mA)"
+# - "Płukanie szybkie 1"
+_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP = {
+    "Płukanie wsteczne": "status_backwash",
+    "Płukanie regenerantem": "status_regenerant_rinse",
+    "Płukanie wolne": "status_slow_rinse",
+    "Płukanie szybkie": "status_fast_rinse",
+    "Napełnianie": "status_filling",
+    "": "status_inactive",
+}
+
+# Mapping for getT1 sensor values (Time leakage)
+# Maps raw API value -> display value in hours (as shown in translations)
+_SYR_CONNECT_SENSOR_GETT1_VALUE_MAP = {
+    "1": "0.5", "2": "1.0", "3": "1.5", "4": "2.0", "5": "2.5",
+    "6": "3.0", "7": "3.5", "8": "4.0", "9": "4.5", "10": "5.0",
+    "11": "5.5", "12": "6.0", "13": "6.5", "14": "7.0", "15": "7.5",
+    "16": "8.0", "17": "8.5", "18": "9.0", "19": "9.5", "20": "10.0",
+    "21": "10.5", "22": "11.0", "23": "11.5", "24": "12.0", "25": "12.5",
+    "26": "13.0", "27": "13.5", "28": "14.0", "29": "14.5", "30": "15.0",
+    "31": "15.5", "32": "16.0", "33": "16.5", "34": "17.0", "35": "17.5",
+    "36": "18.0", "37": "18.5", "38": "19.0", "39": "19.5", "40": "20.0",
+    "41": "20.5", "42": "21.0", "43": "21.5", "44": "22.0", "45": "22.5",
+    "46": "23.0", "47": "23.5", "48": "24.0", "49": "24.5", "50": "25.0",
+}
+
+# Mapping for getUL sensor values (Leakage protection - Absent level)
+# Maps raw API value -> display value in liters (as shown in translations)
+_SYR_CONNECT_SENSOR_GETUL_VALUE_MAP = {
+    "1": "10", "2": "20", "3": "30", "4": "40", "5": "50",
+    "6": "60", "7": "70", "8": "80", "9": "90", "10": "100",
+}
+
+# Water hardness unit mapping (for getWHU)
+# According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
+_SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP = {
+    0: "°dH",       # German degree of water hardness (Grad deutsche Härte)
+    1: "°fH",       # French degree of water hardness (degré français de dureté)
+    2: "ppm",       # Parts per million (mg/L), common international unit
+    3: "mmol/l",    # Millimoles per liter, SI unit for water hardness
+}
+
+# Sensor state classes (for Home Assistant) - internal
+_SYR_CONNECT_SENSOR_STATE_CLASS = {
+    "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
+    "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
+    "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
+    "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
+    "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
+    "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
+    "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
+    "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
+    "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
+    "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
+    "getNPS": SensorStateClass.MEASUREMENT,        # Microleakage count
+    "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
+    "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
+    "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
+    "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity
+    "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
+    "getSS2": SensorStateClass.MEASUREMENT,        # Salt container supply 2 (weeks)
+    "getSS3": SensorStateClass.MEASUREMENT,        # Salt container supply 3 (weeks)
+    "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
+    "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
+    "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
+    "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
+    "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
+    "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
+    "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
+    "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
+    "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
+}
+
+# Sensors that should remain as strings (not converted to numbers) - internal
+_SYR_CONNECT_SENSOR_STRING = {
+    "getAB",   # Valve shut-off (1=open, 2=closed)
+    "getCNA",  # Device name
+    "getDGW",  # Gateway
+    "getFIR",  # Firmware
+    "getIPA",  # IP address
+    "getLE",   # Leakage protection - Present level (mapped to liters)
+    "getMAC",  # MAC address
+    "getMAN",  # Manufacturer
+    "getRTI",  # Regeneration time
+    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
+    "getSRN",  # Serial number
+    "getT1",   # Time leakage (mapped to hours)
+    "getLU",   # Leakage protection - Level (mapped to percentage)
+    "getVER",  # Version
+    "getVLV",  # Valve status (10=closed, 11=closing, 20=open, 21=opening)
+    "getWHU",  # Water hardness unit (mapped to unit names)
+    # Note: getBAT is handled specially - extracts first numeric value from space-separated string
+}
+
+# Sensor display precision mapping (number of decimals to show)
+# Use integers for whole-number display (0), or >0 for decimal places.
+# This allows configuring how many decimals Home Assistant should show
+# for specific sensors when the integration formats the value.
+_SYR_CONNECT_SENSOR_PRECISION = {
+    "getAVO": 1,    # Current flow: show with 2 decimal places
+    "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
+    "getBAT": 2,    # Battery voltage: show with 2 decimal places
+    "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
+    "getCFO": 0,    # Cycle flow offset: show as whole number by default
+    "getCOF": 0,    # Total water consumption counter: show as whole number by default
+    "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
+    "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
+    "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
+    "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDWF": 0,    # Expected daily water consumption: show as whole number by default
+    "getFCO": 0,    # Iron content: show as whole number by default
+    "getFLO": 0,    # Flow rate: show as whole number by default
+    "getINR": 0,    # Incomplete regenerations: show as whole number by default
+    "getIWH": 0,    # Incoming water hardness: show as whole number by default
+    "getLE": 0,     # Leakage protection - Present level: show as whole number by default
+    "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
+    "getNPS": 0,    # Microleakage count: show as whole number by default
+    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
+    "getPRS": 1,    # Pressure: show with 1 decimal place by default
+    "getPST": 0,    # Pressure sensor installed: show as whole number by default
+    "getRDO": 0,    # Salt dosing: show as whole number by default
+    "getRPD": 0,    # Regeneration interval: show as whole days by default
+    "getRES": 0,    # Remaining capacity: show as whole number by default
+    "getRG1": 0,    # Regeneration 1: show as whole number by default
+    "getRG2": 0,    # Regeneration 2: show as whole number by default
+    "getRG3": 0,    # Regeneration 3: show as whole number by default
+    "getSS1": 0,    # Salt container supply 1: show as whole number by default
+    "getSS2": 0,    # Salt container supply 2: show as whole number by default
+    "getSS3": 0,    # Salt container supply 3: show as whole number by default
+    "getSV1": 0,    # Salt container volume 1: show as whole number by default
+    "getSV2": 0,    # Salt container volume 2: show as whole number by default
+    "getSV3": 0,    # Salt container volume 3: show as whole number by default
+    "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
+    "getTOR": 0,    # Total regenerations: show as whole number by default
+    "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
+    "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
+    "getVOL": 0,    # Total water volume: show as whole number by default
 }
 
 # Sensor units mapping (units are standardized and not translated) - internal
@@ -424,173 +593,4 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
     "getTMP": UnitOfTime.SECONDS,                       # Deactivate leakage protection for n seconds
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
-}
-
-# Sensor display precision mapping (number of decimals to show)
-# Use integers for whole-number display (0), or >0 for decimal places.
-# This allows configuring how many decimals Home Assistant should show
-# for specific sensors when the integration formats the value.
-_SYR_CONNECT_SENSOR_PRECISION = {
-    "getAVO": 1,    # Current flow: show with 2 decimal places
-    "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
-    "getBAT": 2,    # Battery voltage: show with 2 decimal places
-    "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
-    "getCFO": 0,    # Cycle flow offset: show as whole number by default
-    "getCOF": 0,    # Total water consumption counter: show as whole number by default
-    "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
-    "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
-    "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
-    "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
-    "getDWF": 0,    # Expected daily water consumption: show as whole number by default
-    "getFCO": 0,    # Iron content: show as whole number by default
-    "getFLO": 0,    # Flow rate: show as whole number by default
-    "getINR": 0,    # Incomplete regenerations: show as whole number by default
-    "getIWH": 0,    # Incoming water hardness: show as whole number by default
-    "getLE": 0,     # Leakage protection - Present level: show as whole number by default
-    "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
-    "getNPS": 0,    # Microleakage count: show as whole number by default
-    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
-    "getPRS": 1,    # Pressure: show with 1 decimal place by default
-    "getPST": 0,    # Pressure sensor installed: show as whole number by default
-    "getRDO": 0,    # Salt dosing: show as whole number by default
-    "getRPD": 0,    # Regeneration interval: show as whole days by default
-    "getRES": 0,    # Remaining capacity: show as whole number by default
-    "getRG1": 0,    # Regeneration 1: show as whole number by default
-    "getRG2": 0,    # Regeneration 2: show as whole number by default
-    "getRG3": 0,    # Regeneration 3: show as whole number by default
-    "getSS1": 0,    # Salt container supply 1: show as whole number by default
-    "getSS2": 0,    # Salt container supply 2: show as whole number by default
-    "getSS3": 0,    # Salt container supply 3: show as whole number by default
-    "getSV1": 0,    # Salt container volume 1: show as whole number by default
-    "getSV2": 0,    # Salt container volume 2: show as whole number by default
-    "getSV3": 0,    # Salt container volume 3: show as whole number by default
-    "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
-    "getTOR": 0,    # Total regenerations: show as whole number by default
-    "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
-    "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
-    "getVOL": 0,    # Total water volume: show as whole number by default
-}
-
-# Sensors to always exclude (parameters from XML that should not be exposed) - internal
-_SYR_CONNECT_EXCLUDED_SENSORS = {
-    # Sensors exits in devices:
-    # - LEXplus10S
-    # - LEXplus10SL
-
-    'p1883', 'p1883rd', 'p8883', 'p8883rd',
-    'sbt', 'sta', 'dst', 'ast', 'so',
-    'dclg', 'clb', 'nrs',  # Device collection metadata
-    'nrdt', 'dg',  # Additional device metadata attributes
-
-    # Other attributes than "n" = "name" / "v" = "value" in XML response
-    'getSRN_dt',    # Serial number timestamp
-    'getALM_acd',   # Active alarm since timestamp
-    'getALM_dt',    # Alarm timestamp
-    'getALM_ih',    # Alarm inhibit flag (unlcear purpose)
-    'getALM_m',     # Alarm message e.g. LowSalt
-
-    'getDEN',  # Boolean sensor - device enabled/disabled
-    'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
-    'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
-    'getNOT',  # Notes field not useful as sensor
-    'getSIR',  # Immediate regeneration control
-    'getSMR',  # Manual regeneration control - per documentation unknown what values do
-    'getRST',  # Reset device control - per documentation unknown what values do
-    'getTYP',  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
-    'getRTI',  # Value is always 00:00. Not clear what it represents.
-    'getFCO',  # Iron content (always 0) - not useful
-    'getSCR',  # Unknown, likely number of service regeneration
-
-    # BUG: Exclude until the bug is found why these are not shown as translated strings.
-    # They also seem to exists as sensor and binary_sensor.
-    'getSRE',  # Regeneration active - now handled as binary_sensor platform
-
-    # Sensors exits in devices:
-    # - LEXplus10SL
-
-    # Leak protection - internal flags (unclear meaning)
-    'getPM1', 'getPM2', 'getPM3', 'getPM4', 'getPM5', 'getPM6', 'getPM7', 'getPM8',
-    'getPB1', 'getPB2', 'getPB3', 'getPB4', 'getPB5', 'getPB6', 'getPB7', 'getPB8',
-    'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
-    # Technical values without context
-    'get71', 'getBSA', 'getBUZ',
-    'getCDF',
-    'getCES', 'getCND',
-    'getCNO', # Code number - not useful for users
-    'getCNS',
-    'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
-    'getDRP', 'getDST', 'getDTC',
-    'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
-    'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
-    'getOHF', 'getYHF',
-    'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
-    'getT2', 'getTN',
-
-    # Sensors exits in devices:
-    # - Safe-T+
-
-    # Unknown Safe-T+ specific sensors
-    'f', 'b', 'm',  # CI values from API response, unclear purpose
-    'getALA',       # Last alarm - e.g. FF ? unclear purpose
-    'getALA_acd',   # Last alarm - timestamp - acknowledged?
-    'getALA_dt',    # Last alarm - timestamp - occurence?
-    'getALA_ih',    # Last alarm - e.g. 0 - Unknown
-    'getALA_m',     # Last alarm - alarm codes e.g. A5, A6
-    'getAWY',       # Unknown
-    'getBLT',       # Unknown
-    'getBSI',       # Unknown
-    'getCEO',       # Unknown
-    #'getCNO',      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
-    'getEXI',       # Unknown
-    'getEXT',       # Unknown
-    'getGLE',       # Unknown
-    'getGUL',       # Unknown
-    'getINT',       # Unknown
-    'getREL',       # Unknown
-    'getSRV',       # Last service date? unclear format
-    #'getT2',       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
-    'getTBS',       # Unknown
-    'getTC',        # Unknown
-    'getTO',        # Unknown
-    'getTPA',       # Unknown
-    'getUNI',       # Unknown
-}
-
-# Sensors to exclude only when value is 0 - internal
-_SYR_CONNECT_EXCLUDE_WHEN_ZERO = {
-    'getCS1', 'getCS2', 'getCS3',  # Remaining resin capacity (percent)
-    'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
-    'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
-    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
-}
-
-# Sensors that are disabled by default (less frequently used) - internal
-_SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS = {
-    # Sensors exits in devices:
-    # - LEXplus10S
-    # - LEXplus10SL
-
-    'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
-    'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
-    'getNOT',  # Notes - rarely used
-    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
-    'getDWF',  # Flow Warning Value - advanced setting
-    'getSRE',  # Regeneration active
-    'getRG2', 'getRG3',  # Regeneration running for tank
-    'getRPD',  # Regeneration interval (days)
-    'getRPW',  # Regeneration permitted weekdays as bit mask
-    'getPST',  # Pressure sensor installed: 1 = not available, 2 = available
-    'getWHU',  # Water hardness unit
-
-    # Sensors exits in devices:
-    # - LEXplus10SL
-
-    # Leak protection profiles (expert setting)
-    'getPA1', 'getPA2', 'getPA3', 'getPA4', 'getPA5', 'getPA6', 'getPA7', 'getPA8',
-    'getPF1', 'getPF2', 'getPF3', 'getPF4', 'getPF5', 'getPF6', 'getPF7', 'getPF8',
-    'getPT1', 'getPT2', 'getPT3', 'getPT4', 'getPT5', 'getPT6', 'getPT7', 'getPT8',
-    'getPV1', 'getPV2', 'getPV3', 'getPV4', 'getPV5', 'getPV6', 'getPV7', 'getPV8',
-    'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
-    'getPRN',  # Duplicate of getPRF
-    'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',
 }

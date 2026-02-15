@@ -15,22 +15,22 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    _SYR_CONNECT_DIAGNOSTIC_SENSORS,
-    _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS,
-    _SYR_CONNECT_EXCLUDE_WHEN_ZERO,
-    _SYR_CONNECT_EXCLUDED_SENSORS,
-    _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
+    _SYR_CONNECT_SENSOR_DIAGNOSTIC,
+    _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO,
+    _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_GETLE_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_GETUL_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP,
     _SYR_CONNECT_SENSOR_ICONS,
-    _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_PRECISION,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
-    _SYR_CONNECT_SENSOR_STATUS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_STRING,
     _SYR_CONNECT_SENSOR_UNITS,
-    _SYR_CONNECT_STRING_SENSORS,
-    _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
@@ -70,7 +70,7 @@ async def async_setup_entry(
         registry = er.async_get(hass)
         for device in coordinator.data.get('devices', []):
             device_id = device['id']
-            for excluded_key in _SYR_CONNECT_EXCLUDED_SENSORS:
+            for excluded_key in _SYR_CONNECT_SENSOR_EXCLUDED:
                 entity_id = build_entity_id("sensor", device_id, excluded_key)
                 registry_entry = registry.async_get(entity_id)
                 if registry_entry is not None and hasattr(registry_entry, "entity_id"):
@@ -96,13 +96,13 @@ async def async_setup_entry(
 
         for key, value in status.items():
             # Skip sensors excluded globally
-            if key in _SYR_CONNECT_EXCLUDED_SENSORS:
+            if key in _SYR_CONNECT_SENSOR_EXCLUDED:
                 continue
 
             # Special logic for getCS1/2/3:
             # These sensors represent the remaining resin capacity in percent (getCSx),
             # while getSVx represents the salt amount in kg for the same compartment.
-            # By default, sensors in _SYR_CONNECT_EXCLUDE_WHEN_ZERO are hidden if their value is 0.
+            # By default, sensors in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO are hidden if their value is 0.
             # However, for getCS1/2/3, we want to show them if the corresponding getSV1/2/3 is not zero,
             # even if getCSx itself is zero. This ensures that users see the resin capacity as long as
             # there is salt present, which is relevant for maintenance and monitoring.
@@ -136,7 +136,7 @@ async def async_setup_entry(
                         continue
                     elif isinstance(value, str) and value == "0":
                         continue
-            elif key in _SYR_CONNECT_EXCLUDE_WHEN_ZERO:
+            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO:
                 if isinstance(value, int | float) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
@@ -193,7 +193,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         self.entity_id = build_entity_id("sensor", device_id, sensor_key)
 
         # Set entity category for diagnostic sensors
-        if sensor_key in _SYR_CONNECT_DIAGNOSTIC_SENSORS:
+        if sensor_key in _SYR_CONNECT_SENSOR_DIAGNOSTIC:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         # Set unit of measurement for water hardness sensors dynamically
@@ -206,7 +206,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     break
             if whu_value is not None:
                 try:
-                    self._attr_native_unit_of_measurement = _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(whu_value), None)
+                    self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP.get(int(whu_value), None)
                 except (ValueError, TypeError):
                     self._attr_native_unit_of_measurement = None
             else:
@@ -236,7 +236,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Disable sensors by default based on configuration
         # Also disable sensors that are represented by control entities so they
         # are available if users explicitly enable them, but do not clutter the UI.
-        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_DISABLED_BY_DEFAULT_SENSORS:
+        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
             self._attr_entity_registry_enabled_default = False
 
         # Build device info from coordinator data
@@ -289,7 +289,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if device['id'] == self._device_id:
                     raw_value = device.get('status', {}).get('getALM')
                     break
-            mapped = _SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(str(raw_value))
+            mapped = _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(str(raw_value))
             if mapped in ("no_salt", "low_salt"):
                 return "mdi:bell-alert"
             return "mdi:bell-outline"
@@ -476,10 +476,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
                     if isinstance(value, int | float):
-                        return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
+                        return _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP.get(int(value), None)
                     elif isinstance(value, str):
                         try:
-                            return _SYR_CONNECT_WATER_HARDNESS_UNIT_MAP.get(int(value), None)
+                            return _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP.get(int(value), None)
                         except (ValueError, TypeError):
                             return None
                     return None
@@ -498,8 +498,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return None
 
                 # Special handling for regeneration permitted weekdays (getRPW):
-                # The device returns a bitmask where bit 0 = Monday, bit 1 = Tuesday, ... bit 6 = Sunday.
-                # - mask == 0 -> "Jederzeit"
+                # The device returns a bitmask where bit 1 = Monday, bit 2 = Tuesday, ... bit 7 = Sunday.
+                # - mask == 0 -> "Anytime"
                 # - other masks -> comma-separated short weekday names using strftime('%a')
                 if self._sensor_key == 'getRPW':
                     raw_mask = status.get('getRPW')
@@ -551,7 +551,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if m:
                         resistance_value = str(m.group(1) or "")
                         normalized = "Płukanie regenerantem"
-                        mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
+                        mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
                         self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
                         return mapped
@@ -560,14 +560,14 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if m2:
                         rinse_round = str(m2.group(1) or "")
                         normalized = "Płukanie rapide"
-                        mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, "status_fast_rinse"))
+                        mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, "status_fast_rinse"))
                         self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": rinse_round})
                         return mapped
 
                     # Fallback: use raw string as normalized mapping key
                     normalized = raw
-                    mapped = str(_SYR_CONNECT_SENSOR_STATUS_VALUE_MAP.get(normalized, normalized))
+                    mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, normalized))
                     self._attr_translation_key = mapped
                     _LOGGER.debug("getSTA mapped=%s", mapped)
                     return mapped
@@ -575,7 +575,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
                     raw = str(status.get('getALM') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_ALARM_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(raw))
                     self._attr_translation_key = mapped if mapped is not None else value
                     # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
@@ -583,26 +583,26 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for getLE sensor: map raw API values to display values
                 if self._sensor_key == 'getLE':
                     raw = str(status.get('getLE') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_GETLE_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '100', '150', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getUL sensor: map raw API values to display values
                 if self._sensor_key == 'getUL':
                     raw = str(status.get('getUL') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_GETUL_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getT1 sensor: map raw API values to display values
                 if self._sensor_key == 'getT1':
                     raw = str(status.get('getT1') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_GETT1_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
-                if self._sensor_key in _SYR_CONNECT_STRING_SENSORS:
+                if self._sensor_key in _SYR_CONNECT_SENSOR_STRING:
                     _LOGGER.debug("String sensor key: %s, value: %s", self._sensor_key, value)
                     return str(value) if value is not None else None
 

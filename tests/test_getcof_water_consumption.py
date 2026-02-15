@@ -84,5 +84,5 @@ def test_getcof_handles_string_values():
 def test_getcof_not_excluded():
     """Test that getCOF is not in the excluded sensors list."""
     from custom_components.syr_connect.const import (
-        _SYR_CONNECT_EXCLUDED_SENSORS,
+        _SYR_CONNECT_SENSOR_EXCLUDED,
     )

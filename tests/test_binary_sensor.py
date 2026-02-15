@@ -117,7 +117,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
     
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
-    # getSRE should be excluded per _SYR_CONNECT_EXCLUDED_SENSORS
+    # getSRE should be excluded per _SYR_CONNECT_SENSOR_EXCLUDED
     assert len(entities) == 0
 
 
@@ -147,7 +147,7 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mo
     async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
     
     # Patch the binary sensors list to include our test sensor
-    with patch("custom_components.syr_connect.binary_sensor._SYR_CONNECT_BINARY_SENSORS", {"testSensor": None}):
+    with patch("custom_components.syr_connect.binary_sensor._SYR_CONNECT_SENSOR_BINARY", {"testSensor": None}):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
     # Should create one sensor for device1
