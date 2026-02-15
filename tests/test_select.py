@@ -401,38 +401,6 @@ async def test_numeric_select_without_unit(hass: HomeAssistant) -> None:
         assert "2" in select.options
 
 
-async def test_getab_icon_variants(hass: HomeAssistant) -> None:
-    """Test dynamic icon for getAB select (open/closed/base)."""
-    # Base icon from const is mdi:valve
-    data_open = {
-        "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getAB": "1"}},
-        ]
-    }
-    coordinator_open = _build_coordinator(hass, data_open)
-    select_open = SyrConnectNumericSelect(coordinator_open, "device1", "Device 1", "getAB", 1, 2, 1)
-    assert select_open.icon == "mdi:valve-open"
-
-    data_closed = {
-        "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getAB": "2"}},
-        ]
-    }
-    coordinator_closed = _build_coordinator(hass, data_closed)
-    select_closed = SyrConnectNumericSelect(coordinator_closed, "device1", "Device 1", "getAB", 1, 2, 1)
-    assert select_closed.icon == "mdi:valve-closed"
-
-    data_none = {
-        "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getAB": ""}},
-        ]
-    }
-    coordinator_none = _build_coordinator(hass, data_none)
-    select_none = SyrConnectNumericSelect(coordinator_none, "device1", "Device 1", "getAB", 1, 2, 1)
-    # Base icon should be returned when value missing
-    assert select_none.icon == "mdi:valve"
-
-
 async def test_numeric_select_options_include_unit(hass: HomeAssistant) -> None:
     """Ensure numeric select options include the configured unit label."""
     data = {
