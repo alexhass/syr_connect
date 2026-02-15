@@ -321,3 +321,66 @@ async def test_icon_fallback_when_no_status(hass: HomeAssistant) -> None:
     valve = SyrConnectValve(coordinator, "missing", "Missing")
     # No status -> closed is None -> icon should be base icon
     assert valve.icon == valve._base_icon
+
+
+async def test_is_closing_state_and_icon(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "c1", "name": "C1", "status": {"getVLV": "11"}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "c1", "C1")
+
+    # getVLV=11 -> closing True, is_closed False
+    assert valve.is_closing is True
+    assert valve.is_opening is False
+    assert valve.is_closed is False
+    # moving icon for closing
+    assert valve.icon == "mdi:valve"
+
+
+async def test_extra_state_attributes_none_when_no_status(hass: HomeAssistant) -> None:
+    data = {"devices": []}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "no_status", "NoStatus")
+    assert valve.extra_state_attributes is None
+
+
+async def test_is_closed_none_when_device_missing(hass: HomeAssistant) -> None:
+    # Coordinator has devices but not our device id
+    data = {"devices": [{"id": "other", "name": "Other", "status": {"getVLV": "20"}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "missing_device", "Missing")
+    assert valve._get_device() is None
+    assert valve._get_status() is None
+    assert valve.is_closed is None
+
+
+async def test_async_open_handles_write_state_exception(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "w1", "name": "W1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    valve = SyrConnectValve(coordinator, "w1", "W1")
+
+    # Make async_write_ha_state raise; async_open should swallow it
+    def _fail():
+        raise Exception("ui fail")
+
+    valve.async_write_ha_state = _fail
+
+    await valve.async_open()
+    # Command sent and cache set despite UI failure
+    coordinator.async_set_device_value.assert_awaited_with("w1", "setAB", 1)
+    assert valve._cached_ab is not None and valve._cached_ab["value"] == "1"
+
+
+async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -> None:
+    # If entry.runtime_data.data is falsy, async_setup_entry should not call add_entities
+    coordinator = _build_coordinator(hass, {"devices": []})
+    # Simulate missing data
+    coordinator.data = None
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # add_entities should not be called when coordinator.data is falsy
+    assert not add_entities.called
