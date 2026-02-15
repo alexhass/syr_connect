@@ -159,6 +159,41 @@
       "getmac": {
         "name": "Indirizzo MAC"
       },
+      "getmac1": {
+        "name": "Indirizzo MAC WLAN"
+      },
+      "getmac2": {
+        "name": "Indirizzo MAC LAN"
+      },
+      "geteip": {
+        "name": "Indirizzo IP Ethernet"
+      },
+      "getwfc": {
+        "name": "SSID WLAN"
+      },
+      "getwfr": {
+        "name": "Intensità del segnale WLAN"
+      },
+      "getwfs": {
+        "name": "Stato connessione WLAN",
+        "state": {
+          "0": "Non connesso",
+          "1": "Connessione in corso",
+          "2": "Connesso"
+        }
+      },
+      "getwgw": {
+        "name": "Gateway WLAN"
+      },
+      "getwip": {
+        "name": "Indirizzo IP WLAN"
+      },
+      "getvps1": {
+        "name": "Nessun impulso turbina sulla testina di controllo 1 da"
+      },
+      "getvps2": {
+        "name": "Nessun impulso turbina sulla testina di controllo 2 da"
+      },
       "getman": {
         "name": "Produttore"
       },

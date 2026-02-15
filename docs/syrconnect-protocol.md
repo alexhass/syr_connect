@@ -290,7 +290,7 @@ Some further data about the device
 | getMAN          | "Syr"                            |        | Manufacturer
 | getFIR          | "SLPS"                           |        | Firmware name. Used to find the correct firmware file during firmware update
 | getCDE          | "010SCA19DF0917.01.024.1.1.0010" |        | *unknown constant (some kind of device identifier?)*
-| getTMZ          | "01:00"                          |        | Timezone (Returns unclear value "4" on LEXplus10SL)
+| getTMZ          | "4" (old docs: "01:00" ?)        |        | Timezone (Returns unclear value "4" on LEXplus10SL, NeoSoft2500)
 | getDAT          | "1694635165"                     |        | Current time as UNIX timestamp (seconds since 1.1.1970)
 | getLAN          | "1"                              |        | Language of the UI (0=English, 1=German, 3=Spanish)
 

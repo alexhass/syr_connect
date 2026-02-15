@@ -159,6 +159,41 @@
       "getmac": {
         "name": "Dirección MAC"
       },
+      "getmac1": {
+        "name": "Dirección MAC WLAN"
+      },
+      "getmac2": {
+        "name": "Dirección MAC LAN"
+      },
+      "geteip": {
+        "name": "Dirección IP Ethernet"
+      },
+      "getwfc": {
+        "name": "SSID WLAN"
+      },
+      "getwfr": {
+        "name": "Intensidad de la señal WLAN"
+      },
+      "getwfs": {
+        "name": "Estado de la conexión WLAN",
+        "state": {
+          "0": "No conectado",
+          "1": "Conectando",
+          "2": "Conectado"
+        }
+      },
+      "getwgw": {
+        "name": "Gateway WLAN"
+      },
+      "getwip": {
+        "name": "Dirección IP WLAN"
+      },
+      "getvps1": {
+        "name": "Sin pulsos de turbina en cabeza de control 1 desde"
+      },
+      "getvps2": {
+        "name": "Sin pulsos de turbina en cabeza de control 2 desde"
+      },
       "getman": {
         "name": "Fabricante"
       },

@@ -104,7 +104,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     'getDWF',  # Flow Warning Value - advanced setting
     'getLAN',  # Language of the UI (0=English, 1=German, 3=Spanish)
-    'getNOT',  # Notes - rarely used
+    'getNOT',  # Retrieving the current notification
     'getSRE',  # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
     'getRPD',  # Regeneration interval (days)
@@ -196,7 +196,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 
     # Unknown Safe-T+ specific sensors
     'f', 'b', 'm',  # CI values from API response, unclear purpose
-    'getALA',       # Last alarm - e.g. FF ? unclear purpose
+    'getALA',       # Last alarm - e.g. "FF" ? unclear purpose
     'getALA_acd',   # Last alarm - timestamp - acknowledged?
     'getALA_dt',    # Last alarm - timestamp - occurence?
     'getALA_ih',    # Last alarm - e.g. 0 - Unknown
@@ -219,6 +219,42 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getTO',        # Unknown
     'getTPA',       # Unknown
     'getUNI',       # Unknown
+
+    # Sensors exits in devices:
+    # - NeoSoft 2500 / 5000
+
+    'getALN',       # Value: "", unclear meaning
+    'getALW',       # Value: "", unclear meaning
+    'getBMX',       # Value: "", unclear meaning
+    'getERE',       # Value: "", unclear meaning
+    #'getLDF',      # Value: "", unclear meaning
+    'getLMS',       # Value: "", unclear meaning
+    'getNRE',       # Value: "", unclear meaning
+    #'getOHF',      # Value: "", unclear meaning
+    'getPRE',       # Value: "", unclear meaning
+    'getVRE1',      # Value: "", unclear meaning
+    'getVRE2',      # Value: "", unclear meaning
+    #'getYHF',      # Value: "", unclear meaning
+    'getHWV',       # Value: e.g. "V1", unclear meaning
+    'getAPT',       # Value: e.g. "600", unclear meaning
+    'getCNF',       # Value: "", unclear meaning
+    'getCSD',       # Value: "", unclear meaning
+    'getEVL',       # Value: "0", unclear meaning
+    #'getIDS',      # Value: "False", unclear meaning
+    'getLNG',       # Value: "0", unclear meaning
+    'getPSD',       # Value: "", unclear meaning
+    'getRTC',       # Value: "", unclear meaning
+    'getRURL',      # Value: "", unclear meaning
+    'getTMZ',       # Value: "4", unclear meaning
+    'getTURL',      # Value: "", unclear meaning
+    'getWAD',       # Value: "False", unclear meaning
+    'getWTI',       # Value: e.g. "1720", unclear meaning
+    #'getNOT',      # Value: e.g. "FF", unclear meaning
+    'getWRN',       # Retrieve current warning / Acknowledge current warning: Value: "FF" / 255, unclear meaning
+    'getALD',       # Value: "", unclear meaning
+    'getCNL',       # Value: "", unclear meaning
+    'getWAH',       # Value: "", unclear meaning
+    'getNET',       # Value: "", unclear meaning
 }
 
 # Sensors to exclude only when value is 0 - internal
@@ -227,6 +263,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO = {
     'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
     'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
+
+    # Sensors exits in devices:
+    # - NeoSoft 2500 / 5000
+    'getLAR',  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show
 }
 
 # Sensor icons (Material Design Icons) - internal

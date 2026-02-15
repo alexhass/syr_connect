@@ -148,6 +148,41 @@
       "getmac": {
         "name": "Endereço MAC"
       },
+      "getmac1": {
+        "name": "Endereço MAC WLAN"
+      },
+      "getmac2": {
+        "name": "Endereço MAC LAN"
+      },
+      "geteip": {
+        "name": "Endereço IP Ethernet"
+      },
+      "getwfc": {
+        "name": "SSID WLAN"
+      },
+      "getwfr": {
+        "name": "Força do sinal WLAN"
+      },
+      "getwfs": {
+        "name": "Estado da conexão WLAN",
+        "state": {
+          "0": "Não conectado",
+          "1": "Conectando",
+          "2": "Conectado"
+        }
+      },
+      "getwgw": {
+        "name": "Gateway WLAN"
+      },
+      "getwip": {
+        "name": "Endereço IP WLAN"
+      },
+      "getvps1": {
+        "name": "Sem pulsos da turbina na cabeça de controle 1 desde"
+      },
+      "getvps2": {
+        "name": "Sem pulsos da turbina na cabeça de controle 2 desde"
+      },
       "getman": {
         "name": "Fabricante"
       },

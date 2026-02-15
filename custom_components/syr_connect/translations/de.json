@@ -83,6 +83,13 @@
       "getbat": {
         "name": "Batteriespannung"
       },
+      "getbuz": {
+        "name": "Buzzer bei Alarm",
+        "state": {
+          "true": "Aktiviert",
+          "false": "Deaktiviert"
+        }
+      },
       "getcel": {
         "name": "Wassertemperatur"
       },
@@ -124,6 +131,12 @@
       "getdwf": {
         "name": "Erwarteter täglicher Wasserverbrauch"
       },
+      "getegw": {
+        "name": "Ethernet Gateway"
+      },
+      "geteip": {
+        "name": "Ethernet IP Adresse"
+      },
       "getfco": {
         "name": "Eisengehalt"
       },
@@ -142,6 +155,9 @@
       "getipa": {
         "name": "IP Adresse"
       },
+      "getltv": {
+        "name": "Letztes gezapftes Volumen"
+      },
       "getle": {
         "name": "Leckageschutz - Stufe Anwesend"
       },
@@ -159,6 +175,12 @@
       "getmac": {
         "name": "MAC Adresse"
       },
+      "getmac1": {
+        "name": "WLAN MAC Adresse"
+      },
+      "getmac2": {
+        "name": "LAN MAC Adresse"
+      },
       "getman": {
         "name": "Hersteller"
       },
@@ -166,7 +188,7 @@
         "name": "Mikroleckagen-Anzahl"
       },
       "getnot": {
-        "name": "Notizen"
+        "name": "Aktuelle Benachrichtigung"
       },
       "getnor": {
         "name": "Regenerationen im Normalbetrieb"
@@ -279,14 +301,30 @@
       "getrdo": {
         "name": "Salzdosierung"
       },
+      "getre1": {
+        "name": "Reserve Kapazität Flasche 1"
+      },
+      "getre2": {
+        "name": "Reserve Kapazität Flasche 2"
+      },
       "getres": {
         "name": "Restkapazität"
       },
-      "getrg1": {
-        "name": "Regeneration im Behälter 1",
+      "getrmo": {
+        "name": "Regenerationsmodus",
         "state": {
-          "0": "Inaktiv",
-          "1": "Läuft"
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatik"
+        }
+      },
+      "getrg1": {
+        "name": "Regeneration Status",
+        "state": {
+          "0": "keine Regeneration",
+          "1": "Flasche 1 regeneriert",
+          "2": "Flasche 2 regeneriert"
         }
       },
       "getrg2": {
@@ -318,6 +356,9 @@
       "getrtm": {
         "name": "Minuten der Regeneration"
       },
+      "getscr": {
+        "name": "Service-Regenerationszyklen"
+      },
       "getsir": {
         "name": "Sofortregeneration",
         "state": {
@@ -325,8 +366,11 @@
           "1": "Nicht starten"
         }
       },
-      "getscr": {
-        "name": "Service-Regenerationszyklen"
+      "getsrh": {
+        "name": "Nächste halbjährliche Wartung"
+      },
+      "getsrv": {
+        "name": "Nächste jährliche Wartung"
       },
       "getsrn": {
         "name": "Seriennummer"
@@ -405,6 +449,32 @@
       },
       "getwhu": {
         "name": "Wasserhärte-Einheit"
+      },
+      "getwfc": {
+        "name": "WLAN SSID"
+      },
+      "getwfr": {
+        "name": "WLAN Signalstärke"
+      },
+      "getwfs": {
+        "name": "WLAN Verbindungsstatus",
+        "state": {
+          "0": "Nicht verbunden",
+          "1": "Wird verbunden",
+          "2": "Verbunden"
+        }
+      },
+      "getwgw": {
+        "name": "WLAN Gateway"
+      },
+      "getwip": {
+        "name": "WLAN IP-Adresse"
+      },
+      "getvps1": {
+        "name": "Keine Turbinenimpulse Steuerkopf 1 seit"
+      },
+      "getvps2": {
+        "name": "Keine Turbinenimpulse Steuerkopf 2 seit"
       }
     },
     "binary_sensor": {

@@ -152,6 +152,41 @@
       "getmac": {
         "name": "MAC address"
       },
+      "getmac1": {
+        "name": "Wi-Fi MAC address"
+      },
+      "getmac2": {
+        "name": "LAN MAC address"
+      },
+      "geteip": {
+        "name": "Ethernet IP address"
+      },
+      "getwfc": {
+        "name": "Wi-Fi SSID"
+      },
+      "getwfr": {
+        "name": "Wi-Fi signal strength"
+      },
+      "getwfs": {
+        "name": "Wi-Fi connection status",
+        "state": {
+          "0": "Not connected",
+          "1": "Connecting",
+          "2": "Connected"
+        }
+      },
+      "getwgw": {
+        "name": "Wi-Fi gateway"
+      },
+      "getwip": {
+        "name": "Wi-Fi IP address"
+      },
+      "getvps1": {
+        "name": "No turbine pulses on control head 1 since"
+      },
+      "getvps2": {
+        "name": "No turbine pulses on control head 2 since"
+      },
       "getman": {
         "name": "Manufacturer"
       },
