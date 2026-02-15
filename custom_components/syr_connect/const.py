@@ -103,7 +103,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
     'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     'getDWF',  # Flow Warning Value - advanced setting
-    'getLAN', # Language of the UI (0=English, 1=German, 3=Spanish)
+    'getLAN',  # Language of the UI (0=English, 1=German, 3=Spanish)
     'getNOT',  # Notes - rarely used
     'getSRE',  # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
