@@ -306,8 +306,9 @@ async def test_sync_service_wrappers_schedule_tasks(hass: HomeAssistant) -> None
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "s1", "S1")
 
-    # Provide a hass with async_create_task spy
+    # Provide a hass with async_create_task spy that consumes the coro
     fake_hass = MagicMock()
+    fake_hass.async_create_task = Mock(side_effect=lambda coro: coro.close())
     valve.hass = fake_hass
     valve.open_valve()
     fake_hass.async_create_task.assert_called()
