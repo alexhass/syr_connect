@@ -145,6 +145,14 @@
       "getle": {
         "name": "Protezione perdite - Livello presente"
       },
+      "getlan": {
+        "name": "Lingua",
+        "state": {
+          "0": "Inglese",
+          "1": "Tedesco",
+          "3": "Spagnolo"
+        }
+      },
       "getlar": {
         "name": "Ultima rigenerazione"
       },
@@ -354,6 +362,9 @@
         "name": "Quantità sale contenitore 3"
       },
       "gett1": {
+        "name": "Perdita di tempo"
+      },
+      "gett2": {
         "name": "Perdita di tempo"
       },
       "gettmp": {

@@ -12,8 +12,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
-    _SYR_CONNECT_SENSOR_ICONS,
-    _SYR_CONNECT_SENSOR_UNITS,
+    _SYR_CONNECT_SENSOR_ICON,
+    _SYR_CONNECT_SENSOR_UNIT,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
@@ -131,7 +131,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Use same icon as the combined regeneration time sensor if available
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICONS.get("getRTIME")
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getRTIME")
 
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
@@ -230,14 +230,14 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = f"{device_id}_{sensor_key}_select"
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         # Icon mapping if present
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICONS.get(sensor_key)
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
 
         # Store base icon for state-based icon changes
         self._base_icon = getattr(self, '_attr_icon', None)
 
         # Determine unit label (if available) and build options (append unit for readability)
         unit_label = None
-        unit = _SYR_CONNECT_SENSOR_UNITS.get(self._sensor_key)
+        unit = _SYR_CONNECT_SENSOR_UNIT.get(self._sensor_key)
         if unit is not None:
             try:
                 unit_label = str(unit)

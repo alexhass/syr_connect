@@ -546,7 +546,7 @@ async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     
-    # getSRE has an icon defined in _SYR_CONNECT_SENSOR_ICONS
+    # getSRE has an icon defined in _SYR_CONNECT_SENSOR_ICON
     sensor = SyrConnectBinarySensor(
         coordinator, "device1", "Device 1", "project1", "getSRE", BinarySensorDeviceClass.RUNNING
     )

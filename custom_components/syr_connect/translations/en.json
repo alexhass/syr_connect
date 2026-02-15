@@ -138,6 +138,14 @@
       "getle": {
         "name": "Leakage protection - Present level"
       },
+      "getlan": {
+        "name": "Language",
+        "state": {
+          "0": "English",
+          "1": "German",
+          "3": "Spanish"
+        }
+      },
       "getlar": {
         "name": "Last regeneration"
       },
@@ -354,6 +362,9 @@
         "name": "Salt container volume 3"
       },
       "gett1": {
+        "name": "Leakage time"
+      },
+      "gett2": {
         "name": "Leakage time"
       },
       "gettmp": {

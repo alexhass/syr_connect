@@ -102,14 +102,15 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
 
     'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
     'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
-    'getNOT',  # Notes - rarely used
-    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
     'getDWF',  # Flow Warning Value - advanced setting
+    'getLAN', # Language of the UI (0=English, 1=German, 3=Spanish)
+    'getNOT',  # Notes - rarely used
     'getSRE',  # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
     'getRPD',  # Regeneration interval (days)
     'getRPW',  # Regeneration permitted weekdays as bit mask
     'getPST',  # Pressure sensor installed: 1 = not available, 2 = available
+    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
     'getWHU',  # Water hardness unit
 
     # Sensors exits in devices:
@@ -229,7 +230,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO = {
 }
 
 # Sensor icons (Material Design Icons) - internal
-_SYR_CONNECT_SENSOR_ICONS = {
+_SYR_CONNECT_SENSOR_ICON = {
     # Sensors exits in devices:
     # - LEXplus10S
     # - LEXplus10SL
@@ -251,21 +252,22 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getWHU": "mdi:water-opacity",
     # Pressure & Flow
     "getCOF": "mdi:counter",
-    "getPRS": "mdi:gauge",
-    "getFLO": "mdi:waves-arrow-right",
-    "getFCO": "mdi:counter",
     "getDWF": "mdi:water-alert",
+    "getFCO": "mdi:counter",
+    "getFLO": "mdi:waves-arrow-right",
+    "getPRS": "mdi:gauge",
     # Capacity & Supply
     "getRES": "mdi:gauge",
-    "getVOL": "mdi:gauge-full",
-    "getSV1": "mdi:delete-variant",
-    "getSV2": "mdi:delete-variant",
-    "getSV3": "mdi:delete-variant",
     "getSS1": "mdi:calendar-week",
     "getSS2": "mdi:calendar-week",
     "getSS3": "mdi:calendar-week",
+    "getSV1": "mdi:delete-variant",
+    "getSV2": "mdi:delete-variant",
+    "getSV3": "mdi:delete-variant",
+    "getVOL": "mdi:gauge-full",
     # Regeneration
     "getINR": "mdi:counter",
+    "getLAR": "mdi:calendar-clock",
     "getNOR": "mdi:counter",
     "getRTI": "mdi:clock-outline",
     "getRPD": "mdi:calendar-clock",
@@ -273,21 +275,21 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getSRE": "mdi:autorenew",
     "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
-    "getLAR": "mdi:calendar-clock",
     # System & Status
     "getALM": "mdi:bell-alert",
-    "getPST": "mdi:check-circle",
     "getSTA": "mdi:list-status",
+    "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",
     # Device Info
-    "getSRN": "mdi:identifier",
-    "getVER": "mdi:chip",
-    "getFIR": "mdi:chip",
     "getCNA": "mdi:tag",
+    "getDGW": "mdi:router-network",
+    "getFIR": "mdi:chip",
+    "getIPA": "mdi:ip-network",
+    "getLAN": "mdi:translate",
     "getMAN": "mdi:factory",
     "getMAC": "mdi:ethernet",
-    "getIPA": "mdi:ip-network",
-    "getDGW": "mdi:router-network",
+    "getSRN": "mdi:identifier",
+    "getVER": "mdi:chip",
     # Configuration
     "getCS1": "mdi:beaker",
     "getCS2": "mdi:beaker",
@@ -313,6 +315,7 @@ _SYR_CONNECT_SENSOR_ICONS = {
     "getLE": "mdi:water-alert",
     "getNPS": "mdi:pipe-leak",
     "getT1": "mdi:timer-outline",
+    "getT2": "mdi:timer-outline",
     "getTMP": "mdi:timer-off-outline",
     "getUL": "mdi:water-alert",
     "getPF1": "mdi:water-alert",
@@ -372,7 +375,7 @@ _SYR_CONNECT_SENSOR_GETLE_VALUE_MAP = {
 #
 # Use this mapping to decode device `getRPW` bitmasks where each bit
 # represents a weekday.
-_SYR_CONNECT_SENSOR_GETRPW_BITS = {
+_SYR_CONNECT_SENSOR_GETRPW_VALUE_MAP = {
     0: None,    # No days configured
     1: 0,       # Monday
     2: 1,       # Tuesday
@@ -396,7 +399,7 @@ _SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP = {
     "": "status_inactive",
 }
 
-# Mapping for getT1 sensor values (Time leakage)
+# Mapping for getT1, getT2 sensor values (Time leakage)
 # Maps raw API value -> display value in hours (as shown in translations)
 _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP = {
     "1": "0.5", "2": "1.0", "3": "1.5", "4": "2.0", "5": "2.5",
@@ -420,7 +423,7 @@ _SYR_CONNECT_SENSOR_GETUL_VALUE_MAP = {
 
 # Water hardness unit mapping (for getWHU)
 # According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
-_SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP = {
+_SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP = {
     0: "°dH",       # German degree of water hardness (Grad deutsche Härte)
     1: "°fH",       # French degree of water hardness (degré français de dureté)
     2: "ppm",       # Parts per million (mg/L), common international unit
@@ -460,93 +463,42 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
 
 # Sensors that should remain as strings (not converted to numbers) - internal
 _SYR_CONNECT_SENSOR_STRING = {
-    "getAB",   # Valve shut-off (1=open, 2=closed)
     "getCNA",  # Device name
     "getDGW",  # Gateway
     "getFIR",  # Firmware
     "getIPA",  # IP address
-    "getLE",   # Leakage protection - Present level (mapped to liters)
     "getMAC",  # MAC address
     "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
     "getSRN",  # Serial number
-    "getT1",   # Time leakage (mapped to hours)
-    "getLU",   # Leakage protection - Level (mapped to percentage)
     "getVER",  # Version
-    "getVLV",  # Valve status (10=closed, 11=closing, 20=open, 21=opening)
-    "getWHU",  # Water hardness unit (mapped to unit names)
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
 }
 
-# Sensor display precision mapping (number of decimals to show)
-# Use integers for whole-number display (0), or >0 for decimal places.
-# This allows configuring how many decimals Home Assistant should show
-# for specific sensors when the integration formats the value.
-_SYR_CONNECT_SENSOR_PRECISION = {
-    "getAVO": 1,    # Current flow: show with 2 decimal places
-    "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
-    "getBAT": 2,    # Battery voltage: show with 2 decimal places
-    "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
-    "getCFO": 0,    # Cycle flow offset: show as whole number by default
-    "getCOF": 0,    # Total water consumption counter: show as whole number by default
-    "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
-    "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
-    "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
-    "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
-    "getDWF": 0,    # Expected daily water consumption: show as whole number by default
-    "getFCO": 0,    # Iron content: show as whole number by default
-    "getFLO": 0,    # Flow rate: show as whole number by default
-    "getINR": 0,    # Incomplete regenerations: show as whole number by default
-    "getIWH": 0,    # Incoming water hardness: show as whole number by default
-    "getLE": 0,     # Leakage protection - Present level: show as whole number by default
-    "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
-    "getNPS": 0,    # Microleakage count: show as whole number by default
-    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
-    "getPRS": 1,    # Pressure: show with 1 decimal place by default
-    "getPST": 0,    # Pressure sensor installed: show as whole number by default
-    "getRDO": 0,    # Salt dosing: show as whole number by default
-    "getRPD": 0,    # Regeneration interval: show as whole days by default
-    "getRES": 0,    # Remaining capacity: show as whole number by default
-    "getRG1": 0,    # Regeneration 1: show as whole number by default
-    "getRG2": 0,    # Regeneration 2: show as whole number by default
-    "getRG3": 0,    # Regeneration 3: show as whole number by default
-    "getSS1": 0,    # Salt container supply 1: show as whole number by default
-    "getSS2": 0,    # Salt container supply 2: show as whole number by default
-    "getSS3": 0,    # Salt container supply 3: show as whole number by default
-    "getSV1": 0,    # Salt container volume 1: show as whole number by default
-    "getSV2": 0,    # Salt container volume 2: show as whole number by default
-    "getSV3": 0,    # Salt container volume 3: show as whole number by default
-    "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
-    "getTOR": 0,    # Total regenerations: show as whole number by default
-    "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
-    "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
-    "getVOL": 0,    # Total water volume: show as whole number by default
-}
-
 # Sensor units mapping (units are standardized and not translated) - internal
-_SYR_CONNECT_SENSOR_UNITS = {
+_SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - LEXplus10S
     # - LEXplus10SL
 
     # getIWH and getOWH units are set dynamically from getWHU
     "getAVO": UnitOfVolume.LITERS,                          # Current flow in Liters (e.g. "1655mL" -> 1.655 L)
+    "getDWF": UnitOfVolume.LITERS,                          # Expected daily water consumption
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
+    "getFCO": "ppm",                                        # Iron content (parts per million)
     "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
-    "getVOL": UnitOfVolume.LITERS,                          # Total capacity
+    "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
     "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
     "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
+    "getPRS": UnitOfPressure.BAR,                           # Pressure
     "getSV1": UnitOfMass.KILOGRAMS,                         # Salt container amount 1
     "getSV2": UnitOfMass.KILOGRAMS,                         # Salt container amount 2
     "getSV3": UnitOfMass.KILOGRAMS,                         # Salt container amount 3
     "getSS1": UnitOfTime.WEEKS,                             # Salt container supply 1
     "getSS2": UnitOfTime.WEEKS,                             # Salt container supply 2
     "getSS3": UnitOfTime.WEEKS,                             # Salt container supply 3
-    "getPRS": UnitOfPressure.BAR,                           # Pressure
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
-    "getFCO": "ppm",                                        # Iron content (parts per million)
-    "getDWF": UnitOfVolume.LITERS,                          # Expected daily water consumption
-    "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
+    "getVOL": UnitOfVolume.LITERS,                          # Total capacity
 
     # Configuration/resin capacity sensors are percentage values
     "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)
@@ -591,6 +543,57 @@ _SYR_CONNECT_SENSOR_UNITS = {
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
     "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
     "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
+    "getT2": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
     "getTMP": UnitOfTime.SECONDS,                       # Deactivate leakage protection for n seconds
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
+}
+
+# Sensor display precision mapping (number of decimals to show)
+# Use integers for whole-number display (0), or >0 for decimal places.
+# This allows configuring how many decimals Home Assistant should show
+# for specific sensors when the integration formats the value.
+_SYR_CONNECT_SENSOR_UNIT_PRECISION = {
+    "getAB": 0,     # Valve shut-off (1=open, 2=closed)
+    "getAVO": 1,    # Current flow: show with 2 decimal places
+    "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
+    "getBAT": 2,    # Battery voltage: show with 2 decimal places
+    "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
+    "getCFO": 0,    # Cycle flow offset: show as whole number by default
+    "getCOF": 0,    # Total water consumption counter: show as whole number by default
+    "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
+    "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
+    "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
+    "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDWF": 0,    # Expected daily water consumption: show as whole number by default
+    "getFCO": 0,    # Iron content: show as whole number by default
+    "getFLO": 0,    # Flow rate: show as whole number by default
+    "getINR": 0,    # Incomplete regenerations: show as whole number by default
+    "getIWH": 0,    # Incoming water hardness: show as whole number by default
+    "getLAN": 0,    # Language of the UI: show as whole number by default (0=English, 1=German, 3=Spanish)
+    "getLE": 0,     # Leakage protection - Present level: show as whole number by default
+    "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
+    "getNPS": 0,    # Microleakage count: show as whole number by default
+    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
+    "getPRS": 1,    # Pressure: show with 1 decimal place by default
+    "getPST": 0,    # Pressure sensor installed: show as whole number by default
+    "getRDO": 0,    # Salt dosing: show as whole number by default
+    "getRPD": 0,    # Regeneration interval: show as whole days by default
+    "getRES": 0,    # Remaining capacity: show as whole number by default
+    "getRG1": 0,    # Regeneration 1: show as whole number by default
+    "getRG2": 0,    # Regeneration 2: show as whole number by default
+    "getRG3": 0,    # Regeneration 3: show as whole number by default
+    "getSS1": 0,    # Salt container supply 1: show as whole number by default
+    "getSS2": 0,    # Salt container supply 2: show as whole number by default
+    "getSS3": 0,    # Salt container supply 3: show as whole number by default
+    "getSV1": 0,    # Salt container volume 1: show as whole number by default
+    "getSV2": 0,    # Salt container volume 2: show as whole number by default
+    "getSV3": 0,    # Salt container volume 3: show as whole number by default
+    "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
+    "getTOR": 0,    # Total regenerations: show as whole number by default
+    "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
+    "getT2": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
+    "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
+    "getVLV": 0,    # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
+    "getVOL": 0,    # Total water volume: show as whole number by default
+    "getWHU": 0,    # Water hardness unit: show as whole number by default (mapped to unit names)
 }

@@ -145,6 +145,14 @@
       "getle": {
         "name": "Leckageschutz - Stufe Anwesend"
       },
+      "getlan": {
+        "name": "Sprache",
+        "state": {
+          "0": "Englisch",
+          "1": "Deutsch",
+          "3": "Spanisch"
+        }
+      },
       "getlar": {
         "name": "Letzte Regeneration"
       },
@@ -354,6 +362,9 @@
         "name": "Salzmenge Behälter 3"
       },
       "gett1": {
+        "name": "Zeitleckage"
+      },
+      "gett2": {
         "name": "Zeitleckage"
       },
       "gettmp": {

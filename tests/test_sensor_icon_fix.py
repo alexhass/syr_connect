@@ -18,11 +18,11 @@ class TestSyrConnectSensorIconFix(unittest.TestCase):
     """Test the icon attribute fix for SyrConnectSensor."""
 
     def test_icon_attribute_exists_in_dict(self):
-        """Test sensor initialization when icon is defined in _SYR_CONNECT_SENSOR_ICONS."""
+        """Test sensor initialization when icon is defined in _SYR_CONNECT_SENSOR_ICON."""
         # Simulate sensor with icon defined
         sensor = MockSensorEntity()
 
-        # Icon is defined (like in _SYR_CONNECT_SENSOR_ICONS)
+        # Icon is defined (like in _SYR_CONNECT_SENSOR_ICON)
         sensor._attr_icon = "mdi:water-percent"
 
         # Old approach (would work here)
@@ -55,7 +55,7 @@ class TestSyrConnectSensorIconFix(unittest.TestCase):
 
     def test_real_world_scenario_with_leak_protection_sensors(self):
         """Test real-world scenario with LEXplus10SL leak protection sensors."""
-        # These sensors don't have icons defined in _SYR_CONNECT_SENSOR_ICONS:
+        # These sensors don't have icons defined in _SYR_CONNECT_SENSOR_ICON:
         leak_sensors = [
             'getPA1', 'getPA2', 'getPA3',  # Profile active
             'getPN1', 'getPN2', 'getPN3',  # Profile name
@@ -68,7 +68,7 @@ class TestSyrConnectSensorIconFix(unittest.TestCase):
         for sensor_key in leak_sensors:
             sensor = MockSensorEntity()
 
-            # These sensors have no icon in _SYR_CONNECT_SENSOR_ICONS
+            # These sensors have no icon in _SYR_CONNECT_SENSOR_ICON
             # So _attr_icon is never set
 
             # Old approach: FAILS

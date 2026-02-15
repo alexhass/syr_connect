@@ -145,6 +145,14 @@
       "getle": {
         "name": "Protection contre les fuites - Niveau présent"
       },
+      "getlan": {
+        "name": "Langue",
+        "state": {
+          "0": "Anglais",
+          "1": "Allemand",
+          "3": "Espagnol"
+        }
+      },
       "getlar": {
         "name": "Dernière régénération"
       },
@@ -351,6 +359,9 @@
         "name": "Quantité de sel réservoir 3"
       },
       "gett1": {
+        "name": "Fuite de temps"
+      },
+      "gett2": {
         "name": "Fuite de temps"
       },
       "gettmp": {

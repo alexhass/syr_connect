@@ -3456,7 +3456,7 @@ async def test_sensor_numeric_conversion_precision_type_error(hass: HomeAssistan
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
 
     # Mock precision to None and test
-    with patch.dict("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_PRECISION", {"getPRS": None}):
+    with patch.dict("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION", {"getPRS": None}):
         value = sensor.native_value
         assert value == 5.0
 

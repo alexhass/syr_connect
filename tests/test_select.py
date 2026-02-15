@@ -393,7 +393,7 @@ async def test_numeric_select_without_unit(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     # getRPD typically has "days" unit, but test without
-    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNITS", {}):
+    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNIT", {}):
         select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getRPD", 1, 4, 1)
         
         # Options should be plain numbers
@@ -942,7 +942,7 @@ async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> No
         def __str__(self):
             raise ValueError("Cannot convert to string")
     
-    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNITS", {"getSV1": BadUnit()}):
+    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNIT", {"getSV1": BadUnit()}):
         select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getSV1", 0, 25, 1)
         
         # Should fall back to no unit label

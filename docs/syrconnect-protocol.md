@@ -290,7 +290,7 @@ Some further data about the device
 | getMAN          | "Syr"                            |        | Manufacturer
 | getFIR          | "SLPS"                           |        | Firmware name. Used to find the correct firmware file during firmware update
 | getCDE          | "010SCA19DF0917.01.024.1.1.0010" |        | *unknown constant (some kind of device identifier?)*
-| getTMZ          | "01:00"                          |        | Timezone
+| getTMZ          | "01:00"                          |        | Timezone (Returns unclear value "4" on LEXplus10SL)
 | getDAT          | "1694635165"                     |        | Current time as UNIX timestamp (seconds since 1.1.1970)
 | getLAN          | "1"                              |        | Language of the UI (0=English, 1=German, 3=Spanish)
 
@@ -310,7 +310,7 @@ Some further data about the device
 | getSNM          | "255.255.255.0"       |        | Subnet mask
 | getDNS          | "123.123.123.254"     |        | DNS server
 | getDGW          | "123.123.123.254"     |        | Default gateway
-| getNET          | "po��czono"           |        | *unknown constant (some Polish text)*
+| getNET          | "połączony"           |        | Connection status e.g. "connected" (Polish text)
 
 ### Holiday
 
@@ -400,11 +400,12 @@ These settings can be set by the user.
 
 ### Leakage protection
 
-These properties are only available on devices that contain leakage protection, e.g. LEX Plus 10 SL Connect.
+These properties are only available on devices that contain leakage protection, e.g. LEX Plus 10 SL Connect, Safe-T+.
 
 | Property        | Example      | Unit    | Description
 |-----------------|--------------|---------|-------------------------------------------------------
 | getAB / setAB   | "1"          |         | Valve shut-off: 1 = open, 2 = closed
+| getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
 | getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L
 | getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
@@ -424,7 +425,7 @@ These properties are only available on devices that contain leakage protection, 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
 | getDMA          | "1"          |        | *unknown*
-| getAVO          | "0mL"        | mL     | Current water flow in "mL". Syr Apps show value in "L"
+| getAVO          | "0mL"        | mL     | Current water flow in "mL". Syr Apps shows value in "L"
 | getBSA          | "0"          |        | *unknown*
 | getDBD          | "10"         |        | *unknown*
 | getDBT          | "15"         |        | *unknown*

@@ -25,12 +25,12 @@ from .const import (
     _SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP,
     _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP,
     _SYR_CONNECT_SENSOR_GETUL_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP,
-    _SYR_CONNECT_SENSOR_ICONS,
-    _SYR_CONNECT_SENSOR_PRECISION,
+    _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_STRING,
-    _SYR_CONNECT_SENSOR_UNITS,
+    _SYR_CONNECT_SENSOR_UNIT,
+    _SYR_CONNECT_SENSOR_UNIT_PRECISION,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
@@ -206,17 +206,17 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     break
             if whu_value is not None:
                 try:
-                    self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP.get(int(whu_value), None)
+                    self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP.get(int(whu_value), None)
                 except (ValueError, TypeError):
                     self._attr_native_unit_of_measurement = None
             else:
                 self._attr_native_unit_of_measurement = None
-        elif sensor_key in _SYR_CONNECT_SENSOR_UNITS:
-            self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNITS[sensor_key]
+        elif sensor_key in _SYR_CONNECT_SENSOR_UNIT:
+            self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNIT[sensor_key]
 
         # Set suggested display precision if available
-        if sensor_key in _SYR_CONNECT_SENSOR_PRECISION:
-            self._attr_suggested_display_precision = _SYR_CONNECT_SENSOR_PRECISION[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_UNIT_PRECISION:
+            self._attr_suggested_display_precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION[sensor_key]
 
         # Set device class if available
         if sensor_key in _SYR_CONNECT_SENSOR_DEVICE_CLASS:
@@ -227,8 +227,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             self._attr_state_class = _SYR_CONNECT_SENSOR_STATE_CLASS[sensor_key]
 
         # Set icon if available
-        if sensor_key in _SYR_CONNECT_SENSOR_ICONS:
-            self._attr_icon = _SYR_CONNECT_SENSOR_ICONS[sensor_key]
+        if sensor_key in _SYR_CONNECT_SENSOR_ICON:
+            self._attr_icon = _SYR_CONNECT_SENSOR_ICON[sensor_key]
 
         # Store base icon for state-based icon changes
         self._base_icon = getattr(self, '_attr_icon', None)
@@ -260,7 +260,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             value = value / 10
 
         # Apply configured precision if available
-        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key)
+        precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key)
         if precision is not None:
             try:
                 value = round(value, precision)
@@ -426,7 +426,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         # Convert mbar to bar (divide by 1000)
                         pressure_bar = pressure_mbar / 1000
                         # Apply configured precision
-                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key, 3)
+                        precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 3)
                         return round(pressure_bar, precision)
                     except (ValueError, TypeError):
                         return None
@@ -448,7 +448,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         # Replace comma with dot for proper float conversion
                         voltage = float(first_value.replace(',', '.'))
                         # Apply configured precision
-                        precision = _SYR_CONNECT_SENSOR_PRECISION.get(self._sensor_key, 2)
+                        precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 2)
                         return round(voltage, precision)
                     except (ValueError, TypeError, IndexError):
                         return None
@@ -476,10 +476,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
                     if isinstance(value, int | float):
-                        return _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP.get(int(value), None)
+                        return _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP.get(int(value), None)
                     elif isinstance(value, str):
                         try:
-                            return _SYR_CONNECT_SENSOR_GETWHU_UNIT_MAP.get(int(value), None)
+                            return _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP.get(int(value), None)
                         except (ValueError, TypeError):
                             return None
                     return None
@@ -594,12 +594,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
-                # Special handling for getT1 sensor: map raw API values to display values
-                if self._sensor_key == 'getT1':
-                    raw = str(status.get('getT1') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_GETT1_VALUE_MAP.get(raw))
+                # Special handling for getT1 and getT2 sensors: map raw API values to display values
+                if self._sensor_key in ('getT1', 'getT2'):
+                    raw = str(status.get(self._sensor_key) or "")
+                    mapped = _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP.get(raw)
                     # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
-                    return mapped if mapped is not None else (raw if raw else None)
+                    return str(mapped) if mapped is not None else (raw if raw else None)
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
                 if self._sensor_key in _SYR_CONNECT_SENSOR_STRING:

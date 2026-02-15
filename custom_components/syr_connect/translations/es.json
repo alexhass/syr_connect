@@ -145,6 +145,14 @@
       "getle": {
         "name": "Protección contra fugas - Nivel presente"
       },
+      "getlan": {
+        "name": "Idioma",
+        "state": {
+          "0": "Inglés",
+          "1": "Alemán",
+          "3": "Español"
+        }
+      },
       "getlar": {
         "name": "Última regeneración"
       },
@@ -351,6 +359,9 @@
         "name": "Cantidad de sal depósito 3"
       },
       "gett1": {
+        "name": "Fuga de tiempo"
+      },
+      "gett2": {
         "name": "Fuga de tiempo"
       },
       "gettmp": {
