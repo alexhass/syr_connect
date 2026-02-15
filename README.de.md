@@ -222,7 +222,7 @@ automation:
 
 #### Lecksensor — Absperrventil schließen (setAB)
 
-Schließt automatisch das Absperrventil (`setAB = 2`), wenn ein Leckmelder einen Wasseraustritt meldet. Dieses Beispiel verwendet den Standard-Dienst `select.select_option`, um die Option `2` für die SYR-`getAB`-Select-Entität auszuwählen. Ersetze die Entity-IDs durch die korrekten IDs in deinem System.
+Schließt automatisch das Absperrventil (`setAB = 2`), wenn ein Leckmelder einen Wasseraustritt meldet. Dieses Beispiel verwendet den Standard-Dienst `valve.close`, um die Option `2` für die SYR-`getAB`-Select-Entität auszuwählen. Ersetze die Entity-IDs durch die korrekten IDs in deinem System.
 
 ```yaml
 automation:

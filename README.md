@@ -228,7 +228,7 @@ automation:
 
 #### Leak Sensor — Close Water Valve (setAB)
 
-Automatically close the water valve (`setAB = 2`) when a leak sensor reports a water leak. This example uses the standard `select.select_option` service to choose the `2` option on the SYR `getAB` select entity. Replace the entity IDs with the correct IDs from your system.
+Automatically close the water valve (`setAB = 2`) when a leak sensor reports a water leak. This example uses the standard `valve.close` service to choose the `2` option on the SYR `getAB` select entity. Replace the entity IDs with the correct IDs from your system.
 
 ```yaml
 automation:
