@@ -91,7 +91,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
     if not status:
         return None
 
-    def is_nonempty(key: str) -> bool:
+    def is_not_empty(key: str) -> bool:
         val = status.get(key)
         if val is None:
             return False
@@ -100,17 +100,17 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
         return True
 
     # Priority selection
-    if is_nonempty("getIPA"):
+    if is_not_empty("getIPA"):
         mac_val = status.get("getMAC")
         if mac_val is not None and str(mac_val).strip() != "":
             return str(mac_val)
 
-    if is_nonempty("getWIP"):
+    if is_not_empty("getWIP"):
         mac_val = status.get("getMAC1")
         if mac_val is not None and str(mac_val).strip() != "":
             return str(mac_val)
 
-    if is_nonempty("getEIP"):
+    if is_not_empty("getEIP"):
         mac_val = status.get("getMAC2")
         if mac_val is not None and str(mac_val).strip() != "":
             return str(mac_val)
