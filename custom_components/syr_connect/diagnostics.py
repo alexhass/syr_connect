@@ -21,9 +21,15 @@ _TO_REDACT = {
     CONF_PASSWORD,
     CONF_USERNAME,
     "session_data",
-    "getMAC",
-    "getIPA",
-    "getDGW",
+    "getMAC",   # MAC address
+    "getMAC1",  # Wi-Fi MAC address
+    "getMAC2",  # Ethernet MAC address
+    "getIPA",   # IP address
+    "getDGW",   # Default gateway
+    "getEGW",   # Ethernet gateway
+    "getEIP",   # Ethernet IP address
+    "getWGW",   # Wi-Fi gateway
+    "getWIP",   # Wi-Fi IP address
 }
 
 

@@ -270,13 +270,22 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
 
-    # LEXplus10SL, Safe-T+ sensors.
-    #'getNPS',  # Value "" means sensor does not exists.
+    # Sensors exits in devices only:
+    # - LEXplus10SL
+    # - Safe-T+
+    'getCEL',  # Water temperature - value "" means sensor does not exists or not measured, so not useful to show.
+    'getNPS',  # Value "" means sensor does not exists.
 
-    # Sensors exits in devices:
+    # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
+    'getCYT',  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
     'getLAR',  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show
+    'getVPS1', # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
     'getVPS2', # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
+    'getEGW',  # Ethernet gateway
+    'getEIP',  # Ethernet IP address
+    'getWGW',  # Wi-Fi gateway
+    'getWIP',  # Wi-Fi IP address
 }
 
 # Sensor icons (Material Design Icons) - internal
@@ -402,7 +411,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getLTV": "mdi:faucet",             # Last dispensed volume
     "getRMO": "mdi:autorenew",
     "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
-    "getSRV": "mdi:calendar-clock",     # Last service date
+    "getSRV": "mdi:calendar-clock",     # Next annual maintenance
     "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
     "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
     "getWGW": "mdi:router-wireless",
@@ -543,7 +552,7 @@ _SYR_CONNECT_SENSOR_STRING = {
     "getSRN",  # Serial number
     "getVER",  # Version
     "getWFC",  # Wi-Fi SSID
-    "getWHU",   # Water hardness unit
+    "getWHU",  # Water hardness unit
 }
 
 # Sensor units mapping (units are standardized and not translated) - internal
@@ -659,6 +668,8 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRDO": 0,    # Salt dosing: show as whole number by default
     "getRMO": 0,    # Regeneration mode (1=Standard, 2=ECO, 3=Power, 4=Automatik)
     "getRPD": 0,    # Regeneration interval: show as whole days by default
+    "getRE1": 0,    # Reserve capacity bottle 1: show as whole number by default
+    "getRE2": 0,    # Reserve capacity bottle 2: show as whole number by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
@@ -675,8 +686,9 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getT2": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
     "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
     "getVLV": 0,    # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
+    "getVPS1": 0,   # No turbine pulses on control head 1 since: show as whole number of seconds by default
+    "getVPS2": 0,   # No turbine pulses on control head 2 since: show as whole number of seconds by default
     "getVOL": 0,    # Total water volume: show as whole number by default
     "getWFR": 0,    # Wi-Fi signal strength: show as whole number by default
     "getWFS": 0,    # Wi-Fi connection status
-    "getWHU": 0,    # Water hardness unit: show as whole number by default (mapped to unit names)
 }
