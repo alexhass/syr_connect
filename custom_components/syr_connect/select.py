@@ -53,7 +53,10 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        if "getRTH" not in status and "getRTM" not in status:
+        # Only create regeneration time select when both hour and minute are present and non-empty
+        rth = status.get("getRTH")
+        rtm = status.get("getRTM")
+        if rth is None or rth == "" or rtm is None or rtm == "":
             continue
         entities.append(SyrConnectRegenerationSelect(coordinator, device_id, device_name))
 
