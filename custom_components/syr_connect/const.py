@@ -260,6 +260,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getCNL',       # Value: "", unclear meaning
     'getWAH',       # Value: "", unclear meaning
     'getNET',       # Value: "", unclear meaning
+    'getTSD',       # Value: "", unclear meaning
 }
 
 # Sensors to exclude only when value is 0 - internal
@@ -397,6 +398,11 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getWFC": "mdi:wifi",
     "getWFS": "mdi:wifi-check",
     "getWFR": "mdi:wifi-strength-1",
+    "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
+    "getSRV": "mdi:calendar-clock",     # Last service date
+    "getLTV": "mdi:faucet",             # Last dispensed volume
+    "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
+    "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
 }
 
 # Mapping for getALM sensor values
@@ -643,6 +649,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
     "getRDO": 0,    # Salt dosing: show as whole number by default
+    "getRMO": 0,    # Regeneration mode (1=Standard, 2=ECO, 3=Power, 4=Automatik)
     "getRPD": 0,    # Regeneration interval: show as whole days by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
     "getRG1": 0,    # Regeneration 1: show as whole number by default
@@ -661,5 +668,6 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
     "getVLV": 0,    # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
     "getVOL": 0,    # Total water volume: show as whole number by default
+    "getWFS": 0,    # Wi-Fi connection status
     "getWHU": 0,    # Water hardness unit: show as whole number by default (mapped to unit names)
 }

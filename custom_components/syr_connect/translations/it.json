@@ -326,6 +326,15 @@
       "getres": {
         "name": "Capacità residua"
       },
+      "getrmo": {
+        "name": "Modalità di rigenerazione",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatico"
+        }
+      },
       "getrg1": {
         "name": "Serbatoio di rigenerazione 1",
         "state": {

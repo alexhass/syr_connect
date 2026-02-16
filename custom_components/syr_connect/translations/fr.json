@@ -323,6 +323,15 @@
       "getres": {
         "name": "Capacité restante"
       },
+      "getrmo": {
+        "name": "Mode de régénération",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatique"
+        }
+      },
       "getrg1": {
         "name": "Réservoir de régénération 1",
         "state": {
