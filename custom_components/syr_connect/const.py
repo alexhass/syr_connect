@@ -274,7 +274,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # - LEXplus10SL
     # - Safe-T+
     'getCEL',  # Water temperature - value "" means sensor does not exists or not measured, so not useful to show.
-    'getNPS',  # Value "" means sensor does not exists.
+    'getNPS',  # Microleakage count - value "" means sensor does not exists.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
@@ -628,14 +628,18 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
 
     # Sensors exits in devices:
-    # - NeoSoft 2500 / 5000
+    # - NeoSoft 2500
 
     "getLTV": UnitOfVolume.LITERS,                      # Last volume tapped
     "getRE1": UnitOfVolume.LITERS,                      # Reserve capacity bottle 1
-    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2
     "getWFR": PERCENTAGE,                               # Wi-Fi signal strength 0-100%
     "getVPS1": UnitOfTime.SECONDS,                      # No turbine pulses Control head 1 since
     "getVPS2": UnitOfTime.SECONDS,                      # No turbine pulses Control head 2 since
+
+    # Sensors exits in devices:
+    # - NeoSoft 5000
+
+    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2
 }
 
 # Sensor display precision mapping (number of decimals to show)

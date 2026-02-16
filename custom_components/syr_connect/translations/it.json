@@ -2,14 +2,14 @@
   "config": {
     "abort": {
       "already_configured": "Questo account è già configurato",
-      "reauth_failed": "Riautenticazione fallita. Riprova.",
+      "reauth_failed": "Riautenticazione non riuscita. Riprova.",
       "reauth_successful": "Riautenticazione riuscita",
-      "reconfigure_failed": "Riconfigurazione fallita. Riprova.",
+      "reconfigure_failed": "Riconfigurazione non riuscita. Riprova.",
       "reconfigure_successful": "Riconfigurazione riuscita"
     },
     "error": {
-      "cannot_connect": "Impossibile connettersi a SYR Connect. Verifica la connessione Internet e riprova.",
-      "invalid_auth": "Nome utente o password non validi. Verifica le tue credenziali.",
+      "cannot_connect": "Impossibile connettersi a SYR Connect. Controlla la connessione a Internet e riprova.",
+      "invalid_auth": "Nome utente o password non validi. Controlla le credenziali.",
       "unknown": "Si è verificato un errore imprevisto. Riprova più tardi."
     },
     "step": {
@@ -26,7 +26,7 @@
           "password": "Password",
           "username": "Nome utente"
         },
-        "description": "Aggiorna le tue credenziali SYR Connect.",
+        "description": "Aggiorna le credenziali di SYR Connect.",
         "title": "Riconfigurare SYR Connect"
       },
       "user": {
@@ -47,7 +47,7 @@
     },
     "button": {
       "setrst": {
-        "name": "Reset dispositivo"
+        "name": "Ripristina dispositivo"
       },
       "setsir": {
         "name": "Rigenera ora"
@@ -103,13 +103,13 @@
         "name": "Pressione di ingresso"
       },
       "getbat": {
-        "name": "Tensione della batteria"
+        "name": "Tensione batteria"
       },
       "getbuz": {
-        "name": "Buzzer in caso di allarme",
+        "name": "Cicalino in caso di allarme",
         "state": {
-          "true": "Attivato",
-          "false": "Disattivato"
+          "false": "Disattivato",
+          "true": "Attivato"
         }
       },
       "getcde": {
@@ -130,28 +130,28 @@
         "name": "Consumo totale d'acqua"
       },
       "getcs1": {
-        "name": "Capacità residua della resina 1"
+        "name": "Capacità residua resina 1"
       },
       "getcs2": {
-        "name": "Capacità residua della resina 2"
+        "name": "Capacità residua resina 2"
       },
       "getcs3": {
-        "name": "Capacità residua della resina 3"
+        "name": "Capacità residua resina 3"
       },
       "getcyn": {
-        "name": "Contatore cicli"
+        "name": "Contatore cicli di rigenerazione"
       },
       "getcyt": {
-        "name": "Durata del ciclo"
+        "name": "Durata ciclo di rigenerazione"
       },
       "getden": {
-        "name": "Dispositivo attivato"
+        "name": "Dispositivo abilitato"
       },
       "getdgw": {
         "name": "Gateway"
       },
       "getdwf": {
-        "name": "Consumo giornaliero d'acqua previsto"
+        "name": "Consumo giornaliero previsto"
       },
       "getegw": {
         "name": "Gateway Ethernet"
@@ -198,7 +198,7 @@
         "name": "Indirizzo MAC"
       },
       "getmac1": {
-        "name": "Indirizzo MAC WLAN"
+        "name": "Indirizzo MAC Wi‑Fi"
       },
       "getmac2": {
         "name": "Indirizzo MAC LAN"
@@ -207,65 +207,64 @@
         "name": "Produttore"
       },
       "getnor": {
-        "name": "Rigenerazioni in funzionamento normale"
+        "name": "Rigenerazioni (normale)"
       },
       "getnot": {
         "name": "Note"
       },
       "getnps": {
-        "name": "Conteggio microleaks"
+        "name": "Conteggio micro‑perdite"
       },
       "getowh": {
         "name": "Durezza acqua in uscita"
       },
-      "getrg1": {
-        "name": "Stato rigenerazione",
-        "state": {
-          "0": "Nessuna rigenerazione",
-          "1": "Serbatoio 1 rigenerato",
-          "2": "Serbatoio 2 rigenerato"
-        }
+      "getpa1": {
+        "name": "Profilo protezione perdite 1 attivato"
       },
-        "name": "Profilo 3 attivato"
+      "getpa2": {
+        "name": "Profilo protezione perdite 2 attivato"
+      },
+      "getpa3": {
+        "name": "Profilo protezione perdite 3 attivato"
       },
       "getpa4": {
-        "name": "Profilo 4 attivato"
+        "name": "Profilo protezione perdite 4 attivato"
       },
       "getpa5": {
-        "name": "Profilo 5 attivato"
+        "name": "Profilo protezione perdite 5 attivato"
       },
       "getpa6": {
-        "name": "Profilo 6 attivato"
+        "name": "Profilo protezione perdite 6 attivato"
       },
       "getpa7": {
-        "name": "Profilo 7 attivato"
+        "name": "Profilo protezione perdite 7 attivato"
       },
       "getpa8": {
-        "name": "Profilo 8 attivato"
+        "name": "Profilo protezione perdite 8 attivato"
       },
       "getpf1": {
-        "name": "Soglia perdita di flusso 1"
+        "name": "Soglia perdita flusso 1"
       },
       "getpf2": {
-        "name": "Soglia perdita di flusso 2"
+        "name": "Soglia perdita flusso 2"
       },
       "getpf3": {
-        "name": "Soglia perdita di flusso 3"
+        "name": "Soglia perdita flusso 3"
       },
       "getpf4": {
-        "name": "Soglia perdita di flusso 4"
+        "name": "Soglia perdita flusso 4"
       },
       "getpf5": {
-        "name": "Soglia perdita di flusso 5"
+        "name": "Soglia perdita flusso 5"
       },
       "getpf6": {
-        "name": "Soglia perdita di flusso 6"
+        "name": "Soglia perdita flusso 6"
       },
       "getpf7": {
-        "name": "Soglia perdita di flusso 7"
+        "name": "Soglia perdita flusso 7"
       },
       "getpf8": {
-        "name": "Soglia perdita di flusso 8"
+        "name": "Soglia perdita flusso 8"
       },
       "getpn1": {
         "name": "Nome profilo 1"
@@ -292,7 +291,7 @@
         "name": "Nome profilo 8"
       },
       "getprf": {
-        "name": "Giorno attivo del profilo"
+        "name": "Profilo protezione attivo"
       },
       "getprs": {
         "name": "Pressione"
@@ -305,57 +304,58 @@
         }
       },
       "getpv1": {
-        "name": "Soglia perdita di volume 1"
+        "name": "Soglia perdita volume 1"
       },
       "getpv2": {
-        "name": "Soglia perdita di volume 2"
+        "name": "Soglia perdita volume 2"
       },
       "getpv3": {
-        "name": "Soglia perdita di volume 3"
+        "name": "Soglia perdita volume 3"
       },
       "getpv4": {
-        "name": "Soglia perdita di volume 4"
+        "name": "Soglia perdita volume 4"
       },
       "getpv5": {
-        "name": "Soglia perdita di volume 5"
+        "name": "Soglia perdita volume 5"
       },
       "getpv6": {
-        "name": "Soglia perdita di volume 6"
+        "name": "Soglia perdita volume 6"
       },
       "getpv7": {
-        "name": "Soglia perdita di volume 7"
+        "name": "Soglia perdita volume 7"
       },
       "getpv8": {
-        "name": "Soglia perdita di volume 8"
+        "name": "Soglia perdita volume 8"
       },
       "getrdo": {
-        "name": "Dosaggio del sale"
+        "name": "Dosaggio sale"
       },
       "getre1": {
-        "name": "Capacità di riserva bottiglia 1"
+        "name": "Capacità riserva bottiglia 1"
       },
       "getre2": {
-        "name": "Capacità di riserva bottiglia 2"
+        "name": "Capacità riserva bottiglia 2"
       },
       "getres": {
         "name": "Capacità residua"
       },
       "getrg1": {
-        "name": "Serbatoio di rigenerazione 1",
+        "name": "Stato rigenerazione",
         "state": {
-          "0": "Inattivo",
-          "1": "In funzione"
+          "0": "Nessuna rigenerazione",
+          "1": "Serbatoio 1 in rigenerazione",
+          "2": "Serbatoio 2 in rigenerazione"
         }
       },
       "getrg2": {
-        "name": "Serbatoio di rigenerazione 2",
+        "name": "Rigenerazione serbatoio 2",
         "state": {
           "0": "Inattivo",
           "1": "In funzione"
         }
       },
       "getrg3": {
-        "name": "Serbatoio di rigenerazione 3",
+        "name": "Rigenerazione serbatoio 3",
         "state": {
           "0": "Inattivo",
           "1": "In funzione"
@@ -374,19 +374,19 @@
         "name": "Intervallo rigenerazione"
       },
       "getrpw": {
-        "name": "Giorni di rigenerazione"
+        "name": "Giorni rigenerazione"
       },
       "getrth": {
-        "name": "Ora rigenerazione (Ora)"
+        "name": "Ora rigenerazione (ore)"
       },
       "getrti": {
         "name": "Ora rigenerazione"
       },
       "getrtm": {
-        "name": "Ora rigenerazione (Minuto)"
+        "name": "Ora rigenerazione (minuti)"
       },
       "getscr": {
-        "name": "Cicli di rigenerazione del servizio"
+        "name": "Cicli di rigenerazione di servizio"
       },
       "getsir": {
         "name": "Rigenerazione immediata",
@@ -421,7 +421,7 @@
           "status_filling": "Riempimento",
           "status_inactive": "Inattivo",
           "status_refill_salt": "Si prega di aggiungere il sale",
-          "status_regenerant_rinse": "Risciacquo rigenerante",
+          "status_regenerant_rinse": "Risciacquo con rigenerante",
           "status_slow_rinse": "Risciacquo lento"
         }
       },
@@ -435,10 +435,10 @@
         "name": "Quantità sale contenitore 3"
       },
       "gett1": {
-        "name": "Perdita di tempo"
+        "name": "Tempo perdita"
       },
       "gett2": {
-        "name": "Perdita di tempo"
+        "name": "Tempo perdita"
       },
       "gettmp": {
         "name": "Protezione perdite disattivata"
@@ -468,10 +468,10 @@
         "name": "Volume totale"
       },
       "getvps1": {
-        "name": "Nessun impulso turbina sulla testina di controllo 1 da"
+        "name": "Nessun impulso turbina testina 1 da"
       },
       "getvps2": {
-        "name": "Nessun impulso turbina sulla testina di controllo 2 da"
+        "name": "Nessun impulso turbina testina 2 da"
       },
       "getvs1": {
         "name": "Soglia volume 1"
@@ -483,13 +483,13 @@
         "name": "Soglia volume 3"
       },
       "getwfc": {
-        "name": "SSID WLAN"
+        "name": "SSID Wi‑Fi"
       },
       "getwfr": {
-        "name": "Intensità del segnale WLAN"
+        "name": "Intensità segnale Wi‑Fi"
       },
       "getwfs": {
-        "name": "Stato connessione WLAN",
+        "name": "Stato connessione Wi‑Fi",
         "state": {
           "0": "Non connesso",
           "1": "Connessione in corso",
@@ -497,13 +497,13 @@
         }
       },
       "getwgw": {
-        "name": "Gateway WLAN"
+        "name": "Gateway Wi‑Fi"
       },
       "getwhu": {
         "name": "Unità durezza acqua"
       },
       "getwip": {
-        "name": "Indirizzo IP WLAN"
+        "name": "Indirizzo IP Wi‑Fi"
       }
     },
     "valve": {
@@ -527,7 +527,7 @@
   },
   "issues": {
     "device_offline": {
-      "description": "Il dispositivo SYR Connect \"{device_name}\" è attualmente offline e non può essere contattato. Verificare:\n\n- L'alimentazione del dispositivo\n- La connessione di rete\n- Lo stato del servizio cloud SYR Connect\n\nIl dispositivo si riconnetterà automaticamente quando tornerà online.",
+      "description": "Il dispositivo SYR Connect \"{device_name}\" è attualmente offline e non può essere raggiunto. Controlla:\n\n- Alimentazione del dispositivo\n- Connessione di rete\n- Stato del servizio cloud SYR Connect\n\nIl dispositivo si riconnetterà automaticamente quando tornerà online.",
       "title": "Dispositivo offline: {device_name}"
     }
   },
@@ -535,7 +535,7 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Intervallo di aggiornamento"
+          "scan_interval": "Intervallo aggiornamento"
         },
         "description": "Definisce l'intervallo di tempo tra le chiamate API.",
         "title": "Opzioni SYR Connect"
