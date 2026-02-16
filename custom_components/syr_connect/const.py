@@ -527,6 +527,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
 
 # Sensors that should remain as strings (not converted to numbers) - internal
 _SYR_CONNECT_SENSOR_STRING = {
+    # Note: getBAT is handled specially - extracts first numeric value from space-separated string
     "getCNA",  # Device name
     "getDGW",  # Gateway
     "getFIR",  # Firmware
@@ -538,7 +539,7 @@ _SYR_CONNECT_SENSOR_STRING = {
     "getSRN",  # Serial number
     "getVER",  # Version
     "getWFC",  # Wi-Fi SSID
-    # Note: getBAT is handled specially - extracts first numeric value from space-separated string
+    "getWHU",   # Water hardness unit
 }
 
 # Sensor units mapping (units are standardized and not translated) - internal
