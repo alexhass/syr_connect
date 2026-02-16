@@ -273,13 +273,14 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # Sensors exits in devices only:
     # - LEXplus10SL
     # - Safe-T+
-    'getCEL',  # Water temperature - value "" means sensor does not exists or not measured, so not useful to show.
+    'getCEL',  # Water temperature - value "" means sensor does not exists or not measured.
     'getNPS',  # Microleakage count - value "" means sensor does not exists.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
+    'getBAR',  # Pressure at inlet - value "" means sensor does not exists or not measured
     'getCYT',  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
-    'getLAR',  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show
+    'getLAR',  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show.
     'getVPS1', # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
     'getVPS2', # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
     'getEGW',  # Ethernet gateway
@@ -293,7 +294,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # NOT TESTED
     # RPD and RTM have no influence on the NeoSoft 5000, as this system initiates regeneration automatically as soon
     # as a pillar is exhausted. Softened water is available at all times.
-    #'getRPD',   # Regeneration interval (days) - value "0" means no interval configured, so not useful to show.
+    #'getRPD',   # Regeneration interval (days) - value "0" means no interval configured.
     #'getRTM',   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
 }
 
