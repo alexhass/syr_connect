@@ -142,6 +142,9 @@
       "getipa": {
         "name": "Dirección IP"
       },
+      "getltv": {
+        "name": "Último volumen dispensado"
+      },
       "getle": {
         "name": "Protección contra fugas - Nivel presente"
       },
@@ -310,6 +313,12 @@
       },
       "getrdo": {
         "name": "Dosificación de sal"
+      },
+      "getre1": {
+        "name": "Capacidad de reserva del frasco 1"
+      },
+      "getre2": {
+        "name": "Capacidad de reserva del frasco 2"
       },
       "getres": {
         "name": "Capacidad restante"

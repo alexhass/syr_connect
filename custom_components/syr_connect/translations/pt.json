@@ -128,6 +128,9 @@
       "getipa": {
         "name": "Endereço IP"
       },
+      "getltv": {
+        "name": "Último volume dispensado"
+      },
       "getiwh": {
         "name": "Dureza da água de entrada"
       },
@@ -299,6 +302,12 @@
       },
       "getrdo": {
         "name": "Dosagem de sal"
+      },
+      "getre1": {
+        "name": "Capacidade de reserva do frasco 1"
+      },
+      "getre2": {
+        "name": "Capacidade de reserva do frasco 2"
       },
       "getres": {
         "name": "Capacidade restante"

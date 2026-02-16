@@ -132,6 +132,9 @@
       "getipa": {
         "name": "IP Address"
       },
+      "getltv": {
+        "name": "Last dispensed volume"
+      },
       "getiwh": {
         "name": "Input water hardness"
       },
@@ -313,6 +316,12 @@
       },
       "getrdo": {
         "name": "Salt dosing"
+      },
+      "getre1": {
+        "name": "Reserve capacity bottle 1"
+      },
+      "getre2": {
+        "name": "Reserve capacity bottle 2"
       },
       "getres": {
         "name": "Remaining capacity"

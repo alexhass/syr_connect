@@ -85,13 +85,19 @@ _SYR_CONNECT_SENSOR_CONTROLLED = {
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     'getCNA',  # Device name
     'getDGW',  # Gateway
+    'getEGW',  # Ethernet gateway
+    'getEIP',  # Ethernet IP address
     'getFIR',  # Firmware model
     'getIPA',  # IP address
     'getMAC',  # MAC address
+    'getMAC1', # Wi-Fi MAC address
+    'getMAC2', # LAN MAC address
     'getMAN',  # Manufacturer
     'getSRN',  # Serial number
     'getTYP',  # Type
     'getVER',  # Firmware version
+    'getWGW',  # Wi-Fi gateway
+    'getWIP',  # Wi-Fi IP address
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
@@ -382,6 +388,16 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getPV6": "mdi:gauge",
     "getPV7": "mdi:gauge",
     "getPV8": "mdi:gauge",
+
+    # Sensors exits in devices:
+    # - NeoSoft 2500 / 5000
+    "getEGW": "mdi:router-network",
+    "getEIP": "mdi:ip-network",
+    "getWGW": "mdi:router-wireless",
+    "getWIP": "mdi:ip-network",
+    "getWFC": "mdi:wifi",
+    "getWFS": "mdi:wifi-check",
+    "getWFR": "mdi:wifi-strength-1",
 }
 
 # Mapping for getALM sensor values
@@ -513,6 +529,7 @@ _SYR_CONNECT_SENSOR_STRING = {
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
     "getSRN",  # Serial number
     "getVER",  # Version
+    "getWFC",  # Wi-Fi SSID
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
 }
 
@@ -586,6 +603,16 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getT2": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
     "getTMP": UnitOfTime.SECONDS,                       # Deactivate leakage protection for n seconds
     "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
+
+    # Sensors exits in devices:
+    # - NeoSoft 2500 / 5000
+
+    "getLTV": UnitOfVolume.LITERS,                      # Last volume tapped
+    "getRE1": UnitOfVolume.LITERS,                      # Reserve capacity bottle 1
+    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2
+    "getWFR": PERCENTAGE,                               # Wi-Fi signal strength 0-100%
+    "getVPS1": UnitOfTime.SECONDS,                      # No turbine pulses Control head 1 since
+    "getVPS2": UnitOfTime.SECONDS,                      # No turbine pulses Control head 2 since
 }
 
 # Sensor display precision mapping (number of decimals to show)

@@ -142,6 +142,9 @@
       "getipa": {
         "name": "Adresse IP"
       },
+      "getltv": {
+        "name": "Dernier volume distribué"
+      },
       "getle": {
         "name": "Protection contre les fuites - Niveau présent"
       },
@@ -310,6 +313,12 @@
       },
       "getrdo": {
         "name": "Dosage du sel"
+      },
+      "getre1": {
+        "name": "Capacité de réserve de la bouteille 1"
+      },
+      "getre2": {
+        "name": "Capacité de réserve de la bouteille 2"
       },
       "getres": {
         "name": "Capacité restante"
