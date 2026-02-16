@@ -286,6 +286,15 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     'getEIP',  # Ethernet IP address
     'getWGW',  # Wi-Fi gateway
     'getWIP',  # Wi-Fi IP address
+
+    # Sensors exits in devices only:
+    # - NeoSoft 5000
+
+    # NOT TESTED
+    # RPD and RTM have no influence on the NeoSoft 5000, as this system initiates regeneration automatically as soon
+    # as a pillar is exhausted. Softened water is available at all times.
+    #'getRPD',   # Regeneration interval (days) - value "0" means no interval configured, so not useful to show.
+    #'getRTM',   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
 }
 
 # Sensor icons (Material Design Icons) - internal

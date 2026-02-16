@@ -1,18 +1,18 @@
 {
+  "domain": "syr_connect",
+  "name": "SYR Connect",
   "codeowners": [
     "@alexhass"
   ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/alexhass/syr_connect",
-  "domain": "syr_connect",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/alexhass/syr_connect/issues",
   "loggers": [
     "custom_components.syr_connect"
   ],
-  "name": "SYR Connect",
   "quality_scale": "platinum",
   "requirements": [
     "pycryptodomex==3.19.0",
