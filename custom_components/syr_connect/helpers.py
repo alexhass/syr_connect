@@ -51,9 +51,10 @@ def build_device_info(
             if 'getFIR' in status and status['getFIR']:
                 hw_version = str(status['getFIR'])
 
-            # Get MAC address from getMAC
-            if 'getMAC' in status and status['getMAC']:
-                mac = str(status['getMAC'])
+            # Get MAC address using prioritized helper
+            detected_mac = get_current_mac(status)
+            if detected_mac:
+                mac = str(detected_mac)
                 connections.add(("mac", mac))
 
             break
@@ -74,6 +75,53 @@ def build_device_info(
         connections=connections if connections else set(),
         configuration_url=_SYR_CONNECT_CONFIGURATION_URL,
     )
+
+
+def get_current_mac(status: dict[str, Any]) -> str | None:
+    """Return the current MAC address following priority rules.
+
+    Priority:
+    1. If `getIPA` not empty -> use `getMAC`
+    2. If `getWIP` not empty -> use `getMAC1`
+    3. If `getEIP` not empty -> use `getMAC2`
+
+    If the selected MAC is missing or empty, fall back to any available
+    non-empty `getMAC` / `getMAC1` / `getMAC2`.
+    """
+    if not status:
+        return None
+
+    def is_nonempty(key: str) -> bool:
+        val = status.get(key)
+        if val is None:
+            return False
+        if isinstance(val, str) and val.strip() == "":
+            return False
+        return True
+
+    # Priority selection
+    if is_nonempty("getIPA"):
+        mac_val = status.get("getMAC")
+        if mac_val is not None and str(mac_val).strip() != "":
+            return str(mac_val)
+
+    if is_nonempty("getWIP"):
+        mac_val = status.get("getMAC1")
+        if mac_val is not None and str(mac_val).strip() != "":
+            return str(mac_val)
+
+    if is_nonempty("getEIP"):
+        mac_val = status.get("getMAC2")
+        if mac_val is not None and str(mac_val).strip() != "":
+            return str(mac_val)
+
+    # Fallback: first available MAC
+    for k in ("getMAC", "getMAC1", "getMAC2"):
+        val = status.get(k)
+        if val is not None and str(val).strip() != "":
+            return str(val)
+
+    return None
 
 
 def build_entity_id(platform: str, device_id: str, key: str) -> str:
