@@ -105,6 +105,13 @@
       "getbat": {
         "name": "Tensão da bateria"
       },
+      "getbuz": {
+        "name": "Buzzer em caso de alarme",
+        "state": {
+          "true": "Ativado",
+          "false": "Desativado"
+        }
+      },
       "getcde": {
         "name": "Código de configuração"
       },
@@ -145,6 +152,9 @@
       },
       "getdwf": {
         "name": "Consumo diário de água esperado"
+      },
+      "getegw": {
+        "name": "Gateway Ethernet"
       },
       "geteip": {
         "name": "Endereço IP Ethernet"
@@ -208,13 +218,14 @@
       "getowh": {
         "name": "Dureza da água de saída"
       },
-      "getpa1": {
-        "name": "Perfil de proteção contra vazamento 1 ativado"
+      "getrg1": {
+        "name": "Estado da regeneração",
+        "state": {
+          "0": "Sem regeneração",
+          "1": "Recipiente 1 regenerado",
+          "2": "Recipiente 2 regenerado"
+        }
       },
-      "getpa2": {
-        "name": "Perfil de proteção contra vazamento 2 ativado"
-      },
-      "getpa3": {
         "name": "Perfil de proteção contra vazamento 3 ativado"
       },
       "getpa4": {

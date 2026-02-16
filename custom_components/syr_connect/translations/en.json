@@ -105,6 +105,13 @@
       "getbat": {
         "name": "Battery voltage"
       },
+      "getbuz": {
+        "name": "Buzzer on alarm",
+        "state": {
+          "true": "Enabled",
+          "false": "Disabled"
+        }
+      },
       "getcde": {
         "name": "Configuration code"
       },
@@ -145,6 +152,9 @@
       },
       "getdwf": {
         "name": "Expected daily water consumption"
+      },
+      "getegw": {
+        "name": "Ethernet gateway"
       },
       "geteip": {
         "name": "Ethernet IP address"
@@ -330,10 +340,11 @@
         "name": "Remaining capacity"
       },
       "getrg1": {
-        "name": "Regeneration tank 1",
+        "name": "Regeneration status",
         "state": {
-          "0": "Inactive",
-          "1": "Running"
+          "0": "No regeneration",
+          "1": "Tank 1 regenerating",
+          "2": "Tank 2 regenerating"
         }
       },
       "getrg2": {

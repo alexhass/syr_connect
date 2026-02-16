@@ -105,6 +105,13 @@
       "getbat": {
         "name": "Tensión de batería"
       },
+      "getbuz": {
+        "name": "Zumbador en alarma",
+        "state": {
+          "true": "Activado",
+          "false": "Desactivado"
+        }
+      },
       "getcde": {
         "name": "Código de configuración"
       },
@@ -145,6 +152,9 @@
       },
       "getdwf": {
         "name": "Consumo diario de agua esperado"
+      },
+      "getegw": {
+        "name": "Puerta de enlace Ethernet"
       },
       "geteip": {
         "name": "Dirección IP Ethernet"
@@ -327,10 +337,11 @@
         "name": "Capacidad restante"
       },
       "getrg1": {
-        "name": "Depósito de regeneración 1",
+        "name": "Estado de regeneración",
         "state": {
-          "0": "Inactivo",
-          "1": "En funcionamiento"
+          "0": "Sin regeneración",
+          "1": "Depósito 1 regenerado",
+          "2": "Depósito 2 regenerado"
         }
       },
       "getrg2": {

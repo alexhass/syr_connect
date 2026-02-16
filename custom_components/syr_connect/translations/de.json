@@ -343,8 +343,8 @@
         "name": "Regeneration Status",
         "state": {
           "0": "keine Regeneration",
-          "1": "Flasche 1 regeneriert",
-          "2": "Flasche 2 regeneriert"
+          "1": "Behälter 1 regeneriert",
+          "2": "Behälter 2 regeneriert"
         }
       },
       "getrg2": {

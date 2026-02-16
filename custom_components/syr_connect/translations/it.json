@@ -105,6 +105,13 @@
       "getbat": {
         "name": "Tensione della batteria"
       },
+      "getbuz": {
+        "name": "Buzzer in caso di allarme",
+        "state": {
+          "true": "Attivato",
+          "false": "Disattivato"
+        }
+      },
       "getcde": {
         "name": "Codice di configurazione"
       },
@@ -145,6 +152,9 @@
       },
       "getdwf": {
         "name": "Consumo giornaliero d'acqua previsto"
+      },
+      "getegw": {
+        "name": "Gateway Ethernet"
       },
       "geteip": {
         "name": "Indirizzo IP Ethernet"
@@ -208,13 +218,14 @@
       "getowh": {
         "name": "Durezza acqua in uscita"
       },
-      "getpa1": {
-        "name": "Profilo 1 attivato"
+      "getrg1": {
+        "name": "Stato rigenerazione",
+        "state": {
+          "0": "Nessuna rigenerazione",
+          "1": "Serbatoio 1 rigenerato",
+          "2": "Serbatoio 2 rigenerato"
+        }
       },
-      "getpa2": {
-        "name": "Profilo 2 attivato"
-      },
-      "getpa3": {
         "name": "Profilo 3 attivato"
       },
       "getpa4": {

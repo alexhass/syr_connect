@@ -105,6 +105,13 @@
       "getbat": {
         "name": "Tension de batterie"
       },
+      "getbuz": {
+        "name": "Buzzer en cas d'alarme",
+        "state": {
+          "true": "Activé",
+          "false": "Désactivé"
+        }
+      },
       "getcde": {
         "name": "Code de configuration"
       },
@@ -145,6 +152,9 @@
       },
       "getdwf": {
         "name": "Consommation d'eau quotidienne prévue"
+      },
+      "getegw": {
+        "name": "Passerelle Ethernet"
       },
       "geteip": {
         "name": "Adresse IP Ethernet"
@@ -327,10 +337,11 @@
         "name": "Capacité restante"
       },
       "getrg1": {
-        "name": "Réservoir de régénération 1",
+        "name": "Statut de régénération",
         "state": {
-          "0": "Inactif",
-          "1": "En cours"
+          "0": "Pas de régénération",
+          "1": "Réservoir 1 régénéré",
+          "2": "Réservoir 2 régénéré"
         }
       },
       "getrg2": {
