@@ -218,7 +218,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getGUL',       # Unknown
     'getINT',       # Unknown
     'getREL',       # Unknown
-    'getSRV',       # Last service date? unclear format
     #'getT2',       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
     'getTBS',       # Unknown
     'getTC',        # Unknown

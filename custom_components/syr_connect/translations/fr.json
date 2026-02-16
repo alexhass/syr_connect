@@ -369,6 +369,12 @@
       "getscr": {
         "name": "Cycles de régénération de service"
       },
+      "getsrh": {
+        "name": "Prochaine maintenance semestrielle"
+      },
+      "getsrv": {
+        "name": "Prochaine maintenance annuelle"
+      },
       "getsrn": {
         "name": "Numéro de série"
       },

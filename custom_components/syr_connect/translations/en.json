@@ -372,6 +372,12 @@
       "getscr": {
         "name": "Service regeneration cycles"
       },
+      "getsrh": {
+        "name": "Next semi-annual maintenance"
+      },
+      "getsrv": {
+        "name": "Next annual maintenance"
+      },
       "getsrn": {
         "name": "Serial number"
       },
