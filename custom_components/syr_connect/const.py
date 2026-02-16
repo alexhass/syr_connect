@@ -549,6 +549,7 @@ _SYR_CONNECT_SENSOR_STRING = {
     "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
     "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
+    "getRPW",  # Regeneration permitted weekdays as bit mask (handled specially to decode bitmask)
     "getSRN",  # Serial number
     "getVER",  # Version
     "getWFC",  # Wi-Fi SSID
