@@ -1,64 +1,62 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "title": "SYR Connect",
-        "description": "Geben Sie Ihre SYR Connect App Anmeldedaten ein",
-        "data": {
-          "username": "Benutzername",
-          "password": "Passwort"
-        }
-      },
-      "reauth_confirm": {
-        "title": "SYR Connect erneut authentifizieren",
-        "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Bitte geben Sie neue Anmeldedaten ein.",
-        "data": {
-          "username": "Benutzername",
-          "password": "Passwort"
-        }
-      },
-      "reconfigure": {
-        "title": "SYR Connect neu konfigurieren",
-        "description": "Aktualisieren Sie Ihre SYR Connect Anmeldedaten.",
-        "data": {
-          "username": "Benutzername",
-          "password": "Passwort"
-        }
-      }
+    "abort": {
+      "already_configured": "Dieser Account ist bereits konfiguriert",
+      "reauth_failed": "Erneute Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich",
+      "reconfigure_failed": "Neukonfiguration fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "reconfigure_successful": "Neukonfiguration erfolgreich"
     },
     "error": {
       "cannot_connect": "Verbindung zu SYR Connect nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
       "invalid_auth": "Ungültiger Benutzername oder Passwort. Bitte überprüfen Sie Ihre Anmeldedaten.",
       "unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
     },
-    "abort": {
-      "already_configured": "Dieser Account ist bereits konfiguriert",
-      "reauth_successful": "Erneute Authentifizierung erfolgreich",
-      "reauth_failed": "Erneute Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
-      "reconfigure_successful": "Neukonfiguration erfolgreich",
-      "reconfigure_failed": "Neukonfiguration fehlgeschlagen. Bitte versuchen Sie es erneut."
-    }
-  },
-  "options": {
     "step": {
-      "init": {
-        "title": "SYR Connect Optionen",
-        "description": "Definiert den Zeitabstand zwischen API-Aufrufen.",
+      "reauth_confirm": {
         "data": {
-          "scan_interval": "Aktualisierungsintervall"
-        }
+          "password": "Passwort",
+          "username": "Benutzername"
+        },
+        "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Bitte geben Sie neue Anmeldedaten ein.",
+        "title": "SYR Connect erneut authentifizieren"
+      },
+      "reconfigure": {
+        "data": {
+          "password": "Passwort",
+          "username": "Benutzername"
+        },
+        "description": "Aktualisieren Sie Ihre SYR Connect Anmeldedaten.",
+        "title": "SYR Connect neu konfigurieren"
+      },
+      "user": {
+        "data": {
+          "password": "Passwort",
+          "username": "Benutzername"
+        },
+        "description": "Geben Sie Ihre SYR Connect App Anmeldedaten ein",
+        "title": "SYR Connect"
       }
     }
   },
   "entity": {
-    "sensor": {
-      "getpst": {
-        "name": "Drucksensor",
-        "state": {
-          "1": "Nicht verfügbar",
-          "2": "Verfügbar"
-        }
+    "binary_sensor": {
+      "getsre": {
+        "name": "Regeneration aktiv"
+      }
+    },
+    "button": {
+      "setrst": {
+        "name": "Gerät zurücksetzen"
       },
+      "setsir": {
+        "name": "Sofort regenerieren"
+      },
+      "setsmr": {
+        "name": "Mehrfach regenerieren"
+      }
+    },
+    "select": {
       "getab": {
         "name": "Ventilabsperrung",
         "state": {
@@ -66,8 +64,29 @@
           "2": "Geschlossen"
         }
       },
-      "getavo": {
-        "name": "Aktueller Durchfluss"
+      "getrpd": {
+        "name": "Regenerationsintervall"
+      },
+      "getrtime": {
+        "name": "Regenerationsuhrzeit"
+      },
+      "getsv1": {
+        "name": "Salzmenge Behälter 1"
+      },
+      "getsv2": {
+        "name": "Salzmenge Behälter 2"
+      },
+      "getsv3": {
+        "name": "Salzmenge Behälter 3"
+      }
+    },
+    "sensor": {
+      "getab": {
+        "name": "Ventilabsperrung",
+        "state": {
+          "1": "Geöffnet",
+          "2": "Geschlossen"
+        }
       },
       "getalm": {
         "name": "Alarm",
@@ -76,6 +95,9 @@
           "no_alarm": "Keiner",
           "no_salt": "Salz leer"
         }
+      },
+      "getavo": {
+        "name": "Aktueller Durchfluss"
       },
       "getbar": {
         "name": "Eingangsdruck"
@@ -86,15 +108,15 @@
       "getbuz": {
         "name": "Buzzer bei Alarm",
         "state": {
-          "true": "Aktiviert",
-          "false": "Deaktiviert"
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
         }
-      },
-      "getcel": {
-        "name": "Wassertemperatur"
       },
       "getcde": {
         "name": "Konfigurationscode"
+      },
+      "getcel": {
+        "name": "Wassertemperatur"
       },
       "getcna": {
         "name": "Gerätename",
@@ -104,6 +126,9 @@
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
+      "getcof": {
+        "name": "Wasserverbrauch Gesamt"
+      },
       "getcs1": {
         "name": "Restkapazität des Harzes 1"
       },
@@ -112,9 +137,6 @@
       },
       "getcs3": {
         "name": "Restkapazität des Harzes 3"
-      },
-      "getcof": {
-        "name": "Wasserverbrauch Gesamt"
       },
       "getcyn": {
         "name": "Regenerationszyklen Anzahl"
@@ -149,17 +171,11 @@
       "getinr": {
         "name": "Unvollständige Regenerationen"
       },
-      "getiwh": {
-        "name": "Rohwasserhärte"
-      },
       "getipa": {
         "name": "IP Adresse"
       },
-      "getltv": {
-        "name": "Letztes gezapftes Volumen"
-      },
-      "getle": {
-        "name": "Leckageschutz - Stufe Anwesend"
+      "getiwh": {
+        "name": "Rohwasserhärte"
       },
       "getlan": {
         "name": "Sprache",
@@ -171,6 +187,12 @@
       },
       "getlar": {
         "name": "Letzte Regeneration"
+      },
+      "getle": {
+        "name": "Leckageschutz - Stufe Anwesend"
+      },
+      "getltv": {
+        "name": "Letztes gezapftes Volumen"
       },
       "getmac": {
         "name": "MAC Adresse"
@@ -184,14 +206,14 @@
       "getman": {
         "name": "Hersteller"
       },
-      "getnps": {
-        "name": "Mikroleckagen-Anzahl"
+      "getnor": {
+        "name": "Regenerationen im Normalbetrieb"
       },
       "getnot": {
         "name": "Aktuelle Benachrichtigung"
       },
-      "getnor": {
-        "name": "Regenerationen im Normalbetrieb"
+      "getnps": {
+        "name": "Mikroleckagen-Anzahl"
       },
       "getowh": {
         "name": "Weichwasserhärte"
@@ -274,6 +296,13 @@
       "getprs": {
         "name": "Eingangsdruck"
       },
+      "getpst": {
+        "name": "Drucksensor",
+        "state": {
+          "1": "Nicht verfügbar",
+          "2": "Verfügbar"
+        }
+      },
       "getpv1": {
         "name": "Volumenleckage-Schwellwert 1"
       },
@@ -310,15 +339,6 @@
       "getres": {
         "name": "Restkapazität"
       },
-      "getrmo": {
-        "name": "Regenerationsmodus",
-        "state": {
-          "1": "Standard",
-          "2": "ECO",
-          "3": "Power",
-          "4": "Automatik"
-        }
-      },
       "getrg1": {
         "name": "Regeneration Status",
         "state": {
@@ -339,6 +359,15 @@
         "state": {
           "0": "Inaktiv",
           "1": "Läuft"
+        }
+      },
+      "getrmo": {
+        "name": "Regenerationsmodus",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatik"
         }
       },
       "getrpd": {
@@ -369,23 +398,11 @@
       "getsrh": {
         "name": "Nächste halbjährliche Wartung"
       },
-      "getsrv": {
-        "name": "Nächste jährliche Wartung"
-      },
       "getsrn": {
         "name": "Seriennummer"
       },
-      "getsta": {
-        "name": "Status",
-        "state": {
-          "status_backwash": "Rückspülung",
-          "status_fast_rinse": "Schnelles Spülen",
-          "status_filling": "Befüllen",
-          "status_inactive": "Inaktiv",
-          "status_regenerant_rinse": "Spülen mit Regeneriermittel",
-          "status_refill_salt": "Bitte Salz nachfüllen",
-          "status_slow_rinse": "Langsames Spülen"
-        }
+      "getsrv": {
+        "name": "Nächste jährliche Wartung"
       },
       "getss1": {
         "name": "Salzvorrat Behälter 1"
@@ -395,6 +412,18 @@
       },
       "getss3": {
         "name": "Salzvorrat Behälter 3"
+      },
+      "getsta": {
+        "name": "Status",
+        "state": {
+          "status_backwash": "Rückspülung",
+          "status_fast_rinse": "Schnelles Spülen",
+          "status_filling": "Befüllen",
+          "status_inactive": "Inaktiv",
+          "status_refill_salt": "Bitte Salz nachfüllen",
+          "status_regenerant_rinse": "Spülen mit Regeneriermittel",
+          "status_slow_rinse": "Langsames Spülen"
+        }
       },
       "getsv1": {
         "name": "Salzmenge Behälter 1"
@@ -417,26 +446,14 @@
       "gettor": {
         "name": "Summe aller Regenerationen"
       },
-      "getul": {
-        "name": "Leckageschutz - Stufe Abwesend"
-      },
       "gettyp": {
         "name": "Typ"
       },
+      "getul": {
+        "name": "Leckageschutz - Stufe Abwesend"
+      },
       "getver": {
         "name": "Firmware-Version"
-      },
-      "getvol": {
-        "name": "Gesamtvolumen"
-      },
-      "getvs1": {
-        "name": "Volumenschwelle 1"
-      },
-      "getvs2": {
-        "name": "Volumenschwelle 2"
-      },
-      "getvs3": {
-        "name": "Volumenschwelle 3"
       },
       "getvlv": {
         "name": "Ventilstatus",
@@ -447,8 +464,23 @@
           "21": "Wird geöffnet"
         }
       },
-      "getwhu": {
-        "name": "Wasserhärte-Einheit"
+      "getvol": {
+        "name": "Gesamtvolumen"
+      },
+      "getvps1": {
+        "name": "Keine Turbinenimpulse Steuerkopf 1 seit"
+      },
+      "getvps2": {
+        "name": "Keine Turbinenimpulse Steuerkopf 2 seit"
+      },
+      "getvs1": {
+        "name": "Volumenschwelle 1"
+      },
+      "getvs2": {
+        "name": "Volumenschwelle 2"
+      },
+      "getvs3": {
+        "name": "Volumenschwelle 3"
       },
       "getwfc": {
         "name": "WLAN SSID"
@@ -467,54 +499,11 @@
       "getwgw": {
         "name": "WLAN Gateway"
       },
+      "getwhu": {
+        "name": "Wasserhärte-Einheit"
+      },
       "getwip": {
         "name": "WLAN IP-Adresse"
-      },
-      "getvps1": {
-        "name": "Keine Turbinenimpulse Steuerkopf 1 seit"
-      },
-      "getvps2": {
-        "name": "Keine Turbinenimpulse Steuerkopf 2 seit"
-      }
-    },
-    "binary_sensor": {
-      "getsre": {
-        "name": "Regeneration aktiv"
-      }
-    },
-    "button": {
-      "setrst": {
-        "name": "Gerät zurücksetzen"
-      },
-      "setsir": {
-        "name": "Sofort regenerieren"
-      },
-      "setsmr": {
-        "name": "Mehrfach regenerieren"
-      }
-    },
-    "select": {
-      "getab": {
-        "name": "Ventilabsperrung",
-        "state": {
-          "1": "Geöffnet",
-          "2": "Geschlossen"
-        }
-      },
-      "getrtime": {
-        "name": "Regenerationsuhrzeit"
-      },
-      "getsv1": {
-        "name": "Salzmenge Behälter 1"
-      },
-      "getsv2": {
-        "name": "Salzmenge Behälter 2"
-      },
-      "getsv3": {
-        "name": "Salzmenge Behälter 3"
-      },
-      "getrpd": {
-        "name": "Regenerationsintervall"
       }
     },
     "valve": {
@@ -538,8 +527,19 @@
   },
   "issues": {
     "device_offline": {
-      "title": "Gerät offline: {device_name}",
-      "description": "Das SYR Connect Gerät \"{device_name}\" ist derzeit offline und kann nicht erreicht werden. Bitte überprüfen Sie:\n\n- Stromversorgung des Geräts\n- Netzwerkverbindung\n- SYR Connect Cloud-Dienst Status\n\nDas Gerät wird automatisch wieder verbunden, sobald es online ist."
+      "description": "Das SYR Connect Gerät \"{device_name}\" ist derzeit offline und kann nicht erreicht werden. Bitte überprüfen Sie:\n\n- Stromversorgung des Geräts\n- Netzwerkverbindung\n- SYR Connect Cloud-Dienst Status\n\nDas Gerät wird automatisch wieder verbunden, sobald es online ist.",
+      "title": "Gerät offline: {device_name}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Aktualisierungsintervall"
+        },
+        "description": "Definiert den Zeitabstand zwischen API-Aufrufen.",
+        "title": "SYR Connect Optionen"
+      }
     }
   }
 }

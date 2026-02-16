@@ -40,14 +40,23 @@
     }
   },
   "entity": {
-    "sensor": {
-      "getpst": {
-        "name": "Sensor de pressão",
-        "state": {
-          "1": "Não disponível",
-          "2": "Disponível"
-        }
+    "binary_sensor": {
+      "getsre": {
+        "name": "Regeneração ativa"
+      }
+    },
+    "button": {
+      "setrst": {
+        "name": "Redefinir dispositivo"
       },
+      "setsir": {
+        "name": "Regenerar agora"
+      },
+      "setsmr": {
+        "name": "Regeneração múltipla"
+      }
+    },
+    "select": {
       "getab": {
         "name": "Fecho de válvula",
         "state": {
@@ -55,8 +64,29 @@
           "2": "Fechada"
         }
       },
-      "getavo": {
-        "name": "Fluxo atual"
+      "getrpd": {
+        "name": "Intervalo de regeneração"
+      },
+      "getrtime": {
+        "name": "Hora de regeneração"
+      },
+      "getsv1": {
+        "name": "Quantidade de sal recipiente 1"
+      },
+      "getsv2": {
+        "name": "Quantidade de sal recipiente 2"
+      },
+      "getsv3": {
+        "name": "Quantidade de sal recipiente 3"
+      }
+    },
+    "sensor": {
+      "getab": {
+        "name": "Fecho de válvula",
+        "state": {
+          "1": "Aberta",
+          "2": "Fechada"
+        }
       },
       "getalm": {
         "name": "Alarm",
@@ -66,17 +96,20 @@
           "no_salt": "Sem sal"
         }
       },
+      "getavo": {
+        "name": "Fluxo atual"
+      },
       "getbar": {
         "name": "Pressão de entrada"
       },
       "getbat": {
         "name": "Tensão da bateria"
       },
-      "getcel": {
-        "name": "Temperatura da água"
-      },
       "getcde": {
         "name": "Código de configuração"
+      },
+      "getcel": {
+        "name": "Temperatura da água"
       },
       "getcna": {
         "name": "Nome do dispositivo",
@@ -86,6 +119,9 @@
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
+      "getcof": {
+        "name": "Consumo total de água"
+      },
       "getcs1": {
         "name": "Capacidade restante da resina 1"
       },
@@ -94,9 +130,6 @@
       },
       "getcs3": {
         "name": "Capacidade restante da resina 3"
-      },
-      "getcof": {
-        "name": "Consumo total de água"
       },
       "getcyn": {
         "name": "Contador de ciclo"
@@ -113,6 +146,9 @@
       "getdwf": {
         "name": "Consumo diário de água esperado"
       },
+      "geteip": {
+        "name": "Endereço IP Ethernet"
+      },
       "getfco": {
         "name": "Teor de ferro"
       },
@@ -123,19 +159,13 @@
         "name": "Fluxo de água"
       },
       "getinr": {
-          "name": "Regenerações incompletas"
+        "name": "Regenerações incompletas"
       },
       "getipa": {
         "name": "Endereço IP"
       },
-      "getltv": {
-        "name": "Último volume dispensado"
-      },
       "getiwh": {
         "name": "Dureza da água de entrada"
-      },
-      "getle": {
-        "name": "Proteção contra vazamentos - Nível presente"
       },
       "getlan": {
         "name": "Idioma",
@@ -148,6 +178,12 @@
       "getlar": {
         "name": "Última regeneração"
       },
+      "getle": {
+        "name": "Proteção contra vazamentos - Nível presente"
+      },
+      "getltv": {
+        "name": "Último volume dispensado"
+      },
       "getmac": {
         "name": "Endereço MAC"
       },
@@ -157,46 +193,17 @@
       "getmac2": {
         "name": "Endereço MAC LAN"
       },
-      "geteip": {
-        "name": "Endereço IP Ethernet"
-      },
-      "getwfc": {
-        "name": "SSID WLAN"
-      },
-      "getwfr": {
-        "name": "Força do sinal WLAN"
-      },
-      "getwfs": {
-        "name": "Estado da conexão WLAN",
-        "state": {
-          "0": "Não conectado",
-          "1": "Conectando",
-          "2": "Conectado"
-        }
-      },
-      "getwgw": {
-        "name": "Gateway WLAN"
-      },
-      "getwip": {
-        "name": "Endereço IP WLAN"
-      },
-      "getvps1": {
-        "name": "Sem pulsos da turbina na cabeça de controle 1 desde"
-      },
-      "getvps2": {
-        "name": "Sem pulsos da turbina na cabeça de controle 2 desde"
-      },
       "getman": {
         "name": "Fabricante"
-      },
-      "getnps": {
-        "name": "Contagem de microvazamentos"
       },
       "getnor": {
         "name": "Regenerações em funcionamento normal"
       },
       "getnot": {
         "name": "Notas"
+      },
+      "getnps": {
+        "name": "Contagem de microvazamentos"
       },
       "getowh": {
         "name": "Dureza da água de saída"
@@ -276,6 +283,13 @@
       "getprs": {
         "name": "Pressão"
       },
+      "getpst": {
+        "name": "Sensor de pressão",
+        "state": {
+          "1": "Não disponível",
+          "2": "Disponível"
+        }
+      },
       "getpv1": {
         "name": "Limiar de vazamento de volume 1"
       },
@@ -312,15 +326,6 @@
       "getres": {
         "name": "Capacidade restante"
       },
-      "getrmo": {
-        "name": "Modo de regeneração",
-        "state": {
-          "1": "Padrão",
-          "2": "ECO",
-          "3": "Power",
-          "4": "Automático"
-        }
-      },
       "getrg1": {
         "name": "Tanque de regeneração 1",
         "state": {
@@ -342,6 +347,15 @@
           "1": "Em funcionamento"
         }
       },
+      "getrmo": {
+        "name": "Modo de regeneração",
+        "state": {
+          "1": "Padrão",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automático"
+        }
+      },
       "getrpd": {
         "name": "Intervalo de regeneração"
       },
@@ -357,6 +371,9 @@
       "getrtm": {
         "name": "Hora de regeneração (Minuto)"
       },
+      "getscr": {
+        "name": "Ciclos de regeneração de serviço"
+      },
       "getsir": {
         "name": "Regeneração imediata",
         "state": {
@@ -364,17 +381,14 @@
           "1": "Não iniciar"
         }
       },
-      "getscr": {
-        "name": "Ciclos de regeneração de serviço"
-      },
       "getsrh": {
         "name": "Próxima manutenção semestral"
       },
-      "getsrv": {
-        "name": "Próxima manutenção anual"
-      },
       "getsrn": {
         "name": "Número de série"
+      },
+      "getsrv": {
+        "name": "Próxima manutenção anual"
       },
       "getss1": {
         "name": "Reserva de sal recipiente 1"
@@ -392,8 +406,8 @@
           "status_fast_rinse": "Enxágue rápido",
           "status_filling": "Enchimento",
           "status_inactive": "Inativo",
-          "status_regenerant_rinse": "Enxágue com regenerante",
           "status_refill_salt": "Por favor, reponha o sal",
+          "status_regenerant_rinse": "Enxágue com regenerante",
           "status_slow_rinse": "Enxágue lento"
         }
       },
@@ -418,26 +432,14 @@
       "gettor": {
         "name": "Total de regenerações"
       },
-      "getul": {
-        "name": "Proteção contra vazamentos - Nível ausente"
-      },
       "gettyp": {
         "name": "Tipo"
       },
+      "getul": {
+        "name": "Proteção contra vazamentos - Nível ausente"
+      },
       "getver": {
         "name": "Versão do firmware"
-      },
-      "getvol": {
-        "name": "Volume total"
-      },
-      "getvs1": {
-        "name": "Limite de volume 1"
-      },
-      "getvs2": {
-        "name": "Limite de volume 2"
-      },
-      "getvs3": {
-        "name": "Limite de volume 3"
       },
       "getvlv": {
         "name": "Estado da válvula",
@@ -448,48 +450,46 @@
           "21": "Abrindo"
         }
       },
-      "getwhu": {
-        "name": "Unidade de dureza da água"
-      }
-    },
-    "binary_sensor": {
-      "getsre": {
-        "name": "Regeneração ativa"
-      }
-    },
-    "button": {
-      "setrst": {
-        "name": "Redefinir dispositivo"
+      "getvol": {
+        "name": "Volume total"
       },
-      "setsir": {
-        "name": "Regenerar agora"
+      "getvps1": {
+        "name": "Sem pulsos da turbina na cabeça de controle 1 desde"
       },
-      "setsmr": {
-        "name": "Regeneração múltipla"
-      }
-    },
-    "select": {
-      "getab": {
-        "name": "Fecho de válvula",
+      "getvps2": {
+        "name": "Sem pulsos da turbina na cabeça de controle 2 desde"
+      },
+      "getvs1": {
+        "name": "Limite de volume 1"
+      },
+      "getvs2": {
+        "name": "Limite de volume 2"
+      },
+      "getvs3": {
+        "name": "Limite de volume 3"
+      },
+      "getwfc": {
+        "name": "SSID WLAN"
+      },
+      "getwfr": {
+        "name": "Força do sinal WLAN"
+      },
+      "getwfs": {
+        "name": "Estado da conexão WLAN",
         "state": {
-          "1": "Aberta",
-          "2": "Fechada"
+          "0": "Não conectado",
+          "1": "Conectando",
+          "2": "Conectado"
         }
       },
-      "getrtime": {
-        "name": "Hora de regeneração"
+      "getwgw": {
+        "name": "Gateway WLAN"
       },
-      "getsv1": {
-        "name": "Quantidade de sal recipiente 1"
+      "getwhu": {
+        "name": "Unidade de dureza da água"
       },
-      "getsv2": {
-        "name": "Quantidade de sal recipiente 2"
-      },
-      "getsv3": {
-        "name": "Quantidade de sal recipiente 3"
-      },
-      "getrpd": {
-        "name": "Intervalo de regeneração"
+      "getwip": {
+        "name": "Endereço IP WLAN"
       }
     },
     "valve": {

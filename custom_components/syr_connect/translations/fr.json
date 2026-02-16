@@ -1,64 +1,62 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "title": "SYR Connect",
-        "description": "Entrez vos identifiants de l'application SYR Connect",
-        "data": {
-          "username": "Nom d'utilisateur",
-          "password": "Mot de passe"
-        }
-      },
-      "reauth_confirm": {
-        "title": "Réauthentifier SYR Connect",
-        "description": "Les identifiants pour {username} ne sont plus valides. Veuillez saisir de nouveaux identifiants.",
-        "data": {
-          "username": "Nom d'utilisateur",
-          "password": "Mot de passe"
-        }
-      },
-      "reconfigure": {
-        "title": "Reconfigurer SYR Connect",
-        "description": "Mettez à jour vos identifiants SYR Connect.",
-        "data": {
-          "username": "Nom d'utilisateur",
-          "password": "Mot de passe"
-        }
-      }
+    "abort": {
+      "already_configured": "Ce compte est déjà configuré",
+      "reauth_failed": "Échec de la réauthentification. Veuillez réessayer.",
+      "reauth_successful": "Réauthentification réussie",
+      "reconfigure_failed": "Échec de la reconfiguration. Veuillez réessayer.",
+      "reconfigure_successful": "Reconfiguration réussie"
     },
     "error": {
       "cannot_connect": "Impossible de se connecter à SYR Connect. Veuillez vérifier votre connexion Internet et réessayer.",
       "invalid_auth": "Nom d'utilisateur ou mot de passe invalide. Veuillez vérifier vos identifiants.",
       "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
     },
-    "abort": {
-      "already_configured": "Ce compte est déjà configuré",
-      "reauth_successful": "Réauthentification réussie",
-      "reauth_failed": "Échec de la réauthentification. Veuillez réessayer.",
-      "reconfigure_successful": "Reconfiguration réussie",
-      "reconfigure_failed": "Échec de la reconfiguration. Veuillez réessayer."
-    }
-  },
-  "options": {
     "step": {
-      "init": {
-        "title": "Options SYR Connect",
-        "description": "Définit l'intervalle de temps entre les appels API.",
+      "reauth_confirm": {
         "data": {
-          "scan_interval": "Intervalle de mise à jour"
-        }
+          "password": "Mot de passe",
+          "username": "Nom d'utilisateur"
+        },
+        "description": "Les identifiants pour {username} ne sont plus valides. Veuillez saisir de nouveaux identifiants.",
+        "title": "Réauthentifier SYR Connect"
+      },
+      "reconfigure": {
+        "data": {
+          "password": "Mot de passe",
+          "username": "Nom d'utilisateur"
+        },
+        "description": "Mettez à jour vos identifiants SYR Connect.",
+        "title": "Reconfigurer SYR Connect"
+      },
+      "user": {
+        "data": {
+          "password": "Mot de passe",
+          "username": "Nom d'utilisateur"
+        },
+        "description": "Entrez vos identifiants de l'application SYR Connect",
+        "title": "SYR Connect"
       }
     }
   },
   "entity": {
-    "sensor": {
-      "getpst": {
-        "name": "Capteur de pression",
-        "state": {
-          "1": "Indisponible",
-          "2": "Disponible"
-        }
+    "binary_sensor": {
+      "getsre": {
+        "name": "Régénération active"
+      }
+    },
+    "button": {
+      "setrst": {
+        "name": "Réinitialiser l'appareil"
       },
+      "setsir": {
+        "name": "Régénérer maintenant"
+      },
+      "setsmr": {
+        "name": "Régénération multiple"
+      }
+    },
+    "select": {
       "getab": {
         "name": "Coupure de vanne",
         "state": {
@@ -66,8 +64,29 @@
           "2": "Fermé"
         }
       },
-      "getavo": {
-        "name": "Débit actuel"
+      "getrpd": {
+        "name": "Intervalle de régénération"
+      },
+      "getrtime": {
+        "name": "Heure de régénération"
+      },
+      "getsv1": {
+        "name": "Quantité de sel réservoir 1"
+      },
+      "getsv2": {
+        "name": "Quantité de sel réservoir 2"
+      },
+      "getsv3": {
+        "name": "Quantité de sel réservoir 3"
+      }
+    },
+    "sensor": {
+      "getab": {
+        "name": "Coupure de vanne",
+        "state": {
+          "1": "Ouvert",
+          "2": "Fermé"
+        }
       },
       "getalm": {
         "name": "Alarme",
@@ -77,17 +96,20 @@
           "no_salt": "Pas de sel"
         }
       },
+      "getavo": {
+        "name": "Débit actuel"
+      },
       "getbar": {
         "name": "Pression d'entrée"
       },
       "getbat": {
         "name": "Tension de batterie"
       },
-      "getcel": {
-        "name": "Température de l'eau"
-      },
       "getcde": {
         "name": "Code de configuration"
+      },
+      "getcel": {
+        "name": "Température de l'eau"
       },
       "getcna": {
         "name": "Nom de l'appareil",
@@ -97,6 +119,9 @@
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
+      "getcof": {
+        "name": "Consommation d'eau totale"
+      },
       "getcs1": {
         "name": "Capacité restante de la résine 1"
       },
@@ -105,9 +130,6 @@
       },
       "getcs3": {
         "name": "Capacité restante de la résine 3"
-      },
-      "getcof": {
-        "name": "Consommation d'eau totale"
       },
       "getcyn": {
         "name": "Compteur de cycles"
@@ -124,6 +146,9 @@
       "getdwf": {
         "name": "Consommation d'eau quotidienne prévue"
       },
+      "geteip": {
+        "name": "Adresse IP Ethernet"
+      },
       "getfco": {
         "name": "Teneur en fer"
       },
@@ -136,17 +161,11 @@
       "getinr": {
         "name": "Régénérations incomplètes"
       },
-      "getiwh": {
-        "name": "Dureté de l'eau brute"
-      },
       "getipa": {
         "name": "Adresse IP"
       },
-      "getltv": {
-        "name": "Dernier volume distribué"
-      },
-      "getle": {
-        "name": "Protection contre les fuites - Niveau présent"
+      "getiwh": {
+        "name": "Dureté de l'eau brute"
       },
       "getlan": {
         "name": "Langue",
@@ -159,6 +178,12 @@
       "getlar": {
         "name": "Dernière régénération"
       },
+      "getle": {
+        "name": "Protection contre les fuites - Niveau présent"
+      },
+      "getltv": {
+        "name": "Dernier volume distribué"
+      },
       "getmac": {
         "name": "Adresse MAC"
       },
@@ -168,46 +193,17 @@
       "getmac2": {
         "name": "Adresse MAC LAN"
       },
-      "geteip": {
-        "name": "Adresse IP Ethernet"
-      },
-      "getwfc": {
-        "name": "SSID WLAN"
-      },
-      "getwfr": {
-        "name": "Puissance du signal WLAN"
-      },
-      "getwfs": {
-        "name": "État de la connexion WLAN",
-        "state": {
-          "0": "Non connecté",
-          "1": "Connexion en cours",
-          "2": "Connecté"
-        }
-      },
-      "getwgw": {
-        "name": "Passerelle WLAN"
-      },
-      "getwip": {
-        "name": "Adresse IP WLAN"
-      },
-      "getvps1": {
-        "name": "Aucune impulsion de turbine sur la tête de commande 1 depuis"
-      },
-      "getvps2": {
-        "name": "Aucune impulsion de turbine sur la tête de commande 2 depuis"
-      },
       "getman": {
         "name": "Fabricant"
       },
-      "getnps": {
-        "name": "Nombre de microfuites"
+      "getnor": {
+        "name": "Régénérations en fonctionnement normal"
       },
       "getnot": {
         "name": "Notes"
       },
-      "getnor": {
-        "name": "Régénérations en fonctionnement normal"
+      "getnps": {
+        "name": "Nombre de microfuites"
       },
       "getowh": {
         "name": "Dureté de l'eau adoucie"
@@ -287,6 +283,13 @@
       "getprs": {
         "name": "Pression"
       },
+      "getpst": {
+        "name": "Capteur de pression",
+        "state": {
+          "1": "Indisponible",
+          "2": "Disponible"
+        }
+      },
       "getpv1": {
         "name": "Seuil de fuite de volume 1"
       },
@@ -323,15 +326,6 @@
       "getres": {
         "name": "Capacité restante"
       },
-      "getrmo": {
-        "name": "Mode de régénération",
-        "state": {
-          "1": "Standard",
-          "2": "ECO",
-          "3": "Power",
-          "4": "Automatique"
-        }
-      },
       "getrg1": {
         "name": "Réservoir de régénération 1",
         "state": {
@@ -353,6 +347,15 @@
           "1": "En cours"
         }
       },
+      "getrmo": {
+        "name": "Mode de régénération",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatique"
+        }
+      },
       "getrpd": {
         "name": "Intervalle de régénération"
       },
@@ -368,6 +371,9 @@
       "getrtm": {
         "name": "Heure de régénération (Minute)"
       },
+      "getscr": {
+        "name": "Cycles de régénération de service"
+      },
       "getsir": {
         "name": "Régénération immédiate",
         "state": {
@@ -375,29 +381,14 @@
           "1": "Ne pas démarrer"
         }
       },
-      "getscr": {
-        "name": "Cycles de régénération de service"
-      },
       "getsrh": {
         "name": "Prochaine maintenance semestrielle"
-      },
-      "getsrv": {
-        "name": "Prochaine maintenance annuelle"
       },
       "getsrn": {
         "name": "Numéro de série"
       },
-      "getsta": {
-        "name": "Statut",
-        "state": {
-          "status_backwash": "Rinçage inverse",
-          "status_fast_rinse": "Rinçage rapide",
-          "status_filling": "Remplissage",
-          "status_inactive": "Inactif",
-          "status_regenerant_rinse": "Rinçage régénérant",
-          "status_refill_salt": "Veuillez ajouter du sel",
-          "status_slow_rinse": "Rinçage lent"
-        }
+      "getsrv": {
+        "name": "Prochaine maintenance annuelle"
       },
       "getss1": {
         "name": "Stock de sel réservoir 1"
@@ -407,6 +398,18 @@
       },
       "getss3": {
         "name": "Stock de sel réservoir 3"
+      },
+      "getsta": {
+        "name": "Statut",
+        "state": {
+          "status_backwash": "Rinçage inverse",
+          "status_fast_rinse": "Rinçage rapide",
+          "status_filling": "Remplissage",
+          "status_inactive": "Inactif",
+          "status_refill_salt": "Veuillez ajouter du sel",
+          "status_regenerant_rinse": "Rinçage régénérant",
+          "status_slow_rinse": "Rinçage lent"
+        }
       },
       "getsv1": {
         "name": "Quantité de sel réservoir 1"
@@ -429,26 +432,14 @@
       "gettor": {
         "name": "Total des régénérations"
       },
-      "getul": {
-        "name": "Protection contre les fuites - Niveau absent"
-      },
       "gettyp": {
         "name": "Type"
       },
+      "getul": {
+        "name": "Protection contre les fuites - Niveau absent"
+      },
       "getver": {
         "name": "Version du firmware"
-      },
-      "getvol": {
-        "name": "Volume total"
-      },
-      "getvs1": {
-        "name": "Seuil de volume 1"
-      },
-      "getvs2": {
-        "name": "Seuil de volume 2"
-      },
-      "getvs3": {
-        "name": "Seuil de volume 3"
       },
       "getvlv": {
         "name": "État de vanne",
@@ -459,48 +450,46 @@
           "21": "Ouverture"
         }
       },
-      "getwhu": {
-        "name": "Unité de dureté de l'eau"
-      }
-    },
-    "binary_sensor": {
-      "getsre": {
-        "name": "Régénération active"
-      }
-    },
-    "button": {
-      "setrst": {
-        "name": "Réinitialiser l'appareil"
+      "getvol": {
+        "name": "Volume total"
       },
-      "setsir": {
-        "name": "Régénérer maintenant"
+      "getvps1": {
+        "name": "Aucune impulsion de turbine sur la tête de commande 1 depuis"
       },
-      "setsmr": {
-        "name": "Régénération multiple"
-      }
-    },
-    "select": {
-      "getab": {
-        "name": "Coupure de vanne",
+      "getvps2": {
+        "name": "Aucune impulsion de turbine sur la tête de commande 2 depuis"
+      },
+      "getvs1": {
+        "name": "Seuil de volume 1"
+      },
+      "getvs2": {
+        "name": "Seuil de volume 2"
+      },
+      "getvs3": {
+        "name": "Seuil de volume 3"
+      },
+      "getwfc": {
+        "name": "SSID WLAN"
+      },
+      "getwfr": {
+        "name": "Puissance du signal WLAN"
+      },
+      "getwfs": {
+        "name": "État de la connexion WLAN",
         "state": {
-          "1": "Ouvert",
-          "2": "Fermé"
+          "0": "Non connecté",
+          "1": "Connexion en cours",
+          "2": "Connecté"
         }
       },
-      "getrtime": {
-        "name": "Heure de régénération"
+      "getwgw": {
+        "name": "Passerelle WLAN"
       },
-      "getsv1": {
-        "name": "Quantité de sel réservoir 1"
+      "getwhu": {
+        "name": "Unité de dureté de l'eau"
       },
-      "getsv2": {
-        "name": "Quantité de sel réservoir 2"
-      },
-      "getsv3": {
-        "name": "Quantité de sel réservoir 3"
-      },
-      "getrpd": {
-        "name": "Intervalle de régénération"
+      "getwip": {
+        "name": "Adresse IP WLAN"
       }
     },
     "valve": {
@@ -524,8 +513,19 @@
   },
   "issues": {
     "device_offline": {
-      "title": "Appareil hors ligne : {device_name}",
-      "description": "L'appareil SYR Connect \"{device_name}\" est actuellement hors ligne et ne peut pas être contacté. Veuillez vérifier :\n\n- L'alimentation électrique de l'appareil\n- La connexion réseau\n- L'état du service cloud SYR Connect\n\nL'appareil se reconnectera automatiquement lorsqu'il sera de nouveau en ligne."
+      "description": "L'appareil SYR Connect \"{device_name}\" est actuellement hors ligne et ne peut pas être contacté. Veuillez vérifier :\n\n- L'alimentation électrique de l'appareil\n- La connexion réseau\n- L'état du service cloud SYR Connect\n\nL'appareil se reconnectera automatiquement lorsqu'il sera de nouveau en ligne.",
+      "title": "Appareil hors ligne : {device_name}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalle de mise à jour"
+        },
+        "description": "Définit l'intervalle de temps entre les appels API.",
+        "title": "Options SYR Connect"
+      }
     }
   }
 }

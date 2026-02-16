@@ -1,57 +1,62 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "title": "SYR Connect",
-        "description": "Enter your SYR Connect App credentials",
-        "data": {
-          "username": "Username",
-          "password": "Password"
-        }
-      },
-      "reauth_confirm": {
-        "title": "Reauthenticate SYR Connect",
-        "description": "The credentials for {username} are no longer valid. Please enter new credentials.",
-        "data": {
-          "username": "Username",
-          "password": "Password"
-        }
-      },
-      "reconfigure": {
-        "title": "Reconfigure SYR Connect",
-        "description": "Update your SYR Connect credentials.",
-        "data": {
-          "username": "Username",
-          "password": "Password"
-        }
-      }
+    "abort": {
+      "already_configured": "This account is already configured",
+      "reauth_failed": "Reauthentication failed. Please try again.",
+      "reauth_successful": "Reauthentication successful",
+      "reconfigure_failed": "Reconfiguration failed. Please try again.",
+      "reconfigure_successful": "Reconfiguration successful"
     },
     "error": {
       "cannot_connect": "Unable to connect to SYR Connect. Please check your internet connection and try again.",
       "invalid_auth": "Invalid username or password. Please check your credentials.",
       "unknown": "An unexpected error occurred. Please try again later."
     },
-    "abort": {
-      "already_configured": "This account is already configured",
-      "reauth_successful": "Reauthentication successful",
-      "reauth_failed": "Reauthentication failed. Please try again.",
-      "reconfigure_successful": "Reconfiguration successful",
-      "reconfigure_failed": "Reconfiguration failed. Please try again."
-    }
-  },
-  "options": {
     "step": {
-      "init": {
-        "title": "SYR Connect Options",
-        "description": "Defines the time interval between API calls.",
+      "reauth_confirm": {
         "data": {
-          "scan_interval": "Update interval"
-        }
+          "password": "Password",
+          "username": "Username"
+        },
+        "description": "The credentials for {username} are no longer valid. Please enter new credentials.",
+        "title": "Reauthenticate SYR Connect"
+      },
+      "reconfigure": {
+        "data": {
+          "password": "Password",
+          "username": "Username"
+        },
+        "description": "Update your SYR Connect credentials.",
+        "title": "Reconfigure SYR Connect"
+      },
+      "user": {
+        "data": {
+          "password": "Password",
+          "username": "Username"
+        },
+        "description": "Enter your SYR Connect App credentials",
+        "title": "SYR Connect"
       }
     }
   },
   "entity": {
-    "sensor": {
+    "binary_sensor": {
+      "getsre": {
+        "name": "Regeneration active"
+      }
+    },
+    "button": {
+      "setrst": {
+        "name": "Reset device"
+      },
+      "setsir": {
+        "name": "Regenerate now"
+      },
+      "setsmr": {
+        "name": "Multi regenerate"
+      }
+    },
+    "select": {
       "getab": {
         "name": "Valve shut-off",
         "state": {
@@ -59,8 +64,29 @@
           "2": "Closed"
         }
       },
-      "getavo": {
-        "name": "Current flow"
+      "getrpd": {
+        "name": "Regeneration interval"
+      },
+      "getrtime": {
+        "name": "Regeneration time"
+      },
+      "getsv1": {
+        "name": "Salt container volume 1"
+      },
+      "getsv2": {
+        "name": "Salt container volume 2"
+      },
+      "getsv3": {
+        "name": "Salt container volume 3"
+      }
+    },
+    "sensor": {
+      "getab": {
+        "name": "Valve shut-off",
+        "state": {
+          "1": "Opened",
+          "2": "Closed"
+        }
       },
       "getalm": {
         "name": "Alarm",
@@ -70,17 +96,20 @@
           "no_salt": "No salt"
         }
       },
+      "getavo": {
+        "name": "Current flow"
+      },
       "getbar": {
         "name": "Inlet pressure"
       },
       "getbat": {
         "name": "Battery voltage"
       },
-      "getcel": {
-        "name": "Water temperature"
-      },
       "getcde": {
         "name": "Configuration code"
+      },
+      "getcel": {
+        "name": "Water temperature"
       },
       "getcna": {
         "name": "Device name",
@@ -90,6 +119,9 @@
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
+      "getcof": {
+        "name": "Total water consumption"
+      },
       "getcs1": {
         "name": "Remaining resin capacity 1"
       },
@@ -98,9 +130,6 @@
       },
       "getcs3": {
         "name": "Remaining resin capacity 3"
-      },
-      "getcof": {
-        "name": "Total water consumption"
       },
       "getcyn": {
         "name": "Regeneration cycle counter"
@@ -117,6 +146,9 @@
       "getdwf": {
         "name": "Expected daily water consumption"
       },
+      "geteip": {
+        "name": "Ethernet IP address"
+      },
       "getfco": {
         "name": "Iron content"
       },
@@ -132,14 +164,8 @@
       "getipa": {
         "name": "IP Address"
       },
-      "getltv": {
-        "name": "Last dispensed volume"
-      },
       "getiwh": {
         "name": "Input water hardness"
-      },
-      "getle": {
-        "name": "Leakage protection - Present level"
       },
       "getlan": {
         "name": "Language",
@@ -152,6 +178,12 @@
       "getlar": {
         "name": "Last regeneration"
       },
+      "getle": {
+        "name": "Leakage protection - Present level"
+      },
+      "getltv": {
+        "name": "Last dispensed volume"
+      },
       "getmac": {
         "name": "MAC address"
       },
@@ -161,46 +193,17 @@
       "getmac2": {
         "name": "LAN MAC address"
       },
-      "geteip": {
-        "name": "Ethernet IP address"
-      },
-      "getwfc": {
-        "name": "Wi-Fi SSID"
-      },
-      "getwfr": {
-        "name": "Wi-Fi signal strength"
-      },
-      "getwfs": {
-        "name": "Wi-Fi connection status",
-        "state": {
-          "0": "Not connected",
-          "1": "Connecting",
-          "2": "Connected"
-        }
-      },
-      "getwgw": {
-        "name": "Wi-Fi gateway"
-      },
-      "getwip": {
-        "name": "Wi-Fi IP address"
-      },
-      "getvps1": {
-        "name": "No turbine pulses on control head 1 since"
-      },
-      "getvps2": {
-        "name": "No turbine pulses on control head 2 since"
-      },
       "getman": {
         "name": "Manufacturer"
       },
-      "getnps": {
-        "name": "Microleakage count"
+      "getnor": {
+        "name": "Regenerations (normal operation)"
       },
       "getnot": {
         "name": "Notes"
       },
-      "getnor": {
-        "name": "Regenerations (normal operation)"
+      "getnps": {
+        "name": "Microleakage count"
       },
       "getowh": {
         "name": "Output water hardness"
@@ -326,15 +329,6 @@
       "getres": {
         "name": "Remaining capacity"
       },
-      "getrmo": {
-        "name": "Regeneration mode",
-        "state": {
-          "1": "Standard",
-          "2": "ECO",
-          "3": "Power",
-          "4": "Automatic"
-        }
-      },
       "getrg1": {
         "name": "Regeneration tank 1",
         "state": {
@@ -356,6 +350,15 @@
           "1": "Running"
         }
       },
+      "getrmo": {
+        "name": "Regeneration mode",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatic"
+        }
+      },
       "getrpd": {
         "name": "Regeneration interval"
       },
@@ -371,6 +374,9 @@
       "getrtm": {
         "name": "Regeneration time (minute)"
       },
+      "getscr": {
+        "name": "Service regeneration cycles"
+      },
       "getsir": {
         "name": "Immediate regeneration",
         "state": {
@@ -378,29 +384,14 @@
           "1": "Do not start"
         }
       },
-      "getscr": {
-        "name": "Service regeneration cycles"
-      },
       "getsrh": {
         "name": "Next semi-annual maintenance"
-      },
-      "getsrv": {
-        "name": "Next annual maintenance"
       },
       "getsrn": {
         "name": "Serial number"
       },
-      "getsta": {
-        "name": "Status",
-        "state": {
-          "status_backwash": "Backwash",
-          "status_fast_rinse": "Fast rinse",
-          "status_filling": "Filling",
-          "status_inactive": "Inactive",
-          "status_regenerant_rinse": "Regenerant rinse",
-          "status_refill_salt": "Please refill salt",
-          "status_slow_rinse": "Slow rinse"
-        }
+      "getsrv": {
+        "name": "Next annual maintenance"
       },
       "getss1": {
         "name": "Salt container stock 1"
@@ -410,6 +401,18 @@
       },
       "getss3": {
         "name": "Salt container stock 3"
+      },
+      "getsta": {
+        "name": "Status",
+        "state": {
+          "status_backwash": "Backwash",
+          "status_fast_rinse": "Fast rinse",
+          "status_filling": "Filling",
+          "status_inactive": "Inactive",
+          "status_refill_salt": "Please refill salt",
+          "status_regenerant_rinse": "Regenerant rinse",
+          "status_slow_rinse": "Slow rinse"
+        }
       },
       "getsv1": {
         "name": "Salt container volume 1"
@@ -432,26 +435,14 @@
       "gettor": {
         "name": "Total regenerations"
       },
-      "getul": {
-        "name": "Leakage protection - Absent level"
-      },
       "gettyp": {
         "name": "Type"
       },
+      "getul": {
+        "name": "Leakage protection - Absent level"
+      },
       "getver": {
         "name": "Firmware version"
-      },
-      "getvol": {
-        "name": "Total volume"
-      },
-      "getvs1": {
-        "name": "Volume threshold 1"
-      },
-      "getvs2": {
-        "name": "Volume threshold 2"
-      },
-      "getvs3": {
-        "name": "Volume threshold 3"
       },
       "getvlv": {
         "name": "Valve status",
@@ -462,48 +453,46 @@
           "21": "Opening"
         }
       },
-      "getwhu": {
-        "name": "Water hardness unit"
-      }
-    },
-    "binary_sensor": {
-      "getsre": {
-        "name": "Regeneration active"
-      }
-    },
-    "button": {
-      "setrst": {
-        "name": "Reset device"
+      "getvol": {
+        "name": "Total volume"
       },
-      "setsir": {
-        "name": "Regenerate now"
+      "getvps1": {
+        "name": "No turbine pulses on control head 1 since"
       },
-      "setsmr": {
-        "name": "Multi regenerate"
-      }
-    },
-    "select": {
-      "getab": {
-        "name": "Valve shut-off",
+      "getvps2": {
+        "name": "No turbine pulses on control head 2 since"
+      },
+      "getvs1": {
+        "name": "Volume threshold 1"
+      },
+      "getvs2": {
+        "name": "Volume threshold 2"
+      },
+      "getvs3": {
+        "name": "Volume threshold 3"
+      },
+      "getwfc": {
+        "name": "Wi-Fi SSID"
+      },
+      "getwfr": {
+        "name": "Wi-Fi signal strength"
+      },
+      "getwfs": {
+        "name": "Wi-Fi connection status",
         "state": {
-          "1": "Opened",
-          "2": "Closed"
+          "0": "Not connected",
+          "1": "Connecting",
+          "2": "Connected"
         }
       },
-      "getrtime": {
-        "name": "Regeneration time"
+      "getwgw": {
+        "name": "Wi-Fi gateway"
       },
-      "getsv1": {
-        "name": "Salt container volume 1"
+      "getwhu": {
+        "name": "Water hardness unit"
       },
-      "getsv2": {
-        "name": "Salt container volume 2"
-      },
-      "getsv3": {
-        "name": "Salt container volume 3"
-      },
-      "getrpd": {
-        "name": "Regeneration interval"
+      "getwip": {
+        "name": "Wi-Fi IP address"
       }
     },
     "valve": {
@@ -527,8 +516,19 @@
   },
   "issues": {
     "device_offline": {
-      "title": "Device offline: {device_name}",
-      "description": "The SYR Connect device \"{device_name}\" is currently offline and cannot be reached. Please check:\n\n- Device power supply\n- Network connection\n- SYR Connect cloud service status\n\nThe device will automatically reconnect when it comes back online."
+      "description": "The SYR Connect device \"{device_name}\" is currently offline and cannot be reached. Please check:\n\n- Device power supply\n- Network connection\n- SYR Connect cloud service status\n\nThe device will automatically reconnect when it comes back online.",
+      "title": "Device offline: {device_name}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Update interval"
+        },
+        "description": "Defines the time interval between API calls.",
+        "title": "SYR Connect Options"
+      }
     }
   }
 }
