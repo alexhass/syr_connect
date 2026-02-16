@@ -67,7 +67,7 @@
       "getrpd": {
         "name": "Intervalo de regeneración"
       },
-      "getrtime": {
+      "getrtm": {
         "name": "Hora de regeneración"
       },
       "getsv1": {
@@ -377,7 +377,11 @@
         "name": "Hora de regeneración (Hora)"
       },
       "getrti": {
-        "name": "Hora de regeneración"
+        "name": "Gesamtdauer des Regenerationszyklus"
+      },
+      "getrtm": {
+        "name": "Regenerationsuhrzeit",
+        "old_name": "Minuten der Regeneration"
       },
       "getrtm": {
         "name": "Hora de regeneración (Minuto)"

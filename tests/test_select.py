@@ -949,3 +949,31 @@ async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant, create_mo
     assert len(sv1_entities) == 1
     assert len(sv2_entities) == 1
     assert len(sv3_entities) == 1
+
+
+async def test_regeneration_select_combined_mode_sends_only_setRTM(hass: HomeAssistant) -> None:
+    """When device reports combined getRTM (HH:MM) and no getRTH, selection should send only setRTM as string."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    # Combined representation: no getRTH, getRTM holds HH:MM
+                    "getRTM": "07:15",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
+
+    await select.async_select_option("07:15")
+
+    # Only setRTM should be called with the HH:MM string
+    assert coordinator.async_set_device_value.call_count == 1
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setRTM", "07:15")
+    # Ensure setRTH was not called
+    assert not any(c.args[1] == "setRTH" for c in coordinator.async_set_device_value.call_args_list)

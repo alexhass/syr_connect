@@ -467,12 +467,40 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError):
                         return None
 
-                # Special handling for combined regeneration time sensor
-                if self._sensor_key == 'getRTIME':
-                    hour = status.get('getRTH', 0)
-                    minute = status.get('getRTM', 0)
+                # Special handling for regeneration time - expose as `getRTM`:
+                # - If `getRTM` exists and `getRTH` is missing, `getRTM` may contain a combined time string "HH:MM".
+                # - If both `getRTH` and `getRTM` exist as numeric values, combine them as HH:MM.
+                if self._sensor_key == 'getRTM':
+                    raw_rtm = status.get('getRTM')
+                    raw_rth = status.get('getRTH')
+
+                    # Case A: combined time string in getRTM, no getRTH provided
+                    if raw_rtm is not None and (raw_rth is None or raw_rth == ""):
+                        if isinstance(raw_rtm, str):
+                            m = re.match(r'\s*(\d{1,2}):(\d{2})\s*$', raw_rtm)
+                            if m:
+                                try:
+                                    h = int(m.group(1))
+                                    mm = int(m.group(2))
+                                    # Strict validation: hours 0-23, minutes 0-59
+                                    if 0 <= h <= 23 and 0 <= mm <= 59:
+                                        return f"{h:02d}:{mm:02d}"
+                                    return "00:00"
+                                except Exception:
+                                    return "00:00"
+                        # No combined string found -> fallthrough to numeric handling when possible
+
+                    # Case B: split numeric values (getRTH hours, getRTM minutes)
                     try:
-                        return f"{int(hour):02d}:{int(minute):02d}"
+                        if raw_rth is None or raw_rth == "":
+                            # If hours missing and we couldn't parse a combined string, report None
+                            return None
+                        h = int(float(raw_rth))
+                        m = int(float(raw_rtm))
+                        # Strict validation
+                        if 0 <= h <= 23 and 0 <= m <= 59:
+                            return f"{h:02d}:{m:02d}"
+                        return "00:00"
                     except (ValueError, TypeError):
                         return "00:00"
 

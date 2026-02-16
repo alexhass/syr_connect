@@ -78,7 +78,7 @@ _SYR_CONNECT_SENSOR_CONTROLLED = {
     "getSV2",   # Salt container amount 2 - also represented as select entity
     "getSV3",   # Salt container amount 3 - also represented as select entity
     "getRPD",   # Regeneration interval - also represented as select entity
-    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM) - also represented as select entity
+    "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
@@ -167,7 +167,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getALM_m',     # Alarm message e.g. LowSalt
 
     'getDEN',  # Boolean sensor - device enabled/disabled
-    'getRTH', 'getRTM',  # Regeneration time - combined into getRTIME
+    'getRTH',  # Regeneration hour - minutes/combined handled by getRTM
     'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
     'getNOT',  # Notes field not useful as sensor
     'getSIR',  # Immediate regeneration control
@@ -380,7 +380,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getCYT": "mdi:timer-sync",
 
     # Custom non-API combined sensor
-    "getRTIME": "mdi:clock-outline", # Regeneration time (combined from getRTH and getRTM)
+    "getRTM": "mdi:clock-outline", # Regeneration time (minutes or combined HH:MM)
 
     # Sensors exits in devices:
     # - LEXplus10SL
@@ -564,7 +564,6 @@ _SYR_CONNECT_SENSOR_STRING = {
     "getMAC",  # MAC address
     "getMAN",  # Manufacturer
     "getRTI",  # Regeneration time
-    "getRTIME", # CUSTOM Regeneration time (combined from getRTH and getRTM)
     "getRPW",  # Regeneration permitted weekdays as bit mask (handled specially to decode bitmask)
     "getSRN",  # Serial number
     "getVER",  # Version

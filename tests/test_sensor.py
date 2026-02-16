@@ -179,7 +179,7 @@ async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
     assert sensor.native_value == "02:30"
 
@@ -464,7 +464,7 @@ async def test_sensor_rtime_invalid(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
     assert sensor.native_value == "00:00"
 
@@ -1607,8 +1607,8 @@ async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:
     controlled_entry = registry.async_get_or_create(
         "sensor",
         "syr_connect",
-        "device1_getRTIME",  # getRTIME is controlled
-        suggested_object_id="device1_getrtime",
+        "device1_getRTM",  # getRTM is controlled
+        suggested_object_id="device1_getrtm",
     )
     
     data = {
@@ -2356,7 +2356,7 @@ async def test_sensor_rtime_invalid_hour(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
     # Should return "00:00" when conversion fails
     assert sensor.native_value == "00:00"
@@ -3260,7 +3260,7 @@ async def test_sensor_rtime_value_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
     # Should return 00:00
     assert sensor.native_value == "00:00"
@@ -3620,7 +3620,7 @@ async def test_sensor_rtime_type_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTIME")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
     # Should return 00:00
     assert sensor.native_value == "00:00"

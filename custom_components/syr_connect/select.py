@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any, cast
 
 from homeassistant.components.select import SelectEntity
@@ -53,10 +54,10 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        # Only create regeneration time select when both hour and minute are present and non-empty
-        rth = status.get("getRTH")
+        # Create regeneration time select when `getRTM` is present (it may contain a combined HH:MM
+        # string when `getRTH` is not provided, or act as minutes when `getRTH` is present).
         rtm = status.get("getRTM")
-        if rth is None or rth == "" or rtm is None or rtm == "":
+        if rtm is None or rtm == "":
             continue
         entities.append(SyrConnectRegenerationSelect(coordinator, device_id, device_name))
 
@@ -119,13 +120,15 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         self._device_name = device_name
 
         self._attr_has_entity_name = True
-        self._attr_translation_key = "getrtime"
-        self.entity_id = build_entity_id("select", device_id, "getrtime")
-        self._attr_unique_id = f"{device_id}_getrtime_select"
+        # Keep translation key for human-friendly name, but back the select by `getRTM` key
+        self._attr_translation_key = "getrtm"
+        self.entity_id = build_entity_id("select", device_id, "getRTM")
+        self._attr_unique_id = f"{device_id}_getRTM_select"
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Use same icon as the combined regeneration time sensor if available
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getRTIME")
+        # Use the regeneration-time icon mapped to `getRTM`
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getRTM")
 
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
@@ -150,14 +153,33 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             status = dev.get("status", {})
             rth = status.get("getRTH")
             rtm = status.get("getRTM")
-            if rth is None or rth == "" or rtm is None or rtm == "":
+            if rtm is None or rtm == "":
                 return None
+
+            # If hour missing, `getRTM` may contain a combined HH:MM string
+            if rth is None or rth == "":
+                if isinstance(rtm, str):
+                    m = re.match(r"\s*(\d{1,2}):(\d{2})\s*$", rtm)
+                    if not m:
+                        return None
+                    try:
+                        h = int(m.group(1))
+                        mm = int(m.group(2))
+                        if 0 <= h <= 23 and 0 <= mm <= 59:
+                            return f"{h:02d}:{mm:02d}"
+                    except Exception:
+                        return None
+                return None
+
+            # Both hour and minute present as numeric values
             try:
-                h = int(float(rth)) % 24
-                m = int(float(rtm)) % 60
+                h = int(float(rth))
+                m = int(float(rtm))
+                if 0 <= h <= 23 and 0 <= m <= 59:
+                    return f"{h:02d}:{m:02d}"
             except Exception:
                 return None
-            return f"{h:02d}:{m:02d}"
+            return None
         return None
 
     async def async_select_option(self, option: str) -> None:
@@ -174,15 +196,32 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
 
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
-            await coordinator.async_set_device_value(self._device_id, "setRTH", h)
-            await coordinator.async_set_device_value(self._device_id, "setRTM", m)
-            _LOGGER.debug("Requested setRTH/setRTM for device %s (h=%s m=%s)", self._device_id, h, m)
-            _LOGGER.debug(
-                "Regeneration time select changed for %s to %02d:%02d",
-                self._device_id,
-                h,
-                m,
-            )
+            # Determine device's current representation: combined string in getRTM (no getRTH)
+            raw_status = None
+            for dev in coordinator.data.get("devices", []):
+                if dev.get("id") == self._device_id:
+                    raw_status = dev.get("status", {})
+                    break
+
+            combined_mode = False
+            if raw_status is not None:
+                raw_rth = raw_status.get("getRTH")
+                raw_rtm = raw_status.get("getRTM")
+                if (raw_rth is None or raw_rth == "") and isinstance(raw_rtm, str) and ":" in raw_rtm:
+                    combined_mode = True
+
+            # If device is in combined-mode (no getRTH, getRTM is a HH:MM string),
+            # do NOT call setRTH (the device doesn't accept separate hour),
+            # and send the full HH:MM string via setRTM.
+            if combined_mode:
+                await coordinator.async_set_device_value(self._device_id, "setRTM", option)
+                _LOGGER.debug("Requested setRTM for device %s (time=%s)", self._device_id, option)
+                _LOGGER.debug("Regeneration time select changed for %s to %s", self._device_id, option)
+            else:
+                await coordinator.async_set_device_value(self._device_id, "setRTH", h)
+                await coordinator.async_set_device_value(self._device_id, "setRTM", m)
+                _LOGGER.debug("Requested setRTH/setRTM for device %s (h=%s m=%s)", self._device_id, h, m)
+                _LOGGER.debug("Regeneration time select changed for %s to %02d:%02d", self._device_id, h, m)
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to set regeneration time for device %s", self._device_id)
 

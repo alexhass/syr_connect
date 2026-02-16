@@ -67,7 +67,7 @@
       "getrpd": {
         "name": "Regeneration interval"
       },
-      "getrtime": {
+      "getrtm": {
         "name": "Regeneration time"
       },
       "getsv1": {
@@ -380,7 +380,11 @@
         "name": "Regeneration time (hour)"
       },
       "getrti": {
-        "name": "Regeneration time"
+        "name": "Total duration of regeneration cycle"
+      },
+      "getrtm": {
+        "name": "Regeneration time",
+        "old_name": "Minutes of regeneration"
       },
       "getrtm": {
         "name": "Regeneration time (minute)"
