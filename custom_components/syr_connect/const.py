@@ -393,16 +393,17 @@ _SYR_CONNECT_SENSOR_ICON = {
     # - NeoSoft 2500 / 5000
     "getEGW": "mdi:router-network",
     "getEIP": "mdi:ip-network",
+    "getLTV": "mdi:faucet",             # Last dispensed volume
+    "getRMO": "mdi:autorenew",
+    "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
+    "getSRV": "mdi:calendar-clock",     # Last service date
+    "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
+    "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
     "getWGW": "mdi:router-wireless",
     "getWIP": "mdi:ip-network",
     "getWFC": "mdi:wifi",
     "getWFS": "mdi:wifi-check",
     "getWFR": "mdi:wifi-strength-1",
-    "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
-    "getSRV": "mdi:calendar-clock",     # Last service date
-    "getLTV": "mdi:faucet",             # Last dispensed volume
-    "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
-    "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
 }
 
 # Mapping for getALM sensor values
@@ -668,6 +669,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
     "getVLV": 0,    # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
     "getVOL": 0,    # Total water volume: show as whole number by default
+    "getWFR": 0,    # Wi-Fi signal strength: show as whole number by default
     "getWFS": 0,    # Wi-Fi connection status
     "getWHU": 0,    # Water hardness unit: show as whole number by default (mapped to unit names)
 }
