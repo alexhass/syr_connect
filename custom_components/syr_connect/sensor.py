@@ -137,9 +137,12 @@ async def async_setup_entry(
                     elif isinstance(value, str) and value == "0":
                         continue
             elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY:
+                # Treat None or empty strings (including whitespace-only) as "empty"
+                if value is None:
+                    continue
                 if isinstance(value, int | float) and value == 0:
                     continue
-                elif isinstance(value, str) and value == "0":
+                elif isinstance(value, str) and (value.strip() == "" or value == "0"):
                     continue
 
             # Create sensor if value is valid

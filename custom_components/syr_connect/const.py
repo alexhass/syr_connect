@@ -270,9 +270,13 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
 
+    # LEXplus10SL, Safe-T+ sensors.
+    #'getNPS',  # Value "" means sensor does not exists.
+
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
     'getLAR',  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show
+    'getVPS2', # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
 }
 
 # Sensor icons (Material Design Icons) - internal
