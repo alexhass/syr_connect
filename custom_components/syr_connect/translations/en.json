@@ -384,10 +384,7 @@
       },
       "getrtm": {
         "name": "Regeneration time",
-        "old_name": "Minutes of regeneration"
-      },
-      "getrtm": {
-        "name": "Regeneration time (minute)"
+        "old_name": "Regeneration time (minute)"
       },
       "getscr": {
         "name": "Service regeneration cycles"

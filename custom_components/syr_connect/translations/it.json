@@ -380,14 +380,11 @@
         "name": "Ora rigenerazione (ore)"
       },
       "getrti": {
-        "name": "Gesamtdauer des Regenerationszyklus"
+        "name": "Durata totale del ciclo di rigenerazione"
       },
       "getrtm": {
-        "name": "Regenerationsuhrzeit",
-        "old_name": "Minuten der Regeneration"
-      },
-      "getrtm": {
-        "name": "Ora rigenerazione (minuti)"
+        "name": "Ora di rigenerazione",
+        "old_name": "Ora rigenerazione (minuti)"
       },
       "getscr": {
         "name": "Cicli di rigenerazione di servizio"
