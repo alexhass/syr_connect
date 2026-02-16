@@ -130,6 +130,12 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
     'getPRN',  # Duplicate of getPRF
     'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',
+
+    # Sensors exits in devices:
+    # - NeoSoft 2500 / 5000
+
+    'getVPS1',  # No turbine pulses on control head 1 since (timestamp) - technical metric for flow measurement, not useful for most users
+    'getVPS2',  # No turbine pulses on control head 2 since (timestamp) - technical metric for flow measurement, not useful for most users
 }
 
 # Sensor device classes (for Home Assistant) - internal
@@ -675,6 +681,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
     "getLAN": 0,    # Language of the UI: show as whole number by default (0=English, 1=German, 3=Spanish)
     "getLE": 0,     # Leakage protection - Present level: show as whole number by default
+    "getLTV": 0,    # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
