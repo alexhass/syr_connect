@@ -393,6 +393,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     # - NeoSoft 2500 / 5000
     "getEGW": "mdi:router-network",
     "getEIP": "mdi:ip-network",
+    "getMAC1": "mdi:ethernet",          # Wi-Fi MAC address
+    "getMAC2": "mdi:ethernet",          # LAN MAC address
     "getLTV": "mdi:faucet",             # Last dispensed volume
     "getRMO": "mdi:autorenew",
     "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
