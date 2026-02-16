@@ -19,7 +19,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY,
     _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_GETLE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP,
@@ -102,7 +102,7 @@ async def async_setup_entry(
             # Special logic for getCS1/2/3:
             # These sensors represent the remaining resin capacity in percent (getCSx),
             # while getSVx represents the salt amount in kg for the same compartment.
-            # By default, sensors in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO are hidden if their value is 0.
+            # By default, sensors in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY are hidden if their value is 0.
             # However, for getCS1/2/3, we want to show them if the corresponding getSV1/2/3 is not zero,
             # even if getCSx itself is zero. This ensures that users see the resin capacity as long as
             # there is salt present, which is relevant for maintenance and monitoring.
@@ -136,7 +136,7 @@ async def async_setup_entry(
                         continue
                     elif isinstance(value, str) and value == "0":
                         continue
-            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_ZERO:
+            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY:
                 if isinstance(value, int | float) and value == 0:
                     continue
                 elif isinstance(value, str) and value == "0":
