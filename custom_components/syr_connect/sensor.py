@@ -477,11 +477,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # Case A: combined time string in getRTM, no getRTH provided
                     if raw_rtm is not None and (raw_rth is None or raw_rth == ""):
                         if isinstance(raw_rtm, str):
-                            m = re.match(r'\s*(\d{1,2}):(\d{2})\s*$', raw_rtm)
-                            if m:
+                            m_match = re.match(r'\s*(\d{1,2}):(\d{2})\s*$', raw_rtm)
+                            if m_match:
                                 try:
-                                    h = int(m.group(1))
-                                    mm = int(m.group(2))
+                                    h = int(m_match.group(1))
+                                    mm = int(m_match.group(2))
                                     # Strict validation: hours 0-23, minutes 0-59
                                     if 0 <= h <= 23 and 0 <= mm <= 59:
                                         return f"{h:02d}:{mm:02d}"

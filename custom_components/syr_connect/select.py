@@ -159,12 +159,12 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             # If hour missing, `getRTM` may contain a combined HH:MM string
             if rth is None or rth == "":
                 if isinstance(rtm, str):
-                    m = re.match(r"\s*(\d{1,2}):(\d{2})\s*$", rtm)
-                    if not m:
+                    m_match = re.match(r"\s*(\d{1,2}):(\d{2})\s*$", rtm)
+                    if not m_match:
                         return None
                     try:
-                        h = int(m.group(1))
-                        mm = int(m.group(2))
+                        h = int(m_match.group(1))
+                        mm = int(m_match.group(2))
                         if 0 <= h <= 23 and 0 <= mm <= 59:
                             return f"{h:02d}:{mm:02d}"
                     except Exception:
