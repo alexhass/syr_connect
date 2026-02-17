@@ -120,6 +120,16 @@ def test_get_current_mac_getIPA_mac_empty_fallback() -> None:
     assert get_current_mac(status) == "11:22:33:44:55:66"
 
 
+def test_get_current_mac_zero_ip_treated_as_empty() -> None:
+    """An IP value of '0.0.0.0' should be treated as empty and fall back."""
+    status = {
+        "getIPA": "0.0.0.0",
+        "getMAC": "   ",  # preferred MAC empty
+        "getMAC1": "11:22:33:44:55:66",
+    }
+    assert get_current_mac(status) == "11:22:33:44:55:66"
+
+
 def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
     """Test selection when getWIP/getEIP are present."""
     status_wip = {"getWIP": "10.0.0.1", "getMAC1": "11:11:11:11:11:11"}
