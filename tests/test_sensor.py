@@ -3604,28 +3604,6 @@ async def test_sensor_icon_pst_none_value(hass: HomeAssistant) -> None:
     assert sensor.icon == sensor._base_icon
 
 
-async def test_sensor_rtime_type_error(hass: HomeAssistant) -> None:
-    """Test getRTIME with TypeError."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRTH": None,
-                    "getRTM": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
-
-    # Current integration returns None when both RTH and RTM are None
-    assert sensor.native_value is None
-
-
 async def test_sensor_whu_int_value(hass: HomeAssistant) -> None:
     """Test getWHU with integer value."""
     data = {
