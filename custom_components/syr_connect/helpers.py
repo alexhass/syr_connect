@@ -98,6 +98,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
         if isinstance(val, str):
             s = val.strip()
             # Treat empty string and the unspecified address 0.0.0.0 as empty
+            # Syr "Trio DFR/LS" sets IP as "0.0.0.0", where all others do not.
             if s == "" or s == "0.0.0.0":
                 return False
             return True
