@@ -447,6 +447,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # Support both formats:
                     # - Safe-T+ format ("6,11 4,38 3,90")
                     # - Trio DFR/LS format ("363" -> 3.63 V).
+                    # Narrow the type for mypy: accept only str/int/float.
+                    if value is None:
+                        return None
+                    if not isinstance(value, (str, int, float)):
+                        return None
                     parsed = get_sensor_bat_value(value)
                     return parsed
 
