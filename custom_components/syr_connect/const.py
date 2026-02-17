@@ -308,7 +308,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     #"getLWT",
     "getSMF",
     #"getPSD",
-    #"getPSE",
+    "getPSE",
     "getPRN",
     "getRCE",
     #"getRTC",
@@ -330,6 +330,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getVTO",
     #"getWAD",
     #"getWAH",
+    "getWFL",
     "getWNS",
     #"getWTI",
     #"getNET",
@@ -506,6 +507,13 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getWFC": "mdi:wifi",
     "getWFS": "mdi:wifi-check",
     "getWFR": "mdi:wifi-strength-1",
+
+    # Sensors exits in devices:
+    # - Trio DFR/LS
+
+    "getDSV": "mdi:water-check",
+    "getDTT": "mdi:clock-outline",
+    "getPRF": "mdi:account",
 }
 
 # Mapping for getALM sensor values
