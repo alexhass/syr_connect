@@ -77,6 +77,20 @@ def build_device_info(
     )
 
 
+def build_entity_id(platform: str, device_id: str, key: str) -> str:
+    """Build consistent entity ID.
+
+    Args:
+        platform: Platform name (sensor, binary_sensor, button)
+        device_id: Device ID (serial number)
+        key: Entity key (sensor_key, command, etc.)
+
+    Returns:
+        Formatted entity ID
+    """
+    return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
+
+
 def get_current_mac(status: dict[str, Any]) -> str | None:
     """Return the current MAC address following priority rules.
 
@@ -129,48 +143,6 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
     return None
 
 
-def build_entity_id(platform: str, device_id: str, key: str) -> str:
-    """Build consistent entity ID.
-
-    Args:
-        platform: Platform name (sensor, binary_sensor, button)
-        device_id: Device ID (serial number)
-        key: Entity key (sensor_key, command, etc.)
-
-    Returns:
-        Formatted entity ID
-    """
-    return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
-
-
-def get_sensor_vol_value(value: str | int | float) -> str | int | float:
-    """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
-
-    Some devices send values with prefixes that include the parameter name
-    and unit in brackets, e.g., 'Vol[L]6530', 'Temp[C]25', etc.
-    This function extracts the numeric value from such strings.
-
-    Args:
-        value: The raw sensor value
-
-    Returns:
-        Cleaned value with prefix removed if applicable
-    """
-    # Only process string values
-    if not isinstance(value, str):
-        return value
-
-    # Pattern to match values like 'Vol[L]6530', 'Temp[C]25', etc.
-    # Format: word characters, optional brackets with content, then the actual value
-    match = re.match(r'^[A-Za-z]+\[[^\]]+\](.+)$', value)
-    if match:
-        cleaned = match.group(1).strip()
-        _LOGGER.debug("Cleaned sensor value from '%s' to '%s'", value, cleaned)
-        return cleaned
-
-    return value
-
-
 def get_sensor_avo_value(value: str | int | float) -> float | None:
     """Extract numeric flow value from strings like '1655mL' -> 1.655 (L).
 
@@ -217,3 +189,31 @@ def get_sensor_avo_value(value: str | int | float) -> float | None:
             return None
 
     return None
+
+
+def get_sensor_vol_value(value: str | int | float) -> str | int | float:
+    """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
+
+    Some devices send values with prefixes that include the parameter name
+    and unit in brackets, e.g., 'Vol[L]6530', 'Temp[C]25', etc.
+    This function extracts the numeric value from such strings.
+
+    Args:
+        value: The raw sensor value
+
+    Returns:
+        Cleaned value with prefix removed if applicable
+    """
+    # Only process string values
+    if not isinstance(value, str):
+        return value
+
+    # Pattern to match values like 'Vol[L]6530', 'Temp[C]25', etc.
+    # Format: word characters, optional brackets with content, then the actual value
+    match = re.match(r'^[A-Za-z]+\[[^\]]+\](.+)$', value)
+    if match:
+        cleaned = match.group(1).strip()
+        _LOGGER.debug("Cleaned sensor value from '%s' to '%s'", value, cleaned)
+        return cleaned
+
+    return value
