@@ -578,6 +578,48 @@ async def test_regeneration_select_available_device_not_found(hass: HomeAssistan
     assert select.available is True
 
 
+async def test_regeneration_select_combined_current_option(hass: HomeAssistant) -> None:
+    """Test current_option when device reports combined getRTM string and no getRTH."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    # Combined representation: no getRTH, getRTM holds HH:MM
+                    "getRTM": "07:15",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option == "07:15"
+
+
+async def test_regeneration_select_combined_invalid_current_option(hass: HomeAssistant) -> None:
+    """Invalid combined getRTM string should result in None for current_option."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    # Invalid format
+                    "getRTM": "25:61",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option is None
+
+
 async def test_numeric_select_current_option_no_matching_option(hass: HomeAssistant) -> None:
     """Test numeric select current option when value doesn't match options."""
     data = {
