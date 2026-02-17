@@ -706,6 +706,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDSV": 0,    # Microleakage test: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
     "getFLO": 0,    # Flow rate: show as whole number by default
