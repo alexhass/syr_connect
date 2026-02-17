@@ -302,6 +302,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # as a pillar is exhausted. Softened water is available at all times.
     #'getRPD',   # Regeneration interval (days) - value "0" means no interval configured.
     #'getRTM',   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
+
+    # Sensors exits in devices only:
+    # - Trio DFR/LS
+    "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
 }
 
 # Sensor icons (Material Design Icons) - internal
