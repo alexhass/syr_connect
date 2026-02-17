@@ -380,7 +380,7 @@
         "name": "Durée totale du cycle de régénération"
       },
       "getrtm": {
-        "name": "Temps de régénération",
+        "name": "Temps de régénération"
       },
       "getscr": {
         "name": "Cycles de régénération de service"

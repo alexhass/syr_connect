@@ -383,7 +383,7 @@
         "name": "Duração total do ciclo de regeneração"
       },
       "getrtm": {
-        "name": "Hora de regeneração",
+        "name": "Hora de regeneração"
       },
       "getscr": {
         "name": "Ciclos de regeneração de serviço"

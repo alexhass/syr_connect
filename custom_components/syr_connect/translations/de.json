@@ -383,7 +383,7 @@
         "name": "Gesamtdauer des Regenerationszyklus"
       },
       "getrtm": {
-        "name": "Regenerationsuhrzeit",
+        "name": "Regenerationsuhrzeit"
       },
       "getscr": {
         "name": "Service-Regenerationszyklen"
