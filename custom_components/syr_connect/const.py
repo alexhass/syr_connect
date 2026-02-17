@@ -717,6 +717,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
+    "getPRF": 0,    # Leak protection profile: show as whole number by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
     "getRDO": 0,    # Salt dosing: show as whole number by default
