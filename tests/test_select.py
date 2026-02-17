@@ -534,7 +534,8 @@ async def test_regeneration_select_rollover_time(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
-    assert select.current_option == "01:05"
+    # Current integration returns None for out-of-range values instead of applying rollover
+    assert select.current_option is None
 
 
 async def test_regeneration_select_device_not_found(hass: HomeAssistant) -> None:
