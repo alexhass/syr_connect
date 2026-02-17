@@ -4422,6 +4422,146 @@ async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
     assert vlv_sensor.icon == vlv_sensor._base_icon
 
 
+async def test_getavo_parsing(hass: HomeAssistant) -> None:
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getAVO": "1655mL"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+
+    # 1655 mL -> 1.655 L
+    assert abs(sensor.native_value - 1.655) < 1e-6
+
+
+async def test_getvol_cleaning_and_conversion(hass: HomeAssistant) -> None:
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getVOL": "Vol[L]6530"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+
+    # Cleaned value should be numeric 6530 (int)
+    assert sensor.native_value == 6530
+
+
+async def test_getbar_parsing_and_precision(hass: HomeAssistant) -> None:
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAR": "4077 mbar"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+
+    # 4077 mbar -> 4.077 bar rounded to precision 1 -> 4.1
+    assert sensor.native_value == 4.1
+
+
+async def test_getbat_parsing_and_precision(hass: HomeAssistant) -> None:
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAT": "6,12 4,38 3,90"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    # First value 6,12 -> 6.12 with precision 2
+    assert sensor.native_value == 6.12
+
+
+async def test_getul_numeric_conversion(hass: HomeAssistant) -> None:
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getUL": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+
+    # 5 -> multiplied by 10 -> 50 (int)
+    assert sensor.native_value == 50
+
+
+async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
+    # Combined valid string
+    data_ok = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getRTM": "7:05"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data_ok)
+    sensor_ok = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    assert sensor_ok.native_value == "07:05"
+
+    # Combined invalid string (hour out of range)
+    data_bad = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getRTM": "25:00"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data_bad)
+    sensor_bad = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    assert sensor_bad.native_value == "00:00"
+
+
+async def test_getle_mapping(hass: HomeAssistant) -> None:
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getLE": "2"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
+
+    # getLE value '2' maps to '100' per constants
+    assert sensor.native_value == "100"
+
+
 async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
     """Test getVLV sensor icon with unknown value returns base icon."""
     data = {
