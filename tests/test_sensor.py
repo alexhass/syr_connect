@@ -3622,8 +3622,8 @@ async def test_sensor_rtime_type_error(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
-    # Should return 00:00
-    assert sensor.native_value == "00:00"
+    # Current integration returns None when both RTH and RTM are None
+    assert sensor.native_value is None
 
 
 async def test_sensor_whu_int_value(hass: HomeAssistant) -> None:
