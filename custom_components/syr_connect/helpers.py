@@ -232,7 +232,7 @@ def get_sensor_bat_value(value: str | int | float) -> float | None:
         return None
 
     # If already numeric, assume it's in 1/100 V (int) and divide
-    if isinstance(value, (int, float)):
+    if isinstance(value, (int | float)):
         try:
             return round(float(value) / 100.0, 2)
         except (TypeError, ValueError):
