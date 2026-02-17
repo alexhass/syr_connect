@@ -381,7 +381,6 @@
       },
       "getrtm": {
         "name": "Temps de régénération",
-        "old_name": "Heure de régénération (Minute)"
       },
       "getscr": {
         "name": "Cycles de régénération de service"
