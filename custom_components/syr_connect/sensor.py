@@ -578,18 +578,18 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # Try known patterns and map to internal translation keys.
                     # Keep placeholder values local for debugging only (frontend
                     # states do not support placeholders).
-                    m = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
-                    if m:
-                        resistance_value = str(m.group(1) or "")
+                    m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
+                    if m_match:
+                        resistance_value = str(m_match.group(1) or "")
                         normalized = "Płukanie regenerantem"
                         mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
                         self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
                         return mapped
 
-                    m2 = re.match(r"Płukanie szybkie\s*(\d+)", raw)
-                    if m2:
-                        rinse_round = str(m2.group(1) or "")
+                    m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
+                    if m2_match:
+                        rinse_round = str(m2_match.group(1) or "")
                         normalized = "Płukanie rapide"
                         mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, "status_fast_rinse"))
                         self._attr_translation_key = mapped
