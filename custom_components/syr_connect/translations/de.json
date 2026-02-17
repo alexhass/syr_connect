@@ -318,6 +318,16 @@
           "8": "Profil 8"
         }
       },
+      "getprs": {
+        "name": "Eingangsdruck"
+      },
+      "getpst": {
+        "name": "Drucksensor",
+        "state": {
+          "1": "Nicht verfügbar",
+          "2": "Verfügbar"
+        }
+      },
       "getpt1": {
         "name": "Leckageschutzzeit 1"
       },
@@ -341,16 +351,6 @@
       },
       "getpt8": {
         "name": "Leckageschutzzeit 8"
-      },
-      "getprs": {
-        "name": "Eingangsdruck"
-      },
-      "getpst": {
-        "name": "Drucksensor",
-        "state": {
-          "1": "Nicht verfügbar",
-          "2": "Verfügbar"
-        }
       },
       "getpv1": {
         "name": "Volumenleckageschwellwert 1"

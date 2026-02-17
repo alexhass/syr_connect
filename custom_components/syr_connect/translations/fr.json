@@ -108,8 +108,8 @@
       "getbuz": {
         "name": "Buzzer en cas d'alarme",
         "state": {
-          "true": "Activé",
-          "false": "Désactivé"
+          "false": "Désactivé",
+          "true": "Activé"
         }
       },
       "getcde": {
@@ -125,6 +125,9 @@
           "lexplus10s": "LEX Plus 10 S Connect",
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
+      },
+      "getcnd": {
+        "name": "Conductivité"
       },
       "getcof": {
         "name": "Consommation d'eau totale"
@@ -149,6 +152,18 @@
       },
       "getdgw": {
         "name": "Passerelle"
+      },
+      "getdsv": {
+        "name": "Test de microfuites",
+        "state": {
+          "0": "Inactif",
+          "1": "Actif",
+          "2": "Annulé - chute de pression",
+          "3": "Ignoré"
+        }
+      },
+      "getdtt": {
+        "name": "Temps du test de microfuites"
       },
       "getdwf": {
         "name": "Consommation d'eau quotidienne prévue"
@@ -290,6 +305,19 @@
       "getpn8": {
         "name": "Nom du profil 8"
       },
+      "getprf": {
+        "name": "Profil de protection contre les fuites actif",
+        "state": {
+          "1": "Présent",
+          "2": "Absent",
+          "3": "Profil 3",
+          "4": "Profil 4",
+          "5": "Profil 5",
+          "6": "Profil 6",
+          "7": "Profil 7",
+          "8": "Profil 8"
+        }
+      },
       "getprs": {
         "name": "Pression"
       },
@@ -299,6 +327,30 @@
           "1": "Indisponible",
           "2": "Disponible"
         }
+      },
+      "getpt1": {
+        "name": "Temps de protection fuite 1"
+      },
+      "getpt2": {
+        "name": "Temps de protection fuite 2"
+      },
+      "getpt3": {
+        "name": "Temps de protection fuite 3"
+      },
+      "getpt4": {
+        "name": "Temps de protection fuite 4"
+      },
+      "getpt5": {
+        "name": "Temps de protection fuite 5"
+      },
+      "getpt6": {
+        "name": "Temps de protection fuite 6"
+      },
+      "getpt7": {
+        "name": "Temps de protection fuite 7"
+      },
+      "getpt8": {
+        "name": "Temps de protection fuite 8"
       },
       "getpv1": {
         "name": "Seuil de fuite de volume 1"
@@ -392,6 +444,21 @@
           "1": "Ne pas démarrer"
         }
       },
+      "getsle": {
+        "name": "Temps restant en phase d'apprentissage"
+      },
+      "getslf": {
+        "name": "Débit en phase d'apprentissage"
+      },
+      "getslp": {
+        "name": "Durée de la phase d'apprentissage"
+      },
+      "getslt": {
+        "name": "Temps en phase d'apprentissage"
+      },
+      "getslv": {
+        "name": "Volume en phase d'apprentissage"
+      },
       "getsrh": {
         "name": "Prochaine maintenance semestrielle"
       },
@@ -481,6 +548,9 @@
       },
       "getwfc": {
         "name": "SSID WLAN"
+      },
+      "getwfl": {
+        "name": "Réseaux disponibles"
       },
       "getwfr": {
         "name": "Puissance du signal WLAN"
