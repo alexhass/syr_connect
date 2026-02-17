@@ -53,6 +53,7 @@ This integration works with SYR water softeners that appear in the SYR Connect c
 
 Tested and reported working:
 
+- NeoSoft 2500 Connect
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
@@ -60,7 +61,6 @@ Tested and reported working:
 
 Not tested, but should work (please report):
 
-- NeoSoft 2500 Connect
 - NeoSoft 5000 Connect
 - SYR LEX 1500 Connect Single
 - SYR LEX 1500 Connect Duplex
