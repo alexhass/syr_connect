@@ -58,6 +58,7 @@ Getestet und gemeldet funktionierend:
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 - SYR Safe-T+
+- SYR TRIO DFR/LS Connect 2425
 
 Nicht getestet, sollte aber funktionieren (bitte melden):
 
@@ -71,7 +72,6 @@ Nicht getestet, sollte aber funktionieren (bitte melden):
 
 Auch Leckage-Erkennungsgeräte sind interessant, können aber zusätzlichen Aufwand erfordern:
 
-- TRIO DFR/LS Connect 2425
 - SafeTech Connect
 - SafeTech plus Connect
 - SafeFloor Connect
