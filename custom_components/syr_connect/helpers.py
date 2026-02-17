@@ -138,7 +138,7 @@ def build_entity_id(platform: str, device_id: str, key: str) -> str:
     return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
 
 
-def clean_sensor_value(value: str | int | float) -> str | int | float:
+def get_sensor_vol_value(value: str | int | float) -> str | int | float:
     """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
 
     Some devices send values with prefixes that include the parameter name
@@ -166,7 +166,7 @@ def clean_sensor_value(value: str | int | float) -> str | int | float:
     return value
 
 
-def extract_flow_value(value: str | int | float) -> float | None:
+def get_sensor_avo_value(value: str | int | float) -> float | None:
     """Extract numeric flow value from strings like '1655mL' -> 1.655 (L).
 
     The getAVO sensor returns flow values in the format '1655mL', '0mL', etc.

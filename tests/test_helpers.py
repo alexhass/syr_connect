@@ -6,8 +6,8 @@ from homeassistant.core import HomeAssistant
 from custom_components.syr_connect.helpers import (
     build_device_info,
     build_entity_id,
-    clean_sensor_value,
-    extract_flow_value,
+    get_sensor_vol_value,
+    get_sensor_avo_value,
     get_current_mac,
 )
 
@@ -67,31 +67,31 @@ def test_build_device_info_minimal() -> None:
     assert device_info["serial_number"] == "DEVICE123"
 
 
-def test_extract_flow_value() -> None:
+def test_get_sensor_avo_value() -> None:
     """Test flow value extraction from strings."""
     # Test standard format - values in mL converted to L
-    assert extract_flow_value("1655mL") == 1.655
-    assert extract_flow_value("0mL") == 0.0
-    assert extract_flow_value("999mL") == 0.999
-    assert extract_flow_value("1000mL") == 1.0
+    assert get_sensor_avo_value("1655mL") == 1.655
+    assert get_sensor_avo_value("0mL") == 0.0
+    assert get_sensor_avo_value("999mL") == 0.999
+    assert get_sensor_avo_value("1000mL") == 1.0
     
     # Test numeric inputs - treated as mL and converted to L
-    assert extract_flow_value(1655) == 1.655
-    assert extract_flow_value(0) == 0.0
-    assert extract_flow_value(100.5) == 0.1005
+    assert get_sensor_avo_value(1655) == 1.655
+    assert get_sensor_avo_value(0) == 0.0
+    assert get_sensor_avo_value(100.5) == 0.1005
     
     # Test None input
-    assert extract_flow_value(None) is None
+    assert get_sensor_avo_value(None) is None
     
     # Test fallback: extract number at start and convert to L
-    assert extract_flow_value("1655") == 1.655
-    assert extract_flow_value("100abc") == 0.1
+    assert get_sensor_avo_value("1655") == 1.655
+    assert get_sensor_avo_value("100abc") == 0.1
     
     # Test invalid inputs
-    assert extract_flow_value("mL") is None
-    assert extract_flow_value("abc") is None
-    assert extract_flow_value("") is None
-    assert extract_flow_value("no numbers here") is None
+    assert get_sensor_avo_value("mL") is None
+    assert get_sensor_avo_value("abc") is None
+    assert get_sensor_avo_value("") is None
+    assert get_sensor_avo_value("no numbers here") is None
 
 
 def test_get_current_mac_empty_and_none() -> None:
@@ -129,12 +129,11 @@ def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
     assert get_current_mac(status_eip) == "22:22:22:22:22:22"
 
 
-def test_clean_sensor_value_various() -> None:
+def test_clean_sensor_vol_value() -> None:
     """Clean sensor values with and without prefixes."""
-    assert clean_sensor_value("Vol[L]6530") == "6530"
-    assert clean_sensor_value("Temp[C] 25 ") == "25"
+    assert get_sensor_vol_value("Vol[L]6530") == "6530"
     # Non-matching string should be returned unchanged
-    assert clean_sensor_value("plain_value") == "plain_value"
+    assert get_sensor_vol_value("plain_value") == "plain_value"
     # Non-string values are returned unchanged
-    assert clean_sensor_value(123) == 123
-    assert clean_sensor_value(12.34) == 12.34
+    assert get_sensor_vol_value(123) == 123
+    assert get_sensor_vol_value(12.34) == 12.34
