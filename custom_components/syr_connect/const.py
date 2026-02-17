@@ -246,7 +246,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getVRE1',      # Value: "", unclear meaning
     'getVRE2',      # Value: "", unclear meaning
     #'getYHF',      # Value: "", unclear meaning
-    'getHWV',       # Value: e.g. "V1", unclear meaning
+    'getHWV',       # Value: e.g. "V1", "0000000001", unclear meaning
     'getAPT',       # Value: e.g. "600", unclear meaning
     'getCNF',       # Value: "", unclear meaning
     'getCSD',       # Value: "", unclear meaning
@@ -267,6 +267,28 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getWAH',       # Value: "", unclear meaning
     'getNET',       # Value: "", unclear meaning
     'getTSD',       # Value: "", unclear meaning
+
+    # Sensors exits in devices:
+    # - Trio DFR/LS
+
+    "getAFW",
+    #"getALD",
+    #"getAPT",
+    "getBPT",
+    #"getBSA",
+    "getCFW",
+    #"getCNF",
+    #"getCNL",
+    #"getCSD",
+    "getCSE",
+    "getDTR",
+    #"getFSL",
+    #"getHWV",
+    "getPRN",
+    "getSFV",
+    "getCURL",
+    #"getDBT",
+    #"getDCM",
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
@@ -658,7 +680,14 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - NeoSoft 5000
 
-    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2
+    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2^
+
+    # Sensors exits in devices:
+    # - Trio DFR/LS
+
+    "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Self-learning phase volume (l/h)
+    "getSLT": UnitOfTime.SECONDS,                       # Time in self-learning phase (seconds)
+    "getSLV": UnitOfVolume.LITERS,                      # Self-learning phase volume (l)
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -699,6 +728,9 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
     "getRG3": 0,    # Regeneration 3: show as whole number by default
+    "getSLF": 0,    # Self-learning phase volume (l/h)
+    "getSLT": 0,    # Time in self-learning phase (seconds)
+    "getSLV": 0,    # Self-learning phase volume (l)
     "getSS1": 0,    # Salt container supply 1: show as whole number by default
     "getSS2": 0,    # Salt container supply 2: show as whole number by default
     "getSS3": 0,    # Salt container supply 3: show as whole number by default

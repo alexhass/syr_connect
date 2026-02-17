@@ -150,6 +150,15 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdsv": {
+        "name": "Mikroleckage-Test",
+        "state": {
+          "0": "Inaktiv",
+          "1": "Aktiv",
+          "2": "Abgebrochen - Druckabfall",
+          "3": "Übersprungen"
+        }
+      },
       "getdwf": {
         "name": "Erwarteter täglicher Wasserverbrauch"
       },
@@ -394,6 +403,15 @@
           "0": "Sofort starten",
           "1": "Nicht starten"
         }
+      },
+      "getslf": {
+        "name": "Durchfluss Selbstlernphase"
+      },
+      "getslt": {
+        "name": "Zeit in Selbstlernphase"
+      },
+      "getslv": {
+        "name": "Volumen in Selbstlernphase"
       },
       "getsrh": {
         "name": "Nächste halbjährliche Wartung"
