@@ -15,9 +15,9 @@ This custom integration enables control of SYR Connect devices through Home Assi
 
 Examples of device interfaces:
 
-![LEXplus10S screenshot](docs/assets/screenshots/lexplus10s-en.png)
+![LEXplus10S screenshot](docs/assets/screenshots/en/lexplus10s.png)
 
-![Safe-T+ screenshot](docs/assets/screenshots/safe-t-en.png)
+![Safe-T+ screenshot](docs/assets/screenshots/en/safetplus.png)
 
 ## Installation
 
