@@ -6,7 +6,9 @@ from homeassistant.core import HomeAssistant
 from custom_components.syr_connect.helpers import (
     build_device_info,
     build_entity_id,
+    clean_sensor_value,
     extract_flow_value,
+    get_current_mac,
 )
 
 
@@ -90,3 +92,49 @@ def test_extract_flow_value() -> None:
     assert extract_flow_value("abc") is None
     assert extract_flow_value("") is None
     assert extract_flow_value("no numbers here") is None
+
+
+def test_get_current_mac_empty_and_none() -> None:
+    """Empty or None status returns None."""
+    assert get_current_mac({}) is None
+
+
+def test_get_current_mac_priority_getIPA() -> None:
+    """If getIPA present, prefer getMAC."""
+    status = {
+        "getIPA": "1.2.3.4",
+        "getMAC": "AA:BB:CC:DD:EE:FF",
+        "getMAC1": "11:22:33:44:55:66",
+        "getMAC2": "77:88:99:AA:BB:CC",
+    }
+    assert get_current_mac(status) == "AA:BB:CC:DD:EE:FF"
+
+
+def test_get_current_mac_getIPA_mac_empty_fallback() -> None:
+    """If preferred MAC is empty, fall back to first available MAC."""
+    status = {
+        "getIPA": "1.2.3.4",
+        "getMAC": "   ",  # whitespace should be treated as empty
+        "getMAC1": "11:22:33:44:55:66",
+    }
+    assert get_current_mac(status) == "11:22:33:44:55:66"
+
+
+def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
+    """Test selection when getWIP/getEIP are present."""
+    status_wip = {"getWIP": "10.0.0.1", "getMAC1": "11:11:11:11:11:11"}
+    assert get_current_mac(status_wip) == "11:11:11:11:11:11"
+
+    status_eip = {"getEIP": "10.0.0.2", "getMAC2": "22:22:22:22:22:22"}
+    assert get_current_mac(status_eip) == "22:22:22:22:22:22"
+
+
+def test_clean_sensor_value_various() -> None:
+    """Clean sensor values with and without prefixes."""
+    assert clean_sensor_value("Vol[L]6530") == "6530"
+    assert clean_sensor_value("Temp[C] 25 ") == "25"
+    # Non-matching string should be returned unchanged
+    assert clean_sensor_value("plain_value") == "plain_value"
+    # Non-string values are returned unchanged
+    assert clean_sensor_value(123) == 123
+    assert clean_sensor_value(12.34) == 12.34
