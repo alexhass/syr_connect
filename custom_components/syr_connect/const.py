@@ -5,6 +5,7 @@ from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
     PERCENTAGE,
+    UnitOfConductivity,
     UnitOfElectricPotential,
     UnitOfMass,
     UnitOfPressure,
@@ -274,21 +275,64 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getAFW",
     #"getALD",
     #"getAPT",
+    "getBAP",
+    "getBAR2",
+    "getBFT",
     "getBPT",
     #"getBSA",
+    "getCCK",
     "getCFW",
+    #"getCND",  # Conductivity in µS/cm
+    "getCND2",
     #"getCNF",
     #"getCNL",
     #"getCSD",
     "getCSE",
-    "getDTR",
-    #"getFSL",
-    #"getHWV",
-    "getPRN",
-    "getSFV",
     "getCURL",
     #"getDBT",
     #"getDCM",
+    #"getDMA",
+    #"getDOM",
+    #"getDPL",
+    #"getDRP",
+    #"getDST",
+    #"getDTC",
+    #"getEVL",
+    "getDTR",
+    #"getFSL",
+    #"getHWV",
+    #"getIDS",
+    "getLED",
+    "getLOCK",
+    #"getLNG",
+    #"getLWT",
+    "getSMF",
+    #"getPSD",
+    #"getPSE",
+    "getPRN",
+    "getRCE",
+    #"getRTC",
+    #"getRURL",
+    "getSFV",
+    "getSLP_m",
+    "getSLP_sd",
+    "getSLP_ed",
+    #"getSLO",
+    "getSOF",
+    "getSRO",
+    "getSRV",
+    #"getTN",
+    #"getTMZ",
+    #"getTSD",
+    "getTSE",
+    #"getTURL",
+    "getVER2",
+    "getVTO",
+    #"getWAD",
+    #"getWAH",
+    "getWNS",
+    #"getWTI",
+    #"getNET",
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
@@ -328,6 +372,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # Sensors exits in devices only:
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
+    "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
 }
 
 # Sensor icons (Material Design Icons) - internal
@@ -585,6 +630,7 @@ _SYR_CONNECT_SENSOR_STRING = {
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
     "getCNA",  # Device name
     "getDGW",  # Gateway
+    "getDTT",  # Microleakage test time
     "getFIR",  # Firmware
     "getIPA",  # IP address
     "getMAC",  # MAC address
@@ -685,6 +731,8 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - Trio DFR/LS
 
+    "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Water conductivity (µS/cm)
+    "getSLE": UnitOfTime.SECONDS,                       # Remaining time in seconds of an active self-learning phase
     "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Self-learning phase volume (l/h)
     "getSLT": UnitOfTime.SECONDS,                       # Time in self-learning phase (seconds)
     "getSLV": UnitOfVolume.LITERS,                      # Self-learning phase volume (l)
@@ -701,6 +749,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default
+    "getCND": 0,    # Conductivity in µS/cm: show as whole number by default
     "getCOF": 0,    # Total water consumption counter: show as whole number by default
     "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
     "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
@@ -730,6 +779,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
     "getRG3": 0,    # Regeneration 3: show as whole number by default
+    "getSLE": 0,    # Remaining time in seconds of an active self-learning phase: show as whole number by default
     "getSLF": 0,    # Self-learning phase volume (l/h)
     "getSLT": 0,    # Time in self-learning phase (seconds)
     "getSLV": 0,    # Self-learning phase volume (l)
