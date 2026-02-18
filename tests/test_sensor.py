@@ -164,7 +164,7 @@ async def test_sensor_availability(
 
 
 async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
-    """Test combined regeneration time sensor (getRTIME)."""
+    """Test combined regeneration time sensor (getRTH and getRTM)."""
     data = {
         "devices": [
             {
@@ -449,7 +449,7 @@ async def test_sensor_lar_invalid_timestamp(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_rtime_invalid(hass: HomeAssistant) -> None:
-    """Test getRTIME with invalid values."""
+    """Test getRTH with invalid values."""
     data = {
         "devices": [
             {
@@ -2340,8 +2340,8 @@ async def test_sensor_lar_invalid_value(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_rtime_invalid_hour(hass: HomeAssistant) -> None:
-    """Test getRTIME sensor with invalid hour value."""
+async def test_sensor_rth_invalid_hour(hass: HomeAssistant) -> None:
+    """Test getRTH sensor with invalid hour value."""
     data = {
         "devices": [
             {
@@ -3244,8 +3244,8 @@ async def test_sensor_icon_pst_with_exception(hass: HomeAssistant) -> None:
     assert icon is not None
 
 
-async def test_sensor_rtime_value_error(hass: HomeAssistant) -> None:
-    """Test getRTIME with ValueError on conversion."""
+async def test_sensor_rtm_value_error(hass: HomeAssistant) -> None:
+    """Test getRTM with ValueError on conversion."""
     data = {
         "devices": [
             {
