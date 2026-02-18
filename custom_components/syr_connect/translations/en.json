@@ -108,8 +108,8 @@
       "getbuz": {
         "name": "Buzzer on alarm",
         "state": {
-          "true": "Enabled",
-          "false": "Disabled"
+          "false": "Disabled",
+          "true": "Enabled"
         }
       },
       "getcde": {
@@ -125,6 +125,9 @@
           "lexplus10s": "LEX Plus 10 S Connect",
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
+      },
+      "getcnd": {
+        "name": "Conductivity"
       },
       "getcof": {
         "name": "Total water consumption"
@@ -149,6 +152,18 @@
       },
       "getdgw": {
         "name": "Gateway"
+      },
+      "getdsv": {
+        "name": "Microleakage test",
+        "state": {
+          "0": "Inactive",
+          "1": "Active",
+          "2": "Aborted - pressure drop",
+          "3": "Skipped"
+        }
+      },
+      "getdtt": {
+        "name": "Microleakage test time"
       },
       "getdwf": {
         "name": "Expected daily water consumption"
@@ -291,7 +306,17 @@
         "name": "Leak protection profile name 8"
       },
       "getprf": {
-        "name": "Active leak protection profile"
+        "name": "Active leak protection profile",
+        "state": {
+          "1": "Present",
+          "2": "Absent",
+          "3": "Profile 3",
+          "4": "Profile 4",
+          "5": "Profile 5",
+          "6": "Profile 6",
+          "7": "Profile 7",
+          "8": "Profile 8"
+        }
       },
       "getprs": {
         "name": "Inlet pressure"
@@ -302,6 +327,30 @@
           "1": "Not available",
           "2": "Available"
         }
+      },
+      "getpt1": {
+        "name": "Leak protection time 1"
+      },
+      "getpt2": {
+        "name": "Leak protection time 2"
+      },
+      "getpt3": {
+        "name": "Leak protection time 3"
+      },
+      "getpt4": {
+        "name": "Leak protection time 4"
+      },
+      "getpt5": {
+        "name": "Leak protection time 5"
+      },
+      "getpt6": {
+        "name": "Leak protection time 6"
+      },
+      "getpt7": {
+        "name": "Leak protection time 7"
+      },
+      "getpt8": {
+        "name": "Leak protection time 8"
       },
       "getpv1": {
         "name": "Volume leakage threshold 1"
@@ -395,6 +444,21 @@
           "1": "Do not start"
         }
       },
+      "getsle": {
+        "name": "Remaining time in self-learning phase"
+      },
+      "getslf": {
+        "name": "Flow in self-learning phase"
+      },
+      "getslp": {
+        "name": "Duration of self-learning phase"
+      },
+      "getslt": {
+        "name": "Time in self-learning phase"
+      },
+      "getslv": {
+        "name": "Volume in self-learning phase"
+      },
       "getsrh": {
         "name": "Next semi-annual maintenance"
       },
@@ -484,6 +548,9 @@
       },
       "getwfc": {
         "name": "Wi-Fi SSID"
+      },
+      "getwfl": {
+        "name": "Available networks"
       },
       "getwfr": {
         "name": "Wi-Fi signal strength"

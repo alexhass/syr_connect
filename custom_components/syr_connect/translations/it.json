@@ -126,6 +126,9 @@
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
+      "getcnd": {
+        "name": "Conduttività"
+      },
       "getcof": {
         "name": "Consumo totale d'acqua"
       },
@@ -149,6 +152,18 @@
       },
       "getdgw": {
         "name": "Gateway"
+      },
+      "getdsv": {
+        "name": "Test di microperdite",
+        "state": {
+          "0": "Inattivo",
+          "1": "Attivo",
+          "2": "Annullato - perdita di pressione",
+          "3": "Saltato"
+        }
+      },
+      "getdtt": {
+        "name": "Tempo test microperdite"
       },
       "getdwf": {
         "name": "Consumo giornaliero previsto"
@@ -291,7 +306,17 @@
         "name": "Nome profilo 8"
       },
       "getprf": {
-        "name": "Profilo protezione attivo"
+        "name": "Profilo protezione attivo",
+        "state": {
+          "1": "Presente",
+          "2": "Assente",
+          "3": "Profilo 3",
+          "4": "Profilo 4",
+          "5": "Profilo 5",
+          "6": "Profilo 6",
+          "7": "Profilo 7",
+          "8": "Profilo 8"
+        }
       },
       "getprs": {
         "name": "Pressione"
@@ -302,6 +327,30 @@
           "1": "Non disponibile",
           "2": "Disponibile"
         }
+      },
+      "getpt1": {
+        "name": "Tempo protezione perdite 1"
+      },
+      "getpt2": {
+        "name": "Tempo protezione perdite 2"
+      },
+      "getpt3": {
+        "name": "Tempo protezione perdite 3"
+      },
+      "getpt4": {
+        "name": "Tempo protezione perdite 4"
+      },
+      "getpt5": {
+        "name": "Tempo protezione perdite 5"
+      },
+      "getpt6": {
+        "name": "Tempo protezione perdite 6"
+      },
+      "getpt7": {
+        "name": "Tempo protezione perdite 7"
+      },
+      "getpt8": {
+        "name": "Tempo protezione perdite 8"
       },
       "getpv1": {
         "name": "Soglia perdita volume 1"
@@ -395,6 +444,21 @@
           "1": "Non avviare"
         }
       },
+      "getsle": {
+        "name": "Tempo rimanente in fase di autoapprendimento"
+      },
+      "getslf": {
+        "name": "Flusso in fase di autoapprendimento"
+      },
+      "getslp": {
+        "name": "Durata della fase di autoapprendimento"
+      },
+      "getslt": {
+        "name": "Tempo in fase di autoapprendimento"
+      },
+      "getslv": {
+        "name": "Volume in fase di autoapprendimento"
+      },
       "getsrh": {
         "name": "Prossima manutenzione semestrale"
       },
@@ -484,6 +548,9 @@
       },
       "getwfc": {
         "name": "SSID Wi‑Fi"
+      },
+      "getwfl": {
+        "name": "Reti disponibili"
       },
       "getwfr": {
         "name": "Intensità segnale Wi‑Fi"

@@ -126,6 +126,9 @@
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
       },
+      "getcnd": {
+        "name": "Wasserleitfähigkeit"
+      },
       "getcof": {
         "name": "Wasserverbrauch Gesamt"
       },
@@ -149,6 +152,18 @@
       },
       "getdgw": {
         "name": "Gateway"
+      },
+      "getdsv": {
+        "name": "Mikroleckage-Test",
+        "state": {
+          "0": "Inaktiv",
+          "1": "Aktiv",
+          "2": "Abgebrochen - Druckabfall",
+          "3": "Übersprungen"
+        }
+      },
+      "getdtt": {
+        "name": "Mikroleckage-Test Zeit"
       },
       "getdwf": {
         "name": "Erwarteter täglicher Wasserverbrauch"
@@ -291,7 +306,17 @@
         "name": "Leckagesschutz-Profil Name 8"
       },
       "getprf": {
-        "name": "Aktives Leckagesschutz-Profil"
+        "name": "Aktives Leckagesschutz-Profil",
+        "state": {
+          "1": "Anwesend",
+          "2": "Abwesend",
+          "3": "Profil 3",
+          "4": "Profil 4",
+          "5": "Profil 5",
+          "6": "Profil 6",
+          "7": "Profil 7",
+          "8": "Profil 8"
+        }
       },
       "getprs": {
         "name": "Eingangsdruck"
@@ -303,29 +328,53 @@
           "2": "Verfügbar"
         }
       },
+      "getpt1": {
+        "name": "Leckageschutzzeit 1"
+      },
+      "getpt2": {
+        "name": "Leckageschutzzeit 2"
+      },
+      "getpt3": {
+        "name": "Leckageschutzzeit 3"
+      },
+      "getpt4": {
+        "name": "Leckageschutzzeit 4"
+      },
+      "getpt5": {
+        "name": "Leckageschutzzeit 5"
+      },
+      "getpt6": {
+        "name": "Leckageschutzzeit 6"
+      },
+      "getpt7": {
+        "name": "Leckageschutzzeit 7"
+      },
+      "getpt8": {
+        "name": "Leckageschutzzeit 8"
+      },
       "getpv1": {
-        "name": "Volumenleckage-Schwellwert 1"
+        "name": "Volumenleckageschwellwert 1"
       },
       "getpv2": {
-        "name": "Volumenleckage-Schwellwert 2"
+        "name": "Volumenleckageschwellwert 2"
       },
       "getpv3": {
-        "name": "Volumenleckage-Schwellwert 3"
+        "name": "Volumenleckageschwellwert 3"
       },
       "getpv4": {
-        "name": "Volumenleckage-Schwellwert 4"
+        "name": "Volumenleckageschwellwert 4"
       },
       "getpv5": {
-        "name": "Volumenleckage-Schwellwert 5"
+        "name": "Volumenleckageschwellwert 5"
       },
       "getpv6": {
-        "name": "Volumenleckage-Schwellwert 6"
+        "name": "Volumenleckageschwellwert 6"
       },
       "getpv7": {
-        "name": "Volumenleckage-Schwellwert 7"
+        "name": "Volumenleckageschwellwert 7"
       },
       "getpv8": {
-        "name": "Volumenleckage-Schwellwert 8"
+        "name": "Volumenleckageschwellwert 8"
       },
       "getrdo": {
         "name": "Salzdosierung"
@@ -394,6 +443,21 @@
           "0": "Sofort starten",
           "1": "Nicht starten"
         }
+      },
+      "getsle": {
+        "name": "Restzeit in Selbstlernphase"
+      },
+      "getslf": {
+        "name": "Durchfluss in Selbstlernphase"
+      },
+      "getslp": {
+        "name": "Dauer der Selbstlernphase"
+      },
+      "getslt": {
+        "name": "Zeit in Selbstlernphase"
+      },
+      "getslv": {
+        "name": "Volumen in Selbstlernphase"
       },
       "getsrh": {
         "name": "Nächste halbjährliche Wartung"
@@ -484,6 +548,9 @@
       },
       "getwfc": {
         "name": "WLAN SSID"
+      },
+      "getwfl": {
+        "name": "Verfügbare Netzwerke"
       },
       "getwfr": {
         "name": "WLAN Signalstärke"

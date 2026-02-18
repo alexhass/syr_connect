@@ -37,6 +37,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     get_sensor_avo_value,
+    get_sensor_bat_value,
     get_sensor_vol_value,
 )
 
@@ -443,18 +444,16 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for battery voltage (getBAT) - Safe-T+ device
                 # Format: "6,12 4,38 3,90" where first value is battery voltage in V
                 if self._sensor_key == 'getBAT':
-                    if value is None or value == "":
+                    # Support both formats:
+                    # - Safe-T+ format ("6,11 4,38 3,90")
+                    # - Trio DFR/LS format ("363" -> 3.63 V).
+                    # Narrow the type for mypy: accept only str/int/float.
+                    if value is None:
                         return None
-                    try:
-                        # Extract first value from space-separated string
-                        first_value = str(value).split()[0]
-                        # Replace comma with dot for proper float conversion
-                        voltage = float(first_value.replace(',', '.'))
-                        # Apply configured precision
-                        precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 2)
-                        return round(voltage, precision)
-                    except (ValueError, TypeError, IndexError):
+                    if not isinstance(value, (str | int | float)):
                         return None
+                    parsed = get_sensor_bat_value(value)
+                    return parsed
 
                 # Special handling for leakage protection absent level (getUL)
                 # Format: "5" -> multiply by 10 to get liters (5 -> 50L)

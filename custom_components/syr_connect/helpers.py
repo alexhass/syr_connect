@@ -217,3 +217,48 @@ def get_sensor_vol_value(value: str | int | float) -> str | int | float:
         return cleaned
 
     return value
+
+
+def get_sensor_bat_value(value: str | int | float) -> float | None:
+    """Parse battery voltage supporting two formats.
+
+    Formats supported:
+    - Safe-T+ format: "6,11 4,38 3,90" -> take first token and parse comma as decimal
+    - Trio DFR/LS format: "363" -> value in 1/100 V, so divide by 100 -> 3.63
+
+    Returns the voltage as float rounded to 2 decimals, or None on failure.
+    """
+    if value is None:
+        return None
+
+    # If already numeric, assume it's in 1/100 V (int) and divide
+    if isinstance(value, (int | float)):
+        try:
+            return round(float(value) / 100.0, 2)
+        except (TypeError, ValueError):
+            return None
+
+    if not isinstance(value, str):
+        return None
+
+    s = value.strip()
+    if s == "":
+        return None
+
+    # If space-separated Safe-T+ format, take first token
+    if " " in s:
+        first = s.split()[0]
+        try:
+            return round(float(first.replace(',', '.')), 2)
+        except (ValueError, TypeError):
+            return None
+
+    # Digits-only Trio DFR/LS format "363" -> divide by 100
+    if s.isdigit():
+        try:
+            return round(int(s) / 100.0, 2)
+        except (ValueError, TypeError):
+            return None
+
+    # No other variants supported. Return None.
+    return None

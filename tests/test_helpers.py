@@ -9,6 +9,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_vol_value,
     get_sensor_avo_value,
     get_current_mac,
+    get_sensor_bat_value,
 )
 
 
@@ -137,6 +138,24 @@ def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
 
     status_eip = {"getEIP": "10.0.0.2", "getMAC2": "22:22:22:22:22:22"}
     assert get_current_mac(status_eip) == "22:22:22:22:22:22"
+
+
+def test_get_sensor_bat_value_variants() -> None:
+    """Test parsing of battery voltage in various formats."""
+    # Safe-T+ multi-value -> take first token and parse comma as decimal
+    assert get_sensor_bat_value("6,12 4,38 3,90") == 6.12
+
+    # Digits-only Trio format -> divide by 100
+    assert get_sensor_bat_value("363") == 3.63
+
+    # Numeric input (int/float) assumed in 1/100 V -> divide
+    assert get_sensor_bat_value(363) == 3.63
+    assert get_sensor_bat_value(363.0) == 3.63
+
+    # Empty or invalid -> None
+    assert get_sensor_bat_value("") is None
+    assert get_sensor_bat_value(None) is None
+    assert get_sensor_bat_value("not-a-number") is None
 
 
 def test_clean_sensor_vol_value() -> None:

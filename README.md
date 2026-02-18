@@ -58,6 +58,7 @@ Tested and reported working:
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 - SYR Safe-T+
+- SYR TRIO DFR/LS Connect 2425
 
 Not tested, but should work (please report):
 
@@ -71,7 +72,6 @@ Not tested, but should work (please report):
 
 Leakage detection devices are also of interrest, but may require additonal work:
 
-- TRIO DFR/LS Connect 2425
 - SafeTech Connect
 - SafeTech plus Connect
 - SafeFloor Connect

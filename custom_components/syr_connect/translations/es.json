@@ -108,8 +108,8 @@
       "getbuz": {
         "name": "Zumbador en alarma",
         "state": {
-          "true": "Activado",
-          "false": "Desactivado"
+          "false": "Desactivado",
+          "true": "Activado"
         }
       },
       "getcde": {
@@ -125,6 +125,9 @@
           "lexplus10s": "LEX Plus 10 S Connect",
           "lexplus10sl": "LEX Plus 10 SL Connect"
         }
+      },
+      "getcnd": {
+        "name": "Conductividad"
       },
       "getcof": {
         "name": "Consumo total de agua"
@@ -149,6 +152,18 @@
       },
       "getdgw": {
         "name": "Puerta de enlace"
+      },
+      "getdsv": {
+        "name": "Prueba de microfugas",
+        "state": {
+          "0": "Inactivo",
+          "1": "Activo",
+          "2": "Cancelado - pérdida de presión",
+          "3": "Omitido"
+        }
+      },
+      "getdtt": {
+        "name": "Tiempo de prueba de microfugas"
       },
       "getdwf": {
         "name": "Consumo diario de agua esperado"
@@ -290,6 +305,19 @@
       "getpn8": {
         "name": "Nombre del perfil de protección contra fugas 8"
       },
+      "getprf": {
+        "name": "Perfil de protección contra fugas activo",
+        "state": {
+          "1": "Presente",
+          "2": "Ausente",
+          "3": "Perfil 3",
+          "4": "Perfil 4",
+          "5": "Perfil 5",
+          "6": "Perfil 6",
+          "7": "Perfil 7",
+          "8": "Perfil 8"
+        }
+      },
       "getprs": {
         "name": "Presión"
       },
@@ -299,6 +327,30 @@
           "1": "No disponible",
           "2": "Disponible"
         }
+      },
+      "getpt1": {
+        "name": "Tiempo de protección contra fugas 1"
+      },
+      "getpt2": {
+        "name": "Tiempo de protección contra fugas 2"
+      },
+      "getpt3": {
+        "name": "Tiempo de protección contra fugas 3"
+      },
+      "getpt4": {
+        "name": "Tiempo de protección contra fugas 4"
+      },
+      "getpt5": {
+        "name": "Tiempo de protección contra fugas 5"
+      },
+      "getpt6": {
+        "name": "Tiempo de protección contra fugas 6"
+      },
+      "getpt7": {
+        "name": "Tiempo de protección contra fugas 7"
+      },
+      "getpt8": {
+        "name": "Tiempo de protección contra fugas 8"
       },
       "getpv1": {
         "name": "Umbral de fuga de volumen 1"
@@ -392,6 +444,21 @@
           "1": "No iniciar"
         }
       },
+      "getsle": {
+        "name": "Tiempo restante en fase de autoaprendizaje"
+      },
+      "getslf": {
+        "name": "Flujo en fase de autoaprendizaje"
+      },
+      "getslp": {
+        "name": "Duración de la fase de autoaprendizaje"
+      },
+      "getslt": {
+        "name": "Tiempo en fase de autoaprendizaje"
+      },
+      "getslv": {
+        "name": "Volumen en fase de autoaprendizaje"
+      },
       "getsrh": {
         "name": "Próximo mantenimiento semestral"
       },
@@ -481,6 +548,9 @@
       },
       "getwfc": {
         "name": "SSID WLAN"
+      },
+      "getwfl": {
+        "name": "Redes disponibles"
       },
       "getwfr": {
         "name": "Intensidad de la señal WLAN"

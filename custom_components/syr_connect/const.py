@@ -5,6 +5,7 @@ from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import (
     PERCENTAGE,
+    UnitOfConductivity,
     UnitOfElectricPotential,
     UnitOfMass,
     UnitOfPressure,
@@ -246,7 +247,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getVRE1',      # Value: "", unclear meaning
     'getVRE2',      # Value: "", unclear meaning
     #'getYHF',      # Value: "", unclear meaning
-    'getHWV',       # Value: e.g. "V1", unclear meaning
+    'getHWV',       # Value: e.g. "V1", "0000000001", unclear meaning
     'getAPT',       # Value: e.g. "600", unclear meaning
     'getCNF',       # Value: "", unclear meaning
     'getCSD',       # Value: "", unclear meaning
@@ -267,6 +268,72 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getWAH',       # Value: "", unclear meaning
     'getNET',       # Value: "", unclear meaning
     'getTSD',       # Value: "", unclear meaning
+
+    # Sensors exits in devices:
+    # - Trio DFR/LS
+
+    "getAFW",
+    #"getALD",
+    #"getAPT",
+    "getBAP",
+    "getBAR2",
+    "getBFT",
+    "getBPT",
+    #"getBSA",
+    "getCCK",
+    "getCFW",
+    #"getCND",  # Conductivity in µS/cm
+    "getCND2",
+    #"getCNF",
+    #"getCNL",
+    #"getCSD",
+    "getCSE",
+    "getCURL",
+    #"getDBT",
+    #"getDCM",
+    #"getDMA",
+    #"getDOM",
+    #"getDPL",
+    #"getDRP",
+    #"getDST",
+    #"getDTC",
+    #"getEVL",
+    "getDTR",
+    #"getFSL",
+    #"getHWV",
+    #"getIDS",
+    "getLED",
+    "getLOCK",
+    #"getLNG",
+    #"getLWT",
+    "getSMF",
+    #"getPSD",
+    "getPSE",
+    "getPRN",
+    "getRCE",
+    #"getRTC",
+    #"getRURL",
+    "getSFV",
+    "getSLP_m",
+    "getSLP_sd",
+    "getSLP_ed",
+    #"getSLO",
+    "getSOF",
+    "getSRO",
+    "getSRV",
+    #"getTN",
+    #"getTMZ",
+    #"getTSD",
+    "getTSE",
+    #"getTURL",
+    "getVER2",
+    "getVTO",
+    #"getWAD",
+    #"getWAH",
+    "getWFL",
+    "getWNS",
+    #"getWTI",
+    #"getNET",
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
@@ -302,6 +369,11 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # as a pillar is exhausted. Softened water is available at all times.
     #'getRPD',   # Regeneration interval (days) - value "0" means no interval configured.
     #'getRTM',   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
+
+    # Sensors exits in devices only:
+    # - Trio DFR/LS
+    "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
+    "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
 }
 
 # Sensor icons (Material Design Icons) - internal
@@ -435,6 +507,13 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getWFC": "mdi:wifi",
     "getWFS": "mdi:wifi-check",
     "getWFR": "mdi:wifi-strength-1",
+
+    # Sensors exits in devices:
+    # - Trio DFR/LS
+
+    "getDSV": "mdi:water-check",
+    "getDTT": "mdi:clock-outline",
+    "getPRF": "mdi:account",
 }
 
 # Mapping for getALM sensor values
@@ -559,6 +638,7 @@ _SYR_CONNECT_SENSOR_STRING = {
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
     "getCNA",  # Device name
     "getDGW",  # Gateway
+    "getDTT",  # Microleakage test time
     "getFIR",  # Firmware
     "getIPA",  # IP address
     "getMAC",  # MAC address
@@ -654,7 +734,16 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - NeoSoft 5000
 
-    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2
+    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2^
+
+    # Sensors exits in devices:
+    # - Trio DFR/LS
+
+    "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Water conductivity (µS/cm)
+    "getSLE": UnitOfTime.SECONDS,                       # Remaining time in seconds of an active self-learning phase
+    "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Self-learning phase volume (l/h)
+    "getSLT": UnitOfTime.SECONDS,                       # Time in self-learning phase (seconds)
+    "getSLV": UnitOfVolume.LITERS,                      # Self-learning phase volume (l)
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -668,11 +757,13 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default
+    "getCND": 0,    # Conductivity in µS/cm: show as whole number by default
     "getCOF": 0,    # Total water consumption counter: show as whole number by default
     "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
     "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDSV": 0,    # Microleakage test: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
     "getFLO": 0,    # Flow rate: show as whole number by default
@@ -684,6 +775,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
+    "getPRF": 0,    # Leak protection profile: show as whole number by default
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
     "getRDO": 0,    # Salt dosing: show as whole number by default
@@ -695,6 +787,10 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
     "getRG3": 0,    # Regeneration 3: show as whole number by default
+    "getSLE": 0,    # Remaining time in seconds of an active self-learning phase: show as whole number by default
+    "getSLF": 0,    # Self-learning phase volume (l/h)
+    "getSLT": 0,    # Time in self-learning phase (seconds)
+    "getSLV": 0,    # Self-learning phase volume (l)
     "getSS1": 0,    # Salt container supply 1: show as whole number by default
     "getSS2": 0,    # Salt container supply 2: show as whole number by default
     "getSS3": 0,    # Salt container supply 3: show as whole number by default
