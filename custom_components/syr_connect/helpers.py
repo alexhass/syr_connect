@@ -262,3 +262,89 @@ def get_sensor_bat_value(value: str | int | float) -> float | None:
 
     # No other variants supported. Return None.
     return None
+
+
+def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
+    """Return regeneration time as HH:MM string or None.
+
+    Handles two device representations:
+    - Separate hour (`getRTH`) and minutes (`getRTM`) numeric values.
+    - Combined string in `getRTM` containing an HH:MM value.
+
+    Returns a zero-padded "HH:MM" string when valid, otherwise None.
+    """
+    if not status:
+        return None
+
+    rth = status.get("getRTH")
+    rtm = status.get("getRTM")
+
+    if rtm is None or rtm == "":
+        return None
+
+    # Case A:Combined representation: getRTH missing/empty and getRTM contains HH:MM
+    if rth is None or rth == "":
+        if isinstance(rtm, str):
+            m_match = re.match(r"\s*(\d{1,2}):(\d{2})\s*$", rtm)
+            if not m_match:
+                return None
+            try:
+                h = int(m_match.group(1))
+                mm = int(m_match.group(2))
+                # Strict validation: hours 0-23, minutes 0-59
+                if 0 <= h <= 23 and 0 <= mm <= 59:
+                    return f"{h:02d}:{mm:02d}"
+            except Exception:
+                return None
+        return None
+
+    # Case B: Separate numeric values
+    try:
+        h = int(float(rth))
+        m = int(float(rtm))
+        # Strict validation: hours 0-23, minutes 0-59
+        if 0 <= h <= 23 and 0 <= m <= 59:
+            return f"{h:02d}:{m:02d}"
+    except Exception:
+        return None
+
+    return None
+
+
+def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str, Any]]:
+    """Build set commands for regeneration time selection.
+
+    Given the current `status` and a chosen `option` string in "HH:MM" format,
+    return a list of (set_key, value) tuples that should be called on the API.
+
+    If the device uses the combined representation (no `getRTH` and `getRTM` is
+    a HH:MM string), a single `setRTM` with the HH:MM string is returned.
+    Otherwise, returns two commands: `setRTH` (hour int) and `setRTM` (minute int).
+    """
+    commands: list[tuple[str, Any]] = []
+    if not option or not isinstance(option, str):
+        return commands
+
+    # Determine combined-mode
+    combined_mode = False
+    if status is not None:
+        raw_rth = status.get("getRTH")
+        raw_rtm = status.get("getRTM")
+        if (raw_rth is None or raw_rth == "") and isinstance(raw_rtm, str) and ":" in raw_rtm:
+            combined_mode = True
+
+    if combined_mode:
+        commands.append(("setRTM", option))
+        return commands
+
+    # Parse HH:MM into integers
+    try:
+        parts = option.split(":")
+        h = int(parts[0])
+        m = int(parts[1])
+    except Exception:
+        return commands
+
+    commands.append(("setRTH", h))
+    commands.append(("setRTM", m))
+    return commands
