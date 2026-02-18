@@ -69,7 +69,7 @@ async def async_get_config_entry_diagnostics(
     }
 
     # Redact username in entry title if present, e.g. "SYR Connect (username)" ->
-    # "SYR Connect (<REDACTED_USERNAME>)" to avoid leaking usernames in diagnostics.
+    # "SYR Connect (***REDACTED_USERNAME***)" to avoid leaking usernames in diagnostics.
     try:
         entry_obj = diagnostics_data.get("entry")
         if isinstance(entry_obj, dict):
@@ -101,7 +101,7 @@ async def async_get_config_entry_diagnostics(
             key_str = str(key)
             placeholder = f"***REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', key_str).upper()}***"
 
-            # attributes like mac="..."
+            # Attributes like mac="..."
             try:
                 cleaned = re.sub(
                     rf'({re.escape(key_str)}\s*=\s*")([^"]*)(")',
@@ -123,7 +123,7 @@ async def async_get_config_entry_diagnostics(
             except Exception:
                 pass
 
-            # simple key:value or key=val patterns
+            # Simple key:value or key=val patterns
             try:
                 cleaned = re.sub(
                     rf'({re.escape(key_str)}\s*[:=]\s*)([^\s><"\']+)',
@@ -160,7 +160,7 @@ async def async_get_config_entry_diagnostics(
                 if not api.is_session_valid():
                     await api.login()
             except Exception:
-                # don't fail diagnostics if login fails
+                # Don't fail diagnostics if login fails
                 api = None
 
         if api and api.projects:
@@ -175,7 +175,7 @@ async def async_get_config_entry_diagnostics(
                 except Exception:
                     return ""
 
-            # iterate all projects
+            # Iterate all projects
             projects_raw: dict[str, Any] = {}
             for project in api.projects:
                 pid = project.get("id")
@@ -184,13 +184,13 @@ async def async_get_config_entry_diagnostics(
                 xml_resp = await _fetch(_SYR_CONNECT_API_DEVICE_LIST_URL, {"xml": payload})
                 projects_raw[pid]["device_list"] = _redact_xml(xml_resp, api)
 
-                # parse devices (best-effort)
+                # Parse devices (best-effort)
                 try:
                     devices = api.response_parser.parse_device_list_response(xml_resp)
                 except Exception:
                     devices = []
 
-                # fetch status for each device (limited concurrency by semaphore)
+                # Fetch status for each device (limited concurrency by semaphore)
                 status_tasks = []
                 for device in devices:
                     device_id = device.get("dclg") or device.get("id")
@@ -243,7 +243,7 @@ async def async_get_config_entry_diagnostics(
             return [_redact_obj(i) for i in obj]
 
         if isinstance(obj, str):
-            # redact sensitive values inside strings (including raw XML)
+            # Redact sensitive values inside strings (including raw XML)
             return _redact_xml(obj, getattr(coordinator, "api", None))
 
         return obj
