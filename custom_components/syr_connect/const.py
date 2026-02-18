@@ -151,6 +151,9 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
 _SYR_CONNECT_SENSOR_EXCLUDED = {
+    # Uninstall - This will delete the sensors from the entity registry if they were created before.
+    "getRTIME",  # Uninstall custom regeneration time control
+
     # Sensors exits in devices:
     # - LEXplus10S
     # - LEXplus10SL
