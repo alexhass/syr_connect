@@ -329,6 +329,30 @@
       "getpr8": {
         "name": "Tempo de retorno ao perfil 8"
       },
+      "getpw1": {
+        "name": "Alerta de vazamento perfil 1"
+      },
+      "getpw2": {
+        "name": "Alerta de vazamento perfil 2"
+      },
+      "getpw3": {
+        "name": "Alerta de vazamento perfil 3"
+      },
+      "getpw4": {
+        "name": "Alerta de vazamento perfil 4"
+      },
+      "getpw5": {
+        "name": "Alerta de vazamento perfil 5"
+      },
+      "getpw6": {
+        "name": "Alerta de vazamento perfil 6"
+      },
+      "getpw7": {
+        "name": "Alerta de vazamento perfil 7"
+      },
+      "getpw8": {
+        "name": "Alerta de vazamento perfil 8"
+      },
       "getpf1": {
         "name": "Limite de vazamento por fluxo 1"
       },

@@ -448,6 +448,30 @@
       "getpr8": {
         "name": "Temps de retour au profil 8"
       },
+      "getpw1": {
+        "name": "Alerte de fuite profil 1"
+      },
+      "getpw2": {
+        "name": "Alerte de fuite profil 2"
+      },
+      "getpw3": {
+        "name": "Alerte de fuite profil 3"
+      },
+      "getpw4": {
+        "name": "Alerte de fuite profil 4"
+      },
+      "getpw5": {
+        "name": "Alerte de fuite profil 5"
+      },
+      "getpw6": {
+        "name": "Alerte de fuite profil 6"
+      },
+      "getpw7": {
+        "name": "Alerte de fuite profil 7"
+      },
+      "getpw8": {
+        "name": "Alerte de fuite profil 8"
+      },
       "getrdo": {
         "name": "Dosage du sel"
       },

@@ -448,6 +448,30 @@
       "getpr8": {
         "name": "Return time to profile 8"
       },
+      "getpw1": {
+        "name": "Leak warning profile 1"
+      },
+      "getpw2": {
+        "name": "Leak warning profile 2"
+      },
+      "getpw3": {
+        "name": "Leak warning profile 3"
+      },
+      "getpw4": {
+        "name": "Leak warning profile 4"
+      },
+      "getpw5": {
+        "name": "Leak warning profile 5"
+      },
+      "getpw6": {
+        "name": "Leak warning profile 6"
+      },
+      "getpw7": {
+        "name": "Leak warning profile 7"
+      },
+      "getpw8": {
+        "name": "Leak warning profile 8"
+      },
       "getrdo": {
         "name": "Salt dosing"
       },
