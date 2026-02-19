@@ -352,6 +352,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         elif self._sensor_key == 'getCEL':
             # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
             value = value / 10
+        elif self._sensor_key == 'getVOL':
+            # API provides total volume in liters; convert to cubic meters (m³)
+            try:
+                value = value / 1000
+            except Exception:
+                pass
 
         # Apply configured precision if available
         precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key)

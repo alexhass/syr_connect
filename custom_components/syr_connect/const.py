@@ -154,6 +154,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
     "getPRS": SensorDeviceClass.PRESSURE,
+    "getVOL": SensorDeviceClass.WATER,
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal
@@ -688,7 +689,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
     "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
-    "getVOL": SensorStateClass.MEASUREMENT,        # Total capacity
+    "getVOL": SensorStateClass.TOTAL_INCREASING,  # Total capacity (cumulative)
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
     "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
@@ -734,7 +735,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getSS1": UnitOfTime.WEEKS,                             # Salt container supply 1
     "getSS2": UnitOfTime.WEEKS,                             # Salt container supply 2
     "getSS3": UnitOfTime.WEEKS,                             # Salt container supply 3
-    "getVOL": UnitOfVolume.LITERS,                          # Total capacity
+    "getVOL": UnitOfVolume.CUBIC_METERS,                    # Total capacity (m³)
 
     # Configuration/resin capacity sensors are percentage values
     "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)
@@ -881,7 +882,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getVLV": 0,    # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
     "getVPS1": 0,   # No turbine pulses on control head 1 since: show as whole number of seconds by default
     "getVPS2": 0,   # No turbine pulses on control head 2 since: show as whole number of seconds by default
-    "getVOL": 0,    # Total water volume: show as whole number by default
+    "getVOL": 3,    # Total water volume: show in cubic meters (m³) with 3 decimals by default
     "getWFR": 0,    # Wi-Fi signal strength: show as whole number by default
     "getWFS": 0,    # Wi-Fi connection status
 
