@@ -232,8 +232,8 @@ async def test_cached_ab_overrides_vlv_and_expires(hass: HomeAssistant) -> None:
     # By default getVLV=20 -> open
     assert valve.is_closed is False
 
-    # Inject cached getAB=2 (closed) with future expiry
-    valve._cached_ab = {"value": "2", "expires": time.time() + 5}
+    # Inject cached getAB=2 (closed) with future expiry (store boolean True)
+    valve._cached_ab = {"value": True, "expires": time.time() + 5}
     assert valve.is_closed is True
 
     # Expire the cache and confirm we return to authoritative VLV
@@ -281,13 +281,13 @@ async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None
 
     await valve.async_open()
     coordinator.async_set_device_value.assert_awaited_with("op", "setAB", 1)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] == "1"
+    assert valve._cached_ab is not None and valve._cached_ab["value"] is False
 
     # Test close
     coordinator.async_set_device_value.reset_mock()
     await valve.async_close()
     coordinator.async_set_device_value.assert_awaited_with("op", "setAB", 2)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] == "2"
+    assert valve._cached_ab is not None and valve._cached_ab["value"] is True
 
     # Simulate failure
     async def _fail(*args, **kwargs):
@@ -371,7 +371,7 @@ async def test_async_open_handles_write_state_exception(hass: HomeAssistant) -> 
     await valve.async_open()
     # Command sent and cache set despite UI failure
     coordinator.async_set_device_value.assert_awaited_with("w1", "setAB", 1)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] == "1"
+    assert valve._cached_ab is not None and valve._cached_ab["value"] is False
 
 
 async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -> None:

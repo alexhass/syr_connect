@@ -60,8 +60,8 @@
       "getab": {
         "name": "Fechamento da válvula",
         "state": {
-          "1": "Aberto",
-          "2": "Fechado"
+          "false": "Aberto",
+          "true": "Fechado"
         }
       },
       "getrpd": {
@@ -84,8 +84,8 @@
       "getab": {
         "name": "Fechamento da válvula",
         "state": {
-          "1": "Aberto",
-          "2": "Fechado"
+          "false": "Aberto",
+          "true": "Fechado"
         }
       },
       "getalm": {
@@ -577,8 +577,8 @@
       "getab": {
         "name": "Fechamento da válvula",
         "state": {
-          "1": "Aberta",
-          "2": "Fechada"
+          "false": "Aberta",
+          "true": "Fechada"
         }
       },
       "getvlv": {

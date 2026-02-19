@@ -60,8 +60,8 @@
       "getab": {
         "name": "Cierre de válvula",
         "state": {
-          "1": "Abierta",
-          "2": "Cerrada"
+          "false": "Abierta",
+          "true": "Cerrada"
         }
       },
       "getrpd": {
@@ -84,8 +84,8 @@
       "getab": {
         "name": "Cierre de válvula",
         "state": {
-          "1": "Abierta",
-          "2": "Cerrada"
+          "false": "Abierta",
+          "true": "Cerrada"
         }
       },
       "getalm": {
@@ -577,8 +577,8 @@
       "getab": {
         "name": "Cierre de válvula",
         "state": {
-          "1": "Abierta",
-          "2": "Cerrada"
+          "false": "Abierta",
+          "true": "Cerrada"
         }
       },
       "getvlv": {

@@ -348,3 +348,74 @@ def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str,
     commands.append(("setRTH", h))
     commands.append(("setRTM", m))
     return commands
+
+
+def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
+    """Parse `getAB` value from device status and return closed state as bool.
+
+    Returns:
+        - True if valve is closed
+        - False if valve is open
+        - None if unknown/unparseable
+
+    Devices may report `getAB` as numeric (1=open, 2=closed) or boolean-like
+    strings (`"true"`/`"false"`). Map both to a unified boolean.
+    """
+    if not status:
+        return None
+
+    val = status.get("getAB")
+    if val is None or val == "":
+        return None
+
+    # Numeric values (int/float or digit strings)
+    try:
+        if isinstance(val, (int, float)):
+            # Safe-T: Syr seems to use 1 for open and 2 for closed, but we want True=closed, False=open
+            ival = int(float(val))
+            if ival == 2:
+                return True
+            if ival == 1:
+                return False
+            return None
+        if isinstance(val, str):
+            # Trio DFR/LS and other new devices: Normalize string and check for boolean-like values
+            s = val.strip().lower()
+            # Boolean-like strings
+            if s in ("true", "false"):
+                return s == "true"
+            # Numeric string fallback
+            if s.isdigit():
+                ival = int(s)
+                if ival == 2:
+                    return True
+                if ival == 1:
+                    return False
+    except Exception:
+        return None
+
+    return None
+
+
+def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any]:
+    """Build the appropriate (`setAB`, value) command for desired closed state.
+
+    - If device reports `getAB` as boolean-like strings, use "true"/"false".
+    - Otherwise prefer numeric `1` (open) / `2` (closed).
+
+    Returns a tuple (set_key, value).
+    """
+    raw = None
+    if status:
+        raw = status.get("getAB")
+
+    # Prefer boolean-string representation if current value looks boolean
+    if isinstance(raw, str) and raw.strip().lower() in ("true", "false"):
+        return ("setAB", "true" if closed else "false")
+
+    # If raw is explicitly boolean type (unlikely), use string representation
+    if isinstance(raw, bool):
+        return ("setAB", "true" if closed else "false")
+
+    # Fallback to numeric representation
+    return ("setAB", 2 if closed else 1)

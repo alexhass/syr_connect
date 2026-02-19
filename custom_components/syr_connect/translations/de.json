@@ -60,8 +60,8 @@
       "getab": {
         "name": "Ventilabsperrung",
         "state": {
-          "1": "Geöffnet",
-          "2": "Geschlossen"
+          "false": "Geöffnet",
+          "true": "Geschlossen"
         }
       },
       "getrpd": {
@@ -84,8 +84,8 @@
       "getab": {
         "name": "Ventilabsperrung",
         "state": {
-          "1": "Geöffnet",
-          "2": "Geschlossen"
+          "false": "Geöffnet",
+          "true": "Geschlossen"
         }
       },
       "getalm": {
@@ -577,8 +577,8 @@
       "getab": {
         "name": "Ventilabsperrung",
         "state": {
-          "1": "Geöffnet",
-          "2": "Geschlossen"
+          "false": "Geöffnet",
+          "true": "Geschlossen"
         }
       },
       "getvlv": {

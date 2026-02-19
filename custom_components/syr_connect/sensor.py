@@ -36,6 +36,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
     build_device_info,
     build_entity_id,
+    get_sensor_ab_value,
     get_sensor_avo_value,
     get_sensor_bat_value,
     get_sensor_rtm_value,
@@ -328,17 +329,19 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except Exception:
                 pass
 
-        # Dynamic icon for valve shut-off (getAB)
+        # Dynamic icon for valve shut-off (getAB) - use boolean parsing
         if self._sensor_key == "getAB":
-            val = self.native_value
-            if val is None:
+            # Read raw status for this device and parse as boolean
+            raw_status = None
+            for device in self.coordinator.data.get('devices', []):
+                if device['id'] == self._device_id:
+                    raw_status = device.get('status', {})
+                    break
+            ab = get_sensor_ab_value(raw_status or {})
+            if ab is None:
                 return self._base_icon
-            # Values: 1=open, 2=closed
-            if str(val) == "1":
-                return "mdi:valve-open"
-            elif str(val) == "2":
-                return "mdi:valve-closed"
-            return self._base_icon
+            # True -> closed, False -> open
+            return "mdi:valve-closed" if ab else "mdi:valve-open"
 
         # Dynamic icon for valve status (getVLV)
         if self._sensor_key == "getVLV":
@@ -473,6 +476,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if self._sensor_key == 'getRTM':
                     # Use helper to parse regeneration time consistently.
                     return get_sensor_rtm_value(status)
+
+                # Special handling for valve shut-off (getAB): return lowercase string for translations
+                if self._sensor_key == 'getAB':
+                    ab = get_sensor_ab_value(status)
+                    if ab is None:
+                        return None
+                    return "true" if ab else "false"
 
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':

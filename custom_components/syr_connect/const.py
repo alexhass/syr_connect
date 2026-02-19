@@ -74,7 +74,7 @@ _SYR_CONNECT_SENSOR_BINARY = {
 # Sensors that are represented by control entities (select/text/buttons)
 # These sensors should be hidden from the regular sensor platform.
 _SYR_CONNECT_SENSOR_CONTROLLED = {
-    "getAB",    # Valve shut-off (1=open, 2=closed) - also represented as select entity
+    "getAB",    # Valve shut-off (false=open, true=closed) - also represented as select entity
     "getSV1",   # Salt container amount 1 - also represented as select entity
     "getSV2",   # Salt container amount 2 - also represented as select entity
     "getSV3",   # Salt container amount 3 - also represented as select entity
@@ -754,7 +754,6 @@ _SYR_CONNECT_SENSOR_UNIT = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
-    "getAB": 0,     # Valve shut-off (1=open, 2=closed)
     "getAVO": 1,    # Current flow: show with 2 decimal places
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places

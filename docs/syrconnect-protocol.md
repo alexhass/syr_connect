@@ -404,7 +404,7 @@ These properties are only available on devices that contain leakage protection, 
 
 | Property        | Example      | Unit    | Description
 |-----------------|--------------|---------|-------------------------------------------------------
-| getAB / setAB   | "1"          |         | Valve shut-off: 1 = open, 2 = closed
+| getAB / setAB   | "true"<br>"1"          |         | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed
 | getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"
 | getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening

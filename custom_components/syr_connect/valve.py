@@ -17,7 +17,12 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import _SYR_CONNECT_SENSOR_ICON
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id
+from .helpers import (
+    build_device_info,
+    build_entity_id,
+    build_set_ab_command,
+    get_sensor_ab_value,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -148,7 +153,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         # We use this cached value to update the GUI immediately when
         # `getVLV` is not present; `getVLV` remains authoritative.
         self._ab_cache_seconds = 60
-        self._cached_ab: dict | None = None  # {'value': '1'|'2', 'expires': float}
+        self._cached_ab: dict | None = None  # {'value': True|False, 'expires': float}
 
         # This integration does not report a continuous position value
         # (we expose opening/closing via discrete `getVLV` codes). Set
@@ -231,9 +236,9 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
                     val,
                     self._cached_ab.get("expires", 0) - now,
                 )
-                if val == "2":
+                if val is True:
                     return True
-                if val == "1":
+                if val is False:
                     return False
             else:
                 # Cache expired
@@ -253,15 +258,9 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             except (ValueError, TypeError):
                 pass
 
-        # Fallback to getAB control value
-        val = status.get("getAB")
-        if val is None or val == "":
-            return None
-        if str(val) == "2":
-            return True
-        if str(val) == "1":
-            return False
-        return None
+        # Fallback to getAB control value (use helper to normalize)
+        ab = get_sensor_ab_value(status)
+        return ab
 
     @property
     def is_opening(self) -> bool | None:
@@ -313,21 +312,34 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         command to the backend; any exceptions are wrapped as
         `HomeAssistantError` so callers receive a clear failure.
         """
+        # Build the correct setAB command based on device representation
+        set_key, set_val = build_set_ab_command(self._get_status() or {}, False)
+
+        # Optimistically cache the requested boolean value (False = opened)
+        self._cached_ab = {"value": False, "expires": time.time() + self._ab_cache_seconds}
+        _LOGGER.debug(
+            "Optimistically cached getAB=%s for %s seconds for %s",
+            set_val,
+            self._ab_cache_seconds,
+            self._device_id,
+        )
         try:
-            await self._sc_coordinator.async_set_device_value(self._device_id, "setAB", 1)
-            # Optimistically cache the requested value so the UI shows the
-            # new state immediately while the device updates its internal
-            # `getAB` (which can lag by ~60s).
-            self._cached_ab = {"value": "1", "expires": time.time() + self._ab_cache_seconds}
-            _LOGGER.debug("Cached getAB=%s for %s seconds for %s", "1", self._ab_cache_seconds, self._device_id)
-            # Push an immediate HA state update so the UI reflects the change.
+            # Immediately write state so the UI reflects the requested change
             try:
                 self.async_write_ha_state()
             except Exception:
-                # Best-effort; don't fail command on UI update error.
                 pass
+
+            # Send command to backend; await result but do not block UI update
+            await self._sc_coordinator.async_set_device_value(self._device_id, set_key, set_val)
         except Exception as err:  # pragma: no cover - defensive
+            # On failure, clear optimistic cache and restore state
             _LOGGER.exception("Failed to open valve %s", self._device_id)
+            self._cached_ab = None
+            try:
+                self.async_write_ha_state()
+            except Exception:
+                pass
             raise HomeAssistantError(f"Failed to open valve {self._device_id}: {err}") from err
 
     async def async_close(self) -> None:
@@ -335,19 +347,34 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
         See `async_open` for behavior and error handling.
         """
+        # Build the correct setAB command based on device representation
+        set_key, set_val = build_set_ab_command(self._get_status() or {}, True)
+
+        # Optimistically cache the requested boolean value (True = closed)
+        self._cached_ab = {"value": True, "expires": time.time() + self._ab_cache_seconds}
+        _LOGGER.debug(
+            "Optimistically cached getAB=%s for %s seconds for %s",
+            set_val,
+            self._ab_cache_seconds,
+            self._device_id,
+        )
         try:
-            await self._sc_coordinator.async_set_device_value(self._device_id, "setAB", 2)
-            # Optimistically cache the requested value so the UI shows the
-            # new state immediately while the device updates its internal
-            # `getAB` (which can lag by ~60s).
-            self._cached_ab = {"value": "2", "expires": time.time() + self._ab_cache_seconds}
-            _LOGGER.debug("Cached getAB=%s for %s seconds for %s", "2", self._ab_cache_seconds, self._device_id)
+            # Immediately write state so the UI reflects the requested change
             try:
                 self.async_write_ha_state()
             except Exception:
                 pass
+
+            # Send command to backend; await result but do not block UI update
+            await self._sc_coordinator.async_set_device_value(self._device_id, set_key, set_val)
         except Exception as err:  # pragma: no cover - defensive
+            # On failure, clear optimistic cache and restore state
             _LOGGER.exception("Failed to close valve %s", self._device_id)
+            self._cached_ab = None
+            try:
+                self.async_write_ha_state()
+            except Exception:
+                pass
             raise HomeAssistantError(f"Failed to close valve {self._device_id}: {err}") from err
 
     async def async_open_valve(self) -> None:

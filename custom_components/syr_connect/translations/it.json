@@ -60,8 +60,8 @@
       "getab": {
         "name": "Chiusura valvola",
         "state": {
-          "1": "Aperta",
-          "2": "Chiusa"
+          "false": "Aperta",
+          "true": "Chiusa"
         }
       },
       "getrpd": {
@@ -84,8 +84,8 @@
       "getab": {
         "name": "Chiusura valvola",
         "state": {
-          "1": "Aperta",
-          "2": "Chiusa"
+          "false": "Aperta",
+          "true": "Chiusa"
         }
       },
       "getalm": {
@@ -577,8 +577,8 @@
       "getab": {
         "name": "Chiusura valvola",
         "state": {
-          "1": "Aperta",
-          "2": "Chiusa"
+          "false": "Aperta",
+          "true": "Chiusa"
         }
       },
       "getvlv": {

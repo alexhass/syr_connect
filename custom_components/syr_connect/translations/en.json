@@ -60,8 +60,8 @@
       "getab": {
         "name": "Valve shut-off",
         "state": {
-          "1": "Opened",
-          "2": "Closed"
+          "false": "Opened",
+          "true": "Closed"
         }
       },
       "getrpd": {
@@ -84,8 +84,8 @@
       "getab": {
         "name": "Valve shut-off",
         "state": {
-          "1": "Opened",
-          "2": "Closed"
+          "false": "Opened",
+          "true": "Closed"
         }
       },
       "getalm": {
@@ -577,8 +577,8 @@
       "getab": {
         "name": "Valve shut-off",
         "state": {
-          "1": "Opened",
-          "2": "Closed"
+          "false": "Opened",
+          "true": "Closed"
         }
       },
       "getvlv": {
