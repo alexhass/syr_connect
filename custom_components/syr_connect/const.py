@@ -300,6 +300,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     #"getDRP",
     #"getDST",
     #"getDTC",
+    "getENV",
     #"getEVL",
     "getDTR",
     #"getFSL",
