@@ -450,28 +450,28 @@
         "name": "Nome do perfil de proteção 8"
       },
       "getpr1": {
-        "name": "Tempo de retorno ao perfil 1"
+        "name": "Tempo de retorno ao perfil ativo 1"
       },
       "getpr2": {
-        "name": "Tempo de retorno ao perfil 2"
-      },
-      "getpr2": {
-        "name": "Tempo de retorno ao perfil 2"
+        "name": "Tempo de retorno ao perfil ativo 2"
       },
       "getpr3": {
-        "name": "Tempo de retorno ao perfil 3"
-      },
-      "getpr3": {
-        "name": "Tempo de retorno ao perfil 3"
+        "name": "Tempo de retorno ao perfil ativo 3"
       },
       "getpr4": {
-        "name": "Tempo de retorno ao perfil 4"
-      },
-      "getpr4": {
-        "name": "Tempo de retorno ao perfil 4"
+        "name": "Tempo de retorno ao perfil ativo 4"
       },
       "getpr5": {
-        "name": "Tempo de retorno ao perfil 5"
+        "name": "Tempo de retorno ao perfil ativo 5"
+      },
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil ativo 6"
+      },
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil ativo 7"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil ativo 8"
       },
       "getpr5": {
         "name": "Tempo de retorno ao perfil 5"

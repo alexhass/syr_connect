@@ -496,6 +496,60 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getPV6": "mdi:gauge",
     "getPV7": "mdi:gauge",
     "getPV8": "mdi:gauge",
+    # Leak protection profile icons (active/name/week/mode/return time)
+    "getPA1": "mdi:shield-check",
+    "getPA2": "mdi:shield-check",
+    "getPA3": "mdi:shield-check",
+    "getPA4": "mdi:shield-check",
+    "getPA5": "mdi:shield-check",
+    "getPA6": "mdi:shield-check",
+    "getPA7": "mdi:shield-check",
+    "getPA8": "mdi:shield-check",
+
+    "getPN1": "mdi:account",
+    "getPN2": "mdi:account",
+    "getPN3": "mdi:account",
+    "getPN4": "mdi:account",
+    "getPN5": "mdi:account",
+    "getPN6": "mdi:account",
+    "getPN7": "mdi:account",
+    "getPN8": "mdi:account",
+
+    "getPB1": "mdi:bell-alert",
+    "getPB2": "mdi:bell-alert",
+    "getPB3": "mdi:bell-alert",
+    "getPB4": "mdi:bell-alert",
+    "getPB5": "mdi:bell-alert",
+    "getPB6": "mdi:bell-alert",
+    "getPB7": "mdi:bell-alert",
+    "getPB8": "mdi:bell-alert",
+
+    "getPW1": "mdi:alert",
+    "getPW2": "mdi:alert",
+    "getPW3": "mdi:alert",
+    "getPW4": "mdi:alert",
+    "getPW5": "mdi:alert",
+    "getPW6": "mdi:alert",
+    "getPW7": "mdi:alert",
+    "getPW8": "mdi:alert",
+
+    "getPM1": "mdi:pipe-leak",
+    "getPM2": "mdi:pipe-leak",
+    "getPM3": "mdi:pipe-leak",
+    "getPM4": "mdi:pipe-leak",
+    "getPM5": "mdi:pipe-leak",
+    "getPM6": "mdi:pipe-leak",
+    "getPM7": "mdi:pipe-leak",
+    "getPM8": "mdi:pipe-leak",
+
+    "getPR1": "mdi:clock-outline",
+    "getPR2": "mdi:clock-outline",
+    "getPR3": "mdi:clock-outline",
+    "getPR4": "mdi:clock-outline",
+    "getPR5": "mdi:clock-outline",
+    "getPR6": "mdi:clock-outline",
+    "getPR7": "mdi:clock-outline",
+    "getPR8": "mdi:clock-outline",
 
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
@@ -701,6 +755,14 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 6
     "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 7
     "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 8
+    "getPR1": UnitOfTime.HOURS,                         # Return time to profile 1
+    "getPR2": UnitOfTime.HOURS,                         # Return time to profile 2
+    "getPR3": UnitOfTime.HOURS,                         # Return time to profile 3
+    "getPR4": UnitOfTime.HOURS,                         # Return time to profile 4
+    "getPR5": UnitOfTime.HOURS,                         # Return time to profile 5
+    "getPR6": UnitOfTime.HOURS,                         # Return time to profile 6
+    "getPR7": UnitOfTime.HOURS,                         # Return time to profile 7
+    "getPR8": UnitOfTime.HOURS,                         # Return time to profile 8
     "getPT1": UnitOfTime.MINUTES,                       # Leak protection time 1
     "getPT2": UnitOfTime.MINUTES,                       # Leak protection time 2
     "getPT3": UnitOfTime.MINUTES,                       # Leak protection time 3
@@ -781,7 +843,15 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
-    "getPRF": 0,    # Leak protection profile: show as whole number by default
+    "getPRF": 0,    # Active leak protection profile
+    "getPR1": 0,    # Return time to profile 1
+    "getPR2": 0,    # Return time to profile 2
+    "getPR3": 0,    # Return time to profile 3
+    "getPR4": 0,    # Return time to profile 4
+    "getPR5": 0,    # Return time to profile 5
+    "getPR6": 0,    # Return time to profile 6
+    "getPR7": 0,    # Return time to profile 7
+    "getPR8": 0,    # Return time to profile 8
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
     "getRDO": 0,    # Salt dosing: show as whole number by default

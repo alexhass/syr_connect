@@ -450,28 +450,28 @@
         "name": "Nome profilo 8"
       },
       "getpr1": {
-        "name": "Tempo di ritorno al profilo 1"
+        "name": "Tempo di ritorno al profilo attivo 1"
       },
       "getpr2": {
-        "name": "Tempo di ritorno al profilo 2"
-      },
-      "getpr2": {
-        "name": "Tempo di ritorno al profilo 2"
+        "name": "Tempo di ritorno al profilo attivo 2"
       },
       "getpr3": {
-        "name": "Tempo di ritorno al profilo 3"
-      },
-      "getpr3": {
-        "name": "Tempo di ritorno al profilo 3"
+        "name": "Tempo di ritorno al profilo attivo 3"
       },
       "getpr4": {
-        "name": "Tempo di ritorno al profilo 4"
-      },
-      "getpr4": {
-        "name": "Tempo di ritorno al profilo 4"
+        "name": "Tempo di ritorno al profilo attivo 4"
       },
       "getpr5": {
-        "name": "Tempo di ritorno al profilo 5"
+        "name": "Tempo di ritorno al profilo attivo 5"
+      },
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo attivo 6"
+      },
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo attivo 7"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo attivo 8"
       },
       "getpr5": {
         "name": "Tempo di ritorno al profilo 5"

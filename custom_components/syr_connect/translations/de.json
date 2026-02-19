@@ -450,28 +450,28 @@
         "name": "Leckagesschutz-Profil Name 8"
       },
       "getpr1": {
-        "name": "Rückkehrzeit zu Profil 1"
+        "name": "Rückkehrzeit 1 zu Anwesend-Profil"
       },
       "getpr2": {
-        "name": "Rückkehrzeit zu Profil 2"
+        "name": "Rückkehrzeit 2 zu Anwesend-Profil"
       },
       "getpr3": {
-        "name": "Rückkehrzeit zu Profil 3"
+        "name": "Rückkehrzeit 3 zu Anwesend-Profil"
       },
       "getpr4": {
-        "name": "Rückkehrzeit zu Profil 4"
+        "name": "Rückkehrzeit 4 zu Anwesend-Profil"
       },
       "getpr5": {
-        "name": "Rückkehrzeit zu Profil 5"
+        "name": "Rückkehrzeit 5 zu Anwesend-Profil"
       },
       "getpr6": {
-        "name": "Rückkehrzeit zu Profil 6"
+        "name": "Rückkehrzeit 6 zu Anwesend-Profil"
       },
       "getpr7": {
-        "name": "Rückkehrzeit zu Profil 7"
+        "name": "Rückkehrzeit 7 zu Anwesend-Profil"
       },
       "getpr8": {
-        "name": "Rückkehrzeit zu Profil 8"
+        "name": "Rückkehrzeit 8 zu Anwesend-Profil"
       },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",

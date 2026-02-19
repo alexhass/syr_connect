@@ -450,28 +450,28 @@
         "name": "Nombre del perfil de protección contra fugas 8"
       },
       "getpr1": {
-        "name": "Tiempo de retorno al perfil 1"
+        "name": "Tiempo de retorno al perfil activo 1"
       },
       "getpr2": {
-        "name": "Tiempo de retorno al perfil 2"
+        "name": "Tiempo de retorno al perfil activo 2"
       },
       "getpr3": {
-        "name": "Tiempo de retorno al perfil 3"
+        "name": "Tiempo de retorno al perfil activo 3"
       },
       "getpr4": {
-        "name": "Tiempo de retorno al perfil 4"
+        "name": "Tiempo de retorno al perfil activo 4"
       },
       "getpr5": {
-        "name": "Tiempo de retorno al perfil 5"
+        "name": "Tiempo de retorno al perfil activo 5"
       },
       "getpr6": {
-        "name": "Tiempo de retorno al perfil 6"
+        "name": "Tiempo de retorno al perfil activo 6"
       },
       "getpr7": {
-        "name": "Tiempo de retorno al perfil 7"
+        "name": "Tiempo de retorno al perfil activo 7"
       },
       "getpr8": {
-        "name": "Tiempo de retorno al perfil 8"
+        "name": "Tiempo de retorno al perfil activo 8"
       },
       "getprf": {
         "name": "Perfil de protección contra fugas activo",

@@ -450,28 +450,28 @@
         "name": "Nom du profil 8"
       },
       "getpr1": {
-        "name": "Temps de retour au profil 1"
+        "name": "Temps de retour au profil actif 1"
       },
       "getpr2": {
-        "name": "Temps de retour au profil 2"
+        "name": "Temps de retour au profil actif 2"
       },
       "getpr3": {
-        "name": "Temps de retour au profil 3"
+        "name": "Temps de retour au profil actif 3"
       },
       "getpr4": {
-        "name": "Temps de retour au profil 4"
+        "name": "Temps de retour au profil actif 4"
       },
       "getpr5": {
-        "name": "Temps de retour au profil 5"
+        "name": "Temps de retour au profil actif 5"
       },
       "getpr6": {
-        "name": "Temps de retour au profil 6"
+        "name": "Temps de retour au profil actif 6"
       },
       "getpr7": {
-        "name": "Temps de retour au profil 7"
+        "name": "Temps de retour au profil actif 7"
       },
       "getpr8": {
-        "name": "Temps de retour au profil 8"
+        "name": "Temps de retour au profil actif 8"
       },
       "getprf": {
         "name": "Profil de protection contre les fuites actif",
