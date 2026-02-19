@@ -105,15 +105,29 @@ async def async_setup_entry(
         handled_keys: set[str] = set()
 
         def _is_true(val: object) -> bool:
-            if val is True:
-                return True
+            # Handle real booleans first
+            if isinstance(val, bool):
+                return val
+
+            # Numeric-like values (including numeric strings)
             if isinstance(val, (int, float)):
                 try:
-                    return int(val) != 0
+                    return int(float(val)) != 0
                 except Exception:
                     return False
+
             if isinstance(val, str):
-                return val.strip().lower() in ("1", "true", "on", "yes")
+                sval = val.strip().lower()
+                if sval in ("1", "true", "on", "yes"):
+                    return True
+                if sval in ("0", "false", "off", "no"):
+                    return False
+                # Try parsing numeric string
+                try:
+                    return int(float(sval)) != 0
+                except Exception:
+                    return False
+
             return False
 
         for idx in range(1, 9):
