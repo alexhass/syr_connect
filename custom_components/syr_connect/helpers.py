@@ -370,7 +370,7 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
 
     # Numeric values (int/float or digit strings)
     try:
-        if isinstance(val, (int, float)):
+        if isinstance(val, (int | float)):
             # Safe-T: Syr seems to use 1 for open and 2 for closed, but we want True=closed, False=open
             ival = int(float(val))
             if ival == 2:

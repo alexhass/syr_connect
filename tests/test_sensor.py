@@ -466,7 +466,7 @@ async def test_sensor_rtime_invalid(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
-    assert sensor.native_value == "00:00"
+    assert sensor.native_value is None
 
 
 async def test_sensor_rpw_invalid_mask(hass: HomeAssistant) -> None:
@@ -2358,8 +2358,8 @@ async def test_sensor_rth_invalid_hour(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
-    # Should return "00:00" when conversion fails
-    assert sensor.native_value == "00:00"
+    # Should return None when conversion fails
+    assert sensor.native_value is None
 
 
 async def test_sensor_string_sensor_none_value(hass: HomeAssistant) -> None:
@@ -3262,8 +3262,8 @@ async def test_sensor_rtm_value_error(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
 
-    # Should return 00:00 when both RTH and RTM are None
-    assert sensor.native_value == "00:00"
+    # Should return None when both RTH and RTM are None
+    assert sensor.native_value is None
 
 
 async def test_sensor_whu_string_value_error(hass: HomeAssistant) -> None:
@@ -4521,7 +4521,7 @@ async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data_bad)
     sensor_bad = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
-    assert sensor_bad.native_value == "00:00"
+    assert sensor_bad.native_value is None
 
 
 async def test_getle_mapping(hass: HomeAssistant) -> None:
