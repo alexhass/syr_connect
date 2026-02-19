@@ -137,6 +137,13 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
 
     'getVPS1',  # No turbine pulses on control head 1 since (timestamp) - technical metric for flow measurement, not useful for most users
     'getVPS2',  # No turbine pulses on control head 2 since (timestamp) - technical metric for flow measurement, not useful for most users
+
+    # Sensors exits in devices:
+    # - NeoSoft 2500 / 5000 / Trio DFR/LS
+
+    'getWFC',   # Wi-Fi SSID
+    'getWFR',   # Wifi signal strength (%)
+    'getWFS',   # Wi-Fi connection status (connected / not connected)
 }
 
 # Sensor device classes (for Home Assistant) - internal
