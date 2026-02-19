@@ -234,76 +234,116 @@
         "name": "Output water hardness"
       },
       "getpa1": {
-        "name": "Leak protection profile 1"
+        "name": "Leak protection profile 1",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa2": {
-        "name": "Leak protection profile 2"
+        "name": "Leak protection profile 2",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa3": {
-        "name": "Leak protection profile 3"
+        "name": "Leak protection profile 3",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa4": {
-        "name": "Leak protection profile 4"
+        "name": "Leak protection profile 4",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa5": {
-        "name": "Leak protection profile 5"
+        "name": "Leak protection profile 5",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa6": {
-        "name": "Leak protection profile 6"
+        "name": "Leak protection profile 6",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa7": {
-        "name": "Leak protection profile 7"
+        "name": "Leak protection profile 7",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpa8": {
-        "name": "Leak protection profile 8"
+        "name": "Leak protection profile 8",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb1": {
-        "name": "Buzzer profile 1"
+        "name": "Buzzer profile 1",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb2": {
-        "name": "Buzzer profile 2"
+        "name": "Buzzer profile 2",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb3": {
-        "name": "Buzzer profile 3"
+        "name": "Buzzer profile 3",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb4": {
-        "name": "Buzzer profile 4"
+        "name": "Buzzer profile 4",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb5": {
-        "name": "Buzzer profile 5"
+        "name": "Buzzer profile 5",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb6": {
-        "name": "Buzzer profile 6"
+        "name": "Buzzer profile 6",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb7": {
-        "name": "Buzzer profile 7"
+        "name": "Buzzer profile 7",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpb8": {
-        "name": "Buzzer profile 8"
-      },
-      "getpm1": {
-        "name": "Microleakage test profile 1"
-      },
-      "getpm2": {
-        "name": "Microleakage test profile 2"
-      },
-      "getpm3": {
-        "name": "Microleakage test profile 3"
-      },
-      "getpm4": {
-        "name": "Microleakage test profile 4"
-      },
-      "getpm5": {
-        "name": "Microleakage test profile 5"
-      },
-      "getpm6": {
-        "name": "Microleakage test profile 6"
-      },
-      "getpm7": {
-        "name": "Microleakage test profile 7"
-      },
-      "getpm8": {
-        "name": "Microleakage test profile 8"
+        "name": "Buzzer profile 8",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpf1": {
         "name": "Flow leakage threshold 1"
@@ -329,6 +369,62 @@
       "getpf8": {
         "name": "Flow leakage threshold 8"
       },
+      "getpm1": {
+        "name": "Microleakage test profile 1",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm2": {
+        "name": "Microleakage test profile 2",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm3": {
+        "name": "Microleakage test profile 3",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm4": {
+        "name": "Microleakage test profile 4",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm5": {
+        "name": "Microleakage test profile 5",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm6": {
+        "name": "Microleakage test profile 6",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm7": {
+        "name": "Microleakage test profile 7",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
+      "getpm8": {
+        "name": "Microleakage test profile 8",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
+        }
+      },
       "getpn1": {
         "name": "Leak protection profile name 1"
       },
@@ -352,6 +448,30 @@
       },
       "getpn8": {
         "name": "Leak protection profile name 8"
+      },
+      "getpr1": {
+        "name": "Return time to profile 1"
+      },
+      "getpr2": {
+        "name": "Return time to profile 2"
+      },
+      "getpr3": {
+        "name": "Return time to profile 3"
+      },
+      "getpr4": {
+        "name": "Return time to profile 4"
+      },
+      "getpr5": {
+        "name": "Return time to profile 5"
+      },
+      "getpr6": {
+        "name": "Return time to profile 6"
+      },
+      "getpr7": {
+        "name": "Return time to profile 7"
+      },
+      "getpr8": {
+        "name": "Return time to profile 8"
       },
       "getprf": {
         "name": "Active leak protection profile",
@@ -424,53 +544,61 @@
       "getpv8": {
         "name": "Volume leakage threshold 8"
       },
-      "getpr1": {
-        "name": "Return time to profile 1"
-      },
-      "getpr2": {
-        "name": "Return time to profile 2"
-      },
-      "getpr3": {
-        "name": "Return time to profile 3"
-      },
-      "getpr4": {
-        "name": "Return time to profile 4"
-      },
-      "getpr5": {
-        "name": "Return time to profile 5"
-      },
-      "getpr6": {
-        "name": "Return time to profile 6"
-      },
-      "getpr7": {
-        "name": "Return time to profile 7"
-      },
-      "getpr8": {
-        "name": "Return time to profile 8"
-      },
       "getpw1": {
-        "name": "Leak warning profile 1"
+        "name": "Leak warning profile 1",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw2": {
-        "name": "Leak warning profile 2"
+        "name": "Leak warning profile 2",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw3": {
-        "name": "Leak warning profile 3"
+        "name": "Leak warning profile 3",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw4": {
-        "name": "Leak warning profile 4"
+        "name": "Leak warning profile 4",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw5": {
-        "name": "Leak warning profile 5"
+        "name": "Leak warning profile 5",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw6": {
-        "name": "Leak warning profile 6"
+        "name": "Leak warning profile 6",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw7": {
-        "name": "Leak warning profile 7"
+        "name": "Leak warning profile 7",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getpw8": {
-        "name": "Leak warning profile 8"
+        "name": "Leak warning profile 8",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
       },
       "getrdo": {
         "name": "Salt dosing"

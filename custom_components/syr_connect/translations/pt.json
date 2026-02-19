@@ -234,124 +234,116 @@
         "name": "Dureza da água de saída"
       },
       "getpa1": {
-        "name": "Perfil de proteção contra vazamento 1 ativado"
-      },
-      "getpb1": {
-        "name": "Buzzer perfil 1"
-      },
-      "getpb2": {
-        "name": "Buzzer perfil 2"
-      },
-      "getpb3": {
-        "name": "Buzzer perfil 3"
-      },
-      "getpb4": {
-        "name": "Buzzer perfil 4"
-      },
-      "getpb5": {
-        "name": "Buzzer perfil 5"
-      },
-      "getpb6": {
-        "name": "Buzzer perfil 6"
-      },
-      "getpb7": {
-        "name": "Buzzer perfil 7"
-      },
-      "getpb8": {
-        "name": "Buzzer perfil 8"
-      },
-      "getpm1": {
-        "name": "Teste microvazamento perfil 1"
-      },
-      "getpm2": {
-        "name": "Teste microvazamento perfil 2"
-      },
-      "getpm3": {
-        "name": "Teste microvazamento perfil 3"
-      },
-      "getpm4": {
-        "name": "Teste microvazamento perfil 4"
-      },
-      "getpm5": {
-        "name": "Teste microvazamento perfil 5"
-      },
-      "getpm6": {
-        "name": "Teste microvazamento perfil 6"
-      },
-      "getpm7": {
-        "name": "Teste microvazamento perfil 7"
-      },
-      "getpm8": {
-        "name": "Teste microvazamento perfil 8"
+        "name": "Perfil de proteção contra vazamento 1",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa2": {
-        "name": "Perfil de proteção contra vazamento 2 ativado"
+        "name": "Perfil de proteção contra vazamento 2",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa3": {
-        "name": "Perfil de proteção contra vazamento 3 ativado"
+        "name": "Perfil de proteção contra vazamento 3",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa4": {
-        "name": "Perfil de proteção contra vazamento 4 ativado"
+        "name": "Perfil de proteção contra vazamento 4",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa5": {
-        "name": "Perfil de proteção contra vazamento 5 ativado"
+        "name": "Perfil de proteção contra vazamento 5",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa6": {
-        "name": "Perfil de proteção contra vazamento 6 ativado"
+        "name": "Perfil de proteção contra vazamento 6",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa7": {
-        "name": "Perfil de proteção contra vazamento 7 ativado"
+        "name": "Perfil de proteção contra vazamento 7",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpa8": {
-        "name": "Perfil de proteção contra vazamento 8 ativado"
+        "name": "Perfil de proteção contra vazamento 8",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr1": {
-        "name": "Tempo de retorno ao perfil 1"
+      "getpb1": {
+        "name": "Buzzer perfil 1",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr2": {
-        "name": "Tempo de retorno ao perfil 2"
+      "getpb2": {
+        "name": "Buzzer perfil 2",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr3": {
-        "name": "Tempo de retorno ao perfil 3"
+      "getpb3": {
+        "name": "Buzzer perfil 3",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr4": {
-        "name": "Tempo de retorno ao perfil 4"
+      "getpb4": {
+        "name": "Buzzer perfil 4",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr5": {
-        "name": "Tempo de retorno ao perfil 5"
+      "getpb5": {
+        "name": "Buzzer perfil 5",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
+      "getpb6": {
+        "name": "Buzzer perfil 6",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpb7": {
+        "name": "Buzzer perfil 7",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
-      },
-      "getpw1": {
-        "name": "Alerta de vazamento perfil 1"
-      },
-      "getpw2": {
-        "name": "Alerta de vazamento perfil 2"
-      },
-      "getpw3": {
-        "name": "Alerta de vazamento perfil 3"
-      },
-      "getpw4": {
-        "name": "Alerta de vazamento perfil 4"
-      },
-      "getpw5": {
-        "name": "Alerta de vazamento perfil 5"
-      },
-      "getpw6": {
-        "name": "Alerta de vazamento perfil 6"
-      },
-      "getpw7": {
-        "name": "Alerta de vazamento perfil 7"
-      },
-      "getpw8": {
-        "name": "Alerta de vazamento perfil 8"
+      "getpb8": {
+        "name": "Buzzer perfil 8",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getpf1": {
         "name": "Limite de vazamento por fluxo 1"
@@ -377,6 +369,62 @@
       "getpf8": {
         "name": "Limite de vazamento por fluxo 8"
       },
+      "getpm1": {
+        "name": "Teste microvazamento perfil 1",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm2": {
+        "name": "Teste microvazamento perfil 2",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm3": {
+        "name": "Teste microvazamento perfil 3",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm4": {
+        "name": "Teste microvazamento perfil 4",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm5": {
+        "name": "Teste microvazamento perfil 5",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm6": {
+        "name": "Teste microvazamento perfil 6",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm7": {
+        "name": "Teste microvazamento perfil 7",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
+      "getpm8": {
+        "name": "Teste microvazamento perfil 8",
+        "state": {
+          "false": "Inativo",
+          "true": "Ativo"
+        }
+      },
       "getpn1": {
         "name": "Nome do perfil de proteção 1"
       },
@@ -400,6 +448,51 @@
       },
       "getpn8": {
         "name": "Nome do perfil de proteção 8"
+      },
+      "getpr1": {
+        "name": "Tempo de retorno ao perfil 1"
+      },
+      "getpr2": {
+        "name": "Tempo de retorno ao perfil 2"
+      },
+      "getpr2": {
+        "name": "Tempo de retorno ao perfil 2"
+      },
+      "getpr3": {
+        "name": "Tempo de retorno ao perfil 3"
+      },
+      "getpr3": {
+        "name": "Tempo de retorno ao perfil 3"
+      },
+      "getpr4": {
+        "name": "Tempo de retorno ao perfil 4"
+      },
+      "getpr4": {
+        "name": "Tempo de retorno ao perfil 4"
+      },
+      "getpr5": {
+        "name": "Tempo de retorno ao perfil 5"
+      },
+      "getpr5": {
+        "name": "Tempo de retorno ao perfil 5"
+      },
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
+      },
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
+      },
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
+      },
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
       },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",
@@ -471,6 +564,62 @@
       },
       "getpv8": {
         "name": "Limite de vazamento por volume 8"
+      },
+      "getpw1": {
+        "name": "Alerta de vazamento perfil 1",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw2": {
+        "name": "Alerta de vazamento perfil 2",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw3": {
+        "name": "Alerta de vazamento perfil 3",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw4": {
+        "name": "Alerta de vazamento perfil 4",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw5": {
+        "name": "Alerta de vazamento perfil 5",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw6": {
+        "name": "Alerta de vazamento perfil 6",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw7": {
+        "name": "Alerta de vazamento perfil 7",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getpw8": {
+        "name": "Alerta de vazamento perfil 8",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
       },
       "getrdo": {
         "name": "Dosagem de sal"

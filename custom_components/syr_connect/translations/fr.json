@@ -234,76 +234,116 @@
         "name": "Dureté de l'eau adoucie"
       },
       "getpa1": {
-        "name": "Profil 1 activé"
-      },
-      "getpb1": {
-        "name": "Avertisseur profil 1"
-      },
-      "getpb2": {
-        "name": "Avertisseur profil 2"
-      },
-      "getpb3": {
-        "name": "Avertisseur profil 3"
-      },
-      "getpb4": {
-        "name": "Avertisseur profil 4"
-      },
-      "getpb5": {
-        "name": "Avertisseur profil 5"
-      },
-      "getpb6": {
-        "name": "Avertisseur profil 6"
-      },
-      "getpb7": {
-        "name": "Avertisseur profil 7"
-      },
-      "getpb8": {
-        "name": "Avertisseur profil 8"
-      },
-      "getpm1": {
-        "name": "Test micro-fuite profil 1"
-      },
-      "getpm2": {
-        "name": "Test micro-fuite profil 2"
-      },
-      "getpm3": {
-        "name": "Test micro-fuite profil 3"
-      },
-      "getpm4": {
-        "name": "Test micro-fuite profil 4"
-      },
-      "getpm5": {
-        "name": "Test micro-fuite profil 5"
-      },
-      "getpm6": {
-        "name": "Test micro-fuite profil 6"
-      },
-      "getpm7": {
-        "name": "Test micro-fuite profil 7"
-      },
-      "getpm8": {
-        "name": "Test micro-fuite profil 8"
+        "name": "Profil 1",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa2": {
-        "name": "Profil 2 activé"
+        "name": "Profil 2",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa3": {
-        "name": "Profil 3 activé"
+        "name": "Profil 3",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa4": {
-        "name": "Profil 4 activé"
+        "name": "Profil 4",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa5": {
-        "name": "Profil 5 activé"
+        "name": "Profil 5",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa6": {
-        "name": "Profil 6 activé"
+        "name": "Profil 6",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa7": {
-        "name": "Profil 7 activé"
+        "name": "Profil 7",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpa8": {
-        "name": "Profil 8 activé"
+        "name": "Profil 8",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb1": {
+        "name": "Avertisseur profil 1",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb2": {
+        "name": "Avertisseur profil 2",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb3": {
+        "name": "Avertisseur profil 3",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb4": {
+        "name": "Avertisseur profil 4",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb5": {
+        "name": "Avertisseur profil 5",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb6": {
+        "name": "Avertisseur profil 6",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb7": {
+        "name": "Avertisseur profil 7",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getpb8": {
+        "name": "Avertisseur profil 8",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpf1": {
         "name": "Seuil de fuite de débit 1"
@@ -329,6 +369,62 @@
       "getpf8": {
         "name": "Seuil de fuite de débit 8"
       },
+      "getpm1": {
+        "name": "Test micro-fuite profil 1",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm2": {
+        "name": "Test micro-fuite profil 2",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm3": {
+        "name": "Test micro-fuite profil 3",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm4": {
+        "name": "Test micro-fuite profil 4",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm5": {
+        "name": "Test micro-fuite profil 5",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm6": {
+        "name": "Test micro-fuite profil 6",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm7": {
+        "name": "Test micro-fuite profil 7",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
+      "getpm8": {
+        "name": "Test micro-fuite profil 8",
+        "state": {
+          "false": "Inactif",
+          "true": "En cours"
+        }
+      },
       "getpn1": {
         "name": "Nom du profil 1"
       },
@@ -352,6 +448,30 @@
       },
       "getpn8": {
         "name": "Nom du profil 8"
+      },
+      "getpr1": {
+        "name": "Temps de retour au profil 1"
+      },
+      "getpr2": {
+        "name": "Temps de retour au profil 2"
+      },
+      "getpr3": {
+        "name": "Temps de retour au profil 3"
+      },
+      "getpr4": {
+        "name": "Temps de retour au profil 4"
+      },
+      "getpr5": {
+        "name": "Temps de retour au profil 5"
+      },
+      "getpr6": {
+        "name": "Temps de retour au profil 6"
+      },
+      "getpr7": {
+        "name": "Temps de retour au profil 7"
+      },
+      "getpr8": {
+        "name": "Temps de retour au profil 8"
       },
       "getprf": {
         "name": "Profil de protection contre les fuites actif",
@@ -424,53 +544,61 @@
       "getpv8": {
         "name": "Seuil de fuite de volume 8"
       },
-      "getpr1": {
-        "name": "Temps de retour au profil 1"
-      },
-      "getpr2": {
-        "name": "Temps de retour au profil 2"
-      },
-      "getpr3": {
-        "name": "Temps de retour au profil 3"
-      },
-      "getpr4": {
-        "name": "Temps de retour au profil 4"
-      },
-      "getpr5": {
-        "name": "Temps de retour au profil 5"
-      },
-      "getpr6": {
-        "name": "Temps de retour au profil 6"
-      },
-      "getpr7": {
-        "name": "Temps de retour au profil 7"
-      },
-      "getpr8": {
-        "name": "Temps de retour au profil 8"
-      },
       "getpw1": {
-        "name": "Alerte de fuite profil 1"
+        "name": "Alerte de fuite profil 1",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw2": {
-        "name": "Alerte de fuite profil 2"
+        "name": "Alerte de fuite profil 2",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw3": {
-        "name": "Alerte de fuite profil 3"
+        "name": "Alerte de fuite profil 3",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw4": {
-        "name": "Alerte de fuite profil 4"
+        "name": "Alerte de fuite profil 4",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw5": {
-        "name": "Alerte de fuite profil 5"
+        "name": "Alerte de fuite profil 5",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw6": {
-        "name": "Alerte de fuite profil 6"
+        "name": "Alerte de fuite profil 6",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw7": {
-        "name": "Alerte de fuite profil 7"
+        "name": "Alerte de fuite profil 7",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getpw8": {
-        "name": "Alerte de fuite profil 8"
+        "name": "Alerte de fuite profil 8",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
       },
       "getrdo": {
         "name": "Dosage du sel"

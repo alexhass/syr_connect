@@ -234,76 +234,116 @@
         "name": "Dureza del agua de salida"
       },
       "getpa1": {
-        "name": "Perfil de protección contra fugas 1 activado"
+        "name": "Perfil de protección contra fugas 1",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa2": {
-        "name": "Perfil de protección contra fugas 2 activado"
+        "name": "Perfil de protección contra fugas 2",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa3": {
-        "name": "Perfil de protección contra fugas 3 activado"
+        "name": "Perfil de protección contra fugas 3",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa4": {
-        "name": "Perfil de protección contra fugas 4 activado"
+        "name": "Perfil de protección contra fugas 4",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa5": {
-        "name": "Perfil de protección contra fugas 5 activado"
+        "name": "Perfil de protección contra fugas 5",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa6": {
-        "name": "Perfil de protección contra fugas 6 activado"
+        "name": "Perfil de protección contra fugas 6",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa7": {
-        "name": "Perfil de protección contra fugas 7 activado"
+        "name": "Perfil de protección contra fugas 7",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpa8": {
-        "name": "Perfil de protección contra fugas 8 activado"
+        "name": "Perfil de protección contra fugas 8",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb1": {
-        "name": "Zumbador perfil 1"
+        "name": "Zumbador perfil 1",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb2": {
-        "name": "Zumbador perfil 2"
+        "name": "Zumbador perfil 2",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb3": {
-        "name": "Zumbador perfil 3"
+        "name": "Zumbador perfil 3",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb4": {
-        "name": "Zumbador perfil 4"
+        "name": "Zumbador perfil 4",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb5": {
-        "name": "Zumbador perfil 5"
+        "name": "Zumbador perfil 5",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb6": {
-        "name": "Zumbador perfil 6"
+        "name": "Zumbador perfil 6",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb7": {
-        "name": "Zumbador perfil 7"
+        "name": "Zumbador perfil 7",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpb8": {
-        "name": "Zumbador perfil 8"
-      },
-      "getpm1": {
-        "name": "Prueba de microfugas perfil 1"
-      },
-      "getpm2": {
-        "name": "Prueba de microfugas perfil 2"
-      },
-      "getpm3": {
-        "name": "Prueba de microfugas perfil 3"
-      },
-      "getpm4": {
-        "name": "Prueba de microfugas perfil 4"
-      },
-      "getpm5": {
-        "name": "Prueba de microfugas perfil 5"
-      },
-      "getpm6": {
-        "name": "Prueba de microfugas perfil 6"
-      },
-      "getpm7": {
-        "name": "Prueba de microfugas perfil 7"
-      },
-      "getpm8": {
-        "name": "Prueba de microfugas perfil 8"
+        "name": "Zumbador perfil 8",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpf1": {
         "name": "Umbral de fuga de caudal 1"
@@ -329,6 +369,62 @@
       "getpf8": {
         "name": "Umbral de fuga de caudal 8"
       },
+      "getpm1": {
+        "name": "Prueba de microfugas perfil 1",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm2": {
+        "name": "Prueba de microfugas perfil 2",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm3": {
+        "name": "Prueba de microfugas perfil 3",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm4": {
+        "name": "Prueba de microfugas perfil 4",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm5": {
+        "name": "Prueba de microfugas perfil 5",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm6": {
+        "name": "Prueba de microfugas perfil 6",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm7": {
+        "name": "Prueba de microfugas perfil 7",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
+      "getpm8": {
+        "name": "Prueba de microfugas perfil 8",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
+        }
+      },
       "getpn1": {
         "name": "Nombre del perfil de protección contra fugas 1"
       },
@@ -352,6 +448,30 @@
       },
       "getpn8": {
         "name": "Nombre del perfil de protección contra fugas 8"
+      },
+      "getpr1": {
+        "name": "Tiempo de retorno al perfil 1"
+      },
+      "getpr2": {
+        "name": "Tiempo de retorno al perfil 2"
+      },
+      "getpr3": {
+        "name": "Tiempo de retorno al perfil 3"
+      },
+      "getpr4": {
+        "name": "Tiempo de retorno al perfil 4"
+      },
+      "getpr5": {
+        "name": "Tiempo de retorno al perfil 5"
+      },
+      "getpr6": {
+        "name": "Tiempo de retorno al perfil 6"
+      },
+      "getpr7": {
+        "name": "Tiempo de retorno al perfil 7"
+      },
+      "getpr8": {
+        "name": "Tiempo de retorno al perfil 8"
       },
       "getprf": {
         "name": "Perfil de protección contra fugas activo",
@@ -424,53 +544,61 @@
       "getpv8": {
         "name": "Umbral de fuga de volumen 8"
       },
-      "getpr1": {
-        "name": "Tiempo de retorno al perfil 1"
-      },
-      "getpr2": {
-        "name": "Tiempo de retorno al perfil 2"
-      },
-      "getpr3": {
-        "name": "Tiempo de retorno al perfil 3"
-      },
-      "getpr4": {
-        "name": "Tiempo de retorno al perfil 4"
-      },
-      "getpr5": {
-        "name": "Tiempo de retorno al perfil 5"
-      },
-      "getpr6": {
-        "name": "Tiempo de retorno al perfil 6"
-      },
-      "getpr7": {
-        "name": "Tiempo de retorno al perfil 7"
-      },
-      "getpr8": {
-        "name": "Tiempo de retorno al perfil 8"
-      },
       "getpw1": {
-        "name": "Alerta de fuga perfil 1"
+        "name": "Alerta de fuga perfil 1",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw2": {
-        "name": "Alerta de fuga perfil 2"
+        "name": "Alerta de fuga perfil 2",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw3": {
-        "name": "Alerta de fuga perfil 3"
+        "name": "Alerta de fuga perfil 3",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw4": {
-        "name": "Alerta de fuga perfil 4"
+        "name": "Alerta de fuga perfil 4",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw5": {
-        "name": "Alerta de fuga perfil 5"
+        "name": "Alerta de fuga perfil 5",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw6": {
-        "name": "Alerta de fuga perfil 6"
+        "name": "Alerta de fuga perfil 6",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw7": {
-        "name": "Alerta de fuga perfil 7"
+        "name": "Alerta de fuga perfil 7",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getpw8": {
-        "name": "Alerta de fuga perfil 8"
+        "name": "Alerta de fuga perfil 8",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
       },
       "getrdo": {
         "name": "Dosificación de sal"

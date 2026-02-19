@@ -234,124 +234,116 @@
         "name": "Durezza acqua in uscita"
       },
       "getpa1": {
-        "name": "Profilo protezione perdite 1 attivato"
-      },
-      "getpb1": {
-        "name": "Cicalino profilo 1"
-      },
-      "getpb2": {
-        "name": "Cicalino profilo 2"
-      },
-      "getpb3": {
-        "name": "Cicalino profilo 3"
-      },
-      "getpb4": {
-        "name": "Cicalino profilo 4"
-      },
-      "getpb5": {
-        "name": "Cicalino profilo 5"
-      },
-      "getpb6": {
-        "name": "Cicalino profilo 6"
-      },
-      "getpb7": {
-        "name": "Cicalino profilo 7"
-      },
-      "getpb8": {
-        "name": "Cicalino profilo 8"
-      },
-      "getpm1": {
-        "name": "Test micro-perdita profilo 1"
-      },
-      "getpm2": {
-        "name": "Test micro-perdita profilo 2"
-      },
-      "getpm3": {
-        "name": "Test micro-perdita profilo 3"
-      },
-      "getpm4": {
-        "name": "Test micro-perdita profilo 4"
-      },
-      "getpm5": {
-        "name": "Test micro-perdita profilo 5"
-      },
-      "getpm6": {
-        "name": "Test micro-perdita profilo 6"
-      },
-      "getpm7": {
-        "name": "Test micro-perdita profilo 7"
-      },
-      "getpm8": {
-        "name": "Test micro-perdita profilo 8"
+        "name": "Profilo protezione perdite 1",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa2": {
-        "name": "Profilo protezione perdite 2 attivato"
+        "name": "Profilo protezione perdite 2",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa3": {
-        "name": "Profilo protezione perdite 3 attivato"
+        "name": "Profilo protezione perdite 3",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa4": {
-        "name": "Profilo protezione perdite 4 attivato"
+        "name": "Profilo protezione perdite 4",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa5": {
-        "name": "Profilo protezione perdite 5 attivato"
+        "name": "Profilo protezione perdite 5",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa6": {
-        "name": "Profilo protezione perdite 6 attivato"
+        "name": "Profilo protezione perdite 6",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa7": {
-        "name": "Profilo protezione perdite 7 attivato"
+        "name": "Profilo protezione perdite 7",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpa8": {
-        "name": "Profilo protezione perdite 8 attivato"
+        "name": "Profilo protezione perdite 8",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr1": {
-        "name": "Tempo di ritorno al profilo 1"
+      "getpb1": {
+        "name": "Cicalino profilo 1",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr2": {
-        "name": "Tempo di ritorno al profilo 2"
+      "getpb2": {
+        "name": "Cicalino profilo 2",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr3": {
-        "name": "Tempo di ritorno al profilo 3"
+      "getpb3": {
+        "name": "Cicalino profilo 3",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr4": {
-        "name": "Tempo di ritorno al profilo 4"
+      "getpb4": {
+        "name": "Cicalino profilo 4",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr5": {
-        "name": "Tempo di ritorno al profilo 5"
+      "getpb5": {
+        "name": "Cicalino profilo 5",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
+      "getpb6": {
+        "name": "Cicalino profilo 6",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpb7": {
+        "name": "Cicalino profilo 7",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
-      },
-      "getpw1": {
-        "name": "Avviso perdita profilo 1"
-      },
-      "getpw2": {
-        "name": "Avviso perdita profilo 2"
-      },
-      "getpw3": {
-        "name": "Avviso perdita profilo 3"
-      },
-      "getpw4": {
-        "name": "Avviso perdita profilo 4"
-      },
-      "getpw5": {
-        "name": "Avviso perdita profilo 5"
-      },
-      "getpw6": {
-        "name": "Avviso perdita profilo 6"
-      },
-      "getpw7": {
-        "name": "Avviso perdita profilo 7"
-      },
-      "getpw8": {
-        "name": "Avviso perdita profilo 8"
+      "getpb8": {
+        "name": "Cicalino profilo 8",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getpf1": {
         "name": "Soglia perdita flusso 1"
@@ -377,6 +369,62 @@
       "getpf8": {
         "name": "Soglia perdita flusso 8"
       },
+      "getpm1": {
+        "name": "Test micro-perdita profilo 1",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm2": {
+        "name": "Test micro-perdita profilo 2",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm3": {
+        "name": "Test micro-perdita profilo 3",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm4": {
+        "name": "Test micro-perdita profilo 4",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm5": {
+        "name": "Test micro-perdita profilo 5",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm6": {
+        "name": "Test micro-perdita profilo 6",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm7": {
+        "name": "Test micro-perdita profilo 7",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
+      "getpm8": {
+        "name": "Test micro-perdita profilo 8",
+        "state": {
+          "false": "Inattivo",
+          "true": "In funzione"
+        }
+      },
       "getpn1": {
         "name": "Nome profilo 1"
       },
@@ -400,6 +448,51 @@
       },
       "getpn8": {
         "name": "Nome profilo 8"
+      },
+      "getpr1": {
+        "name": "Tempo di ritorno al profilo 1"
+      },
+      "getpr2": {
+        "name": "Tempo di ritorno al profilo 2"
+      },
+      "getpr2": {
+        "name": "Tempo di ritorno al profilo 2"
+      },
+      "getpr3": {
+        "name": "Tempo di ritorno al profilo 3"
+      },
+      "getpr3": {
+        "name": "Tempo di ritorno al profilo 3"
+      },
+      "getpr4": {
+        "name": "Tempo di ritorno al profilo 4"
+      },
+      "getpr4": {
+        "name": "Tempo di ritorno al profilo 4"
+      },
+      "getpr5": {
+        "name": "Tempo di ritorno al profilo 5"
+      },
+      "getpr5": {
+        "name": "Tempo di ritorno al profilo 5"
+      },
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
+      },
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
+      },
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
+      },
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
       },
       "getprf": {
         "name": "Profilo protezione attivo",
@@ -471,6 +564,62 @@
       },
       "getpv8": {
         "name": "Soglia perdita volume 8"
+      },
+      "getpw1": {
+        "name": "Avviso perdita profilo 1",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw2": {
+        "name": "Avviso perdita profilo 2",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw3": {
+        "name": "Avviso perdita profilo 3",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw4": {
+        "name": "Avviso perdita profilo 4",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw5": {
+        "name": "Avviso perdita profilo 5",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw6": {
+        "name": "Avviso perdita profilo 6",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw7": {
+        "name": "Avviso perdita profilo 7",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getpw8": {
+        "name": "Avviso perdita profilo 8",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
       },
       "getrdo": {
         "name": "Dosaggio sale"
