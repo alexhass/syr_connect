@@ -68,9 +68,11 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for sensors")
         return
 
+    # Prepare entity registry handle
+    registry = er.async_get(hass)
+
     # Remove previously-registered entities that are now excluded
     try:
-        registry = er.async_get(hass)
         for device in coordinator.data.get('devices', []):
             device_id = device['id']
             for excluded_key in _SYR_CONNECT_SENSOR_EXCLUDED:
@@ -97,9 +99,73 @@ async def async_setup_entry(
         # Create sensors for all status values
         sensor_count = 0
 
+        # Handle leak-protection groups controlled by getPA1..getPA8
+        # If getPAx evaluates to true, ensure sensors getPVx, getPTx, getPFx, getPMx, getPWx, getPBx, getPRx are created.
+        # If getPAx evaluates to false, remove those sensors from the registry if present.
+        handled_keys: set[str] = set()
+
+        def _is_true(val: object) -> bool:
+            if val is True:
+                return True
+            if isinstance(val, (int, float)):
+                try:
+                    return int(val) != 0
+                except Exception:
+                    return False
+            if isinstance(val, str):
+                return val.strip().lower() in ("1", "true", "on", "yes")
+            return False
+
+        for idx in range(1, 9):
+            pa_key = f"getPA{idx}"
+            pa_val = status.get(pa_key)
+            group_keys = [
+                f"getPV{idx}",
+                f"getPT{idx}",
+                f"getPF{idx}",
+                f"getPM{idx}",
+                f"getPW{idx}",
+                f"getPB{idx}",
+                f"getPR{idx}"
+            ]
+
+            try:
+                if _is_true(pa_val):
+                    # Create entities for group keys (instantiate sensor objects so they appear as entities).
+                    for gk in group_keys:
+                        # Avoid duplicates when iterating over status later
+                        handled_keys.add(gk)
+                        entities.append(
+                            SyrConnectSensor(
+                                coordinator,
+                                device_id,
+                                device_name,
+                                project_id,
+                                gk,
+                            )
+                        )
+                        sensor_count += 1
+                else:
+                    # Remove group sensors from entity registry when PA flag is false
+                    for gk in group_keys:
+                        entity_id = build_entity_id("sensor", device_id, gk)
+                        registry_entry = registry.async_get(entity_id)
+                        if registry_entry is not None and hasattr(registry_entry, "entity_id"):
+                            _LOGGER.debug("Removing sensor due to getPA=false: %s", entity_id)
+                            try:
+                                registry.async_remove(registry_entry.entity_id)
+                            except Exception:
+                                _LOGGER.exception("Failed to remove sensor %s", entity_id)
+            except Exception:
+                _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
+
         for key, value in status.items():
             # Skip sensors excluded globally
             if key in _SYR_CONNECT_SENSOR_EXCLUDED:
+                continue
+
+            # Skip keys already handled by getPA group logic above
+            if key in handled_keys:
                 continue
 
             # Special logic for getCS1/2/3:
@@ -512,6 +578,29 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if ab is None:
                         return None
                     return "true" if ab else "false"
+
+                # Special handling for leak-protection boolean flags (getPMx, getPWx, getPBx, getPRx)
+                # Return "true"/"false" strings to match existing boolean string handling (e.g. getAB)
+                if re.match(r"^getP(?:M|W|B|R)\d$", self._sensor_key):
+                    if value is None or (isinstance(value, str) and value.strip() == ""):
+                        return None
+                    # Numeric values
+                    if isinstance(value, (int, float)):
+                        try:
+                            return "true" if int(float(value)) != 0 else "false"
+                        except Exception:
+                            return None
+                    # String values
+                    if isinstance(value, str):
+                        sval = value.strip().lower()
+                        if sval in ("1", "true", "on", "yes"):
+                            return "true"
+                        if sval in ("0", "false", "off", "no"):
+                            return "false"
+                        try:
+                            return "true" if int(float(sval)) != 0 else "false"
+                        except Exception:
+                            return sval
 
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':

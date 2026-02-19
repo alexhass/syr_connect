@@ -196,10 +196,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # Sensors exits in devices:
     # - LEXplus10SL
 
-    # Leak protection - internal flags (unclear meaning)
-    'getPM1', 'getPM2', 'getPM3', 'getPM4', 'getPM5', 'getPM6', 'getPM7', 'getPM8',
-    'getPB1', 'getPB2', 'getPB3', 'getPB4', 'getPB5', 'getPB6', 'getPB7', 'getPB8',
-    'getPR1', 'getPR2', 'getPR3', 'getPR4', 'getPR5', 'getPR6', 'getPR7', 'getPR8',
     # Technical values without context
     'get71', 'getBSA', 'getBUZ',
     'getCDF',
@@ -818,4 +814,9 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getVOL": 0,    # Total water volume: show as whole number by default
     "getWFR": 0,    # Wi-Fi signal strength: show as whole number by default
     "getWFS": 0,    # Wi-Fi connection status
+
+    # Leak protection numeric precisions (integers)
+    "getPF1": 0, "getPF2": 0, "getPF3": 0, "getPF4": 0, "getPF5": 0, "getPF6": 0, "getPF7": 0, "getPF8": 0,
+    "getPT1": 0, "getPT2": 0, "getPT3": 0, "getPT4": 0, "getPT5": 0, "getPT6": 0, "getPT7": 0, "getPT8": 0,
+    "getPV1": 0, "getPV2": 0, "getPV3": 0, "getPV4": 0, "getPV5": 0, "getPV6": 0, "getPV7": 0, "getPV8": 0,
 }

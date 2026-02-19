@@ -257,6 +257,30 @@
       "getpa8": {
         "name": "Leckagesschutz-Profil 8 aktiviert"
       },
+      "getpb1": {
+        "name": "Summer Profil 1"
+      },
+      "getpb2": {
+        "name": "Summer Profil 2"
+      },
+      "getpb3": {
+        "name": "Summer Profil 3"
+      },
+      "getpb4": {
+        "name": "Summer Profil 4"
+      },
+      "getpb5": {
+        "name": "Summer Profil 5"
+      },
+      "getpb6": {
+        "name": "Summer Profil 6"
+      },
+      "getpb7": {
+        "name": "Summer Profil 7"
+      },
+      "getpb8": {
+        "name": "Summer Profil 8"
+      },
       "getpf1": {
         "name": "Durchflussleckage-Schwellwert 1"
       },
@@ -281,6 +305,30 @@
       "getpf8": {
         "name": "Durchflussleckage-Schwellwert 8"
       },
+      "getpm1": {
+        "name": "Mikroleckage-Test Profil 1"
+      },
+      "getpm2": {
+        "name": "Mikroleckage-Test Profil 2"
+      },
+      "getpm3": {
+        "name": "Mikroleckage-Test Profil 3"
+      },
+      "getpm4": {
+        "name": "Mikroleckage-Test Profil 4"
+      },
+      "getpm5": {
+        "name": "Mikroleckage-Test Profil 5"
+      },
+      "getpm6": {
+        "name": "Mikroleckage-Test Profil 6"
+      },
+      "getpm7": {
+        "name": "Mikroleckage-Test Profil 7"
+      },
+      "getpm8": {
+        "name": "Mikroleckage-Test Profil 8"
+      },
       "getpn1": {
         "name": "Leckagesschutz-Profil Name 1"
       },
@@ -304,6 +352,30 @@
       },
       "getpn8": {
         "name": "Leckagesschutz-Profil Name 8"
+      },
+      "getpr1": {
+        "name": "Rückkehrzeit zu Profil 1"
+      },
+      "getpr2": {
+        "name": "Rückkehrzeit zu Profil 2"
+      },
+      "getpr3": {
+        "name": "Rückkehrzeit zu Profil 3"
+      },
+      "getpr4": {
+        "name": "Rückkehrzeit zu Profil 4"
+      },
+      "getpr5": {
+        "name": "Rückkehrzeit zu Profil 5"
+      },
+      "getpr6": {
+        "name": "Rückkehrzeit zu Profil 6"
+      },
+      "getpr7": {
+        "name": "Rückkehrzeit zu Profil 7"
+      },
+      "getpr8": {
+        "name": "Rückkehrzeit zu Profil 8"
       },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",

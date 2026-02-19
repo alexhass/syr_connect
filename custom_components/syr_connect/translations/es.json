@@ -257,6 +257,54 @@
       "getpa8": {
         "name": "Perfil de protección contra fugas 8 activado"
       },
+      "getpb1": {
+        "name": "Zumbador perfil 1"
+      },
+      "getpb2": {
+        "name": "Zumbador perfil 2"
+      },
+      "getpb3": {
+        "name": "Zumbador perfil 3"
+      },
+      "getpb4": {
+        "name": "Zumbador perfil 4"
+      },
+      "getpb5": {
+        "name": "Zumbador perfil 5"
+      },
+      "getpb6": {
+        "name": "Zumbador perfil 6"
+      },
+      "getpb7": {
+        "name": "Zumbador perfil 7"
+      },
+      "getpb8": {
+        "name": "Zumbador perfil 8"
+      },
+      "getpm1": {
+        "name": "Prueba de microfugas perfil 1"
+      },
+      "getpm2": {
+        "name": "Prueba de microfugas perfil 2"
+      },
+      "getpm3": {
+        "name": "Prueba de microfugas perfil 3"
+      },
+      "getpm4": {
+        "name": "Prueba de microfugas perfil 4"
+      },
+      "getpm5": {
+        "name": "Prueba de microfugas perfil 5"
+      },
+      "getpm6": {
+        "name": "Prueba de microfugas perfil 6"
+      },
+      "getpm7": {
+        "name": "Prueba de microfugas perfil 7"
+      },
+      "getpm8": {
+        "name": "Prueba de microfugas perfil 8"
+      },
       "getpf1": {
         "name": "Umbral de fuga de caudal 1"
       },
@@ -375,6 +423,30 @@
       },
       "getpv8": {
         "name": "Umbral de fuga de volumen 8"
+      },
+      "getpr1": {
+        "name": "Tiempo de retorno al perfil 1"
+      },
+      "getpr2": {
+        "name": "Tiempo de retorno al perfil 2"
+      },
+      "getpr3": {
+        "name": "Tiempo de retorno al perfil 3"
+      },
+      "getpr4": {
+        "name": "Tiempo de retorno al perfil 4"
+      },
+      "getpr5": {
+        "name": "Tiempo de retorno al perfil 5"
+      },
+      "getpr6": {
+        "name": "Tiempo de retorno al perfil 6"
+      },
+      "getpr7": {
+        "name": "Tiempo de retorno al perfil 7"
+      },
+      "getpr8": {
+        "name": "Tiempo de retorno al perfil 8"
       },
       "getrdo": {
         "name": "Dosificación de sal"

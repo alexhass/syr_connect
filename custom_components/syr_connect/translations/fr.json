@@ -236,6 +236,54 @@
       "getpa1": {
         "name": "Profil 1 activé"
       },
+      "getpb1": {
+        "name": "Avertisseur profil 1"
+      },
+      "getpb2": {
+        "name": "Avertisseur profil 2"
+      },
+      "getpb3": {
+        "name": "Avertisseur profil 3"
+      },
+      "getpb4": {
+        "name": "Avertisseur profil 4"
+      },
+      "getpb5": {
+        "name": "Avertisseur profil 5"
+      },
+      "getpb6": {
+        "name": "Avertisseur profil 6"
+      },
+      "getpb7": {
+        "name": "Avertisseur profil 7"
+      },
+      "getpb8": {
+        "name": "Avertisseur profil 8"
+      },
+      "getpm1": {
+        "name": "Test micro-fuite profil 1"
+      },
+      "getpm2": {
+        "name": "Test micro-fuite profil 2"
+      },
+      "getpm3": {
+        "name": "Test micro-fuite profil 3"
+      },
+      "getpm4": {
+        "name": "Test micro-fuite profil 4"
+      },
+      "getpm5": {
+        "name": "Test micro-fuite profil 5"
+      },
+      "getpm6": {
+        "name": "Test micro-fuite profil 6"
+      },
+      "getpm7": {
+        "name": "Test micro-fuite profil 7"
+      },
+      "getpm8": {
+        "name": "Test micro-fuite profil 8"
+      },
       "getpa2": {
         "name": "Profil 2 activé"
       },
@@ -375,6 +423,30 @@
       },
       "getpv8": {
         "name": "Seuil de fuite de volume 8"
+      },
+      "getpr1": {
+        "name": "Temps de retour au profil 1"
+      },
+      "getpr2": {
+        "name": "Temps de retour au profil 2"
+      },
+      "getpr3": {
+        "name": "Temps de retour au profil 3"
+      },
+      "getpr4": {
+        "name": "Temps de retour au profil 4"
+      },
+      "getpr5": {
+        "name": "Temps de retour au profil 5"
+      },
+      "getpr6": {
+        "name": "Temps de retour au profil 6"
+      },
+      "getpr7": {
+        "name": "Temps de retour au profil 7"
+      },
+      "getpr8": {
+        "name": "Temps de retour au profil 8"
       },
       "getrdo": {
         "name": "Dosage du sel"

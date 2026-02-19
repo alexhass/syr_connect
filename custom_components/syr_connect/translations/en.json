@@ -257,6 +257,54 @@
       "getpa8": {
         "name": "Leak protection profile 8 activated"
       },
+      "getpb1": {
+        "name": "Buzzer profile 1"
+      },
+      "getpb2": {
+        "name": "Buzzer profile 2"
+      },
+      "getpb3": {
+        "name": "Buzzer profile 3"
+      },
+      "getpb4": {
+        "name": "Buzzer profile 4"
+      },
+      "getpb5": {
+        "name": "Buzzer profile 5"
+      },
+      "getpb6": {
+        "name": "Buzzer profile 6"
+      },
+      "getpb7": {
+        "name": "Buzzer profile 7"
+      },
+      "getpb8": {
+        "name": "Buzzer profile 8"
+      },
+      "getpm1": {
+        "name": "Microleakage test profile 1"
+      },
+      "getpm2": {
+        "name": "Microleakage test profile 2"
+      },
+      "getpm3": {
+        "name": "Microleakage test profile 3"
+      },
+      "getpm4": {
+        "name": "Microleakage test profile 4"
+      },
+      "getpm5": {
+        "name": "Microleakage test profile 5"
+      },
+      "getpm6": {
+        "name": "Microleakage test profile 6"
+      },
+      "getpm7": {
+        "name": "Microleakage test profile 7"
+      },
+      "getpm8": {
+        "name": "Microleakage test profile 8"
+      },
       "getpf1": {
         "name": "Flow leakage threshold 1"
       },
@@ -375,6 +423,30 @@
       },
       "getpv8": {
         "name": "Volume leakage threshold 8"
+      },
+      "getpr1": {
+        "name": "Return time to profile 1"
+      },
+      "getpr2": {
+        "name": "Return time to profile 2"
+      },
+      "getpr3": {
+        "name": "Return time to profile 3"
+      },
+      "getpr4": {
+        "name": "Return time to profile 4"
+      },
+      "getpr5": {
+        "name": "Return time to profile 5"
+      },
+      "getpr6": {
+        "name": "Return time to profile 6"
+      },
+      "getpr7": {
+        "name": "Return time to profile 7"
+      },
+      "getpr8": {
+        "name": "Return time to profile 8"
       },
       "getrdo": {
         "name": "Salt dosing"
