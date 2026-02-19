@@ -110,7 +110,7 @@ async def async_setup_entry(
                 return val
 
             # Numeric-like values (including numeric strings)
-            if isinstance(val, (int, float)):
+            if isinstance(val, (int | float)):
                 try:
                     return int(float(val)) != 0
                 except Exception:

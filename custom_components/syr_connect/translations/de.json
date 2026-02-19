@@ -234,52 +234,116 @@
         "name": "Weichwasserhärte"
       },
       "getpa1": {
-        "name": "Leckagesschutz-Profil 1 aktiviert"
+        "name": "Leckagesschutz-Profil 1",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa2": {
-        "name": "Leckagesschutz-Profil 2 aktiviert"
+        "name": "Leckagesschutz-Profil 2",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa3": {
-        "name": "Leckagesschutz-Profil 3 aktiviert"
+        "name": "Leckagesschutz-Profil 3",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa4": {
-        "name": "Leckagesschutz-Profil 4 aktiviert"
+        "name": "Leckagesschutz-Profil 4",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa5": {
-        "name": "Leckagesschutz-Profil 5 aktiviert"
+        "name": "Leckagesschutz-Profil 5",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa6": {
-        "name": "Leckagesschutz-Profil 6 aktiviert"
+        "name": "Leckagesschutz-Profil 6",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa7": {
-        "name": "Leckagesschutz-Profil 7 aktiviert"
+        "name": "Leckagesschutz-Profil 7",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpa8": {
-        "name": "Leckagesschutz-Profil 8 aktiviert"
+        "name": "Leckagesschutz-Profil 8",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb1": {
-        "name": "Summer Profil 1"
+        "name": "Summer Profil 1",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb2": {
-        "name": "Summer Profil 2"
+        "name": "Summer Profil 2",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb3": {
-        "name": "Summer Profil 3"
+        "name": "Summer Profil 3",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb4": {
-        "name": "Summer Profil 4"
+        "name": "Summer Profil 4",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb5": {
-        "name": "Summer Profil 5"
+        "name": "Summer Profil 5",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb6": {
-        "name": "Summer Profil 6"
+        "name": "Summer Profil 6",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb7": {
-        "name": "Summer Profil 7"
+        "name": "Summer Profil 7",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpb8": {
-        "name": "Summer Profil 8"
+        "name": "Summer Profil 8",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpf1": {
         "name": "Durchflussleckage-Schwellwert 1"
@@ -306,28 +370,60 @@
         "name": "Durchflussleckage-Schwellwert 8"
       },
       "getpm1": {
-        "name": "Mikroleckage-Test Profil 1"
+        "name": "Mikroleckage-Test Profil 1",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm2": {
-        "name": "Mikroleckage-Test Profil 2"
+        "name": "Mikroleckage-Test Profil 2",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm3": {
-        "name": "Mikroleckage-Test Profil 3"
+        "name": "Mikroleckage-Test Profil 3",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm4": {
-        "name": "Mikroleckage-Test Profil 4"
+        "name": "Mikroleckage-Test Profil 4",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm5": {
-        "name": "Mikroleckage-Test Profil 5"
+        "name": "Mikroleckage-Test Profil 5",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm6": {
-        "name": "Mikroleckage-Test Profil 6"
+        "name": "Mikroleckage-Test Profil 6",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm7": {
-        "name": "Mikroleckage-Test Profil 7"
+        "name": "Mikroleckage-Test Profil 7",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpm8": {
-        "name": "Mikroleckage-Test Profil 8"
+        "name": "Mikroleckage-Test Profil 8",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getpn1": {
         "name": "Leckagesschutz-Profil Name 1"
@@ -376,30 +472,6 @@
       },
       "getpr8": {
         "name": "Rückkehrzeit zu Profil 8"
-      },
-      "getpw1": {
-        "name": "Leckagewarnung Profil 1"
-      },
-      "getpw2": {
-        "name": "Leckagewarnung Profil 2"
-      },
-      "getpw3": {
-        "name": "Leckagewarnung Profil 3"
-      },
-      "getpw4": {
-        "name": "Leckagewarnung Profil 4"
-      },
-      "getpw5": {
-        "name": "Leckagewarnung Profil 5"
-      },
-      "getpw6": {
-        "name": "Leckagewarnung Profil 6"
-      },
-      "getpw7": {
-        "name": "Leckagewarnung Profil 7"
-      },
-      "getpw8": {
-        "name": "Leckagewarnung Profil 8"
       },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",
@@ -471,6 +543,62 @@
       },
       "getpv8": {
         "name": "Volumenleckageschwellwert 8"
+      },
+      "getpw1": {
+        "name": "Leckagewarnung Profil 1",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw2": {
+        "name": "Leckagewarnung Profil 2",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw3": {
+        "name": "Leckagewarnung Profil 3",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw4": {
+        "name": "Leckagewarnung Profil 4",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw5": {
+        "name": "Leckagewarnung Profil 5",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw6": {
+        "name": "Leckagewarnung Profil 6",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw7": {
+        "name": "Leckagewarnung Profil 7",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getpw8": {
+        "name": "Leckagewarnung Profil 8",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
       },
       "getrdo": {
         "name": "Salzdosierung"

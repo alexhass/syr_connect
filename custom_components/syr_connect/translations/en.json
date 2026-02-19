@@ -234,28 +234,28 @@
         "name": "Output water hardness"
       },
       "getpa1": {
-        "name": "Leak protection profile 1 activated"
+        "name": "Leak protection profile 1"
       },
       "getpa2": {
-        "name": "Leak protection profile 2 activated"
+        "name": "Leak protection profile 2"
       },
       "getpa3": {
-        "name": "Leak protection profile 3 activated"
+        "name": "Leak protection profile 3"
       },
       "getpa4": {
-        "name": "Leak protection profile 4 activated"
+        "name": "Leak protection profile 4"
       },
       "getpa5": {
-        "name": "Leak protection profile 5 activated"
+        "name": "Leak protection profile 5"
       },
       "getpa6": {
-        "name": "Leak protection profile 6 activated"
+        "name": "Leak protection profile 6"
       },
       "getpa7": {
-        "name": "Leak protection profile 7 activated"
+        "name": "Leak protection profile 7"
       },
       "getpa8": {
-        "name": "Leak protection profile 8 activated"
+        "name": "Leak protection profile 8"
       },
       "getpb1": {
         "name": "Buzzer profile 1"
