@@ -134,9 +134,11 @@ async def async_setup_entry(
             pa_key = f"getPA{idx}"
             pa_val = status.get(pa_key)
             group_keys = [
+                f"getPA{idx}",
                 f"getPV{idx}",
                 f"getPT{idx}",
                 f"getPF{idx}",
+                f"getPN{idx}",
                 f"getPM{idx}",
                 f"getPW{idx}",
                 f"getPB{idx}",
