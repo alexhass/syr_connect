@@ -248,6 +248,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
+        # Cache last non-None native value to avoid writing None when API omits values
+        self._last_native_value: str | int | float | datetime | None = None
+
     def _apply_numeric_conversion(self, value: float) -> float | int:
         """Apply sensor-specific unit conversion and precision.
 
@@ -401,13 +404,39 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self) -> str | int | float | datetime | None:
-        """Return the state of the sensor."""
+        """Return the state of the sensor.
+
+        Wrapper around `_compute_native_value()` that caches the last
+        non-None value. If the API omits the `getXXX` field (i.e. returns
+        `None`), the last known non-None value is returned to avoid
+        storing `None` in the entity state.
+        """
+        computed = self._compute_native_value()
+        if computed is not None:
+            self._last_native_value = computed
+            return computed
+        return getattr(self, "_last_native_value", None)
+
+    def _compute_native_value(self) -> str | int | float | datetime | None:
+        """Original native_value computation moved here."""
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
                 status = device.get('status', {})
 
                 # Defensive: always set value before use in string sensors
                 value = status.get(self._sensor_key) if self._sensor_key in status else None
+
+                # Log missing sensor data (API omitted field or returned None/empty)
+                if self._sensor_key not in status or value is None or (
+                    isinstance(value, str) and value.strip() == ""
+                ):
+                    _LOGGER.debug(
+                        "Missing sensor data for device=%s (%s) sensor=%s value=%r",
+                        self._device_name,
+                        self._device_id,
+                        self._sensor_key,
+                        value,
+                    )
 
                 # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
                 if self._sensor_key == 'getVOL' and value is not None:
