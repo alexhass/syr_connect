@@ -170,6 +170,9 @@ async def async_setup_entry(
                                 registry.async_remove(registry_entry.entity_id)
                             except Exception:
                                 _LOGGER.exception("Failed to remove sensor %s", entity_id)
+                        # Ensure group keys are marked as handled so they are not recreated
+                        # later when iterating over status.items().
+                        handled_keys.add(gk)
             except Exception:
                 _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
 
