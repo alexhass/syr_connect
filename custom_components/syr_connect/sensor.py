@@ -596,11 +596,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for leak-protection boolean flags (getPMx, getPWx, getPBx)
                 # Note: getPRx are numeric return-time values and must NOT be treated as boolean.
                 # Return "true"/"false" strings to match existing boolean string handling (e.g. getAB)
-                if re.match(r"^getP(?:M|W|B)\d$", self._sensor_key):
+                if re.match(r"^getP(?:A|M|W|B)\d$", self._sensor_key):
                     if value is None or (isinstance(value, str) and value.strip() == ""):
                         return None
                     # Numeric values
-                    if isinstance(value, (int, float)):
+                    if isinstance(value, (int | float)):
                         try:
                             return "true" if int(float(value)) != 0 else "false"
                         except Exception:
