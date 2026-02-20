@@ -159,3 +159,31 @@ def test_checksum_value_wrapping():
     result = checksum.compute_checksum_value("test")
     assert isinstance(result, int)
     assert result > 0
+
+
+def test_compute_checksum_next_byte_and_offset_negative() -> None:
+    """Force next-byte branch and missing key character offset path."""
+    # base characters long enough for wrapping logic and indexing
+    base = ''.join(chr(65 + i) for i in range(64))
+
+    # Use a key character that is NOT present in base to trigger offset < 0 path
+    checksum = SyrChecksum(base, "!")
+
+    # Two-character ASCII input will generate multiple 5-bit chunks and cause
+    # the implementation to hit the `bit_offset > 3` branch (next_byte logic).
+    result = checksum.compute_checksum_value("zz")
+    assert isinstance(result, int)
+    assert result >= 0
+
+
+def test_compute_checksum_with_high_offset_key() -> None:
+    """Use a key with a high offset to exercise the wrapping branch."""
+    # Create a 32-length base so offsets can be large and wrapping can occur
+    base32 = ''.join(chr(65 + i) for i in range(32))
+    # pick last char to maximize offset
+    key = base32[-1]
+    checksum = SyrChecksum(base32, key)
+    # Use a short string that still produces multiple chunks
+    result = checksum.compute_checksum_value("zz")
+    assert isinstance(result, int)
+    assert result > 0
