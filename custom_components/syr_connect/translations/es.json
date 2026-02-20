@@ -64,6 +64,9 @@
           "true": "Cerrada"
         }
       },
+      "getprf": {
+        "name": "Perfil activo de protección contra fugas"
+      },
       "getrpd": {
         "name": "Intervalo de regeneración"
       },
@@ -153,6 +156,14 @@
       "getdgw": {
         "name": "Puerta de enlace"
       },
+      "getdrp": {
+        "name": "Intervalo de prueba de microfugas",
+        "state": {
+          "1": "Diario",
+          "2": "Semanal",
+          "3": "Mensual"
+        }
+      },
       "getdsv": {
         "name": "Prueba de microfugas",
         "state": {
@@ -170,14 +181,6 @@
       },
       "getegw": {
         "name": "Puerta de enlace Ethernet"
-      },
-      "getdrp": {
-        "name": "Intervalo de prueba de microfugas",
-        "state": {
-          "1": "Diario",
-          "2": "Semanal",
-          "3": "Mensual"
-        }
       },
       "geteip": {
         "name": "Dirección IP Ethernet"

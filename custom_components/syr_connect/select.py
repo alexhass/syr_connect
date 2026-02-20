@@ -81,6 +81,23 @@ async def async_setup_entry(
             continue
         entities.append(SyrConnectRegenerationSelect(coordinator, device_id, device_name))
 
+    # Add profile select for active leak-protection profiles (getPRF)
+    for device in coordinator.data.get("devices", []):
+        device_id = device.get("id")
+        device_name = device.get("name", device_id)
+        status = device.get("status", {})
+        # if any getPAx is true, create profile select
+        has_profile = False
+        for i in range(1, 9):
+            pa = status.get(f"getPA{i}")
+            if pa is None:
+                continue
+            if str(pa).lower() == "true":
+                has_profile = True
+                break
+        if has_profile:
+            entities.append(SyrConnectProfileSelect(coordinator, device_id, device_name))
+
     # Add numeric-controlled selects for salt amounts and regeneration interval
     for device in coordinator.data.get("devices", []):
         device_id = device.get("id")
@@ -310,6 +327,103 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             )
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
+
+    @property
+    def available(self) -> bool:
+        if not self.coordinator.last_update_success:
+            return False
+        for device in self.coordinator.data.get("devices", []):
+            if device.get("id") == self._device_id:
+                return device.get("available", True)
+        return True
+
+
+class SyrConnectProfileSelect(CoordinatorEntity, SelectEntity):
+    """Select entity exposing active leak-protection profile (`getPRF`).
+
+    Options are derived from `getPN1..getPN8` for each `getPAx==true`.
+    Selecting an option sends `setPRF` with the corresponding profile index `x`.
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._device_name = device_name
+
+        self._attr_has_entity_name = True
+        self._attr_translation_key = "getprf"
+        self.entity_id = build_entity_id("select", device_id, "getPRF")
+        self._attr_unique_id = f"{device_id}_getPRF_select"
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getPRF")
+
+    @property
+    def options(self) -> list[str]:
+        opts: list[str] = []
+        for dev in self.coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            status = dev.get("status", {})
+            for i in range(1, 9):
+                pa = status.get(f"getPA{i}")
+                if pa is None:
+                    continue
+                if str(pa).lower() != "true":
+                    continue
+                name = status.get(f"getPN{i}") or str(i)
+                opts.append(str(name))
+            break
+        return opts
+
+    @property
+    def current_option(self) -> str | None:
+        for dev in self.coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            status = dev.get("status", {})
+            val = status.get("getPRF")
+            if val is None or val == "":
+                return None
+            try:
+                idx = int(float(val))
+            except Exception:
+                return None
+            name = status.get(f"getPN{idx}")
+            return name
+        return None
+
+    async def async_select_option(self, option: str) -> None:
+        # Find index corresponding to selected option
+        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        selected_idx: int | None = None
+        for dev in coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            status = dev.get("status", {})
+            for i in range(1, 9):
+                pa = status.get(f"getPA{i}")
+                if pa is None or str(pa).lower() != "true":
+                    continue
+                name = status.get(f"getPN{i}") or str(i)
+                if str(name) == option:
+                    selected_idx = i
+                    break
+            break
+
+        if selected_idx is None:
+            _LOGGER.error("Selected profile not found for device %s: %s", self._device_id, option)
+            return
+
+        try:
+            await coordinator.async_set_device_value(self._device_id, "setPRF", selected_idx)
+            _LOGGER.debug("Requested setPRF for device %s (profile=%s)", self._device_id, selected_idx)
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Failed to set PRF for device %s", self._device_id)
 
     @property
     def available(self) -> bool:

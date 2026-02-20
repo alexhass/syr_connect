@@ -64,6 +64,9 @@
           "true": "Closed"
         }
       },
+      "getprf": {
+        "name": "Active leak protection profile"
+      },
       "getrpd": {
         "name": "Regeneration interval"
       },

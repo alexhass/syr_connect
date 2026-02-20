@@ -64,6 +64,9 @@
           "true": "Fermé"
         }
       },
+      "getprf": {
+        "name": "Profil actif de protection contre les fuites"
+      },
       "getrpd": {
         "name": "Intervalle de régénération"
       },
@@ -153,6 +156,14 @@
       "getdgw": {
         "name": "Passerelle"
       },
+      "getdrp": {
+        "name": "Intervalle du test de micro-fuite",
+        "state": {
+          "1": "Quotidien",
+          "2": "Hebdomadaire",
+          "3": "Mensuel"
+        }
+      },
       "getdsv": {
         "name": "Test de microfuites",
         "state": {
@@ -170,14 +181,6 @@
       },
       "getegw": {
         "name": "Passerelle Ethernet"
-      },
-      "getdrp": {
-        "name": "Intervalle du test de micro-fuite",
-        "state": {
-          "1": "Quotidien",
-          "2": "Hebdomadaire",
-          "3": "Mensuel"
-        }
       },
       "geteip": {
         "name": "Adresse IP Ethernet"
