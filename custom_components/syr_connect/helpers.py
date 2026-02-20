@@ -293,7 +293,7 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
                 mm = int(m_match.group(2))
                 # Strict validation: hours 0-23, minutes 0-59
                 if 0 <= hh <= 23 and 0 <= mm <= 59:
-                    return f"{h:02d}:{mm:02d}"
+                    return f"{hh:02d}:{mm:02d}"
             except Exception:
                 return None
         return None
