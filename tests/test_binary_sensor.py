@@ -474,7 +474,9 @@ async def test_async_setup_entry_registry_cleanup(hass: HomeAssistant, create_mo
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     
     # Entry was created, so verify it existed
-    assert entry_to_remove is not None
+    # The setup should remove excluded sensors from the registry
+    # registry.async_get should now return None for that entity_id
+    assert registry.async_get(entry_to_remove.entity_id) is None
 
 
 async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
