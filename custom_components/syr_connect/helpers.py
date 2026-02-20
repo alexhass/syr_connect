@@ -285,7 +285,7 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
     # Case A:Combined representation: getRTH missing/empty and getRTM contains HH:MM
     if rth is None or rth == "":
         if isinstance(rtm, str):
-            m_match = re.match(r"\s*(\d{1,2}):(\d{2})\s*$", rtm)
+            m_match = re.match(r"\s*(\d{2}):(\d{2})\s*$", rtm)
             if not m_match:
                 return None
             try:
