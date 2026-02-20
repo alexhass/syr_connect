@@ -166,3 +166,63 @@ def test_clean_sensor_vol_value() -> None:
     # Non-string values are returned unchanged
     assert get_sensor_vol_value(123) == 123
     assert get_sensor_vol_value(12.34) == 12.34
+
+
+def test_get_sensor_rtm_and_setters() -> None:
+    """Test parsing and building of regeneration time values."""
+    from custom_components.syr_connect.helpers import (
+        get_sensor_rtm_value,
+        set_sensor_rtm_value,
+    )
+
+    # Combined representation: getRTM contains HH:MM
+    status_combined = {"getRTM": "2:5", "getRTH": None}
+    assert get_sensor_rtm_value(status_combined) == "02:05"
+
+    # Separate numeric values
+    status_sep = {"getRTH": "2", "getRTM": "30"}
+    assert get_sensor_rtm_value(status_sep) == "02:30"
+
+    # Invalid combined string
+    status_bad = {"getRTM": "bad", "getRTH": None}
+    assert get_sensor_rtm_value(status_bad) is None
+
+    # set_sensor_rtm_value: combined mode should return single setRTM
+    status_for_set = {"getRTH": None, "getRTM": "02:30"}
+    cmds = set_sensor_rtm_value(status_for_set, "03:45")
+    assert cmds == [("setRTM", "03:45")]
+
+    # set_sensor_rtm_value: separate mode returns two commands
+    status_for_set2 = {"getRTH": "1", "getRTM": "15"}
+    cmds2 = set_sensor_rtm_value(status_for_set2, "04:20")
+    assert ("setRTH", 4) in cmds2 and ("setRTM", 20) in cmds2
+
+
+def test_get_sensor_ab_and_build_command() -> None:
+    """Test parsing of getAB and building set commands."""
+    from custom_components.syr_connect.helpers import (
+        get_sensor_ab_value,
+        build_set_ab_command,
+    )
+
+    # Numeric values
+    assert get_sensor_ab_value({"getAB": 2}) is True
+    assert get_sensor_ab_value({"getAB": 1}) is False
+
+    # String boolean-like
+    assert get_sensor_ab_value({"getAB": "true"}) is True
+    assert get_sensor_ab_value({"getAB": "false"}) is False
+
+    # Numeric string
+    assert get_sensor_ab_value({"getAB": "2"}) is True
+
+    # Invalid or missing
+    assert get_sensor_ab_value({}) is None
+    assert get_sensor_ab_value({"getAB": "x"}) is None
+
+    # build_set_ab_command: prefer boolean-string if raw looks boolean
+    assert build_set_ab_command({"getAB": "true"}, closed=True) == ("setAB", "true")
+    assert build_set_ab_command({"getAB": True}, closed=False) == ("setAB", "false")
+    # fallback numeric
+    assert build_set_ab_command({"getAB": None}, closed=True) == ("setAB", 2)
+
