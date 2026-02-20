@@ -1597,9 +1597,86 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     with patch("custom_components.syr_connect.sensor.er.async_get", return_value=DummyRegistry()):
         # Should not raise exception, continues setup
         await async_setup_entry(hass, entry, add_entities)
-
         # Entities should still be added despite registry issues
         add_entities.assert_called_once()
+
+
+async def test_getpa_group_true_creates_group_entities(hass: HomeAssistant) -> None:
+    """When getPA1 evaluates true, group sensors should be created."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    # Use a truthy string that _is_true should accept
+                    "getPA1": "yes",
+                    # Also include an unrelated sensor to ensure normal sensors are added
+                    "getFLO": "10",
+                },
+            }
+        ]
+    }
+
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    added: list = []
+    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+
+    # group keys for idx=1 should include getPA1, getPV1, getPT1, getPF1, getPN1, getPM1, getPW1, getPB1, getPR1
+    group_expected = {"getPA1", "getPV1", "getPT1", "getPF1", "getPN1", "getPM1", "getPW1", "getPB1", "getPR1"}
+    created_keys = {e._sensor_key for e in added}
+
+    # All group keys should be represented among created entities
+    assert group_expected.issubset(created_keys)
+
+
+async def test_getpa_group_false_removes_registry_entries(hass: HomeAssistant) -> None:
+    """When getPA1 evaluates false, existing group entities in registry should be removed."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    # False-like value
+                    "getPA1": "0",
+                    "getFLO": "10",
+                },
+            }
+        ]
+    }
+
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    # Dummy registry that pretends group sensors exist and records removals
+    class DummyRegistry:
+        def __init__(self):
+            self.removed = []
+
+        def async_get(self, entity_id):
+            # Pretend the registry contains an entry for any queried group key
+            from unittest.mock import MagicMock
+
+            return MagicMock(entity_id=entity_id)
+
+        def async_remove(self, entity_id):
+            self.removed.append(entity_id)
+
+    dummy = DummyRegistry()
+
+    with patch("custom_components.syr_connect.sensor.er.async_get", return_value=dummy):
+        added = []
+        await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+
+    # Ensure at least one removal was performed for group sensor
+    assert len(dummy.removed) > 0
 
 
 async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:
