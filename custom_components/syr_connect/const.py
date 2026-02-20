@@ -576,6 +576,10 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getDSV": "mdi:water-check",
     "getDTT": "mdi:clock-outline",
     "getPRF": "mdi:account",
+    "getSLV": "mdi:water",
+    "getSLF": "mdi:waves-arrow-right",
+    "getSLT": "mdi:timer-outline",
+    "getSLE": "mdi:timer-sand",
 }
 
 # Mapping for getALM sensor values
