@@ -78,6 +78,7 @@ _SYR_CONNECT_SENSOR_CONTROLLED = {
     "getSV1",   # Salt container amount 1 - also represented as select entity
     "getSV2",   # Salt container amount 2 - also represented as select entity
     "getSV3",   # Salt container amount 3 - also represented as select entity
+    "getPRF",   # Active leak protection profile
     "getRPD",   # Regeneration interval - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
 }
