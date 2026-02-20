@@ -208,7 +208,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
     'getOHF', 'getYHF',
-    'getSLE', 'getSLF', 'getSLO', 'getSLP', 'getSLT', 'getSLV',
+    'getSLO', 'getSLP',
     'getT2', 'getTN',
 
     # Sensors exits in devices:
