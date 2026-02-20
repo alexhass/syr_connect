@@ -96,7 +96,7 @@ async def async_setup_entry(
                 has_profile = True
                 break
         if has_profile:
-            entities.append(SyrConnectProfileSelect(coordinator, device_id, device_name))
+            entities.append(SyrConnectPrfSelect(coordinator, device_id, device_name))
 
     # Add numeric-controlled selects for salt amounts and regeneration interval
     for device in coordinator.data.get("devices", []):
@@ -338,7 +338,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         return True
 
 
-class SyrConnectProfileSelect(CoordinatorEntity, SelectEntity):
+class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
     """Select entity exposing active leak-protection profile (`getPRF`).
 
     Options are derived from `getPN1..getPN8` for each `getPAx==true`.
