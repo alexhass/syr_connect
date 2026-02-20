@@ -171,6 +171,14 @@
       "getegw": {
         "name": "Gateway Ethernet"
       },
+      "getdrp": {
+        "name": "Intervallo test microperdite",
+        "state": {
+          "1": "Quotidiano",
+          "2": "Settimanale",
+          "3": "Mensile"
+        }
+      },
       "geteip": {
         "name": "Indirizzo IP Ethernet"
       },

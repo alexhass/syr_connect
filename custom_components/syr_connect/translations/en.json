@@ -153,6 +153,14 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdrp": {
+        "name": "Microleakage test interval",
+        "state": {
+          "1": "Daily",
+          "2": "Weekly",
+          "3": "Monthly"
+        }
+      },
       "getdsv": {
         "name": "Microleakage test",
         "state": {

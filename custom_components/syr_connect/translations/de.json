@@ -153,6 +153,14 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdrp": {
+        "name": "Mikroleckage-Test Intervall",
+        "state": {
+          "1": "Täglich",
+          "2": "Wöchentlich",
+          "3": "Monatlich"
+        }
+      },
       "getdsv": {
         "name": "Mikroleckage-Test",
         "state": {

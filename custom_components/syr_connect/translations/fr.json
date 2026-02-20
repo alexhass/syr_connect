@@ -171,6 +171,14 @@
       "getegw": {
         "name": "Passerelle Ethernet"
       },
+      "getdrp": {
+        "name": "Intervalle du test de micro-fuite",
+        "state": {
+          "1": "Quotidien",
+          "2": "Hebdomadaire",
+          "3": "Mensuel"
+        }
+      },
       "geteip": {
         "name": "Adresse IP Ethernet"
       },

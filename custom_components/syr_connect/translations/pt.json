@@ -153,6 +153,14 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdrp": {
+        "name": "Intervalo do teste de microvazamento",
+        "state": {
+          "1": "Diário",
+          "2": "Semanal",
+          "3": "Mensal"
+        }
+      },
       "getdsv": {
         "name": "Teste de microvazamento",
         "state": {

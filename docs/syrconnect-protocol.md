@@ -435,7 +435,7 @@ These properties are only available on devices that contain leakage protection, 
 | getDOM          | "60"         |        | *unknown*
 | getDPL          | "10"         |        | *unknown*
 | getDTC          | "3"          |        | *unknown*
-| getDRP          | "1"          |        | *unknown*
+| getDRP          | "1"          |        | Sets the test interval for micro-leakage tests e.g. 1-3<br>1=The test starts daily<br>2=The test starts weekly<br>3=The test starts monthly
 | getALA          | "0"          |        | *unknown*
 | getTN           | "20"         |        | *unknown*
 | getSMR          | "1"          |        | *unknown*

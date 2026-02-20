@@ -171,6 +171,14 @@
       "getegw": {
         "name": "Puerta de enlace Ethernet"
       },
+      "getdrp": {
+        "name": "Intervalo de prueba de microfugas",
+        "state": {
+          "1": "Diario",
+          "2": "Semanal",
+          "3": "Mensual"
+        }
+      },
       "geteip": {
         "name": "Dirección IP Ethernet"
       },

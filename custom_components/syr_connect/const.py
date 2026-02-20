@@ -204,7 +204,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getCNO', # Code number - not useful for users
     'getCNS',
     'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
-    'getDRP', 'getDST', 'getDTC',
+    'getDST', 'getDTC',
     'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
     'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
     'getOHF', 'getYHF',
@@ -301,7 +301,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     #"getDMA",
     #"getDOM",
     #"getDPL",
-    #"getDRP",
     #"getDST",
     #"getDTC",
     "getENV",
@@ -573,6 +572,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # Sensors exits in devices:
     # - Trio DFR/LS
 
+    "getDRP": "mdi:calendar-clock",
     "getDSV": "mdi:water-check",
     "getDTT": "mdi:clock-outline",
     "getPRF": "mdi:account",
@@ -832,6 +832,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDRP": 0,    # Microleakage test interval: show as whole number by default
     "getDSV": 0,    # Microleakage test: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
