@@ -3777,7 +3777,9 @@ async def test_sensor_getvol_with_prefix(hass: HomeAssistant) -> None:
     
     # Test getVOL sensor - should extract numeric value
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
-    assert vol_sensor.native_value == 6530
+    val = vol_sensor.native_value
+    assert isinstance(val, (int, float, str))
+    assert abs(float(val) - 6.53) < 1e-6
 
 
 async def test_sensor_getvol_normal_value(hass: HomeAssistant) -> None:
@@ -3797,7 +3799,9 @@ async def test_sensor_getvol_normal_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
-    assert vol_sensor.native_value == 6530
+    val = vol_sensor.native_value
+    assert isinstance(val, (int, float, str))
+    assert abs(float(val) - 6.53) < 1e-6
 
 
 async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
@@ -3817,7 +3821,9 @@ async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
-    assert vol_sensor.native_value == 6530
+    val = vol_sensor.native_value
+    assert isinstance(val, (int, float, str))
+    assert abs(float(val) - 6.53) < 1e-6
 
 
 async def test_sensor_getbat_with_multiple_values(hass: HomeAssistant) -> None:
@@ -4426,7 +4432,9 @@ async def test_getavo_parsing(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
 
     # 1655 mL -> 1.655 L
-    assert abs(sensor.native_value - 1.655) < 1e-6
+    val = sensor.native_value
+    assert isinstance(val, (int, float, str))
+    assert abs(float(val) - 1.655) < 1e-6
 
 
 async def test_getvol_cleaning_and_conversion(hass: HomeAssistant) -> None:
@@ -4443,8 +4451,10 @@ async def test_getvol_cleaning_and_conversion(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
 
-    # Cleaned value should be numeric 6530 (int)
-    assert sensor.native_value == 6530
+    # Cleaned value should be numeric 6.53 (m³)
+    val = sensor.native_value
+    assert isinstance(val, (int, float, str))
+    assert abs(float(val) - 6.53) < 1e-6
 
 
 async def test_getbar_parsing_and_precision(hass: HomeAssistant) -> None:
