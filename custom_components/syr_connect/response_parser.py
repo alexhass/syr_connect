@@ -291,46 +291,38 @@ class ResponseParser:
         return self._flatten_attributes(parsed['sc'])
 
     def _ignore_broken_response(self, device_list: Any) -> bool:
-        """Return True if all device entries only contain ignorable c-keys.
+        """Ignore responses where every `d` device entry has <6 XML tags.
 
-        This handles broken fragments where the response contains only keys
-        like `getSRN`, `getALA`, `getNOT`, `getWRN` and therefore carries no
-        sensor data worth processing.
-
-        This seems to happen with Trio DFR/LS devices only.
+        Count child element tags inside each `d` entry. For the `c` tag we
+        count individual occurrences. If all devices have fewer than 6 tags,
+        the response is likely a broken fragment and is ignored.
         """
-        ignorable_c_keys = {"getSRN", "getALA", "getNOT", "getWRN"}
-        device_cs: list[set[str]] = []
+        def count_tags_for_device(d: Any) -> int:
+            if not isinstance(d, dict):
+                return 0
+            total = 0
+            for key, val in d.items():
+                # Ignore attributes and text
+                if key.startswith('@') or key == '#text':
+                    continue
+                if key == 'c':
+                    if isinstance(val, list):
+                        total += len(val)
+                    else:
+                        total += 1
+                else:
+                    total += 1
+            return total
 
+        counts: list[int] = []
         if isinstance(device_list, list):
             for d in device_list:
-                keys: set[str] = set()
-                if isinstance(d, dict) and 'c' in d:
-                    c = d['c']
-                    if isinstance(c, list):
-                        for item in c:
-                            if isinstance(item, dict) and '@n' in item:
-                                keys.add(item['@n'])
-                    elif isinstance(c, dict) and '@n' in c:
-                        keys.add(c['@n'])
-                device_cs.append(keys)
+                counts.append(count_tags_for_device(d))
         else:
-            single_keys: set[str] = set()
-            if isinstance(device_list, dict) and 'c' in device_list:
-                c = device_list['c']
-                if isinstance(c, list):
-                    for item in c:
-                        if isinstance(item, dict) and '@n' in item:
-                            single_keys.add(item['@n'])
-                elif isinstance(c, dict) and '@n' in c:
-                    single_keys.add(c['@n'])
-            device_cs.append(single_keys)
+            counts.append(count_tags_for_device(device_list))
 
-        if device_cs and all(k and k.issubset(ignorable_c_keys) for k in device_cs):
-            _LOGGER.debug(
-                "Ignoring status response: devices only contain ignorable keys %s",
-                [list(k) for k in device_cs],
-            )
+        if counts and all(c < 6 for c in counts):
+            _LOGGER.debug("Ignoring status response: device tag counts %s", counts)
             return True
 
         return False
