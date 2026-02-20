@@ -908,3 +908,58 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
         with pytest.raises(ConfigEntryNotReady, match="Error communicating with API"):
             await coordinator.async_config_entry_first_refresh()
 
+
+    async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
+        """If asyncio.gather raises, coordinator should raise UpdateFailed."""
+        from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+
+        with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+             patch("custom_components.syr_connect.coordinator.asyncio.gather", side_effect=Exception("gather failed")):
+            mock_api = MagicMock()
+            mock_api.session_data = "test_session"
+            mock_api.is_session_valid = MagicMock(return_value=True)
+            mock_api.projects = [{"id": "p1", "name": "P1"}]
+            mock_api.get_devices = AsyncMock(return_value=[{"id": "d1", "dclg": "d1"}])
+            mock_api_class.return_value = mock_api
+
+            coordinator = SyrConnectDataUpdateCoordinator(
+                hass,
+                MagicMock(),
+                "test@example.com",
+                "password",
+                60,
+            )
+
+            # Calling the internal update should raise UpdateFailed due to gather error
+            from homeassistant.helpers.update_coordinator import UpdateFailed
+            with pytest.raises(UpdateFailed):
+                await coordinator._async_update_data()
+
+
+    async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
+        """If asyncio.gather returns Exception objects, they should be skipped."""
+        from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+
+        # Patch asyncio.gather to return a list containing an Exception
+        with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+             patch("custom_components.syr_connect.coordinator.asyncio.gather", return_value=[Exception("proj fail")]):
+            mock_api = MagicMock()
+            mock_api.session_data = "test_session"
+            mock_api.is_session_valid = MagicMock(return_value=True)
+            mock_api.projects = [{"id": "p1", "name": "P1"}]
+            mock_api.get_devices = AsyncMock(return_value=[{"id": "d1", "dclg": "d1"}])
+            mock_api_class.return_value = mock_api
+
+            coordinator = SyrConnectDataUpdateCoordinator(
+                hass,
+                MagicMock(),
+                "test@example.com",
+                "password",
+                60,
+            )
+
+            result = await coordinator._async_update_data()
+            # No devices should be returned since the project result was an Exception
+            assert isinstance(result, dict)
+            assert result.get("devices") == []
+
