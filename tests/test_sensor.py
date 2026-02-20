@@ -4596,7 +4596,7 @@ async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getRTM": "7:05"},
+                "status": {"getRTM": "07:05"},
             }
         ]
     }

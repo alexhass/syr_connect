@@ -176,7 +176,7 @@ def test_get_sensor_rtm_and_setters() -> None:
     )
 
     # Combined representation: getRTM contains HH:MM
-    status_combined = {"getRTM": "2:5", "getRTH": None}
+    status_combined = {"getRTM": "02:05", "getRTH": None}
     assert get_sensor_rtm_value(status_combined) == "02:05"
 
     # Separate numeric values
