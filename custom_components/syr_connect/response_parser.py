@@ -293,6 +293,11 @@ class ResponseParser:
     def _ignore_broken_response(self, device_list: Any) -> bool:
         """Ignore responses where every `d` device entry has <6 XML tags.
 
+        Dirty workaround:
+        1. Syr Trio DFR/LS: For unknown reaons the device very often returns an XML
+           response with getSRN, getALA, getNOT, getWRN only. This causes unwanted
+           sensor status flapping. This need to be ignored.
+
         Count child element tags inside each `d` entry. For the `c` tag we
         count individual occurrences. If all devices have fewer than 6 tags,
         the response is likely a broken fragment and is ignored.
