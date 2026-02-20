@@ -450,28 +450,28 @@
         "name": "Leak protection profile name 8"
       },
       "getpr1": {
-        "name": "Return time to active profile 1"
+        "name": "Return time 1 to Present profile"
       },
       "getpr2": {
-        "name": "Return time to active profile 2"
+        "name": "Return time 2 to Present profile"
       },
       "getpr3": {
-        "name": "Return time to active profile 3"
+        "name": "Return time 3 to Present profile"
       },
       "getpr4": {
-        "name": "Return time to active profile 4"
+        "name": "Return time 4 to Present profile"
       },
       "getpr5": {
-        "name": "Return time to active profile 5"
+        "name": "Return time 5 to Present profile"
       },
       "getpr6": {
-        "name": "Return time to active profile 6"
+        "name": "Return time 6 to Present profile"
       },
       "getpr7": {
-        "name": "Return time to active profile 7"
+        "name": "Return time 7 to Present profile"
       },
       "getpr8": {
-        "name": "Return time to active profile 8"
+        "name": "Return time 8 to Present profile"
       },
       "getprf": {
         "name": "Active leak protection profile",
