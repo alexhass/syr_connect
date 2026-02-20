@@ -454,3 +454,47 @@ async def test_icon_open_state(hass: HomeAssistant) -> None:
     # getVLV=20 -> open -> icon should be open
     assert valve.is_closed is False
     assert valve.icon == "mdi:valve-open"
+
+
+async def test_async_setup_entry_skips_invalid_values(hass: HomeAssistant) -> None:
+    """If getAB and getVLV don't contain known numeric codes, no valve should be created."""
+    data = {
+        "devices": [
+            {
+                "id": "bad",
+                "name": "Bad",
+                "project_id": "p",
+                "status": {"getAB": "3", "getVLV": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    # Should not create any valve entities
+    add_entities.assert_not_called()
+
+
+async def test_async_open_close_with_boolean_string_status(hass: HomeAssistant) -> None:
+    """When device uses boolean-string getAB, setAB should use 'true'/'false'."""
+    data = {"devices": [{"id": "b1", "name": "B1", "status": {"getAB": "true"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    valve = SyrConnectValve(coordinator, "b1", "B1")
+
+    # Patch async_write_ha_state to avoid hass dependency
+    valve.async_write_ha_state = Mock()
+
+    await valve.async_open()
+    # Opening should send 'false' to open
+    coordinator.async_set_device_value.assert_awaited_with("b1", "setAB", "false")
+
+    coordinator.async_set_device_value.reset_mock()
+    await valve.async_close()
+    # Closing should send 'true' to close
+    coordinator.async_set_device_value.assert_awaited_with("b1", "setAB", "true")
