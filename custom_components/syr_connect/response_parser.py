@@ -270,6 +270,10 @@ class ResponseParser:
             _LOGGER.warning("Status response 'dvs' element contains no device entries; skipping update: %s", dvs)
             return None
 
+        # If the response is broken (broken fragments), skip it.
+        if self._ignore_broken_response(device_list):
+            return None
+
         # Ensure at least one device entry contains detailed <c> children
         has_c = False
         if isinstance(device_list, list):
@@ -285,6 +289,51 @@ class ResponseParser:
             return None
 
         return self._flatten_attributes(parsed['sc'])
+
+    def _ignore_broken_response(self, device_list: Any) -> bool:
+        """Return True if all device entries only contain ignorable c-keys.
+
+        This handles broken fragments where the response contains only keys
+        like `getSRN`, `getALA`, `getNOT`, `getWRN` and therefore carries no
+        sensor data worth processing.
+
+        This seems to happen with Trio DFR/LS devices only.
+        """
+        ignorable_c_keys = {"getSRN", "getALA", "getNOT", "getWRN"}
+        device_cs: list[set[str]] = []
+
+        if isinstance(device_list, list):
+            for d in device_list:
+                keys: set[str] = set()
+                if isinstance(d, dict) and 'c' in d:
+                    c = d['c']
+                    if isinstance(c, list):
+                        for item in c:
+                            if isinstance(item, dict) and '@n' in item:
+                                keys.add(item['@n'])
+                    elif isinstance(c, dict) and '@n' in c:
+                        keys.add(c['@n'])
+                device_cs.append(keys)
+        else:
+            single_keys: set[str] = set()
+            if isinstance(device_list, dict) and 'c' in device_list:
+                c = device_list['c']
+                if isinstance(c, list):
+                    for item in c:
+                        if isinstance(item, dict) and '@n' in item:
+                            single_keys.add(item['@n'])
+                elif isinstance(c, dict) and '@n' in c:
+                    single_keys.add(c['@n'])
+            device_cs.append(single_keys)
+
+        if device_cs and all(k and k.issubset(ignorable_c_keys) for k in device_cs):
+            _LOGGER.debug(
+                "Ignoring status response: devices only contain ignorable keys %s",
+                [list(k) for k in device_cs],
+            )
+            return True
+
+        return False
 
     def parse_statistics_response(self, xml_response: str) -> dict[str, Any]:
         """Parse statistics response.
