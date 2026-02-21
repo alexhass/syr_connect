@@ -42,7 +42,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1", "getRE2"},
-        "threshold": 2,
+        "threshold": 3,
     },
     {
         "display_name": "NeoSoft 2500 Connect",
@@ -50,7 +50,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1"},
-        "threshold": 1,
+        "threshold": 2,
     },
     {
         "display_name": "Trio DFR/LS Connect",
@@ -94,37 +94,45 @@ def detect_model(flat: dict[str, object]) -> dict:
             display = sig.get("display_name", sig["name"])
             _LOGGER.debug("Detected device model: %s (cna_equals)", display)
             return {"name": sig["name"], "display_name": display}
-
-        # 2) version based
-        if sig.get("ver_prefix") and ver.startswith(sig["ver_prefix"]):
-            display = sig.get("display_name", sig["name"])
-            _LOGGER.debug("Detected device model: %s (ver_prefix)", display)
-            return {"name": sig["name"], "display_name": display}
-        if sig.get("ver_contains") and sig["ver_contains"] in ver:
-            display = sig.get("display_name", sig["name"])
-            _LOGGER.debug("Detected device model: %s (ver_contains)", display)
-            return {"name": sig["name"], "display_name": display}
-
         # 2b) explicit attribute equality checks
         attrs = sig.get("attrs_equals")
+        attrs_matched = False
         if attrs and isinstance(attrs, dict):
-            matched = True
+            attrs_matched = True
             for k, v in attrs.items():
                 if str(flat.get(k, "")) != str(v):
-                    matched = False
+                    attrs_matched = False
                     break
-            if matched:
-                display = sig.get("display_name", sig["name"])
-                _LOGGER.debug("Detected device model: %s (attrs_equals)", display)
-                return {"name": sig["name"], "display_name": display}
 
-        # 3) fingerprint keys
+        # 3) fingerprint keys with optional version constraints
         allowed = sig.get("v_keys", set())
         if allowed:
             matches = len(keys & allowed)
             if matches >= sig.get("threshold", 1):
+                # if signature also specifies a version condition, require it as well
+                ver_ok = True
+                if sig.get("ver_prefix"):
+                    ver_ok = ver.startswith(sig["ver_prefix"])
+                if sig.get("ver_contains"):
+                    ver_ok = ver_ok and (sig["ver_contains"] in ver)
+                if attrs and isinstance(attrs, dict):
+                    ver_ok = ver_ok and attrs_matched
+                if ver_ok:
+                    display = sig.get("display_name", sig["name"])
+                    _LOGGER.debug(
+                        "Detected device model: %s (v_keys match=%d)", display, matches
+                    )
+                    return {"name": sig["name"], "display_name": display}
+
+        # 2) version based (only if no v_keys are present for this signature)
+        if not allowed:
+            if sig.get("ver_prefix") and ver.startswith(sig["ver_prefix"]):
                 display = sig.get("display_name", sig["name"])
-                _LOGGER.debug("Detected device model: %s (v_keys match=%d)", display, matches)
+                _LOGGER.debug("Detected device model: %s (ver_prefix)", display)
+                return {"name": sig["name"], "display_name": display}
+            if sig.get("ver_contains") and sig["ver_contains"] in ver:
+                display = sig.get("display_name", sig["name"])
+                _LOGGER.debug("Detected device model: %s (ver_contains)", display)
                 return {"name": sig["name"], "display_name": display}
 
     _LOGGER.debug("Unknown device model; sample keys: %s", sorted(keys)[:20])
