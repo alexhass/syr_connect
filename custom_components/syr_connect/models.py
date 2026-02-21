@@ -74,10 +74,6 @@ def detect_model(flat: dict[str, object]) -> str | None:
     ver = str(flat.get("getVER", "")) if flat.get("getVER") is not None else ""
     keys = set(flat.keys())
 
-    # If `getCNA` is present, treat it as a unique model identifier.
-    if cna.strip():
-        return cna.strip()
-
     for sig in MODEL_SIGNATURES:
         # 1) explicit CNA
         if sig.get("cna_equals") and cna == sig["cna_equals"]:
