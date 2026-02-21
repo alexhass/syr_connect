@@ -65,15 +65,11 @@
         }
       },
       "getprf": {
-<<<<<<< Updated upstream
-        "name": "Active leak protection profile"
-=======
         "name": "Active leak protection profile",
         "state": {
           "1": "Present",
           "2": "Absent"
         }
->>>>>>> Stashed changes
       },
       "getrpd": {
         "name": "Regeneration interval"

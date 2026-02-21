@@ -65,15 +65,11 @@
         }
       },
       "getprf": {
-<<<<<<< Updated upstream
-        "name": "Perfil ativo de proteção contra vazamentos"
-=======
         "name": "Perfil de proteção contra vazamento ativo",
         "state": {
           "1": "Presente",
           "2": "Ausente"
         }
->>>>>>> Stashed changes
       },
       "getrpd": {
         "name": "Intervalo de regeneração"

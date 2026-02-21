@@ -65,15 +65,11 @@
         }
       },
       "getprf": {
-<<<<<<< Updated upstream
-        "name": "Profilo attivo di protezione dalle perdite"
-=======
         "name": "Profilo protezione attivo",
         "state": {
           "1": "Presente",
           "2": "Assente"
         }
->>>>>>> Stashed changes
       },
       "getrpd": {
         "name": "Intervallo di rigenerazione"
