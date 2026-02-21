@@ -1069,3 +1069,71 @@ async def test_regeneration_select_combined_mode_sends_only_setRTM(hass: HomeAss
     coordinator.async_set_device_value.assert_called_once_with("device1", "setRTM", "07:15")
     # Ensure setRTH was not called
     assert not any(c.args[1] == "setRTH" for c in coordinator.async_set_device_value.call_args_list)
+
+
+def test_build_time_options_step_60_additional():
+    """Build time options with 60-minute step (additional coverage)."""
+    opts = _build_time_options(60)
+    assert len(opts) == 24
+    assert opts[0] == "00:00"
+    assert opts[-1] == "23:00"
+
+
+async def test_regeneration_select_current_and_select_with_mock(create_mock_coordinator, hass):
+    data = {"devices": [{"id": "mdev1", "name": "Device M", "status": {"getRTM": "07:30"}, "available": True}]}
+    coord = create_mock_coordinator(data)
+    coord.last_update_success = True
+    coord.async_set_device_value = AsyncMock()
+
+    sel = SyrConnectRegenerationSelect(coord, "mdev1", "Device M")
+    assert sel.current_option == "07:30"
+    await sel.async_select_option("08:15")
+    assert coord.async_set_device_value.await_count >= 1
+
+
+async def test_numeric_select_current_and_select_with_mock(create_mock_coordinator):
+    data = {"devices": [{"id": "mdev2", "status": {"getSV1": "5"}, "available": True}]}
+    coord = create_mock_coordinator(data)
+    coord.last_update_success = True
+    coord.async_set_device_value = AsyncMock()
+
+    num = SyrConnectNumericSelect(coord, "mdev2", "Device M2", "getSV1", 0, 10, 1)
+    assert any(opt.startswith("5") for opt in num.options)
+    assert num.current_option is not None and num.current_option.startswith("5")
+    await num.async_select_option("3")
+    coord.async_set_device_value.assert_awaited()
+
+
+async def test_numeric_select_invalid_option_with_mock(create_mock_coordinator):
+    data = {"devices": [{"id": "mdev3", "status": {"getSV1": "5"}}]}
+    coord = create_mock_coordinator(data)
+    coord.last_update_success = True
+    coord.async_set_device_value = AsyncMock()
+
+    num = SyrConnectNumericSelect(coord, "mdev3", "Device M3", "getSV1", 0, 2, 1)
+    await num.async_select_option("bad-option")
+    coord.async_set_device_value.assert_not_awaited()
+
+
+def test_prf_select_options_and_current_with_mock(create_mock_coordinator):
+    data = {"devices": [{"id": "mdev4", "status": {"getPA1": "true", "getPN1": "Profile A", "getPA2": "false", "getPRF": "1"}, "available": True}]}
+    coord = create_mock_coordinator(data)
+    coord.last_update_success = True
+    prf = SyrConnectPrfSelect(coord, "mdev4", "Device M4")
+    opts = prf.options
+    assert "Profile A" in opts
+    assert prf.current_option == "Profile A"
+
+
+def test_availability_properties_with_mock(create_mock_coordinator):
+    data = {"devices": [{"id": "mdev5", "status": {}, "available": False}]}
+    coord = create_mock_coordinator(data)
+    coord.last_update_success = False
+
+    regen = SyrConnectRegenerationSelect(coord, "mdev5", "Device M5")
+    numeric = SyrConnectNumericSelect(coord, "mdev5", "Device M5", "getSV1", 0, 1, 1)
+    prf = SyrConnectPrfSelect(coord, "mdev5", "Device M5")
+
+    assert regen.available is False
+    assert numeric.available is False
+    assert prf.available is False
