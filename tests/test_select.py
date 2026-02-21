@@ -669,6 +669,82 @@ async def test_regeneration_select_combined_invalid_current_option(hass: HomeAss
     assert select.current_option is None
 
 
+async def test_regeneration_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
+    """Ensure exceptions from coordinator are caught when setting RTM."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": "2",
+                    "getRTM": "30",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    async def raiser(*args, **kwargs):
+        raise Exception("boom")
+
+    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
+
+    # Should not raise despite coordinator raising internally
+    await select.async_select_option("03:45")
+
+
+async def test_regeneration_select_no_commands_returns(hass: HomeAssistant) -> None:
+    """When set_sensor_rtm_value returns no commands, nothing is sent."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": "2",
+                    "getRTM": "30",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
+
+    with patch("custom_components.syr_connect.select.set_sensor_rtm_value", return_value=[]):
+        await select.async_select_option("03:45")
+
+    coordinator.async_set_device_value.assert_not_called()
+
+
+async def test_numeric_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
+    """Ensure exceptions from coordinator are caught when setting numeric selects."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSV1": "5",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    async def raiser(*args, **kwargs):
+        raise Exception("boom")
+
+    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getSV1", 0, 25, 1)
+
+    # Should not raise despite coordinator raising internally
+    await select.async_select_option("10 kg")
+
+
 async def test_numeric_select_current_option_no_matching_option(hass: HomeAssistant) -> None:
     """Test numeric select current option when value doesn't match options."""
     data = {
