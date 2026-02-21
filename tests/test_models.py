@@ -77,7 +77,9 @@ def test_detect_model_none_input():
 
 def test_trio_attrs_only_synthetic():
     """If attrs_equals is present and matches, detection succeeds without getVER."""
-    flat = {"getVER2": "176"}
+    # Construct a synthetic flattened dict that matches the current trio signature
+    # (requires ver_prefix 'syr001' and v_keys 'getAFW' and 'getVER2').
+    flat = {"getVER2": "176", "getAFW": "1", "getVER": "syr001-A-B-000-176"}
     assert detect_model(flat)["name"] == "trio"
 
 
