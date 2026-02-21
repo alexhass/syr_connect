@@ -37,20 +37,20 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "threshold": 1,
     },
     {
-        "display_name": "NeoSoft 2500 Connect",
-        "name": "neosoft2500",
-        "cna_equals": None,
-        "ver_prefix": "NSS",
-        "v_keys": {"getRE1"},
-        "threshold": 1,
-    },
-    {
         "display_name": "NeoSoft 5000 Connect",
         "name": "neosoft5000",
         "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1", "getRE2"},
         "threshold": 2,
+    },
+    {
+        "display_name": "NeoSoft 2500 Connect",
+        "name": "neosoft2500",
+        "cna_equals": None,
+        "ver_prefix": "NSS",
+        "v_keys": {"getRE1"},
+        "threshold": 1,
     },
     {
         "display_name": "Trio DFR/LS Connect",
