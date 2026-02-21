@@ -4776,6 +4776,77 @@ async def test_getle_mapping(hass: HomeAssistant) -> None:
     assert sensor.native_value == "100"
 
 
+async def test_sensor_icon_getbat_zero_numeric_alert(hass: HomeAssistant) -> None:
+    """Test getBAT icon shows alert when numeric voltage is zero."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAT": 0},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    assert sensor.icon == "mdi:battery-alert-variant-outline"
+
+
+async def test_sensor_icon_getbat_zero_string_alert(hass: HomeAssistant) -> None:
+    """Test getBAT icon shows alert when string "0" is provided."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAT": "0"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    assert sensor.icon == "mdi:battery-alert-variant-outline"
+
+
+async def test_sensor_icon_getbat_invalid_fallback_base(hass: HomeAssistant) -> None:
+    """Invalid getBAT values should result in base icon (no alert)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAT": "invalid"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    assert sensor.icon == sensor._base_icon
+
+
+async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -> None:
+    """Safe-T+ multi-value format should use base icon (not alert)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAT": "6,12 4,38 3,90"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    assert sensor.icon == sensor._base_icon
+
 async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
     """Test getVLV sensor icon with unknown value returns base icon."""
     data = {
@@ -4794,3 +4865,56 @@ async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
     
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == vlv_sensor._base_icon
+
+
+@pytest.mark.parametrize(
+    ("key", "raw", "expected"),
+    [
+        ("getPM1", 1, "true"),
+        ("getPM1", 0, "false"),
+        ("getPW2", "1", "true"),
+        ("getPW2", "0", "false"),
+        ("getPB3", "true", "true"),
+        ("getPB3", "on", "true"),
+        ("getPB3", "yes", "true"),
+        ("getPM1", "false", "false"),
+        ("getPM1", "off", "false"),
+        ("getPW2", "maybe", "maybe"),
+    ],
+)
+async def test_leak_protection_boolean_flags_various_values(
+    hass: HomeAssistant, key: str, raw: object, expected: str
+) -> None:
+    """Test leak-protection boolean flags parsing for various inputs."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {key: raw},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", key)
+
+    assert sensor.native_value == expected
+
+
+async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant) -> None:
+    """Empty string or None for leak-protection flags should return None."""
+    for raw in (None, "", "   "):
+        data = {
+            "devices": [
+                {
+                    "id": "device1",
+                    "name": "Device 1",
+                    "project_id": "project1",
+                    "status": {"getPM1": raw},
+                }
+            ]
+        }
+        coordinator = _build_coordinator(hass, data)
+        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM1")
+        assert sensor.native_value is None

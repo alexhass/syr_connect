@@ -747,3 +747,32 @@ def test_element_to_dict_child_converted_to_list_multiple_appends(parser):
     result = parser._element_to_dict(element)
     assert isinstance(result["x"], list)
     assert result["x"] == ["1", "2", "3", "4"]
+
+
+def test_ignore_broken_response_minimal_set(parser):
+    """Responses containing only minimal broken c-names should be ignored."""
+    parser = ResponseParser()
+    device_list = [
+        {"c": [{"@n": "getSRN", "@v": "123"}, {"@n": "getALA", "@v": ""}]},
+        {"c": {"@n": "getWRN", "@v": ""}},
+    ]
+
+    assert parser._ignore_broken_response(device_list) is True
+
+
+def test_ignore_broken_response_dict_minimal(parser):
+    """Single-device dict with only broken names should be ignored."""
+    parser = ResponseParser()
+    device = {"c": {"@n": "getNOT", "@v": ""}}
+
+    assert parser._ignore_broken_response(device) is True
+
+
+def test_ignore_broken_response_not_broken(parser):
+    """Responses that include other c-names must not be ignored."""
+    parser = ResponseParser()
+    device_list = [
+        {"c": [{"@n": "getSRN", "@v": "123"}, {"@n": "getFLO", "@v": "10"}]},
+    ]
+
+    assert parser._ignore_broken_response(device_list) is False
