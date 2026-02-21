@@ -1071,6 +1071,36 @@ async def test_regeneration_select_combined_mode_sends_only_setRTM(hass: HomeAss
     assert not any(c.args[1] == "setRTH" for c in coordinator.async_set_device_value.call_args_list)
 
 
+async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities):
+    """Ensure async_setup_entry removes previously-registered excluded selects from the registry."""
+    from custom_components.syr_connect import select as select_module
+    from custom_components.syr_connect.helpers import build_entity_id
+
+    device_id = "device_del"
+    data = {"devices": [{"id": device_id, "name": "Device Del", "status": {}}]}
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    class RegistryEntry:
+        def __init__(self, eid):
+            self.entity_id = eid
+
+    mock_registry = MagicMock()
+    # Make registry.async_get return a RegistryEntry (simulating a previously-registered entity)
+    def _get(eid):
+        return RegistryEntry(eid)
+
+    mock_registry.async_get.side_effect = _get
+    mock_registry.async_remove = MagicMock()
+
+    # Patch the entity registry accessor used by the module to return our mock
+    with patch("custom_components.syr_connect.select.er.async_get", return_value=mock_registry):
+        await select_module.async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # Verify that async_remove was called at least once for an excluded sensor
+    assert mock_registry.async_remove.called
+
+
 async def test_regeneration_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
     """Ensure async_select_option handles exceptions from coordinator.set calls."""
     data = {
