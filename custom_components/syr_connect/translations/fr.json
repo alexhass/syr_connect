@@ -65,7 +65,15 @@
         }
       },
       "getprf": {
+<<<<<<< Updated upstream
         "name": "Profil actif de protection contre les fuites"
+=======
+        "name": "Profil de protection contre les fuites actif",
+        "state": {
+          "1": "Présent",
+          "2": "Absent"
+        }
+>>>>>>> Stashed changes
       },
       "getrpd": {
         "name": "Intervalle de régénération"

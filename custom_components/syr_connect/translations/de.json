@@ -65,7 +65,15 @@
         }
       },
       "getprf": {
+<<<<<<< Updated upstream
         "name": "Aktives Leckagesschutz-Profil"
+=======
+        "name": "Aktives Leckagesschutz-Profil",
+        "state": {
+          "1": "Anwesend",
+          "2": "Abwesend"
+        }
+>>>>>>> Stashed changes
       },
       "getrpd": {
         "name": "Regenerationsintervall"
