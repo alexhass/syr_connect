@@ -68,3 +68,32 @@ def test_safetplus_detection():
 def test_unknown_model_detection():
     """Unknown or empty flattened dict should yield the unknown fallback."""
     assert detect_model({})["name"] == "unknown"
+
+
+def test_detect_model_none_input():
+    """Passing a non-dict (None) returns None."""
+    assert detect_model(None) is None
+
+
+def test_trio_attrs_only_synthetic():
+    """If attrs_equals is present and matches, detection succeeds without getVER."""
+    flat = {"getVER2": "176"}
+    assert detect_model(flat)["name"] == "trio"
+
+
+def test_neosoft_vkeys_version_mismatch_returns_unknown():
+    """If v_keys match but version constraints fail, signature is skipped and result is unknown."""
+    flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
+    assert detect_model(flat)["name"] == "unknown"
+
+
+def test_insufficient_v_keys_and_no_other_match():
+    """If a signature requires more v_keys than present and nothing else matches, return unknown."""
+    flat = {"getRE1": "1", "getVER": "NOTNSS"}
+    assert detect_model(flat)["name"] == "unknown"
+
+
+def test_attrs_equals_mismatch_skips_signature():
+    """When attrs_equals is present but values don't match, signature should be skipped."""
+    flat = {"getVER2": "999"}
+    assert detect_model(flat)["name"] == "unknown"
