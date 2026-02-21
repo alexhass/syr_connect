@@ -4494,6 +4494,78 @@ async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
     assert vlv_sensor.icon == vlv_sensor._base_icon
 
 
+# Tests merged from test_sensor_more.py
+async def test_getsre_icon_true_and_false(hass: HomeAssistant) -> None:
+    """getSRE icon should reflect active/inactive states."""
+    data_true = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getSRE": "true"}}]}
+    coord_t = _build_coordinator(hass, data_true)
+    s_true = SyrConnectSensor(coord_t, "d1", "Device", "p", "getSRE")
+    assert s_true.icon == "mdi:autorenew"
+
+    data_false = {"devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getSRE": "0"}}]}
+    coord_f = _build_coordinator(hass, data_false)
+    s_false = SyrConnectSensor(coord_f, "d2", "Device", "p", "getSRE")
+    assert s_false.icon == "mdi:timer-outline"
+
+
+async def test_vlv_value_mappings(hass: HomeAssistant) -> None:
+    """Test getVLV specific mappings to icons."""
+    mapping = {
+        "10": "mdi:valve-closed",
+        "11": "mdi:valve",
+        "20": "mdi:valve-open",
+        "21": "mdi:valve",
+    }
+    for val, expected in mapping.items():
+        data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getVLV": val}}]}
+        coord = _build_coordinator(hass, data)
+        sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getVLV")
+        assert sensor.icon == expected
+
+
+async def test_rg_datetime_icon_branch(hass: HomeAssistant) -> None:
+    """If native_value is a datetime with timestamp 1, icon should map to open valve."""
+    data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getRG1": "ignored"}}]}
+    coord = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getRG1")
+    # Force last native value to a datetime with timestamp == 1
+    sensor._last_native_value = datetime.fromtimestamp(1, UTC)
+    assert sensor.icon == "mdi:valve"
+
+
+async def test_getvol_conversion_to_m3(hass: HomeAssistant) -> None:
+    """getVOL string values should be converted to cubic meters (divide by 1000)."""
+    data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getVOL": "6530"}}]}
+    coord = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getVOL")
+    # 6530 L -> 6.53 m3
+    assert sensor.native_value == 6.53
+
+
+async def test_async_setup_entry_getpa_group_creation(hass: HomeAssistant) -> None:
+    """When getPA1 evaluates true, group sensors are created."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getPA1": "on", "getPN1": "Profile X"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    entities_collected = []
+    await async_setup_entry(hass, entry, lambda ents: entities_collected.extend(ents))
+
+    # Should include at least one group sensor like getPN1
+    keys = [getattr(e, "_sensor_key", None) for e in entities_collected]
+    assert "getPN1" in keys or "getPV1" in keys or "getPF1" in keys
+
+
 # Tests merged from test_sensor_icon_fix.py
 def test_icon_attribute_exists_in_dict() -> None:
     """Test sensor initialization when icon is defined in _SYR_CONNECT_SENSOR_ICON."""
