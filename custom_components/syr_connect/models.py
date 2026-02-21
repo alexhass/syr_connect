@@ -64,9 +64,9 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "display_name": "Trio DFR/LS Connect",
         "name": "trio",
         "cna_equals": None,
-        "ver_prefix": None,
-        "ver_contains": "176",
-        "attrs_equals": {"getVER2": "176"},
+        "ver_prefix": "syr001",
+        "v_keys": {"getAFW", "getVER2"},
+        "v_keys_required": 2,
     },
     {
         "display_name": "Safe-T+ Connect",
@@ -93,54 +93,77 @@ def detect_model(flat: dict[str, object]) -> dict:
     if not isinstance(flat, dict):
         return None
 
-    # Normalize helpers
-    cna = str(flat.get("getCNA", "")) if flat.get("getCNA") is not None else ""
-    ver = str(flat.get("getVER", "")) if flat.get("getVER") is not None else ""
+    # Simple normalizations
+    cna = str(flat.get("getCNA") or "")
+    ver = str(flat.get("getVER") or "")
     keys = set(flat.keys())
+    _LOGGER.debug("detect_model: keys=%s; getCNA=%s; getVER=%s", sorted(keys)[:120], cna, ver)
+
+    def attrs_match(sig: dict) -> bool:
+        attrs = sig.get("attrs_equals")
+        if not attrs:
+            return True
+        for k, v in attrs.items():
+            if str(flat.get(k, "")) != str(v):
+                return False
+        return True
+
+    def version_match(sig: dict) -> bool:
+        vp = sig.get("ver_prefix")
+        vc = sig.get("ver_contains")
+        if vp and not ver.startswith(vp):
+            return False
+        if vc and vc not in ver:
+            return False
+        return True
 
     for sig in MODEL_SIGNATURES:
-        # 1) explicit CNA
-        if sig.get("cna_equals") and cna == sig["cna_equals"]:
-            display = sig.get("display_name", sig["name"])
-            _LOGGER.debug("Detected device model: %s (cna_equals)", display)
-            return {"name": sig["name"], "display_name": display}
-        # explicit attribute equality checks
-        attrs = sig.get("attrs_equals")
-        attrs_matched = False
-        if attrs and isinstance(attrs, dict):
-            attrs_matched = True
-            for k, v in attrs.items():
-                if str(flat.get(k, "")) != str(v):
-                    attrs_matched = False
-                    break
-            if not attrs_matched:
-                # if attributes are required but don't match, skip this signature
-                continue
+        name = sig.get("name")
+        display = sig.get("display_name", name)
+        _LOGGER.debug(
+            "detect_model: testing signature %s (cna_equals=%s ver_prefix=%s ver_contains=%s v_keys=%s attrs=%s v_keys_required=%s)",
+            name,
+            sig.get("cna_equals"),
+            sig.get("ver_prefix"),
+            sig.get("ver_contains"),
+            sig.get("v_keys"),
+            sig.get("attrs_equals"),
+            sig.get("v_keys_required"),
+        )
 
-        # If signature defines v_keys, require fingerprint match first
-        v_keys = sig.get("v_keys") or set()
+        # 1) explicit CNA match wins immediately
+        if sig.get("cna_equals") and cna == sig.get("cna_equals"):
+            _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
+            return {"name": name, "display_name": display}
+
+        # 2) attributes must match if provided; if attrs are required and
+        # they don't match, this signature is skipped.
+        if not attrs_match(sig):
+            continue
+
+        # 3) if the signature defines v_keys, require the fingerprint match
+        v_keys = set(sig.get("v_keys") or set())
         if v_keys:
-            matches = len(keys & set(v_keys))
-            if matches < sig.get("v_keys_required", 1):
+            matches = len(v_keys & keys)
+            required = int(sig.get("v_keys_required", 1))
+            if matches < required:
+                _LOGGER.debug("detect_model: signature %s v_keys matched %d < %d", name, matches, required)
                 continue
-            # require version constraints if provided
-            if sig.get("ver_prefix") and not ver.startswith(sig["ver_prefix"]):
+            if not version_match(sig):
+                _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
-            if sig.get("ver_contains") and sig["ver_contains"] not in ver:
-                continue
-            display = sig.get("display_name", sig["name"])
-            _LOGGER.debug("Detected device model: %s (v_keys match=%d)", display, matches)
-            return {"name": sig["name"], "display_name": display}
-        # If no v_keys required, attributes-only matches should already
-        # have returned above. Fall back to version checks.
-        if sig.get("ver_prefix") and ver.startswith(sig["ver_prefix"]):
-            display = sig.get("display_name", sig["name"])
-            _LOGGER.debug("Detected device model: %s (ver_prefix)", display)
-            return {"name": sig["name"], "display_name": display}
-        if sig.get("ver_contains") and sig["ver_contains"] in ver:
-            display = sig.get("display_name", sig["name"])
-            _LOGGER.debug("Detected device model: %s (ver_contains)", display)
-            return {"name": sig["name"], "display_name": display}
+            _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
+            return {"name": name, "display_name": display}
 
-    _LOGGER.debug("Unknown device model; sample keys: %s", sorted(keys)[:20])
+        # 4) no v_keys: if attrs were present and matched, we've already
+        # satisfied detection above. Otherwise fall back to version checks.
+        if sig.get("attrs_equals"):
+            _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
+            return {"name": name, "display_name": display}
+
+        if (sig.get("ver_prefix") or sig.get("ver_contains")) and version_match(sig):
+            _LOGGER.debug("detect_model: detected model %s (ver)", display)
+            return {"name": name, "display_name": display}
+
+    _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
     return {"name": "unknown", "display_name": "Unknown model"}
