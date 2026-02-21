@@ -4313,6 +4313,62 @@ async def test_sensor_gett1_empty_value(hass: HomeAssistant) -> None:
     assert t1_sensor.native_value in (None, "None")
 
 
+async def test_sensor_getul_integer_input(hass: HomeAssistant) -> None:
+    """Test getUL when API returns an integer (should multiply by 10)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getUL": 4},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+
+    # 4 -> 40 liters
+    assert sensor.native_value == 40
+
+
+async def test_sensor_getul_mapped_string_key(hass: HomeAssistant) -> None:
+    """Test getUL with string key that exists in mapping (e.g., '1')."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getUL": "1"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+
+    # Mapping '1' -> 10 liters; implementation returns numeric int
+    assert sensor.native_value == 10
+
+
+async def test_sensor_getul_unmapped_string_returns_scaled_if_numeric(hass: HomeAssistant) -> None:
+    """Unmapped numeric-like strings should be scaled by 10 (e.g., '99' -> 990)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getUL": "99"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+
+    assert sensor.native_value == 990
+
+
 async def test_sensor_icon_getab_open_value(hass: HomeAssistant) -> None:
     """Test getAB sensor icon when valve is open (value=1)."""
     data = {
