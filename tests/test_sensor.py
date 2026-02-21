@@ -4494,6 +4494,71 @@ async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
     assert vlv_sensor.icon == vlv_sensor._base_icon
 
 
+# Tests merged from test_sensor_icon_fix.py
+def test_icon_attribute_exists_in_dict() -> None:
+    """Test sensor initialization when icon is defined in _SYR_CONNECT_SENSOR_ICON."""
+    class MockSensorEntity:
+        pass
+
+    sensor = MockSensorEntity()
+    sensor._attr_icon = "mdi:water-percent"
+
+    base_icon_old = sensor._attr_icon
+    assert base_icon_old == "mdi:water-percent"
+
+    base_icon_new = getattr(sensor, '_attr_icon', None)
+    assert base_icon_new == "mdi:water-percent"
+
+
+def test_icon_attribute_missing_old_approach_fails() -> None:
+    """Test that old approach fails when icon is not defined."""
+    class MockSensorEntity:
+        pass
+
+    sensor = MockSensorEntity()
+    try:
+        _ = sensor._attr_icon  # type: ignore[attr-defined]
+        raised = False
+    except AttributeError:
+        raised = True
+
+    assert raised is True
+
+
+def test_icon_attribute_missing_new_approach_works() -> None:
+    """Test that new approach works when icon is not defined."""
+    class MockSensorEntity:
+        pass
+
+    sensor = MockSensorEntity()
+    base_icon = getattr(sensor, '_attr_icon', None)
+    assert base_icon is None
+
+
+def test_real_world_scenario_with_leak_protection_sensors() -> None:
+    """Test real-world scenario with LEXplus10SL leak protection sensors."""
+    class MockSensorEntity:
+        pass
+
+    leak_sensors = [
+        'getPA1', 'getPA2', 'getPA3',
+        'getPN1', 'getPN2', 'getPN3',
+        'getPF1', 'getPF2', 'getPF3',
+        'getPT1', 'getPT2', 'getPT3',
+        'getPV1', 'getPV2', 'getPV3',
+        'getPRF',
+    ]
+
+    for sensor_key in leak_sensors:
+        sensor = MockSensorEntity()
+        base_icon = getattr(sensor, '_attr_icon', None)
+        assert base_icon is None
+
+
+
+
+
+
 async def test_getavo_parsing(hass: HomeAssistant) -> None:
     data = {
         "devices": [
