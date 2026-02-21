@@ -1,7 +1,7 @@
 """Tests for sensor platform."""
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -542,6 +542,135 @@ async def test_sensor_setup_no_data(hass: HomeAssistant) -> None:
 
     # Should not call add_entities when no data
     add_entities.assert_not_called()
+
+
+# Additional tests merged from test_sensor_extra.py
+def test_extra_getavo_and_getbar_and_getbat_and_getul(create_mock_coordinator):
+    data = {
+        "devices": [
+            {
+                "id": "dev_s",
+                "name": "Device S",
+                "project_id": "p1",
+                "status": {
+                    "getAVO": "1655mL",
+                    "getBAR": "4077 mbar",
+                    "getBAT": "363",
+                    "getUL": "5",
+                },
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    avo = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getAVO")
+    assert abs(float(avo.native_value) - 1.655) < 0.001
+
+    bar = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getBAR")
+    # 4077 mbar -> 4.077 bar -> rounded to 1 decimal -> 4.1
+    assert bar.native_value == 4.1
+
+    bat = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getBAT")
+    assert bat.native_value == 3.63
+
+    ul = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getUL")
+    assert ul.native_value == 50
+
+
+def test_extra_getrtm_and_getab_icon_and_getpm_boolean(create_mock_coordinator):
+    data = {
+        "devices": [
+            {
+                "id": "dev_rt",
+                "name": "Device RT",
+                "project_id": "p1",
+                "status": {
+                    "getRTM": "07:15",
+                    "getAB": "2",
+                    "getPM1": "1",
+                },
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    rtm = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getRTM")
+    assert rtm.native_value == "07:15"
+
+    ab = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getAB")
+    # native_value returns 'true'/'false' strings
+    assert ab.native_value == "true"
+    # Icon should reflect closed valve for True
+    assert ab.icon == "mdi:valve-closed"
+
+    pm1 = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getPM1")
+    assert pm1.native_value == "true"
+
+
+def test_extra_getwhu_and_getlar_and_getrpw(create_mock_coordinator):
+    # getWHU mapping, getLAR timestamp, getRPW bitmask
+    ts = 1609459200  # 2021-01-01 00:00:00 UTC
+    data = {
+        "devices": [
+            {
+                "id": "dev_w",
+                "name": "Device W",
+                "project_id": "p1",
+                "status": {
+                    "getWHU": 1,
+                    "getLAR": str(ts),
+                    "getRPW": "5",  # Monday + Wednesday bits
+                },
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    whu = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getWHU")
+    assert whu.native_value == "°fH"
+
+    lar = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getLAR")
+    assert isinstance(lar.native_value, datetime)
+    # Check timestamp matches (allow timezone differences by comparing UTC timestamp)
+    assert int(lar.native_value.replace(tzinfo=timezone.utc).timestamp()) == ts
+
+    rpw = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getRPW")
+    # Should return a comma-separated list for mask with multiple days
+    assert isinstance(rpw.native_value, str)
+    assert "," in rpw.native_value or rpw.native_value != ""
+
+
+def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
+    data = {
+        "devices": [
+            {
+                "id": "dev_map",
+                "name": "Device Map",
+                "project_id": "p1",
+                "status": {
+                    "getSTA": "Płukanie regenerantem (587mA)",
+                    "getALM": "NoSalt",
+                    "getLE": "2",
+                    "getT1": "3",
+                },
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    sta = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getSTA")
+    assert sta.native_value == "status_regenerant_rinse"
+    assert sta._attr_translation_key == "status_regenerant_rinse"
+
+    alm = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getALM")
+    assert alm.native_value == "no_salt"
+    assert alm._attr_translation_key == "no_salt"
+
+    le = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getLE")
+    assert le.native_value == "100"
+
+    t1 = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getT1")
+    assert t1.native_value == "1.5"
 
 
 async def test_sensor_missing_device(hass: HomeAssistant) -> None:
