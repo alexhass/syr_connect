@@ -77,12 +77,15 @@ def detect_model(flat: dict[str, object]) -> str | None:
     for sig in MODEL_SIGNATURES:
         # 1) explicit CNA
         if sig.get("cna_equals") and cna == sig["cna_equals"]:
+            _LOGGER.debug("Detected device model: %s (cna_equals)", sig["name"])
             return sig["name"]
 
         # 2) version based
         if sig.get("ver_prefix") and ver.startswith(sig["ver_prefix"]):
+            _LOGGER.debug("Detected device model: %s (ver_prefix)", sig["name"])
             return sig["name"]
         if sig.get("ver_contains") and sig["ver_contains"] in ver:
+            _LOGGER.debug("Detected device model: %s (ver_contains)", sig["name"])
             return sig["name"]
 
         # 2b) explicit attribute equality checks
@@ -94,6 +97,7 @@ def detect_model(flat: dict[str, object]) -> str | None:
                     matched = False
                     break
             if matched:
+                _LOGGER.debug("Detected device model: %s (attrs_equals)", sig["name"])
                 return sig["name"]
 
         # 3) fingerprint keys
@@ -101,6 +105,7 @@ def detect_model(flat: dict[str, object]) -> str | None:
         if allowed:
             matches = len(keys & allowed)
             if matches >= sig.get("threshold", 1):
+                _LOGGER.debug("Detected device model: %s (v_keys match=%d)", sig["name"], matches)
                 return sig["name"]
 
     _LOGGER.debug("Unknown device model; sample keys: %s", sorted(keys)[:20])
