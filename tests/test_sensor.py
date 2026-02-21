@@ -4525,7 +4525,8 @@ async def test_vlv_value_mappings(hass: HomeAssistant) -> None:
 
 async def test_rg_datetime_icon_branch(hass: HomeAssistant) -> None:
     """If native_value is a datetime with timestamp 1, icon should map to open valve."""
-    data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getRG1": "ignored"}}]}
+    # Ensure computed native value is None so the cached datetime is used
+    data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getRG1": None}}]}
     coord = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getRG1")
     # Force last native value to a datetime with timestamp == 1
