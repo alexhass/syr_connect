@@ -41,6 +41,14 @@ def test_neosoft2500_detection():
     assert detect_model(flat)["name"] == "neosoft2500"
 
 
+def test_neosoft5000_detection():
+    xml = _load_xml("NeoSoft5000_GetDeviceCollectionStatus.xml")
+    parser = ResponseParser()
+    flat = parser.parse_device_status_response(xml)
+    assert flat is not None
+    assert detect_model(flat)["name"] == "neosoft5000"
+
+
 def test_trio_dfrls_detection():
     xml = _load_xml("TrioDFRLS_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
@@ -60,9 +68,3 @@ def test_safetplus_detection():
 def test_unknown_model_detection():
     """Unknown or empty flattened dict should yield the unknown fallback."""
     assert detect_model({})["name"] == "unknown"
-
-
-def test_neosoft5000_detection_synthetic():
-    """Detect neosoft5000 via ver_prefix + v_keys."""
-    flat = {"getVER": "NSS.V.2.028", "getRE1": "x", "getRE2": "y"}
-    assert detect_model(flat)["name"] == "neosoft5000"

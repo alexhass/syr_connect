@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Just for model tests. We need a test machine to verify -->
+<sc>
+  <col>
+    <dcl dclg="3f985e4a-8b09-f111-8010-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="16.02.2026 21:18:56" nrs="0" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="41985e4a-8b09-f111-8010-be3af2b6058f" sbt="" sta="2" dst="2" ast="1" so="1">
+      <ci f="-" b="-" m="-" />
+      <c n="getSRN" v="206BBB56934" dt="16.02.2026 21:18:56" />
+      <c n="getALM" v="ff,ff,ff,ff,ff,ff,ff,ff" dt="16.02.2026 21:19:03" />
+      <c n="getALN" v="ff,ff,ff,ff,ff,ff,ff,ff" />
+      <c n="getALW" v="ff,ff,ff,ff,ff,ff,ff,ff" />
+      <c n="getBMX" v="" />
+      <c n="getCYN" v="0" />
+      <c n="getEGW" v="" />
+      <c n="getEIP" v="" />
+      <c n="getERE" v="0" />
+      <c n="getLAR" v="1771200000" />
+      <c n="getLDF" v="" />
+      <c n="getLMS" v="[0,0,0,0,0,0,0,0,0,0,0,0]" />
+      <c n="getMAC1" v="c4:98:94:eX:XX:Xb" />
+      <c n="getMAC2" v="c4:98:94:eX:XX:Xa" />
+      <c n="getNRE" v="1" />
+      <c n="getOHF" v="" />
+      <c n="getOWH" v="7" />
+      <c n="getPRE" v="0" />
+      <c n="getSRE" v="0" />
+      <c n="getVRE1" v="" />
+      <c n="getVRE2" v="" />
+      <c n="getWFC" v="my-ssid" />
+      <c n="getWFS" v="2" />
+      <c n="getWGW" v="192.168.178.1" />
+      <c n="getWIP" v="192.168.178.20" />
+      <c n="getYHF" v="" />
+      <c n="getHWV" v="V1" />
+      <c n="getAPT" v="600" />
+      <c n="getBUZ" v="True" />
+      <c n="getCNF" v="" />
+      <c n="getCSD" v="" />
+      <c n="getEVL" v="0" />
+      <c n="getIDS" v="False" />
+      <c n="getIWH" v="19" />
+      <c n="getLNG" v="0" />
+      <c n="getPSD" v="" />
+      <c n="getRMO" v="4" />
+      <c n="getRPD" v="2" />
+      <c n="getRPW" v="0" />
+      <c n="getRTM" v="01:00" />
+      <c n="getRTC" v="" />
+      <c n="getRURL" v="" />
+      <c n="getSRH" v="15.08.2026" />
+      <c n="getSRV" v="14.02.2027" />
+      <c n="getTMZ" v="4" />
+      <c n="getTSD" v="" />
+      <c n="getTURL" v="" />
+      <c n="getWAD" v="False" />
+      <c n="getWHU" v="0" />
+      <c n="getWTI" v="1740" />
+      <c n="getALA" v="FF" dt="16.02.2026 21:19:03" />
+      <c n="getAVO" v="0" />
+      <c n="getBAR" v="" />
+      <c n="getCEL" v="" />
+      <c n="getCND" v="" />
+      <c n="getCYT" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getLTV" v="5" />
+      <c n="getNOT" v="FF" />
+      <c n="getNPS" v="" />
+      <c n="getRE1" v="773" />
+      <c n="getRE2" v="999" />
+      <c n="getRG1" v="0" />
+      <c n="getRTI" v="0" />
+      <c n="getSS1" v="17" />
+      <c n="getSV1" v="24" />
+      <c n="getVOL" v="1019" />
+      <c n="getVPS1" v="3360" />
+      <c n="getVPS2" v="" />
+      <c n="getWFR" v="100" />
+      <c n="getWRN" v="FF" />
+      <c n="getALD" v="" />
+      <c n="getCNL" v="" />
+      <c n="getWAH" v="" />
+      <c n="getNET" v="" />
+      <c n="getVER" v="NSS.V.2.028" />
+    </d>
+  </dvs>
+  <cs v="C5FE" />
+</sc>
