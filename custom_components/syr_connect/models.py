@@ -106,13 +106,14 @@ def detect_model(flat: dict[str, object]) -> dict:
             return {"name": sig["name"], "display_name": display}
         # explicit attribute equality checks
         attrs = sig.get("attrs_equals")
+        attrs_matched = False
         if attrs and isinstance(attrs, dict):
-            all_attrs_match = True
+            attrs_matched = True
             for k, v in attrs.items():
                 if str(flat.get(k, "")) != str(v):
-                    all_attrs_match = False
+                    attrs_matched = False
                     break
-            if not all_attrs_match:
+            if not attrs_matched:
                 # if attributes are required but don't match, skip this signature
                 continue
 
@@ -130,8 +131,8 @@ def detect_model(flat: dict[str, object]) -> dict:
             display = sig.get("display_name", sig["name"])
             _LOGGER.debug("Detected device model: %s (v_keys match=%d)", display, matches)
             return {"name": sig["name"], "display_name": display}
-
-        # If no v_keys required, fall back to version/attrs checks
+        # If no v_keys required, attributes-only matches should already
+        # have returned above. Fall back to version checks.
         if sig.get("ver_prefix") and ver.startswith(sig["ver_prefix"]):
             display = sig.get("display_name", sig["name"])
             _LOGGER.debug("Detected device model: %s (ver_prefix)", display)
