@@ -1071,6 +1071,54 @@ async def test_regeneration_select_combined_mode_sends_only_setRTM(hass: HomeAss
     assert not any(c.args[1] == "setRTH" for c in coordinator.async_set_device_value.call_args_list)
 
 
+async def test_regeneration_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
+    """Ensure async_select_option handles exceptions from coordinator.set calls."""
+    data = {
+        "devices": [
+            {
+                "id": "device_exc",
+                "name": "Device Exc",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": "2",
+                    "getRTM": "30",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRegenerationSelect(coordinator, "device_exc", "Device Exc")
+
+    # Make coordinator raise when trying to set values; ensure method is patched
+    with patch.object(coordinator, "async_set_device_value", AsyncMock(side_effect=Exception("boom"))) as m:
+        # Should not raise despite underlying coordinator exception
+        await select.async_select_option("03:45")
+        assert m.await_count >= 1
+
+
+async def test_numeric_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
+    """Ensure numeric select handles exceptions from coordinator.set calls."""
+    data = {
+        "devices": [
+            {
+                "id": "device_num_exc",
+                "name": "Device Num Exc",
+                "project_id": "project1",
+                "status": {
+                    "getSV1": "5",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectNumericSelect(coordinator, "device_num_exc", "Device Num Exc", "getSV1", 0, 10, 1)
+
+    with patch.object(coordinator, "async_set_device_value", AsyncMock(side_effect=Exception("boom"))) as m:
+        # Should not raise despite underlying coordinator exception when selecting valid option
+        await select.async_select_option("3 kg")
+        assert m.await_count >= 1
+
+
 def test_build_time_options_step_60_additional():
     """Build time options with 60-minute step (additional coverage)."""
     opts = _build_time_options(60)
