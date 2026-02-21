@@ -1783,12 +1783,12 @@ def test_icon_getpst_values(create_mock_coordinator):
 
 
 def test_icon_sre_true_false(create_mock_coordinator):
-    data_t = {"devices": [{"id": "d5", "name": "D5", "project_id": "p1", "status": {"getSRE": "1"}}]}
+    data_t = {"devices": [{"id": "d5", "name": "D5", "project_id": "p1", "status": {"getSRE": "true"}}]}
     coord_t = create_mock_coordinator(data_t)
     st = SyrConnectSensor(coord_t, "d5", "D5", "p1", "getSRE")
     assert st.icon == "mdi:autorenew"
 
-    data_f = {"devices": [{"id": "d6", "name": "D6", "project_id": "p1", "status": {"getSRE": "0"}}]}
+    data_f = {"devices": [{"id": "d6", "name": "D6", "project_id": "p1", "status": {"getSRE": "false"}}]}
     coord_f = create_mock_coordinator(data_f)
     sf = SyrConnectSensor(coord_f, "d6", "D6", "p1", "getSRE")
     assert sf.icon == "mdi:timer-outline"
@@ -1844,11 +1844,12 @@ async def test_async_setup_entry_getpa_group_false_removes_registry(hass: HomeAs
             self.removed = True
 
     with patch("custom_components.syr_connect.sensor.er.async_get", return_value=DummyRegistry()):
-        added = []
-        await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
-        # If registry.remove was called no exception should be raised and setup completes
-        assert True
-        add_entities.assert_called_once()
+        registry = DummyRegistry()
+        with patch("custom_components.syr_connect.sensor.er.async_get", return_value=registry):
+            added = []
+            await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+            # If registry.async_remove was called it should have set removed=True
+            assert registry.removed is True
 
 
 async def test_getpa_group_true_creates_group_entities(hass: HomeAssistant) -> None:
