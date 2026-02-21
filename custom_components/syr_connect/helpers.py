@@ -64,7 +64,7 @@ def build_device_info(
 
     # Use fallback if no model found
     if model is None:
-        model = "SYR Connect"
+        model = "Unknown model"
         _LOGGER.debug("No model found for device %s, using fallback", device_id)
 
     return DeviceInfo(
