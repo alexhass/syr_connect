@@ -24,6 +24,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     {
         "name": "lexplus10sl",
         "cna_equals": "LEXplus10SL",
+        "ver_prefix": None,
         "threshold": 1,
     },
     {
