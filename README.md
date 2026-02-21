@@ -53,25 +53,27 @@ This integration works with SYR water softeners that appear in the SYR Connect c
 
 Tested and reported working:
 
-- NeoSoft 2500 Connect
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
-- SYR Safe-T+
+- SYR NeoSoft 2500 Connect
+- SYR Safe-T+ Connect
 - SYR TRIO DFR/LS Connect 2425
 
 Not tested, but should work (please report):
 
-- NeoSoft 5000 Connect
 - SYR LEX 1500 Connect Single
 - SYR LEX 1500 Connect Duplex
 - SYR LEX 1500 Connect Alternating
 - SYR LEX 1500 Connect Triple
 - SYR IT 3000 Pendulum system
+- SYR NeoSoft 5000 Connect
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
 Leakage detection devices are also of interrest, but may require additonal work:
 
+- HygBox Connect
+- NeoDos Connect
 - SafeTech Connect
 - SafeTech plus Connect
 - SafeFloor Connect

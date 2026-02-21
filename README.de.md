@@ -53,25 +53,27 @@ Diese Integration funktioniert mit SYR-Wasserenthärtern, die im SYR Connect-Clo
 
 Getestet und gemeldet funktionierend:
 
-- NeoSoft 2500 Connect
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
-- SYR Safe-T+
+- SYR NeoSoft 2500 Connect
+- SYR Safe-T+ Connect
 - SYR TRIO DFR/LS Connect 2425
 
 Nicht getestet, sollte aber funktionieren (bitte melden):
 
-- NeoSoft 5000 Connect
 - SYR LEX 1500 Connect Einzel
 - SYR LEX 1500 Connect Doppel
 - SYR LEX 1500 Connect Pendel
 - SYR LEX 1500 Connect Dreifach
 - SYR IT 3000 Pendelanlage
+- SYR NeoSoft 5000 Connect
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
 Auch Leckage-Erkennungsgeräte sind interessant, können aber zusätzlichen Aufwand erfordern:
 
+- HygBox Connect
+- NeoDos Connect
 - SafeTech Connect
 - SafeTech plus Connect
 - SafeFloor Connect
