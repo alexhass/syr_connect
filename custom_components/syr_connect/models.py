@@ -16,18 +16,28 @@ _LOGGER = logging.getLogger(__name__)
 # fingerprint keys where a threshold of matches is required.
 MODEL_SIGNATURES: Iterable[dict] = [
     {
+        "display_name": "LEX Plus 10 Connect",
+        "name": "lexplus10",
+        "cna_equals": "LEXplus10",
+        "ver_prefix": None,
+        "threshold": 1,
+    },
+    {
+        "display_name": "LEX Plus 10 S Connect",
         "name": "lexplus10s",
         "cna_equals": "LEXplus10S",
         "ver_prefix": None,
         "threshold": 1,
     },
     {
+        "display_name": "LEX Plus 10 SL Connect",
         "name": "lexplus10sl",
         "cna_equals": "LEXplus10SL",
         "ver_prefix": None,
         "threshold": 1,
     },
     {
+        "display_name": "NeoSoft 2500 Connect",
         "name": "neosoft2500",
         "cna_equals": None,
         "ver_prefix": "NSS",
@@ -35,6 +45,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "threshold": 1,
     },
     {
+        "display_name": "NeoSoft 5000 Connect",
         "name": "neosoft5000",
         "cna_equals": None,
         "ver_prefix": "NSS",
@@ -42,6 +53,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "threshold": 2,
     },
     {
+        "display_name": "Trio DFR/LS Connect",
         "name": "trio",
         "cna_equals": None,
         "ver_prefix": None,
@@ -50,6 +62,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "threshold": 2,
     },
     {
+        "display_name": "Safe-T+ Connect",
         "name": "safetplus",
         "cna_equals": None,
         "ver_contains": "Safe-T",
