@@ -105,7 +105,7 @@ async def async_setup_entry(
         device_name = device.get("name", device_id)
         status = device.get("status", {})
         # Salt amount selects (max depends on device model)
-        model = detect_model(status)
+        model = detect_model(status)["name"]
         max_capacity = int(_SYR_CONNECT_MODEL_SALT_CAPACITY.get(str(model), 25))
         for sv_key in ("getSV1", "getSV2", "getSV3"):
             sv_value = status.get(sv_key)

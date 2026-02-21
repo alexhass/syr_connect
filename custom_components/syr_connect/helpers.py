@@ -8,6 +8,7 @@ from typing import Any
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import _SYR_CONNECT_CONFIGURATION_URL, DOMAIN
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +40,11 @@ def build_device_info(
         if device['id'] == device_id:
             status = device.get('status', {})
 
-            # Get model from getCNA
-            if 'getCNA' in status and status['getCNA']:
-                model = str(status['getCNA'])
+            # Get human-friendly model display name
+            detected = detect_model(status)
+            display_name = detected.get("display_name") if isinstance(detected, dict) else None
+            if display_name:
+                model = str(display_name)
 
             # Get software version from getVER
             if 'getVER' in status and status['getVER']:

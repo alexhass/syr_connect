@@ -16,7 +16,7 @@ def test_lexplus10s_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat) == "lexplus10s"
+    assert detect_model(flat)["name"] == "lexplus10s"
 
 
 def test_lexplus10sl_detection():
@@ -24,7 +24,7 @@ def test_lexplus10sl_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat) == "lexplus10sl"
+    assert detect_model(flat)["name"] == "lexplus10sl"
 
 
 def test_neosoft2500_detection():
@@ -32,7 +32,7 @@ def test_neosoft2500_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat) == "neosoft2500"
+    assert detect_model(flat)["name"] == "neosoft2500"
 
 
 def test_trio_dfrls_detection():
@@ -40,7 +40,7 @@ def test_trio_dfrls_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat) == "trio"
+    assert detect_model(flat)["name"] == "trio"
 
 
 def test_safetplus_detection():
@@ -48,4 +48,4 @@ def test_safetplus_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat) == "safetplus"
+    assert detect_model(flat)["name"] == "safetplus"

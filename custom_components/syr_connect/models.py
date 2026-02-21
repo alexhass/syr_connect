@@ -71,8 +71,9 @@ MODEL_SIGNATURES: Iterable[dict] = [
 ]
 
 
-def detect_model(flat: dict[str, object]) -> str | None:
-    """Return a detected model name or None.
+def detect_model(flat: dict[str, object]) -> dict:
+    """Return a detected model as {'name':..., 'display_name':...}.
+    If no signature matches, return an 'unknown' model dict.
 
     The function applies a small set of rules in order:
     1. `getCNA` exact match
@@ -90,16 +91,19 @@ def detect_model(flat: dict[str, object]) -> str | None:
     for sig in MODEL_SIGNATURES:
         # 1) explicit CNA
         if sig.get("cna_equals") and cna == sig["cna_equals"]:
-            _LOGGER.debug("Detected device model: %s (cna_equals)", sig["name"])
-            return sig["name"]
+            display = sig.get("display_name", sig["name"])
+            _LOGGER.debug("Detected device model: %s (cna_equals)", display)
+            return {"name": sig["name"], "display_name": display}
 
         # 2) version based
         if sig.get("ver_prefix") and ver.startswith(sig["ver_prefix"]):
-            _LOGGER.debug("Detected device model: %s (ver_prefix)", sig["name"])
-            return sig["name"]
+            display = sig.get("display_name", sig["name"])
+            _LOGGER.debug("Detected device model: %s (ver_prefix)", display)
+            return {"name": sig["name"], "display_name": display}
         if sig.get("ver_contains") and sig["ver_contains"] in ver:
-            _LOGGER.debug("Detected device model: %s (ver_contains)", sig["name"])
-            return sig["name"]
+            display = sig.get("display_name", sig["name"])
+            _LOGGER.debug("Detected device model: %s (ver_contains)", display)
+            return {"name": sig["name"], "display_name": display}
 
         # 2b) explicit attribute equality checks
         attrs = sig.get("attrs_equals")
@@ -110,16 +114,18 @@ def detect_model(flat: dict[str, object]) -> str | None:
                     matched = False
                     break
             if matched:
-                _LOGGER.debug("Detected device model: %s (attrs_equals)", sig["name"])
-                return sig["name"]
+                display = sig.get("display_name", sig["name"])
+                _LOGGER.debug("Detected device model: %s (attrs_equals)", display)
+                return {"name": sig["name"], "display_name": display}
 
         # 3) fingerprint keys
         allowed = sig.get("v_keys", set())
         if allowed:
             matches = len(keys & allowed)
             if matches >= sig.get("threshold", 1):
-                _LOGGER.debug("Detected device model: %s (v_keys match=%d)", sig["name"], matches)
-                return sig["name"]
+                display = sig.get("display_name", sig["name"])
+                _LOGGER.debug("Detected device model: %s (v_keys match=%d)", display, matches)
+                return {"name": sig["name"], "display_name": display}
 
     _LOGGER.debug("Unknown device model; sample keys: %s", sorted(keys)[:20])
-    return None
+    return {"name": "unknown", "display_name": "Unknown model"}
