@@ -50,20 +50,20 @@ _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 # Unknown models with similar names can have up to 300 kg per container.
 # Fallback to 25 kg when unknown.
 _SYR_CONNECT_MODEL_SALT_CAPACITY = {
-    "LEXPLUS10": 25,
-    "LEXPLUS10S": 25,
-    "LEXPLUS10SL": 25,
+    "lexplus10": 25,
+    "lexplus10s": 25,
+    "lexplus10sl": 25,
+    "neosoft2500": 40,
+    "neosoft5000": 35,
     # TODO: Below names are not confirmed models.
     # Names are guessed from data sheets with similar pattern, values are documented in data sheets.
-    "UNKNOWN_LEX10": 25,
-    "UNKNOWN_LEX20": 70,
-    "UNKNOWN_LEX30": 70,
-    "UNKNOWN_LEX40": 75,
-    "UNKNOWN_LEX60": 110,
-    "UNKNOWN_LEX80": 200,
-    "UNKNOWN_LEX100": 300,
-    "UNKNOWN_NEOSOFT2500": 40,
-    "UNKNOWN_NEOSOFT5000": 35,
+    "unknown_lex10": 25,
+    "unknown_lex20": 70,
+    "unknown_lex30": 70,
+    "unknown_lex40": 75,
+    "unknown_lex60": 110,
+    "unknown_lex80": 200,
+    "unknown_lex100": 300,
 }
 
 # Binary sensors mapping with their device classes - internal

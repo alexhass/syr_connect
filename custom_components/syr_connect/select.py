@@ -24,6 +24,7 @@ from .helpers import (
     get_sensor_rtm_value,
     set_sensor_rtm_value,
 )
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -104,8 +105,8 @@ async def async_setup_entry(
         device_name = device.get("name", device_id)
         status = device.get("status", {})
         # Salt amount selects (max depends on device model)
-        model = status.get("getCNA") or device.get("type") or ""
-        max_capacity = int(_SYR_CONNECT_MODEL_SALT_CAPACITY.get(str(model).upper(), 25))
+        model = detect_model(status)
+        max_capacity = int(_SYR_CONNECT_MODEL_SALT_CAPACITY.get(str(model), 25))
         for sv_key in ("getSV1", "getSV2", "getSV3"):
             sv_value = status.get(sv_key)
             if sv_value is None or sv_value == "":

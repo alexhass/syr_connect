@@ -28,10 +28,18 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "threshold": 1,
     },
     {
-        "name": "neosoft",
+        "name": "neosoft2500",
         "cna_equals": None,
         "ver_prefix": "NSS",
+        "v_keys": {"getRE1"},
         "threshold": 1,
+    },
+    {
+        "name": "neosoft5000",
+        "cna_equals": None,
+        "ver_prefix": "NSS",
+        "v_keys": {"getRE1", "getRE2"},
+        "threshold": 2,
     },
     {
         "name": "trio",

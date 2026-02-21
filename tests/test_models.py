@@ -32,7 +32,7 @@ def test_neosoft2500_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat) == "neosoft"
+    assert detect_model(flat) == "neosoft2500"
 
 
 def test_trio_dfrls_detection():
