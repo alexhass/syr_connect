@@ -41,8 +41,8 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "name": "neosoft5000",
         "cna_equals": None,
         "ver_prefix": "NSS",
-        "v_keys": {"getRE2"},
-        "threshold": 1,
+        "v_keys": {"getRE1", "getRE2"},
+        "threshold": 3,
     },
     {
         "display_name": "NeoSoft 2500 Connect",
@@ -50,7 +50,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1"},
-        "threshold": 1,
+        "threshold": 2,
     },
     {
         "display_name": "Trio DFR/LS Connect",
