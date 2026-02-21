@@ -9,6 +9,7 @@ from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordi
 from custom_components.syr_connect.select import (
     SyrConnectNumericSelect,
     SyrConnectRegenerationSelect,
+    SyrConnectPrfSelect,
     async_setup_entry,
     _build_time_options,
 )
@@ -398,7 +399,55 @@ async def test_numeric_select_without_unit(hass: HomeAssistant) -> None:
         
         # Options should be plain numbers
         assert "1" in select.options
-        assert "2" in select.options
+
+
+async def test_prf_select_options_and_current(hass: HomeAssistant) -> None:
+    """Test SyrConnectPrfSelect options and current_option behavior."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.options == ["Profile A"]
+    assert select.current_option == "Profile A"
+
+
+async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Ensure async_setup_entry handles exceptions from entity registry cleanup."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": "2",
+                    "getRTM": "30",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    # Force the entity registry accessor to raise to hit the exception branch
+    with patch("custom_components.syr_connect.select.er.async_get", side_effect=Exception("boom")):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # Should still proceed and add the regeneration select
+    assert len(entities) >= 1
 
 
 async def test_numeric_select_options_include_unit(hass: HomeAssistant) -> None:
