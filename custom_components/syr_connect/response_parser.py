@@ -291,45 +291,46 @@ class ResponseParser:
         return self._flatten_attributes(parsed['sc'])
 
     def _ignore_broken_response(self, device_list: Any) -> bool:
-        """Ignore responses where every `d` device entry has <6 XML tags.
+        """Ignore broken responses
 
         Dirty workaround:
         1. Syr Trio DFR/LS: For unknown reaons the device very often returns an XML
            response with getSRN, getALA, getNOT, getWRN only. This causes unwanted
            sensor status flapping. This need to be ignored.
-
-        Count child element tags inside each `d` entry. For the `c` tag we
-        count individual occurrences. If all devices have fewer than 6 tags,
-        the response is likely a broken fragment and is ignored.
         """
-        def count_tags_for_device(d: Any) -> int:
-            if not isinstance(d, dict):
-                return 0
-            total = 0
-            for key, val in d.items():
-                # Ignore attributes and text
-                if key.startswith('@') or key == '#text':
-                    continue
-                if key == 'c':
-                    if isinstance(val, list):
-                        total += len(val)
-                    else:
-                        total += 1
-                else:
-                    total += 1
-            return total
+        # New detection: if every device only contains minimal 'c' entries
+        # with names in the broken set, treat as broken response.
+        broken_names = {"getSRN", "getALA", "getNOT", "getWRN"}
 
-        counts: list[int] = []
+        def get_c_names(d: Any) -> set:
+            names: set = set()
+            if not isinstance(d, dict):
+                return names
+            c = d.get('c')
+            if not c:
+                return names
+            if isinstance(c, list):
+                for item in c:
+                    if isinstance(item, dict) and '@n' in item:
+                        names.add(item['@n'])
+            elif isinstance(c, dict) and '@n' in c:
+                names.add(c['@n'])
+            return names
+
+        c_names_list: list[set] = []
         if isinstance(device_list, list):
             for d in device_list:
-                counts.append(count_tags_for_device(d))
+                c_names_list.append(get_c_names(d))
         else:
-            counts.append(count_tags_for_device(device_list))
+            c_names_list.append(get_c_names(device_list))
 
-        if counts and all(c < 6 for c in counts):
-            _LOGGER.debug("Ignoring status response: device tag counts %s", counts)
+        # If every device has at least one c-name and all names are a subset
+        # of the minimal broken set, ignore the response.
+        if c_names_list and all(names and names.issubset(broken_names) for names in c_names_list):
+            _LOGGER.debug("Ignoring status response: minimal c-names present %s", c_names_list)
             return True
 
+        # Only treat as broken when minimal c-names are present.
         return False
 
     def parse_statistics_response(self, xml_response: str) -> dict[str, Any]:
