@@ -106,6 +106,7 @@ _SYR_CONNECT_SENSOR_ALA_CODES_SAFET = {
     "AA": "alarm_temperature_sensor_faulty",
     "AB": "alarm_weak_battery",
     "AE": "error_no_information",
+    "WeakBat": "alarm_weak_battery",
 }
 
 _SYR_CONNECT_SENSOR_NOT_CODES = {

@@ -143,8 +143,41 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
             # corresponding getXXX value is neither "FF" nor empty.
             if self._command in ("setALA", "setNOT", "setWRN"):
-                # Send reset value 255 = 0xFF
-                await coordinator.async_set_device_value(self._device_id, self._command, "FF")
+                # Determine corresponding get key
+                if self._command == "setALA":
+                    get_key = "getALA"
+                elif self._command == "setNOT":
+                    get_key = "getNOT"
+                else:
+                    get_key = "getWRN"
+
+                # Find device status
+                status = None
+                for device in coordinator.data.get('devices', []):
+                    if device['id'] == self._device_id:
+                        status = device.get('status', {})
+                        break
+
+                raw = None
+                if status is not None:
+                    raw = status.get(get_key)
+
+                # If there's no value, no reset required
+                if raw is None or (isinstance(raw, str) and raw.strip() == ""):
+                    raise HomeAssistantError(f"No reset required for {get_key} on {self._device_id}")
+
+                # If the device returns an integer (or digit-only string), send 0 to reset.
+                # If the device returns a hex/non-digit value, send FF (255).
+                if isinstance(raw, int):
+                    send_value = 0
+                else:
+                    raw_str = str(raw).strip()
+                    if raw_str.isdigit():
+                        send_value = 0
+                    else:
+                        send_value = "FF"
+
+                await coordinator.async_set_device_value(self._device_id, self._command, send_value)
                 return
 
             # Default action: Send value 0 for `setSIR`, otherwise 1
