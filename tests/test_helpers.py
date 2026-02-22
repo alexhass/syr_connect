@@ -10,6 +10,10 @@ from custom_components.syr_connect.helpers import (
     get_sensor_avo_value,
     get_current_mac,
     get_sensor_bat_value,
+    get_sensor_ala_map,
+    get_sensor_not_map,
+    get_sensor_wrn_map,
+    get_sensor_ab_value,
 )
 
 
@@ -267,4 +271,54 @@ def test_get_sensor_ab_and_build_command() -> None:
     assert build_set_ab_command({"getAB": True}, closed=False) == ("setAB", "false")
     # fallback numeric
     assert build_set_ab_command({"getAB": None}, closed=True) == ("setAB", 2)
+
+
+def test_sensor_code_mappings_and_unknown_model() -> None:
+    """Test ALA/NOT/WRN mapping functions and unknown-model behavior."""
+
+    # ALA: LEX family (detect via getCNA)
+    status_lex = {"getCNA": "LEXplus10S"}
+    mapped, raw = get_sensor_ala_map(status_lex, "0")
+    assert mapped == "no_alarm" and raw == "0"
+
+    # ALA: NeoSoft family (detect via getVER prefix and v_keys)
+    status_neo = {"getVER": "NSS-1", "getRE1": "x", "getRE2": "y"}
+    mapped2, raw2 = get_sensor_ala_map(status_neo, "FF")
+    assert mapped2 == "no_alarm" and raw2 == "FF"
+
+    # ALA: Safe-T+ family (detect via getVER contains)
+    status_safet = {"getVER": "Something Safe-T Something"}
+    mapped3, raw3 = get_sensor_ala_map(status_safet, "A1")
+    assert mapped3 == "alarm_end_switch" and raw3 == "A1"
+
+    # ALA: unknown model -> returns (None, raw)
+    mapped4, raw4 = get_sensor_ala_map({}, "A5")
+    assert mapped4 is None and raw4 == "A5"
+
+    # NOT mapping
+    mapped_not, raw_not = get_sensor_not_map({}, "01")
+    assert mapped_not == "new_software_available" and raw_not == "01"
+    mapped_not2, raw_not2 = get_sensor_not_map({}, "")
+    assert mapped_not2 == "no_notification" and raw_not2 == ""
+
+    # WRN mapping
+    mapped_wrn, raw_wrn = get_sensor_wrn_map({}, "02")
+    assert mapped_wrn == "salt_supply_low" and raw_wrn == "02"
+    mapped_wrn2, raw_wrn2 = get_sensor_wrn_map({}, None)
+    assert mapped_wrn2 is None and raw_wrn2 == ""
+
+
+def test_get_sensor_ab_string_numeric_edge() -> None:
+    """Cover numeric-string branch for getAB ('1' -> False)."""
+
+    assert get_sensor_ab_value({"getAB": "1"}) is False
+
+
+def test_mapping_none_inputs() -> None:
+    """Ensure mapping functions handle None/empty raw codes."""
+    mapped_ala, raw_ala = get_sensor_ala_map({}, None)
+    assert mapped_ala is None and raw_ala == ""
+
+    mapped_not, raw_not = get_sensor_not_map({}, None)
+    assert mapped_not is None and raw_not == ""
 
