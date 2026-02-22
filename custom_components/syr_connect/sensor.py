@@ -37,6 +37,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     get_sensor_ab_value,
+    get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
     get_sensor_rtm_value,
@@ -381,18 +382,32 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         - Salt stock: full/half/empty cup based on level
         - Remaining capacity: gauge-empty/low/full based on percentage
         """
-        # Dynamic icon for alarm sensor
-        if self._sensor_key == "getALM":
-            # Read raw status value to decide icon (avoid translated display)
-            raw_value = None
+        # Dynamic icon for alarm sensors (getALM and getALA): simplified
+        # Rule: only 'no_alarm' is considered non-alarm; everything else is an alarm.
+        if self._sensor_key in ("getALM", "getALA"):
+            raw = None
+            raw_status = None
             for device in self.coordinator.data.get('devices', []):
                 if device['id'] == self._device_id:
-                    raw_value = device.get('status', {}).get('getALM')
+                    raw_status = device.get('status', {})
+                    if self._sensor_key == "getALM":
+                        raw = raw_status.get('getALM')
+                    else:
+                        raw = raw_status.get('getALA')
                     break
-            mapped = _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(str(raw_value))
-            if mapped in ("no_salt", "low_salt"):
-                return "mdi:bell-alert"
-            return "mdi:bell-outline"
+
+            mapped = None
+            if self._sensor_key == "getALM":
+                mapped = _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(str(raw))
+            else:
+                try:
+                    mapped, _ = get_sensor_ala_map(raw_status or {}, raw)
+                except Exception:
+                    mapped = None
+
+            if mapped == "no_alarm" or raw is None or (isinstance(raw, str) and str(raw).strip() == ""):
+                return "mdi:bell-outline"
+            return "mdi:bell-alert"
 
         # Dynamic icon for regeneration active sensor
         if self._sensor_key == "getSRE":
@@ -603,6 +618,24 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if ab is None:
                         return None
                     return "true" if ab else "false"
+
+                # Special handling for getALA: map alarm code to translation key
+                if self._sensor_key == 'getALA':
+                    raw = status.get('getALA')
+                    if raw is None:
+                        return None
+                    # Try to map to internal translation key based on device model
+                    mapped, raw_code = get_sensor_ala_map(status, raw)
+                    if mapped:
+                        # expose internal key (frontend will translate)
+                        self._attr_translation_key = mapped
+                        return mapped
+                    # If model was unknown or no mapping found, return raw value 1:1
+                    try:
+                        sval = str(raw_code)
+                        return sval if sval != "" else None
+                    except Exception:
+                        return None
 
                 # Special handling for leak-protection boolean flags (getPMx, getPWx, getPBx)
                 # Note: getPRx are numeric return-time values and must NOT be treated as boolean.

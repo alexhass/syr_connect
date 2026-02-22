@@ -95,11 +95,33 @@
           "true": "Geschlossen"
         }
       },
+      "getala": {
+        "name": "Alarmstatus",
+        "state": {
+          "alarm_end_switch": "ALARM: Endschalter",
+          "alarm_external_sensor_leakage_cable": "ALARM EXT. SENSOR LECKAGE KABEL",
+          "alarm_external_sensor_leakage_radio": "ALARM EXT. SENSOR LECKAGE FUNK",
+          "alarm_increased_water_hardness": "ALARM: Erhöhte Wasserhärte",
+          "alarm_leakage_time_reached": "ALARM: Leckzeit erreicht!",
+          "alarm_leakage_volume_reached": "ALARM: Leckvolumen erreicht!",
+          "alarm_max_flow_rate_reached": "ALARM: Maximaler Durchfluss erreicht!",
+          "alarm_microleakage_detected": "ALARM: Mikroleckage erkannt!",
+          "alarm_pressure_sensor_faulty": "ALARM: Drucksensor fehlerhaft!",
+          "alarm_salt_supply_empty": "ALARM: Salzversorgung leer",
+          "alarm_temperature_sensor_faulty": "ALARM: Temperatursensor fehlerhaft!",
+          "alarm_turbine_blocked": "ALARM: Turbine blockiert!",
+          "alarm_valve_position": "ALARM: Ventilstellung",
+          "alarm_weak_battery": "ALARM: Schwache Batterie!",
+          "error_no_information": "Fehler: keine Informationen verfügbar",
+          "fault_conductance_sensor": "ALARM: Leitfähigkeitssensor fehlerhaft!",
+          "no_alarm": "Kein Alarm"
+        }
+      },
       "getalm": {
         "name": "Alarm",
         "state": {
           "low_salt": "Salz gering",
-          "no_alarm": "Keiner",
+          "no_alarm": "Kein Alarm",
           "no_salt": "Salz leer"
         }
       },

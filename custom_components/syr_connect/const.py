@@ -66,6 +66,48 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
     "unknown_lex100": 300,
 }
 
+# Alarm code mappings per device model (raw API getALA -> internal translation key)
+# These are used to map device-specific alarm codes to internal translation keys.
+_SYR_CONNECT_SENSOR_ALA_LEX10 = {
+    "0": "no_alarm",
+}
+
+_SYR_CONNECT_SENSOR_ALA_NEOSOFT = {
+    "FF": "no_alarm",
+    "A1": "alarm_end_switch",
+    "A2": "alarm_turbine_blocked",
+    "A3": "alarm_leakage_volume_reached",
+    "A4": "alarm_leakage_time_reached",
+    "A5": "alarm_max_flow_rate_reached",
+    "A6": "alarm_microleakage_detected",
+    "A7": "alarm_external_sensor_leakage_radio",
+    "A8": "alarm_external_sensor_leakage_cable",
+    "A9": "alarm_pressure_sensor_faulty",
+    "AA": "alarm_temperature_sensor_faulty",
+    "AB": "fault_conductance_sensor",
+    "AC": "fault_conductance_sensor",
+    "AE": "error_no_information",
+    "AD": "alarm_increased_water_hardness",
+    "0D": "alarm_salt_supply_empty",
+    "0E": "alarm_valve_position",
+}
+
+_SYR_CONNECT_SENSOR_ALA_SAFET = {
+    "FF": "no_alarm",
+    "A1": "alarm_end_switch",
+    "A2": "alarm_turbine_blocked",
+    "A3": "alarm_leakage_volume_reached",
+    "A4": "alarm_leakage_time_reached",
+    "A5": "alarm_max_flow_rate_reached",
+    "A6": "alarm_microleakage_detected",
+    "A7": "alarm_external_sensor_leakage_radio",
+    "A8": "alarm_external_sensor_leakage_cable",
+    "A9": "alarm_pressure_sensor_faulty",
+    "AA": "alarm_temperature_sensor_faulty",
+    "AB": "alarm_weak_battery",
+    "AE": "error_no_information",
+}
+
 # Binary sensors mapping with their device classes - internal
 _SYR_CONNECT_SENSOR_BINARY = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
@@ -217,7 +259,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 
     # Unknown Safe-T+ specific sensors
     'f', 'b', 'm',  # CI values from API response, unclear purpose, (m = MAC address)
-    'getALA',       # Last alarm - e.g. "FF" ? unclear purpose
     'getALA_acd',   # Last alarm - timestamp - acknowledged?
     'getALA_dt',    # Last alarm - timestamp - occurence?
     'getALA_ih',    # Last alarm - e.g. 0 - Unknown
@@ -432,6 +473,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "nrdt": "mdi:calendar-clock",
     # System & Status
     "getALM": "mdi:bell-alert",
+    "getALA": "mdi:bell-alert",
     "getSTA": "mdi:list-status",
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",

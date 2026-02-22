@@ -95,11 +95,33 @@
           "true": "Chiusa"
         }
       },
+      "getala": {
+        "name": "Allarme corrente",
+        "state": {
+          "alarm_end_switch": "Allarme finecorsa",
+          "alarm_external_sensor_leakage_cable": "Perdita sensore esterno (cavo)",
+          "alarm_external_sensor_leakage_radio": "Perdita sensore esterno (radio)",
+          "alarm_increased_water_hardness": "Aumento della durezza dell'acqua",
+          "alarm_leakage_time_reached": "Tempo di perdita raggiunto",
+          "alarm_leakage_volume_reached": "Volume di perdita raggiunto",
+          "alarm_max_flow_rate_reached": "Portata massima raggiunta",
+          "alarm_microleakage_detected": "Microperdita rilevata",
+          "alarm_pressure_sensor_faulty": "Sensore di pressione difettoso",
+          "alarm_salt_supply_empty": "Rifornimento di sale vuoto",
+          "alarm_temperature_sensor_faulty": "Sensore di temperatura difettoso",
+          "alarm_turbine_blocked": "Turbina bloccata",
+          "alarm_valve_position": "Posizione valvola",
+          "alarm_weak_battery": "Batteria debole",
+          "error_no_information": "Nessuna informazione disponibile",
+          "fault_conductance_sensor": "Guasto sensore di conducibilità",
+          "no_alarm": "Nessun allarme"
+        }
+      },
       "getalm": {
         "name": "Allarme",
         "state": {
           "low_salt": "Sale basso",
-          "no_alarm": "Nessuno",
+          "no_alarm": "Nessun allarme",
           "no_salt": "Nessun sale"
         }
       },
@@ -477,37 +499,37 @@
         "name": "Tempo di ritorno al profilo attivo 4"
       },
       "getpr5": {
-        "name": "Tempo di ritorno al profilo 5"
-      },
-      "getpr5": {
         "name": "Tempo di ritorno al profilo attivo 5"
       },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
-      },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
+      "getpr5": {
+        "name": "Tempo di ritorno al profilo 5"
       },
       "getpr6": {
         "name": "Tempo di ritorno al profilo attivo 6"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
       },
       "getpr7": {
         "name": "Tempo di ritorno al profilo attivo 7"
       },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
       },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
       },
       "getpr8": {
         "name": "Tempo di ritorno al profilo attivo 8"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
       },
       "getprf": {
         "name": "Profilo protezione attivo",

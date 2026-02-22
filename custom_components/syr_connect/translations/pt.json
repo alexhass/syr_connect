@@ -95,11 +95,33 @@
           "true": "Fechado"
         }
       },
+      "getala": {
+        "name": "Alarme atual",
+        "state": {
+          "alarm_end_switch": "Alarme de fim de curso",
+          "alarm_external_sensor_leakage_cable": "Vazamento sensor externo (cabo)",
+          "alarm_external_sensor_leakage_radio": "Vazamento sensor externo (rádio)",
+          "alarm_increased_water_hardness": "Aumento da dureza da água",
+          "alarm_leakage_time_reached": "Tempo de vazamento atingido",
+          "alarm_leakage_volume_reached": "Volume de vazamento atingido",
+          "alarm_max_flow_rate_reached": "Taxa de fluxo máxima atingida",
+          "alarm_microleakage_detected": "Microvazamento detectado",
+          "alarm_pressure_sensor_faulty": "Sensor de pressão com defeito",
+          "alarm_salt_supply_empty": "Suprimento de sal vazio",
+          "alarm_temperature_sensor_faulty": "Sensor de temperatura com defeito",
+          "alarm_turbine_blocked": "Turbina bloqueada",
+          "alarm_valve_position": "Posição da válvula",
+          "alarm_weak_battery": "Bateria fraca",
+          "error_no_information": "Nenhuma informação disponível",
+          "fault_conductance_sensor": "Falha no sensor de condutividade",
+          "no_alarm": "Sem alarme"
+        }
+      },
       "getalm": {
         "name": "Alarme",
         "state": {
           "low_salt": "Pouco sal",
-          "no_alarm": "Nenhum",
+          "no_alarm": "Sem alarme",
           "no_salt": "Sem sal"
         }
       },
@@ -477,37 +499,37 @@
         "name": "Tempo de retorno ao perfil ativo 4"
       },
       "getpr5": {
-        "name": "Tempo de retorno ao perfil 5"
-      },
-      "getpr5": {
         "name": "Tempo de retorno ao perfil ativo 5"
       },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
-      },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
+      "getpr5": {
+        "name": "Tempo de retorno ao perfil 5"
       },
       "getpr6": {
         "name": "Tempo de retorno ao perfil ativo 6"
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
       },
       "getpr7": {
         "name": "Tempo de retorno ao perfil ativo 7"
       },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
       },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
       },
       "getpr8": {
         "name": "Tempo de retorno ao perfil ativo 8"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
       },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",

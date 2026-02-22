@@ -95,11 +95,33 @@
           "true": "Closed"
         }
       },
+      "getala": {
+        "name": "Current alarm",
+        "state": {
+          "alarm_end_switch": "End switch alarm",
+          "alarm_external_sensor_leakage_cable": "External sensor leakage (cable)",
+          "alarm_external_sensor_leakage_radio": "External sensor leakage (radio)",
+          "alarm_increased_water_hardness": "Increased water hardness",
+          "alarm_leakage_time_reached": "Leakage time reached",
+          "alarm_leakage_volume_reached": "Leakage volume reached",
+          "alarm_max_flow_rate_reached": "Maximum flow rate reached",
+          "alarm_microleakage_detected": "Microleakage detected",
+          "alarm_pressure_sensor_faulty": "Pressure sensor faulty",
+          "alarm_salt_supply_empty": "Salt supply empty",
+          "alarm_temperature_sensor_faulty": "Temperature sensor faulty",
+          "alarm_turbine_blocked": "Turbine blocked",
+          "alarm_valve_position": "Valve position",
+          "alarm_weak_battery": "Weak battery",
+          "error_no_information": "No information available",
+          "fault_conductance_sensor": "Conductivity sensor fault",
+          "no_alarm": "No alarm"
+        }
+      },
       "getalm": {
         "name": "Alarm",
         "state": {
           "low_salt": "Low salt",
-          "no_alarm": "None",
+          "no_alarm": "No alarm",
           "no_salt": "No salt"
         }
       },

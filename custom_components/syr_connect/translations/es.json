@@ -95,11 +95,33 @@
           "true": "Cerrada"
         }
       },
+      "getala": {
+        "name": "Alarma actual",
+        "state": {
+          "alarm_end_switch": "Alarma interruptor final",
+          "alarm_external_sensor_leakage_cable": "Fuga sensor externo (cable)",
+          "alarm_external_sensor_leakage_radio": "Fuga sensor externo (radio)",
+          "alarm_increased_water_hardness": "Aumento de dureza del agua",
+          "alarm_leakage_time_reached": "Tiempo de fuga alcanzado",
+          "alarm_leakage_volume_reached": "Volumen de fuga alcanzado",
+          "alarm_max_flow_rate_reached": "Caudal máximo alcanzado",
+          "alarm_microleakage_detected": "Microfuga detectada",
+          "alarm_pressure_sensor_faulty": "Sensor de presión defectuoso",
+          "alarm_salt_supply_empty": "Suministro de sal vacío",
+          "alarm_temperature_sensor_faulty": "Sensor de temperatura defectuoso",
+          "alarm_turbine_blocked": "Turbina bloqueada",
+          "alarm_valve_position": "Posición de la válvula",
+          "alarm_weak_battery": "Batería débil",
+          "error_no_information": "Sin información disponible",
+          "fault_conductance_sensor": "Fallo del sensor de conductividad",
+          "no_alarm": "Sin alarma"
+        }
+      },
       "getalm": {
         "name": "Alarma",
         "state": {
           "low_salt": "Poca sal",
-          "no_alarm": "Ninguna",
+          "no_alarm": "Sin alarma",
           "no_salt": "Sin sal"
         }
       },

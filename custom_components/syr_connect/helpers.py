@@ -7,7 +7,13 @@ from typing import Any
 
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import _SYR_CONNECT_CONFIGURATION_URL, DOMAIN
+from .const import (
+    _SYR_CONNECT_CONFIGURATION_URL,
+    _SYR_CONNECT_SENSOR_ALA_LEX10,
+    _SYR_CONNECT_SENSOR_ALA_NEOSOFT,
+    _SYR_CONNECT_SENSOR_ALA_SAFET,
+    DOMAIN,
+)
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -398,6 +404,56 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
         return None
 
     return None
+
+
+def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
+    """Map raw getALA alarm code to internal translation key.
+
+    Args:
+        status: Flattened device status dict (used to detect model).
+        raw_code: Raw code value from the API (e.g. "FF", "A5", "0").
+
+    Returns:
+        Internal translation key (e.g. "no_alarm", "alarm_low_salt") or None if unknown.
+    """
+    if raw_code is None:
+        return (None, "")
+
+    code = str(raw_code)
+    code_stripped = code.strip()
+    if code_stripped == "":
+        return (None, code)
+
+    # Detect model from status (expect flattened attributes)
+    try:
+        model = detect_model(status or {}).get("name")
+    except Exception:
+        model = None
+
+    code_upper = code.upper()
+
+    # If model is unknown or not detected, do NOT attempt any matching.
+    # Return the raw code unchanged so the caller can present it 1:1.
+    if not model or (isinstance(model, str) and str(model).strip().lower().startswith("unknown")):
+        return (None, code)
+
+    # Select mapping based on detected model. Only attempt mapping for the
+    # explicitly-detected model family; do NOT attempt cross-family fallbacks.
+    if model in ("lexplus10", "lexplus10s", "lexplus10sl"):
+        mapped = _SYR_CONNECT_SENSOR_ALA_LEX10.get(code_upper)
+        return (mapped, code) if mapped is not None else (None, code)
+
+    if model in ("neosoft2500", "neosoft5000", "trio"):
+        mapped = _SYR_CONNECT_SENSOR_ALA_NEOSOFT.get(code_upper)
+        return (mapped, code) if mapped is not None else (None, code)
+
+    if model == "safetplus":
+        mapped = _SYR_CONNECT_SENSOR_ALA_SAFET.get(code_upper)
+        return (mapped, code) if mapped is not None else (None, code)
+
+    # If we reach here, model was something else (not recognized). Do not
+    # attempt any mapping — return raw code unchanged.
+    return (None, code)
 
 
 def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any]:
