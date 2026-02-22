@@ -262,7 +262,14 @@
         "name": "Regenerations (normal operation)"
       },
       "getnot": {
-        "name": "Notifications"
+        "name": "Notifications",
+        "state": {
+          "annual_maintenance": "Annual maintenance",
+          "bi_annual_maintenance": "Bi-annual maintenance",
+          "new_software_available": "New software update available!",
+          "new_software_installed": "New software update installed!",
+          "no_notification": "No notification"
+        }
       },
       "getnps": {
         "name": "Microleakage count"
@@ -832,6 +839,19 @@
       },
       "getwip": {
         "name": "Wi-Fi IP address"
+      },
+      "getwrn": {
+        "name": "Warnings",
+        "state": {
+          "battery_low": "Battery low",
+          "initial_filling": "Initial filling",
+          "leak_warning": "Leak warning",
+          "leak_warning_time": "Leak warning time",
+          "leak_warning_volume": "Leakage volume",
+          "no_warning": "No warning",
+          "power_outage": "Power outage",
+          "salt_supply_low": "Salt supply low"
+        }
       }
     },
     "valve": {

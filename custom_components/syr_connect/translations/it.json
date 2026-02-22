@@ -262,7 +262,14 @@
         "name": "Rigenerazioni (normale)"
       },
       "getnot": {
-        "name": "Notifiche"
+        "name": "Notifiche",
+        "state": {
+          "annual_maintenance": "Manutenzione annuale",
+          "bi_annual_maintenance": "Manutenzione semestrale",
+          "new_software_available": "Nuovo aggiornamento software disponibile!",
+          "new_software_installed": "Nuovo aggiornamento software installato!",
+          "no_notification": "Nessuna notifica"
+        }
       },
       "getnps": {
         "name": "Conteggio micro‑perdite"
@@ -499,37 +506,37 @@
         "name": "Tempo di ritorno al profilo attivo 4"
       },
       "getpr5": {
-        "name": "Tempo di ritorno al profilo attivo 5"
+        "name": "Tempo di ritorno al profilo 5"
       },
       "getpr5": {
-        "name": "Tempo di ritorno al profilo 5"
+        "name": "Tempo di ritorno al profilo attivo 5"
+      },
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
+      },
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
       },
       "getpr6": {
         "name": "Tempo di ritorno al profilo attivo 6"
       },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
       },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
       },
       "getpr7": {
         "name": "Tempo di ritorno al profilo attivo 7"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
       },
       "getpr8": {
         "name": "Tempo di ritorno al profilo attivo 8"
-      },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
-      },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
       },
       "getprf": {
         "name": "Profilo protezione attivo",
@@ -853,6 +860,19 @@
       },
       "getwip": {
         "name": "Indirizzo IP Wi‑Fi"
+      },
+      "getwrn": {
+        "name": "Avvisi",
+        "state": {
+          "battery_low": "Batteria scarica",
+          "initial_filling": "Riempimento iniziale",
+          "leak_warning": "Avviso di perdita",
+          "leak_warning_time": "Avviso di perdita tempo",
+          "leak_warning_volume": "Avviso di perdita volume",
+          "no_warning": "Nessun avviso",
+          "power_outage": "Interruzione di corrente",
+          "salt_supply_low": "Scorta di sale bassa"
+        }
       }
     },
     "valve": {

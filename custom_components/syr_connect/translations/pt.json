@@ -262,7 +262,14 @@
         "name": "Regenerações (operação normal)"
       },
       "getnot": {
-        "name": "Notificações"
+        "name": "Notificações",
+        "state": {
+          "annual_maintenance": "Manutenção anual",
+          "bi_annual_maintenance": "Manutenção semestral",
+          "new_software_available": "Nova atualização de software disponível!",
+          "new_software_installed": "Nova atualização de software instalada!",
+          "no_notification": "Sem notificação"
+        }
       },
       "getnps": {
         "name": "Contagem de microvazamentos"
@@ -499,37 +506,37 @@
         "name": "Tempo de retorno ao perfil ativo 4"
       },
       "getpr5": {
-        "name": "Tempo de retorno ao perfil ativo 5"
+        "name": "Tempo de retorno ao perfil 5"
       },
       "getpr5": {
-        "name": "Tempo de retorno ao perfil 5"
+        "name": "Tempo de retorno ao perfil ativo 5"
+      },
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
+      },
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
       },
       "getpr6": {
         "name": "Tempo de retorno ao perfil ativo 6"
       },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
       },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
       },
       "getpr7": {
         "name": "Tempo de retorno ao perfil ativo 7"
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
       },
       "getpr8": {
         "name": "Tempo de retorno ao perfil ativo 8"
-      },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
-      },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
       },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",
@@ -853,6 +860,19 @@
       },
       "getwip": {
         "name": "Endereço IP Wi‑Fi"
+      },
+      "getwrn": {
+        "name": "Alertas",
+        "state": {
+          "battery_low": "Bateria fraca",
+          "initial_filling": "Enchimento inicial",
+          "leak_warning": "Aviso de vazamento",
+          "leak_warning_time": "Aviso de vazamento (tempo)",
+          "leak_warning_volume": "Aviso de vazamento (volume)",
+          "no_warning": "Sem aviso",
+          "power_outage": "Falta de energia",
+          "salt_supply_low": "Baixa reserva de sal"
+        }
       }
     },
     "valve": {

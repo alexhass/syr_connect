@@ -262,7 +262,14 @@
         "name": "Régénérations en fonctionnement normal"
       },
       "getnot": {
-        "name": "Notifications"
+        "name": "Notifications",
+        "state": {
+          "annual_maintenance": "Entretien annuel",
+          "bi_annual_maintenance": "Entretien semestriel",
+          "new_software_available": "Nouvelle mise à jour logicielle disponible !",
+          "new_software_installed": "Nouvelle mise à jour logicielle installée !",
+          "no_notification": "Aucune notification"
+        }
       },
       "getnps": {
         "name": "Nombre de microfuites"
@@ -832,6 +839,19 @@
       },
       "getwip": {
         "name": "Adresse IP WLAN"
+      },
+      "getwrn": {
+        "name": "Avertissements",
+        "state": {
+          "battery_low": "Batterie faible",
+          "initial_filling": "Remplissage initial",
+          "leak_warning": "Avertissement de fuite",
+          "leak_warning_time": "Avertissement de fuite (temps)",
+          "leak_warning_volume": "Avertissement de fuite (volume)",
+          "no_warning": "Aucun avertissement",
+          "power_outage": "Coupure de courant",
+          "salt_supply_low": "Faible approvisionnement en sel"
+        }
       }
     },
     "valve": {
