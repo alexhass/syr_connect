@@ -434,3 +434,130 @@ async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypa
     await button.async_press()
 
     coordinator.async_set_device_value.assert_called_once_with("device3", "setALA", "FF")
+
+async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
+    """setNOT raises when no reset required (missing/empty getNOT)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_not",
+                "name": "Device NOT",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    button = SyrConnectButton(coordinator, "device_not", "Device NOT", "project1", "setNOT", "Reset notification")
+
+    with pytest.raises(HomeAssistantError, match=r"No reset required for getNOT on device_not"):
+        await button.async_press()
+
+
+async def test_button_reset_not_send_empty_for_lex10_and_safet(hass: HomeAssistant) -> None:
+    """When model is lex10/safetplus, setNOT reset sends empty string."""
+    data = {
+        "devices": [
+            {
+                "id": "device_not1",
+                "name": "Device NOT1",
+                "project_id": "project1",
+                "status": {"getNOT": "01", "getCNA": "LEXplus10S"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_not1", "Device NOT1", "project1", "setNOT", "Reset notification")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_not1", "setNOT", "")
+
+
+async def test_button_reset_not_send_FF_for_other_models(hass: HomeAssistant) -> None:
+    """When model unknown/other, setNOT reset sends 'FF'."""
+    data = {
+        "devices": [
+            {
+                "id": "device_not2",
+                "name": "Device NOT2",
+                "project_id": "project1",
+                "status": {"getNOT": "01"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_not2", "Device NOT2", "project1", "setNOT", "Reset notification")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_not2", "setNOT", "FF")
+
+
+async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
+    """setWRN raises when no reset required (missing/empty getWRN)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_wrn",
+                "name": "Device WRN",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    button = SyrConnectButton(coordinator, "device_wrn", "Device WRN", "project1", "setWRN", "Reset warning")
+
+    with pytest.raises(HomeAssistantError, match=r"No reset required for getWRN on device_wrn"):
+        await button.async_press()
+
+
+async def test_button_reset_wrn_send_empty_for_lex10_and_safet(hass: HomeAssistant) -> None:
+    """When model is lex10/safetplus, setWRN reset sends empty string."""
+    data = {
+        "devices": [
+            {
+                "id": "device_wrn1",
+                "name": "Device WRN1",
+                "project_id": "project1",
+                "status": {"getWRN": "02", "getVER": "Safe-T v1"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_wrn1", "Device WRN1", "project1", "setWRN", "Reset warning")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_wrn1", "setWRN", "")
+
+
+async def test_button_reset_wrn_send_FF_for_other_models(hass: HomeAssistant) -> None:
+    """When model unknown/other, setWRN reset sends 'FF'."""
+    data = {
+        "devices": [
+            {
+                "id": "device_wrn2",
+                "name": "Device WRN2",
+                "project_id": "project1",
+                "status": {"getWRN": "02"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_wrn2", "Device WRN2", "project1", "setWRN", "Reset warning")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_wrn2", "setWRN", "FF")
