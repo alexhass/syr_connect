@@ -421,13 +421,15 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     if raw_code is None:
         return (None, "")
 
+    # Normalize code and prepare uppercase form for mapping lookups
+    code = str(raw_code)
+    code_upper = code.strip().upper()
+
     # Detect model from status (expect flattened attributes)
     try:
         model = detect_model(status or {}).get("name")
     except Exception:
         model = None
-
-    code_upper = code.upper()
 
     # If model is unknown or not detected, do NOT attempt any matching.
     # Return the raw code unchanged so the caller can present it 1:1.
