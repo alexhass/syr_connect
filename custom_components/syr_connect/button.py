@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_device_info, build_entity_id
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -166,16 +167,23 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 if raw is None or (isinstance(raw, str) and raw.strip() == ""):
                     raise HomeAssistantError(f"No reset required for {get_key} on {self._device_id}")
 
-                # Choose the payload type: integer 0 for numeric values, "FF" for hex/non-digit values.
-                send_value: int | str
-                if isinstance(raw, int):
-                    send_value = 0
+                # For safetplus and all lex10 models we reset by sending
+                # an empty string; for other models send "FF".
+                try:
+                    model = detect_model(status or {}).get("name")
+                except Exception:
+                    model = None
+
+                send_value: str
+                if isinstance(model, str) and model.lower() in (
+                    "safetplus",
+                    "lexplus10",
+                    "lexplus10s",
+                    "lexplus10sl",
+                ):
+                    send_value = ""
                 else:
-                    raw_str = str(raw).strip()
-                    if raw_str.isdigit():
-                        send_value = 0
-                    else:
-                        send_value = "FF"
+                    send_value = "FF"
 
                 await coordinator.async_set_device_value(self._device_id, self._command, send_value)
                 return
