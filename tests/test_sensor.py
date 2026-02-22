@@ -2938,11 +2938,8 @@ async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
 
     # When value is not in map, .get() returns None, should fallback to original value
     value = sensor.native_value
-    # The code does: mapped = str(_SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(raw))
-    # If not found, .get() returns None, str(None) = 'None'
-    # Then: return mapped if mapped is not None else (value if value is not None else None)
-    # The implementation may return None or the string 'None' for unmapped values.
-    assert value in (None, "None")
+    # The implementation now returns the raw unmapped value as-is.
+    assert value == "UnknownAlarm"
 
 
 async def test_sensor_alarm_value_none_and_unmapped(hass: HomeAssistant) -> None:
