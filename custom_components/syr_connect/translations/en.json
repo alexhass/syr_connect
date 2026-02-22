@@ -46,6 +46,12 @@
       }
     },
     "button": {
+      "setala": {
+        "name": "Reset alarm"
+      },
+      "setnot": {
+        "name": "Reset notification"
+      },
       "setrst": {
         "name": "Reset device"
       },
@@ -54,6 +60,9 @@
       },
       "setsmr": {
         "name": "Multi regenerate"
+      },
+      "setwrn": {
+        "name": "Reset warning"
       }
     },
     "select": {

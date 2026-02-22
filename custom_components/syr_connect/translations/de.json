@@ -46,6 +46,12 @@
       }
     },
     "button": {
+      "setala": {
+        "name": "Alarme zurücksetzen"
+      },
+      "setnot": {
+        "name": "Benachrichtigung zurücksetzen"
+      },
       "setrst": {
         "name": "Gerät zurücksetzen"
       },
@@ -54,6 +60,9 @@
       },
       "setsmr": {
         "name": "Mehrfach regenerieren"
+      },
+      "setwrn": {
+        "name": "Warnungen zurücksetzen"
       }
     },
     "select": {

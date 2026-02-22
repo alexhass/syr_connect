@@ -46,6 +46,12 @@
       }
     },
     "button": {
+      "setala": {
+        "name": "Restablecer alarma"
+      },
+      "setnot": {
+        "name": "Restablecer notificación"
+      },
       "setrst": {
         "name": "Reiniciar dispositivo"
       },
@@ -54,6 +60,9 @@
       },
       "setsmr": {
         "name": "Regeneración múltiple"
+      },
+      "setwrn": {
+        "name": "Restablecer advertencia"
       }
     },
     "select": {

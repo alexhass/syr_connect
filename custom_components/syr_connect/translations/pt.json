@@ -46,6 +46,12 @@
       }
     },
     "button": {
+      "setala": {
+        "name": "Redefinir alarme"
+      },
+      "setnot": {
+        "name": "Redefinir notificação"
+      },
       "setrst": {
         "name": "Redefinir dispositivo"
       },
@@ -54,6 +60,9 @@
       },
       "setsmr": {
         "name": "Regeneração múltipla"
+      },
+      "setwrn": {
+        "name": "Redefinir aviso"
       }
     },
     "select": {
@@ -506,37 +515,37 @@
         "name": "Tempo de retorno ao perfil ativo 4"
       },
       "getpr5": {
-        "name": "Tempo de retorno ao perfil 5"
-      },
-      "getpr5": {
         "name": "Tempo de retorno ao perfil ativo 5"
       },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
-      },
-      "getpr6": {
-        "name": "Tempo de retorno ao perfil 6"
+      "getpr5": {
+        "name": "Tempo de retorno ao perfil 5"
       },
       "getpr6": {
         "name": "Tempo de retorno ao perfil ativo 6"
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
       },
-      "getpr7": {
-        "name": "Tempo de retorno ao perfil 7"
+      "getpr6": {
+        "name": "Tempo de retorno ao perfil 6"
       },
       "getpr7": {
         "name": "Tempo de retorno ao perfil ativo 7"
       },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
       },
-      "getpr8": {
-        "name": "Tempo de retorno ao perfil 8"
+      "getpr7": {
+        "name": "Tempo de retorno ao perfil 7"
       },
       "getpr8": {
         "name": "Tempo de retorno ao perfil ativo 8"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
+      },
+      "getpr8": {
+        "name": "Tempo de retorno ao perfil 8"
       },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",

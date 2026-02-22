@@ -46,6 +46,12 @@
       }
     },
     "button": {
+      "setala": {
+        "name": "Réinitialiser l'alarme"
+      },
+      "setnot": {
+        "name": "Réinitialiser la notification"
+      },
       "setrst": {
         "name": "Réinitialiser l'appareil"
       },
@@ -54,6 +60,9 @@
       },
       "setsmr": {
         "name": "Régénération multiple"
+      },
+      "setwrn": {
+        "name": "Réinitialiser l'avertissement"
       }
     },
     "select": {

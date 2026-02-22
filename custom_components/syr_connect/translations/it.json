@@ -46,6 +46,12 @@
       }
     },
     "button": {
+      "setala": {
+        "name": "Reimposta allarme"
+      },
+      "setnot": {
+        "name": "Reimposta notifica"
+      },
       "setrst": {
         "name": "Ripristina dispositivo"
       },
@@ -54,6 +60,9 @@
       },
       "setsmr": {
         "name": "Rigenerazione multipla"
+      },
+      "setwrn": {
+        "name": "Reimposta avviso"
       }
     },
     "select": {
@@ -506,37 +515,37 @@
         "name": "Tempo di ritorno al profilo attivo 4"
       },
       "getpr5": {
-        "name": "Tempo di ritorno al profilo 5"
-      },
-      "getpr5": {
         "name": "Tempo di ritorno al profilo attivo 5"
       },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
-      },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
+      "getpr5": {
+        "name": "Tempo di ritorno al profilo 5"
       },
       "getpr6": {
         "name": "Tempo di ritorno al profilo attivo 6"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
+      "getpr6": {
+        "name": "Tempo di ritorno al profilo 6"
       },
       "getpr7": {
         "name": "Tempo di ritorno al profilo attivo 7"
       },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
       },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
+      "getpr7": {
+        "name": "Tempo di ritorno al profilo 7"
       },
       "getpr8": {
         "name": "Tempo di ritorno al profilo attivo 8"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
+      },
+      "getpr8": {
+        "name": "Tempo di ritorno al profilo 8"
       },
       "getprf": {
         "name": "Profilo protezione attivo",

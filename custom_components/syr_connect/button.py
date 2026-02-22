@@ -143,8 +143,8 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
             # corresponding getXXX value is neither "FF" nor empty.
             if self._command in ("setALA", "setNOT", "setWRN"):
-                # Send reset value 255
-                await coordinator.async_set_device_value(self._device_id, self._command, 255)
+                # Send reset value 255 = 0xFF
+                await coordinator.async_set_device_value(self._device_id, self._command, "FF")
                 return
 
             # Default action: Send value 0 for `setSIR`, otherwise 1
