@@ -262,7 +262,14 @@
         "name": "Regenerationen im Normalbetrieb"
       },
       "getnot": {
-        "name": "Aktuelle Benachrichtigung"
+        "name": "Benachrichtigungen",
+        "state": {
+          "annual_maintenance": "Jährliche Wartung",
+          "bi_annual_maintenance": "Halbjährliche Wartung",
+          "new_software_available": "Neues Software Update verfügbar!",
+          "new_software_installed": "Neues Software Update installiert!",
+          "no_notification": "Keine Benachrichtigung"
+        }
       },
       "getnps": {
         "name": "Mikroleckagen-Anzahl"
@@ -832,6 +839,19 @@
       },
       "getwip": {
         "name": "WLAN IP-Adresse"
+      },
+      "getwrn": {
+        "name": "Warnungen",
+        "state": {
+          "battery_low": "Batterien erschöpft",
+          "initial_filling": "Erstbefüllung",
+          "leak_warning": "Leckagewarnung",
+          "leak_warning_time": "Leckagewarnung Zeit",
+          "leak_warning_volume": "Volumenleckage",
+          "no_warning": "Keine Warnung",
+          "power_outage": "Stromunterbrechung",
+          "salt_supply_low": "Salzvorrat geht zur neige"
+        }
       }
     },
     "valve": {

@@ -9,9 +9,9 @@ from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import (
     _SYR_CONNECT_CONFIGURATION_URL,
-    _SYR_CONNECT_SENSOR_ALA_LEX10,
-    _SYR_CONNECT_SENSOR_ALA_NEOSOFT,
-    _SYR_CONNECT_SENSOR_ALA_SAFET,
+    _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
+    _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
+    _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
     DOMAIN,
 )
 from .models import detect_model
@@ -440,15 +440,15 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     # Select mapping based on detected model. Only attempt mapping for the
     # explicitly-detected model family; do NOT attempt cross-family fallbacks.
     if model in ("lexplus10", "lexplus10s", "lexplus10sl"):
-        mapped = _SYR_CONNECT_SENSOR_ALA_LEX10.get(code_upper)
+        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_LEX10.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
     if model in ("neosoft2500", "neosoft5000", "trio"):
-        mapped = _SYR_CONNECT_SENSOR_ALA_NEOSOFT.get(code_upper)
+        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
     if model == "safetplus":
-        mapped = _SYR_CONNECT_SENSOR_ALA_SAFET.get(code_upper)
+        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_SAFET.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
     # If we reach here, model was something else (not recognized). Do not

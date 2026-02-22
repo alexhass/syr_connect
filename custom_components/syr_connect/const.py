@@ -68,11 +68,11 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
 
 # Alarm code mappings per device model (raw API getALA -> internal translation key)
 # These are used to map device-specific alarm codes to internal translation keys.
-_SYR_CONNECT_SENSOR_ALA_LEX10 = {
+_SYR_CONNECT_SENSOR_ALA_CODES_LEX10 = {
     "0": "no_alarm",
 }
 
-_SYR_CONNECT_SENSOR_ALA_NEOSOFT = {
+_SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT = {
     "FF": "no_alarm",
     "A1": "alarm_end_switch",
     "A2": "alarm_turbine_blocked",
@@ -92,7 +92,7 @@ _SYR_CONNECT_SENSOR_ALA_NEOSOFT = {
     "0E": "alarm_valve_position",
 }
 
-_SYR_CONNECT_SENSOR_ALA_SAFET = {
+_SYR_CONNECT_SENSOR_ALA_CODES_SAFET = {
     "FF": "no_alarm",
     "A1": "alarm_end_switch",
     "A2": "alarm_turbine_blocked",
@@ -106,6 +106,25 @@ _SYR_CONNECT_SENSOR_ALA_SAFET = {
     "AA": "alarm_temperature_sensor_faulty",
     "AB": "alarm_weak_battery",
     "AE": "error_no_information",
+}
+
+_SYR_CONNECT_SENSOR_NOT_CODES = {
+    "01": "new_software_available",
+    "02": "bi_annual_maintenance",
+    "03": "annual_maintenance",
+    "04": "new_software_installed",
+    "FF": "no_notification",
+}
+
+_SYR_CONNECT_SENSOR_WRN_CODES = {
+    "01": "power_outage",
+    "02": "salt_supply_low",
+    "07": "leak_warning",
+    "08": "battery_low",
+    "09": "initial_filling",
+    "10": "leak_warning_volume",
+    "11": "leak_warning_time",
+    "FF": "no_warning",
 }
 
 # Binary sensors mapping with their device classes - internal
@@ -224,7 +243,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getDEN',  # Boolean sensor - device enabled/disabled
     'getRTH',  # Regeneration hour - minutes/combined handled by getRTM
     'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
-    'getNOT',  # Notes field not useful as sensor
+    'getNOT',  # Notifications
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control - per documentation unknown what values do
     'getRST',  # Reset device control - per documentation unknown what values do
@@ -311,7 +330,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getWAD',       # Value: "False", unclear meaning
     'getWTI',       # Value: e.g. "1720", unclear meaning
     #'getNOT',      # Value: e.g. "FF", unclear meaning
-    'getWRN',       # Retrieve current warning / Acknowledge current warning: Value: "FF" / 255, unclear meaning
     'getALD',       # Value: "", unclear meaning
     'getCNL',       # Value: "", unclear meaning
     'getWAH',       # Value: "", unclear meaning
@@ -474,6 +492,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     # System & Status
     "getALM": "mdi:bell-alert",
     "getALA": "mdi:bell-alert",
+    "getNOT": "mdi:bell",
+    "getWRN": "mdi:alert",
     "getSTA": "mdi:list-status",
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",

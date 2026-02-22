@@ -262,7 +262,7 @@
         "name": "Régénérations en fonctionnement normal"
       },
       "getnot": {
-        "name": "Notes"
+        "name": "Notifications"
       },
       "getnps": {
         "name": "Nombre de microfuites"
