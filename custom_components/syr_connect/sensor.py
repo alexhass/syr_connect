@@ -40,8 +40,10 @@ from .helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_not_map,
     get_sensor_rtm_value,
     get_sensor_vol_value,
+    get_sensor_wrn_map,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -631,6 +633,36 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         self._attr_translation_key = mapped
                         return mapped
                     # If model was unknown or no mapping found, return raw value 1:1
+                    try:
+                        sval = str(raw_code)
+                        return sval if sval != "" else None
+                    except Exception:
+                        return None
+
+                # Special handling for getNOT: map notification codes to translation keys
+                if self._sensor_key == 'getNOT':
+                    raw = status.get('getNOT')
+                    if raw is None:
+                        return None
+                    mapped, raw_code = get_sensor_not_map(status, raw)
+                    if mapped:
+                        self._attr_translation_key = mapped
+                        return mapped
+                    try:
+                        sval = str(raw_code)
+                        return sval if sval != "" else None
+                    except Exception:
+                        return None
+
+                # Special handling for getWRN: map warning codes to translation keys
+                if self._sensor_key == 'getWRN':
+                    raw = status.get('getWRN')
+                    if raw is None:
+                        return None
+                    mapped, raw_code = get_sensor_wrn_map(status, raw)
+                    if mapped:
+                        self._attr_translation_key = mapped
+                        return mapped
                     try:
                         sval = str(raw_code)
                         return sval if sval != "" else None
