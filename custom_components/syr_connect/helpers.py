@@ -12,6 +12,8 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
+    _SYR_CONNECT_SENSOR_NOT_CODES,
+    _SYR_CONNECT_SENSOR_WRN_CODES,
     DOMAIN,
 )
 from .models import detect_model
@@ -454,6 +456,52 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     # If we reach here, model was something else (not recognized). Do not
     # attempt any mapping — return raw code unchanged.
     return (None, code)
+
+
+def get_sensor_not_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
+    """Map raw getNOT notification code to internal translation key.
+
+    Args:
+        status: Device status dict (unused but kept for signature parity)
+        raw_code: Raw code value from the API (e.g. "01", "FF")
+
+    Returns:
+        (mapped_key, raw_code) where mapped_key is internal translation key or None
+    """
+    if raw_code is None:
+        return (None, "")
+
+    code = str(raw_code)
+    code_stripped = code.strip()
+    if code_stripped == "":
+        return (None, code)
+
+    code_upper = code_stripped.upper()
+    mapped = _SYR_CONNECT_SENSOR_NOT_CODES.get(code_upper)
+    return (mapped, code) if mapped is not None else (None, code)
+
+
+def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
+    """Map raw getWRN warning code to internal translation key.
+
+    Args:
+        status: Device status dict (unused but kept for signature parity)
+        raw_code: Raw code value from the API (e.g. "01", "FF")
+
+    Returns:
+        (mapped_key, raw_code) where mapped_key is internal translation key or None
+    """
+    if raw_code is None:
+        return (None, "")
+
+    code = str(raw_code)
+    code_stripped = code.strip()
+    if code_stripped == "":
+        return (None, code)
+
+    code_upper = code_stripped.upper()
+    mapped = _SYR_CONNECT_SENSOR_WRN_CODES.get(code_upper)
+    return (mapped, code) if mapped is not None else (None, code)
 
 
 def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any]:
