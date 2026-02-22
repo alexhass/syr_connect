@@ -762,9 +762,22 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for alarm sensor: map raw API values to internal keys
                 if self._sensor_key == 'getALM':
-                    raw = str(status.get('getALM') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(raw))
-                    self._attr_translation_key = mapped if mapped is not None else value
+                    raw = status.get('getALM')
+                    raw_str = str(raw) if raw is not None else ""
+
+                    # Try model-aware mapping (same helper used for getALA), then fallback
+                    # to the static getALM value map.
+                    try:
+                        ala_mapped, _ = get_sensor_ala_map(status or {}, raw)
+                    except Exception:
+                        ala_mapped = None
+
+                    std_mapped = _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(raw_str)
+
+                    mapped = ala_mapped or std_mapped
+                    # Set translation key when available so frontend translates the state
+                    if mapped is not None:
+                        self._attr_translation_key = mapped
                     # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
 
