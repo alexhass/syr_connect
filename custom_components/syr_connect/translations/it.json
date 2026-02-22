@@ -517,35 +517,14 @@
       "getpr5": {
         "name": "Tempo di ritorno al profilo attivo 5"
       },
-      "getpr5": {
-        "name": "Tempo di ritorno al profilo 5"
-      },
       "getpr6": {
         "name": "Tempo di ritorno al profilo attivo 6"
-      },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
-      },
-      "getpr6": {
-        "name": "Tempo di ritorno al profilo 6"
       },
       "getpr7": {
         "name": "Tempo di ritorno al profilo attivo 7"
       },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
-      },
-      "getpr7": {
-        "name": "Tempo di ritorno al profilo 7"
-      },
       "getpr8": {
         "name": "Tempo di ritorno al profilo attivo 8"
-      },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
-      },
-      "getpr8": {
-        "name": "Tempo di ritorno al profilo 8"
       },
       "getprf": {
         "name": "Profilo protezione attivo",
