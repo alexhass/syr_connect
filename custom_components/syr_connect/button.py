@@ -166,8 +166,8 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 if raw is None or (isinstance(raw, str) and raw.strip() == ""):
                     raise HomeAssistantError(f"No reset required for {get_key} on {self._device_id}")
 
-                # If the device returns an integer (or digit-only string), send 0 to reset.
-                # If the device returns a hex/non-digit value, send FF (255).
+                # Choose the payload type: integer 0 for numeric values, "FF" for hex/non-digit values.
+                send_value: int | str
                 if isinstance(raw, int):
                     send_value = 0
                 else:
