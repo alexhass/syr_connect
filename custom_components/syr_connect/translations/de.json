@@ -62,7 +62,7 @@
         "name": "Mehrfach regenerieren"
       },
       "setwrn": {
-        "name": "Warnungen zurücksetzen"
+        "name": "Warnung zurücksetzen"
       }
     },
     "select": {
@@ -105,24 +105,24 @@
         }
       },
       "getala": {
-        "name": "Alarmstatus",
+        "name": "Alarm",
         "state": {
-          "alarm_end_switch": "ALARM: Endschalter",
-          "alarm_external_sensor_leakage_cable": "ALARM EXT. SENSOR LECKAGE KABEL",
-          "alarm_external_sensor_leakage_radio": "ALARM EXT. SENSOR LECKAGE FUNK",
-          "alarm_increased_water_hardness": "ALARM: Erhöhte Wasserhärte",
-          "alarm_leakage_time_reached": "ALARM: Leckzeit erreicht!",
-          "alarm_leakage_volume_reached": "ALARM: Leckvolumen erreicht!",
-          "alarm_max_flow_rate_reached": "ALARM: Maximaler Durchfluss erreicht!",
-          "alarm_microleakage_detected": "ALARM: Mikroleckage erkannt!",
-          "alarm_pressure_sensor_faulty": "ALARM: Drucksensor fehlerhaft!",
-          "alarm_salt_supply_empty": "ALARM: Salzversorgung leer",
-          "alarm_temperature_sensor_faulty": "ALARM: Temperatursensor fehlerhaft!",
-          "alarm_turbine_blocked": "ALARM: Turbine blockiert!",
-          "alarm_valve_position": "ALARM: Ventilstellung",
-          "alarm_weak_battery": "ALARM: Schwache Batterie!",
+          "alarm_end_switch": "Endschalter",
+          "alarm_external_sensor_leakage_cable": "EXT. SENSOR LECKAGE KABEL",
+          "alarm_external_sensor_leakage_radio": "EXT. SENSOR LECKAGE FUNK",
+          "alarm_increased_water_hardness": "Erhöhte Wasserhärte",
+          "alarm_leakage_time_reached": "Leckzeit erreicht!",
+          "alarm_leakage_volume_reached": "Leckvolumen erreicht!",
+          "alarm_max_flow_rate_reached": "Maximaler Durchfluss erreicht!",
+          "alarm_microleakage_detected": "Mikroleckage erkannt!",
+          "alarm_pressure_sensor_faulty": "Drucksensor fehlerhaft!",
+          "alarm_salt_supply_empty": "Salzversorgung leer",
+          "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
+          "alarm_turbine_blocked": "Turbine blockiert!",
+          "alarm_valve_position": "Ventilstellung",
+          "alarm_weak_battery": "Schwache Batterie!",
           "error_no_information": "Fehler: keine Informationen verfügbar",
-          "fault_conductance_sensor": "ALARM: Leitfähigkeitssensor fehlerhaft!",
+          "fault_conductance_sensor": "Leitfähigkeitssensor fehlerhaft!",
           "no_alarm": "Kein Alarm"
         }
       },
@@ -277,13 +277,13 @@
         "name": "Regenerationen im Normalbetrieb"
       },
       "getnot": {
-        "name": "Benachrichtigungen",
+        "name": "Benachrichtigung",
         "state": {
           "annual_maintenance": "Jährliche Wartung",
           "bi_annual_maintenance": "Halbjährliche Wartung",
           "new_software_available": "Neues Software Update verfügbar!",
           "new_software_installed": "Neues Software Update installiert!",
-          "no_notification": "Keine Benachrichtigung"
+          "no_notification": "Keine"
         }
       },
       "getnps": {
@@ -856,7 +856,7 @@
         "name": "WLAN IP-Adresse"
       },
       "getwrn": {
-        "name": "Warnungen",
+        "name": "Warnung",
         "state": {
           "battery_low": "Batterien erschöpft",
           "initial_filling": "Erstbefüllung",

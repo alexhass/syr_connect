@@ -421,11 +421,6 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     if raw_code is None:
         return (None, "")
 
-    code = str(raw_code)
-    code_stripped = code.strip()
-    if code_stripped == "":
-        return (None, code)
-
     # Detect model from status (expect flattened attributes)
     try:
         model = detect_model(status or {}).get("name")
@@ -468,15 +463,12 @@ def get_sensor_not_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     Returns:
         (mapped_key, raw_code) where mapped_key is internal translation key or None
     """
+    # Accept None
     if raw_code is None:
         return (None, "")
 
     code = str(raw_code)
-    code_stripped = code.strip()
-    if code_stripped == "":
-        return (None, code)
-
-    code_upper = code_stripped.upper()
+    code_upper = code.strip().upper()
     mapped = _SYR_CONNECT_SENSOR_NOT_CODES.get(code_upper)
     return (mapped, code) if mapped is not None else (None, code)
 
@@ -491,15 +483,12 @@ def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     Returns:
         (mapped_key, raw_code) where mapped_key is internal translation key or None
     """
+    # Accept None
     if raw_code is None:
         return (None, "")
 
     code = str(raw_code)
-    code_stripped = code.strip()
-    if code_stripped == "":
-        return (None, code)
-
-    code_upper = code_stripped.upper()
+    code_upper = code.strip().upper()
     mapped = _SYR_CONNECT_SENSOR_WRN_CODES.get(code_upper)
     return (mapped, code) if mapped is not None else (None, code)
 

@@ -105,24 +105,24 @@
         }
       },
       "getala": {
-        "name": "Alarma actual",
+        "name": "Alarma",
         "state": {
-          "alarm_end_switch": "Alarma interruptor final",
+          "alarm_end_switch": "Interruptor final",
           "alarm_external_sensor_leakage_cable": "Fuga sensor externo (cable)",
           "alarm_external_sensor_leakage_radio": "Fuga sensor externo (radio)",
           "alarm_increased_water_hardness": "Aumento de dureza del agua",
-          "alarm_leakage_time_reached": "Tiempo de fuga alcanzado",
-          "alarm_leakage_volume_reached": "Volumen de fuga alcanzado",
-          "alarm_max_flow_rate_reached": "Caudal máximo alcanzado",
-          "alarm_microleakage_detected": "Microfuga detectada",
-          "alarm_pressure_sensor_faulty": "Sensor de presión defectuoso",
+          "alarm_leakage_time_reached": "¡Tiempo de fuga alcanzado!",
+          "alarm_leakage_volume_reached": "¡Volumen de fuga alcanzado!",
+          "alarm_max_flow_rate_reached": "¡Caudal máximo alcanzado!",
+          "alarm_microleakage_detected": "¡Microfuga detectada!",
+          "alarm_pressure_sensor_faulty": "¡Sensor de presión defectuoso!",
           "alarm_salt_supply_empty": "Suministro de sal vacío",
-          "alarm_temperature_sensor_faulty": "Sensor de temperatura defectuoso",
-          "alarm_turbine_blocked": "Turbina bloqueada",
+          "alarm_temperature_sensor_faulty": "¡Sensor de temperatura defectuoso!",
+          "alarm_turbine_blocked": "¡Turbina bloqueada!",
           "alarm_valve_position": "Posición de la válvula",
-          "alarm_weak_battery": "Batería débil",
-          "error_no_information": "Sin información disponible",
-          "fault_conductance_sensor": "Fallo del sensor de conductividad",
+          "alarm_weak_battery": "¡Batería débil!",
+          "error_no_information": "Error: no hay información disponible",
+          "fault_conductance_sensor": "¡Sensor de conductividad defectuoso!",
           "no_alarm": "Sin alarma"
         }
       },
@@ -277,13 +277,13 @@
         "name": "Regeneraciones en funcionamiento normal"
       },
       "getnot": {
-        "name": "Notificaciones",
+        "name": "Notificación",
         "state": {
           "annual_maintenance": "Mantenimiento anual",
           "bi_annual_maintenance": "Mantenimiento semestral",
-          "new_software_available": "¡Nueva actualización de software disponible!",
-          "new_software_installed": "¡Nueva actualización de software instalada!",
-          "no_notification": "Sin notificaciones"
+          "new_software_available": "Nueva actualización de software disponible!",
+          "new_software_installed": "Nueva actualización de software instalada!",
+          "no_notification": "Ninguna"
         }
       },
       "getnps": {

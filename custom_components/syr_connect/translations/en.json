@@ -105,24 +105,24 @@
         }
       },
       "getala": {
-        "name": "Current alarm",
+        "name": "Alarm",
         "state": {
-          "alarm_end_switch": "End switch alarm",
+          "alarm_end_switch": "End switch",
           "alarm_external_sensor_leakage_cable": "External sensor leakage (cable)",
           "alarm_external_sensor_leakage_radio": "External sensor leakage (radio)",
           "alarm_increased_water_hardness": "Increased water hardness",
-          "alarm_leakage_time_reached": "Leakage time reached",
-          "alarm_leakage_volume_reached": "Leakage volume reached",
-          "alarm_max_flow_rate_reached": "Maximum flow rate reached",
-          "alarm_microleakage_detected": "Microleakage detected",
-          "alarm_pressure_sensor_faulty": "Pressure sensor faulty",
+          "alarm_leakage_time_reached": "Leakage time reached!",
+          "alarm_leakage_volume_reached": "Leakage volume reached!",
+          "alarm_max_flow_rate_reached": "Maximum flow rate reached!",
+          "alarm_microleakage_detected": "Microleakage detected!",
+          "alarm_pressure_sensor_faulty": "Pressure sensor faulty!",
           "alarm_salt_supply_empty": "Salt supply empty",
-          "alarm_temperature_sensor_faulty": "Temperature sensor faulty",
-          "alarm_turbine_blocked": "Turbine blocked",
+          "alarm_temperature_sensor_faulty": "Temperature sensor faulty!",
+          "alarm_turbine_blocked": "Turbine blocked!",
           "alarm_valve_position": "Valve position",
-          "alarm_weak_battery": "Weak battery",
-          "error_no_information": "No information available",
-          "fault_conductance_sensor": "Conductivity sensor fault",
+          "alarm_weak_battery": "Weak battery!",
+          "error_no_information": "Error: no information available",
+          "fault_conductance_sensor": "Conductivity sensor faulty!",
           "no_alarm": "No alarm"
         }
       },
@@ -277,13 +277,13 @@
         "name": "Regenerations (normal operation)"
       },
       "getnot": {
-        "name": "Notifications",
+        "name": "Notification",
         "state": {
           "annual_maintenance": "Annual maintenance",
           "bi_annual_maintenance": "Bi-annual maintenance",
           "new_software_available": "New software update available!",
           "new_software_installed": "New software update installed!",
-          "no_notification": "No notification"
+          "no_notification": "None"
         }
       },
       "getnps": {
@@ -856,7 +856,7 @@
         "name": "Wi-Fi IP address"
       },
       "getwrn": {
-        "name": "Warnings",
+        "name": "Warning",
         "state": {
           "battery_low": "Battery low",
           "initial_filling": "Initial filling",
