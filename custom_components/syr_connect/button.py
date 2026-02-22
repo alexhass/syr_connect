@@ -50,13 +50,23 @@ async def async_setup_entry(
         # Add action buttons
         action_buttons = [
             ("setSIR", "Regenerate Now"),
-            # ("setSMR", "Multi Regenerate"),
-            # ("setRST", "Reset Device"),
+            # Reset buttons: setALA, setNOT, setWRN send value 255 to clear codes
+            ("setALA", "Reset alarm"),
+            ("setNOT", "Reset notification"),
+            ("setWRN", "Reset warning"),
         ]
 
         for command, name in action_buttons:
             # Only add setSIR button if getSIR is available in device status
             if command == "setSIR" and "getSIR" not in status:
+                continue
+
+            # For reset buttons, ensure the corresponding getXXX exists
+            if command == "setALA" and "getALA" not in status:
+                continue
+            if command == "setNOT" and "getNOT" not in status:
+                continue
+            if command == "setWRN" and "getWRN" not in status:
                 continue
 
             entities.append(
@@ -130,11 +140,33 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
-            # Send value: 0 for `setSIR` (documentation: 0 = immediate), otherwise 1
+            # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
+            # corresponding getXXX value is neither "FF" nor empty.
+            if self._command in ("setALA", "setNOT", "setWRN"):
+                # Determine get key
+                get_key = f"get{self._command[3:]}"
+                # Find current device status
+                current_status = None
+                for device in coordinator.data.get('devices', []):
+                    if device['id'] == self._device_id:
+                        current_status = device.get('status', {})
+                        break
+
+                cur = None
+                if current_status is not None:
+                    cur = current_status.get(get_key)
+
+                sval = str(cur) if cur is not None else ""
+                if sval.strip() == "" or sval.upper() == "FF":
+                    raise HomeAssistantError(f"No reset required for {get_key}")
+
+                # Send reset value 255
+                await coordinator.async_set_device_value(self._device_id, self._command, 255)
+                return
+
+            # Default action: Send value 0 for `setSIR`, otherwise 1
             value = 0 if self._command == "setSIR" else 1
-            await coordinator.async_set_device_value(
-                self._device_id, self._command, value
-            )
+            await coordinator.async_set_device_value(self._device_id, self._command, value)
         except ValueError as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err
         except Exception as err:
