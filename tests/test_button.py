@@ -343,3 +343,94 @@ async def test_async_setup_entry_no_getsir(hass: HomeAssistant, create_mock_entr
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     # Es sollte kein Button erstellt werden
     assert len(entities) == 0
+
+
+async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
+    """Reset button raises when no reset required (missing/empty get key)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_reset",
+                "name": "Device Reset",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    button = SyrConnectButton(coordinator, "device_reset", "Device Reset", "project1", "setALA", "Reset alarm")
+
+    with pytest.raises(HomeAssistantError, match=r"No reset required for getALA on device_reset"):
+        await button.async_press()
+
+
+async def test_button_reset_send_empty_for_lex10_and_safet(hass: HomeAssistant) -> None:
+    """When model is lex10/safetplus, reset sends empty string."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getALA": "A5", "getCNA": "LEXplus10S"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setALA", "Reset alarm")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setALA", "")
+
+
+async def test_button_reset_send_FF_for_other_models(hass: HomeAssistant) -> None:
+    """When model unknown/other, reset sends 'FF'."""
+    data = {
+        "devices": [
+            {
+                "id": "device2",
+                "name": "Device 2",
+                "project_id": "project1",
+                "status": {"getALA": "A5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device2", "Device 2", "project1", "setALA", "Reset alarm")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device2", "setALA", "FF")
+
+
+async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypatch) -> None:
+    """If detect_model raises, the code falls back and sends 'FF'."""
+    from custom_components.syr_connect import button as button_mod
+
+    data = {
+        "devices": [
+            {
+                "id": "device3",
+                "name": "Device 3",
+                "project_id": "project1",
+                "status": {"getALA": "A5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    # Make detect_model raise
+    monkeypatch.setattr(button_mod, "detect_model", lambda *_: (_ for _ in ()).throw(Exception("boom")))
+
+    button = SyrConnectButton(coordinator, "device3", "Device 3", "project1", "setALA", "Reset alarm")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device3", "setALA", "FF")
