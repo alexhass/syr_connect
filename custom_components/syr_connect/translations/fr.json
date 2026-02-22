@@ -105,24 +105,24 @@
         }
       },
       "getala": {
-        "name": "Alarme actuelle",
+        "name": "Alarme",
         "state": {
-          "alarm_end_switch": "Alarme fin de course",
-          "alarm_external_sensor_leakage_cable": "Fuite capteur externe (câble)",
-          "alarm_external_sensor_leakage_radio": "Fuite capteur externe (radio)",
+          "alarm_end_switch": "Fin de course",
+          "alarm_external_sensor_leakage_cable": "Fuite du capteur externe (câble)",
+          "alarm_external_sensor_leakage_radio": "Fuite du capteur externe (radio)",
           "alarm_increased_water_hardness": "Dureté de l'eau augmentée",
           "alarm_leakage_time_reached": "Temps de fuite atteint",
           "alarm_leakage_volume_reached": "Volume de fuite atteint",
           "alarm_max_flow_rate_reached": "Débit maximal atteint",
-          "alarm_microleakage_detected": "Micro-fuite détectée",
+          "alarm_microleakage_detected": "Micro‑fuite détectée",
           "alarm_pressure_sensor_faulty": "Capteur de pression défectueux",
           "alarm_salt_supply_empty": "Approvisionnement en sel vide",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
           "alarm_turbine_blocked": "Turbine bloquée",
           "alarm_valve_position": "Position de la vanne",
           "alarm_weak_battery": "Batterie faible",
-          "error_no_information": "Aucune information disponible",
-          "fault_conductance_sensor": "Défaillance du capteur de conductivité",
+          "error_no_information": "Erreur : aucune information disponible",
+          "fault_conductance_sensor": "Capteur de conductivité défectueux",
           "no_alarm": "Aucune alarme"
         }
       },
@@ -277,12 +277,12 @@
         "name": "Régénérations en fonctionnement normal"
       },
       "getnot": {
-        "name": "Notifications",
+        "name": "Notification",
         "state": {
           "annual_maintenance": "Entretien annuel",
           "bi_annual_maintenance": "Entretien semestriel",
-          "new_software_available": "Nouvelle mise à jour logicielle disponible !",
-          "new_software_installed": "Nouvelle mise à jour logicielle installée !",
+          "new_software_available": "Nouvelle mise à jour logicielle disponible",
+          "new_software_installed": "Nouvelle mise à jour logicielle installée",
           "no_notification": "Aucune notification"
         }
       },

@@ -105,24 +105,24 @@
         }
       },
       "getala": {
-        "name": "Alarme atual",
+        "name": "Alarme",
         "state": {
-          "alarm_end_switch": "Alarme de fim de curso",
-          "alarm_external_sensor_leakage_cable": "Vazamento sensor externo (cabo)",
-          "alarm_external_sensor_leakage_radio": "Vazamento sensor externo (rádio)",
+          "alarm_end_switch": "Fim de curso",
+          "alarm_external_sensor_leakage_cable": "Vazamento do sensor externo (cabo)",
+          "alarm_external_sensor_leakage_radio": "Vazamento do sensor externo (rádio)",
           "alarm_increased_water_hardness": "Aumento da dureza da água",
-          "alarm_leakage_time_reached": "Tempo de vazamento atingido",
-          "alarm_leakage_volume_reached": "Volume de vazamento atingido",
-          "alarm_max_flow_rate_reached": "Taxa de fluxo máxima atingida",
-          "alarm_microleakage_detected": "Microvazamento detectado",
-          "alarm_pressure_sensor_faulty": "Sensor de pressão com defeito",
+          "alarm_leakage_time_reached": "Tempo de vazamento atingido!",
+          "alarm_leakage_volume_reached": "Volume de vazamento atingido!",
+          "alarm_max_flow_rate_reached": "Taxa de fluxo máxima atingida!",
+          "alarm_microleakage_detected": "Microvazamento detectado!",
+          "alarm_pressure_sensor_faulty": "Sensor de pressão com defeito!",
           "alarm_salt_supply_empty": "Suprimento de sal vazio",
-          "alarm_temperature_sensor_faulty": "Sensor de temperatura com defeito",
-          "alarm_turbine_blocked": "Turbina bloqueada",
+          "alarm_temperature_sensor_faulty": "Sensor de temperatura com defeito!",
+          "alarm_turbine_blocked": "Turbina bloqueada!",
           "alarm_valve_position": "Posição da válvula",
-          "alarm_weak_battery": "Bateria fraca",
+          "alarm_weak_battery": "Bateria fraca!",
           "error_no_information": "Nenhuma informação disponível",
-          "fault_conductance_sensor": "Falha no sensor de condutividade",
+          "fault_conductance_sensor": "Falha no sensor de condutividade!",
           "no_alarm": "Sem alarme"
         }
       },
@@ -277,13 +277,13 @@
         "name": "Regenerações (operação normal)"
       },
       "getnot": {
-        "name": "Notificações",
+        "name": "Notificação",
         "state": {
           "annual_maintenance": "Manutenção anual",
           "bi_annual_maintenance": "Manutenção semestral",
           "new_software_available": "Nova atualização de software disponível!",
           "new_software_installed": "Nova atualização de software instalada!",
-          "no_notification": "Sem notificação"
+          "no_notification": "Nenhuma"
         }
       },
       "getnps": {
@@ -856,14 +856,14 @@
         "name": "Endereço IP Wi‑Fi"
       },
       "getwrn": {
-        "name": "Alertas",
+        "name": "Aviso",
         "state": {
           "battery_low": "Bateria fraca",
           "initial_filling": "Enchimento inicial",
           "leak_warning": "Aviso de vazamento",
           "leak_warning_time": "Aviso de vazamento (tempo)",
-          "leak_warning_volume": "Aviso de vazamento (volume)",
-          "no_warning": "Sem aviso",
+          "leak_warning_volume": "Volume de vazamento",
+          "no_warning": "Nenhum aviso",
           "power_outage": "Falta de energia",
           "salt_supply_low": "Baixa reserva de sal"
         }
