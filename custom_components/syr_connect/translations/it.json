@@ -127,12 +127,18 @@
         }
       },
       "getalm": {
-        "name": "Allarme",
+        "name": "Ultimi allarmi",
         "state": {
           "low_salt": "Sale basso",
           "no_alarm": "Nessun allarme",
           "no_salt": "Nessun sale"
         }
+      },
+      "getaln": {
+        "name": "Ultime notifiche"
+      },
+      "getalw": {
+        "name": "Ultimi avvisi"
       },
       "getavo": {
         "name": "Flusso attuale"

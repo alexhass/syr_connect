@@ -172,19 +172,18 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # - LEXplus10S
     # - LEXplus10SL
 
-    'getALM',  # Last 8 alarms as list
-    'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
-    'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
-    'getDWF',  # Flow Warning Value - advanced setting
-    'getLAN',  # Language of the UI (0=English, 1=German, 3=Spanish)
-    'getNOT',  # Retrieving the current notification
-    'getSRE',  # Regeneration active
+    'getCYN',   # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
+    'getCYT',   # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
+    'getDWF',   # Flow Warning Value - advanced setting
+    'getLAN',   # Language of the UI (0=English, 1=German, 3=Spanish)
+    'getNOT',   # Retrieving the current notification
+    'getSRE',   # Regeneration active
     'getRG2', 'getRG3',  # Regeneration running for tank
-    'getRPD',  # Regeneration interval (days)
-    'getRPW',  # Regeneration permitted weekdays as bit mask
-    'getPST',  # Pressure sensor installed: 1 = not available, 2 = available
+    'getRPD',   # Regeneration interval (days)
+    'getRPW',   # Regeneration permitted weekdays as bit mask
+    'getPST',   # Pressure sensor installed: 1 = not available, 2 = available
     'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
-    'getWHU',  # Water hardness unit
+    'getWHU',   # Water hardness unit
 
     # Sensors exits in devices:
     # - LEXplus10SL
@@ -195,7 +194,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     'getPT1', 'getPT2', 'getPT3', 'getPT4', 'getPT5', 'getPT6', 'getPT7', 'getPT8',
     'getPV1', 'getPV2', 'getPV3', 'getPV4', 'getPV5', 'getPV6', 'getPV7', 'getPV8',
     'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
-    'getPRN',  # Duplicate of getPRF
+    'getPRN',   # Duplicate of getPRF
     'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',
 
     # Sensors exits in devices:
@@ -207,6 +206,9 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000 / Trio DFR/LS
 
+    'getALN',   # List of last 8 notifications
+    'getALM',   # List of last 8 alarms
+    'getALW',   # List of last 8 warnings
     'getWFC',   # Wi-Fi SSID
     'getWFR',   # Wifi signal strength (%)
     'getWFS',   # Wi-Fi connection status (connected / not connected)
@@ -235,7 +237,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'p1883', 'p1883rd', 'p8883', 'p8883rd',
     'sbt', 'sta', 'dst', 'ast', 'so',
     'dclg', 'clb', 'nrs',  # Device collection metadata
-    'nrdt', 'dg',  # Additional device metadata attributes
+    'nrdt', 'dg',   # Additional device metadata attributes
 
     # Other attributes than "n" = "name" / "v" = "value" in XML response
     'getSRN_dt',    # Serial number timestamp
@@ -306,8 +308,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
 
-    'getALN',       # Value: "", unclear meaning
-    'getALW',       # Value: "", unclear meaning
     'getBMX',       # Value: "", unclear meaning
     'getERE',       # Value: "", unclear meaning
     #'getLDF',      # Value: "", unclear meaning
@@ -351,7 +351,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     #"getBSA",
     "getCCK",
     "getCFW",
-    #"getCND",  # Conductivity in µS/cm
+    #"getCND",      # Conductivity in µS/cm
     "getCND2",
     #"getCNF",
     #"getCNL",

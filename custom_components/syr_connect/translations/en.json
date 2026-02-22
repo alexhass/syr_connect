@@ -127,12 +127,18 @@
         }
       },
       "getalm": {
-        "name": "Alarm",
+        "name": "Last alarms",
         "state": {
           "low_salt": "Low salt",
           "no_alarm": "No alarm",
           "no_salt": "No salt"
         }
+      },
+      "getaln": {
+        "name": "Last notifications"
+      },
+      "getalw": {
+        "name": "Last warnings"
       },
       "getavo": {
         "name": "Current flow"

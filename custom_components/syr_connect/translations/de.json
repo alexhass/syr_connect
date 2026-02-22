@@ -127,12 +127,18 @@
         }
       },
       "getalm": {
-        "name": "Alarm",
+        "name": "Letzte Alarme",
         "state": {
           "low_salt": "Salz gering",
           "no_alarm": "Kein Alarm",
           "no_salt": "Salz leer"
         }
+      },
+      "getaln": {
+        "name": "Letzte Benachrichtigungen"
+      },
+      "getalw": {
+        "name": "Letzte Warnungen"
       },
       "getavo": {
         "name": "Aktueller Durchfluss"

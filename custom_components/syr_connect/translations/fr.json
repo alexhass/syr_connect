@@ -127,12 +127,18 @@
         }
       },
       "getalm": {
-        "name": "Alarme",
+        "name": "Dernières alarmes",
         "state": {
           "low_salt": "Sel faible",
           "no_alarm": "Aucune alarme",
           "no_salt": "Pas de sel"
         }
+      },
+      "getaln": {
+        "name": "Dernières notifications"
+      },
+      "getalw": {
+        "name": "Derniers avertissements"
       },
       "getavo": {
         "name": "Débit actuel"
