@@ -244,7 +244,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getDEN',  # Boolean sensor - device enabled/disabled
     'getRTH',  # Regeneration hour - minutes/combined handled by getRTM
     'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
-    'getNOT',  # Notifications
     'getSIR',  # Immediate regeneration control
     'getSMR',  # Manual regeneration control - per documentation unknown what values do
     'getRST',  # Reset device control - per documentation unknown what values do
@@ -330,7 +329,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getTURL',      # Value: "", unclear meaning
     'getWAD',       # Value: "False", unclear meaning
     'getWTI',       # Value: e.g. "1720", unclear meaning
-    #'getNOT',      # Value: e.g. "FF", unclear meaning
     'getALD',       # Value: "", unclear meaning
     'getCNL',       # Value: "", unclear meaning
     'getWAH',       # Value: "", unclear meaning
