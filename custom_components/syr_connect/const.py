@@ -115,6 +115,7 @@ _SYR_CONNECT_SENSOR_NOT_CODES = {
     "03": "annual_maintenance",
     "04": "new_software_installed",
     "FF": "no_notification",
+    "": "no_notification",
 }
 
 _SYR_CONNECT_SENSOR_WRN_CODES = {
@@ -126,6 +127,7 @@ _SYR_CONNECT_SENSOR_WRN_CODES = {
     "10": "leak_warning_volume",
     "11": "leak_warning_time",
     "FF": "no_warning",
+    "": "no_warning",
 }
 
 # Binary sensors mapping with their device classes - internal
@@ -170,6 +172,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # - LEXplus10S
     # - LEXplus10SL
 
+    'getALM',  # Last 8 alarms as list
     'getCYN',  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
     'getCYT',  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     'getDWF',  # Flow Warning Value - advanced setting

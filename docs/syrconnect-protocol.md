@@ -298,7 +298,7 @@ Some further data about the device
 
 | Property        | Example                          | Unit   | Description
 |-----------------|----------------------------------|--------|-------------------------------------------------------
-| getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()
+| getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes.
 | getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"           |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.
 
 ### Network
