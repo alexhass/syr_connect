@@ -652,7 +652,7 @@ _SYR_CONNECT_SENSOR_ICON = {
 # - "NoSalt"  -> device reports salt empty <= 2kg
 # - "LowSalt" -> device reports low salt <= 4kg
 # - ""        -> no alarm >= 5kg
-_SYR_CONNECT_SENSOR_GETALM_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
     "NoSalt": "no_salt",
     "LowSalt": "low_salt",
     "": "no_alarm",
@@ -660,7 +660,7 @@ _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP = {
 
 # Mapping for getLE sensor values (Leakage protection - Present level)
 # Maps raw API value -> display value in liters (as shown in translations)
-_SYR_CONNECT_SENSOR_GETLE_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
     "2": "100", "3": "150", "4": "200", "5": "250", "6": "300",
     "7": "350", "8": "400", "9": "450", "10": "500", "11": "550",
     "12": "600", "13": "650", "14": "700", "15": "750", "16": "800",
@@ -677,7 +677,7 @@ _SYR_CONNECT_SENSOR_GETLE_VALUE_MAP = {
 #
 # Use this mapping to decode device `getRPW` bitmasks where each bit
 # represents a weekday.
-_SYR_CONNECT_SENSOR_GETRPW_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_RPW_VALUE_MAP = {
     0: None,    # No days configured
     1: 0,       # Monday
     2: 1,       # Tuesday
@@ -692,7 +692,7 @@ _SYR_CONNECT_SENSOR_GETRPW_VALUE_MAP = {
 # This assigns the observed Polish status to the internal translations.
 # - "Płukanie regenerantem (5mA)"
 # - "Płukanie szybkie 1"
-_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_STA_VALUE_MAP = {
     "Płukanie wsteczne": "status_backwash",
     "Płukanie regenerantem": "status_regenerant_rinse",
     "Płukanie wolne": "status_slow_rinse",
@@ -703,7 +703,7 @@ _SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP = {
 
 # Mapping for getT1, getT2 sensor values (Time leakage)
 # Maps raw API value -> display value in hours (as shown in translations)
-_SYR_CONNECT_SENSOR_GETT1_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_T1_VALUE_MAP = {
     "1": "0.5", "2": "1.0", "3": "1.5", "4": "2.0", "5": "2.5",
     "6": "3.0", "7": "3.5", "8": "4.0", "9": "4.5", "10": "5.0",
     "11": "5.5", "12": "6.0", "13": "6.5", "14": "7.0", "15": "7.5",
@@ -718,14 +718,14 @@ _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP = {
 
 # Mapping for getUL sensor values (Leakage protection - Absent level)
 # Maps raw API value -> display value in liters (as shown in translations)
-_SYR_CONNECT_SENSOR_GETUL_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_UL_VALUE_MAP = {
     "1": "10", "2": "20", "3": "30", "4": "40", "5": "50",
     "6": "60", "7": "70", "8": "80", "9": "90", "10": "100",
 }
 
 # Water hardness unit mapping (for getWHU)
 # According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
-_SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP = {
+_SYR_CONNECT_SENSOR_WHU_VALUE_MAP = {
     0: "°dH",       # German degree of water hardness (Grad deutsche Härte)
     1: "°fH",       # French degree of water hardness (degré français de dureté)
     2: "ppm",       # Parts per million (mg/L), common international unit

@@ -20,12 +20,12 @@ from .const import (
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY,
-    _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_GETLE_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_GETT1_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_GETUL_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_STRING,
@@ -300,7 +300,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     break
             if whu_value is not None:
                 try:
-                    self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP.get(int(whu_value), None)
+                    self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(whu_value), None)
                 except (ValueError, TypeError):
                     self._attr_native_unit_of_measurement = None
             else:
@@ -400,7 +400,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
             mapped = None
             if self._sensor_key == "getALM":
-                mapped = _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(str(raw))
+                mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(str(raw))
             else:
                 try:
                     mapped, _ = get_sensor_ala_map(raw_status or {}, raw)
@@ -696,10 +696,10 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for water hardness unit sensor (mapping)
                 if self._sensor_key == 'getWHU':
                     if isinstance(value, int | float):
-                        return _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP.get(int(value), None)
+                        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
                     elif isinstance(value, str):
                         try:
-                            return _SYR_CONNECT_SENSOR_GETWHU_VALUE_MAP.get(int(value), None)
+                            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
                         except (ValueError, TypeError):
                             return None
                     return None
@@ -771,7 +771,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if m_match:
                         resistance_value = str(m_match.group(1) or "")
                         normalized = "Płukanie regenerantem"
-                        mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
+                        mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
                         self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
                         return mapped
@@ -780,14 +780,14 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if m2_match:
                         rinse_round = str(m2_match.group(1) or "")
                         normalized = "Płukanie rapide"
-                        mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, "status_fast_rinse"))
+                        mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, "status_fast_rinse"))
                         self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": rinse_round})
                         return mapped
 
                     # Fallback: use raw string as normalized mapping key
                     normalized = raw
-                    mapped = str(_SYR_CONNECT_SENSOR_GETSTA_VALUE_MAP.get(normalized, normalized))
+                    mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, normalized))
                     self._attr_translation_key = mapped
                     _LOGGER.debug("getSTA mapped=%s", mapped)
                     return mapped
@@ -804,7 +804,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except Exception:
                         ala_mapped = None
 
-                    std_mapped = _SYR_CONNECT_SENSOR_GETALM_VALUE_MAP.get(raw_str)
+                    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str)
 
                     mapped = ala_mapped or std_mapped
                     # Set translation key when available so frontend translates the state
@@ -816,21 +816,21 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # Special handling for getLE sensor: map raw API values to display values
                 if self._sensor_key == 'getLE':
                     raw = str(status.get('getLE') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_GETLE_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '100', '150', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getUL sensor: map raw API values to display values
                 if self._sensor_key == 'getUL':
                     raw = str(status.get('getUL') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_GETUL_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getT1 and getT2 sensors: map raw API values to display values
                 if self._sensor_key in ('getT1', 'getT2'):
                     raw = str(status.get(self._sensor_key) or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_GETT1_VALUE_MAP.get(raw))
+                    mapped = str(_SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
                     return str(mapped) if mapped is not None else (raw if raw else None)
 
