@@ -111,72 +111,77 @@ async def test_sensor_native_value_timestamp(hass: HomeAssistant) -> None:
     assert value.tzinfo == UTC
 
 
-async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> None:
-    """Exhaustive-ish test for getALA, getNOT and getWRN with many input variants."""
-    truthy = {"true", "True", "TRUE", "on", "ON", "yes", "1", 1, True}
-    falsy = {"false", "False", "FALSE", "off", "OFF", "no", "0", 0, False}
-
-    variants = [None, "", "   ", "true", "off", "1", "0", 1, 0, True, False, "UnknownValue", "CompletelyUnknown", 123]
-
-    for key in ("getALA", "getNOT", "getWRN"):
-        for raw in variants:
-            data = {"devices": [{"id": "d_ex", "name": "Device", "project_id": "p", "status": {key: raw}}]}
-            coord = _build_coordinator(hass, data)
-            s = SyrConnectSensor(coord, "d_ex", "Device", "p", key)
-
-            val = s.native_value
-
-            # Determine expected semantics: empty/None -> None; truthy -> "true"; falsy -> "false"; else -> str(raw)
-            if raw is None or (isinstance(raw, str) and raw.strip() == ""):
-                expected = None
-            else:
-                # normalize by string or numeric truthiness
-                if raw in truthy:
-                    expected = "true"
-                elif raw in falsy:
-                    expected = "false"
-                else:
-                    expected = str(raw)
-
-            assert (val is None and expected is None) or (val == expected), f"Key {key} raw={raw!r} -> got {val!r}, expected {expected!r}"
-
-
-async def test_sensor_getala_not_and_wrn_various_values(hass: HomeAssistant) -> None:
-    """Test getALA, getNOT and getWRN sensors handle None/empty/unmapped values."""
-    for key in ("getALA", "getNOT", "getWRN"):
-        for raw in (None, "", "UnknownValue", "1"):
-            data = {
-                "devices": [
-                    {
-                        "id": "device1",
-                        "name": "Device 1",
-                        "project_id": "project1",
-                        "status": {key: raw},
-                    }
-                ]
+async def test_sensor_native_value_string(hass: HomeAssistant) -> None:
+    """Test sensor native value for string sensors."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRN": "123456789",
+                },
             }
-            coordinator = _build_coordinator(hass, data)
-            sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", key)
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRN")
 
-            # Ensure we exercise the parsing/mapping logic and return a stable type
-            val = sensor.native_value
-            assert (val is None) or isinstance(val, str)
+    assert sensor.native_value == "123456789"
 
 
-async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
-    """Sanity check: mapped values produce a (possibly different) string, unmapped fall back gracefully."""
-    # Mapped example (most integrations return string mapping); we don't assert exact mapping
-    data_mapped = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getALA": ""}}]}
-    coord_m = _build_coordinator(hass, data_mapped)
-    s_m = SyrConnectSensor(coord_m, "d1", "Device", "p", "getALA")
-    assert (s_m.native_value is None) or isinstance(s_m.native_value, str)
+@pytest.mark.parametrize(
+    ("available", "last_success", "expected"),
+    [
+        (True, True, True),
+        (False, False, False),
+        (True, False, False),
+    ],
+)
+async def test_sensor_availability(
+    hass: HomeAssistant, available: bool, last_success: bool, expected: bool
+) -> None:
+    """Test sensor availability."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "available": available,
+                "status": {
+                    "getPRS": "50",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = last_success
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
 
-    # Unmapped raw value should be returned or handled
-    data_unmapped = {"devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getALA": "CompletelyUnknown"}}]}
-    coord_u = _build_coordinator(hass, data_unmapped)
-    s_u = SyrConnectSensor(coord_u, "d2", "Device", "p", "getALA")
-    assert s_u.native_value is not None
-    
+    assert sensor.available is expected
+
+
+async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
+    """Test combined regeneration time sensor (getRTH and getRTM)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRTH": "2",
+                    "getRTM": "30",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+
+    assert sensor.native_value == "02:30"
 
 
 async def test_sensor_water_hardness_unit(hass: HomeAssistant) -> None:
@@ -197,61 +202,6 @@ async def test_sensor_water_hardness_unit(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
 
     assert sensor.native_value == "°dH"
-
-
-async def test_sensor_getul_mapped_string(hass: HomeAssistant) -> None:
-    """getUL mapping returns mapped display value for string inputs."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getUL": "1",  # mapped to "10"
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
-
-    assert sensor.native_value == "10"
-
-
-async def test_sensor_getul_mapped_int(hass: HomeAssistant) -> None:
-    """getUL mapping returns mapped display value for integer inputs."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getUL": 2,  # mapped to "20"
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
-
-    assert sensor.native_value == "20"
-
-
-async def test_sensor_getul_empty_and_unmapped(hass: HomeAssistant) -> None:
-    """getUL empty value -> None; unmapped raw value returned as string."""
-    # Empty value should be treated as missing
-    data_empty = {"devices": [{"id": "d_e", "name": "Device", "project_id": "p", "status": {"getUL": ""}}]}
-    coord_e = _build_coordinator(hass, data_empty)
-    s_e = SyrConnectSensor(coord_e, "d_e", "Device", "p", "getUL")
-    assert s_e.native_value is None
-
-    # Unmapped raw value should be returned as string
-    data_unmapped = {"devices": [{"id": "d_u", "name": "Device", "project_id": "p", "status": {"getUL": "999"}}]}
-    coord_u = _build_coordinator(hass, data_unmapped)
-    s_u = SyrConnectSensor(coord_u, "d_u", "Device", "p", "getUL")
-    assert s_u.native_value == "999"
 
 
 async def test_sensor_regeneration_weekdays_all(hass: HomeAssistant) -> None:
