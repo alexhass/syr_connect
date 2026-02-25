@@ -4,7 +4,7 @@ from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.models import detect_model
 
 
-FIXTURE_DIR = Path(__file__).parent / "fixtures"
+FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
 
 
 def _load_xml(name: str) -> str:
