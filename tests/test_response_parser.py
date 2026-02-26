@@ -5,9 +5,9 @@ import pytest
 
 from custom_components.syr_connect.response_parser import ResponseParser
 
-FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetProjectDeviceCollections.xml")
-FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10S_GetDeviceCollectionStatus.xml")
-FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures", "LEXplus10SL_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "LEXplus10S_GetProjectDeviceCollections.xml")
+FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "LEXplus10S_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "LEXplus10SL_GetDeviceCollectionStatus.xml")
 
 @pytest.fixture
 def parser():
