@@ -732,7 +732,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return None
 
                     if mask == 0:
-                        return "0"  # "Not specified" - use "0" as internal key for translation
+                        # "Not specified" - use "0" as internal key for translation
+                        return "0"
 
                     parts: list[str] = []
                     # Localize short weekday names using the Home Assistant language setting.
