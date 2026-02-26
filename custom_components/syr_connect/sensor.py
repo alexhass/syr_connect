@@ -582,13 +582,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     #status['getSTA'] = "Płukanie szybkie 1"
                     #status['getSTA'] = "Płukanie wsteczne"
 
-                # Special handling for battery voltage (getBAT) - Safe-T+ device
-                # Format: "6,12 4,38 3,90" where first value is battery voltage in V
+                # Special handling for battery voltage (getBAT)
                 if self._sensor_key == 'getBAT':
                     # Support both formats:
-                    # - Safe-T+ format ("6,11 4,38 3,90")
-                    # - Trio DFR/LS format ("363" -> 3.63 V).
-                    # Narrow the type for mypy: accept only str/int/float.
+                    # - Safe-T+ format ("6,11 4,38 3,90" -> "6.11 V")
+                    # - Trio DFR/LS format ("363" -> "3.63 V").
                     if value is None:
                         return None
                     if not isinstance(value, (str | int | float)):
