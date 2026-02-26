@@ -706,7 +706,10 @@
         "name": "Intervallo rigenerazione"
       },
       "getrpw": {
-        "name": "Giorni rigenerazione"
+        "name": "Giorni rigenerazione",
+        "state": {
+          "0": "Non specificato"
+        }
       },
       "getrth": {
         "name": "Ora rigenerazione (ore)"

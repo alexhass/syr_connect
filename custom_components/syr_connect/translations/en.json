@@ -706,7 +706,10 @@
         "name": "Regeneration interval"
       },
       "getrpw": {
-        "name": "Regeneration days"
+        "name": "Regeneration days",
+        "state": {
+          "0": "Not specified"
+        }
       },
       "getrth": {
         "name": "Regeneration time (hour)"

@@ -706,7 +706,10 @@
         "name": "Intervalo de regeneração"
       },
       "getrpw": {
-        "name": "Dias de regeneração"
+        "name": "Dias de regeneração",
+        "state": {
+          "0": "Não definido"
+        }
       },
       "getrth": {
         "name": "Hora da regeneração (hora)"

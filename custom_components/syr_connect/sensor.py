@@ -719,7 +719,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for regeneration permitted weekdays (getRPW):
                 # The device returns a bitmask where bit 1 = Monday, bit 2 = Tuesday, ... bit 7 = Sunday.
-                # - mask == 0 -> "Anytime"
+                # - mask == 0 -> "Not specified"
                 # - other masks -> comma-separated short weekday names using strftime('%a')
                 if self._sensor_key == 'getRPW':
                     raw_mask = status.get('getRPW')
@@ -734,7 +734,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return None
 
                     if mask == 0:
-                        return None
+                        return "0"  # "Not specified" - use "0" as internal key for translation
 
                     parts: list[str] = []
                     # Localize short weekday names using the Home Assistant language setting.
