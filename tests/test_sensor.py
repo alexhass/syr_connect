@@ -243,7 +243,8 @@ async def test_sensor_regeneration_weekdays_zero(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
 
-    assert sensor.native_value is None
+    # The integration exposes mask==0 as the internal translation key "0"
+    assert sensor.native_value == "0"
 
 
 async def test_sensor_status_mapping(hass: HomeAssistant) -> None:
@@ -4039,8 +4040,8 @@ async def test_sensor_rpw_zero_mask(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
 
-    # Should return None for mask == 0
-    assert sensor.native_value is None
+    # Should return the internal translation key "0" for mask == 0
+    assert sensor.native_value == "0"
 
 
 async def test_sensor_rpw_value_error_on_float(hass: HomeAssistant) -> None:
