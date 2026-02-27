@@ -12,8 +12,8 @@ from homeassistant.core import HomeAssistant
 
 from .api_xml import SyrConnectAPI
 from .const import (
-    _SYR_CONNECT_API_DEVICE_LIST_URL,
-    _SYR_CONNECT_API_DEVICE_STATUS_URL,
+    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
+    _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 
@@ -182,7 +182,7 @@ async def async_get_config_entry_diagnostics(
                 pid = project.get("id")
                 projects_raw[pid] = {"device_list": "", "devices": {}}
                 payload = api.payload_builder.build_device_list_payload(api.session_data, pid)
-                xml_resp = await _fetch(_SYR_CONNECT_API_DEVICE_LIST_URL, {"xml": payload})
+                xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
                 projects_raw[pid]["device_list"] = _redact_xml(xml_resp, api)
 
                 # Parse devices (best-effort)
@@ -200,7 +200,7 @@ async def async_get_config_entry_diagnostics(
 
                     async def _fetch_status(did: str):
                         payload2 = api.payload_builder.build_device_status_payload(api.session_data, did)
-                        xml_status = await _fetch(_SYR_CONNECT_API_DEVICE_STATUS_URL, {"xml": payload2})
+                        xml_status = await _fetch(_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL, {"xml": payload2})
                         return did, _redact_xml(xml_status, api)
 
                     status_tasks.append(_fetch_status(device_id))
