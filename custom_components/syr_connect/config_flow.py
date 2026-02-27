@@ -109,7 +109,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
                         default=current_scan_interval,
                     ): selector.NumberSelector(
                         selector.NumberSelectorConfig(
-                            min=10,
+                            min=60,
                             max=600,
                             unit_of_measurement=UnitOfTime.SECONDS,
                             mode=selector.NumberSelectorMode.BOX,

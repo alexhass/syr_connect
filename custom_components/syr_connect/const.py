@@ -109,6 +109,7 @@ _SYR_CONNECT_SENSOR_ALA_CODES_SAFET = {
     "WeakBat": "alarm_weak_battery",
 }
 
+# Notification code mappings
 _SYR_CONNECT_SENSOR_NOT_CODES = {
     "01": "new_software_available",
     "02": "bi_annual_maintenance",
@@ -118,6 +119,7 @@ _SYR_CONNECT_SENSOR_NOT_CODES = {
     "": "no_notification",
 }
 
+# Warning code mappings
 _SYR_CONNECT_SENSOR_WRN_CODES = {
     "01": "power_outage",
     "02": "salt_supply_low",
