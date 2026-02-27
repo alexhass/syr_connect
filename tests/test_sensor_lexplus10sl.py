@@ -87,7 +87,7 @@ REAL_XML_RESPONSE = """<?xml version="1.0" encoding="utf-8"?>
 </sc>"""
 
 
-class TestLEXplus10SLRealData(unittest.TestCase):
+class TestLEXplus10SL(unittest.TestCase):
     """Tests with real data from LEXplus10SL."""
 
     def setUp(self):
