@@ -123,11 +123,13 @@ class SyrConnectAPI:
             _LOGGER.error("Authentication failed: %s", err)
             raise SyrConnectAuthError(f"Authentication failed: {err}") from err
         except (aiohttp.ClientError, TimeoutError) as err:
-            _LOGGER.error("Connection failed: %s", err)
-            raise SyrConnectConnectionError(f"Connection failed: {err}") from err
+            error_representation = repr(err)
+            _LOGGER.error("Connection failed: %s", error_representation)
+            raise SyrConnectConnectionError(f"Connection failed: {error_representation}") from err
         except Exception as err:
-            _LOGGER.error("Login failed with unexpected error: %s", err)
-            raise SyrConnectConnectionError(f"Login failed: {err}") from err
+            error_representation = repr(err)
+            _LOGGER.error("Login failed with unexpected error: %s", error_representation)
+            raise SyrConnectConnectionError(f"Login failed: {error_representation}") from err
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
         """Get devices for a project.

@@ -91,15 +91,20 @@ class HTTPClient:
             except (TimeoutError, aiohttp.ClientError) as err:
                 is_last_attempt = attempt == self.max_retries - 1
 
+                # Build a detailed message including URL and exception repr
+                error_msg = f"Request to {url} failed on attempt {attempt + 1}/{self.max_retries}: {err!r}"
+
                 if is_last_attempt:
-                    _LOGGER.error("Request failed after %d attempts: %s", self.max_retries, err)
-                    raise
+                    _LOGGER.error("%s", error_msg)
+                    # Re-raise a ClientError with a clear message so callers see details
+                    raise aiohttp.ClientError(f"Request failed after {self.max_retries} attempts to {url}: {err!r}") from err
 
                 # Calculate backoff time (exponential: 1s, 2s, 4s, ...)
                 backoff_time = 2 ** attempt
                 _LOGGER.warning(
-                    "Request failed (attempt %d/%d): %s. Retrying in %ds...",
-                    attempt + 1, self.max_retries, err, backoff_time
+                    "%s. Retrying in %ds...",
+                    error_msg,
+                    backoff_time,
                 )
                 await asyncio.sleep(backoff_time)
 
