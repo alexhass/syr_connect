@@ -149,21 +149,24 @@ _SYR_CONNECT_SENSOR_CONTROLLED = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
-    'getCNA',  # Device name
-    'getDGW',  # Gateway
-    'getEGW',  # Ethernet gateway
-    'getEIP',  # Ethernet IP address
-    'getFIR',  # Firmware model
-    'getIPA',  # IP address
-    'getMAC',  # MAC address
-    'getMAC1', # Wi-Fi MAC address
-    'getMAC2', # LAN MAC address
-    'getMAN',  # Manufacturer
-    'getSRN',  # Serial number
-    'getTYP',  # Type
-    'getVER',  # Firmware version
-    'getWGW',  # Wi-Fi gateway
-    'getWIP',  # Wi-Fi IP address
+    'getCNA',   # Device name
+    'getDGW',   # Gateway
+    'getEGW',   # Ethernet gateway
+    'getEIP',   # Ethernet IP address
+    'getFIR',   # Firmware model
+    'getIPA',   # IP address
+    'getMAC',   # MAC address
+    'getMAC1',  # Wi-Fi MAC address
+    'getMAC2',  # LAN MAC address
+    'getMAN',   # Manufacturer
+    'getSRN',   # Serial number
+    'getTYP',   # Type
+    'getVER',   # Firmware version
+    'getWFC',   # Wi-Fi SSID
+    'getWFR',   # Wifi signal strength (%)
+    'getWFS',   # Wi-Fi connection status (connected / not connected)
+    'getWGW',   # Wi-Fi gateway
+    'getWIP',   # Wi-Fi IP address
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
@@ -209,9 +212,6 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     'getALN',   # List of last 8 notifications
     'getALM',   # List of last 8 alarms
     'getALW',   # List of last 8 warnings
-    'getWFC',   # Wi-Fi SSID
-    'getWFR',   # Wifi signal strength (%)
-    'getWFS',   # Wi-Fi connection status (connected / not connected)
 }
 
 # Sensor device classes (for Home Assistant) - internal
