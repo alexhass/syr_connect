@@ -13,7 +13,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import SyrConnectAPI
+from .api_xml import SyrConnectAPI
 from .const import _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT, DOMAIN
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 

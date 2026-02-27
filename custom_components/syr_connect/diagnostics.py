@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .api import SyrConnectAPI
+from .api_xml import SyrConnectAPI
 from .const import (
     _SYR_CONNECT_API_DEVICE_LIST_URL,
     _SYR_CONNECT_API_DEVICE_STATUS_URL,

@@ -16,7 +16,7 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .api import SyrConnectAPI
+from .api_xml import SyrConnectAPI
 from .const import _SYR_CONNECT_SCAN_INTERVAL_DEFAULT, DOMAIN
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .repairs import create_issue, delete_issue

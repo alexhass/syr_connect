@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import pytest
 import aiohttp
 
-from custom_components.syr_connect.api import SyrConnectAPI
+from custom_components.syr_connect.api_xml import SyrConnectAPI
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -388,3 +388,4 @@ async def test_get_devices_with_device_already_has_id(api_client):
         assert len(devices) == 1
         # Should keep existing id, not overwrite with serial_number
         assert devices[0]['id'] == "EXISTING_ID"
+
