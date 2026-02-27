@@ -8,11 +8,13 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
+    _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
@@ -171,6 +173,10 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
 
+        # Set entity category according to central sensor mappings
+        if "getRTM" in _SYR_CONNECT_SENSOR_CONFIG:
+            self._attr_entity_category = EntityCategory.CONFIG
+
         _LOGGER.debug(
             "Created SyrConnectRegenerationSelect object: device=%s name=%s unique_id=%s",
             self._device_id,
@@ -274,6 +280,10 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             v += step
         self._options = opts
 
+        # Set entity category according to central sensor mappings
+        if self._sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
+            self._attr_entity_category = EntityCategory.CONFIG
+
         _LOGGER.debug(
             "Created SyrConnectNumericSelect object: device=%s key=%s unique_id=%s",
             self._device_id,
@@ -362,6 +372,10 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = f"{device_id}_getPRF_select"
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getPRF")
+
+        # Set entity category according to central sensor mappings
+        if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:
+            self._attr_entity_category = EntityCategory.CONFIG
 
     @property
     def options(self) -> list[str]:

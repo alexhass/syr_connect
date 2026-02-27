@@ -137,14 +137,8 @@ _SYR_CONNECT_SENSOR_BINARY = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
 }
 
-# Sensors that are represented by control entities (select/text/buttons)
-# These sensors should be hidden from the regular sensor platform.
-_SYR_CONNECT_SENSOR_CONTROLLED = {
-    "getAB",    # Valve shut-off (false=open, true=closed) - also represented as select entity
-    "getSV1",   # Salt container amount 1 - also represented as select entity
-    "getSV2",   # Salt container amount 2 - also represented as select entity
-    "getSV3",   # Salt container amount 3 - also represented as select entity
-    "getPRF",   # Active leak protection profile
+# Configuration sensors - settings users do not need for daily use
+_SYR_CONNECT_SENSOR_CONFIG = {
     "getRPD",   # Regeneration interval - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
 }
