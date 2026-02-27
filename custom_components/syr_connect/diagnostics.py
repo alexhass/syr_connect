@@ -29,6 +29,7 @@ _TO_REDACT = {
     "getEGW",   # Ethernet gateway
     "getEIP",   # Ethernet IP address
     "getWGW",   # Wi-Fi gateway
+    "getWFC",   # Wi-Fi SSID
     "getWIP",   # Wi-Fi IP address
 }
 
