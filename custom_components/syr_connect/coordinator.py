@@ -184,7 +184,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 entry = getattr(self, "config_entry", None)
                 if entry and entry.options:
                     device_settings = entry.options.get(_SYR_CONNECT_DEVICE_SETTINGS, {})
-                    dev_opts = device_settings.get(str(device.get('id')), {}) if isinstance(device.get('id'), (str, int)) else {}
+                    dev_opts = device_settings.get(str(device.get('id')), {}) if isinstance(device.get('id'), (str | int)) else {}
                     if dev_opts and _SYR_CONNECT_DEVICE_USE_JSON_API in dev_opts:
                         use_json = bool(dev_opts.get(_SYR_CONNECT_DEVICE_USE_JSON_API, False))
                     elif device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
