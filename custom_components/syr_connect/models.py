@@ -34,7 +34,6 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "LEX Plus 10 S Connect",
-        "name": "lexplus10s",
         "cna_equals": "LEXplus10S",
         "ver_prefix": None,
     },
@@ -46,6 +45,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "NeoSoft 5000 Connect",
+        "device_url": "neosoft",
         "name": "neosoft5000",
         "cna_equals": None,
         "ver_prefix": "NSS",
@@ -54,7 +54,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "NeoSoft 2500 Connect",
-        "name": "neosoft2500",
+        "device_url": "neosoft",
         "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1"},
@@ -62,11 +62,19 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "Trio DFR/LS Connect",
+        "device_url": "trio",
         "name": "trio",
         "cna_equals": None,
         "ver_prefix": "syr001",
         "v_keys": {"getAFW", "getVER2"},
         "v_keys_required": 2,
+    },
+    {
+        "display_name": "Safe-Tech+ Connect",
+        "device_url": "trio",
+        "name": "safetech",
+        "cna_equals": None,
+        "ver_prefix": "Safe-Tech",
     },
     {
         "display_name": "Safe-T+ Connect",
