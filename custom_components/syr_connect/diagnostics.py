@@ -231,15 +231,15 @@ async def async_get_config_entry_diagnostics(
         # Use the coordinator's aiohttp session so we reuse the existing
         # HA-managed ClientSession and its connectors.
         session = getattr(coordinator, "_session", None)
+        collect_json = True
         if session is None:
-            # If coordinator unexpectedly lacks a session, abort JSON collection
+            # If coordinator unexpectedly lacks a session, skip JSON collection
             raw_json = {"error": "no http session available on coordinator"}
             diagnostics_data["raw_json"] = raw_json
-            # Skip rest of JSON collection
-            session = None
+            collect_json = False
 
-
-        async def _fetch_device_json(dev: dict[str, Any]):
+        if collect_json:
+            async def _fetch_device_json(dev: dict[str, Any]):
             dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
             device_url = dev.get("device_url")
             if not device_url:
@@ -277,24 +277,24 @@ async def async_get_config_entry_diagnostics(
             except Exception:
                 return dev_id, None
 
-        if coordinator and getattr(coordinator, "data", None):
-            devices = coordinator.data.get("devices", [])
-            semaphore = asyncio.Semaphore(5)
+            if coordinator and getattr(coordinator, "data", None):
+                devices = coordinator.data.get("devices", [])
+                semaphore = asyncio.Semaphore(5)
 
-            async def _wrap(dev):
-                async with semaphore:
-                    return await _fetch_device_json(dev)
+                async def _wrap(dev):
+                    async with semaphore:
+                        return await _fetch_device_json(dev)
 
-            tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("device_url")]
-            if tasks:
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-                for res in results:
-                    if isinstance(res, Exception):
-                        continue
-                    if isinstance(res, tuple) and len(res) == 2:
-                        did, payload = res
-                        if payload is not None:
-                            raw_json[did] = payload
+                tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("device_url")]
+                if tasks:
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                    for res in results:
+                        if isinstance(res, Exception):
+                            continue
+                        if isinstance(res, tuple) and len(res) == 2:
+                            did, payload = res
+                            if payload is not None:
+                                raw_json[did] = payload
     except Exception:
         raw_json = {"error": "failed to collect raw json for devices"}
 

@@ -121,7 +121,7 @@ class SyrConnectJsonAPI:
             await self.login()
 
         # Support tests that patch `_fetch_json` with a synchronous callable
-        maybe = self._fetch_json("get/all")
+        maybe: Any = self._fetch_json("get/all")
         if hasattr(maybe, "__await__"):
             status = await maybe
         else:
@@ -143,7 +143,7 @@ class SyrConnectJsonAPI:
             await self.login()
 
         try:
-            maybe = self._fetch_json("get/all")
+            maybe: Any = self._fetch_json("get/all")
             if hasattr(maybe, "__await__"):
                 status = await maybe
             else:
