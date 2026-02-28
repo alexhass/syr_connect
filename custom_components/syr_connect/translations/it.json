@@ -221,10 +221,10 @@
         "name": "Consumo giornaliero previsto"
       },
       "getegw": {
-        "name": "Gateway Ethernet"
+        "name": "Gateway (LAN)"
       },
       "geteip": {
-        "name": "Indirizzo IP Ethernet"
+        "name": "Indirizzo IP (LAN)"
       },
       "getfco": {
         "name": "Contenuto di ferro"
@@ -265,10 +265,10 @@
         "name": "Indirizzo MAC"
       },
       "getmac1": {
-        "name": "Indirizzo MAC Wi‑Fi"
+        "name": "Indirizzo MAC (WLAN)"
       },
       "getmac2": {
-        "name": "Indirizzo MAC LAN"
+        "name": "Indirizzo MAC (LAN)"
       },
       "getman": {
         "name": "Produttore"
@@ -850,13 +850,13 @@
         }
       },
       "getwgw": {
-        "name": "Gateway Wi‑Fi"
+        "name": "Gateway (WLAN)"
       },
       "getwhu": {
         "name": "Unità durezza acqua"
       },
       "getwip": {
-        "name": "Indirizzo IP Wi‑Fi"
+        "name": "Indirizzo IP (WLAN)"
       },
       "getwrn": {
         "name": "Avvisi",

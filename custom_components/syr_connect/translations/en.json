@@ -221,10 +221,10 @@
         "name": "Expected daily water consumption"
       },
       "getegw": {
-        "name": "Ethernet gateway"
+        "name": "Gateway (LAN)"
       },
       "geteip": {
-        "name": "Ethernet IP address"
+        "name": "IP address (LAN)"
       },
       "getfco": {
         "name": "Iron content"
@@ -239,7 +239,7 @@
         "name": "Incomplete regenerations"
       },
       "getipa": {
-        "name": "IP Address"
+        "name": "IP address"
       },
       "getiwh": {
         "name": "Input water hardness"
@@ -265,10 +265,10 @@
         "name": "MAC address"
       },
       "getmac1": {
-        "name": "Wi-Fi MAC address"
+        "name": "MAC address (Wi‑Fi)"
       },
       "getmac2": {
-        "name": "LAN MAC address"
+        "name": "MAC address (LAN)"
       },
       "getman": {
         "name": "Manufacturer"
@@ -850,13 +850,13 @@
         }
       },
       "getwgw": {
-        "name": "Wi-Fi gateway"
+        "name": "Gateway (Wi‑Fi)"
       },
       "getwhu": {
         "name": "Water hardness unit"
       },
       "getwip": {
-        "name": "Wi-Fi IP address"
+        "name": "IP address (Wi‑Fi)"
       },
       "getwrn": {
         "name": "Warning",

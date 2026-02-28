@@ -221,10 +221,10 @@
         "name": "Erwarteter täglicher Wasserverbrauch"
       },
       "getegw": {
-        "name": "Ethernet Gateway"
+        "name": "Gateway (LAN)"
       },
       "geteip": {
-        "name": "Ethernet IP Adresse"
+        "name": "IP-Adresse (LAN)"
       },
       "getfco": {
         "name": "Eisengehalt"
@@ -239,7 +239,7 @@
         "name": "Unvollständige Regenerationen"
       },
       "getipa": {
-        "name": "IP Adresse"
+        "name": "IP-Adresse"
       },
       "getiwh": {
         "name": "Rohwasserhärte"
@@ -265,10 +265,10 @@
         "name": "MAC Adresse"
       },
       "getmac1": {
-        "name": "WLAN MAC Adresse"
+        "name": "MAC Adresse (WLAN)"
       },
       "getmac2": {
-        "name": "LAN MAC Adresse"
+        "name": "MAC Adresse (LAN)"
       },
       "getman": {
         "name": "Hersteller"
@@ -850,13 +850,13 @@
         }
       },
       "getwgw": {
-        "name": "WLAN Gateway"
+        "name": "Gateway (WLAN)"
       },
       "getwhu": {
         "name": "Wasserhärte-Einheit"
       },
       "getwip": {
-        "name": "WLAN IP-Adresse"
+        "name": "IP-Adresse (WLAN)"
       },
       "getwrn": {
         "name": "Warnung",

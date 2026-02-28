@@ -221,10 +221,10 @@
         "name": "Consumo diario de agua esperado"
       },
       "getegw": {
-        "name": "Puerta de enlace Ethernet"
+        "name": "Puerta de enlace (LAN)"
       },
       "geteip": {
-        "name": "Dirección IP Ethernet"
+        "name": "Dirección IP (LAN)"
       },
       "getfco": {
         "name": "Contenido de hierro"
@@ -265,10 +265,10 @@
         "name": "Dirección MAC"
       },
       "getmac1": {
-        "name": "Dirección MAC WLAN"
+        "name": "Dirección MAC (WLAN)"
       },
       "getmac2": {
-        "name": "Dirección MAC LAN"
+        "name": "Dirección MAC (LAN)"
       },
       "getman": {
         "name": "Fabricante"
@@ -850,13 +850,13 @@
         }
       },
       "getwgw": {
-        "name": "Gateway WLAN"
+        "name": "Puerta de enlace (WLAN)"
       },
       "getwhu": {
         "name": "Unidad de dureza del agua"
       },
       "getwip": {
-        "name": "Dirección IP WLAN"
+        "name": "Dirección IP (WLAN)"
       },
       "getwrn": {
         "name": "Advertencias",

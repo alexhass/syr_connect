@@ -221,10 +221,10 @@
         "name": "Consommation d'eau quotidienne prévue"
       },
       "getegw": {
-        "name": "Passerelle Ethernet"
+        "name": "Passerelle (LAN)"
       },
       "geteip": {
-        "name": "Adresse IP Ethernet"
+        "name": "Adresse IP (LAN)"
       },
       "getfco": {
         "name": "Teneur en fer"
@@ -265,10 +265,10 @@
         "name": "Adresse MAC"
       },
       "getmac1": {
-        "name": "Adresse MAC WLAN"
+        "name": "Adresse MAC (WLAN)"
       },
       "getmac2": {
-        "name": "Adresse MAC LAN"
+        "name": "Adresse MAC (LAN)"
       },
       "getman": {
         "name": "Fabricant"
@@ -850,13 +850,13 @@
         }
       },
       "getwgw": {
-        "name": "Passerelle WLAN"
+        "name": "Passerelle (WLAN)"
       },
       "getwhu": {
         "name": "Unité de dureté de l'eau"
       },
       "getwip": {
-        "name": "Adresse IP WLAN"
+        "name": "Adresse IP (WLAN)"
       },
       "getwrn": {
         "name": "Avertissements",
