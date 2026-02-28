@@ -337,68 +337,68 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # Sensors exits in devices:
     # - Trio DFR/LS
 
-    "getAFW",
-    #"getALD",
-    #"getAPT",
-    "getBAP",
-    "getBAR2",
-    "getBFT",
-    "getBPT",
-    #"getBSA",
-    "getCCK",
-    "getCFW",
+    "getAFW",       # Value: "", unclear meaning
+    #"getALD",      # Value: "", unclear meaning (duplicate of getALD from NeoSoft 2500/5000)
+    #"getAPT",      # Value: e.g. "600", unclear meaning (duplicate of getAPT from NeoSoft 2500/5000)
+    "getBAP",       # Value: "", unclear meaning
+    "getBAR2",      # Value: "", unclear meaning (duplicate of getBAR from LEXplus10S/Safe-T+)
+    "getBFT",       # Value: "", unclear meaning
+    "getBPT",       # Value: "", unclear meaning
+    #"getBSA",      # Value: "", unclear meaning (duplicate of getBSA from LEXplus10SL)
+    "getCCK",       # Value: "", unclear meaning
+    "getCFW",       # Value: "", unclear meaning
     #"getCND",      # Conductivity in µS/cm
-    "getCND2",
-    #"getCNF",
-    #"getCNL",
-    #"getCSD",
-    "getCSE",
-    "getCURL",
-    #"getDBT",
-    #"getDCM",
-    #"getDMA",
-    #"getDOM",
-    #"getDPL",
-    #"getDST",
-    #"getDTC",
-    "getENV",
-    #"getEVL",
-    "getDTR",
-    #"getFSL",
-    #"getHWV",
-    #"getIDS",
-    "getLED",
-    "getLOCK",
-    #"getLNG",
-    #"getLWT",
-    "getSMF",
-    #"getPSD",
-    "getPSE",
-    "getPRN",
-    "getRCE",
-    #"getRTC",
-    #"getRURL",
-    "getSFV",
-    "getSLP_m",
-    "getSLP_sd",
-    "getSLP_ed",
-    #"getSLO",
-    "getSOF",
-    "getSRO",
-    "getSRV",
-    #"getTN",
-    #"getTMZ",
-    #"getTSD",
-    "getTSE",
-    #"getTURL",
-    "getVER2",
-    "getVTO",
-    #"getWAD",
-    #"getWAH",
-    "getWFL",
-    "getWNS",
-    #"getWTI",
-    #"getNET",
+    "getCND2",      # Value: "", unclear meaning (duplicate of getCND from LEXplus10SL)
+    #"getCNF",      # Value: "", unclear meaning (duplicate of getCNF from NeoSoft 2500/5000)
+    #"getCNL",      # Value: "", unclear meaning (duplicate of getCNL from NeoSoft 2500/5000)
+    #"getCSD",      # Value: "", unclear meaning (duplicate of getCSD from NeoSoft 2500/5000)
+    "getCSE",       # Value: "", unclear meaning
+    "getCURL",      # Value: "", unclear meaning
+    #"getDBT",      # Value: "", unclear meaning (duplicate of getDBT from LEXplus10SL)
+    #"getDCM",      # Value: "", unclear meaning (duplicate of getDCM from LEXplus10SL)
+    #"getDMA",      # Value: "", unclear meaning (duplicate of getDMA from LEXplus10SL)
+    #"getDOM",      # Value: "", unclear meaning (duplicate of getDOM from LEXplus10SL)
+    #"getDPL",      # Value: "", unclear meaning (duplicate of getDPL from LEXplus10SL)
+    #"getDST",      # Value: "", unclear meaning (duplicate of getDST from LEXplus10SL)
+    #"getDTC",      # Value: "", unclear meaning (duplicate of getDTC from LEXplus10SL)
+    "getENV",       # Value: "", unclear meaning
+    #"getEVL",      # Value: "0", unclear meaning (duplicate of getEVL from NeoSoft 2500/5000)
+    "getDTR",       # Value: "", unclear meaning
+    #"getFSL",      # Value: "", unclear meaning (duplicate of getFSL from LEXplus10SL)
+    #"getHWV",      # Value: e.g. "V1", "0000000001", unclear meaning (duplicate of getHWV from NeoSoft 2500/5000)
+    #"getIDS",      # Value: "False", unclear meaning (duplicate of getIDS from NeoSoft 2500/5000)
+    "getLED",       # Value: "", unclear meaning
+    "getLOCK",      # Value: "False", unclear meaning
+    #"getLNG",      # Value: "0", unclear meaning (duplicate of getLNG from NeoSoft 2500/5000)
+    #"getLWT",      # Value: "", unclear meaning (duplicate of getLWT from LEXplus10SL)
+    "getSMF",       # Value: "", unclear meaning
+    #"getPSD",      # Value: "", unclear meaning (duplicate of getPSD from NeoSoft 2500/5000)
+    "getPSE",       # Value: "", unclear meaning
+    "getPRN",       # Value: "", unclear meaning (duplicate of getPRN from LEXplus10SL)
+    "getRCE",       # Value: "", unclear meaning
+    #"getRTC",      # Value: "", unclear meaning (duplicate of getRTC from NeoSoft 2500/5000)
+    #"getRURL",     # Value: "", unclear meaning (duplicate of getRURL from NeoSoft 2500/5000)
+    "getSFV",       # Value: "", unclear meaning
+    "getSLP_m",     # Value: "", unclear meaning - duplicate of getSLP from LEXplus10SL but with "_m" suffix, likely a modified value for maintenance mode or similar
+    "getSLP_sd",    # Value: "", unclear meaning - likely start date for maintenance mode or similar
+    "getSLP_ed",    # Value: "", unclear meaning - likely end date for maintenance mode or similar
+    #"getSLO",      # Value: "", unclear meaning (duplicate of getSLO from LEXplus10SL)
+    "getSOF",       # Value: "", unclear meaning - likely related to service or maintenance mode
+    "getSRO",       # Value: "", unclear meaning - likely related to service or maintenance mode
+    "getSRV",       # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
+    #"getTN",       # Value: "", unclear meaning (duplicate of getTN from LEXplus10SL)
+    #"getTMZ",      # Value: "4", unclear meaning (duplicate of getTMZ from NeoSoft 2500/5000)
+    #"getTSD",      # Value: "", unclear meaning (duplicate of getTSD from NeoSoft 2500/5000)
+    "getTSE",       # Value: "", unclear meaning - likely related to service or maintenance mode
+    #"getTURL",     # Value: "", unclear meaning (duplicate of getTURL from NeoSoft 2500/5000)
+    "getVER2",      # Value: "", unclear meaning - duplicate of getVER from LEXplus10SL but with "_m" suffix, likely a modified value for maintenance mode or similar
+    "getVTO",       # Value: "", unclear meaning - likely related to service or maintenance mode
+    #"getWAD",      # Value: "False", unclear meaning (duplicate of getWAD from NeoSoft 2500/5000)
+    #"getWAH",      # Value: "", unclear meaning (duplicate of getWAH from NeoSoft 2500/5000)
+    "getWFL",       # Value: "", unclear meaning - likely related to water flow or similar
+    "getWNS",       # Value: "", unclear meaning - likely related to water flow or similar
+    #"getWTI",      # Value: e.g. "1720", unclear meaning (duplicate of getWTI from NeoSoft 2500/5000)
+    #"getNET",      # Value: "", unclear meaning (duplicate of getNET from NeoSoft 2500/5000)
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
