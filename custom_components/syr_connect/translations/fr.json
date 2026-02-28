@@ -889,6 +889,11 @@
           "21": "Ouverture"
         }
       }
+    },
+    "switch": {
+      "use_local_json_api": {
+        "name": "Utiliser l'API JSON locale"
+      }
     }
   },
   "issues": {

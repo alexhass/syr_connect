@@ -20,6 +20,7 @@ PLATFORMS: list[str | Platform] = [
     Platform.SENSOR,
     Platform.BUTTON,
     Platform.SELECT,
+    Platform.SWITCH,
     Platform.VALVE,
 ]
 
@@ -40,6 +41,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_PASSWORD],
         scan_interval,
     )
+
+    # Attach config entry to coordinator for options access
+    coordinator.config_entry = entry
 
     try:
         await coordinator.async_config_entry_first_refresh()

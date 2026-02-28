@@ -18,7 +18,7 @@ from custom_components.syr_connect.exceptions import (
 
 async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test successful coordinator update."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -55,7 +55,7 @@ async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress
 
 async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator update without session triggers login."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = None  # No session initially
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -83,7 +83,7 @@ async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progr
 
 async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test setting device value through coordinator."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -121,7 +121,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
 
 async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator optimistic update of in-memory data."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -164,7 +164,7 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
 
 async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator raises ValueError when device not found."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -192,7 +192,7 @@ async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_
 
 async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
     """Test coordinator raises ValueError when no data available."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api_class.return_value = mock_api
 
@@ -213,7 +213,7 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
 
 async def test_coordinator_device_fetch_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exceptions when fetching devices."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [
@@ -250,7 +250,7 @@ async def test_coordinator_device_fetch_exception(hass: HomeAssistant, setup_in_
 
 async def test_coordinator_non_list_device_result(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles non-list device results."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -276,7 +276,7 @@ async def test_coordinator_non_list_device_result(hass: HomeAssistant, setup_in_
 
 async def test_coordinator_device_status_none(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles None status (unexpected structure)."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -309,7 +309,7 @@ async def test_coordinator_device_status_none(hass: HomeAssistant, setup_in_prog
 
 async def test_coordinator_device_status_none_reuses_previous(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator reuses previous status when new status is None."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -345,7 +345,7 @@ async def test_coordinator_device_status_none_reuses_previous(hass: HomeAssistan
 
 async def test_coordinator_device_status_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exceptions when fetching device status."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
          patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -387,7 +387,7 @@ async def test_coordinator_device_status_exception(hass: HomeAssistant, setup_in
 
 async def test_coordinator_device_status_exception_result(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exception results from gather."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -426,7 +426,7 @@ async def test_coordinator_device_status_exception_result(hass: HomeAssistant, s
 
 async def test_coordinator_auth_error_during_login(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator raises ConfigEntryAuthFailed on auth error."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = None
         mock_api.is_session_valid = MagicMock(return_value=False)
@@ -450,7 +450,7 @@ async def test_coordinator_auth_error_during_login(hass: HomeAssistant, setup_in
 
 async def test_coordinator_connection_error_during_login(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator raises UpdateFailed on connection error."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = None
         mock_api.is_session_valid = MagicMock(return_value=False)
@@ -474,7 +474,7 @@ async def test_coordinator_connection_error_during_login(hass: HomeAssistant, se
 
 async def test_coordinator_general_exception_during_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles general exceptions during update."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.is_session_valid = MagicMock(return_value=True)
@@ -499,7 +499,7 @@ async def test_coordinator_general_exception_during_update(hass: HomeAssistant, 
 
 async def test_coordinator_delete_offline_issue_on_recovery(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator deletes repair issue when device comes back online."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
          patch("custom_components.syr_connect.coordinator.delete_issue") as mock_delete_issue:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -527,7 +527,7 @@ async def test_coordinator_delete_offline_issue_on_recovery(hass: HomeAssistant,
 
 async def test_coordinator_device_without_cna_fallback_to_id(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator uses device ID as fallback when cna is missing."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
          patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -560,7 +560,7 @@ async def test_coordinator_device_without_cna_fallback_to_id(hass: HomeAssistant
 
 async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exceptions during optimistic update gracefully."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -596,7 +596,7 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
 
 async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exceptions when scheduling refresh."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -635,7 +635,7 @@ async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssista
 
 async def test_coordinator_device_without_dclg_uses_id(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator uses device ID when dclg is missing."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -663,7 +663,7 @@ async def test_coordinator_device_without_dclg_uses_id(hass: HomeAssistant, setu
 
 async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test setting value for device without dclg uses device id."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -697,7 +697,7 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
 
 async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exception from gather for device tasks."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -727,7 +727,7 @@ async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_i
 
 async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test that optimistic `getAB` updates are preserved for the ignore window."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -774,7 +774,7 @@ async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_
 
 async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator data structure when projects have no devices."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [
@@ -803,7 +803,7 @@ async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant
 
 async def test_ignore_rule_removes_key_when_no_previous_status(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """If an ignore rule exists but no previous status is present, the key should be removed from API status."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -836,7 +836,7 @@ async def test_ignore_rule_removes_key_when_no_previous_status(hass: HomeAssista
 
 async def test_ignore_rule_expires_and_is_removed(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Expired ignore rules should be cleaned up and API values used."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -886,7 +886,7 @@ async def test_delayed_refresh_calls_async_refresh(hass: HomeAssistant) -> None:
 
 async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles unexpected exceptions in update cycle."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.is_session_valid = MagicMock(return_value=True)
@@ -913,7 +913,7 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
         """If asyncio.gather raises, coordinator should raise UpdateFailed."""
         from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 
-        with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+        with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
              patch("custom_components.syr_connect.coordinator.asyncio.gather", side_effect=Exception("gather failed")):
             mock_api = MagicMock()
             mock_api.session_data = "test_session"
@@ -941,7 +941,7 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
         from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 
         # Patch asyncio.gather to return a list containing an Exception
-        with patch("custom_components.syr_connect.coordinator.SyrConnectAPI") as mock_api_class, \
+        with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
              patch("custom_components.syr_connect.coordinator.asyncio.gather", return_value=[Exception("proj fail")]):
             mock_api = MagicMock()
             mock_api.session_data = "test_session"

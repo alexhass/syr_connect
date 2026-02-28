@@ -41,8 +41,8 @@ def mock_setup_entry() -> Generator[AsyncMock, None, None]:
 
 @pytest.fixture
 def mock_syr_api():
-    """Mock SyrConnectAPI."""
-    with patch("custom_components.syr_connect.config_flow.SyrConnectAPI") as mock_api:
+    """Mock SyrConnectXmlAPI."""
+    with patch("custom_components.syr_connect.config_flow.SyrConnectXmlAPI") as mock_api:
         api_instance = MagicMock()
         api_instance.login = AsyncMock(return_value=True)
         api_instance.session_data = "test_session_id"

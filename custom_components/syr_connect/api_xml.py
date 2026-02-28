@@ -36,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 _SESSION_TIMEOUT_MINUTES = 30
 
 
-class SyrConnectAPI:
+class SyrConnectXmlAPI:
     """API client for SYR Connect."""
 
     def __init__(self, session: aiohttp.ClientSession, username: str, password: str) -> None:

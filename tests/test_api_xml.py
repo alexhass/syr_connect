@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import pytest
 import aiohttp
 
-from custom_components.syr_connect.api_xml import SyrConnectAPI
+from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -21,7 +21,7 @@ def mock_session():
 @pytest.fixture
 def api_client(mock_session):
     """Create an API client instance."""
-    return SyrConnectAPI(mock_session, "test@example.com", "testpassword")
+    return SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword")
 
 
 async def test_session_valid_check(api_client):

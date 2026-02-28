@@ -16,9 +16,16 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .api_xml import SyrConnectAPI
-from .const import _SYR_CONNECT_SCAN_INTERVAL_DEFAULT, DOMAIN
+from .api_json import SyrConnectJsonAPI
+from .api_xml import SyrConnectXmlAPI
+from .const import (
+    _SYR_CONNECT_DEVICE_SETTINGS,
+    _SYR_CONNECT_DEVICE_USE_JSON_API,
+    _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
+    DOMAIN,
+)
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+from .models import detect_model
 from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,7 +58,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=scan_interval),
         )
 
-        self.api = SyrConnectAPI(session, username, password)
+        self.api = SyrConnectXmlAPI(session, username, password)
+        # Keep aiohttp session for optional JSON API usage per-device
+        self._session = session
         self._username = username
         # Map of ((device_id, get_key) -> expire_timestamp) to ignore API
         # provided values for a short period after we apply an optimistic
@@ -165,9 +174,38 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Add project_id to device
             device['project_id'] = project_id
 
-            # Use DCLG for API calls
+            # DCLG remains the device identifier for XML API calls
             dclg = device.get('dclg', device['id'])
-            status = await self.api.get_device_status(dclg)
+
+            # Determine whether to use local JSON API for this device.
+            # Priority: persistent per-device option in config entry -> in-memory device flag -> False
+            use_json = False
+            try:
+                entry = getattr(self, "config_entry", None)
+                if entry and entry.options:
+                    device_settings = entry.options.get(_SYR_CONNECT_DEVICE_SETTINGS, {})
+                    dev_opts = device_settings.get(str(device.get('id')), {}) if isinstance(device.get('id'), (str, int)) else {}
+                    if dev_opts and _SYR_CONNECT_DEVICE_USE_JSON_API in dev_opts:
+                        use_json = bool(dev_opts.get(_SYR_CONNECT_DEVICE_USE_JSON_API, False))
+                    elif device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
+                        use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
+                else:
+                    if device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
+                        use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
+            except Exception:
+                use_json = False
+            if use_json:
+                # Only attempt JSON API when a `device_url` is known for the device
+                ip = device.get('ip') or device.get('getWIP') or device.get('getEIP')
+                device_url = device.get('device_url')
+                if ip and device_url:
+                    json_api = SyrConnectJsonAPI(self._session, ip=ip, device_url=device_url)
+                    status = await json_api.get_device_status(dclg)
+                else:
+                    # Fallback to XML API when JSON API cannot be constructed
+                    status = await self.api.get_device_status(dclg)
+            else:
+                status = await self.api.get_device_status(dclg)
 
             # If parser signalled that the response did not contain the
             # expected sc>dvs>d structure, it returns None. In this case we
@@ -197,6 +235,39 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             device['status'] = status
             device['available'] = True
+
+            # Attempt to detect model from the flattened status and set
+            # `device['device_url']` if not already present and the
+            # signature provides a device_url mapping. This allows future
+            # runs to opt into the local JSON API without using DCLG as
+            # a fallback for the device_url.
+            try:
+                if isinstance(status, dict):
+                    if not device.get('device_url'):
+                        model = detect_model(status)
+                        det_url = model.get('device_url')
+                        if det_url:
+                            # Set detected device_url and expose a per-device
+                            # toggle defaulting to False so the UI can show
+                            # an option for devices that actually support it.
+                            device['device_url'] = det_url
+                            try:
+                                # Only add the device-level toggle when supported
+                                if _SYR_CONNECT_DEVICE_USE_JSON_API not in device:
+                                    device[_SYR_CONNECT_DEVICE_USE_JSON_API] = False
+                            except Exception:
+                                pass
+                            _LOGGER.debug("Set device_url for %s to detected value %s", device.get('id'), det_url)
+                        else:
+                            # Ensure per-device JSON API flag is not present for devices
+                            # that do not support a device_url (explicit None).
+                            try:
+                                if _SYR_CONNECT_DEVICE_USE_JSON_API in device:
+                                    device.pop(_SYR_CONNECT_DEVICE_USE_JSON_API, None)
+                            except Exception:
+                                pass
+            except Exception:  # pragma: no cover - defensive
+                _LOGGER.exception("Model detection failed for device %s", device.get('id'))
 
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")

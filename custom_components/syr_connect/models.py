@@ -28,18 +28,21 @@ _LOGGER = logging.getLogger(__name__)
 MODEL_SIGNATURES: Iterable[dict] = [
     {
         "display_name": "LEX Plus 10 Connect",
+        "device_url": None,
         "name": "lexplus10",
         "cna_equals": "LEXplus10",
         "ver_prefix": None,
     },
     {
         "display_name": "LEX Plus 10 S Connect",
+        "device_url": None,
         "name": "lexplus10s",
         "cna_equals": "LEXplus10S",
         "ver_prefix": None,
     },
     {
         "display_name": "LEX Plus 10 SL Connect",
+        "device_url": None,
         "name": "lexplus10sl",
         "cna_equals": "LEXplus10SL",
         "ver_prefix": None,
@@ -80,6 +83,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "Safe-T+ Connect",
+        "device_url": None,
         "name": "safetplus",
         "cna_equals": None,
         "ver_prefix": "Safe-T",
@@ -144,7 +148,8 @@ def detect_model(flat: dict[str, object]) -> dict:
         # 1) explicit CNA match wins immediately
         if sig.get("cna_equals") and cna == sig.get("cna_equals"):
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            return {"name": name, "display_name": display}
+            result = {"name": name, "display_name": display, "device_url": sig.get("device_url")}
+            return result
 
         # 2) attributes must match if provided; if attrs are required and
         # they don't match, this signature is skipped.
@@ -163,17 +168,20 @@ def detect_model(flat: dict[str, object]) -> dict:
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            return {"name": name, "display_name": display}
+            result = {"name": name, "display_name": display, "device_url": sig.get("device_url")}
+            return result
 
         # 4) no v_keys: if attrs were present and matched, we've already
         # satisfied detection above. Otherwise fall back to version checks.
         if sig.get("attrs_equals"):
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            return {"name": name, "display_name": display}
+            result = {"name": name, "display_name": display, "device_url": sig.get("device_url")}
+            return result
 
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and version_match(sig):
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            return {"name": name, "display_name": display}
+            result = {"name": name, "display_name": display, "device_url": sig.get("device_url")}
+            return result
 
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
-    return {"name": "unknown", "display_name": "Unknown model"}
+    return {"name": "unknown", "display_name": "Unknown model", "device_url": None}

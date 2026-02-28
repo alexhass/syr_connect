@@ -13,8 +13,12 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api_xml import SyrConnectAPI
-from .const import _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT, DOMAIN
+from .api_xml import SyrConnectXmlAPI
+from .const import (
+    _SYR_CONNECT_SCAN_INTERVAL_CONF,
+    _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
+    DOMAIN,
+)
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,7 +47,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """
     _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
-    api = SyrConnectAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
+    api = SyrConnectXmlAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
 
     # Test authentication
     _LOGGER.debug("Testing API authentication...")
@@ -90,7 +94,13 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             FlowResult with the configuration entry or form
         """
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            # Persist top-level options (e.g., scan interval)
+            entry = getattr(self, "_config_entry", None)
+            options = dict(entry.options) if entry and entry.options else {}
+            for k, v in user_input.items():
+                options[k] = v
+
+            return self.async_create_entry(title="", data=options)
 
         # Get current scan interval with safe fallback
         entry = getattr(self, "_config_entry", None)
@@ -99,24 +109,24 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             if entry and entry.options
             else _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
         )
+        # Build schema for options (scan interval only)
+        schema_dict: dict = {
+            vol.Optional(
+                _SYR_CONNECT_SCAN_INTERVAL_CONF,
+                default=current_scan_interval,
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=60,
+                    max=600,
+                    unit_of_measurement=UnitOfTime.SECONDS,
+                    mode=selector.NumberSelectorMode.BOX,
+                ),
+            ),
+        }
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Optional(
-                        _SYR_CONNECT_SCAN_INTERVAL_CONF,
-                        default=current_scan_interval,
-                    ): selector.NumberSelector(
-                        selector.NumberSelectorConfig(
-                            min=60,
-                            max=600,
-                            unit_of_measurement=UnitOfTime.SECONDS,
-                            mode=selector.NumberSelectorMode.BOX,
-                        ),
-                    ),
-                }
-            ),
+            data_schema=vol.Schema(schema_dict),
         )
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

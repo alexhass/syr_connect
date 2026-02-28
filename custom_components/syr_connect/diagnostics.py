@@ -1,6 +1,7 @@
 """Diagnostics support for SYR Connect."""
 from __future__ import annotations
 
+import asyncio
 import re
 from datetime import datetime
 from typing import Any
@@ -10,7 +11,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .api_xml import SyrConnectAPI
+from .api_json import SyrConnectJsonAPI
+from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
@@ -84,7 +86,7 @@ async def async_get_config_entry_diagnostics(
     # This collects data for ALL projects and their devices but uses
     # limited concurrency and truncates very large responses to avoid
     # excessive load or extremely large diagnostics payloads.
-    def _redact_xml(xml: str, api: SyrConnectAPI | None) -> str:
+    def _redact_xml(xml: str, api: SyrConnectXmlAPI | None) -> str:
         """Redact sensitive keys inside an XML string using patterns.
 
         This will replace attribute values, <c n="..." v="..."/> entries,
@@ -165,8 +167,6 @@ async def async_get_config_entry_diagnostics(
                 api = None
 
         if api and api.projects:
-            import asyncio
-
             semaphore = asyncio.Semaphore(5)
 
             async def _fetch(url: str, payload: dict[str, Any]) -> str:
@@ -221,6 +221,84 @@ async def async_get_config_entry_diagnostics(
         raw_xml = {"error": "failed to collect raw xml for all projects"}
 
     diagnostics_data["raw_xml"] = raw_xml
+
+    # Attempt to include raw JSON responses from devices that support
+    # the local JSON API (have a `device_url`). We fetch `/get/all` and
+    # redact sensitive keys using `async_redact_data` before including
+    # the result in diagnostics.
+    raw_json: dict[str, Any] = {}
+    try:
+        # Use the coordinator's aiohttp session so we reuse the existing
+        # HA-managed ClientSession and its connectors.
+        session = getattr(coordinator, "_session", None)
+        if session is None:
+            # If coordinator unexpectedly lacks a session, abort JSON collection
+            raw_json = {"error": "no http session available on coordinator"}
+            diagnostics_data["raw_json"] = raw_json
+            # Skip rest of JSON collection
+            session = None
+
+
+        async def _fetch_device_json(dev: dict[str, Any]):
+            dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
+            device_url = dev.get("device_url")
+            if not device_url:
+                return dev_id, None
+
+            # Determine IP from device fields or status
+            ip = dev.get("ip") or dev.get("getWIP") or dev.get("getEIP")
+            if not ip:
+                # try status dict
+                status = dev.get("status") or {}
+                ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
+
+            json_api = SyrConnectJsonAPI(session, ip=ip, device_url=device_url)
+            try:
+                # Login is required for some devices
+                try:
+                    if not json_api.is_session_valid():
+                        await json_api.login()
+                except Exception:
+                    # If login fails, still attempt to fetch once
+                    pass
+
+                base = json_api._build_base_url()
+                if not base:
+                    return dev_id, None
+
+                try:
+                    data = await json_api._fetch_json("get/all", timeout=10)
+                except Exception:
+                    return dev_id, None
+
+                # Redact sensitive keys from the parsed JSON payload
+                redacted = async_redact_data(data, _TO_REDACT)
+                return dev_id, redacted
+            except Exception:
+                return dev_id, None
+
+        if coordinator and getattr(coordinator, "data", None):
+            devices = coordinator.data.get("devices", [])
+            semaphore = asyncio.Semaphore(5)
+
+            async def _wrap(dev):
+                async with semaphore:
+                    return await _fetch_device_json(dev)
+
+            tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("device_url")]
+            if tasks:
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+                for res in results:
+                    if isinstance(res, Exception):
+                        continue
+                    if isinstance(res, tuple) and len(res) == 2:
+                        did, payload = res
+                        if payload is not None:
+                            raw_json[did] = payload
+    except Exception:
+        raw_json = {"error": "failed to collect raw json for devices"}
+
+    diagnostics_data["raw_json"] = raw_json
 
     # Apply redaction for all configured keys everywhere in the diagnostics
     def _redact_obj(obj: Any) -> Any:
