@@ -285,12 +285,12 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     assert mapped == "no_alarm" and raw == "0"
 
     # ALA: NeoSoft family (detect via getVER prefix and v_keys)
-    status_neo = {"getVER": "NSS-1", "getRE1": "x", "getRE2": "y"}
+    status_neo = {"getVER": "NSS.V.2.028", "getRE1": "x", "getRE2": "y"}
     mapped2, raw2 = get_sensor_ala_map(status_neo, "FF")
     assert mapped2 == "no_alarm" and raw2 == "FF"
 
-    # ALA: Safe-T+ family (detect via getVER contains)
-    status_safet = {"getVER": "Something Safe-T Something"}
+    # ALA: Safe-T+ family (detect via getVER prefix)
+    status_safet = {"getVER": "Safe-T+ V2.00e"}
     mapped3, raw3 = get_sensor_ala_map(status_safet, "A1")
     assert mapped3 == "alarm_end_switch" and raw3 == "A1"
 
