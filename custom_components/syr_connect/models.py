@@ -34,6 +34,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "LEX Plus 10 S Connect",
+        "name": "lexplus10s",
         "cna_equals": "LEXplus10S",
         "ver_prefix": None,
     },
