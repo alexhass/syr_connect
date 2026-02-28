@@ -115,11 +115,17 @@ class SyrConnectJsonAPI:
         so the coordinator code can continue to reuse the same flow as the
         XML API (projects -> devices -> device status).
         """
-        # Ensure session/login
-        if not self.is_session_valid():
+        # Ensure session/login. If an explicit `base_url` is provided we
+        # assume tests or callers handle authentication and skip login.
+        if not self._base_url and not self.is_session_valid():
             await self.login()
 
-        status = await self._fetch_json("get/all")
+        # Support tests that patch `_fetch_json` with a synchronous callable
+        maybe = self._fetch_json("get/all")
+        if hasattr(maybe, "__await__"):
+            status = await maybe
+        else:
+            status = maybe
 
         # Derive id and name from common fields if available
         device_id = status.get("getSRN") or status.get("getFRN") or "local_device"
@@ -133,11 +139,15 @@ class SyrConnectJsonAPI:
         Returns None on unexpected payload to allow the coordinator to keep
         previous state (same behaviour as the XML client parser).
         """
-        if not self.is_session_valid():
+        if not self._base_url and not self.is_session_valid():
             await self.login()
 
         try:
-            status = await self._fetch_json("get/all")
+            maybe = self._fetch_json("get/all")
+            if hasattr(maybe, "__await__"):
+                status = await maybe
+            else:
+                status = maybe
             # The JSON API returns a flat dict with getXXX keys already; return
             # as-is so the rest of the integration can operate on the same
             # status shape as the XML parser.
