@@ -234,8 +234,8 @@ def get_sensor_bat_value(value: str | int | float) -> float | None:
     """Parse battery voltage supporting two formats.
 
     Formats supported:
-    - Safe-Tech+ format: "9,36" -> take as is and parse comma as decimal
     - Safe-T+ format: "6,11 4,38 3,90" -> take first token and parse comma as decimal
+    - Safe-Tech+ format: "9,36" -> take as is and parse comma as decimal
     - Trio DFR/LS format: "363" -> value in 1/100 V, so divide by 100 -> 3.63
 
     Returns the voltage as float rounded to 2 decimals, or None on failure.
