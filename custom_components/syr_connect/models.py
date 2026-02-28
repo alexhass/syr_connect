@@ -81,7 +81,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "display_name": "Safe-T+ Connect",
         "name": "safetplus",
         "cna_equals": None,
-        "ver_contains": "Safe-T",
+        "ver_prefix": "Safe-T",
     },
 ]
 
