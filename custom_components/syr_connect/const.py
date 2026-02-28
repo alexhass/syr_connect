@@ -673,7 +673,7 @@ _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
 # Example: mask 5 (0b0000101) means Monday (1<<0) and Wednesday (1<<2).
 #
 # Use this mapping to decode device `getRPW` bitmasks where each bit
-# represents a weekday.
+# represents a weekday. Documentation only.
 _SYR_CONNECT_SENSOR_RPW_VALUE_MAP = {
     0: None,    # No days configured
     1: 0,       # Monday
