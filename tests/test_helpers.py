@@ -191,6 +191,9 @@ def test_get_sensor_bat_value_variants() -> None:
     # Safe-T+ multi-value -> take first token and parse comma as decimal
     assert get_sensor_bat_value("6,12 4,38 3,90") == 6.12
 
+    # Safe-Tech+ single value with comma decimal
+    assert get_sensor_bat_value("9,36") == 9.36
+
     # Digits-only Trio format -> divide by 100
     assert get_sensor_bat_value("363") == 3.63
 
