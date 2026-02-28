@@ -55,6 +55,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     {
         "display_name": "NeoSoft 2500 Connect",
         "device_url": "neosoft",
+        "name": "neosoft2500",
         "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1"},
