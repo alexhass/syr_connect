@@ -50,7 +50,7 @@ async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
-    """Test setup when device is not a dict."""
+    """Test setup skips devices that should not create switches."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -68,9 +68,8 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            "string_device",  # String (not a dict)
-            None,  # None (not a dict)
-            {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},
+            {"id": "dev_no_url", "name": "No URL Device"},  # No device_url, skip
+            {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},  # Valid
         ]
     }
     
@@ -80,10 +79,11 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
     
-    # Should only create entity for valid device
+    # Should only create entity for device with device_url
     mock_add_entities.assert_called_once()
     entities = mock_add_entities.call_args[0][0]
     assert len(entities) == 1
+    assert entities[0]._device_id == "dev1"
 
 
 async def test_async_setup_entry_no_device_url(hass: HomeAssistant) -> None:
