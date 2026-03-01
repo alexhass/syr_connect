@@ -269,10 +269,10 @@ def test_lexplus10sl_with_exact_cna():
 def test_attrs_match_single_attr_mismatch():
     """If one attr in attrs_equals doesn't match, signature is skipped."""
     # Since no current signature uses attrs_equals, we test the logic indirectly
-    # by ensuring signatures without attrs_equals don't fail
-    flat = {"getVER": "syr001-test"}
+    # Trio requires both v_keys (getAFW, getVER2) AND version prefix
+    flat = {"getVER": "syr001-test", "getAFW": "1", "getVER2": "176"}
     result = detect_model(flat)
-    # Without v_keys, should still detect by version
+    # With v_keys and version, should detect trio
     assert result["name"] == "trio"
 
 
@@ -285,7 +285,8 @@ def test_neosoft_base_path():
 
 def test_trio_base_path():
     """Trio models should return 'trio' as base_path."""
-    flat = {"getVER": "syr001-firmware"}
+    # Trio requires both v_keys (getAFW, getVER2) with v_keys_required=2
+    flat = {"getVER": "syr001-firmware", "getAFW": "1", "getVER2": "176"}
     result = detect_model(flat)
     assert result["name"] == "trio"
     assert result["base_path"] == "trio"

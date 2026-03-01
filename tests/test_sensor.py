@@ -5159,31 +5159,16 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
 
 async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) -> None:
     """Test exception handler in getPA group processing."""
-    # Create a coordinator with data that will cause an exception during getPA processing
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
 
-    # Create status mock that raises exception when accessing getPA keys
-    class ProblematicStatus(dict):
-        def get(self, key, default=None):
-            if key.startswith("getPA"):
-                raise Exception("Test error")
-            return super().get(key, default)
-
-        def __getitem__(self, key):
-            if key.startswith("getPA"):
-                raise Exception("Test error")
-            return super().__getitem__(key)
-
-    status = ProblematicStatus()
-    status["getPA1"] = "true"  # Set it before making it raise
-
+    # Normal status dict with getPA1 set to true
     coordinator.data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": status,
+                "status": {"getPA1": "true"},
             }
         ]
     }
@@ -5204,11 +5189,18 @@ async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) ->
 
     mock_add_entities = Mock()
 
-    # Should not raise exception, should handle it gracefully
-    await async_setup_entry(hass, entry, mock_add_entities)
+    # Patch the entity registry to raise exception when removing
+    with patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry:
+        mock_reg_instance = MagicMock()
+        mock_reg_instance.async_get.return_value = None
+        mock_reg_instance.async_remove.side_effect = Exception("Test error")
+        mock_registry.return_value = mock_reg_instance
 
-    # Should still call add_entities at least once (empty list is ok)
-    assert mock_add_entities.called
+        # Should not raise exception, should handle it gracefully
+        await async_setup_entry(hass, entry, mock_add_entities)
+
+        # Should still call add_entities (entities created despite exception)
+        assert mock_add_entities.called
 
 
 
