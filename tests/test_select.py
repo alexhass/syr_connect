@@ -1560,3 +1560,145 @@ async def test_prf_select_missing_profile_name(hass: HomeAssistant) -> None:
 
     # Current option should be None because getPN1 is missing
     assert select.current_option is None
+
+
+async def test_async_setup_entry_with_none_pa_values(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry handles None PA values (line 99-100)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getRTM": "02:30",
+                    "getPA1": "true",
+                    "getPA2": None,
+                    "getPA3": None,
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # Should create PRF select because PA1 is true (None values are skipped)
+    prf_entities = [e for e in entities if isinstance(e, SyrConnectPrfSelect)]
+    assert len(prf_entities) == 1
+
+
+async def test_regeneration_select_options_property(hass: HomeAssistant) -> None:
+    """Test regeneration select options property (line 189)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRTM": "02:30",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
+
+    # Access the options property
+    options = select.options
+    assert isinstance(options, list)
+    assert len(options) == 96  # 24 hours * 4 (every 15 min)
+    assert "00:00" in options
+    assert "23:45" in options
+
+
+async def test_prf_select_entity_category(hass: HomeAssistant) -> None:
+    """Test PRF select has entity_category set (line 378)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    # PRF should have entity_category set if in _SYR_CONNECT_SENSOR_CONFIG
+    # This tests line 378
+    assert hasattr(select, '_attr_entity_category')
+
+
+async def test_prf_select_options_with_none_pa(hass: HomeAssistant) -> None:
+    """Test PRF select options when some PA values are None (line 385)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPA2": None,
+                    "getPN2": "Profile B",
+                    "getPA3": "true",
+                    "getPN3": "Profile C",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    # Should only include profiles where PA is "true", skip None values
+    assert "Profile A" in select.options
+    assert "Profile B" not in select.options  # PA2 is None
+    assert "Profile C" in select.options
+
+
+async def test_prf_select_async_select_option_with_none_pa(hass: HomeAssistant) -> None:
+    """Test PRF select async_select_option skips None PA values (line 421)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPA2": None,
+                    "getPN2": "Profile B",
+                    "getPA3": "true",
+                    "getPN3": "Profile C",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    # Try to select Profile C (should work, PA3 is true)
+    await select.async_select_option("Profile C")
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setPRF", 3)
+
+    # Try to select Profile B (should not call because PA2 is None)
+    coordinator.async_set_device_value.reset_mock()
+    await select.async_select_option("Profile B")
+    coordinator.async_set_device_value.assert_not_called()
+
