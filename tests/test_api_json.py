@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
@@ -36,10 +36,10 @@ async def test_json_client_parses_fixture(fixture: str) -> None:
 
     data = load_fixture(fixture)
 
-    # Patch the internal fetcher to return our fixture data
-    client._fetch_json = lambda path, timeout=10: data
+    # Patch _fetch_json to return fixture data
+    with patch.object(client, "_fetch_json", return_value=data):
+        status = await client.get_device_status("local")
 
-    status = await client.get_device_status("local")
     assert isinstance(status, dict)
     # Sanity check: fixture contains at least one getXXX key
     assert any(k.startswith("get") for k in status.keys())
@@ -50,9 +50,10 @@ async def test_get_devices_builds_device_entry_from_fixture() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://127.0.0.1:5333/local/")
 
     data = load_fixture("SafeTech_get_all_v4.json")
-    client._fetch_json = lambda path, timeout=10: data
 
-    devices = await client.get_devices("local")
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("local")
+
     assert isinstance(devices, list)
     assert len(devices) == 1
     dev = devices[0]
@@ -69,19 +70,16 @@ def test_init_with_base_url() -> None:
 
 
 def test_init_without_base_url() -> None:
-    """Test initialization without base_url (requires ip, port, password)."""
+    """Test initialization without base_url (requires ip and base_path)."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
         ip="192.168.1.100",
-        port=5333,
-        password="admin123",
         base_path="/api/v1/"
     )
     assert client._base_url is None
     assert client._ip == "192.168.1.100"
-    assert client._port == 5333
-    assert client._password == "admin123"
+    assert client._base_path == "/api/v1/"
 
 
 def test_build_base_url_with_explicit_base_url() -> None:
@@ -92,28 +90,36 @@ def test_build_base_url_with_explicit_base_url() -> None:
     assert result == "http://test:5333/api/"
 
 
-def test_build_base_url_without_ip_or_port() -> None:
-    """Test _build_base_url returns empty string when ip or port missing."""
+def test_build_base_url_without_ip_or_base_path() -> None:
+    """Test _build_base_url returns None when ip or base_path missing."""
     sess = MagicMock()
+
+    # Missing both
     client = SyrConnectJsonAPI(sess)
-    result = client._build_base_url()
-    assert result == ""
+    assert client._build_base_url() is None
+
+    # Missing base_path
+    client = SyrConnectJsonAPI(sess, ip="192.168.1.100")
+    assert client._build_base_url() is None
+
+    # Missing ip
+    client = SyrConnectJsonAPI(sess, base_path="/api/v1/")
+    assert client._build_base_url() is None
 
 
 def test_build_base_url_constructs_url() -> None:
-    """Test _build_base_url constructs URL from ip, port, base_path."""
+    """Test _build_base_url constructs URL from ip and base_path."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
         ip="192.168.1.50",
-        port=5333,
         base_path="/api/v1/"
     )
     result = client._build_base_url()
     assert result == "http://192.168.1.50:5333/api/v1/"
 
 
-def test_is_session_valid_no_session_start() -> None:
+def test_is_session_valid_no_last_login() -> None:
     """Test is_session_valid returns False when session not started."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/")
@@ -124,8 +130,8 @@ def test_is_session_valid_expired() -> None:
     """Test is_session_valid returns False when session expired."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/")
-    # Set session start to 31 minutes ago (expired, timeout is 30 min)
-    client._session_start = datetime.now() - timedelta(minutes=31)
+    # Set last login to 31 minutes ago (expired, timeout is 30 min)
+    client._last_login = datetime.now() - timedelta(minutes=31)
     assert client.is_session_valid() is False
 
 
@@ -133,23 +139,24 @@ def test_is_session_valid_active() -> None:
     """Test is_session_valid returns True when session active."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/")
-    # Set session start to 10 minutes ago (still valid)
-    client._session_start = datetime.now() - timedelta(minutes=10)
+    # Set last login to 10 minutes ago (still valid)
+    client._last_login = datetime.now() - timedelta(minutes=10)
     assert client.is_session_valid() is True
 
 
 async def test_login_no_base_url_raises() -> None:
     """Test login raises ValueError when base URL cannot be built."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(sess)  # No ip/port/base_url
+    client = SyrConnectJsonAPI(sess)  # No ip/base_path/base_url
     with pytest.raises(ValueError, match="Base URL not configured"):
         await client.login()
 
 
-async def test_login_with_password() -> None:
-    """Test login constructs URL with password when provided."""
+async def test_login_success() -> None:
+    """Test login makes GET request and updates session state."""
     sess = MagicMock()
     mock_response = AsyncMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
@@ -158,41 +165,17 @@ async def test_login_with_password() -> None:
     client = SyrConnectJsonAPI(
         sess,
         ip="192.168.1.100",
-        port=5333,
-        password="mypass",
         base_path="/api/v1/"
     )
 
-    await client.login()
+    result = await client.login()
 
-    # Verify GET called with password in URL
+    # Verify GET called with login URL pattern
     called_url = sess.get.call_args[0][0]
-    assert "set/ADM/2fmypass" in called_url
-    assert client._session_start is not None
-
-
-async def test_login_without_password() -> None:
-    """Test login constructs URL without password when not provided."""
-    sess = MagicMock()
-    mock_response = AsyncMock()
-    mock_response.raise_for_status = MagicMock()
-    sess.get = AsyncMock(return_value=mock_response)
-    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-    mock_response.__aexit__ = AsyncMock(return_value=None)
-
-    client = SyrConnectJsonAPI(
-        sess,
-        ip="192.168.1.100",
-        port=5333,
-        base_path="/api/v1/"
-    )
-
-    await client.login()
-
-    # Verify GET called without password
-    called_url = sess.get.call_args[0][0]
-    assert "/set/ADM/2f" in called_url
-    assert "mypass" not in called_url
+    assert "/set/ADM/(2)f" in called_url
+    assert result is True
+    assert client._last_login is not None
+    assert len(client.projects) == 1
 
 
 async def test_login_http_error() -> None:
@@ -207,7 +190,6 @@ async def test_login_http_error() -> None:
     client = SyrConnectJsonAPI(
         sess,
         ip="192.168.1.100",
-        port=5333,
         base_path="/api/v1/"
     )
 
@@ -218,7 +200,7 @@ async def test_login_http_error() -> None:
 async def test_fetch_json_no_base_url_raises() -> None:
     """Test _fetch_json raises ValueError when base URL not configured."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(sess)  # No ip/port/base_url
+    client = SyrConnectJsonAPI(sess)  # No ip/base_path/base_url
     with pytest.raises(ValueError, match="Base URL not configured"):
         await client._fetch_json("get/all")
 
@@ -254,21 +236,38 @@ async def test_fetch_json_http_error() -> None:
         await client._fetch_json("get/all")
 
 
+async def test_fetch_json_success() -> None:
+    """Test _fetch_json returns dict on success."""
+    sess = MagicMock()
+    mock_response = AsyncMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"getAB": "value", "getCD": "123"})
+    sess.get = AsyncMock(return_value=mock_response)
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    result = await client._fetch_json("get/all")
+
+    assert result == {"getAB": "value", "getCD": "123"}
+
+
 async def test_get_devices_calls_login_when_needed() -> None:
     """Test get_devices calls login when session invalid and no explicit base_url."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
         ip="192.168.1.100",
-        port=5333,
         base_path="/api/v1/"
     )
 
-    # Mock login and _fetch_json
+    # Mock login
     client.login = AsyncMock()
-    client._fetch_json = AsyncMock(return_value={"getSRN": "12345", "getCNA": "TestDevice"})
 
-    devices = await client.get_devices("project1")
+    data = {"getSRN": "12345", "getCNA": "TestDevice"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("project1")
 
     # Verify login was called
     client.login.assert_called_once()
@@ -276,17 +275,15 @@ async def test_get_devices_calls_login_when_needed() -> None:
     assert devices[0]["id"] == "12345"
 
 
-async def test_get_devices_sync_callable() -> None:
-    """Test get_devices handles synchronous callable from _fetch_json."""
+async def test_get_devices_uses_get_frn_fallback() -> None:
+    """Test get_devices uses getFRN when getSRN missing."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # Mock _fetch_json as synchronous callable (no __await__)
-    data = {"getSRN": "67890", "getFRN": "fallback"}
-    client._fetch_json = lambda path, timeout=10: data
-    
-    devices = await client.get_devices("project1")
-    
+    data = {"getFRN": "67890", "getCNA": "Device"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("project1")
+
     assert len(devices) == 1
     assert devices[0]["id"] == "67890"
 
@@ -298,10 +295,9 @@ async def test_get_devices_fallback_device_id_and_name() -> None:
 
     # Provide data with no getSRN, getFRN, getCNA, getVER
     data = {"getOtherKey": "value"}
-    client._fetch_json = lambda path, timeout=10: data
-    
-    devices = await client.get_devices("project1")
-    
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("project1")
+
     assert len(devices) == 1
     # Should fall back to "local_device"
     assert devices[0]["id"] == "local_device"
@@ -314,30 +310,17 @@ async def test_get_device_status_calls_login() -> None:
     client = SyrConnectJsonAPI(
         sess,
         ip="192.168.1.100",
-        port=5333,
         base_path="/api/v1/"
     )
 
     client.login = AsyncMock()
-    client._fetch_json = AsyncMock(return_value={"getAB": "on", "getCD": "123"})
 
-    status = await client.get_device_status("device1")
+    data = {"getAB": "on", "getCD": "123"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        status = await client.get_device_status("device1")
 
     client.login.assert_called_once()
     assert status == {"getAB": "on", "getCD": "123"}
-
-
-async def test_get_device_status_sync_callable() -> None:
-    """Test get_device_status handles synchronous callable."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    data = {"getXY": "value"}
-    client._fetch_json = lambda path, timeout=10: data
-
-    status = await client.get_device_status("device1")
-
-    assert status == {"getXY": "value"}
 
 
 async def test_get_device_status_exception_returns_none() -> None:
@@ -346,9 +329,8 @@ async def test_get_device_status_exception_returns_none() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Mock _fetch_json to raise exception
-    client._fetch_json = AsyncMock(side_effect=Exception("Network error"))
-
-    status = await client.get_device_status("device1")
+    with patch.object(client, "_fetch_json", side_effect=Exception("Network error")):
+        status = await client.get_device_status("device1")
 
     assert status is None
 
@@ -356,7 +338,7 @@ async def test_get_device_status_exception_returns_none() -> None:
 async def test_set_device_status_no_base_url_raises() -> None:
     """Test set_device_status raises ValueError when base URL not configured."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(sess)  # No ip/port/base_url
+    client = SyrConnectJsonAPI(sess)  # No ip/base_path/base_url
 
     with pytest.raises(ValueError, match="Base URL not configured"):
         await client.set_device_status("device1", "setAB", "on")
@@ -411,3 +393,95 @@ async def test_set_device_status_http_error() -> None:
 
     with pytest.raises(aiohttp.ClientError):
         await client.set_device_status("device1", "AB", "off")
+
+
+async def test_get_devices_skips_login_with_base_url() -> None:
+    """Test get_devices skips login when explicit base_url provided."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Mock login as a spy to verify it's not called
+    client.login = AsyncMock()
+
+    data = {"getSRN": "123", "getCNA": "Device"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("project1")
+
+    # Verify login was NOT called
+    client.login.assert_not_called()
+    assert len(devices) == 1
+
+
+async def test_get_device_status_skips_login_with_base_url() -> None:
+    """Test get_device_status skips login when explicit base_url provided."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Mark session as valid to verify login still not called
+    client._last_login = datetime.now()
+    client.login = AsyncMock()
+
+    data = {"getAB": "value"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        status = await client.get_device_status("device1")
+
+    # Verify login was NOT called even though we could
+    client.login.assert_not_called()
+    assert status == {"getAB": "value"}
+
+
+async def test_get_devices_with_get_ver_name_fallback() -> None:
+    """Test get_devices uses getVER for name when getCNA missing."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    data = {"getSRN": "12345", "getVER": "v1.2.3"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("project1")
+
+    assert len(devices) == 1
+    assert devices[0]["name"] == "v1.2.3"
+
+
+def test_build_base_url_strips_trailing_slash() -> None:
+    """Test _build_base_url adds slash after stripping existing one."""
+    sess = MagicMock()
+    # Test with trailing slash
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/v1/")
+    assert client._build_base_url() == "http://test:5333/api/v1/"
+
+    # Test without trailing slash
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/v1")
+    assert client._build_base_url() == "http://test:5333/api/v1/"
+
+
+def test_build_base_url_strips_slashes_from_base_path() -> None:
+    """Test _build_base_url strips leading/trailing slashes from base_path."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(
+        sess,
+        ip="192.168.1.100",
+        base_path="api/v1"  # No slashes
+    )
+    result = client._build_base_url()
+    assert result == "http://192.168.1.100:5333/api/v1/"
+
+
+async def test_set_device_status_command_without_set_prefix() -> None:
+    """Test set_device_status handles command without 'set' prefix correctly."""
+    sess = MagicMock()
+    mock_response = AsyncMock()
+    mock_response.raise_for_status = MagicMock()
+    sess.get = AsyncMock(return_value=mock_response)
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    result = await client.set_device_status("device1", "AB", "on")
+
+    # Verify URL contains "set/AB/on"
+    called_url = sess.get.call_args[0][0]
+    assert "set/AB/on" in called_url
+    assert result is True
+
