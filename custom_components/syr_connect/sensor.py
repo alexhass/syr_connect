@@ -625,13 +625,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if raw is None:
                         return None
                     # Try to map to internal translation key based on device model
-                    mapped, raw_code = get_sensor_ala_map(status, raw)
-                    if mapped:
-                        # expose internal key (frontend will translate)
-                        self._attr_translation_key = mapped
-                        return mapped
-                    # If model was unknown or no mapping found, return raw value 1:1
                     try:
+                        mapped, raw_code = get_sensor_ala_map(status, raw)
+                        if mapped:
+                            # expose internal key (frontend will translate)
+                            self._attr_translation_key = mapped
+                            return mapped
+                        # If model was unknown or no mapping found, return raw value 1:1
                         sval = str(raw_code)
                         return sval if sval != "" else None
                     except Exception:
@@ -642,11 +642,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     raw = status.get('getNOT')
                     if raw is None:
                         return None
-                    mapped, raw_code = get_sensor_not_map(status, raw)
-                    if mapped:
-                        self._attr_translation_key = mapped
-                        return mapped
                     try:
+                        mapped, raw_code = get_sensor_not_map(status, raw)
+                        if mapped:
+                            self._attr_translation_key = mapped
+                            return mapped
                         sval = str(raw_code)
                         return sval if sval != "" else None
                     except Exception:
@@ -657,11 +657,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     raw = status.get('getWRN')
                     if raw is None:
                         return None
-                    mapped, raw_code = get_sensor_wrn_map(status, raw)
-                    if mapped:
-                        self._attr_translation_key = mapped
-                        return mapped
                     try:
+                        mapped, raw_code = get_sensor_wrn_map(status, raw)
+                        if mapped:
+                            self._attr_translation_key = mapped
+                            return mapped
                         sval = str(raw_code)
                         return sval if sval != "" else None
                     except Exception:

@@ -5158,17 +5158,34 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
 
 
 async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) -> None:
-    """Test exception handler in g etPA group processing."""
+    """Test exception handler in getPA group processing."""
     # Create a coordinator with data that will cause an exception during getPA processing
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
 
-    # Create problematic data where accessing status will raise an exception
-    device_mock = MagicMock()
-    device_mock.__getitem__ = Mock(side_effect=Exception("Test error"))
-    device_mock.get = Mock(side_effect=Exception("Test error"))
+    # Create status mock that raises exception when accessing getPA keys
+    class ProblematicStatus(dict):
+        def get(self, key, default=None):
+            if key.startswith("getPA"):
+                raise Exception("Test error")
+            return super().get(key, default)
+
+        def __getitem__(self, key):
+            if key.startswith("getPA"):
+                raise Exception("Test error")
+            return super().__getitem__(key)
+
+    status = ProblematicStatus()
+    status["getPA1"] = "true"  # Set it before making it raise
 
     coordinator.data = {
-        "devices": [device_mock]
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
     }
     coordinator.last_update_success = True
 
@@ -5192,6 +5209,7 @@ async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) ->
 
     # Should still call add_entities at least once (empty list is ok)
     assert mock_add_entities.called
+
 
 
 async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) -> None:
