@@ -208,6 +208,35 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant, create_mock_en
     assert len(entities) == 0  # No status values, so no selects
 
 
+async def test_async_setup_entry_no_prf_when_all_pa_false(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry does not create PRF select when all getPA values are false or None."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getRTM": "02:30",
+                    "getPA3": "false",
+                    "getPA4": "False",
+                    "getPA5": "FALSE",
+                    "getPA6": None,
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # Should only create regeneration select (no PRF select because no PA is true)
+    prf_entities = [e for e in entities if isinstance(e, SyrConnectPrfSelect)]
+    assert len(prf_entities) == 0
+
+
 async def test_regeneration_select_missing_data(hass: HomeAssistant) -> None:
     """Test regeneration select when RTH/RTM missing."""
     data = {
