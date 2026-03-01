@@ -1557,3 +1557,527 @@ async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) ->
     assert diagnostics["devices"] == []
     assert diagnostics["projects"] == []
 
+
+async def test_diagnostics_raw_json_no_session(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json collection when coordinator has no session."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    # No _session attribute
+    mock_coordinator._session = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should have error message in raw_json
+    assert "raw_json" in diagnostics
+    assert "error" in diagnostics["raw_json"]
+    assert "no http session" in diagnostics["raw_json"]["error"].lower()
+
+
+async def test_diagnostics_raw_json_with_device_url(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json collection with devices that have device_url."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                "ip": "192.168.1.100",
+                "status": {"getWVI": {"value": 100}},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Mock SyrConnectJsonAPI
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api.is_session_valid = MagicMock(return_value=True)
+        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
+        mock_json_api._fetch_json = AsyncMock(return_value={"status": "ok", "data": {"test": "value"}})
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        # Should have collected raw_json
+        assert "raw_json" in diagnostics
+        assert "dev1" in diagnostics["raw_json"]
+
+
+async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json collection when device has no IP."""
+    from unittest.mock import patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                # No ip, getWIP, getEIP, or getIPA
+                "status": {},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api._build_base_url = MagicMock(return_value=None)  # No base URL without IP
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        assert "raw_json" in diagnostics
+
+
+async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json collection when JSON API login fails."""
+    from unittest.mock import AsyncMock, patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                "ip": "192.168.1.100",
+                "status": {},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api.is_session_valid = MagicMock(return_value=False)
+        mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
+        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
+        mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        # Should still attempt fetch even if login fails
+        assert "raw_json" in diagnostics
+
+
+async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json collection when fetch fails."""
+    from unittest.mock import AsyncMock, patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                "ip": "192.168.1.100",
+                "status": {},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api.is_session_valid = MagicMock(return_value=True)
+        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
+        mock_json_api._fetch_json = AsyncMock(side_effect=Exception("Fetch failed"))
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        # Should handle fetch failure gracefully
+        assert "raw_json" in diagnostics
+
+
+async def test_diagnostics_raw_json_device_no_device_url(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json when device has no device_url."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                # No device_url
+                "status": {},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should skip devices without device_url
+    assert "raw_json" in diagnostics
+
+
+async def test_diagnostics_raw_json_exception_handler(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json outer exception handler."""
+    from unittest.mock import patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Make data.get() raise exception
+    mock_coordinator.data = MagicMock()
+    mock_coordinator.data.get = MagicMock(side_effect=RuntimeError("Test error"))
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = MagicMock()
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should have error in raw_json
+    assert "raw_json" in diagnostics
+    assert "error" in diagnostics["raw_json"]
+
+
+async def test_diagnostics_raw_json_device_ip_from_status(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json gets IP from device status."""
+    from unittest.mock import AsyncMock, patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                # IP is in status, not top-level
+                "status": {"getWIP": "192.168.1.100"},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api.is_session_valid = MagicMock(return_value=True)
+        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
+        mock_json_api._fetch_json = AsyncMock(return_value={"status": "ok"})
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        assert "raw_json" in diagnostics
+
+
+async def test_diagnostics_title_redact_exception(hass: HomeAssistant) -> None:
+    """Test diagnostics title redaction exception handling."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="SYR Connect (user@example.com)",  # Title with username
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    # Should have redacted username in title
+    assert "entry" in diagnostics
+    assert "REDACTED_USERNAME" in diagnostics["entry"]["title"]
+
+
+async def test_diagnostics_title_redact_not_string(hass: HomeAssistant) -> None:
+    """Test diagnostics title redaction when title is not string."""
+    from unittest.mock import patch
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title=None,  # Not a string
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    # Should handle non-string title gracefully
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    
+    assert "entry" in diagnostics
+
+
+async def test_diagnostics_raw_json_gather_exception(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json when gather returns exception."""
+    from unittest.mock import AsyncMock, patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                "ip": "192.168.1.100",
+                "status": {},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api.is_session_valid = MagicMock(side_effect=Exception("Test exception"))
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        # Should handle exception in task
+        assert "raw_json" in diagnostics
+
+
+async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> None:
+    """Test diagnostics raw_json when result is not a tuple."""
+    from unittest.mock import AsyncMock, patch, MagicMock
+    
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_session = MagicMock()
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "name": "Device 1",
+                "device_url": "http://192.168.1.100",
+                "ip": "192.168.1.100",
+                "status": {},
+            }
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = mock_session
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_json_api = MagicMock()
+        mock_json_api.is_session_valid = MagicMock(return_value=True)
+        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
+        mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+        mock_json_api_class.return_value = mock_json_api
+        
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        
+        # Result should be properly handled
+        assert "raw_json" in diagnostics
+
