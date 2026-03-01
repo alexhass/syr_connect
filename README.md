@@ -133,7 +133,6 @@ The integration provides comprehensive monitoring of your water softener:
 - **Cloud Dependency**: This integration requires an active internet connection and functioning SYR Connect cloud service
 - **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting
 - **Read-Only Data**: Most sensors are read-only; only regeneration actions can be triggered
-- **Single Account**: Each Home Assistant instance can only connect to one SYR Connect account
 - **No Local API**: The integration uses the cloud API; no local network communication is possible
 
 ## How Data is Updated

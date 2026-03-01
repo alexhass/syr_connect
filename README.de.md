@@ -133,7 +133,6 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 - **Cloud-Abhängigkeit**: Diese Integration benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
 - **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits zu vermeiden
 - **Read-Only Daten**: Die meisten Sensoren sind schreibgeschützt; nur Regenerationsaktionen können ausgelöst werden
-- **Ein Konto pro Instanz**: Jede Home Assistant-Instanz kann nur mit einem SYR Connect-Konto verbunden werden
 - **Keine lokale API**: Die Integration nutzt die Cloud-API; keine lokale Netzwerkkommunikation verfügbar
 
 ## Wie Daten aktualisiert werden
