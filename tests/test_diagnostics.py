@@ -1616,7 +1616,7 @@ async def test_diagnostics_raw_json_with_device_url(hass: HomeAssistant) -> None
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 "ip": "192.168.1.100",
                 "status": {"getWVI": {"value": 100}},
             }
@@ -1669,7 +1669,7 @@ async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 # No ip, getWIP, getEIP, or getIPA
                 "status": {},
             }
@@ -1717,7 +1717,7 @@ async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 "ip": "192.168.1.100",
                 "status": {},
             }
@@ -1769,7 +1769,7 @@ async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 "ip": "192.168.1.100",
                 "status": {},
             }
@@ -1796,7 +1796,7 @@ async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
 
 
 async def test_diagnostics_raw_json_device_no_device_url(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json when device has no device_url."""
+    """Test diagnostics raw_json when device has device_url set to None."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -1818,7 +1818,7 @@ async def test_diagnostics_raw_json_device_no_device_url(hass: HomeAssistant) ->
             {
                 "id": "dev1",
                 "name": "Device 1",
-                # No device_url
+                "device_url": None,
                 "status": {},
             }
         ],
@@ -1832,7 +1832,7 @@ async def test_diagnostics_raw_json_device_no_device_url(hass: HomeAssistant) ->
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    # Should skip devices without device_url
+    # Should skip devices with device_url set to None
     assert "raw_json" in diagnostics
 
 
@@ -1914,7 +1914,7 @@ async def test_diagnostics_raw_json_device_ip_from_status(hass: HomeAssistant) -
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 # IP is in status, not top-level
                 "status": {"getWIP": "192.168.1.100"},
             }
@@ -2025,7 +2025,7 @@ async def test_diagnostics_raw_json_gather_exception(hass: HomeAssistant) -> Non
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 "ip": "192.168.1.100",
                 "status": {},
             }
@@ -2074,7 +2074,7 @@ async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> Non
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "device_url": "http://192.168.1.100",
+                "device_url": "/api/v1/",
                 "ip": "192.168.1.100",
                 "status": {},
             }
