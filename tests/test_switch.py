@@ -68,8 +68,8 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev_no_url", "name": "No URL Device", "device_url": None},  # device_url is None, skip
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},  # Valid
+            {"id": "dev_no_url", "name": "No URL Device", "base_path": None},  # base_path is None, skip
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},  # Valid
         ]
     }
     
@@ -79,15 +79,15 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
     
-    # Should only create entity for device with device_url
+    # Should only create entity for device with base_path
     mock_add_entities.assert_called_once()
     entities = mock_add_entities.call_args[0][0]
     assert len(entities) == 1
     assert entities[0]._device_id == "dev1"
 
 
-async def test_async_setup_entry_no_device_url(hass: HomeAssistant) -> None:
-    """Test setup when devices have device_url set to None."""
+async def test_async_setup_entry_no_base_path(hass: HomeAssistant) -> None:
+    """Test setup when devices have base_path set to None."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -105,7 +105,7 @@ async def test_async_setup_entry_no_device_url(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "name": "Device 1", "device_url": None},  # device_url is None
+            {"id": "dev1", "name": "Device 1", "base_path": None},  # base_path is None
         ]
     }
     
@@ -115,7 +115,7 @@ async def test_async_setup_entry_no_device_url(hass: HomeAssistant) -> None:
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
     
-    # Should not create entities without device_url
+    # Should not create entities without base_path
     mock_add_entities.assert_called_once()
     entities = mock_add_entities.call_args[0][0]
     assert len(entities) == 0
@@ -144,7 +144,7 @@ async def test_async_setup_entry_with_options(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},
         ]
     }
     
@@ -181,7 +181,7 @@ async def test_async_setup_entry_with_in_memory_value(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "dev1",
-                "device_url": "/api/v1/",
+                "base_path": "/api/v1/",
                 "name": "Device 1",
                 _SYR_CONNECT_DEVICE_USE_JSON_API: True,
             },
@@ -219,7 +219,7 @@ async def test_async_setup_entry_default_false(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},
         ]
     }
     
@@ -254,7 +254,7 @@ async def test_async_setup_entry_no_entry_options(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},
         ]
     }
     
@@ -288,7 +288,7 @@ async def test_async_setup_entry_device_no_name(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/"},  # No name
+            {"id": "dev1", "base_path": "/api/v1/"},  # No name
         ]
     }
     
@@ -308,7 +308,7 @@ async def test_async_setup_entry_device_no_name(hass: HomeAssistant) -> None:
 async def test_switch_initialization(hass: HomeAssistant) -> None:
     """Test switch initialization."""
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     
     switch = SyrConnectJsonAPISwitch(
         coordinator=mock_coordinator,
@@ -350,7 +350,7 @@ async def test_switch_turn_on(hass: HomeAssistant) -> None:
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -377,7 +377,7 @@ async def test_switch_turn_off(hass: HomeAssistant) -> None:
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -427,7 +427,7 @@ async def test_switch_set_enabled_with_entry(hass: HomeAssistant) -> None:
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -463,7 +463,7 @@ async def test_switch_set_enabled_entry_no_options(hass: HomeAssistant) -> None:
     mock_entry.options = None
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -495,7 +495,7 @@ async def test_switch_set_enabled_existing_device_settings(hass: HomeAssistant) 
     }
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -524,7 +524,7 @@ async def test_switch_set_enabled_updates_coordinator_device(hass: HomeAssistant
     mock_entry = MagicMock(spec=ConfigEntry)
     mock_entry.options = {}
     
-    device_dict = {"id": "dev1", "name": "Device 1", "device_url": None, _SYR_CONNECT_DEVICE_USE_JSON_API: False}
+    device_dict = {"id": "dev1", "name": "Device 1", "base_path": None, _SYR_CONNECT_DEVICE_USE_JSON_API: False}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {"devices": [device_dict]}
@@ -553,7 +553,7 @@ async def test_switch_set_enabled_device_not_in_coordinator(hass: HomeAssistant)
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "other_dev", "name": "Other Device", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "other_dev", "name": "Other Device", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -579,7 +579,7 @@ async def test_switch_set_enabled_refresh_fails(hass: HomeAssistant) -> None:
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock(side_effect=Exception("Refresh failed"))
     
@@ -606,7 +606,7 @@ async def test_switch_set_enabled_persist_exception(hass: HomeAssistant) -> None
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     
     switch = SyrConnectJsonAPISwitch(
@@ -631,7 +631,7 @@ async def test_switch_set_enabled_outer_exception(hass: HomeAssistant) -> None:
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     
     switch = SyrConnectJsonAPISwitch(
@@ -672,7 +672,7 @@ async def test_async_setup_entry_device_settings_no_device_id(hass: HomeAssistan
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},
         ]
     }
     
@@ -710,7 +710,7 @@ async def test_async_setup_entry_device_use_json_api_none(hass: HomeAssistant) -
         "devices": [
             {
                 "id": "dev1",
-                "device_url": "/api/v1/",
+                "base_path": "/api/v1/",
                 "name": "Device 1",
                 _SYR_CONNECT_DEVICE_USE_JSON_API: None,  # Explicitly None
             },
@@ -749,7 +749,7 @@ async def test_async_setup_entry_empty_device_settings(hass: HomeAssistant) -> N
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},
         ]
     }
     
@@ -771,7 +771,7 @@ async def test_switch_set_enabled_value_false(hass: HomeAssistant) -> None:
     mock_entry.options = {}
     
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "device_url": None}]}
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "base_path": None}]}
     mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
@@ -820,10 +820,10 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            {"id": "dev1", "device_url": "/api/v1/", "name": "Device 1"},
-            {"id": "dev2", "device_url": "/api/v2/", "name": "Device 2", _SYR_CONNECT_DEVICE_USE_JSON_API: True},
-            {"id": "dev3", "device_url": "/api/v3/"},  # No name
-            {"id": "dev4", "device_url": None},  # device_url is None, should be skipped
+            {"id": "dev1", "base_path": "/api/v1/", "name": "Device 1"},
+            {"id": "dev2", "base_path": "/api/v2/", "name": "Device 2", _SYR_CONNECT_DEVICE_USE_JSON_API: True},
+            {"id": "dev3", "base_path": "/api/v3/"},  # No name
+            {"id": "dev4", "base_path": None},  # base_path is None, should be skipped
         ]
     }
     

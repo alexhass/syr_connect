@@ -195,11 +195,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             except Exception:
                 use_json = False
             if use_json:
-                # Only attempt JSON API when a `device_url` is known for the device
+                # Only attempt JSON API when a `base_path` is known for the device
                 ip = device.get('ip') or device.get('getWIP') or device.get('getEIP')
-                device_url = device.get('device_url')
-                if ip and device_url:
-                    json_api = SyrConnectJsonAPI(self._session, ip=ip, device_url=device_url)
+                base_path = device.get('base_path')
+                if ip and base_path:
+                    json_api = SyrConnectJsonAPI(self._session, ip=ip, base_path=base_path)
                     status = await json_api.get_device_status(dclg)
                 else:
                     # Fallback to XML API when JSON API cannot be constructed
@@ -237,30 +237,30 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             device['available'] = True
 
             # Attempt to detect model from the flattened status and set
-            # `device['device_url']` if not already present and the
-            # signature provides a device_url mapping. This allows future
+            # `device['base_path']` if not already present and the
+            # signature provides a base_path mapping. This allows future
             # runs to opt into the local JSON API without using DCLG as
-            # a fallback for the device_url.
+            # a fallback for the base_path.
             try:
                 if isinstance(status, dict):
-                    if not device.get('device_url'):
+                    if not device.get('base_path'):
                         model = detect_model(status)
-                        det_url = model.get('device_url')
+                        det_url = model.get('base_path')
                         if det_url:
-                            # Set detected device_url and expose a per-device
+                            # Set detected base_path and expose a per-device
                             # toggle defaulting to False so the UI can show
                             # an option for devices that actually support it.
-                            device['device_url'] = det_url
+                            device['base_path'] = det_url
                             try:
                                 # Only add the device-level toggle when supported
                                 if _SYR_CONNECT_DEVICE_USE_JSON_API not in device:
                                     device[_SYR_CONNECT_DEVICE_USE_JSON_API] = False
                             except Exception:
                                 pass
-                            _LOGGER.debug("Set device_url for %s to detected value %s", device.get('id'), det_url)
+                            _LOGGER.debug("Set base_path for %s to detected value %s", device.get('id'), det_url)
                         else:
                             # Ensure per-device JSON API flag is not present for devices
-                            # that do not support a device_url (explicit None).
+                            # that do not support a base_path (explicit None).
                             try:
                                 if _SYR_CONNECT_DEVICE_USE_JSON_API in device:
                                     device.pop(_SYR_CONNECT_DEVICE_USE_JSON_API, None)

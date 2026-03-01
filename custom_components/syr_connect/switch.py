@@ -37,8 +37,8 @@ async def async_setup_entry(
     for device in coordinator.data.get('devices', []):
         if not isinstance(device, dict):
             continue
-        # Only create a switch if device supports local JSON API (has device_url)
-        if not device.get('device_url'):
+        # Only create a switch if device supports local JSON API (has base_path)
+        if not device.get('base_path'):
             continue
 
         device_id = str(device.get('id'))

@@ -3,7 +3,7 @@
 This module implements a lightweight client for devices that expose a
 local JSON API at the URL pattern:
 
-    BASE_URL = "http://{ip}:5333/{device_url}/"
+    BASE_URL = "http://{ip}:5333/{base_path}/"
 
 The expected endpoints used here are:
 - GET {BASE_URL}set/ADM/(2)f    -> login (side-effect required before get/all)
@@ -34,20 +34,20 @@ class SyrConnectJsonAPI:
     Args:
         session: aiohttp ClientSession provided by Home Assistant
         ip: IP address of the device (optional if base_url provided)
-        device_url: path component for the device (optional)
-        base_url: explicit base URL (overrides ip/device_url)
+        base_path: path component for the device (optional)
+        base_url: explicit base URL (overrides ip/base_path)
     """
 
     def __init__(
         self,
         session: aiohttp.ClientSession,
         ip: str | None = None,
-        device_url: str | None = None,
+        base_path: str | None = None,
         base_url: str | None = None,
     ) -> None:
         self._session = session
         self._ip = ip
-        self._device_url = device_url
+        self._base_path = base_path
         self._base_url = base_url
         self._last_login: datetime | None = None
         self.projects: list[dict[str, Any]] = []
@@ -55,9 +55,9 @@ class SyrConnectJsonAPI:
     def _build_base_url(self) -> str | None:
         if self._base_url:
             return self._base_url.rstrip("/") + "/"
-        if not self._ip or not self._device_url:
+        if not self._ip or not self._base_path:
             return None
-        return f"http://{self._ip}:{_SYR_CONNECT_JSON_API_PORT}/{self._device_url.strip('/')}/"
+        return f"http://{self._ip}:{_SYR_CONNECT_JSON_API_PORT}/{self._base_path.strip('/')}/"
 
     def is_session_valid(self) -> bool:
         if self._last_login is None:

@@ -223,7 +223,7 @@ async def async_get_config_entry_diagnostics(
     diagnostics_data["raw_xml"] = raw_xml
 
     # Attempt to include raw JSON responses from devices that support
-    # the local JSON API (have a `device_url`). We fetch `/get/all` and
+    # the local JSON API (have a `base_path`). We fetch `/get/all` and
     # redact sensitive keys using `async_redact_data` before including
     # the result in diagnostics.
     raw_json: dict[str, Any] = {}
@@ -238,8 +238,8 @@ async def async_get_config_entry_diagnostics(
         else:
             async def _fetch_device_json(dev: dict[str, Any]):
                 dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
-                device_url = dev.get("device_url")
-                if not device_url:
+                base_path = dev.get("base_path")
+                if not base_path:
                     return dev_id, None
 
                 # Determine IP from device fields or status
@@ -249,7 +249,7 @@ async def async_get_config_entry_diagnostics(
                     status = dev.get("status") or {}
                     ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
 
-                json_api = SyrConnectJsonAPI(session, ip=ip, device_url=device_url)
+                json_api = SyrConnectJsonAPI(session, ip=ip, base_path=base_path)
                 try:
                     # Login is required for some devices
                     try:
@@ -282,7 +282,7 @@ async def async_get_config_entry_diagnostics(
                     async with semaphore:
                         return await _fetch_device_json(dev)
 
-                tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("device_url")]
+                tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("base_path")]
                 if tasks:
                     results = await asyncio.gather(*tasks, return_exceptions=True)
                     for res in results:
