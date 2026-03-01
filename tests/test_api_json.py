@@ -155,12 +155,12 @@ async def test_login_no_base_url_raises() -> None:
 async def test_login_success() -> None:
     """Test login makes GET request and updates session state."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(
         sess,
@@ -181,11 +181,11 @@ async def test_login_success() -> None:
 async def test_login_http_error() -> None:
     """Test login raises exception on HTTP error."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientError("HTTP 401"))
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(
         sess,
@@ -208,12 +208,12 @@ async def test_fetch_json_no_base_url_raises() -> None:
 async def test_fetch_json_non_dict_raises() -> None:
     """Test _fetch_json raises ValueError when response is not a dict."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value=["not", "a", "dict"])
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -224,11 +224,11 @@ async def test_fetch_json_non_dict_raises() -> None:
 async def test_fetch_json_http_error() -> None:
     """Test _fetch_json raises exception on HTTP error."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientError("HTTP 500"))
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -239,12 +239,12 @@ async def test_fetch_json_http_error() -> None:
 async def test_fetch_json_success() -> None:
     """Test _fetch_json returns dict on success."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={"getAB": "value", "getCD": "123"})
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -347,11 +347,11 @@ async def test_set_device_status_no_base_url_raises() -> None:
 async def test_set_device_status_strips_set_prefix() -> None:
     """Test set_device_status strips 'set' prefix from command."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -367,11 +367,11 @@ async def test_set_device_status_strips_set_prefix() -> None:
 async def test_set_device_status_success() -> None:
     """Test set_device_status returns True on success."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -383,11 +383,11 @@ async def test_set_device_status_success() -> None:
 async def test_set_device_status_http_error() -> None:
     """Test set_device_status raises exception on HTTP error."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientError("HTTP 403"))
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -470,11 +470,11 @@ def test_build_base_url_strips_slashes_from_base_path() -> None:
 async def test_set_device_status_command_without_set_prefix() -> None:
     """Test set_device_status handles command without 'set' prefix correctly."""
     sess = MagicMock()
-    mock_response = AsyncMock()
+    mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
-    sess.get = AsyncMock(return_value=mock_response)
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 

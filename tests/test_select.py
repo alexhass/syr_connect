@@ -1635,9 +1635,9 @@ async def test_prf_select_entity_category(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
 
-    # PRF should have entity_category set if in _SYR_CONNECT_SENSOR_CONFIG
+    # PRF is NOT in _SYR_CONNECT_SENSOR_CONFIG, so entity_category should NOT be set
     # This tests line 378
-    assert hasattr(select, '_attr_entity_category')
+    assert not hasattr(select, '_attr_entity_category')
 
 
 async def test_prf_select_options_with_none_pa(hass: HomeAssistant) -> None:
