@@ -186,6 +186,25 @@ def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
     assert get_current_mac(status_eip) == "22:22:22:22:22:22"
 
 
+def test_get_current_mac_non_string_ip_value() -> None:
+    """Test that non-string IP values (int, float, bool, etc.) are treated as present.
+    
+    This covers the case where is_not_empty_ip returns True for non-string values
+    (line 130 in helpers.py).
+    """
+    # IP value as int should be treated as present
+    status_int = {"getIPA": 123456, "getMAC": "AA:BB:CC:DD:EE:FF"}
+    assert get_current_mac(status_int) == "AA:BB:CC:DD:EE:FF"
+
+    # IP value as float should be treated as present
+    status_float = {"getWIP": 192.168, "getMAC1": "11:22:33:44:55:66"}
+    assert get_current_mac(status_float) == "11:22:33:44:55:66"
+
+    # IP value as bool should be treated as present
+    status_bool = {"getEIP": True, "getMAC2": "77:88:99:AA:BB:CC"}
+    assert get_current_mac(status_bool) == "77:88:99:AA:BB:CC"
+
+
 def test_get_sensor_bat_value_variants() -> None:
     """Test parsing of battery voltage in various formats."""
     # Safe-T+ multi-value -> take first token and parse comma as decimal
