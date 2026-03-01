@@ -349,11 +349,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             The converted value with appropriate precision
         """
         # Apply sensor-specific conversions
-        if self._sensor_key == 'getPRS':
-            # Divide pressure by 10 to convert from "dbar" to "bar"
-            value = value / 10
-        elif self._sensor_key == 'getCEL':
+        if self._sensor_key == 'getCEL':
             # getCEL values are provided as 1/10 °C (e.g. 110 -> 11.0°C)
+            value = value / 10
+        elif self._sensor_key == 'getPRS':
+            # Divide pressure by 10 to convert from "dbar" to "bar"
             value = value / 10
         elif self._sensor_key == 'getVOL':
             # API provides total volume in liters; convert to cubic meters (m³)
