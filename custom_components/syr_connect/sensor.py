@@ -546,9 +546,51 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         value,
                     )
 
-                # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
-                if self._sensor_key == 'getVOL' and value is not None:
-                    value = get_sensor_vol_value(value)
+                # Special handling for valve shut-off (getAB): return lowercase string for translations
+                if self._sensor_key == 'getAB':
+                    ab = get_sensor_ab_value(status)
+                    if ab is None:
+                        return None
+                    return "true" if ab else "false"
+
+                # Special handling for getALA: map alarm code to translation key
+                if self._sensor_key == 'getALA':
+                    raw = status.get('getALA')
+                    if raw is None:
+                        return None
+                    # Try to map to internal translation key based on device model
+                    try:
+                        mapped, raw_code = get_sensor_ala_map(status, raw)
+                        if mapped:
+                            # expose internal key (frontend will translate)
+                            self._attr_translation_key = mapped
+                            return mapped
+                        # If model was unknown or no mapping found, return raw value 1:1
+                        sval = str(raw_code)
+                        return sval if sval != "" else None
+                    except Exception:
+                        return None
+
+                # Special handling for alarm sensor: map raw API values to internal keys
+                if self._sensor_key == 'getALM':
+                    raw = status.get('getALM')
+                    raw_str = str(raw) if raw is not None else ""
+
+                    # Try model-aware mapping (same helper used for getALA), then fallback
+                    # to the static getALM value map.
+                    try:
+                        ala_mapped, _ = get_sensor_ala_map(status or {}, raw)
+                    except Exception:
+                        ala_mapped = None
+
+                    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str)
+
+                    mapped = ala_mapped or std_mapped
+                    # Set translation key when available so frontend translates the state
+                    if mapped is not None:
+                        self._attr_translation_key = mapped
+                    # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
+                    return mapped if mapped is not None else (value if value is not None else None)
 
                 # Special handling for current flow rate (getAVO)
                 # Format: "1655mL" - extract numeric value
@@ -576,12 +618,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError):
                         return None
 
-                # TEST: Override getSTA value for manual testing
-                #if self._sensor_key == 'getSTA':
-                    #status['getSTA'] = "Płukanie regenerantem (587mA)"
-                    #status['getSTA'] = "Płukanie szybkie 1"
-                    #status['getSTA'] = "Płukanie wsteczne"
-
                 # Special handling for battery voltage (getBAT)
                 if self._sensor_key == 'getBAT':
                     # Support both formats:
@@ -594,37 +630,25 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     parsed = get_sensor_bat_value(value)
                     return parsed
 
-                # Special handling for regeneration time - expose as `getRTM`:
-                # - If `getRTM` exists and `getRTH` is missing, `getRTM` may contain a combined time string "HH:MM".
-                # - If both `getRTH` and `getRTM` exist as numeric values, combine them as HH:MM.
-                if self._sensor_key == 'getRTM':
-                    # Use helper to parse regeneration time consistently.
-                    return get_sensor_rtm_value(status)
-
-                # Special handling for valve shut-off (getAB): return lowercase string for translations
-                if self._sensor_key == 'getAB':
-                    ab = get_sensor_ab_value(status)
-                    if ab is None:
+                # Special handling for last regeneration timestamp (getLAR): convert unix seconds to datetime object
+                if self._sensor_key == 'getLAR':
+                    if value is None or value == "":
+                        # Return default datetime: 1970-01-01 00:00:00+00:00
                         return None
-                    return "true" if ab else "false"
-
-                # Special handling for getALA: map alarm code to translation key
-                if self._sensor_key == 'getALA':
-                    raw = status.get('getALA')
-                    if raw is None:
-                        return None
-                    # Try to map to internal translation key based on device model
                     try:
-                        mapped, raw_code = get_sensor_ala_map(status, raw)
-                        if mapped:
-                            # expose internal key (frontend will translate)
-                            self._attr_translation_key = mapped
-                            return mapped
-                        # If model was unknown or no mapping found, return raw value 1:1
-                        sval = str(raw_code)
-                        return sval if sval != "" else None
-                    except Exception:
+                        ts = int(float(value))
+                        # Return an aware datetime object (UTC). Home Assistant
+                        # will format this according to the user's timezone/locale.
+                        return datetime.fromtimestamp(ts, UTC)
+                    except (ValueError, TypeError, OverflowError):
                         return None
+
+                # Special handling for getLE sensor: map raw API values to display values
+                if self._sensor_key == 'getLE':
+                    raw = str(status.get('getLE') or "")
+                    mapped = str(_SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw))
+                    # Return mapped display value (e.g. '100', '150', etc.) or raw value as fallback
+                    return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getNOT: map notification codes to translation keys
                 if self._sensor_key == 'getNOT':
@@ -633,21 +657,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return None
                     try:
                         mapped, raw_code = get_sensor_not_map(status, raw)
-                        if mapped:
-                            self._attr_translation_key = mapped
-                            return mapped
-                        sval = str(raw_code)
-                        return sval if sval != "" else None
-                    except Exception:
-                        return None
-
-                # Special handling for getWRN: map warning codes to translation keys
-                if self._sensor_key == 'getWRN':
-                    raw = status.get('getWRN')
-                    if raw is None:
-                        return None
-                    try:
-                        mapped, raw_code = get_sensor_wrn_map(status, raw)
                         if mapped:
                             self._attr_translation_key = mapped
                             return mapped
@@ -680,29 +689,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         except Exception:
                             return sval
 
-                # Special handling for water hardness unit sensor (mapping)
-                if self._sensor_key == 'getWHU':
-                    if isinstance(value, int | float):
-                        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-                    elif isinstance(value, str):
-                        try:
-                            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-                        except (ValueError, TypeError):
-                            return None
-                    return None
-
-                # Special handling for last regeneration timestamp (getLAR): convert unix seconds to datetime object
-                if self._sensor_key == 'getLAR':
-                    if value is None or value == "":
-                        # Return default datetime: 1970-01-01 00:00:00+00:00
-                        return None
-                    try:
-                        ts = int(float(value))
-                        # Return an aware datetime object (UTC). Home Assistant
-                        # will format this according to the user's timezone/locale.
-                        return datetime.fromtimestamp(ts, UTC)
-                    except (ValueError, TypeError, OverflowError):
-                        return None
+                # Special handling for regeneration time - expose as `getRTM`:
+                # - If `getRTM` exists and `getRTH` is missing, `getRTM` may contain a combined time string "HH:MM".
+                # - If both `getRTH` and `getRTM` exist as numeric values, combine them as HH:MM.
+                if self._sensor_key == 'getRTM':
+                    # Use helper to parse regeneration time consistently.
+                    return get_sensor_rtm_value(status)
 
                 # Special handling for regeneration permitted weekdays (getRPW):
                 # The device returns a bitmask where bit 1 = Monday, bit 2 = Tuesday, ... bit 7 = Sunday.
@@ -745,6 +737,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                     return ",".join(parts)
 
+                # TEST: Override getSTA value for manual testing
+                #if self._sensor_key == 'getSTA':
+                    #status['getSTA'] = "Płukanie regenerantem (587mA)"
+                    #status['getSTA'] = "Płukanie szybkie 1"
+                    #status['getSTA'] = "Płukanie wsteczne"
+
                 # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key.
                 # NOTE: Translation placeholders are not supported for entity state strings in the frontend (they are only
                 # available for entity names / labels). See: https://github.com/home-assistant/frontend/issues/29064
@@ -780,33 +778,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     _LOGGER.debug("getSTA mapped=%s", mapped)
                     return mapped
 
-                # Special handling for alarm sensor: map raw API values to internal keys
-                if self._sensor_key == 'getALM':
-                    raw = status.get('getALM')
-                    raw_str = str(raw) if raw is not None else ""
-
-                    # Try model-aware mapping (same helper used for getALA), then fallback
-                    # to the static getALM value map.
-                    try:
-                        ala_mapped, _ = get_sensor_ala_map(status or {}, raw)
-                    except Exception:
-                        ala_mapped = None
-
-                    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str)
-
-                    mapped = ala_mapped or std_mapped
-                    # Set translation key when available so frontend translates the state
-                    if mapped is not None:
-                        self._attr_translation_key = mapped
-                    # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
-                    return mapped if mapped is not None else (value if value is not None else None)
-
-                # Special handling for getLE sensor: map raw API values to display values
-                if self._sensor_key == 'getLE':
-                    raw = str(status.get('getLE') or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw))
-                    # Return mapped display value (e.g. '100', '150', etc.) or raw value as fallback
-                    return mapped if mapped is not None else (raw if raw else None)
+                # Special handling for getT1 and getT2 sensors: map raw API values to display values
+                if self._sensor_key in ('getT1', 'getT2'):
+                    raw = str(status.get(self._sensor_key) or "")
+                    mapped = str(_SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw))
+                    # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
+                    return str(mapped) if mapped is not None else (raw if raw else None)
 
                 # Special handling for getUL sensor: map raw API values to display values
                 if self._sensor_key == 'getUL':
@@ -815,12 +792,35 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
-                # Special handling for getT1 and getT2 sensors: map raw API values to display values
-                if self._sensor_key in ('getT1', 'getT2'):
-                    raw = str(status.get(self._sensor_key) or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw))
-                    # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
-                    return str(mapped) if mapped is not None else (raw if raw else None)
+                # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
+                if self._sensor_key == 'getVOL' and value is not None:
+                    value = get_sensor_vol_value(value)
+
+                # Special handling for water hardness unit sensor (mapping)
+                if self._sensor_key == 'getWHU':
+                    if isinstance(value, int | float):
+                        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
+                    elif isinstance(value, str):
+                        try:
+                            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
+                        except (ValueError, TypeError):
+                            return None
+                    return None
+
+                # Special handling for getWRN: map warning codes to translation keys
+                if self._sensor_key == 'getWRN':
+                    raw = status.get('getWRN')
+                    if raw is None:
+                        return None
+                    try:
+                        mapped, raw_code = get_sensor_wrn_map(status, raw)
+                        if mapped:
+                            self._attr_translation_key = mapped
+                            return mapped
+                        sval = str(raw_code)
+                        return sval if sval != "" else None
+                    except Exception:
+                        return None
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)
                 if self._sensor_key in _SYR_CONNECT_SENSOR_STRING:
