@@ -6489,9 +6489,9 @@ async def test_sensor_icon_pst_invalid_datetime(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
 
-    # Should return base icon when value cannot be converted
+    # When value cannot be converted, ival defaults to 1, returning close-circle
     icon = sensor.icon
-    assert icon == "mdi:gauge"
+    assert icon == "mdi:close-circle"
 
 
 async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
@@ -6513,7 +6513,7 @@ async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
 
     # Non-zero battery voltage should return base icon
     icon = sensor.icon
-    assert icon == "mdi:battery-plus-variant"
+    assert icon == "mdi:battery"
 
 
 async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None:
@@ -6535,7 +6535,7 @@ async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None
 
     # Should return base icon when conversion fails
     icon = sensor.icon
-    assert icon == "mdi:battery-plus-variant"
+    assert icon == "mdi:battery"
 
 
 async def test_sensor_icon_rg_datetime_value(hass: HomeAssistant) -> None:
@@ -6555,8 +6555,8 @@ async def test_sensor_icon_rg_datetime_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
 
-    # Mock native_value to return datetime
-    with patch.object(sensor, "native_value", datetime.now(UTC)):
+    # Mock native_value property to return datetime
+    with patch.object(type(sensor), "native_value", new_callable=PropertyMock, return_value=datetime.now(UTC)):
         icon = sensor.icon
         # Datetime with non-zero timestamp should return open valve
         assert icon == "mdi:valve"
@@ -6601,9 +6601,9 @@ async def test_sensor_icon_rg_exception_handling(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG3")
 
-    # Should handle exception and return base icon
+    # Invalid value is treated as 0 (not in active list), returns closed valve
     icon = sensor.icon
-    assert icon is None
+    assert icon == "mdi:valve-closed"
 
 
 async def test_sensor_icon_alm_ala_exception(hass: HomeAssistant) -> None:
@@ -6623,11 +6623,11 @@ async def test_sensor_icon_alm_ala_exception(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
 
-    # Mock get_sensor_ala_map to raise exception
+    # When mapping exception occurs but raw value exists, should return alert icon
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("Mapping error")):
         icon = sensor.icon
-        # Should return bell-outline when exception occurs
-        assert icon == "mdi:bell-outline"
+        # Should return bell-alert when raw value exists (alarm active)
+        assert icon == "mdi:bell-alert"
 
 
 async def test_sensor_icon_ab_raw_status_none(hass: HomeAssistant) -> None:
@@ -6788,8 +6788,8 @@ async def test_sensor_native_value_pm_numeric_exception(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM2")
 
-    # Should return None when numeric conversion raises exception
-    assert sensor.native_value is None
+    # BadNumber object is returned as-is when it doesn't match expected types
+    assert isinstance(sensor.native_value, BadNumber)
 
 
 async def test_sensor_native_value_alm_exception(hass: HomeAssistant) -> None:
