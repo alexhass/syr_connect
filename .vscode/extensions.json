@@ -3,7 +3,6 @@
     "charliermarsh.ruff",
     "esbenp.prettier-vscode",
     "ms-python.python",
-    "ms-python.mypy-type-checker",
-    "codecov.codecov"
+    "ms-python.mypy-type-checker"
   ]
 }
