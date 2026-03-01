@@ -637,3 +637,195 @@ async def test_switch_set_enabled_getattr_exception(hass: HomeAssistant) -> None
     with patch('builtins.getattr', side_effect=getattr_side_effect):
         # Should handle exception gracefully
         await switch._set_enabled(True)
+
+
+async def test_async_setup_entry_device_settings_no_device_id(hass: HomeAssistant) -> None:
+    """Test setup with device settings that don't contain the device_id."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={"username": "test", "password": "test"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={
+            _SYR_CONNECT_DEVICE_SETTINGS: {
+                "other_dev": {_SYR_CONNECT_DEVICE_USE_JSON_API: True}
+            }
+        },
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},
+        ]
+    }
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    mock_add_entities = MagicMock()
+    
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+    
+    mock_add_entities.assert_called_once()
+    entities = mock_add_entities.call_args[0][0]
+    assert len(entities) == 1
+    # Should default to False when device_id not in settings
+    assert entities[0].is_on is False
+
+
+async def test_async_setup_entry_device_use_json_api_none(hass: HomeAssistant) -> None:
+    """Test setup when device has _SYR_CONNECT_DEVICE_USE_JSON_API set to None."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={"username": "test", "password": "test"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "dev1",
+                "device_url": "http://192.168.1.1",
+                "name": "Device 1",
+                _SYR_CONNECT_DEVICE_USE_JSON_API: None,  # Explicitly None
+            },
+        ]
+    }
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    mock_add_entities = MagicMock()
+    
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+    
+    mock_add_entities.assert_called_once()
+    entities = mock_add_entities.call_args[0][0]
+    assert len(entities) == 1
+    # Should default to False when value is None
+    assert entities[0].is_on is False
+
+
+async def test_async_setup_entry_empty_device_settings(hass: HomeAssistant) -> None:
+    """Test setup when device_settings is empty dict."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={"username": "test", "password": "test"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={_SYR_CONNECT_DEVICE_SETTINGS: {}},  # Empty dict
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},
+        ]
+    }
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    mock_add_entities = MagicMock()
+    
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+    
+    mock_add_entities.assert_called_once()
+    entities = mock_add_entities.call_args[0][0]
+    assert len(entities) == 1
+    assert entities[0].is_on is False
+
+
+async def test_switch_set_enabled_value_false(hass: HomeAssistant) -> None:
+    """Test _set_enabled with False value."""
+    mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.options = {}
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1"}]}
+    mock_coordinator.config_entry = mock_entry
+    mock_coordinator.async_request_refresh = AsyncMock()
+    
+    switch = SyrConnectJsonAPISwitch(
+        coordinator=mock_coordinator,
+        device_id="dev1",
+        device_name="Device 1",
+        initial=True,
+    )
+    switch.hass = hass
+    
+    with patch.object(switch, 'async_write_ha_state') as mock_write_state:
+        with patch.object(hass.config_entries, 'async_update_entry') as mock_update:
+            await switch._set_enabled(False)
+            
+            assert switch.is_on is False
+            mock_update.assert_called_once()
+            mock_write_state.assert_called_once()
+            
+            # Verify False value is persisted
+            call_args = mock_update.call_args
+            options = call_args[1]['options']
+            assert options[_SYR_CONNECT_DEVICE_SETTINGS]["dev1"][_SYR_CONNECT_DEVICE_USE_JSON_API] is False
+
+
+async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
+    """Test setup with multiple devices with different configurations."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={"username": "test", "password": "test"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={
+            _SYR_CONNECT_DEVICE_SETTINGS: {
+                "dev1": {_SYR_CONNECT_DEVICE_USE_JSON_API: True}
+            }
+        },
+        subentries_data={},
+    )
+    
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},
+            {"id": "dev2", "device_url": "http://192.168.1.2", "name": "Device 2", _SYR_CONNECT_DEVICE_USE_JSON_API: True},
+            {"id": "dev3", "device_url": "http://192.168.1.3"},  # No name
+            {"id": "dev4"},  # No device_url, should be skipped
+        ]
+    }
+    
+    config_entry.runtime_data = mock_coordinator
+    
+    mock_add_entities = MagicMock()
+    
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+    
+    mock_add_entities.assert_called_once()
+    entities = mock_add_entities.call_args[0][0]
+    assert len(entities) == 3  # dev4 skipped
+    assert entities[0].is_on is True  # dev1 from options
+    assert entities[1].is_on is True  # dev2 from device
+    assert entities[2].is_on is False  # dev3 default
