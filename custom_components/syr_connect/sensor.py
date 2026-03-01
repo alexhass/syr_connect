@@ -384,9 +384,23 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         - Salt stock: full/half/empty cup based on level
         - Remaining capacity: gauge-empty/low/full based on percentage
         """
-        # Dynamic icon for alarm sensors (getALM and getALA): simplified
+        # Dynamic icon for valve shut-off (getAB) - use boolean parsing
+        if self._sensor_key == "getAB":
+            # Read raw status for this device and parse as boolean
+            raw_status = None
+            for device in self.coordinator.data.get('devices', []):
+                if device['id'] == self._device_id:
+                    raw_status = device.get('status', {})
+                    break
+            ab = get_sensor_ab_value(raw_status or {})
+            if ab is None:
+                return self._base_icon
+            # True -> closed, False -> open
+            return "mdi:valve-closed" if ab else "mdi:valve-open"
+
+        # Dynamic icon for alarm sensors (getALA and getALM): simplified
         # Rule: only 'no_alarm' is considered non-alarm; everything else is an alarm.
-        if self._sensor_key in ("getALM", "getALA"):
+        if self._sensor_key in ("getALA", "getALM"):
             raw = None
             raw_status = None
             for device in self.coordinator.data.get('devices', []):
@@ -410,6 +424,43 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             if mapped == "no_alarm" or raw is None or (isinstance(raw, str) and str(raw).strip() == ""):
                 return "mdi:bell-outline"
             return "mdi:bell-alert"
+
+        # Dynamic icon for battery voltage (getBAT)
+        if self._sensor_key == "getBAT":
+            val = self.native_value
+            if val is None:
+                return self._base_icon
+            # Normalize to string and try converting to float once.
+            sval = str(val).strip()
+            try:
+                if float(sval) == 0:
+                    return "mdi:battery-alert-variant-outline"
+            except (TypeError, ValueError):
+                pass
+
+        # Dynamic icon for pressure sensor availability (getPST)
+        if self._sensor_key == "getPST":
+            try:
+                val = self.native_value
+                # native_value may be numeric or string; normalize to int when possible
+                if val is None:
+                    return self._base_icon
+                try:
+                    if isinstance(val, datetime):
+                        ival = int(val.timestamp())
+                    else:
+                        ival = int(float(val))
+                except (TypeError, ValueError):
+                    ival = 1
+                # Values:
+                # 1 -> Not available
+                # 2 -> Available
+                if ival == 2:
+                    return "mdi:check-circle"
+                if ival == 1:
+                    return "mdi:close-circle"
+            except Exception:
+                pass
 
         # Dynamic icon for regeneration active sensor
         if self._sensor_key == "getSRE":
@@ -440,20 +491,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except Exception:
                 pass
 
-        # Dynamic icon for valve shut-off (getAB) - use boolean parsing
-        if self._sensor_key == "getAB":
-            # Read raw status for this device and parse as boolean
-            raw_status = None
-            for device in self.coordinator.data.get('devices', []):
-                if device['id'] == self._device_id:
-                    raw_status = device.get('status', {})
-                    break
-            ab = get_sensor_ab_value(raw_status or {})
-            if ab is None:
-                return self._base_icon
-            # True -> closed, False -> open
-            return "mdi:valve-closed" if ab else "mdi:valve-open"
-
         # Dynamic icon for valve status (getVLV)
         if self._sensor_key == "getVLV":
             val = self.native_value
@@ -469,43 +506,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             elif str(val) == "21":
                 return "mdi:valve"  # opening in progress
             return self._base_icon
-
-        # Dynamic icon for pressure sensor availability (getPST)
-        if self._sensor_key == "getPST":
-            try:
-                val = self.native_value
-                # native_value may be numeric or string; normalize to int when possible
-                if val is None:
-                    return self._base_icon
-                try:
-                    if isinstance(val, datetime):
-                        ival = int(val.timestamp())
-                    else:
-                        ival = int(float(val))
-                except (TypeError, ValueError):
-                    ival = 1
-                # Values:
-                # 1 -> Not available
-                # 2 -> Available
-                if ival == 2:
-                    return "mdi:check-circle"
-                if ival == 1:
-                    return "mdi:close-circle"
-            except Exception:
-                pass
-
-        # Dynamic icon for battery voltage (getBAT)
-        if self._sensor_key == "getBAT":
-            val = self.native_value
-            if val is None:
-                return self._base_icon
-            # Normalize to string and try converting to float once.
-            sval = str(val).strip()
-            try:
-                if float(sval) == 0:
-                    return "mdi:battery-alert-variant-outline"
-            except (TypeError, ValueError):
-                pass
 
         # Return base icon for all other sensors
         return self._base_icon
