@@ -68,7 +68,8 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            "not a dict",  # Invalid device
+            123,  # Invalid device (not a dict)
+            ["list"],  # Also invalid
             {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},
         ]
     }
@@ -345,10 +346,12 @@ async def test_switch_is_on_property(hass: HomeAssistant) -> None:
 
 async def test_switch_turn_on(hass: HomeAssistant) -> None:
     """Test switch turn_on method."""
+    mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.options = {}
+    
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1"}]}
-    mock_coordinator.config_entry = MagicMock()
-    mock_coordinator.config_entry.options = {}
+    mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
     switch = SyrConnectJsonAPISwitch(
@@ -360,18 +363,22 @@ async def test_switch_turn_on(hass: HomeAssistant) -> None:
     switch.hass = hass
     
     with patch.object(switch, 'async_write_ha_state') as mock_write_state:
-        await switch.async_turn_on()
-        
-        assert switch.is_on is True
-        mock_write_state.assert_called_once()
+        with patch.object(hass.config_entries, 'async_update_entry') as mock_update:
+            await switch.async_turn_on()
+            
+            assert switch.is_on is True
+            mock_write_state.assert_called_once()
+            mock_update.assert_called_once()
 
 
 async def test_switch_turn_off(hass: HomeAssistant) -> None:
     """Test switch turn_off method."""
+    mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.options = {}
+    
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1"}]}
-    mock_coordinator.config_entry = MagicMock()
-    mock_coordinator.config_entry.options = {}
+    mock_coordinator.config_entry = mock_entry
     mock_coordinator.async_request_refresh = AsyncMock()
     
     switch = SyrConnectJsonAPISwitch(
@@ -383,10 +390,12 @@ async def test_switch_turn_off(hass: HomeAssistant) -> None:
     switch.hass = hass
     
     with patch.object(switch, 'async_write_ha_state') as mock_write_state:
-        await switch.async_turn_off()
-        
-        assert switch.is_on is False
-        mock_write_state.assert_called_once()
+        with patch.object(hass.config_entries, 'async_update_entry') as mock_update:
+            await switch.async_turn_off()
+            
+            assert switch.is_on is False
+            mock_write_state.assert_called_once()
+            mock_update.assert_called_once()
 
 
 async def test_switch_set_enabled_no_entry(hass: HomeAssistant) -> None:
@@ -616,15 +625,14 @@ async def test_switch_set_enabled_persist_exception(hass: HomeAssistant) -> None
         # Just verify no exception is raised
 
 
-async def test_switch_set_enabled_getattr_exception(hass: HomeAssistant) -> None:
-    """Test _set_enabled handles exceptions from getattr."""
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+async def test_switch_set_enabled_outer_exception(hass: HomeAssistant) -> None:
+    """Test _set_enabled handles outer exception gracefully."""
+    mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.options = {}
     
-    # Make getattr raise exception
-    def getattr_side_effect(obj, attr, default=None):
-        if attr == "config_entry":
-            raise RuntimeError("Test exception")
-        return default
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1"}]}
+    mock_coordinator.config_entry = mock_entry
     
     switch = SyrConnectJsonAPISwitch(
         coordinator=mock_coordinator,
@@ -634,9 +642,11 @@ async def test_switch_set_enabled_getattr_exception(hass: HomeAssistant) -> None
     )
     switch.hass = hass
     
-    with patch('builtins.getattr', side_effect=getattr_side_effect):
-        # Should handle exception gracefully
+    # Make async_update_entry raise an exception to trigger outer exception handler
+    with patch.object(hass.config_entries, 'async_update_entry', side_effect=Exception("Test exception")):
+        # Should handle exception gracefully and not raise
         await switch._set_enabled(True)
+        # The state may or may not be updated depending on where exception occurs
 
 
 async def test_async_setup_entry_device_settings_no_device_id(hass: HomeAssistant) -> None:

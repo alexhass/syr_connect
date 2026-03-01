@@ -1854,19 +1854,37 @@ async def test_diagnostics_raw_json_exception_handler(hass: HomeAssistant) -> No
         subentries_data={},
     )
     
+    # Create a mock that will fail during attribute access in raw_json section
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Make data.get() raise exception
-    mock_coordinator.data = MagicMock()
-    mock_coordinator.data.get = MagicMock(side_effect=RuntimeError("Test error"))
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = MagicMock()
+    
+    # Set up data that works initially but causes issues later
+    call_count = [0]
+    
+    def get_side_effect(key, default=None):
+        call_count[0] += 1
+        # First call (for final device/project section) works
+        if call_count[0] == 1:
+            return []
+        # Second call (if any) raises exception
+        raise RuntimeError("Test error")
+    
+    mock_data = {"devices": [], "projects": []}
+    # Make the mock return a special object that raises on getattr
+    mock_coordinator.data = mock_data
+    
+    # Make _session raise an exception to trigger the raw_json exception handler
+    def session_property_get(self):
+        raise RuntimeError("Session access error")
+    
+    type(mock_coordinator)._session = property(session_property_get)
     
     config_entry.runtime_data = mock_coordinator
     
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
     
-    # Should have error in raw_json
+    # Should have error in raw_json due to exception during session access
     assert "raw_json" in diagnostics
     assert "error" in diagnostics["raw_json"]
 
