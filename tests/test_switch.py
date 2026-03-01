@@ -68,8 +68,8 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
-            123,  # Invalid device (not a dict)
-            ["list"],  # Also invalid
+            "string_device",  # String (not a dict)
+            None,  # None (not a dict)
             {"id": "dev1", "device_url": "http://192.168.1.1", "name": "Device 1"},
         ]
     }
