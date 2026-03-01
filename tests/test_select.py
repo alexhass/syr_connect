@@ -4,16 +4,16 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.select import (
     SyrConnectNumericSelect,
-    SyrConnectRegenerationSelect,
     SyrConnectPrfSelect,
-    async_setup_entry,
+    SyrConnectRegenerationSelect,
     _build_time_options,
+    async_setup_entry,
 )
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -180,9 +180,9 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should create regeneration time select + salt select + RPD select
     assert len(entities) >= 3
 
@@ -201,9 +201,9 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant, create_mock_en
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should only create regeneration select (always created if getRTH/getRTM exist)
     assert len(entities) == 0  # No status values, so no selects
 
@@ -396,7 +396,7 @@ async def test_numeric_select_without_unit(hass: HomeAssistant) -> None:
     # getRPD typically has "days" unit, but test without
     with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNIT", {}):
         select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getRPD", 1, 4, 1)
-        
+
         # Options should be plain numbers
         assert "1" in select.options
 
@@ -522,13 +522,13 @@ async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant, create_mo
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should only create select for getSV2 (getSV1 is zero)
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     sv2_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV2']
-    
+
     assert len(sv1_entities) == 0  # Skipped because value is 0
     assert len(sv2_entities) == 1  # Created
 
@@ -537,9 +537,9 @@ async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_
     """Test async_setup_entry with no coordinator data."""
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(None)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should return early with no entities
     assert len(entities) == 0
 
@@ -842,13 +842,13 @@ async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant, creat
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should only create select for getSV2
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     sv2_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV2']
-    
+
     assert len(sv1_entities) == 0
     assert len(sv2_entities) == 1
 
@@ -870,19 +870,19 @@ async def test_async_setup_entry_skip_none_sv_values(hass: HomeAssistant, create
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should only create select for getSV2
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
-    
+
     assert len(sv1_entities) == 0
 
 
 async def test_async_setup_entry_skip_invalid_float_sv_values(hass: HomeAssistant) -> None:
     """Test async_setup_entry skips invalid float salt values."""
     mock_config_entry = MockConfigEntry()
-    
+
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
         "devices": [
@@ -898,15 +898,15 @@ async def test_async_setup_entry_skip_invalid_float_sv_values(hass: HomeAssistan
         ]
     }
     mock_config_entry.runtime_data = mock_coordinator
-    
+
     entities = []
     async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should only create select for getSV2
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
-    
+
     assert len(sv1_entities) == 0
 
 
@@ -926,9 +926,9 @@ async def test_async_setup_entry_skip_zero_rpd(hass: HomeAssistant, create_mock_
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should not create RPD select
     rpd_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getRPD']
     assert len(rpd_entities) == 0
@@ -950,9 +950,9 @@ async def test_async_setup_entry_skip_empty_rpd(hass: HomeAssistant, create_mock
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should not create RPD select
     rpd_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getRPD']
     assert len(rpd_entities) == 0
@@ -974,9 +974,9 @@ async def test_async_setup_entry_skip_none_rpd(hass: HomeAssistant, create_mock_
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should not create RPD select
     rpd_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getRPD']
     assert len(rpd_entities) == 0
@@ -998,9 +998,9 @@ async def test_async_setup_entry_skip_invalid_rpd(hass: HomeAssistant, create_mo
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should not create RPD select
     rpd_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getRPD']
     assert len(rpd_entities) == 0
@@ -1024,9 +1024,9 @@ async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant, crea
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Find the getSV1 select entity
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     assert len(sv1_entities) == 1
@@ -1049,9 +1049,9 @@ async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, crea
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should use default capacity (25) for unknown model
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     assert len(sv1_entities) == 1
@@ -1072,15 +1072,15 @@ async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> No
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     # Mock a unit that raises exception when converted to string
     class BadUnit:
         def __str__(self):
             raise ValueError("Cannot convert to string")
-    
+
     with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNIT", {"getSV1": BadUnit()}):
         select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getSV1", 0, 25, 1)
-        
+
         # Should fall back to no unit label
         assert "0" in select.options
         assert "25" in select.options
@@ -1106,20 +1106,20 @@ async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant, create_mo
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
-    
+
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    
+
     # Should create select for all 3 SV keys
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     sv2_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV2']
     sv3_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV3']
-    
+
     assert len(sv1_entities) == 1
     assert len(sv2_entities) == 1
     assert len(sv3_entities) == 1
 
 
-async def test_regeneration_select_combined_mode_sends_only_setRTM(hass: HomeAssistant) -> None:
+async def test_regeneration_select_combined_mode_sends_only_set_rtm(hass: HomeAssistant) -> None:
     """When device reports combined getRTM (HH:MM) and no getRTH, selection should send only setRTM as string."""
     data = {
         "devices": [
@@ -1150,7 +1150,6 @@ async def test_regeneration_select_combined_mode_sends_only_setRTM(hass: HomeAss
 async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities):
     """Ensure async_setup_entry removes previously-registered excluded selects from the registry."""
     from custom_components.syr_connect import select as select_module
-    from custom_components.syr_connect.helpers import build_entity_id
 
     device_id = "device_del"
     data = {"devices": [{"id": device_id, "name": "Device Del", "status": {}}]}
@@ -1177,60 +1176,13 @@ async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssist
     assert mock_registry.async_remove.called
 
 
-async def test_regeneration_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
-    """Ensure async_select_option handles exceptions from coordinator.set calls."""
-    data = {
-        "devices": [
-            {
-                "id": "device_exc",
-                "name": "Device Exc",
-                "project_id": "project1",
-                "status": {
-                    "getRTH": "2",
-                    "getRTM": "30",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    select = SyrConnectRegenerationSelect(coordinator, "device_exc", "Device Exc")
-
-    # Make coordinator raise when trying to set values; ensure method is patched
-    with patch.object(coordinator, "async_set_device_value", AsyncMock(side_effect=Exception("boom"))) as m:
-        # Should not raise despite underlying coordinator exception
-        await select.async_select_option("03:45")
-        assert m.await_count >= 1
-
-
-async def test_numeric_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
-    """Ensure numeric select handles exceptions from coordinator.set calls."""
-    data = {
-        "devices": [
-            {
-                "id": "device_num_exc",
-                "name": "Device Num Exc",
-                "project_id": "project1",
-                "status": {
-                    "getSV1": "5",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    select = SyrConnectNumericSelect(coordinator, "device_num_exc", "Device Num Exc", "getSV1", 0, 10, 1)
-
-    with patch.object(coordinator, "async_set_device_value", AsyncMock(side_effect=Exception("boom"))) as m:
-        # Should not raise despite underlying coordinator exception when selecting valid option
-        await select.async_select_option("3 kg")
-        assert m.await_count >= 1
-
-
 def test_build_time_options_step_60_additional():
     """Build time options with 60-minute step (additional coverage)."""
     opts = _build_time_options(60)
     assert len(opts) == 24
     assert opts[0] == "00:00"
     assert opts[-1] == "23:00"
+
 
 
 async def test_regeneration_select_current_and_select_with_mock(create_mock_coordinator, hass):
@@ -1291,3 +1243,291 @@ def test_availability_properties_with_mock(create_mock_coordinator):
     assert regen.available is False
     assert numeric.available is False
     assert prf.available is False
+
+
+async def test_prf_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
+    """Ensure exceptions from coordinator are caught when setting PRF."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    async def raiser(*args, **kwargs):
+        raise Exception("boom")
+
+    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    # Should not raise despite coordinator raising internally
+    await select.async_select_option("Profile A")
+
+
+async def test_prf_select_invalid_current_option_conversion(hass: HomeAssistant) -> None:
+    """Test PRF select when getPRF cannot be converted to int."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "invalid",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option is None
+
+
+async def test_prf_select_profile_not_found(hass: HomeAssistant) -> None:
+    """Test PRF select when selected profile is not found."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    # Try to select a profile that doesn't exist
+    await select.async_select_option("Profile B")
+
+    # Should not call async_set_device_value when profile not found
+    coordinator.async_set_device_value.assert_not_called()
+
+
+async def test_prf_select_unavailable_coordinator(hass: HomeAssistant) -> None:
+    """Test PRF select unavailable when coordinator fails."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.available is False
+
+
+async def test_prf_select_device_unavailable(hass: HomeAssistant) -> None:
+    """Test PRF select unavailable when device unavailable."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "available": False,
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.available is False
+
+
+async def test_prf_select_device_not_found_in_current_option(hass: HomeAssistant) -> None:
+    """Test PRF select returns None when device not found."""
+    data = {
+        "devices": [
+            {
+                "id": "device2",
+                "name": "Device 2",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option is None
+
+
+async def test_prf_select_device_not_found_in_available(hass: HomeAssistant) -> None:
+    """Test PRF select available returns True when device not found."""
+    data = {
+        "devices": [
+            {
+                "id": "device2",
+                "name": "Device 2",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.available is True
+
+
+async def test_prf_select_empty_prf_value(hass: HomeAssistant) -> None:
+    """Test PRF select when getPRF is empty string."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": "",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option is None
+
+
+async def test_prf_select_none_prf_value(hass: HomeAssistant) -> None:
+    """Test PRF select when getPRF is None."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPRF": None,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option is None
+
+
+async def test_prf_select_multiple_profiles(hass: HomeAssistant) -> None:
+    """Test PRF select with multiple enabled profiles."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPA2": "true",
+                    "getPN2": "Profile B",
+                    "getPA3": "false",
+                    "getPN3": "Profile C",
+                    "getPRF": "2",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert "Profile A" in select.options
+    assert "Profile B" in select.options
+    assert "Profile C" not in select.options
+    assert select.current_option == "Profile B"
+
+
+async def test_prf_select_option_selection(hass: HomeAssistant) -> None:
+    """Test PRF select option selection."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPN1": "Profile A",
+                    "getPA2": "true",
+                    "getPN2": "Profile B",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    await select.async_select_option("Profile B")
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setPRF", 2)
+
+
+async def test_prf_select_missing_profile_name(hass: HomeAssistant) -> None:
+    """Test PRF select when profile name (getPN) is missing, fallback to index."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "true",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    # Should use "1" as fallback when getPN1 is missing
+    assert "1" in select.options
+
+    # Current option should be None because getPN1 is missing
+    assert select.current_option is None
