@@ -16,6 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 # fingerprint keys where a threshold of matches is required.
 #
 # Signature fields summary:
+# - `base_path`: json api local access base path for the model or None if not applicable
 # - `cna_equals`: exact match against `getCNA` value (if present)
 # - `ver_prefix` / `ver_contains`: require `getVER` to match the prefix or contain
 # - `attrs_equals`: dict of `getX` -> value pairs that must all match
@@ -132,11 +133,13 @@ def detect_model(flat: dict[str, object]) -> dict:
         return True
 
     for sig in MODEL_SIGNATURES:
+        base_path = sig.get("base_path")
         name = sig.get("name")
         display = sig.get("display_name", name)
         _LOGGER.debug(
-            "detect_model: testing signature %s (cna_equals=%s ver_prefix=%s ver_contains=%s v_keys=%s attrs=%s v_keys_required=%s)",
+            "detect_model: testing signature %s (base_path=%s cna_equals=%s ver_prefix=%s ver_contains=%s v_keys=%s attrs=%s v_keys_required=%s)",
             name,
+            base_path,
             sig.get("cna_equals"),
             sig.get("ver_prefix"),
             sig.get("ver_contains"),
@@ -148,7 +151,7 @@ def detect_model(flat: dict[str, object]) -> dict:
         # 1) explicit CNA match wins immediately
         if sig.get("cna_equals") and cna == sig.get("cna_equals"):
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            result = {"name": name, "display_name": display, "base_path": sig.get("base_path")}
+            result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
         # 2) attributes must match if provided; if attrs are required and
@@ -168,19 +171,19 @@ def detect_model(flat: dict[str, object]) -> dict:
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            result = {"name": name, "display_name": display, "base_path": sig.get("base_path")}
+            result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
         # 4) no v_keys: if attrs were present and matched, we've already
         # satisfied detection above. Otherwise fall back to version checks.
         if sig.get("attrs_equals"):
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            result = {"name": name, "display_name": display, "base_path": sig.get("base_path")}
+            result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and version_match(sig):
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            result = {"name": name, "display_name": display, "base_path": sig.get("base_path")}
+            result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
