@@ -20,7 +20,7 @@ from custom_components.syr_connect.helpers import (
 def test_build_entity_id() -> None:
     """Test entity ID building."""
     entity_id = build_entity_id("sensor", "DEVICE123", "getPRS")
-    
+
     assert entity_id == "sensor.syr_connect_device123_getprs"
 
 
@@ -40,9 +40,9 @@ def test_build_device_info() -> None:
             }
         ]
     }
-    
+
     device_info = build_device_info("DEVICE123", "Test Device", coordinator_data)
-    
+
     assert device_info["name"] == "Test Device"
     assert device_info["manufacturer"] == "SYR"
     assert device_info["model"] == "LEX Plus 10 S Connect"
@@ -63,9 +63,9 @@ def test_build_device_info_minimal() -> None:
             }
         ]
     }
-    
+
     device_info = build_device_info("DEVICE123", "Test Device", coordinator_data)
-    
+
     assert device_info["name"] == "Test Device"
     assert device_info["manufacturer"] == "SYR"
     assert device_info["model"] == "Unknown model"  # Fallback
@@ -79,19 +79,19 @@ def test_get_sensor_avo_value() -> None:
     assert get_sensor_avo_value("0mL") == 0.0
     assert get_sensor_avo_value("999mL") == 0.999
     assert get_sensor_avo_value("1000mL") == 1.0
-    
+
     # Test numeric inputs - treated as mL and converted to L
     assert get_sensor_avo_value(1655) == 1.655
     assert get_sensor_avo_value(0) == 0.0
     assert get_sensor_avo_value(100.5) == 0.1005
-    
+
     # Test None input
     assert get_sensor_avo_value(None) is None
-    
+
     # Test fallback: extract number at start and convert to L
     assert get_sensor_avo_value("1655") == 1.655
     assert get_sensor_avo_value("100abc") == 0.1
-    
+
     # Test invalid inputs
     assert get_sensor_avo_value("mL") is None
     assert get_sensor_avo_value("abc") is None
@@ -188,7 +188,7 @@ def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
 
 def test_get_current_mac_non_string_ip_value() -> None:
     """Test that non-string IP values (int, float, bool, etc.) are treated as present.
-    
+
     This covers the case where is_not_empty_ip returns True for non-string values
     (line 130 in helpers.py).
     """
@@ -334,6 +334,27 @@ def test_get_sensor_ab_string_numeric_edge() -> None:
     """Cover numeric-string branch for getAB ('1' -> False)."""
 
     assert get_sensor_ab_value({"getAB": "1"}) is False
+
+
+def test_get_sensor_ab_invalid_numeric_values() -> None:
+    """Test that invalid numeric values (0, 3, etc.) return None (line 399 in helpers.py).
+
+    Valid values are 1 (open) and 2 (closed). Any other numeric value should return None.
+    """
+    # Test with int 0 (invalid value)
+    assert get_sensor_ab_value({"getAB": 0}) is None
+
+    # Test with int 3 (invalid value)
+    assert get_sensor_ab_value({"getAB": 3}) is None
+
+    # Test with other invalid int values
+    assert get_sensor_ab_value({"getAB": 5}) is None
+    assert get_sensor_ab_value({"getAB": 100}) is None
+
+    # Test with numeric string invalid values
+    assert get_sensor_ab_value({"getAB": "0"}) is None
+    assert get_sensor_ab_value({"getAB": "3"}) is None
+    assert get_sensor_ab_value({"getAB": "999"}) is None
 
 
 def test_mapping_none_inputs() -> None:
