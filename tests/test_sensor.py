@@ -6926,3 +6926,320 @@ async def test_sensor_native_value_vol_exception(hass: HomeAssistant) -> None:
         value = sensor.native_value
         # Will fail at division, but apply_numeric_conversion should handle it
         assert value is not None
+
+
+async def test_is_true_with_non_standard_type(hass: HomeAssistant) -> None:
+    """Test _is_true with non-standard types (dict, list, etc.) returns False."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": {"key": "value"},  # Dict should return False
+                },
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add_entities = Mock()
+
+    # Dict type should be treated as False by _is_true
+    await async_setup_entry(hass, entry, mock_add_entities)
+
+    # Should complete without raising exception, PA group sensors should not be created
+    assert mock_add_entities.called
+    entities = mock_add_entities.call_args[0][0]
+    # PA1 dict value treated as False, so no getPA1 group members created
+    pa_group_keys = ["getPA1", "getPV1", "getPT1", "getPF1", "getPN1", "getPM1", "getPW1", "getPB1", "getPR1"]
+    created_keys = [e._sensor_key for e in entities]
+    for key in pa_group_keys:
+        assert key not in created_keys
+
+
+async def test_getbat_with_invalid_type(hass: HomeAssistant) -> None:
+    """Test getBAT with value that is not str/int/float returns None."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": ["not", "valid"],  # List is not str/int/float
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    # Should return None for invalid type
+    assert sensor.native_value is None
+
+
+async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
+    """Test exception handling during getPA group processing."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+
+    # Create a mock value that will cause exception during _is_true evaluation
+    class ProblematicValue:
+        def __bool__(self):
+            raise RuntimeError("Unexpected error during boolean evaluation")
+
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": ProblematicValue(),
+                },
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add_entities = Mock()
+
+    # Should handle exception in PA group processing gracefully
+    await async_setup_entry(hass, entry, mock_add_entities)
+
+    # Should complete despite exception
+    assert mock_add_entities.called
+
+
+async def test_registry_remove_exception(hass: HomeAssistant) -> None:
+    """Test exception handling when removing sensor from registry fails."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "0",  # False, should try to remove group sensors
+                },
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    # Create mock registry with entity that exists
+    registry = MagicMock()
+    mock_entry = MagicMock()
+    mock_entry.entity_id = "sensor.syr_connect_device1_getpa1"
+    registry.async_get.return_value = mock_entry
+    # Make async_remove raise exception
+    registry.async_remove.side_effect = Exception("Registry error")
+
+    mock_add_entities = Mock()
+
+    with patch("custom_components.syr_connect.sensor.async_get", return_value=registry):
+        # Should handle exception when removing from registry
+        await async_setup_entry(hass, entry, mock_add_entities)
+
+        # Should complete despite exception
+        assert mock_add_entities.called
+
+
+async def test_getcs_with_getsv_value_error(hass: HomeAssistant) -> None:
+    """Test getCS sensor when getSV value cannot be converted to float (ValueError)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": 0,  # Zero value
+                    "getSV1": "not-a-number",  # Cannot convert to float
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    # getCS1 should be excluded because getSV1 is invalid and getCS1 is zero
+    state = hass.states.get("sensor.syr_connect_device1_getcs1")
+    assert state is None
+
+
+async def test_getcs_with_getsv_type_error(hass: HomeAssistant) -> None:
+    """Test getCS sensor when getSV value causes TypeError during float conversion."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS2": "0",  # String zero value
+                    "getSV2": None,  # None causes TypeError in float()
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    # getCS2 should be excluded because getSV2 is None (TypeError) and getCS2 is zero
+    state = hass.states.get("sensor.syr_connect_device2_getcs2")
+    assert state is None
+
+
+async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
+    """Test _is_true with list type returns False."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA2": [1, 2, 3],  # List should return False
+                    "someOtherKey": "value",  # Ensure device is not empty
+                },
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add_entities = Mock()
+
+    # List type should be treated as False by _is_true
+    await async_setup_entry(hass, entry, mock_add_entities)
+
+    assert mock_add_entities.called
+    entities = mock_add_entities.call_args[0][0]
+    # PA2 list value treated as False, so no getPA2 group members should be created
+    pa2_group_keys = ["getPA2", "getPV2", "getPT2", "getPF2", "getPN2", "getPM2", "getPW2", "getPB2", "getPR2"]
+    created_keys = [e._sensor_key for e in entities]
+    for key in pa2_group_keys:
+        assert key not in created_keys
+
+
+async def test_getcs_with_missing_getsv_int_zero(hass: HomeAssistant) -> None:
+    """Test getCS (int zero) is excluded when corresponding getSV is missing."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS3": 0,  # Int zero, no getSV3
+                    "someOther": "value",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    # getCS3 should be excluded because getSV3 is missing and getCS3 is zero
+    state = hass.states.get("sensor.syr_connect_device1_getcs3")
+    assert state is None
+
+
+async def test_getcs_with_getsv_zero_int(hass: HomeAssistant) -> None:
+    """Test getCS is excluded when getSV is int zero and getCS is also zero."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS1": 0,
+                    "getSV1": 0,  # Int zero
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    # getCS1 should be excluded because getSV1 is zero and getCS1 is zero
+    state = hass.states.get("sensor.syr_connect_device1_getcs1")
+    assert state is None
+
+
+async def test_getcs_with_getsv_zero_float(hass: HomeAssistant) -> None:
+    """Test getCS is excluded when getSV is float zero and getCS is also zero."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCS2": 0,
+                    "getSV2": 0.0,  # Float zero
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    # getCS2 should be excluded because getSV2 is zero and getCS2 is zero
+    state = hass.states.get("sensor.syr_connect_device1_getcs2")
+    assert state is None
