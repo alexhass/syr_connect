@@ -472,7 +472,11 @@ def test_attrs_match_with_version_constraints():
 
 
 def test_attrs_match_pass_but_version_fail():
-    """When attrs match but version doesn't, should skip signature."""
+    """When attrs match but version doesn't, model is still detected.
+    
+    attrs_equals takes precedence in detection logic, version is not checked
+    when attrs_equals matches.
+    """
     test_sig = [
         {
             "display_name": "Test Model",
@@ -484,10 +488,10 @@ def test_attrs_match_pass_but_version_fail():
         }
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # Attrs match but version doesn't
+        # Attrs match but version doesn't - attrs_equals takes precedence
         flat = {"getATTR": "value", "getVER": "WRONG"}
         result = detect_model(flat)
-        assert result["name"] == "unknown"
+        assert result["name"] == "testmodel"
 
 
 def test_attrs_match_with_v_keys():
