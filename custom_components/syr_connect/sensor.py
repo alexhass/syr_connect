@@ -594,17 +594,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     parsed = get_sensor_bat_value(value)
                     return parsed
 
-                # Special handling for leakage protection absent level (getUL)
-                # Format: "5" -> multiply by 10 to get liters (5 -> 50L)
-                if self._sensor_key == 'getUL':
-                    if value is None or value == "":
-                        return None
-                    try:
-                        volume_value = float(value) * 10
-                        return int(volume_value)
-                    except (ValueError, TypeError):
-                        return None
-
                 # Special handling for regeneration time - expose as `getRTM`:
                 # - If `getRTM` exists and `getRTH` is missing, `getRTM` may contain a combined time string "HH:MM".
                 # - If both `getRTH` and `getRTM` exist as numeric values, combine them as HH:MM.
