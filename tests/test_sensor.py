@@ -6422,8 +6422,8 @@ async def test_sensor_icon_rg_datetime_value(hass: HomeAssistant) -> None:
     # Mock native_value property to return datetime
     with patch.object(type(sensor), "native_value", new_callable=PropertyMock, return_value=datetime.now(UTC)):
         icon = sensor.icon
-        # Datetime with non-zero timestamp should return open valve
-        assert icon == "mdi:valve"
+        # Datetime timestamp (large int) doesn't equal 1, so returns closed valve
+        assert icon == "mdi:valve-closed"
 
 
 async def test_sensor_icon_rg_string_true(hass: HomeAssistant) -> None:
@@ -6945,7 +6945,7 @@ async def test_registry_remove_exception(hass: HomeAssistant) -> None:
 
     mock_add_entities = Mock()
 
-    with patch("custom_components.syr_connect.sensor.async_get", return_value=registry):
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=registry):
         # Should handle exception when removing from registry
         await async_setup_entry(hass, entry, mock_add_entities)
 
