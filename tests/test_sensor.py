@@ -672,7 +672,7 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
     assert le.native_value == "100"
 
     t1 = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getT1")
-    assert t1.native_value == "1.5"
+    assert t1.native_value == 1.5
 
 
 async def test_sensor_missing_device(hass: HomeAssistant) -> None:
@@ -4321,7 +4321,7 @@ async def test_sensor_gett1_value_mapping(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     
     t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
-    assert t1_sensor.native_value == "5.0"  # Mapped display value
+    assert t1_sensor.native_value == 5.0  # Mapped display value
 
 
 async def test_sensor_gett1_empty_value(hass: HomeAssistant) -> None:

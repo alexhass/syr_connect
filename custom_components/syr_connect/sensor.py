@@ -780,16 +780,16 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Special handling for getT1 and getT2 sensors: map raw API values to display values
                 if self._sensor_key in ('getT1', 'getT2'):
-                    raw = str(status.get(self._sensor_key) or "")
-                    mapped = str(_SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw))
+                    raw = int(status.get(self._sensor_key) or 1)
+                    mapped = float(_SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw))
                     # Return mapped display value (e.g. '0.5', '1.0', etc.) or raw value as fallback
-                    return str(mapped) if mapped is not None else (raw if raw else None)
+                    return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getUL sensor: map raw API values to display values
                 if self._sensor_key == 'getUL':
-                    raw = str(status.get('getUL') or "")
+                    raw = int(status.get('getUL') or 1)
                     mapped = str(_SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw))
-                    # Return mapped display value (e.g. '10', '20', etc.) or raw value as fallback
+                    # Return mapped display value (e.g. 10, 20, etc.) or raw value as fallback
                     return mapped if mapped is not None else (raw if raw else None)
 
                 # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
