@@ -663,14 +663,14 @@ _SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
 }
 
 # Mapping for getLE sensor values (Leakage protection - Present level)
-# Maps raw API value -> display value in liters (as shown in translations)
+# Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
-    "2": "100", "3": "150", "4": "200", "5": "250", "6": "300",
-    "7": "350", "8": "400", "9": "450", "10": "500", "11": "550",
-    "12": "600", "13": "650", "14": "700", "15": "750", "16": "800",
-    "17": "850", "18": "900", "19": "950", "20": "1000", "21": "1050",
-    "22": "1100", "23": "1150", "24": "1200", "25": "1250", "26": "1300",
-    "27": "1350", "28": "1400", "29": "1450", "30": "1500",
+    2: 100, 3: 150, 4: 200, 5: 250, 6: 300,
+    7: 350, 8: 400, 9: 450, 10: 500, 11: 550,
+    12: 600, 13: 650, 14: 700, 15: 750, 16: 800,
+    17: 850, 18: 900, 19: 950, 20: 1000, 21: 1050,
+    22: 1100, 23: 1150, 24: 1200, 25: 1250, 26: 1300,
+    27: 1350, 28: 1400, 29: 1450, 30: 1500,
 }
 
 # getRPW: Days on which regeneration is allowed, stored as a bit mask.

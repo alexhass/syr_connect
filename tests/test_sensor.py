@@ -669,7 +669,7 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
     assert alm._attr_translation_key == "no_salt"
 
     le = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getLE")
-    assert le.native_value == "100"
+    assert le.native_value == 100
 
     t1 = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getT1")
     assert t1.native_value == 1.5
@@ -4215,7 +4215,7 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
     
     le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
     # Mapped display value (matches mapping in const.py)
-    assert le_sensor.native_value == "250"  # Mapped display value
+    assert le_sensor.native_value == 250  # Mapped display value
 
 
 
@@ -4860,8 +4860,8 @@ async def test_getle_mapping(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
 
-    # getLE value '2' maps to '100' per constants
-    assert sensor.native_value == "100"
+    # getLE value '2' maps to 100 per constants
+    assert sensor.native_value == 100
 
 
 async def test_sensor_icon_getbat_zero_numeric_alert(hass: HomeAssistant) -> None:
