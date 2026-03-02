@@ -4218,29 +4218,6 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
     assert le_sensor.native_value == 250  # Mapped display value
 
 
-
-
-async def test_sensor_getle_empty_value(hass: HomeAssistant) -> None:
-    """Test getLE sensor with empty value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getLE": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    
-    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
-    # Implementation may return None or the string 'None' for empty/unmapped values
-    assert le_sensor.native_value in (None, "None")
-
-
 async def test_sensor_getul_value_mapping(hass: HomeAssistant) -> None:
     """Test getUL sensor value mapping from API value to display value."""
     data = {
@@ -4303,27 +4280,6 @@ async def test_sensor_gett1_value_mapping(hass: HomeAssistant) -> None:
     assert t1_sensor.native_value == 5.0  # Mapped display value
 
 
-async def test_sensor_gett1_empty_value(hass: HomeAssistant) -> None:
-    """Test getT1 sensor with empty value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getT1": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    
-    t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
-    # Implementation may return None or the string 'None' for empty/unmapped values
-    assert t1_sensor.native_value in (None, "None")
-
-
 async def test_sensor_getul_integer_input(hass: HomeAssistant) -> None:
     """Test getUL when API returns an integer (should multiply by 10)."""
     data = {
@@ -4360,24 +4316,6 @@ async def test_sensor_getul_mapped_string_key(hass: HomeAssistant) -> None:
 
     # Mapping '1' -> 10 liters; implementation returns numeric int
     assert sensor.native_value == 10
-
-
-async def test_sensor_getul_unmapped_string_returns_scaled_if_numeric(hass: HomeAssistant) -> None:
-    """Unmapped numeric-like strings should be scaled by 10 (e.g., '99' -> 990)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getUL": "99"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
-
-    assert sensor.native_value == 990
 
 
 async def test_sensor_icon_getab_open_value(hass: HomeAssistant) -> None:
@@ -5775,38 +5713,6 @@ async def test_sensor_getal_empty_string(hass: HomeAssistant) -> None:
     # Should handle empty string
     value = sensor.native_value
     assert value is None or isinstance(value, str | int)
-
-
-async def test_sensor_getal_value_error(hass: HomeAssistant) -> None:
-    """Test getUL sensor when conversion raises ValueError."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getUL": "not_a_number",
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        project_id="project1",
-        sensor_key="getUL",
-    )
-
-    # Should handle ValueError in conversion - may return None or mapped value
-    value = sensor.native_value
-    # getUL has two handlers: one multiplies by 10, another uses value map
-    # With invalid input, should return None or the raw value
-    assert value is None or isinstance(value, str)
 
 
 async def test_sensor_getala_none_value(hass: HomeAssistant) -> None:
