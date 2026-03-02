@@ -37,9 +37,9 @@ async def async_setup_entry(
     for device in coordinator.data.get('devices', []):
         if not isinstance(device, dict):
             continue
-        # Only create a switch if device supports local JSON API (has base_path)
-        if not device.get('base_path'):
-            continue
+        # Create a switch for every device so users can enable/disable
+        # the local JSON API toggle even if a `base_path` is not yet known.
+        # This ensures the switch entity remains available in the UI.
 
         device_id = str(device.get('id'))
         # Determine current value: persistent option -> in-memory -> default False
@@ -92,6 +92,11 @@ class SyrConnectJsonAPISwitch(CoordinatorEntity, SwitchEntity):
     @property
     def is_on(self) -> bool:
         return bool(self._is_on)
+
+    @property
+    def available(self) -> bool:
+        """Ensure the switch is always reported available in Home Assistant."""
+        return True
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self._set_enabled(True)

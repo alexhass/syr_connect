@@ -54,10 +54,25 @@ class SyrConnectJsonAPI:
 
     def _build_base_url(self) -> str | None:
         if self._base_url:
-            return self._base_url.rstrip("/") + "/"
+            result = self._base_url.rstrip("/") + "/"
+            _LOGGER.debug("JSON API: Built base URL from explicit base_url: %s", result)
+            return result
         if not self._ip or not self._base_path:
+            _LOGGER.debug(
+                "JSON API: Cannot build base URL - ip=%s, base_path=%s",
+                self._ip,
+                self._base_path
+            )
             return None
-        return f"http://{self._ip}:{_SYR_CONNECT_JSON_API_PORT}/{self._base_path.strip('/')}/"
+        result = f"http://{self._ip}:{_SYR_CONNECT_JSON_API_PORT}/{self._base_path.strip('/')}/"
+        _LOGGER.debug(
+            "JSON API: Built base URL from ip and base_path: %s (ip=%s, base_path=%s, port=%s)",
+            result,
+            self._ip,
+            self._base_path,
+            _SYR_CONNECT_JSON_API_PORT
+        )
+        return result
 
     def is_session_valid(self) -> bool:
         if self._last_login is None:
@@ -75,10 +90,11 @@ class SyrConnectJsonAPI:
             raise ValueError("Base URL not configured for JSON API client")
 
         login_url = f"{base}set/ADM/(2)f"
+        _LOGGER.debug("JSON API: Login attempt - URL: %s", login_url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=10)
             async with self._session.get(login_url, timeout=timeout_obj) as resp:
-                _LOGGER.debug("JSON API login status: %s", resp.status)
+                _LOGGER.debug("JSON API: Login response status: %s", resp.status)
                 # We accept any 2xx as success; some devices return an empty body
                 resp.raise_for_status()
         except Exception as err:
@@ -96,13 +112,16 @@ class SyrConnectJsonAPI:
         if not base:
             raise ValueError("Base URL not configured for JSON API client")
         url = f"{base}{path.lstrip('/') }"
+        _LOGGER.debug("JSON API: Requesting URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=timeout)
             async with self._session.get(url, timeout=timeout_obj) as resp:
+                _LOGGER.debug("JSON API: Response status from %s: %s", url, resp.status)
                 resp.raise_for_status()
                 data = await resp.json()
                 if not isinstance(data, dict):
                     raise ValueError("JSON API returned unexpected payload")
+                _LOGGER.debug("JSON API: Successfully fetched JSON from %s", url)
                 return data
         except Exception as err:
             _LOGGER.error("Failed to fetch JSON from %s: %s", url, err)
@@ -139,7 +158,10 @@ class SyrConnectJsonAPI:
         Returns None on unexpected payload to allow the coordinator to keep
         previous state (same behaviour as the XML client parser).
         """
+        _LOGGER.debug("JSON API: Fetching device status for device_id=%s", device_id)
+
         if not self._base_url and not self.is_session_valid():
+            _LOGGER.debug("JSON API: Session invalid, calling login for device_id=%s", device_id)
             await self.login()
 
         try:
@@ -151,6 +173,11 @@ class SyrConnectJsonAPI:
             # The JSON API returns a flat dict with getXXX keys already; return
             # as-is so the rest of the integration can operate on the same
             # status shape as the XML parser.
+            _LOGGER.debug(
+                "JSON API: Successfully fetched %d keys for device_id=%s",
+                len(status),
+                device_id
+            )
             return {k: v for k, v in status.items()}
         except Exception:
             _LOGGER.exception("Failed to parse JSON device status for %s", device_id)
@@ -171,9 +198,11 @@ class SyrConnectJsonAPI:
         # Strip leading "set" if caller sends full command like "setAB"
         cmd = command[3:] if command.lower().startswith("set") else command
         url = f"{base}set/{cmd}/{value}"
+        _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=10)
             async with self._session.get(url, timeout=timeout_obj) as resp:
+                _LOGGER.debug("JSON API: Set response status: %s", resp.status)
                 resp.raise_for_status()
                 _LOGGER.info("Set %s=%s via JSON API for device %s", cmd, value, device_id)
                 return True

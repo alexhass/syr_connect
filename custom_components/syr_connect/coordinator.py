@@ -177,6 +177,32 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # DCLG remains the device identifier for XML API calls
             dclg = device.get('dclg', device['id'])
 
+            # Restore persistent device properties (base_path, ip) from previous coordinator data
+            # These are detected during model detection but get lost when get_devices() returns fresh dicts
+            if getattr(self, 'data', None) and isinstance(self.data.get('devices'), list):
+                for prev_device in self.data.get('devices', []):
+                    if prev_device.get('id') == device.get('id'):
+                        # Restore base_path if it was detected previously
+                        if prev_device.get('base_path') and not device.get('base_path'):
+                            device['base_path'] = prev_device['base_path']
+                            _LOGGER.debug(
+                                "Device %s: Restored base_path from previous data: %s",
+                                device.get('id'),
+                                device['base_path']
+                            )
+                        # Restore ip if it was in previous data
+                        if prev_device.get('ip') and not device.get('ip'):
+                            device['ip'] = prev_device['ip']
+                            _LOGGER.debug(
+                                "Device %s: Restored ip from previous data: %s",
+                                device.get('id'),
+                                device['ip']
+                            )
+                        # Also restore the JSON API toggle flag from previous memory
+                        if _SYR_CONNECT_DEVICE_USE_JSON_API in prev_device and _SYR_CONNECT_DEVICE_USE_JSON_API not in device:
+                            device[_SYR_CONNECT_DEVICE_USE_JSON_API] = prev_device[_SYR_CONNECT_DEVICE_USE_JSON_API]
+                        break
+
             # Determine whether to use local JSON API for this device.
             # Priority: persistent per-device option in config entry -> in-memory device flag -> False
             use_json = False
@@ -184,27 +210,88 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 entry = getattr(self, "config_entry", None)
                 if entry and entry.options:
                     device_settings = entry.options.get(_SYR_CONNECT_DEVICE_SETTINGS, {})
+                    _LOGGER.debug(
+                        "Device %s: device_settings from config entry: %s",
+                        device.get('id'),
+                        device_settings
+                    )
                     dev_opts = device_settings.get(str(device.get('id')), {}) if isinstance(device.get('id'), (str | int)) else {}
-                    if dev_opts and _SYR_CONNECT_DEVICE_USE_JSON_API in dev_opts:
-                        use_json = bool(dev_opts.get(_SYR_CONNECT_DEVICE_USE_JSON_API, False))
+                    _LOGGER.debug(
+                        "Device %s: device options: %s",
+                        device.get('id'),
+                        dev_opts
+                    )
+                    if _SYR_CONNECT_DEVICE_USE_JSON_API in dev_opts:
+                        use_json = bool(dev_opts[_SYR_CONNECT_DEVICE_USE_JSON_API])
+                        _LOGGER.debug(
+                            "Device %s: use_json from config entry options: %s",
+                            device.get('id'),
+                            use_json
+                        )
                     elif device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
                         use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
-                else:
-                    if device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
-                        use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
-            except Exception:
+                        _LOGGER.debug(
+                            "Device %s: use_json from device dict: %s",
+                            device.get('id'),
+                            use_json
+                        )
+                elif device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
+                    use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
+                    _LOGGER.debug(
+                        "Device %s: use_json from device dict (no options): %s",
+                        device.get('id'),
+                        use_json
+                    )
+            except Exception as ex:
+                _LOGGER.exception(
+                    "Device %s: Exception while determining use_json: %s",
+                    device.get('id'),
+                    ex
+                )
                 use_json = False
+
+            _LOGGER.debug(
+                "Device %s: Final use_json decision: %s",
+                device.get('id'),
+                use_json
+            )
+
             if use_json:
                 # Only attempt JSON API when a `base_path` is known for the device
+                # Debug: Log all device keys to understand what's available
+                _LOGGER.debug(
+                    "Device %s: Available device keys: %s",
+                    device.get('id'),
+                    list(device.keys())
+                )
                 ip = device.get('ip') or device.get('getWIP') or device.get('getEIP')
                 base_path = device.get('base_path')
+                _LOGGER.debug(
+                    "Device %s: JSON API selected, ip=%s (from: ip=%s, getWIP=%s, getEIP=%s), base_path=%s",
+                    device.get('id'),
+                    ip,
+                    device.get('ip'),
+                    device.get('getWIP'),
+                    device.get('getEIP'),
+                    base_path
+                )
                 if ip and base_path:
                     json_api = SyrConnectJsonAPI(self._session, ip=ip, base_path=base_path)
+                    _LOGGER.info(
+                        "Device %s: Using JSON API at %s",
+                        device.get('id'),
+                        json_api._build_base_url()
+                    )
                     status = await json_api.get_device_status(dclg)
                 else:
                     # Fallback to XML API when JSON API cannot be constructed
+                    _LOGGER.warning(
+                        "Device %s: JSON API enabled but missing ip or base_path, falling back to XML API",
+                        device.get('id')
+                    )
                     status = await self.api.get_device_status(dclg)
             else:
+                _LOGGER.debug("Device %s: Using XML API", device.get('id'))
                 status = await self.api.get_device_status(dclg)
 
             # If parser signalled that the response did not contain the
@@ -243,6 +330,17 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # a fallback for the base_path.
             try:
                 if isinstance(status, dict):
+                    # Extract and store IP address from status if available
+                    if not device.get('ip'):
+                        ip_from_status = status.get('getWIP') or status.get('getEIP')
+                        if ip_from_status:
+                            device['ip'] = ip_from_status
+                            _LOGGER.debug(
+                                "Device %s: Extracted IP from status: %s",
+                                device.get('id'),
+                                device['ip']
+                            )
+
                     if not device.get('base_path'):
                         model = detect_model(status)
                         det_url = model.get('base_path')
