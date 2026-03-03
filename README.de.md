@@ -145,7 +145,7 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 
 - **Cloud-Abhängigkeit**: Diese Integration benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
 - **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits zu vermeiden
-- **Read-Only Daten**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
+- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
 - **Keine lokale API**: Die Integration nutzt die Cloud-API; keine lokale Netzwerkkommunikation verfügbar
 
 ## Wie Daten aktualisiert werden
