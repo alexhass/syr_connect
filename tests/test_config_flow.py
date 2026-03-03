@@ -10,6 +10,9 @@ from homeassistant.data_entry_flow import FlowResultType
 from custom_components.syr_connect.const import DOMAIN
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+# Patch path for API class (lazy-loaded in config_flow)
+_API_PATCH_PATH = "custom_components.syr_connect.api_xml.SyrConnectXmlAPI"
+
 
 async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
     """Test we get the form."""
@@ -45,7 +48,7 @@ async def test_form_invalid_auth(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=Exception("Authentication failed"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -67,7 +70,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=Exception("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -236,7 +239,7 @@ async def test_reauth_flow_invalid_auth(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -275,7 +278,7 @@ async def test_reauth_flow_cannot_connect(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -312,7 +315,7 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=RuntimeError("Unexpected error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -390,7 +393,7 @@ async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -428,7 +431,7 @@ async def test_reconfigure_flow_cannot_connect(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -464,7 +467,7 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=RuntimeError("Unexpected error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -485,7 +488,7 @@ async def test_validate_input_auth_error(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         with pytest.raises(InvalidAuthError):
@@ -501,7 +504,7 @@ async def test_validate_input_connection_error(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         with pytest.raises(CannotConnectError):
@@ -516,7 +519,7 @@ async def test_validate_input_unexpected_error(hass: HomeAssistant) -> None:
     from custom_components.syr_connect.config_flow import validate_input, CannotConnectError
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=RuntimeError("Unexpected"),
     ):
         with pytest.raises(CannotConnectError):
@@ -543,7 +546,7 @@ async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
     mock_api.login = AsyncMock()
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI",
         return_value=mock_api,
     ):
         result = await hass.config_entries.flow.async_init(
@@ -586,7 +589,7 @@ async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
 
     # Submit credentials
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -661,7 +664,7 @@ async def test_form_with_auth_error_exception(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -685,7 +688,7 @@ async def test_form_with_connection_error_exception(hass: HomeAssistant) -> None
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -707,7 +710,7 @@ async def test_form_with_generic_exception(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI",
+        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI",
         side_effect=RuntimeError("Unexpected error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(

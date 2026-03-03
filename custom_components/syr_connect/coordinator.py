@@ -17,7 +17,6 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
-from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
