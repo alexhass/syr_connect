@@ -113,7 +113,7 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 - Durchflusszähler (Gesamtverbrauch)
 - Alarmstatus
 
-#### Geräteinformationen (standardmäßig deaktiviert, in der Diagnostik-Kategorie)
+#### Geräteinformationen
 
 - Seriennummer
 - Firmware-Version und Modell

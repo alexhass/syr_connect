@@ -113,7 +113,7 @@ The integration provides comprehensive monitoring of your water softener:
 - Flow counter (total consumption)
 - Alarm status
 
-#### Device Information (disabled by default, available in diagnostics category)
+#### Device Information
 
 - Serial number
 - Firmware version and model
