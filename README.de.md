@@ -19,6 +19,21 @@ Beispiele der Geräteoberflächen:
 
 ![Safe-T+ Screenshot](docs/assets/screenshots/en/safetplus.png)
 
+## Haftungsausschluss
+
+### WICHTIG: Bitte vor der Verwendung der Integration lesen
+
+Diese Integration steuert Wasseraufbereitungssysteme und Absperrventile. Fehlerhafte Konfiguration oder fehlerhafte Automatisierungen können zu Wasserschäden, Systemausfällen oder Sachschäden führen.
+
+- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen" ohne jegliche Garantie bereitgestellt
+- **Gründlich testen**: Teste Automatisierungen immer unter sicheren Bedingungen, bevor du sie produktiv einsetzt
+- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können deine gesamte Wasserversorgung abschalten - teste sorgfältig
+- **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen
+- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen - Verfügbarkeit ist nicht garantiert
+- **Notfallplan**: Stelle sicher, dass du alternativen Zugang zu deinem Absperrventil hast, falls das System ausfällt
+
+Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken an und stimmst zu, sie verantwortungsbewusst zu verwenden.
+
 ## Installation
 
 ### Home Assistant Community Store - HACS (empfohlen)

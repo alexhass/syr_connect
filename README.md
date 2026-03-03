@@ -19,6 +19,21 @@ Examples of device interfaces:
 
 ![Safe-T+ screenshot](docs/assets/screenshots/en/safetplus.png)
 
+## Disclaimer
+
+### IMPORTANT: Read this before using the integration
+
+This integration controls water treatment and water shut-off systems. Improper configuration or malfunctioning automations could result in water damage, system failures, or property damage.
+
+- **Use at Your Own Risk**: This software is provided "as is" without warranty of any kind
+- **Test Thoroughly**: Always test automations in safe conditions before deploying them
+- **Critical Systems**: Valve control automations can shut off your entire water supply - test carefully
+- **No Liability**: The authors and contributors are not responsible for any damages, water damage, property damage, or other issues resulting from the use of this integration
+- **Cloud Dependency**: This integration relies on the SYR Connect cloud service - availability is not guaranteed
+- **Backup Plan**: Ensure you have alternative access to your water shut-off valve in case of system failure
+
+By installing and using this integration, you acknowledge these risks and agree to use it responsibly.
+
 ## Installation
 
 ### Home Assistant Community Store - HACS (recommended)
