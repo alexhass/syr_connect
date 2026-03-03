@@ -901,10 +901,7 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Update interval",
-          "device_ip": "IP address",
-          "device_model": "Device model",
-          "device_model_placeholder": "Please select"
+          "scan_interval": "Update interval"
         },
         "description": "Defines the time interval between API calls.",
         "title": "SYR Connect Options"

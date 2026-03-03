@@ -20,9 +20,6 @@ DOMAIN = "syr_connect"
 _SYR_CONNECT_SCAN_INTERVAL_CONF = "scan_interval"
 _SYR_CONNECT_SCAN_INTERVAL_DEFAULT = 60  # seconds
 
-# Device settings key for storing per-device configuration in options
-_SYR_CONNECT_DEVICE_SETTINGS = "device_settings"
-
 # Local JSON API defaults (devices that serve a local JSON API on port 5333)
 _SYR_CONNECT_JSON_API_PORT = 5333
 
