@@ -24,7 +24,6 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-from .models import detect_model
 from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
@@ -160,27 +159,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # DCLG remains the device identifier for XML API calls
             dclg = device.get("dclg", device["id"])
 
-            # Restore persistent device properties (base_path, ip) from previous coordinator data
-            # These are detected during model detection but get lost when get_devices() returns fresh dicts
-            if getattr(self, "data", None) and isinstance(self.data.get("devices"), list):
-                for prev_device in self.data.get("devices", []):
-                    if prev_device.get("id") == device.get("id"):
-                        # Restore base_path if it was detected previously
-                        if prev_device.get("base_path") and not device.get("base_path"):
-                            device["base_path"] = prev_device["base_path"]
-                            _LOGGER.debug(
-                                "Device %s: Restored base_path from previous data: %s",
-                                device.get("id"),
-                                device["base_path"],
-                            )
-                        # Restore ip if it was in previous data
-                        if prev_device.get("ip") and not device.get("ip"):
-                            device["ip"] = prev_device["ip"]
-                            _LOGGER.debug(
-                                "Device %s: Restored ip from previous data: %s", device.get("id"), device["ip"]
-                            )
-                        break
-
             # Always use XML API
             _LOGGER.debug("Device %s: Using XML API", device.get("id"))
             status = await self.api.get_device_status(dclg)
@@ -213,29 +191,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             device["status"] = status
             device["available"] = True
-
-            # Attempt to detect model from the flattened status and set
-            # `device['base_path']` if not already present and the
-            # signature provides a base_path mapping. This allows future
-            # runs to opt into the local JSON API without using DCLG as
-            # a fallback for the base_path.
-            try:
-                if isinstance(status, dict):
-                    # Extract and store IP address from status if available
-                    if not device.get("ip"):
-                        ip_from_status = status.get("getWIP") or status.get("getEIP")
-                        if ip_from_status:
-                            device["ip"] = ip_from_status
-                            _LOGGER.debug("Device %s: Extracted IP from status: %s", device.get("id"), device["ip"])
-
-                    if not device.get("base_path"):
-                        model = detect_model(status)
-                        det_url = model.get("base_path")
-                        if det_url:
-                            device["base_path"] = det_url
-                            _LOGGER.debug("Set base_path for %s to detected value %s", device.get("id"), det_url)
-            except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Model detection failed for device %s", device.get("id"))
 
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
