@@ -7,9 +7,9 @@
 [![ci](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexhass/syr_connect/graph/badge.svg?token=8P822HPPF3)](https://codecov.io/gh/alexhass/syr_connect)
 
-![Syr](custom_components/syr_connect/logo.png)
-
 This custom integration enables control of SYR Connect devices through Home Assistant.
+
+![Syr](custom_components/syr_connect/logo.png)
 
 ## Screenshots
 
