@@ -100,7 +100,7 @@ pip install pycryptodomex==3.19.0 defusedxml==0.7.1
 
 ## File Structure Requirements
 
-```
+```txt
 config/
 └── custom_components/
    └── syr_connect/
