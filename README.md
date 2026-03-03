@@ -38,7 +38,7 @@ By installing and using this integration, you acknowledge these risks and agree 
 
 ### Home Assistant Community Store - HACS (recommended)
 
-1. Open HACS in Home Assistant
+1. Open [HACS](https://hacs.xyz/) in Home Assistant
 2. Go to "Integrations"
 3. Search for "SYR Connect"
 4. Click "Install"
