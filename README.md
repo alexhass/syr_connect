@@ -126,13 +126,30 @@ The integration provides comprehensive monitoring of your water softener:
 
 #### Buttons (Actions)
 
-- **Regenerate Now (setSIR)**: Start immediate regeneration
+- **Regenerate Now**: Start immediate regeneration cycle
+- **Reset Alarm**: Clear active alarm messages
+- **Reset Notification**: Clear notification messages
+- **Reset Warning**: Clear warning messages
+
+#### Select Controls (Configuration)
+
+- **Regeneration Time**: Set the daily regeneration time (15-minute intervals)
+- **Leak Protection Profile**: Select active leak protection profile (for devices with multiple profiles)
+- **Salt Amount**: Configure salt quantity in containers (0-25 kg, varies by model; up to 3 containers)
+- **Regeneration Interval**: Set how often regeneration occurs (1-4 days)
+
+#### Valve Control
+
+- **Water Shut-off Valve**: Control the main water shut-off valve
+  - Open and close valve operations
+  - Monitor current valve position and status
+  - Integrate with leak detection automations for automatic shutoff
 
 ### Known Limitations
 
 - **Cloud Dependency**: This integration requires an active internet connection and functioning SYR Connect cloud service
 - **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting
-- **Read-Only Data**: Most sensors are read-only; only regeneration actions can be triggered
+- **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
 - **No Local API**: The integration uses the cloud API; no local network communication is possible
 
 ## How Data is Updated
@@ -227,9 +244,9 @@ automation:
           message: "Unusual water flow - check for leaks!"
 ```
 
-#### Leak Sensor — Close Water Valve (setAB)
+#### Leak Sensor — Close Water Valve
 
-Automatically close the water valve e.g. (`setAB = true`) when a leak sensor reports a water leak. This example uses the standard `valve.close` service to choose the `true` option on the SYR `getAB` valve entity. Replace the entity IDs with the correct IDs from your system. Test very carefully that this really works as can become a critical action if needed.
+Automatically close the water valve when a leak sensor detects water. This example uses the standard `valve.close` service to close the SYR water shut-off valve. Replace the entity IDs with the correct IDs from your system. Test very carefully that this automation works correctly, as it can become a critical safety action.
 
 ```yaml
 automation:
@@ -246,7 +263,7 @@ automation:
       - service: notify.mobile_app
         data:
           title: "SYR: Leak detected — valve closed"
-          message: "Leak detected by binary_sensor.house_leak_sensor — SYR valve set to closed."
+          message: "Water leak detected — SYR water shut-off valve has been closed automatically."
 ```
 
 #### Scheduled Regeneration Override

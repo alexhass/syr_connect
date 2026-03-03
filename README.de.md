@@ -126,13 +126,30 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 
 #### Buttons (Aktionen)
 
-- **Sofort regenerieren (setSIR)**: Sofortige Regeneration starten
+- **Sofort regenerieren**: Sofortige Regeneration starten
+- **Alarm zurücksetzen**: Aktive Alarmmeldungen löschen
+- **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen
+- **Warnung zurücksetzen**: Warnungen löschen
+
+#### Auswahlsteuerungen (Konfiguration)
+
+- **Regenerationszeit**: Tägliche Regenerationszeit einstellen (15-Minuten-Intervalle)
+- **Leckschutzprofil**: Aktives Leckschutzprofil auswählen (bei Geräten mit mehreren Profilen)
+- **Salzmenge**: Salzmenge in Behältern konfigurieren (0-25 kg, je nach Modell; bis zu 3 Behälter)
+- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (1-4 Tage)
+
+#### Ventilsteuerung
+
+- **Absperrventil**: Steuerung des Haupt-Absperrventils
+  - Ventil öffnen und schließen
+  - Aktuelle Ventilposition und Status überwachen
+  - Integration mit Leckerkennungs-Automatisierungen für automatisches Absperren
 
 ### Bekannte Einschränkungen
 
 - **Cloud-Abhängigkeit**: Diese Integration benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
 - **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits zu vermeiden
-- **Read-Only Daten**: Die meisten Sensoren sind schreibgeschützt; nur Regenerationsaktionen können ausgelöst werden
+- **Read-Only Daten**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
 - **Keine lokale API**: Die Integration nutzt die Cloud-API; keine lokale Netzwerkkommunikation verfügbar
 
 ## Wie Daten aktualisiert werden
@@ -221,9 +238,9 @@ automation:
           message: "Unusual water flow - check for leaks!"
 ```
 
-#### Lecksensor — Absperrventil schließen (setAB)
+#### Lecksensor — Absperrventil schließen
 
-Schließt automatisch das Absperrventil z.b. (`setAB = true`), wenn ein Leckmelder einen Wasseraustritt meldet. Dieses Beispiel verwendet den Standard-Dienst `valve.close`, um die Option `true` für die SYR-`getAB`-Ventil-Entität auszuwählen. Ersetze die Entity-IDs durch die korrekten IDs in deinem System. Testen sehr sorgfältig, ob dies wirklich funktioniert, da es bei Bedarf zu einer kritischen Maßnahme werden kann.
+Schließt automatisch das Absperrventil, wenn ein Leckmelder einen Wasseraustritt meldet. Dieses Beispiel verwendet den Standard-Dienst `valve.close`, um das SYR-Absperrventil zu schließen. Ersetze die Entity-IDs durch die korrekten IDs in deinem System. Teste sehr sorgfältig, ob diese Automatisierung korrekt funktioniert, da sie zu einer kritischen Sicherheitsmaßnahme werden kann.
 
 ```yaml
 automation:
@@ -240,7 +257,7 @@ automation:
       - service: notify.mobile_app
         data:
           title: "SYR: Leck erkannt — Ventil geschlossen"
-          message: "Leck erkannt durch binary_sensor.house_leak_sensor — SYR‑Ventil auf geschlossen gesetzt."
+          message: "Wasseraustritt erkannt — SYR-Absperrventil wurde automatisch geschlossen."
 ```
 
 #### Geplante Regenerations-Überschreibung
