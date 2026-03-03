@@ -1,4 +1,5 @@
 """Data update coordinator for SYR Connect."""
+
 from __future__ import annotations
 
 import asyncio
@@ -19,8 +20,6 @@ from homeassistant.helpers.update_coordinator import (
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
-    _SYR_CONNECT_DEVICE_SETTINGS,
-    _SYR_CONNECT_DEVICE_USE_JSON_API,
     _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
     DOMAIN,
 )
@@ -86,9 +85,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     await self.api.login()
                 except SyrConnectAuthError as err:
                     _LOGGER.error("Authentication failed: %s", err)
-                    raise ConfigEntryAuthFailed(
-                        "Authentication failed. Please reconfigure the integration."
-                    ) from err
+                    raise ConfigEntryAuthFailed("Authentication failed. Please reconfigure the integration.") from err
                 except SyrConnectConnectionError as err:
                     _LOGGER.error("Connection failed: %s", err)
                     raise UpdateFailed(f"Connection error: {err}") from err
@@ -96,10 +93,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             all_devices = []
 
             # Get devices from all projects in parallel
-            device_tasks = [
-                self.api.get_devices(project['id'])
-                for project in self.api.projects
-            ]
+            device_tasks = [self.api.get_devices(project["id"]) for project in self.api.projects]
 
             try:
                 projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
@@ -111,31 +105,22 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             for project_idx, result in enumerate(projects_devices):
                 if isinstance(result, Exception):
                     _LOGGER.warning(
-                        "Failed to get devices for project %s: %s",
-                        self.api.projects[project_idx]['name'],
-                        result
+                        "Failed to get devices for project %s: %s", self.api.projects[project_idx]["name"], result
                     )
                     continue
 
                 project = self.api.projects[project_idx]
-                project_id = project['id']
+                project_id = project["id"]
                 devices_result = result
                 if not isinstance(devices_result, list):
                     _LOGGER.warning("Device list result is not a list: %s", devices_result)
                     continue
                 devices: list[dict[str, Any]] = devices_result
 
-                _LOGGER.debug(
-                    "Found %d device(s) in project %s",
-                    len(devices),
-                    project['name']
-                )
+                _LOGGER.debug("Found %d device(s) in project %s", len(devices), project["name"])
 
                 # Get status for all devices in parallel
-                status_tasks = [
-                    self._fetch_device_status(device, project_id)
-                    for device in devices
-                ]
+                status_tasks = [self._fetch_device_status(device, project_id) for device in devices]
 
                 device_results = await asyncio.gather(*status_tasks, return_exceptions=True)
 
@@ -148,8 +133,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {
-                'devices': all_devices,
-                'projects': self.api.projects,
+                "devices": all_devices,
+                "projects": self.api.projects,
             }
 
         except ConfigEntryAuthFailed:
@@ -158,9 +143,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.error("Update failed: %s", err, exc_info=True)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-    async def _fetch_device_status(
-        self, device: dict[str, Any], project_id: str
-    ) -> dict[str, Any] | None:
+    async def _fetch_device_status(self, device: dict[str, Any], project_id: str) -> dict[str, Any] | None:
         """Fetch status for a single device.
 
         Args:
@@ -172,127 +155,35 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """
         try:
             # Add project_id to device
-            device['project_id'] = project_id
+            device["project_id"] = project_id
 
             # DCLG remains the device identifier for XML API calls
-            dclg = device.get('dclg', device['id'])
+            dclg = device.get("dclg", device["id"])
 
             # Restore persistent device properties (base_path, ip) from previous coordinator data
             # These are detected during model detection but get lost when get_devices() returns fresh dicts
-            if getattr(self, 'data', None) and isinstance(self.data.get('devices'), list):
-                for prev_device in self.data.get('devices', []):
-                    if prev_device.get('id') == device.get('id'):
+            if getattr(self, "data", None) and isinstance(self.data.get("devices"), list):
+                for prev_device in self.data.get("devices", []):
+                    if prev_device.get("id") == device.get("id"):
                         # Restore base_path if it was detected previously
-                        if prev_device.get('base_path') and not device.get('base_path'):
-                            device['base_path'] = prev_device['base_path']
+                        if prev_device.get("base_path") and not device.get("base_path"):
+                            device["base_path"] = prev_device["base_path"]
                             _LOGGER.debug(
                                 "Device %s: Restored base_path from previous data: %s",
-                                device.get('id'),
-                                device['base_path']
+                                device.get("id"),
+                                device["base_path"],
                             )
                         # Restore ip if it was in previous data
-                        if prev_device.get('ip') and not device.get('ip'):
-                            device['ip'] = prev_device['ip']
+                        if prev_device.get("ip") and not device.get("ip"):
+                            device["ip"] = prev_device["ip"]
                             _LOGGER.debug(
-                                "Device %s: Restored ip from previous data: %s",
-                                device.get('id'),
-                                device['ip']
+                                "Device %s: Restored ip from previous data: %s", device.get("id"), device["ip"]
                             )
-                        # Also restore the JSON API toggle flag from previous memory
-                        if _SYR_CONNECT_DEVICE_USE_JSON_API in prev_device and _SYR_CONNECT_DEVICE_USE_JSON_API not in device:
-                            device[_SYR_CONNECT_DEVICE_USE_JSON_API] = prev_device[_SYR_CONNECT_DEVICE_USE_JSON_API]
                         break
 
-            # Determine whether to use local JSON API for this device.
-            # Priority: persistent per-device option in config entry -> in-memory device flag -> False
-            use_json = False
-            try:
-                entry = getattr(self, "config_entry", None)
-                if entry and entry.options:
-                    device_settings = entry.options.get(_SYR_CONNECT_DEVICE_SETTINGS, {})
-                    _LOGGER.debug(
-                        "Device %s: device_settings from config entry: %s",
-                        device.get('id'),
-                        device_settings
-                    )
-                    dev_opts = device_settings.get(str(device.get('id')), {}) if isinstance(device.get('id'), (str | int)) else {}
-                    _LOGGER.debug(
-                        "Device %s: device options: %s",
-                        device.get('id'),
-                        dev_opts
-                    )
-                    if _SYR_CONNECT_DEVICE_USE_JSON_API in dev_opts:
-                        use_json = bool(dev_opts[_SYR_CONNECT_DEVICE_USE_JSON_API])
-                        _LOGGER.debug(
-                            "Device %s: use_json from config entry options: %s",
-                            device.get('id'),
-                            use_json
-                        )
-                    elif device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
-                        use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
-                        _LOGGER.debug(
-                            "Device %s: use_json from device dict: %s",
-                            device.get('id'),
-                            use_json
-                        )
-                elif device.get(_SYR_CONNECT_DEVICE_USE_JSON_API) is not None:
-                    use_json = bool(device.get(_SYR_CONNECT_DEVICE_USE_JSON_API))
-                    _LOGGER.debug(
-                        "Device %s: use_json from device dict (no options): %s",
-                        device.get('id'),
-                        use_json
-                    )
-            except Exception as ex:
-                _LOGGER.exception(
-                    "Device %s: Exception while determining use_json: %s",
-                    device.get('id'),
-                    ex
-                )
-                use_json = False
-
-            _LOGGER.debug(
-                "Device %s: Final use_json decision: %s",
-                device.get('id'),
-                use_json
-            )
-
-            if use_json:
-                # Only attempt JSON API when a `base_path` is known for the device
-                # Debug: Log all device keys to understand what's available
-                _LOGGER.debug(
-                    "Device %s: Available device keys: %s",
-                    device.get('id'),
-                    list(device.keys())
-                )
-                ip = device.get('ip') or device.get('getWIP') or device.get('getEIP')
-                base_path = device.get('base_path')
-                _LOGGER.debug(
-                    "Device %s: JSON API selected, ip=%s (from: ip=%s, getWIP=%s, getEIP=%s), base_path=%s",
-                    device.get('id'),
-                    ip,
-                    device.get('ip'),
-                    device.get('getWIP'),
-                    device.get('getEIP'),
-                    base_path
-                )
-                if ip and base_path:
-                    json_api = SyrConnectJsonAPI(self._session, ip=ip, base_path=base_path)
-                    _LOGGER.info(
-                        "Device %s: Using JSON API at %s",
-                        device.get('id'),
-                        json_api._build_base_url()
-                    )
-                    status = await json_api.get_device_status(dclg)
-                else:
-                    # Fallback to XML API when JSON API cannot be constructed
-                    _LOGGER.warning(
-                        "Device %s: JSON API enabled but missing ip or base_path, falling back to XML API",
-                        device.get('id')
-                    )
-                    status = await self.api.get_device_status(dclg)
-            else:
-                _LOGGER.debug("Device %s: Using XML API", device.get('id'))
-                status = await self.api.get_device_status(dclg)
+            # Always use XML API
+            _LOGGER.debug("Device %s: Using XML API", device.get("id"))
+            status = await self.api.get_device_status(dclg)
 
             # If parser signalled that the response did not contain the
             # expected sc>dvs>d structure, it returns None. In this case we
@@ -302,26 +193,26 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             if status is None:
                 _LOGGER.warning(
                     "Device %s returned unexpected status structure; preserving previous status if present",
-                    device.get('id'),
+                    device.get("id"),
                 )
                 # Try to find previous device data and return it unchanged
-                if getattr(self, 'data', None) and isinstance(self.data.get('devices', None), list):
-                    for prev in self.data.get('devices', []):
-                        if prev.get('id') == device.get('id'):
-                            _LOGGER.debug("Reusing previous status for device %s", device.get('id'))
+                if getattr(self, "data", None) and isinstance(self.data.get("devices", None), list):
+                    for prev in self.data.get("devices", []):
+                        if prev.get("id") == device.get("id"):
+                            _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
                             return prev
                 # No previous data available: keep empty status but do NOT mark
                 # the device as unavailable to avoid clearing sensors in HA.
-                device['status'] = {}
-                device['available'] = True
+                device["status"] = {}
+                device["available"] = True
                 _LOGGER.debug(
                     "No previous status for device %s; keeping device available with empty status",
-                    device.get('id'),
+                    device.get("id"),
                 )
                 return device
 
-            device['status'] = status
-            device['available'] = True
+            device["status"] = status
+            device["available"] = True
 
             # Attempt to detect model from the flattened status and set
             # `device['base_path']` if not already present and the
@@ -331,41 +222,20 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             try:
                 if isinstance(status, dict):
                     # Extract and store IP address from status if available
-                    if not device.get('ip'):
-                        ip_from_status = status.get('getWIP') or status.get('getEIP')
+                    if not device.get("ip"):
+                        ip_from_status = status.get("getWIP") or status.get("getEIP")
                         if ip_from_status:
-                            device['ip'] = ip_from_status
-                            _LOGGER.debug(
-                                "Device %s: Extracted IP from status: %s",
-                                device.get('id'),
-                                device['ip']
-                            )
+                            device["ip"] = ip_from_status
+                            _LOGGER.debug("Device %s: Extracted IP from status: %s", device.get("id"), device["ip"])
 
-                    if not device.get('base_path'):
+                    if not device.get("base_path"):
                         model = detect_model(status)
-                        det_url = model.get('base_path')
+                        det_url = model.get("base_path")
                         if det_url:
-                            # Set detected base_path and expose a per-device
-                            # toggle defaulting to False so the UI can show
-                            # an option for devices that actually support it.
-                            device['base_path'] = det_url
-                            try:
-                                # Only add the device-level toggle when supported
-                                if _SYR_CONNECT_DEVICE_USE_JSON_API not in device:
-                                    device[_SYR_CONNECT_DEVICE_USE_JSON_API] = False
-                            except Exception:
-                                pass
-                            _LOGGER.debug("Set base_path for %s to detected value %s", device.get('id'), det_url)
-                        else:
-                            # Ensure per-device JSON API flag is not present for devices
-                            # that do not support a base_path (explicit None).
-                            try:
-                                if _SYR_CONNECT_DEVICE_USE_JSON_API in device:
-                                    device.pop(_SYR_CONNECT_DEVICE_USE_JSON_API, None)
-                            except Exception:
-                                pass
+                            device["base_path"] = det_url
+                            _LOGGER.debug("Set base_path for %s to detected value %s", device.get("id"), det_url)
             except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Model detection failed for device %s", device.get('id'))
+                _LOGGER.exception("Model detection failed for device %s", device.get("id"))
 
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
@@ -376,22 +246,22 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # previously-stored value in coordinator.data so entities retain
             # the optimistic state until the ignore window expires.
             try:
-                if getattr(self, 'data', None) and isinstance(self.data, dict):
-                    prev_devices = {d.get('id'): d for d in self.data.get('devices', []) if isinstance(d, dict)}
+                if getattr(self, "data", None) and isinstance(self.data, dict):
+                    prev_devices = {d.get("id"): d for d in self.data.get("devices", []) if isinstance(d, dict)}
                 else:
                     prev_devices = {}
 
                 now = time.time()
                 for key in list(status.keys()):
-                    dev_id_str = str(device.get('id') or "")
+                    dev_id_str = str(device.get("id") or "")
                     ignore_key = (dev_id_str, key)
                     expire = self._ignore_until.get(ignore_key)
                     if expire is None:
                         continue
                     if now < expire:
-                        prev = prev_devices.get(device.get('id'))
-                        if prev and isinstance(prev.get('status'), dict) and key in prev['status']:
-                            status[key] = prev['status'][key]
+                        prev = prev_devices.get(device.get("id"))
+                        if prev and isinstance(prev.get("status"), dict) and key in prev["status"]:
+                            status[key] = prev["status"][key]
                         else:
                             # Remove the key so we don't overwrite with possibly stale API value
                             status.pop(key, None)
@@ -399,21 +269,17 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         # Clean up expired entry
                         self._ignore_until.pop(ignore_key, None)
             except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Failed to apply ignore rules to device status for %s", device.get('id'))
+                _LOGGER.exception("Failed to apply ignore rules to device status for %s", device.get("id"))
 
             return device
 
         except Exception as err:
-            _LOGGER.warning(
-                "Failed to get status for device %s: %s",
-                device['id'],
-                err
-            )
+            _LOGGER.warning("Failed to get status for device %s: %s", device["id"], err)
             # Add project_id even on error
-            device['project_id'] = project_id
+            device["project_id"] = project_id
             # Mark device as unavailable but still add it
-            device['status'] = {}
-            device['available'] = False
+            device["status"] = {}
+            device["available"] = False
 
             # Create repair issue for offline device
             create_issue(
@@ -421,15 +287,13 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 f"device_offline_{device['id']}",
                 "device_offline",
                 translation_placeholders={
-                    "device_name": device.get('cna', device['id']),
+                    "device_name": device.get("cna", device["id"]),
                 },
             )
 
             return device
 
-    async def async_set_device_value(
-        self, device_id: str, command: str, value: Any
-    ) -> None:
+    async def async_set_device_value(self, device_id: str, command: str, value: Any) -> None:
         """Set a device value.
 
         Args:
@@ -448,9 +312,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         # Find the DCLG for this device_id (which is now SN)
         dclg = None
-        for device in self.data.get('devices', []):
-            if device['id'] == device_id:
-                dclg = device.get('dclg', device_id)
+        for device in self.data.get("devices", []):
+            if device["id"] == device_id:
+                dclg = device.get("dclg", device_id)
                 break
 
         if not dclg:
@@ -463,12 +327,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
                 get_key = f"get{command[3:]}"
-                for dev in new_data.get('devices', []):
-                    if dev.get('id') == device_id:
-                        status = dev.setdefault('status', {})
+                for dev in new_data.get("devices", []):
+                    if dev.get("id") == device_id:
+                        status = dev.setdefault("status", {})
                         # Store as string to match API-parsed values
                         status[get_key] = str(value)
-                        dev['available'] = True
+                        dev["available"] = True
                         break
                 # async_set_updated_data is not awaitable; call directly to update data
                 self.async_set_updated_data(new_data)
@@ -477,7 +341,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 # responses for that key for the next 60 seconds so we don't
                 # immediately overwrite the optimistic state with stale data.
                 try:
-                    if get_key.lower() == 'getab':
+                    if get_key.lower() == "getab":
                         self._ignore_until[(device_id, get_key)] = time.time() + 60
                 except Exception:
                     pass

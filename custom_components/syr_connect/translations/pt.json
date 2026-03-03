@@ -889,11 +889,6 @@
           "21": "Abrindo"
         }
       }
-    },
-    "switch": {
-      "use_local_json_api": {
-        "name": "Usar API JSON local"
-      }
     }
   },
   "issues": {

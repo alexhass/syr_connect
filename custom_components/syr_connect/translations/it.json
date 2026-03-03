@@ -889,11 +889,6 @@
           "21": "Apertura"
         }
       }
-    },
-    "switch": {
-      "use_local_json_api": {
-        "name": "Usa API JSON locale"
-      }
     }
   },
   "issues": {

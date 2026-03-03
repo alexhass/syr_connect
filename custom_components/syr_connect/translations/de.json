@@ -889,11 +889,6 @@
           "21": "Wird geöffnet"
         }
       }
-    },
-    "switch": {
-      "use_local_json_api": {
-        "name": "Lokales JSON-API verwenden"
-      }
     }
   },
   "issues": {
@@ -906,7 +901,10 @@
     "step": {
       "init": {
         "data": {
-            "scan_interval": "Aktualisierungsintervall"
+            "scan_interval": "Aktualisierungsintervall",
+            "device_ip": "IP-Adresse",
+            "device_model": "Modell",
+            "device_model_placeholder": "Bitte wählen"
         },
         "description": "Definiert den Zeitabstand zwischen API-Aufrufen.",
         "title": "SYR Connect Optionen"

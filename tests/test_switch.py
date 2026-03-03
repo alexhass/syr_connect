@@ -1,27 +1,18 @@
 """Tests for switch platform."""
+
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
 
-from custom_components.syr_connect.const import (
-    _SYR_CONNECT_DEVICE_SETTINGS,
-    _SYR_CONNECT_DEVICE_USE_JSON_API,
-    DOMAIN,
-)
-from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.switch import (
-    SyrConnectJsonAPISwitch,
-    async_setup_entry,
-)
+from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.switch import async_setup_entry
 
 
-async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
-    """Test setup when coordinator has no data."""
+async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
+    """Test that switch platform does not create any entities."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -35,21 +26,14 @@ async def test_async_setup_entry_no_data(hass: HomeAssistant) -> None:
         options={},
         subentries_data={},
     )
-    
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    
-    config_entry.runtime_data = mock_coordinator
-    
+
     mock_add_entities = MagicMock()
-    
-    # Should return early without adding entities
+
+    # Should return without adding entities
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
+
     mock_add_entities.assert_not_called()
 
-
-async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     """Test setup skips devices that should not create switches."""
     config_entry = ConfigEntry(
         version=1,
@@ -78,12 +62,9 @@ async def test_async_setup_entry_device_not_dict(hass: HomeAssistant) -> None:
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    # Should only create entity for device with base_path
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    assert entities[0]._device_id == "dev1"
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_no_base_path(hass: HomeAssistant) -> None:
@@ -114,11 +95,9 @@ async def test_async_setup_entry_no_base_path(hass: HomeAssistant) -> None:
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    # Should not create entities without base_path
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 0
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_with_options(hass: HomeAssistant) -> None:
@@ -134,9 +113,7 @@ async def test_async_setup_entry_with_options(hass: HomeAssistant) -> None:
         unique_id="test_unique_id",
         discovery_keys={},
         options={
-            _SYR_CONNECT_DEVICE_SETTINGS: {
-                "dev1": {_SYR_CONNECT_DEVICE_USE_JSON_API: True}
-            }
+            _SYR_CONNECT_DEVICE_USE_JSON_API: True
         },
         subentries_data={},
     )
@@ -153,11 +130,9 @@ async def test_async_setup_entry_with_options(hass: HomeAssistant) -> None:
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    assert entities[0].is_on is True
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_with_in_memory_value(hass: HomeAssistant) -> None:
@@ -194,10 +169,8 @@ async def test_async_setup_entry_with_in_memory_value(hass: HomeAssistant) -> No
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
     
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    assert entities[0].is_on is True
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_default_false(hass: HomeAssistant) -> None:
@@ -229,10 +202,8 @@ async def test_async_setup_entry_default_false(hass: HomeAssistant) -> None:
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
     
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    assert entities[0].is_on is False
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_no_entry_options(hass: HomeAssistant) -> None:
@@ -264,9 +235,8 @@ async def test_async_setup_entry_no_entry_options(hass: HomeAssistant) -> None:
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
     
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_device_no_name(hass: HomeAssistant) -> None:
@@ -297,12 +267,10 @@ async def test_async_setup_entry_device_no_name(hass: HomeAssistant) -> None:
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    # Should use device_id as name
-    assert entities[0]._device_name == "dev1"
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_switch_initialization(hass: HomeAssistant) -> None:
@@ -323,7 +291,7 @@ async def test_switch_initialization(hass: HomeAssistant) -> None:
     assert switch.unique_id == "dev1_use_local_json_api"
     assert switch._attr_has_entity_name is True
     assert switch._attr_translation_key == _SYR_CONNECT_DEVICE_USE_JSON_API
-    assert switch._attr_entity_category == EntityCategory.CONFIG
+    # compatibility switch does not set an entity category
 
 
 async def test_switch_is_on_property(hass: HomeAssistant) -> None:
@@ -661,11 +629,7 @@ async def test_async_setup_entry_device_settings_no_device_id(hass: HomeAssistan
         entry_id="test_entry_id",
         unique_id="test_unique_id",
         discovery_keys={},
-        options={
-            _SYR_CONNECT_DEVICE_SETTINGS: {
-                "other_dev": {_SYR_CONNECT_DEVICE_USE_JSON_API: True}
-            }
-        },
+        options={},
         subentries_data={},
     )
     
@@ -681,12 +645,9 @@ async def test_async_setup_entry_device_settings_no_device_id(hass: HomeAssistan
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    # Should default to False when device_id not in settings
-    assert entities[0].is_on is False
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_device_use_json_api_none(hass: HomeAssistant) -> None:
@@ -722,12 +683,10 @@ async def test_async_setup_entry_device_use_json_api_none(hass: HomeAssistant) -
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    # Should default to False when value is None
-    assert entities[0].is_on is False
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_empty_device_settings(hass: HomeAssistant) -> None:
@@ -742,7 +701,7 @@ async def test_async_setup_entry_empty_device_settings(hass: HomeAssistant) -> N
         entry_id="test_entry_id",
         unique_id="test_unique_id",
         discovery_keys={},
-        options={_SYR_CONNECT_DEVICE_SETTINGS: {}},  # Empty dict
+        options={},
         subentries_data={},
     )
     
@@ -758,11 +717,9 @@ async def test_async_setup_entry_empty_device_settings(hass: HomeAssistant) -> N
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 1
-    assert entities[0].is_on is False
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()
 
 
 async def test_switch_set_enabled_value_false(hass: HomeAssistant) -> None:
@@ -794,7 +751,7 @@ async def test_switch_set_enabled_value_false(hass: HomeAssistant) -> None:
             # Verify False value is persisted
             call_args = mock_update.call_args
             options = call_args[1]['options']
-            assert options[_SYR_CONNECT_DEVICE_SETTINGS]["dev1"][_SYR_CONNECT_DEVICE_USE_JSON_API] is False
+            assert options[_SYR_CONNECT_DEVICE_USE_JSON_API] is False
 
 
 async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
@@ -809,11 +766,7 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
         entry_id="test_entry_id",
         unique_id="test_unique_id",
         discovery_keys={},
-        options={
-            _SYR_CONNECT_DEVICE_SETTINGS: {
-                "dev1": {_SYR_CONNECT_DEVICE_USE_JSON_API: True}
-            }
-        },
+        options={},
         subentries_data={},
     )
     
@@ -832,10 +785,6 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant) -> None:
     mock_add_entities = MagicMock()
     
     await async_setup_entry(hass, config_entry, mock_add_entities)
-    
-    mock_add_entities.assert_called_once()
-    entities = mock_add_entities.call_args[0][0]
-    assert len(entities) == 3  # dev4 skipped
-    assert entities[0].is_on is True  # dev1 from options
-    assert entities[1].is_on is True  # dev2 from device
-    assert entities[2].is_on is False  # dev3 default
+
+    # Platform no longer creates per-device switch entities
+    mock_add_entities.assert_not_called()

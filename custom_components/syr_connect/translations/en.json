@@ -889,11 +889,6 @@
           "21": "Opening"
         }
       }
-    },
-    "switch": {
-      "use_local_json_api": {
-        "name": "Use local JSON API"
-      }
     }
   },
   "issues": {
@@ -906,7 +901,10 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Update interval"
+          "scan_interval": "Update interval",
+          "device_ip": "IP address",
+          "device_model": "Device model",
+          "device_model_placeholder": "Please select"
         },
         "description": "Defines the time interval between API calls.",
         "title": "SYR Connect Options"

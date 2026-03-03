@@ -1,7 +1,10 @@
 """Config flow for SYR Connect integration."""
+
 from __future__ import annotations
 
+import json
 import logging
+from pathlib import Path
 from typing import Any
 
 import voluptuous as vol
@@ -13,13 +16,12 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api_xml import SyrConnectXmlAPI
 from .const import (
+    _SYR_CONNECT_DEVICE_SETTINGS,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
     DOMAIN,
 )
-from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +47,10 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         CannotConnectError: If connection to API fails
         InvalidAuthError: If authentication fails
     """
+    # Import here to avoid blocking import at module level
+    from .api_xml import SyrConnectXmlAPI
+    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+
     _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
     api = SyrConnectXmlAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
@@ -94,11 +100,33 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             FlowResult with the configuration entry or form
         """
         if user_input is not None:
-            # Persist top-level options (e.g., scan interval)
+            # Persist options (scan interval and per-device toggles)
             entry = getattr(self, "_config_entry", None)
             options = dict(entry.options) if entry and entry.options else {}
-            for k, v in user_input.items():
-                options[k] = v
+
+            # Scan interval
+            if _SYR_CONNECT_SCAN_INTERVAL_CONF in user_input:
+                options[_SYR_CONNECT_SCAN_INTERVAL_CONF] = user_input[_SYR_CONNECT_SCAN_INTERVAL_CONF]
+
+                # Per-device settings: fields are prefixed with 'device_'<device_id>
+                device_settings = options.get(_SYR_CONNECT_DEVICE_SETTINGS, {})
+                for key, val in list(user_input.items()):
+                    if not key.startswith("device_"):
+                        continue
+                    # key formats: device_<id>_ip or device_<id>_model
+                    parts = key.split("_")
+                    if len(parts) < 3:
+                        continue
+                    device_id = "_".join(parts[1:-1]) if len(parts) > 3 else parts[1]
+                    suffix = parts[-1]
+                    dev_entry = device_settings.get(str(device_id), {})
+                    if suffix == "ip":
+                        dev_entry["ip"] = str(val).strip() if val is not None else ""
+                    elif suffix == "model":
+                        dev_entry["model"] = str(val) if val is not None else ""
+                    device_settings[str(device_id)] = dev_entry
+
+            options[_SYR_CONNECT_DEVICE_SETTINGS] = device_settings
 
             return self.async_create_entry(title="", data=options)
 
@@ -109,7 +137,8 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             if entry and entry.options
             else _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
         )
-        # Build schema for options (scan interval only)
+
+        # Build schema for options: scan interval + per-device toggles
         schema_dict: dict = {
             vol.Optional(
                 _SYR_CONNECT_SCAN_INTERVAL_CONF,
@@ -124,10 +153,47 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             ),
         }
 
+        # Add device-specific settings
+        device_settings_current = entry.options.get(_SYR_CONNECT_DEVICE_SETTINGS, {}) if entry and entry.options else {}
+        coordinator = getattr(entry, "runtime_data", None) if entry else None
+        devices: list[dict[str, Any]] = []
+        if coordinator and getattr(coordinator, "data", None):
+            devices = coordinator.data.get("devices", []) or []
+
+            # Import MODEL_SIGNATURES inside the function to avoid blocking import at module level
+            from .models import MODEL_SIGNATURES
+
+            for device in devices:
+                device_id = str(device.get("id"))
+                field_ip = f"device_{device_id}_ip"
+                field_model = f"device_{device_id}_model"
+                # Only pre-fill the IP input with a previously user-configured value.
+                # Do not fall back to detected values so the user can clear the field.
+                default_ip = device_settings_current.get(device_id, {}).get("ip", "")
+                # Build select options from MODEL_SIGNATURES where base_path is defined
+                model_options: list[dict[str, str]] = []
+                # Placeholder option (localized)
+                model_options.append({"value": "", "label": "device_model_placeholder"})
+                for sig in MODEL_SIGNATURES:
+                    if sig.get("base_path"):
+                        model_options.append({"value": sig.get("name"), "label": sig.get("display_name")})
+                default_model = device_settings_current.get(device_id, {}).get("model", "")
+                # Optional IP address field for the device (allows overriding detected IP)
+                schema_dict[vol.Optional(field_ip, default=default_ip, description={"name": "device_ip"})] = selector.TextSelector()
+                # Select field for model (only models with a base_path)
+                if len(model_options) > 1:
+                    schema_dict[vol.Optional(field_model, default=default_model, description={"name": "device_model"})] = selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=model_options,
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    )
+
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(schema_dict),
         )
+
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SYR Connect."""
@@ -160,9 +226,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         return await self.async_step_reauth_confirm()
 
-    async def async_step_reauth_confirm(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_reauth_confirm(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle reauth confirmation step.
 
         Args:
@@ -214,9 +278,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             description_placeholders={"username": str(self.context.get("username", ""))},
         )
 
-    async def async_step_reconfigure(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle reconfiguration of the integration.
 
         Args:
@@ -276,9 +338,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step.
 
         Args:
@@ -311,6 +371,4 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         else:
             _LOGGER.debug("Showing config form to user")
 
-        return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
-        )
+        return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors)
