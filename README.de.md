@@ -120,10 +120,6 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 - Gerätetyp und Hersteller
 - Netzwerk-Informationen (IP, MAC, Gateway)
 
-#### Binärsensoren
-
-- Regeneration aktiv
-
 #### Buttons (Aktionen)
 
 - **Sofort regenerieren**: Sofortige Regeneration starten

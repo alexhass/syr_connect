@@ -120,10 +120,6 @@ The integration provides comprehensive monitoring of your water softener:
 - Device type and manufacturer
 - Network information (IP, MAC, Gateway)
 
-#### Binary Sensors
-
-- Regeneration active status
-
 #### Buttons (Actions)
 
 - **Regenerate Now**: Start immediate regeneration cycle
