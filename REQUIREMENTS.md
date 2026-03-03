@@ -2,7 +2,7 @@
 
 ## Home Assistant Requirements
 
-- **Home Assistant Version**: 2023.1.0 or higher (recommended: latest stable)
+- **Home Assistant Version**: 2024.1.0 or higher (recommended: latest stable)
 - **Python Version**: 3.11 or higher (included in Home Assistant)
 
 ## Development Requirements
@@ -108,12 +108,17 @@ config/
       ├── manifest.json
       ├── config_flow.py
       ├── const.py
-      ├── api.py
+      ├── api_json.py
+      ├── api_xml.py
+      ├── models.py
       ├── checksum.py
       ├── coordinator.py
       ├── sensor.py
-      ├── button.py
       ├── binary_sensor.py
+      ├── button.py
+      ├── select.py
+      ├── switch.py
+      ├── valve.py
       ├── diagnostics.py
       ├── encryption.py
       ├── exceptions.py
