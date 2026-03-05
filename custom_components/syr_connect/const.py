@@ -141,6 +141,7 @@ _SYR_CONNECT_SENSOR_BINARY = {
 _SYR_CONNECT_SENSOR_CONFIG = {
     "getRPD",   # Regeneration interval - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
+    "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
