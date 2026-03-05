@@ -3,11 +3,11 @@
 This module implements a lightweight client for devices that expose a
 local JSON API at the URL pattern:
 
-    BASE_URL = "http://{host}:5333/{base_path}/"
+    BASE_URL = "{scheme}://{host}:5333{base_path}"
 
 The expected endpoints used here are:
-- GET {BASE_URL}set/ADM/(2)f    -> login (side-effect required before get/all)
-- GET {BASE_URL}get/all         -> returns a flat JSON object with getXXX keys
+- GET {BASE_URL}/set/ADM/(2)f    -> login (side-effect required before /get/all)
+- GET {BASE_URL}/get/all         -> returns a flat JSON object with getXXX keys
 
 The client is intentionally small and mirrors the interface used by the
 XML API client so it can be integrated into the coordinator later.
@@ -66,7 +66,7 @@ class SyrConnectJsonAPI:
                 self._base_path
             )
             return None
-        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}/{self._base_path.strip('/')}/"
+        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
         _LOGGER.debug(
             "JSON API: Built base URL from host and base_path: %s (host=%s, base_path=%s, port=%s)",
             result,
@@ -85,13 +85,13 @@ class SyrConnectJsonAPI:
         """Call the login endpoint required by the device JSON API.
 
         This performs a GET on the known login URL. Many devices require this
-        call before `get/all` returns values.
+        call before `/get/all` returns values.
         """
         base = self._build_base_url()
         if not base:
             raise ValueError("Base URL not configured for JSON API client")
 
-        login_url = f"{base}set/ADM/(2)f"
+        login_url = f"{base}/set/ADM/(2)f"
         _LOGGER.debug("JSON API: Login attempt - URL: %s", login_url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=10)
@@ -130,7 +130,7 @@ class SyrConnectJsonAPI:
             raise
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
-        """Return a single-device list constructed from the JSON `get/all` result.
+        """Return a single-device list constructed from the JSON `/get/all` result.
 
         The local JSON API targets a single device; we expose it as one device
         so the coordinator code can continue to reuse the same flow as the
@@ -142,7 +142,7 @@ class SyrConnectJsonAPI:
             await self.login()
 
         # Support tests that patch `_fetch_json` with a synchronous callable
-        maybe: Any = self._fetch_json("get/all")
+        maybe: Any = self._fetch_json("/get/all")
         if hasattr(maybe, "__await__"):
             status = await maybe
         else:
@@ -167,7 +167,7 @@ class SyrConnectJsonAPI:
             await self.login()
 
         try:
-            maybe: Any = self._fetch_json("get/all")
+            maybe: Any = self._fetch_json("/get/all")
             if hasattr(maybe, "__await__"):
                 status = await maybe
             else:
@@ -189,7 +189,7 @@ class SyrConnectJsonAPI:
         """Attempt to set a device value using the JSON API.
 
         The exact set URL pattern differs between devices. The implementation
-        below attempts a conservative GET to `set/{command}/{value}` and
+        below attempts a conservative GET to `/set/{command}/{value}` and
         returns True if the request succeeds. This can be adapted later to
         match exact device behaviour.
         """
@@ -199,7 +199,7 @@ class SyrConnectJsonAPI:
 
         # Strip leading "set" if caller sends full command like "setAB"
         cmd = command[3:] if command.lower().startswith("set") else command
-        url = f"{base}set/{cmd}/{value}"
+        url = f"{base}/set/{cmd}/{value}"
         _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=10)

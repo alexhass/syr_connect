@@ -202,7 +202,7 @@ async def test_fetch_json_no_base_url_raises() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
     with pytest.raises(ValueError, match="Base URL not configured"):
-        await client._fetch_json("get/all")
+        await client._fetch_json("/get/all")
 
 
 async def test_fetch_json_non_dict_raises() -> None:
@@ -218,7 +218,7 @@ async def test_fetch_json_non_dict_raises() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(ValueError, match="JSON API returned unexpected payload"):
-        await client._fetch_json("get/all")
+        await client._fetch_json("/get/all")
 
 
 async def test_fetch_json_http_error() -> None:
@@ -233,7 +233,7 @@ async def test_fetch_json_http_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(aiohttp.ClientError):
-        await client._fetch_json("get/all")
+        await client._fetch_json("/get/all")
 
 
 async def test_fetch_json_success() -> None:
@@ -248,7 +248,7 @@ async def test_fetch_json_success() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    result = await client._fetch_json("get/all")
+    result = await client._fetch_json("/get/all")
 
     assert result == {"getAB": "value", "getCD": "123"}
 
@@ -341,7 +341,7 @@ async def test_set_device_status_no_base_url_raises() -> None:
     client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
 
     with pytest.raises(ValueError, match="Base URL not configured"):
-        await client.set_device_status("device1", "setAB", "on")
+        await client.set_device_status("device1", "setAB", "true")
 
 
 async def test_set_device_status_strips_set_prefix() -> None:
@@ -355,12 +355,12 @@ async def test_set_device_status_strips_set_prefix() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    result = await client.set_device_status("device1", "setAB", "on")
+    result = await client.set_device_status("device1", "setAB", "true")
 
-    # Verify URL contains "set/AB/on" (not "set/setAB/on")
+    # Verify URL contains "/set/AB/true" (not "/set/setAB/true")
     called_url = sess.get.call_args[0][0]
-    assert "set/AB/on" in called_url
-    assert "set/setAB/" not in called_url
+    assert "/set/AB/true" in called_url
+    assert "/set/setAB/" not in called_url
     assert result is True
 
 
@@ -392,7 +392,7 @@ async def test_set_device_status_http_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(aiohttp.ClientError):
-        await client.set_device_status("device1", "AB", "off")
+        await client.set_device_status("device1", "AB", "false")
 
 
 async def test_get_devices_skips_login_with_base_url() -> None:
@@ -455,13 +455,13 @@ def test_build_base_url_strips_trailing_slash() -> None:
     assert client._build_base_url() == "http://test:5333/api/v1/"
 
 
-def test_build_base_url_strips_slashes_from_base_path() -> None:
-    """Test _build_base_url strips leading/trailing slashes from base_path."""
+def test_build_base_url_with_correct_base_path() -> None:
+    """Test _build_base_url constructs URL when base_path is correctly formatted."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="api/v1"  # No slashes
+        base_path="/api/v1/"  # Correctly formatted with slashes
     )
     result = client._build_base_url()
     assert result == "http://192.168.1.100:5333/api/v1/"
@@ -478,10 +478,10 @@ async def test_set_device_status_command_without_set_prefix() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    result = await client.set_device_status("device1", "AB", "on")
+    result = await client.set_device_status("device1", "AB", "true")
 
-    # Verify URL contains "set/AB/on"
+    # Verify URL contains "/set/AB/true"
     called_url = sess.get.call_args[0][0]
-    assert "set/AB/on" in called_url
+    assert "/set/AB/true" in called_url
     assert result is True
 
