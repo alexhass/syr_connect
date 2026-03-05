@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -484,4 +485,106 @@ async def test_set_device_status_command_without_set_prefix() -> None:
     called_url = sess.get.call_args[0][0]
     assert "/set/AB/true" in called_url
     assert result is True
+
+
+async def test_fetch_json_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _fetch_json logs warning when response contains NSC error code."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"getXYZ": "NSC", "getABC": "value"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        result = await client._fetch_json("/get/all")
+
+    assert result == {"getXYZ": "NSC", "getABC": "value"}
+    assert "Command 'getXYZ' does not exist (NSC error)" in caplog.text
+
+
+async def test_fetch_json_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _fetch_json logs warning when response contains MIMA error code."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setPRF9": "MIMA", "getABC": "value"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        result = await client._fetch_json("/set/prf9/invalid")
+
+    assert result == {"setPRF9": "MIMA", "getABC": "value"}
+    assert "Value for 'setPRF9' is outside valid range (MIMA error)" in caplog.text
+
+
+async def test_set_device_status_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test set_device_status logs warning when response contains NSC error code."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setINVALID": "NSC"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        result = await client.set_device_status("device1", "INVALID", "value")
+
+    assert result is True
+    assert "Command 'setINVALID' does not exist (NSC error)" in caplog.text
+
+
+async def test_set_device_status_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test set_device_status logs warning when response contains MIMA error code."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setPRF9": "mima"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        result = await client.set_device_status("device1", "PRF9", "999")
+
+    assert result is True
+    assert "Value for 'setPRF9' is outside valid range (MIMA error)" in caplog.text
+
+
+async def test_check_api_error_codes_case_insensitive() -> None:
+    """Test _check_api_error_codes handles case-insensitive error codes."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Should not raise any exceptions, just log warnings
+    client._check_api_error_codes({"key1": "nsc"}, "http://test")
+    client._check_api_error_codes({"key2": "NSC"}, "http://test")
+    client._check_api_error_codes({"key3": "Nsc"}, "http://test")
+    client._check_api_error_codes({"key4": "mima"}, "http://test")
+    client._check_api_error_codes({"key5": "MIMA"}, "http://test")
+    client._check_api_error_codes({"key6": "MiMa"}, "http://test")
+
+
+async def test_check_api_error_codes_ignores_non_string_values() -> None:
+    """Test _check_api_error_codes ignores non-string values."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Should not raise exceptions for non-string values
+    client._check_api_error_codes({"key1": 123}, "http://test")
+    client._check_api_error_codes({"key2": None}, "http://test")
+    client._check_api_error_codes({"key3": []}, "http://test")
+    client._check_api_error_codes({"key4": {}}, "http://test")
 

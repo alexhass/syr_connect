@@ -9,6 +9,10 @@ The expected endpoints used here are:
 - GET {BASE_URL}/set/ADM/(2)f    -> login (side-effect required before /get/all)
 - GET {BASE_URL}/get/all         -> returns a flat JSON object with getXXX keys
 
+Known API error codes in responses:
+- "NSC": Command does not exist (No Such Command)
+- "MIMA": Value outside valid range (Min/Max exceeded)
+
 The client is intentionally small and mirrors the interface used by the
 XML API client so it can be integrated into the coordinator later.
 """
@@ -123,6 +127,10 @@ class SyrConnectJsonAPI:
                 data = await resp.json()
                 if not isinstance(data, dict):
                     raise ValueError("JSON API returned unexpected payload")
+
+                # Check for API error codes in response
+                self._check_api_error_codes(data, url)
+
                 _LOGGER.debug("JSON API: Successfully fetched JSON from %s", url)
                 return data
         except Exception as err:
@@ -206,8 +214,43 @@ class SyrConnectJsonAPI:
             async with self._session.get(url, timeout=timeout_obj) as resp:
                 _LOGGER.debug("JSON API: Set response status: %s", resp.status)
                 resp.raise_for_status()
+
+                # Parse response to check for error codes
+                try:
+                    data = await resp.json()
+                    if isinstance(data, dict):
+                        self._check_api_error_codes(data, url)
+                except Exception:
+                    # If JSON parsing fails, continue - some devices return empty response
+                    pass
+
                 _LOGGER.info("Set %s=%s via JSON API for device %s", cmd, value, device_id)
                 return True
         except Exception as err:
             _LOGGER.error("Failed to set %s via JSON API: %s", cmd, err)
             raise
+
+    def _check_api_error_codes(self, data: dict[str, Any], url: str) -> None:
+        """Check response for API error codes and log warnings.
+
+        Known error codes:
+        - "NSC": Command does not exist
+        - "MIMA": Value outside valid range
+        """
+        for key, val in data.items():
+            if not isinstance(val, str):
+                continue
+
+            val_upper = val.upper()
+            if val_upper == "NSC":
+                _LOGGER.warning(
+                    "JSON API: Command '%s' does not exist (NSC error) - URL: %s",
+                    key,
+                    url
+                )
+            elif val_upper == "MIMA":
+                _LOGGER.warning(
+                    "JSON API: Value for '%s' is outside valid range (MIMA error) - URL: %s",
+                    key,
+                    url
+                )
