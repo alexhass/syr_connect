@@ -50,7 +50,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "NeoSoft 5000 Connect",
-        "base_path": "neosoft",
+        "base_path": "/neosoft",
         "name": "neosoft5000",
         "cna_equals": None,
         "ver_prefix": "NSS",
@@ -59,7 +59,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "NeoSoft 2500 Connect",
-        "base_path": "neosoft",
+        "base_path": "/neosoft",
         "name": "neosoft2500",
         "cna_equals": None,
         "ver_prefix": "NSS",
@@ -68,7 +68,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "Trio DFR/LS Connect",
-        "base_path": "trio",
+        "base_path": "/trio",
         "name": "trio",
         "cna_equals": None,
         "ver_prefix": "syr001",
@@ -77,7 +77,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "display_name": "Safe-Tech+ Connect",
-        "base_path": "trio",
+        "base_path": "/trio",
         "name": "safetech",
         "cna_equals": None,
         "ver_prefix": "Safe-Tech",
