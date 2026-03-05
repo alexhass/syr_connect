@@ -123,7 +123,7 @@ def test_neosoft2500_with_base_path():
     flat = {"getRE1": "1", "getVER": "NSS-1.0"}
     result = detect_model(flat)
     assert result["name"] == "neosoft2500"
-    assert result["base_path"] == "neosoft"
+    assert result["base_path"] == "/neosoft"
 
 
 def test_getcna_none_converted_to_empty_string():
@@ -272,7 +272,7 @@ def test_neosoft_base_path():
     """NeoSoft models should return 'neosoft' as base_path."""
     flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS-3.0"}
     result = detect_model(flat)
-    assert result["base_path"] == "neosoft"
+    assert result["base_path"] == "/neosoft"
 
 
 def test_trio_base_path():
@@ -281,7 +281,7 @@ def test_trio_base_path():
     flat = {"getVER": "syr001-firmware", "getAFW": "1", "getVER2": "176"}
     result = detect_model(flat)
     assert result["name"] == "trio"
-    assert result["base_path"] == "trio"
+    assert result["base_path"] == "/trio"
 
 
 def test_safetech_base_path():
@@ -289,7 +289,7 @@ def test_safetech_base_path():
     flat = {"getVER": "Safe-Tech-v2"}
     result = detect_model(flat)
     assert result["name"] == "safetech"
-    assert result["base_path"] == "trio"
+    assert result["base_path"] == "/trio"
 
 
 def test_lexplus_base_path_none():
