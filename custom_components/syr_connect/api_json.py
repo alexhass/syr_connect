@@ -72,11 +72,11 @@ class SyrConnectJsonAPI:
             return None
         result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
         _LOGGER.debug(
-            "JSON API: Built base URL from host and base_path: %s (host=%s, base_path=%s, port=%s)",
+            "JSON API: Built base URL from host and base_path: %s (host=%s, port=%s, base_path=%s)",
             result,
             self._host,
-            self._base_path,
-            _SYR_CONNECT_JSON_API_PORT
+            _SYR_CONNECT_JSON_API_PORT,
+            self._base_path
         )
         return result
 
