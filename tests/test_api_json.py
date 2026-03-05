@@ -70,15 +70,15 @@ def test_init_with_base_url() -> None:
 
 
 def test_init_without_base_url() -> None:
-    """Test initialization without base_url (requires ip and base_path)."""
+    """Test initialization without base_url (requires host and base_path)."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.100",
+        host="192.168.1.100",
         base_path="/api/v1/"
     )
     assert client._base_url is None
-    assert client._ip == "192.168.1.100"
+    assert client._host == "192.168.1.100"
     assert client._base_path == "/api/v1/"
 
 
@@ -91,7 +91,7 @@ def test_build_base_url_with_explicit_base_url() -> None:
 
 
 def test_build_base_url_without_ip_or_base_path() -> None:
-    """Test _build_base_url returns None when ip or base_path missing."""
+    """Test _build_base_url returns None when host or base_path missing."""
     sess = MagicMock()
 
     # Missing both
@@ -99,20 +99,20 @@ def test_build_base_url_without_ip_or_base_path() -> None:
     assert client._build_base_url() is None
 
     # Missing base_path
-    client = SyrConnectJsonAPI(sess, ip="192.168.1.100")
+    client = SyrConnectJsonAPI(sess, host="192.168.1.100")
     assert client._build_base_url() is None
 
-    # Missing ip
+    # Missing host
     client = SyrConnectJsonAPI(sess, base_path="/api/v1/")
     assert client._build_base_url() is None
 
 
 def test_build_base_url_constructs_url() -> None:
-    """Test _build_base_url constructs URL from ip and base_path."""
+    """Test _build_base_url constructs URL from host and base_path."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.50",
+        host="192.168.1.50",
         base_path="/api/v1/"
     )
     result = client._build_base_url()
@@ -147,7 +147,7 @@ def test_is_session_valid_active() -> None:
 async def test_login_no_base_url_raises() -> None:
     """Test login raises ValueError when base URL cannot be built."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(sess)  # No ip/base_path/base_url
+    client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
     with pytest.raises(ValueError, match="Base URL not configured"):
         await client.login()
 
@@ -164,7 +164,7 @@ async def test_login_success() -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.100",
+        host="192.168.1.100",
         base_path="/api/v1/"
     )
 
@@ -189,7 +189,7 @@ async def test_login_http_error() -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.100",
+        host="192.168.1.100",
         base_path="/api/v1/"
     )
 
@@ -200,7 +200,7 @@ async def test_login_http_error() -> None:
 async def test_fetch_json_no_base_url_raises() -> None:
     """Test _fetch_json raises ValueError when base URL not configured."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(sess)  # No ip/base_path/base_url
+    client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
     with pytest.raises(ValueError, match="Base URL not configured"):
         await client._fetch_json("get/all")
 
@@ -258,7 +258,7 @@ async def test_get_devices_calls_login_when_needed() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.100",
+        host="192.168.1.100",
         base_path="/api/v1/"
     )
 
@@ -309,7 +309,7 @@ async def test_get_device_status_calls_login() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.100",
+        host="192.168.1.100",
         base_path="/api/v1/"
     )
 
@@ -338,7 +338,7 @@ async def test_get_device_status_exception_returns_none() -> None:
 async def test_set_device_status_no_base_url_raises() -> None:
     """Test set_device_status raises ValueError when base URL not configured."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(sess)  # No ip/base_path/base_url
+    client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
 
     with pytest.raises(ValueError, match="Base URL not configured"):
         await client.set_device_status("device1", "setAB", "on")
@@ -460,7 +460,7 @@ def test_build_base_url_strips_slashes_from_base_path() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        ip="192.168.1.100",
+        host="192.168.1.100",
         base_path="api/v1"  # No slashes
     )
     result = client._build_base_url()

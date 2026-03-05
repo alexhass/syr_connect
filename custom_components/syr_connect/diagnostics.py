@@ -249,7 +249,7 @@ async def async_get_config_entry_diagnostics(
                     status = dev.get("status") or {}
                     ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
 
-                json_api = SyrConnectJsonAPI(session, ip=ip, base_path=base_path)
+                json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)
                 try:
                     # Login is required for some devices
                     try:

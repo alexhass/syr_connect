@@ -3,7 +3,7 @@
 This module implements a lightweight client for devices that expose a
 local JSON API at the URL pattern:
 
-    BASE_URL = "http://{ip}:5333/{base_path}/"
+    BASE_URL = "http://{host}:5333/{base_path}/"
 
 The expected endpoints used here are:
 - GET {BASE_URL}set/ADM/(2)f    -> login (side-effect required before get/all)
@@ -20,9 +20,11 @@ from typing import Any
 
 import aiohttp
 
-from .const import _SYR_CONNECT_JSON_API_PORT
-
 _LOGGER = logging.getLogger(__name__)
+
+# Local JSON API defaults
+_SYR_CONNECT_JSON_API_SCHEME = "http"
+_SYR_CONNECT_JSON_API_PORT = 5333
 
 # Session timeout (minutes) - mirror XML client behaviour
 _SESSION_TIMEOUT_MINUTES = 30
@@ -33,20 +35,20 @@ class SyrConnectJsonAPI:
 
     Args:
         session: aiohttp ClientSession provided by Home Assistant
-        ip: IP address of the device (optional if base_url provided)
+        host: IP address or hostname of the device (optional if base_url provided)
         base_path: path component for the device (optional)
-        base_url: explicit base URL (overrides ip/base_path)
+        base_url: explicit base URL (overrides host/base_path)
     """
 
     def __init__(
         self,
         session: aiohttp.ClientSession,
-        ip: str | None = None,
+        host: str | None = None,
         base_path: str | None = None,
         base_url: str | None = None,
     ) -> None:
         self._session = session
-        self._ip = ip
+        self._host = host
         self._base_path = base_path
         self._base_url = base_url
         self._last_login: datetime | None = None
@@ -57,18 +59,18 @@ class SyrConnectJsonAPI:
             result = self._base_url.rstrip("/") + "/"
             _LOGGER.debug("JSON API: Built base URL from explicit base_url: %s", result)
             return result
-        if not self._ip or not self._base_path:
+        if not self._host or not self._base_path:
             _LOGGER.debug(
-                "JSON API: Cannot build base URL - ip=%s, base_path=%s",
-                self._ip,
+                "JSON API: Cannot build base URL - host=%s, base_path=%s",
+                self._host,
                 self._base_path
             )
             return None
-        result = f"http://{self._ip}:{_SYR_CONNECT_JSON_API_PORT}/{self._base_path.strip('/')}/"
+        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}/{self._base_path.strip('/')}/"
         _LOGGER.debug(
-            "JSON API: Built base URL from ip and base_path: %s (ip=%s, base_path=%s, port=%s)",
+            "JSON API: Built base URL from host and base_path: %s (host=%s, base_path=%s, port=%s)",
             result,
-            self._ip,
+            self._host,
             self._base_path,
             _SYR_CONNECT_JSON_API_PORT
         )
