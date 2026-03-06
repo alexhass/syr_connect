@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from custom_components.syr_connect.const import DOMAIN
@@ -18,7 +19,7 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
         minor_version=0,
         domain=DOMAIN,
         title="Test",
-        data={"username": "test", "password": "test"},
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
