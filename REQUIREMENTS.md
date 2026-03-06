@@ -25,6 +25,34 @@ Run tests with coverage:
 pytest --cov=custom_components.syr_connect --cov-report=term-missing tests/
 ```
 
+### Development Emulator
+
+For testing without a real SYR device, use the **SYR Connect Emulator**:
+
+**Repository**: <https://github.com/alexhass/syr_connect_emulator>
+
+The emulator provides:
+
+- Full JSON API implementation (port 5333) for local device testing
+- Simulated device responses for various SYR models (LEXplus, SafeTech, NeoSoft)
+- No hardware or credentials required
+- Perfect for integration development, testing, and debugging
+
+To use the emulator:
+
+1. Clone and run the emulator:
+
+   ```bash
+   git clone https://github.com/alexhass/syr_connect_emulator.git
+   cd syr_connect_emulator
+   python emulator.py
+   ```
+
+2. Configure the integration to use `localhost` (or emulator's IP) as the device host
+3. Select JSON API mode when adding the integration
+
+The emulator responds to all standard API calls and allows testing features without accessing real devices.
+
 ## Python Package Requirements
 
 The following packages will be automatically installed by Home Assistant:
