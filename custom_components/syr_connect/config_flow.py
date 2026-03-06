@@ -154,7 +154,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         await api.login()
 
         # Fetch device data directly to validate connection and check for SYR device
-        data_result = await api._fetch_json("get/all")
+        data_result = await api._request_json_data("get/all")
         if not data_result:
             _LOGGER.error("JSON API returned empty result")
             raise CannotConnectError

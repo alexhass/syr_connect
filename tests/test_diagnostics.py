@@ -1592,7 +1592,7 @@ async def test_diagnostics_raw_json_with_base_path(hass: HomeAssistant) -> None:
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._fetch_json = AsyncMock(return_value={"status": "ok", "data": {"test": "value"}})
+        mock_json_api._request_json_data = AsyncMock(return_value={"status": "ok", "data": {"test": "value"}})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -1693,7 +1693,7 @@ async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
         mock_json_api.is_session_valid = MagicMock(return_value=False)
         mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+        mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -1744,7 +1744,7 @@ async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._fetch_json = AsyncMock(side_effect=Exception("Fetch failed"))
+        mock_json_api._request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -1889,7 +1889,7 @@ async def test_diagnostics_raw_json_device_ip_from_status(hass: HomeAssistant) -
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._fetch_json = AsyncMock(return_value={"status": "ok"})
+        mock_json_api._request_json_data = AsyncMock(return_value={"status": "ok"})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2048,7 +2048,7 @@ async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> Non
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+        mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2100,7 +2100,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
     # Mock the JSON API
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._fetch_json = AsyncMock(return_value={"getSRN": "12345", "getFLO": "10"})
+    mock_json_api._request_json_data = AsyncMock(return_value={"getSRN": "12345", "getFLO": "10"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2153,7 +2153,7 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=False)
     mock_json_api.login = AsyncMock()
-    mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2201,7 +2201,7 @@ async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=False)
     mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
-    mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2246,7 +2246,7 @@ async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
     # Mock JSON API where fetch fails with proper spec
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._fetch_json = AsyncMock(side_effect=Exception("Fetch failed"))
+    mock_json_api._request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2338,7 +2338,7 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
     # Mock JSON API with proper spec
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2471,7 +2471,7 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
 
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 

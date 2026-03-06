@@ -184,7 +184,7 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._request_json_data",
             new_callable=AsyncMock,
             return_value={"getSRN": "12345", "getVER": "test"},
         ),
@@ -264,7 +264,7 @@ async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._request_json_data",
             new_callable=AsyncMock,
             return_value={"getSRN": "12345", "getVER": "test"},
         ),
@@ -947,7 +947,7 @@ async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._request_json_data",
             return_value={},
         ),
         pytest.raises(CannotConnectError),
@@ -970,7 +970,7 @@ async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) ->
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._request_json_data",
             return_value={"someOtherField": "value"},
         ),
         pytest.raises(CannotConnectError),
@@ -1072,7 +1072,7 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._request_json_data",
             return_value={"getSRN": "12345"},
         ),
     ):

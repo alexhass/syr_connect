@@ -32,14 +32,14 @@ def load_fixture(name: str) -> dict:
     ],
 )
 async def test_json_client_parses_fixture(fixture: str) -> None:
-    """Ensure SyrConnectJsonAPI returns the JSON as status dict when _fetch_json is patched."""
+    """Ensure SyrConnectJsonAPI returns the JSON as status dict when _request_json_data is patched."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://127.0.0.1:5333/local/")
 
     data = load_fixture(fixture)
 
-    # Patch _fetch_json to return fixture data
-    with patch.object(client, "_fetch_json", return_value=data):
+    # Patch _request_json_data to return fixture data
+    with patch.object(client, "_request_json_data", return_value=data):
         status = await client.get_device_status("local")
 
     assert isinstance(status, dict)
@@ -191,16 +191,16 @@ async def test_login_http_error() -> None:
         await client.login()
 
 
-async def test_fetch_json_no_base_url_raises() -> None:
-    """Test _fetch_json raises ValueError when base URL not configured."""
+async def test_request_json_data_no_base_url_raises() -> None:
+    """Test _request_json_data raises ValueError when base URL not configured."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
     with pytest.raises(ValueError, match="Base URL not configured"):
-        await client._fetch_json("/get/all")
+        await client._request_json_data("/get/all")
 
 
-async def test_fetch_json_non_dict_raises() -> None:
-    """Test _fetch_json raises SyrConnectInvalidResponseError when response is not a dict."""
+async def test_request_json_data_non_dict_raises() -> None:
+    """Test _request_json_data raises SyrConnectInvalidResponseError when response is not a dict."""
     from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
 
     sess = MagicMock()
@@ -214,11 +214,11 @@ async def test_fetch_json_non_dict_raises() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectInvalidResponseError, match="API returned unexpected payload"):
-        await client._fetch_json("/get/all")
+        await client._request_json_data("/get/all")
 
 
-async def test_fetch_json_http_error() -> None:
-    """Test _fetch_json raises exception on HTTP error."""
+async def test_request_json_data_http_error() -> None:
+    """Test _request_json_data raises exception on HTTP error."""
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     sess = MagicMock()
@@ -237,11 +237,11 @@ async def test_fetch_json_http_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectConnectionError):
-        await client._fetch_json("/get/all")
+        await client._request_json_data("/get/all")
 
 
-async def test_fetch_json_success() -> None:
-    """Test _fetch_json returns dict on success."""
+async def test_request_json_data_success() -> None:
+    """Test _request_json_data returns dict on success."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
@@ -252,7 +252,7 @@ async def test_fetch_json_success() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    result = await client._fetch_json("/get/all")
+    result = await client._request_json_data("/get/all")
 
     assert result == {"getAB": "value", "getCD": "123"}
 
@@ -266,7 +266,7 @@ async def test_get_device_status_calls_login() -> None:
     client.login = AsyncMock()
 
     data = {"getAB": "value", "getCD": "123"}
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         status = await client.get_device_status("device1")
 
     # Verify login was called (no cached data)
@@ -279,8 +279,8 @@ async def test_get_device_status_exception_returns_none() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # Mock _fetch_json to raise exception
-    with patch.object(client, "_fetch_json", side_effect=ValueError("Network error")):
+    # Mock _request_json_data to raise exception
+    with patch.object(client, "_request_json_data", side_effect=ValueError("Network error")):
         status = await client.get_device_status("device1")
 
     assert status is None
@@ -364,7 +364,7 @@ async def test_get_device_status_skips_login_with_base_url() -> None:
     client.login = AsyncMock()
 
     data = {"getAB": "value"}
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         status = await client.get_device_status("device1")
 
     # Verify login was NOT called even though we could
@@ -415,8 +415,8 @@ async def test_set_device_status_command_without_set_prefix() -> None:
     assert result is True
 
 
-async def test_fetch_json_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> None:
-    """Test _fetch_json logs warning when response contains NSC error code."""
+async def test_request_json_data_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _request_json_data logs warning when response contains NSC error code."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
@@ -428,14 +428,14 @@ async def test_fetch_json_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> No
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with caplog.at_level(logging.WARNING):
-        result = await client._fetch_json("/get/all")
+        result = await client._request_json_data("/get/all")
 
     assert result == {"getXYZ": "NSC", "getABC": "value"}
     assert "Command 'getXYZ' does not exist (NSC error)" in caplog.text
 
 
-async def test_fetch_json_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
-    """Test _fetch_json logs warning when response contains MIMA error code."""
+async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _request_json_data logs warning when response contains MIMA error code."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
@@ -447,7 +447,7 @@ async def test_fetch_json_logs_mima_error(caplog: pytest.LogCaptureFixture) -> N
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with caplog.at_level(logging.WARNING):
-        result = await client._fetch_json("/set/prf9/invalid")
+        result = await client._request_json_data("/set/prf9/invalid")
 
     assert result == {"setPRF9": "MIMA", "getABC": "value"}
     assert "Value for 'setPRF9' is outside valid range (MIMA error)" in caplog.text
@@ -518,30 +518,30 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     assert result2 is True
 
 
-async def test_check_api_error_codes_case_insensitive() -> None:
-    """Test _check_api_error_codes handles case-insensitive error codes."""
+async def test_validate_response_errors_case_insensitive() -> None:
+    """Test _validate_response_errors handles case-insensitive error codes."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Should not raise any exceptions, just log warnings
-    client._check_api_error_codes({"key1": "nsc"}, "http://test")
-    client._check_api_error_codes({"key2": "NSC"}, "http://test")
-    client._check_api_error_codes({"key3": "Nsc"}, "http://test")
-    client._check_api_error_codes({"key4": "mima"}, "http://test")
-    client._check_api_error_codes({"key5": "MIMA"}, "http://test")
-    client._check_api_error_codes({"key6": "MiMa"}, "http://test")
+    client._validate_response_errors({"key1": "nsc"}, "http://test")
+    client._validate_response_errors({"key2": "NSC"}, "http://test")
+    client._validate_response_errors({"key3": "Nsc"}, "http://test")
+    client._validate_response_errors({"key4": "mima"}, "http://test")
+    client._validate_response_errors({"key5": "MIMA"}, "http://test")
+    client._validate_response_errors({"key6": "MiMa"}, "http://test")
 
 
-async def test_check_api_error_codes_ignores_non_string_values() -> None:
-    """Test _check_api_error_codes ignores non-string values."""
+async def test_validate_response_errors_ignores_non_string_values() -> None:
+    """Test _validate_response_errors ignores non-string values."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Should not raise exceptions for non-string values
-    client._check_api_error_codes({"key1": 123}, "http://test")
-    client._check_api_error_codes({"key2": None}, "http://test")
-    client._check_api_error_codes({"key3": []}, "http://test")
-    client._check_api_error_codes({"key4": {}}, "http://test")
+    client._validate_response_errors({"key1": 123}, "http://test")
+    client._validate_response_errors({"key2": None}, "http://test")
+    client._validate_response_errors({"key3": []}, "http://test")
+    client._validate_response_errors({"key4": {}}, "http://test")
 
 
 async def test_get_devices_fetches_and_caches() -> None:
@@ -551,7 +551,7 @@ async def test_get_devices_fetches_and_caches() -> None:
 
     data = load_fixture("SafeTech_get_all_v4.json")
 
-    # Mock _fetch_json to track calls
+    # Mock _request_json_data to track calls
     fetch_call_count = 0
     original_data = data.copy()
 
@@ -560,7 +560,7 @@ async def test_get_devices_fetches_and_caches() -> None:
         fetch_call_count += 1
         return original_data
 
-    with patch.object(client, "_fetch_json", side_effect=mock_fetch):
+    with patch.object(client, "_request_json_data", side_effect=mock_fetch):
         # Call get_devices - should fetch /get/all
         devices = await client.get_devices("local")
         assert len(devices) == 1
@@ -582,7 +582,7 @@ async def test_get_devices_uses_custom_device_name() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/", device_name="My Custom Device")
 
     data = {"getSRN": "12345", "getOther": "value"}
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         devices = await client.get_devices("local")
 
     assert len(devices) == 1
@@ -597,7 +597,7 @@ async def test_get_device_status_without_cache() -> None:
 
     data = load_fixture("SafeTech_get_all_v4.json")
 
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         # Call get_device_status without calling get_devices first
         status = await client.get_device_status("local")
         assert isinstance(status, dict)
@@ -610,7 +610,7 @@ async def test_get_devices_uses_frn_fallback() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     data = {"getFRN": "67890", "getOther": "value"}  # No getSRN
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         devices = await client.get_devices("local")
 
     assert len(devices) == 1
@@ -624,7 +624,7 @@ async def test_get_devices_uses_local_device_fallback() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     data = {"getOther": "value"}  # No getSRN or getFRN
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         devices = await client.get_devices("local")
 
     assert len(devices) == 1
@@ -641,7 +641,7 @@ async def test_get_devices_calls_login_when_session_invalid() -> None:
     client.login = AsyncMock()
 
     data = {"getSRN": "12345", "getOther": "value"}
-    with patch.object(client, "_fetch_json", return_value=data):
+    with patch.object(client, "_request_json_data", return_value=data):
         devices = await client.get_devices("local")
 
     # Should have called login because session is invalid

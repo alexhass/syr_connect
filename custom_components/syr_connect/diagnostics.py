@@ -266,7 +266,7 @@ async def async_get_config_entry_diagnostics(
                     pass
 
                 try:
-                    data = await api._fetch_json("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
+                    data = await api._request_json_data("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
                     # Redact sensitive keys from the parsed JSON payload
                     redacted = async_redact_data(data, _TO_REDACT)
                     # Use the first device ID from coordinator data as key, or "local_device"
@@ -319,7 +319,7 @@ async def async_get_config_entry_diagnostics(
                             return dev_id, None
 
                         try:
-                            data = await json_api._fetch_json("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
+                            data = await json_api._request_json_data("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
                         except Exception:  # pragma: no cover - diagnostics should never fail
                             return dev_id, None
 
