@@ -69,7 +69,7 @@ async def async_setup_entry(
                 if registry_entry is not None and hasattr(registry_entry, "entity_id"):
                     _LOGGER.debug("Removing excluded select from registry: %s", entity_id)
                     registry.async_remove(registry_entry.entity_id)
-    except Exception:  # pragma: no cover - defensive
+    except (RuntimeError, KeyError, AttributeError):
         _LOGGER.exception("Failed to cleanup excluded selects from entity registry")
 
     entities: list[Any] = []
@@ -218,7 +218,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
                 await coordinator.async_set_device_value(self._device_id, key, val)
             _LOGGER.debug("Requested regeneration time set commands for device %s: %s", self._device_id, commands)
             _LOGGER.debug("Regeneration time select changed for %s to %s", self._device_id, option)
-        except Exception:  # pragma: no cover - defensive
+        except (ValueError, TypeError, KeyError):
             _LOGGER.exception("Failed to set regeneration time for device %s", self._device_id)
 
     @property
@@ -267,7 +267,8 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         if unit is not None:
             try:
                 unit_label = str(unit)
-            except Exception:
+            except (ValueError, TypeError) as err:
+                _LOGGER.debug("Failed to convert unit to string for %s: %s", self._sensor_key, err)
                 unit_label = None
 
         opts: list[str] = []
@@ -311,7 +312,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                     if opt.startswith(f"{num}"):
                         return opt
                 return str(num)
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 return None
         return None
 
@@ -336,7 +337,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                 self._device_id,
                 option,
             )
-        except Exception:  # pragma: no cover - defensive
+        except (ValueError, TypeError, KeyError):
             _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
 
     @property
@@ -406,7 +407,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
                 return None
             try:
                 idx = int(float(val))
-            except Exception:
+            except (ValueError, TypeError):
                 return None
             name = status.get(f"getPN{idx}")
             return name
@@ -437,7 +438,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         try:
             await coordinator.async_set_device_value(self._device_id, "setPRF", selected_idx)
             _LOGGER.debug("Requested setPRF for device %s (profile=%s)", self._device_id, selected_idx)
-        except Exception:  # pragma: no cover - defensive
+        except (ValueError, TypeError, KeyError):
             _LOGGER.exception("Failed to set PRF for device %s", self._device_id)
 
     @property

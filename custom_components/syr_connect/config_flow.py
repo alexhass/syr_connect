@@ -29,6 +29,12 @@ from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
 
+# Minimum allowed scan interval for config flow (seconds)
+_SYR_CONNECT_MIN_SCAN_INTERVAL_SECONDS = 60
+
+# Maximum allowed scan interval for config flow (seconds)
+_SYR_CONNECT_MAX_SCAN_INTERVAL_SECONDS = 600
+
 # Schema for Cloud/XML API configuration (username + password)
 STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
     {
@@ -125,7 +131,6 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     host = data[CONF_HOST]
     model = data[CONF_MODEL]
-    device_name = data[CONF_DEVICE_NAME]
 
     _LOGGER.debug("Validating JSON API connection to host: %s, model: %s", host, model)
 
@@ -141,15 +146,27 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         raise CannotConnectError
 
     session = async_get_clientsession(hass)
-    api = SyrConnectJsonAPI(session, host=host, base_path=base_path, device_name=device_name)
+    api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
 
-    # Test connection by attempting login and fetch
+    # Test connection by attempting login and fetching device data
     _LOGGER.debug("Testing JSON API connection...")
     try:
         await api.login()
-        data_result = await api.get_device_status("test")
+
+        # Fetch device data directly to validate connection and check for SYR device
+        data_result = await api._fetch_json("get/all")
         if not data_result:
+            _LOGGER.error("JSON API returned empty result")
             raise CannotConnectError
+
+        # Verify this is a SYR device by checking for serial number fields
+        has_srn = "getSRN" in data_result or "getFRN" in data_result
+        if not has_srn:
+            _LOGGER.error("JSON API response missing getSRN/getFRN - not a SYR device?")
+            raise CannotConnectError
+
+        _LOGGER.debug("JSON API: Successfully validated SYR device with %d status keys", len(data_result))
+
     except Exception as err:
         _LOGGER.error("JSON API connection failed: %s", err)
         raise CannotConnectError from err
@@ -231,8 +248,8 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
                 default=current_scan_interval,
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=60,
-                    max=600,
+                    min=_SYR_CONNECT_MIN_SCAN_INTERVAL_SECONDS,
+                    max=_SYR_CONNECT_MAX_SCAN_INTERVAL_SECONDS,
                     unit_of_measurement=UnitOfTime.SECONDS,
                     mode=selector.NumberSelectorMode.BOX,
                 ),
@@ -402,7 +419,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                     for name, display in LOCAL_API_MODELS
                                 ],
                                 mode=selector.SelectSelectorMode.DROPDOWN,
-                                sort=True,
                             )
                         ),
                         vol.Required(

@@ -11,13 +11,16 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .api_json import SyrConnectJsonAPI
+from .api_json import _SYR_CONNECT_DEFAULT_API_TIMEOUT, SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+
+# Maximum concurrent API calls for diagnostics data collection
+_SYR_CONNECT_CONCURRENT_API_CALLS = 5
 
 _TO_REDACT = {
     CONF_PASSWORD,
@@ -79,7 +82,7 @@ async def async_get_config_entry_diagnostics(
             title_obj = entry_obj.get("title")
             if isinstance(title_obj, str):
                 entry_obj["title"] = re.sub(r"\(([^)]+)\)", "(***REDACTED_USERNAME***)", title_obj)
-    except Exception:
+    except (TypeError, AttributeError, re.error):
         pass
 
     # Attempt to include raw XML responses (redacted) for diagnostics.
@@ -112,7 +115,7 @@ async def async_get_config_entry_diagnostics(
                     cleaned,
                     flags=re.IGNORECASE,
                 )
-            except Exception:
+            except (re.error, TypeError, ValueError):
                 pass
 
             # <c n="getMAC" v="..." /> or similar: redact v when n matches key
@@ -123,7 +126,7 @@ async def async_get_config_entry_diagnostics(
                     cleaned,
                     flags=re.IGNORECASE,
                 )
-            except Exception:
+            except (re.error, TypeError, ValueError):
                 pass
 
             # Simple key:value or key=val patterns
@@ -134,7 +137,7 @@ async def async_get_config_entry_diagnostics(
                     cleaned,
                     flags=re.IGNORECASE,
                 )
-            except Exception:
+            except (re.error, TypeError, ValueError):
                 pass
 
         # Generic redactions
@@ -142,14 +145,14 @@ async def async_get_config_entry_diagnostics(
             cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "***REDACTED_IP***", cleaned)
             cleaned = re.sub(r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b", "***REDACTED_MAC***", cleaned)
             cleaned = re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "***REDACTED_USERNAME***", cleaned)
-        except Exception:
+        except (re.error, TypeError, ValueError):
             pass
 
         # Remove any whitespace (including newlines) between XML tags: '>   <' -> '><'
         try:
             cleaned = re.sub(r">\s+<", "><", cleaned)
             cleaned = cleaned.strip()
-        except Exception:
+        except (re.error, TypeError, ValueError):
             pass
 
         return cleaned
@@ -162,18 +165,18 @@ async def async_get_config_entry_diagnostics(
             try:
                 if not api.is_session_valid():
                     await api.login()
-            except Exception:
+            except Exception:  # pragma: no cover - diagnostics should never fail
                 # Don't fail diagnostics if login fails
                 api = None
 
         if api and api.projects:
-            semaphore = asyncio.Semaphore(5)
+            semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
 
             async def _fetch(url: str, payload: dict[str, Any]) -> str:
                 try:
                     async with semaphore:
                         return await api.http_client.post(url, payload)
-                except Exception:
+                except Exception:  # pragma: no cover - diagnostics should never fail
                     return ""
 
             # Iterate all projects
@@ -188,7 +191,7 @@ async def async_get_config_entry_diagnostics(
                 # Parse devices (best-effort)
                 try:
                     devices = api.response_parser.parse_device_list_response(xml_resp)
-                except Exception:
+                except Exception:  # pragma: no cover - diagnostics should never fail
                     devices = []
 
                 # Fetch status for each device (limited concurrency by semaphore)
@@ -216,7 +219,7 @@ async def async_get_config_entry_diagnostics(
 
             raw_xml = projects_raw
 
-    except Exception:
+    except Exception:  # pragma: no cover - diagnostics should never fail
         # Never raise from diagnostics
         raw_xml = {"error": "failed to collect raw xml for all projects"}
 
@@ -255,7 +258,7 @@ async def async_get_config_entry_diagnostics(
                     try:
                         if not json_api.is_session_valid():
                             await json_api.login()
-                    except Exception:
+                    except Exception:  # pragma: no cover - diagnostics should never fail
                         # If login fails, still attempt to fetch once
                         pass
 
@@ -264,19 +267,19 @@ async def async_get_config_entry_diagnostics(
                         return dev_id, None
 
                     try:
-                        data = await json_api._fetch_json("get/all", timeout=10)
-                    except Exception:
+                        data = await json_api._fetch_json("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
+                    except Exception:  # pragma: no cover - diagnostics should never fail
                         return dev_id, None
 
                     # Redact sensitive keys from the parsed JSON payload
                     redacted = async_redact_data(data, _TO_REDACT)
                     return dev_id, redacted
-                except Exception:
+                except Exception:  # pragma: no cover - diagnostics should never fail
                     return dev_id, None
 
             if coordinator and getattr(coordinator, "data", None):
                 devices = coordinator.data.get("devices", [])
-                semaphore = asyncio.Semaphore(5)
+                semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
 
                 async def _wrap(dev):
                     async with semaphore:
@@ -292,7 +295,7 @@ async def async_get_config_entry_diagnostics(
                             did, payload = res
                             if payload is not None:
                                 raw_json[did] = payload
-    except Exception:
+    except Exception:  # pragma: no cover - diagnostics should never fail
         raw_json = {"error": "failed to collect raw json for devices"}
 
     diagnostics_data["raw_json"] = raw_json

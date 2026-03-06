@@ -29,6 +29,9 @@ _LOGGER = logging.getLogger(__name__)
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
 
+# Cache duration for setAB commands - devices may take time to reflect changes (seconds)
+_SYR_CONNECT_AB_CACHE_SECONDS = 60
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -152,7 +155,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         # (approx. 60s) to reflect the change in the `getAB` field.
         # We use this cached value to update the GUI immediately when
         # `getVLV` is not present; `getVLV` remains authoritative.
-        self._ab_cache_seconds = 60
+        self._ab_cache_seconds = _SYR_CONNECT_AB_CACHE_SECONDS
         self._cached_ab: dict | None = None  # {'value': True|False, 'expires': float}
 
         # This integration does not report a continuous position value
@@ -327,7 +330,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             # Immediately write state so the UI reflects the requested change
             try:
                 self.async_write_ha_state()
-            except Exception:
+            except RuntimeError:
                 pass
 
             # Send command to backend; await result but do not block UI update
@@ -338,7 +341,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             self._cached_ab = None
             try:
                 self.async_write_ha_state()
-            except Exception:
+            except RuntimeError:
                 pass
             raise HomeAssistantError(f"Failed to open valve {self._device_id}: {err}") from err
 
@@ -362,7 +365,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             # Immediately write state so the UI reflects the requested change
             try:
                 self.async_write_ha_state()
-            except Exception:
+            except RuntimeError:
                 pass
 
             # Send command to backend; await result but do not block UI update
@@ -373,7 +376,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             self._cached_ab = None
             try:
                 self.async_write_ha_state()
-            except Exception:
+            except RuntimeError:
                 pass
             raise HomeAssistantError(f"Failed to close valve {self._device_id}: {err}") from err
 

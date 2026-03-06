@@ -9,6 +9,9 @@ import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
 
+# Default timeout for HTTP requests (seconds)
+_SYR_CONNECT_DEFAULT_HTTP_TIMEOUT = 30
+
 
 class HTTPClient:
     """HTTP client with built-in retry logic and error handling."""
@@ -18,7 +21,7 @@ class HTTPClient:
         session: aiohttp.ClientSession,
         user_agent: str,
         max_retries: int = 3,
-        timeout: int = 30,
+        timeout: int = _SYR_CONNECT_DEFAULT_HTTP_TIMEOUT,
     ) -> None:
         """Initialize HTTP client.
 

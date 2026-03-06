@@ -45,7 +45,12 @@ class SyrEncryption:
             cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
             decrypted = cipher.decrypt(encrypted_data)
 
-            # Remove padding manually (handle non-standard padding)
+            # Remove padding manually due to non-standard padding scheme
+            # SYR devices use a custom padding approach where the plaintext
+            # may be padded with null bytes (\x00) followed by spaces.
+            # Standard PKCS7 unpadding would fail, so we manually strip:
+            # 1. Null bytes (\x00) - may be present at the end
+            # 2. Whitespace - may be used as additional padding
             result = decrypted.decode('utf-8').rstrip('\x00').rstrip()
             _LOGGER.debug("Decryption successful (result length: %d chars)", len(result))
             return result

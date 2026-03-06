@@ -34,6 +34,12 @@ from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 
+# Optimistic update: ignore API responses for this duration after setting a value (seconds)
+_SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS = 60
+
+# Delay before refreshing coordinator data after setting device values (seconds)
+_SYR_CONNECT_DELAYED_REFRESH_SECONDS = 60
+
 
 class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching SYR Connect data."""
@@ -267,8 +273,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     else:
                         # Clean up expired entry
                         self._ignore_until.pop(ignore_key, None)
-            except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Failed to apply ignore rules to device status for %s", device.get("id"))
+            except (KeyError, AttributeError, TypeError) as err:  # pragma: no cover - defensive
+                _LOGGER.warning("Failed to apply ignore rules to device status for %s: %s", device.get("id"), err)
 
             return device
 
@@ -341,11 +347,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 # immediately overwrite the optimistic state with stale data.
                 try:
                     if get_key.lower() == "getab":
-                        self._ignore_until[(device_id, get_key)] = time.time() + 60
-                except Exception:
+                        self._ignore_until[(device_id, get_key)] = time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
+                except (KeyError, TypeError) as err:
+                    _LOGGER.debug("Failed to set ignore_until for getab: %s", err)
                     pass
-        except Exception:  # pragma: no cover - defensive
-            _LOGGER.exception("Failed to apply optimistic update to coordinator data")
+        except (KeyError, AttributeError, TypeError, ValueError) as err:  # pragma: no cover - defensive
+            _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
         try:
             await self.api.set_device_status(dclg, command, value)
@@ -362,7 +369,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
 
-    async def _delayed_refresh(self, delay: int = 60) -> None:
+    async def _delayed_refresh(self, delay: int = _SYR_CONNECT_DELAYED_REFRESH_SECONDS) -> None:
         """Wait `delay` seconds then refresh coordinator data.
 
         This gives the SYR API time to process changes so the subsequent

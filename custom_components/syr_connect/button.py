@@ -171,7 +171,8 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 # an empty string; for other models send "FF".
                 try:
                     model = detect_model(status or {}).get("name")
-                except Exception:
+                except (ValueError, KeyError, AttributeError, TypeError) as err:
+                    _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
                     model = None
 
                 send_value: str

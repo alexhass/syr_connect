@@ -84,7 +84,7 @@ async def async_setup_entry(
                 if registry_entry is not None and hasattr(registry_entry, "entity_id"):
                     _LOGGER.debug("Removing excluded sensor from registry: %s", entity_id)
                     registry.async_remove(registry_entry.entity_id)
-    except Exception:  # pragma: no cover - defensive
+    except (RuntimeError, KeyError, AttributeError):
         _LOGGER.exception("Failed to cleanup excluded sensors from entity registry")
 
     entities = []
@@ -116,7 +116,7 @@ async def async_setup_entry(
             if isinstance(val, (int | float)):
                 try:
                     return int(float(val)) != 0
-                except Exception:
+                except (ValueError, TypeError):
                     return False
 
             if isinstance(val, str):
@@ -128,7 +128,7 @@ async def async_setup_entry(
                 # Try parsing numeric string
                 try:
                     return int(float(sval)) != 0
-                except Exception:
+                except (ValueError, TypeError):
                     return False
 
             return False
@@ -173,12 +173,12 @@ async def async_setup_entry(
                             _LOGGER.debug("Removing sensor due to getPA=false: %s", entity_id)
                             try:
                                 registry.async_remove(registry_entry.entity_id)
-                            except Exception:
+                            except RuntimeError:
                                 _LOGGER.exception("Failed to remove sensor %s", entity_id)
                         # Ensure group keys are marked as handled so they are not recreated
                         # later when iterating over status.items().
                         handled_keys.add(gk)
-            except Exception:
+            except (ValueError, KeyError, AttributeError, TypeError):
                 _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
 
         for key, value in status.items():
@@ -359,7 +359,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             # API provides total volume in liters; convert to cubic meters (m³)
             try:
                 value = value / 1000
-            except Exception:
+            except (ZeroDivisionError, TypeError):
                 pass
 
         # Apply configured precision if available
@@ -418,7 +418,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             else:
                 try:
                     mapped, _ = get_sensor_ala_map(raw_status or {}, raw)
-                except Exception:
+                except (ValueError, KeyError, AttributeError, TypeError):
                     mapped = None
 
             if mapped == "no_alarm" or raw is None or (isinstance(raw, str) and str(raw).strip() == ""):
@@ -459,7 +459,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     return "mdi:check-circle"
                 if ival == 1:
                     return "mdi:close-circle"
-            except Exception:
+            except (ValueError, TypeError):
                 pass
 
         # Dynamic icon for regeneration active sensor
@@ -488,7 +488,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         ival = 0
                 # 1 -> open valve icon, 0 -> closed valve icon
                 return "mdi:valve" if ival == 1 else "mdi:valve-closed"
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 pass
 
         # Dynamic icon for valve status (getVLV)
@@ -568,7 +568,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         # If model was unknown or no mapping found, return raw value 1:1
                         sval = str(raw_code)
                         return sval if sval != "" else None
-                    except Exception:
+                    except (ValueError, KeyError, AttributeError, TypeError):
                         return None
 
                 # Special handling for alarm sensor: map raw API values to internal keys
@@ -580,7 +580,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     # to the static getALM value map.
                     try:
                         ala_mapped, _ = get_sensor_ala_map(status or {}, raw)
-                    except Exception:
+                    except (ValueError, KeyError, AttributeError, TypeError):
                         ala_mapped = None
 
                     std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str)
@@ -660,7 +660,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return mapped
                         sval = str(raw_code)
                         return sval if sval != "" else None
-                    except Exception:
+                    except (ValueError, KeyError, AttributeError, TypeError):
                         return None
 
                 # Special handling for leak-protection boolean flags (getPMx, getPWx, getPBx)
@@ -673,7 +673,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     if isinstance(value, (int | float)):
                         try:
                             return "true" if int(float(value)) != 0 else "false"
-                        except Exception:
+                        except (ValueError, TypeError):
                             return None
                     # String values
                     if isinstance(value, str):
@@ -684,7 +684,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return "false"
                         try:
                             return "true" if int(float(sval)) != 0 else "false"
-                        except Exception:
+                        except (ValueError, TypeError):
                             return sval
 
                 # Special handling for regeneration time - expose as `getRTM`:
@@ -707,7 +707,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError):
                         try:
                             mask = int(str(raw_mask).strip())
-                        except Exception:
+                        except (ValueError, TypeError):
                             return None
 
                     if mask == 0:
@@ -721,14 +721,14 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     locale = None
                     try:
                         locale = getattr(self.hass.config, "language", None)
-                    except Exception:
+                    except AttributeError:
                         locale = None
 
                     for idx in range(7):
                         if mask & (1 << idx):
                             try:
                                 name = format_datetime(ref_monday + timedelta(days=idx), "EEE", locale=locale)
-                            except Exception:
+                            except (ValueError, KeyError, AttributeError, TypeError):
                                 # Fallback to system short name if Babel/localization fails
                                 name = (ref_monday + timedelta(days=idx)).strftime("%a")
                             parts.append(name)
@@ -813,7 +813,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return mapped
                         sval = str(raw_code)
                         return sval if sval != "" else None
-                    except Exception:
+                    except (ValueError, KeyError, AttributeError, TypeError):
                         return None
 
                 # Keep certain sensors as strings (version, serial, MAC, etc.)

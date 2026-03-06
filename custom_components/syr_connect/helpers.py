@@ -313,7 +313,8 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
                 # Strict validation: hours 0-23, minutes 0-59
                 if 0 <= hh <= 23 and 0 <= mm <= 59:
                     return f"{hh:02d}:{mm:02d}"
-            except Exception:
+            except (ValueError, IndexError, AttributeError) as err:
+                _LOGGER.debug("Failed to parse time from match: %s", err)
                 return None
         return None
 
@@ -324,7 +325,8 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
         # Strict validation: hours 0-23, minutes 0-59
         if 0 <= h <= 23 and 0 <= m <= 59:
             return f"{h:02d}:{m:02d}"
-    except Exception:
+    except (ValueError, TypeError) as err:
+        _LOGGER.debug("Failed to parse regeneration time from separate values: %s", err)
         return None
 
     return None
@@ -361,7 +363,8 @@ def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str,
         parts = option.split(":")
         h = int(parts[0])
         m = int(parts[1])
-    except Exception:
+    except (ValueError, IndexError, AttributeError) as err:
+        _LOGGER.debug("Failed to parse time option '%s': %s", option, err)
         return commands
 
     commands.append(("setRTH", h))
@@ -377,8 +380,12 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
         - False if valve is open
         - None if unknown/unparseable
 
-    Devices may report `getAB` as numeric (1=open, 2=closed) or boolean-like
-    strings (`"true"`/`"false"`). Map both to a unified boolean.
+    Devices may report `getAB` in multiple formats:
+    - Numeric: 1 (open), 2 (closed) - Used by older Safe-T devices
+    - Boolean strings: "true" (closed), "false" (open) - Used by newer Trio devices
+
+    The numeric mapping (1=open, 2=closed) appears counterintuitive but
+    matches the SYR device firmware convention.
     """
     if not status:
         return None
@@ -410,7 +417,8 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
                     return True
                 if ival == 1:
                     return False
-    except Exception:
+    except (ValueError, TypeError, AttributeError) as err:
+        _LOGGER.debug("Failed to parse getAB value: %s", err)
         return None
 
     return None
@@ -436,7 +444,8 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     # Detect model from status (expect flattened attributes)
     try:
         model = detect_model(status or {}).get("name")
-    except Exception:
+    except (ValueError, KeyError, AttributeError, TypeError) as err:
+        _LOGGER.debug("Failed to detect model for ALA mapping: %s", err)
         model = None
 
     # If model is unknown or not detected, do NOT attempt any matching.
@@ -506,8 +515,12 @@ def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
 def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any]:
     """Build the appropriate (`setAB`, value) command for desired closed state.
 
-    - If device reports `getAB` as boolean-like strings, use "true"/"false".
-    - Otherwise prefer numeric `1` (open) / `2` (closed).
+    This function mirrors the device's own format for `getAB` when sending `setAB`:
+    - If device reports `getAB` as boolean-like strings, use "true"/"false"
+    - Otherwise use numeric representation: `1` (open) / `2` (closed)
+
+    Using the device's native format prevents potential parsing errors or
+    firmware issues when the device receives commands in an unexpected format.
 
     Returns a tuple (set_key, value).
     """

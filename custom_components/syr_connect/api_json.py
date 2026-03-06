@@ -39,6 +39,9 @@ _SYR_CONNECT_JSON_API_PORT = 5333
 # Session timeout (minutes) - mirror XML client behaviour
 _SESSION_TIMEOUT_MINUTES = 30
 
+# Default timeout for local JSON API requests (seconds)
+_SYR_CONNECT_DEFAULT_API_TIMEOUT = 10
+
 
 class SyrConnectJsonAPI:
     """Client for the local JSON API served by some SYR devices.
@@ -107,7 +110,7 @@ class SyrConnectJsonAPI:
         login_url = f"{base}/set/ADM/(2)f"
         _LOGGER.debug("JSON API: Login attempt - URL: %s", login_url)
         try:
-            timeout_obj = aiohttp.ClientTimeout(total=10)
+            timeout_obj = aiohttp.ClientTimeout(total=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
             async with self._session.get(login_url, timeout=timeout_obj) as resp:
                 _LOGGER.debug("JSON API: Login response status: %s", resp.status)
                 # We accept any 2xx as success; some devices return an empty body
@@ -131,7 +134,7 @@ class SyrConnectJsonAPI:
         _LOGGER.info("Logged into local JSON API at %s", base)
         return True
 
-    async def _fetch_json(self, path: str, timeout: int = 10) -> dict[str, Any]:
+    async def _fetch_json(self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT) -> dict[str, Any]:
         base = self._build_base_url()
         if not base:
             raise ValueError("Base URL not configured for JSON API client")
@@ -225,7 +228,7 @@ class SyrConnectJsonAPI:
                 device_id
             )
             return {k: v for k, v in status.items()}
-        except Exception:
+        except (ValueError, KeyError, TypeError, AttributeError):
             _LOGGER.exception("Failed to parse JSON device status for %s", device_id)
             return None
 
@@ -246,7 +249,7 @@ class SyrConnectJsonAPI:
         url = f"{base}/set/{cmd}/{value}"
         _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
-            timeout_obj = aiohttp.ClientTimeout(total=10)
+            timeout_obj = aiohttp.ClientTimeout(total=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
             async with self._session.get(url, timeout=timeout_obj) as resp:
                 _LOGGER.debug("JSON API: Set response status: %s", resp.status)
                 resp.raise_for_status()
@@ -256,7 +259,7 @@ class SyrConnectJsonAPI:
                     data = await resp.json()
                     if isinstance(data, dict):
                         self._check_api_error_codes(data, url)
-                except Exception:
+                except (ValueError, TypeError, aiohttp.ContentTypeError):
                     # If JSON parsing fails, continue - some devices return empty response
                     pass
 

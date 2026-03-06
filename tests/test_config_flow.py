@@ -179,9 +179,9 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.get_device_status",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
             new_callable=AsyncMock,
-            return_value={"getVER": "test"},
+            return_value={"getSRN": "12345", "getVER": "test"},
         ),
         patch(
             "custom_components.syr_connect.async_setup_entry",
@@ -259,9 +259,9 @@ async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.get_device_status",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
             new_callable=AsyncMock,
-            return_value={"getVER": "test"},
+            return_value={"getSRN": "12345", "getVER": "test"},
         ),
     ):
         result2 = await hass.config_entries.flow.async_configure(
