@@ -417,6 +417,15 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getWNS",       # Value: "", unclear meaning - likely related to water flow or similar
     #"getWTI",      # Value: e.g. "1720", unclear meaning (duplicate of getWTI from NeoSoft 2500/5000)
     #"getNET",      # Value: "", unclear meaning (duplicate of getNET from NeoSoft 2500/5000)
+
+    # JSON API only sensors (not available in XML API):
+    "getDAP",
+    "getDAV",
+    "getDMO",
+    "getDPP",
+    "getDPV",
+    "getDSP",
+    "getDVS",
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
