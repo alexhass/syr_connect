@@ -182,13 +182,13 @@ async def async_get_config_entry_diagnostics(
             if api and api.projects:
                 # Capture api in local variable for type narrowing in closures
                 # mypy doesn't understand that api is not None after the check above
-                xml_api: SyrConnectXmlAPI = api  # type: ignore[assignment]
+                xml_api: SyrConnectXmlAPI = api
                 semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
 
                 async def _fetch(url: str, payload: dict[str, Any]) -> str:
                     try:
                         async with semaphore:
-                            return await xml_api.http_client.post(url, payload)  # type: ignore[union-attr]
+                            return await xml_api.http_client.post(url, payload)
                     except Exception:  # pragma: no cover - diagnostics should never fail
                         return ""
 
