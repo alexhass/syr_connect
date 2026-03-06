@@ -70,6 +70,8 @@ class SyrConnectJsonAPI:
         self._device_name = device_name
         self._last_login: datetime | None = None
         self.projects: list[dict[str, Any]] = []
+        # Cache /get/all response from get_devices() for get_device_status() to reuse
+        self._cached_get_all: dict[str, Any] | None = None
 
     def _build_base_url(self) -> str | None:
         if self._base_url:
@@ -126,6 +128,8 @@ class SyrConnectJsonAPI:
             raise SyrConnectConnectionError(f"Login failed: {err}") from err
 
         self._last_login = datetime.now()
+        # Clear cached response after login
+        self._cached_get_all = None
         # Single-project placeholder to keep coordinator logic compatible
         self.projects = [{"id": "local", "name": "Local JSON API"}]
         _LOGGER.info("Logged into local JSON API at %s", base)
@@ -175,24 +179,36 @@ class SyrConnectJsonAPI:
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
         """Return a single-device list for the local JSON API.
 
-        The local JSON API targets a single device. This method returns a
-        static device entry without calling the API. The actual device data
-        is fetched by get_device_status().
-
-        This avoids an unnecessary API call since /get/all returns all data
-        for the single device anyway.
+        The local JSON API targets a single device. This method fetches /get/all
+        to extract the device serial number, then caches the response for
+        get_device_status() to reuse (avoiding a duplicate API call).
         """
-        # Use configured device name or generic placeholder
-        # The actual device ID will be determined from /get/all response
-        device_id = "local_device"
-        name = self._device_name or "Local Device"
+        # Ensure session/login. If an explicit `base_url` is provided we
+        # assume tests or callers handle authentication and skip login.
+        if not self._base_url and not self.is_session_valid():
+            await self.login()
+
+        # Support tests that patch `_fetch_json` with a synchronous callable
+        maybe: Any = self._fetch_json("/get/all")
+        if hasattr(maybe, "__await__"):
+            status = await maybe
+        else:
+            status = maybe
+
+        # Cache response for get_device_status() to reuse
+        self._cached_get_all = status
+
+        # Extract real device ID (serial number) from response
+        device_id = status.get("getSRN") or status.get("getFRN") or "local_device"
+        # Use configured device name if provided, otherwise use device_id
+        name = self._device_name or device_id
 
         _LOGGER.debug(
-            "JSON API: Returning static device entry (id=%s, name=%s)",
+            "JSON API: Returning device (id=%s, name=%s), cached response for reuse",
             device_id,
             name,
         )
-        return [{"id": device_id, "dclg": device_id, "name": name}]
+        return [{"id": str(device_id), "dclg": str(device_id), "name": str(name)}]
 
     async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Return the device status dictionary parsed from JSON.
@@ -200,22 +216,32 @@ class SyrConnectJsonAPI:
         Returns None on unexpected payload to allow the coordinator to keep
         previous state (same behaviour as the XML client parser).
 
-        This method fetches /get/all and returns all device data.
+        This method reuses the cached response from get_devices() if available,
+        otherwise fetches /get/all directly.
         """
         _LOGGER.debug("JSON API: Fetching device status for device_id=%s", device_id)
 
-        # Ensure session/login
-        if not self._base_url and not self.is_session_valid():
-            _LOGGER.debug("JSON API: Session invalid, calling login for device_id=%s", device_id)
-            await self.login()
-
         try:
-            # Support tests that patch `_fetch_json` with a synchronous callable
-            maybe: Any = self._fetch_json("/get/all")
-            if hasattr(maybe, "__await__"):
-                status = await maybe
+            # Reuse cached response from get_devices() if available
+            if self._cached_get_all is not None:
+                _LOGGER.debug(
+                    "JSON API: Reusing cached /get/all response with %d keys for device_id=%s",
+                    len(self._cached_get_all),
+                    device_id,
+                )
+                status = self._cached_get_all
             else:
-                status = maybe
+                # Fallback: fetch if get_devices() wasn't called first (e.g., direct test)
+                _LOGGER.debug("JSON API: No cached response, fetching /get/all for device_id=%s", device_id)
+                if not self._base_url and not self.is_session_valid():
+                    _LOGGER.debug("JSON API: Session invalid, calling login for device_id=%s", device_id)
+                    await self.login()
+
+                maybe: Any = self._fetch_json("/get/all")
+                if hasattr(maybe, "__await__"):
+                    status = await maybe
+                else:
+                    status = maybe
 
             # The JSON API returns a flat dict with getXXX keys already; return
             # as-is so the rest of the integration can operate on the same

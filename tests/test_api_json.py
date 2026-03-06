@@ -257,22 +257,20 @@ async def test_fetch_json_success() -> None:
 
 
 async def test_get_device_status_calls_login() -> None:
-    """Test get_device_status calls login when session invalid."""
+    """Test get_device_status calls login when session invalid and no cached data."""
     sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        host="192.168.1.100",
-        base_path="/api/v1/"
-    )
+    client = SyrConnectJsonAPI(sess, host="192.168.1.100", base_path="/api/v1/")
 
+    # Mock login
     client.login = AsyncMock()
 
-    data = {"getAB": "on", "getCD": "123"}
+    data = {"getAB": "value", "getCD": "123"}
     with patch.object(client, "_fetch_json", return_value=data):
         status = await client.get_device_status("device1")
 
+    # Verify login was called (no cached data)
     client.login.assert_called_once()
-    assert status == {"getAB": "on", "getCD": "123"}
+    assert status == data
 
 
 async def test_get_device_status_exception_returns_none() -> None:
@@ -518,22 +516,36 @@ async def test_check_api_error_codes_ignores_non_string_values() -> None:
     client._check_api_error_codes({"key4": {}}, "http://test")
 
 
-async def test_get_devices_returns_static_device() -> None:
-    """Test that get_devices returns static device without API call."""
+async def test_get_devices_fetches_and_caches() -> None:
+    """Test that get_devices fetches /get/all and caches response."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # get_devices should not make any API calls
+    data = load_fixture("SafeTech_get_all_v4.json")
+
     with patch("aiohttp.ClientSession.get") as mock_get:
+        # Create a proper async context manager mock
+        mock_response = AsyncMock()
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=None)
+        mock_response.status = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.json = AsyncMock(return_value=data)
+        mock_get.return_value = mock_response
+
+        # Call get_devices - should fetch /get/all
         devices = await client.get_devices("local")
-        
-        # Should return one device
         assert len(devices) == 1
-        assert devices[0]["id"] == "local_device"
-        assert devices[0]["name"] == "Local Device"
-        
-        # Should not have called the API
-        mock_get.assert_not_called()
+        assert mock_get.call_count == 1
+
+        # Response should be cached
+        assert client._cached_get_all == data
+
+        # Second call to get_device_status should use cache
+        status = await client.get_device_status(devices[0]["id"])
+        assert isinstance(status, dict)
+        # Should still be 1 because cache was used
+        assert mock_get.call_count == 1
 
 
 async def test_get_devices_uses_custom_device_name() -> None:
@@ -541,14 +553,17 @@ async def test_get_devices_uses_custom_device_name() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/", device_name="My Custom Device")
 
-    devices = await client.get_devices("local")
-    
+    data = {"getSRN": "12345", "getOther": "value"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("local")
+
     assert len(devices) == 1
-    assert devices[0]["name"] == "My Custom Device"
+    assert devices[0]["id"] == "12345"  # Real serial
+    assert devices[0]["name"] == "My Custom Device"  # Custom name
 
 
-async def test_get_device_status_fetches_from_api() -> None:
-    """Test that get_device_status fetches directly from API."""
+async def test_get_device_status_without_cache() -> None:
+    """Test that get_device_status fetches directly if no cached data."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -563,8 +578,9 @@ async def test_get_device_status_fetches_from_api() -> None:
         mock_response.json = AsyncMock(return_value=data)
         mock_get.return_value = mock_response
 
-        # Call get_device_status - should fetch from API
+        # Call get_device_status without calling get_devices first
         status = await client.get_device_status("local")
         assert isinstance(status, dict)
+        # Should have fetched /get/all
         assert mock_get.call_count == 1
 
