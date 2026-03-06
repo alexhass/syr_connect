@@ -17,6 +17,15 @@ from homeassistant.const import (
 
 DOMAIN = "syr_connect"
 
+# Configuration keys
+CONF_API_TYPE = "api_type"
+CONF_HOST = "host"
+CONF_MODEL = "model"
+
+# API type values
+API_TYPE_XML = "xml"
+API_TYPE_JSON = "json"
+
 _SYR_CONNECT_SCAN_INTERVAL_CONF = "scan_interval"
 _SYR_CONNECT_SCAN_INTERVAL_DEFAULT = 60  # seconds
 

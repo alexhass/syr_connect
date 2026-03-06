@@ -24,6 +24,12 @@ from typing import Any
 
 import aiohttp
 
+from .exceptions import (
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 # Local JSON API defaults
@@ -103,9 +109,18 @@ class SyrConnectJsonAPI:
                 _LOGGER.debug("JSON API: Login response status: %s", resp.status)
                 # We accept any 2xx as success; some devices return an empty body
                 resp.raise_for_status()
+        except aiohttp.ClientResponseError as err:
+            if err.status in (401, 403):
+                _LOGGER.error("JSON API authentication failed: HTTP %s", err.status)
+                raise SyrConnectAuthError(f"Authentication failed: {err.message}") from err
+            _LOGGER.error("JSON API login failed with HTTP %s: %s", err.status, err.message)
+            raise SyrConnectConnectionError(f"Login failed: HTTP {err.status} - {err.message}") from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            _LOGGER.error("JSON API login failed - connection error: %s", err)
+            raise SyrConnectConnectionError(f"Login failed: {err}") from err
         except Exception as err:
-            _LOGGER.error("JSON API login failed: %s", err)
-            raise
+            _LOGGER.error("JSON API login failed - unexpected error: %s", err)
+            raise SyrConnectConnectionError(f"Login failed: {err}") from err
 
         self._last_login = datetime.now()
         # Single-project placeholder to keep coordinator logic compatible
@@ -117,7 +132,7 @@ class SyrConnectJsonAPI:
         base = self._build_base_url()
         if not base:
             raise ValueError("Base URL not configured for JSON API client")
-        url = f"{base}{path.lstrip('/') }"
+        url = f"{base}/{path.lstrip('/')}"
         _LOGGER.debug("JSON API: Requesting URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=timeout)
@@ -126,16 +141,33 @@ class SyrConnectJsonAPI:
                 resp.raise_for_status()
                 data = await resp.json()
                 if not isinstance(data, dict):
-                    raise ValueError("JSON API returned unexpected payload")
+                    _LOGGER.error("JSON API returned non-dict payload from %s", url)
+                    raise SyrConnectInvalidResponseError("API returned unexpected payload type")
 
                 # Check for API error codes in response
                 self._check_api_error_codes(data, url)
 
                 _LOGGER.debug("JSON API: Successfully fetched JSON from %s", url)
                 return data
-        except Exception as err:
-            _LOGGER.error("Failed to fetch JSON from %s: %s", url, err)
+        except aiohttp.ClientResponseError as err:
+            if err.status == 404:
+                _LOGGER.error("JSON API endpoint not found: %s (HTTP %s)", url, err.status)
+                raise SyrConnectConnectionError(
+                    f"Endpoint not found: {path} - Check device model and base_path configuration"
+                ) from err
+            if err.status in (401, 403):
+                _LOGGER.error("JSON API authentication error: %s (HTTP %s)", url, err.status)
+                raise SyrConnectAuthError(f"Authentication failed: {err.message}") from err
+            _LOGGER.error("JSON API HTTP error from %s: HTTP %s - %s", url, err.status, err.message)
+            raise SyrConnectConnectionError(f"HTTP {err.status}: {err.message}") from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            _LOGGER.error("JSON API connection error from %s: %s", url, err)
+            raise SyrConnectConnectionError(f"Connection failed: {err}") from err
+        except SyrConnectInvalidResponseError:
             raise
+        except Exception as err:
+            _LOGGER.error("JSON API unexpected error from %s: %s", url, err)
+            raise SyrConnectConnectionError(f"Unexpected error: {err}") from err
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
         """Return a single-device list constructed from the JSON `/get/all` result.
@@ -226,9 +258,21 @@ class SyrConnectJsonAPI:
 
                 _LOGGER.info("Set %s=%s via JSON API for device %s", cmd, value, device_id)
                 return True
+        except aiohttp.ClientResponseError as err:
+            if err.status == 404:
+                _LOGGER.error("JSON API set endpoint not found: %s (HTTP %s)", url, err.status)
+                raise SyrConnectConnectionError(f"Set command not found: {cmd}") from err
+            if err.status in (401, 403):
+                _LOGGER.error("JSON API authentication error: %s (HTTP %s)", url, err.status)
+                raise SyrConnectAuthError(f"Authentication failed: {err.message}") from err
+            _LOGGER.error("JSON API HTTP error from %s: HTTP %s - %s", url, err.status, err.message)
+            raise SyrConnectConnectionError(f"HTTP {err.status}: {err.message}") from err
+        except (aiohttp.ClientError, TimeoutError) as err:
+            _LOGGER.error("JSON API connection error from %s: %s", url, err)
+            raise SyrConnectConnectionError(f"Connection failed: {err}") from err
         except Exception as err:
-            _LOGGER.error("Failed to set %s via JSON API: %s", cmd, err)
-            raise
+            _LOGGER.error("JSON API unexpected error from %s: %s", url, err)
+            raise SyrConnectConnectionError(f"Unexpected error: {err}") from err
 
     def _check_api_error_codes(self, data: dict[str, Any], url: str) -> None:
         """Check response for API error codes and log warnings.

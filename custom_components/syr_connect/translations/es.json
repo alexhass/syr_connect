@@ -13,6 +13,30 @@
       "unknown": "Se ha producido un error inesperado. Inténtelo de nuevo más tarde."
     },
     "step": {
+      "user": {
+        "menu_options": {
+          "cloud_xml": "Acceso en la nube",
+          "local_json": "Acceso local"
+        },
+        "description": "Elija cómo conectarse a su dispositivo SYR:\n\n- **Acceso en la nube**: Use las credenciales de su aplicación SYR Connect para acceder a todos sus dispositivos a través del servicio en la nube de SYR. Requiere conexión a Internet.\n\n- **Acceso local**: Conéctese directamente a un dispositivo en su red local usando su dirección IP. Funciona sin conexión y proporciona tiempos de respuesta más rápidos.",
+        "title": "SYR Connect"
+      },
+      "cloud_xml": {
+        "data": {
+          "password": "Contraseña",
+          "username": "Nombre de usuario"
+        },
+        "description": "Introduzca sus credenciales de la aplicación SYR Connect para acceso en la nube",
+        "title": "SYR Connect (Nube)"
+      },
+      "local_json": {
+        "data": {
+          "host": "Nombre de host o dirección IP",
+          "model": "Modelo del dispositivo"
+        },
+        "description": "Introduzca el modelo y el nombre de host/IP para acceso local",
+        "title": "SYR Connect (Local)"
+      },
       "reauth_confirm": {
         "data": {
           "password": "Contraseña",
@@ -28,14 +52,6 @@
         },
         "description": "Actualice sus credenciales de SYR Connect.",
         "title": "Reconfigurar SYR Connect"
-      },
-      "user": {
-        "data": {
-          "password": "Contraseña",
-          "username": "Nombre de usuario"
-        },
-        "description": "Introduce las credenciales de la aplicación SYR Connect",
-        "title": "SYR Connect"
       }
     }
   },

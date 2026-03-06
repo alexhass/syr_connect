@@ -7,28 +7,52 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.const import (
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
+    CONF_HOST,
+    CONF_MODEL,
+    DOMAIN,
+)
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 # Patch path for API class (lazy-loaded in config_flow)
 _API_PATCH_PATH = "custom_components.syr_connect.api_xml.SyrConnectXmlAPI"
 
 
-async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
-    """Test we get the form."""
+async def test_form_menu(hass: HomeAssistant) -> None:
+    """Test we get the menu."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.FORM
-    assert result["errors"] == {}
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "user"
+    assert "cloud_xml" in result["menu_options"]
+    assert "local_json" in result["menu_options"]
+
+
+async def test_form_cloud_xml(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test cloud/XML API configuration flow."""
+    # Start flow and select cloud_xml from menu
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["step_id"] == "cloud_xml"
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
         new_callable=AsyncMock,
     ) as mock_setup_entry:
         mock_setup_entry.return_value = True
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
             {
                 CONF_USERNAME: "test@example.com",
                 CONF_PASSWORD: "test_password",
@@ -36,20 +60,26 @@ async def test_form(hass: HomeAssistant, mock_syr_api) -> None:
         )
         await hass.async_block_till_done()
 
-    # Anpassung: Prüfe auf FORM, da dies aktuell zurückgegeben wird
-    assert result2["type"] == FlowResultType.FORM or result2["type"] == FlowResultType.CREATE_ENTRY
-    # Optional: Weitere Assertions je nach tatsächlichem Verhalten
+    assert result3["type"] == FlowResultType.CREATE_ENTRY
+    assert result3["title"] == "SYR Connect Cloud (test@example.com)"
+    assert result3["data"][CONF_USERNAME] == "test@example.com"
+    assert result3["data"][CONF_API_TYPE] == API_TYPE_XML
 
 
-async def test_form_invalid_auth(hass: HomeAssistant) -> None:
-    """Test we handle invalid auth."""
+async def test_form_cloud_xml_invalid_auth(hass: HomeAssistant) -> None:
+    """Test we handle invalid auth for cloud/XML API."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
+    )
+
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
 
     with patch(
         "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
-        side_effect=Exception("Authentication failed"),
+        side_effect=SyrConnectAuthError("Authentication failed"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -60,18 +90,23 @@ async def test_form_invalid_auth(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == FlowResultType.FORM
-    assert "base" in result2["errors"]
+    assert result2["errors"] == {"base": "invalid_auth"}
 
 
-async def test_form_cannot_connect(hass: HomeAssistant) -> None:
-    """Test we handle cannot connect error."""
+async def test_form_cloud_xml_cannot_connect(hass: HomeAssistant) -> None:
+    """Test we handle cannot connect error for cloud/XML API."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
+    )
+
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     with patch(
         "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
-        side_effect=Exception("Connection error"),
+        side_effect=SyrConnectConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -85,20 +120,24 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_form_already_configured(hass: HomeAssistant, mock_syr_api) -> None:
-    """Test we handle already configured."""
+async def test_form_cloud_xml_already_configured(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test we handle already configured for cloud/XML API."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
     )
 
     with patch(
@@ -115,18 +154,133 @@ async def test_form_already_configured(hass: HomeAssistant, mock_syr_api) -> Non
         )
         await hass.async_block_till_done()
 
-    assert result2["type"] == FlowResultType.FORM or result2["type"] == FlowResultType.ABORT
-    # Optional: Weitere Assertions je nach tatsächlichem Verhalten
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "already_configured"
+
+
+async def test_form_local_json(hass: HomeAssistant) -> None:
+    """Test local/JSON API configuration flow."""
+    # Start flow and select local_json from menu
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "local_json"}
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["step_id"] == "local_json"
+
+    with (
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.get_device_status",
+            new_callable=AsyncMock,
+            return_value={"getVER": "test"},
+        ),
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result3["type"] == FlowResultType.CREATE_ENTRY
+    assert "192.168.1.100" in result3["title"]
+    assert result3["data"][CONF_HOST] == "192.168.1.100"
+    assert result3["data"][CONF_MODEL] == "neosoft5000"
+    assert result3["data"][CONF_API_TYPE] == API_TYPE_JSON
+
+
+async def test_form_local_json_cannot_connect(hass: HomeAssistant) -> None:
+    """Test local/JSON API cannot connect error."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "local_json"}
+    )
+
+    with patch(
+        "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+        side_effect=Exception("Connection error"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "cannot_connect"}
+
+
+async def test_form_local_json_already_configured(hass: HomeAssistant) -> None:
+    """Test local/JSON API already configured."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_192.168.1.100",
+        data={
+            CONF_HOST: "192.168.1.100",
+            CONF_MODEL: "neosoft5000",
+            CONF_API_TYPE: API_TYPE_JSON,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "local_json"}
+    )
+
+    with (
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.get_device_status",
+            new_callable=AsyncMock,
+            return_value={"getVER": "test"},
+        ),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "already_configured"
 
 
 async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
     """Test options flow."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
         options={},
     )
@@ -158,10 +312,11 @@ async def test_options_flow_no_entry(hass: HomeAssistant) -> None:
     """Test options flow when entry has no options."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
         options=None,
     )
@@ -177,10 +332,11 @@ async def test_reauth_flow(hass: HomeAssistant, mock_syr_api) -> None:
     """Test reauth flow."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -219,10 +375,11 @@ async def test_reauth_flow_invalid_auth(hass: HomeAssistant) -> None:
     """Test reauth flow with invalid credentials."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -258,10 +415,11 @@ async def test_reauth_flow_cannot_connect(hass: HomeAssistant) -> None:
     """Test reauth flow with connection error."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -297,10 +455,11 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
     """Test reauth flow with unknown error."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -334,10 +493,11 @@ async def test_reconfigure_flow(hass: HomeAssistant, mock_syr_api) -> None:
     """Test reconfigure flow."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -374,10 +534,11 @@ async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:
     """Test reconfigure flow with invalid credentials."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -412,10 +573,11 @@ async def test_reconfigure_flow_cannot_connect(hass: HomeAssistant) -> None:
     """Test reconfigure flow with connection error."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
     )
     entry.add_to_hass(hass)
@@ -482,9 +644,9 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_validate_input_auth_error(hass: HomeAssistant) -> None:
-    """Test validate_input raises InvalidAuthError on auth failure."""
-    from custom_components.syr_connect.config_flow import validate_input, InvalidAuthError
+async def test_validate_input_xml_auth_error(hass: HomeAssistant) -> None:
+    """Test validate_input_xml raises InvalidAuthError on auth failure."""
+    from custom_components.syr_connect.config_flow import InvalidAuthError, validate_input_xml
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
 
     with patch(
@@ -492,15 +654,15 @@ async def test_validate_input_auth_error(hass: HomeAssistant) -> None:
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         with pytest.raises(InvalidAuthError):
-            await validate_input(
+            await validate_input_xml(
                 hass,
                 {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "wrong"},
             )
 
 
-async def test_validate_input_connection_error(hass: HomeAssistant) -> None:
-    """Test validate_input raises CannotConnectError on connection failure."""
-    from custom_components.syr_connect.config_flow import validate_input, CannotConnectError
+async def test_validate_input_xml_connection_error(hass: HomeAssistant) -> None:
+    """Test validate_input_xml raises CannotConnectError on connection failure."""
+    from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_xml
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     with patch(
@@ -508,35 +670,54 @@ async def test_validate_input_connection_error(hass: HomeAssistant) -> None:
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         with pytest.raises(CannotConnectError):
-            await validate_input(
+            await validate_input_xml(
                 hass,
                 {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test"},
             )
 
 
-async def test_validate_input_unexpected_error(hass: HomeAssistant) -> None:
-    """Test validate_input raises CannotConnectError on unexpected error."""
-    from custom_components.syr_connect.config_flow import validate_input, CannotConnectError
+async def test_validate_input_xml_unexpected_error(hass: HomeAssistant) -> None:
+    """Test validate_input_xml raises CannotConnectError on unexpected error."""
+    from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_xml
 
     with patch(
         "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
         side_effect=RuntimeError("Unexpected"),
     ):
         with pytest.raises(CannotConnectError):
-            await validate_input(
+            await validate_input_xml(
                 hass,
                 {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test"},
             )
 
 
+async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None:
+    """Test validate_input_json raises CannotConnectError on connection failure."""
+    from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_json
+
+    with patch(
+        "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+        side_effect=Exception("Network error"),
+    ):
+        with pytest.raises(CannotConnectError):
+            await validate_input_json(
+                hass,
+                {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+            )
+
+
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
     """Test reauth flow when entry is deleted during confirmation."""
-    from unittest.mock import patch, AsyncMock
-    
+    from unittest.mock import AsyncMock, patch
+
     # Create a config entry first
     entry = MockConfigEntry(
         domain=DOMAIN,
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
         entry_id="test_entry_id",
     )
     entry.add_to_hass(hass)
@@ -607,10 +788,11 @@ async def test_options_flow_with_existing_interval(hass: HomeAssistant, mock_syr
     """Test options flow shows existing scan interval as default."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="test@example.com",
+        unique_id="xml_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
+            CONF_API_TYPE: API_TYPE_XML,
         },
         options={"scan_interval": 180},
     )
@@ -655,12 +837,15 @@ async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
     assert result["step_id"] == "reconfigure"
 
 
-async def test_form_with_auth_error_exception(hass: HomeAssistant) -> None:
-    """Test config flow with SyrConnectAuthError."""
+async def test_form_cloud_xml_with_auth_error_exception(hass: HomeAssistant) -> None:
+    """Test cloud/XML config flow with SyrConnectAuthError."""
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
     
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
     )
 
     with patch(
@@ -679,12 +864,15 @@ async def test_form_with_auth_error_exception(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "invalid_auth"}
 
 
-async def test_form_with_connection_error_exception(hass: HomeAssistant) -> None:
-    """Test config flow with SyrConnectConnectionError."""
+async def test_form_cloud_xml_with_connection_error_exception(hass: HomeAssistant) -> None:
+    """Test cloud/XML config flow with SyrConnectConnectionError."""
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
     
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
     )
 
     with patch(
@@ -703,10 +891,13 @@ async def test_form_with_connection_error_exception(hass: HomeAssistant) -> None
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_form_with_generic_exception(hass: HomeAssistant) -> None:
-    """Test config flow with generic exception during API initialization."""
+async def test_form_cloud_xml_with_generic_exception(hass: HomeAssistant) -> None:
+    """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "cloud_xml"}
     )
 
     with patch(

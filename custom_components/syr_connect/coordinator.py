@@ -20,9 +20,15 @@ from homeassistant.helpers.update_coordinator import (
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
+    CONF_HOST,
+    CONF_MODEL,
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+from .models import MODEL_SIGNATURES
 from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,12 +37,13 @@ _LOGGER = logging.getLogger(__name__)
 class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching SYR Connect data."""
 
+    api: SyrConnectXmlAPI | Any  # SyrConnectJsonAPI is imported conditionally
+
     def __init__(
         self,
         hass: HomeAssistant,
         session: aiohttp.ClientSession,
-        username: str,
-        password: str,
+        config_data: dict[str, Any],
         scan_interval: int = _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
     ) -> None:
         """Initialize the coordinator.
@@ -44,8 +51,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         Args:
             hass: Home Assistant instance
             session: aiohttp client session
-            username: SYR Connect username
-            password: SYR Connect password
+            config_data: Configuration data containing API type and credentials
             scan_interval: Update interval in seconds
         """
         super().__init__(
@@ -55,10 +61,42 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=scan_interval),
         )
 
-        self.api = SyrConnectXmlAPI(session, username, password)
+        # Determine API type and create appropriate API client
+        api_type = config_data.get(CONF_API_TYPE, API_TYPE_XML)
+        self._api_type = api_type
+
+        if api_type == API_TYPE_JSON:
+            # Local JSON API
+            from .api_json import SyrConnectJsonAPI
+
+            host = config_data[CONF_HOST]
+            model = config_data[CONF_MODEL]
+
+            # Get base_path for the selected model
+            base_path = None
+            for sig in MODEL_SIGNATURES:
+                if sig["name"] == model:
+                    base_path = sig.get("base_path")
+                    break
+
+            if base_path is None:
+                raise ValueError(f"Model {model} does not support local JSON API")
+
+            self.api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
+            self._username = None  # Not used for JSON API
+            _LOGGER.info("Coordinator initialized with JSON API (host=%s, model=%s)", host, model)
+        else:
+            # Cloud XML API (default)
+            from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+
+            username = config_data[CONF_USERNAME]
+            password = config_data[CONF_PASSWORD]
+            self.api = SyrConnectXmlAPI(session, username, password)
+            self._username = username
+            _LOGGER.info("Coordinator initialized with XML API (username=%s)", username)
+
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session
-        self._username = username
         # Map of ((device_id, get_key) -> expire_timestamp) to ignore API
         # provided values for a short period after we apply an optimistic
         # update. This is used to avoid immediately overwriting an

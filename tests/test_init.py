@@ -228,3 +228,93 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         
         mock_reload.assert_called_once_with("test_entry_id")
 
+
+async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> None:
+    """Test that legacy config entries without API_TYPE are migrated automatically."""
+    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
+    
+    # Create a legacy entry without CONF_API_TYPE
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test Legacy",
+        data={CONF_USERNAME: "legacy@example.com", CONF_PASSWORD: "password"},
+        source="user",
+        entry_id="legacy_entry_id",
+        unique_id="legacy@example.com",  # Old format without prefix
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_coordinator_class.return_value = mock_coordinator
+        
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
+            with patch.object(
+                hass.config_entries,
+                "async_update_entry",
+                new_callable=MagicMock
+            ) as mock_update:
+                result = await async_setup_entry(hass, config_entry)
+    
+    # Verify setup succeeded
+    assert result is True
+    
+    # Verify migration was called
+    mock_update.assert_called_once()
+    call_args = mock_update.call_args
+    
+    # Check that data was updated with API_TYPE_XML
+    assert CONF_API_TYPE in call_args.kwargs["data"]
+    assert call_args.kwargs["data"][CONF_API_TYPE] == API_TYPE_XML
+    
+    # Check that unique_id was updated to new format
+    assert call_args.kwargs["unique_id"] == f"{API_TYPE_XML}_legacy@example.com"
+
+
+async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssistant) -> None:
+    """Test that new config entries with API_TYPE are not migrated."""
+    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
+    
+    # Create a new entry with CONF_API_TYPE already set
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test New",
+        data={
+            CONF_USERNAME: "new@example.com",
+            CONF_PASSWORD: "password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+        source="user",
+        entry_id="new_entry_id",
+        unique_id=f"{API_TYPE_XML}_new@example.com",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+    
+    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_coordinator_class.return_value = mock_coordinator
+        
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
+            with patch.object(
+                hass.config_entries,
+                "async_update_entry",
+                new_callable=MagicMock
+            ) as mock_update:
+                result = await async_setup_entry(hass, config_entry)
+    
+    # Verify setup succeeded
+    assert result is True
+    
+    # Verify migration was NOT called (entry already has API_TYPE)
+    mock_update.assert_not_called()
+

@@ -17,21 +17,55 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import (
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
+    CONF_HOST,
+    CONF_MODEL,
     DOMAIN,
 )
+from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema(
+# Schema for Cloud/XML API configuration (username + password)
+STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
     }
 )
 
+# Get list of models that support local JSON API (have base_path)
+# Sorted alphabetically by display_name
+LOCAL_API_MODELS = sorted(
+    [
+        (sig["name"], sig["display_name"])
+        for sig in MODEL_SIGNATURES
+        if sig.get("base_path") is not None
+    ],
+    key=lambda x: x[1],  # Sort by display_name
+)
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect.
+# Schema for Local/JSON API configuration (host + model)
+STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_MODEL): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    selector.SelectOptionDict(value=name, label=display)
+                    for name, display in LOCAL_API_MODELS
+                ],
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
+        vol.Required(CONF_HOST): str,
+    }
+)
+
+
+async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+    """Validate the user input for Cloud/XML API.
 
     Args:
         hass: Home Assistant instance
@@ -48,27 +82,101 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     from .api_xml import SyrConnectXmlAPI
     from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
-    _LOGGER.debug("Validating credentials for user: %s", data[CONF_USERNAME])
+    _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
     api = SyrConnectXmlAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
 
     # Test authentication
-    _LOGGER.debug("Testing API authentication...")
+    _LOGGER.debug("Testing XML API authentication...")
     try:
         await api.login()
     except SyrConnectAuthError as err:
-        _LOGGER.error("Authentication failed: %s", err)
+        _LOGGER.error("XML API authentication failed: %s", err)
         raise InvalidAuthError from err
     except SyrConnectConnectionError as err:
-        _LOGGER.error("Connection failed: %s", err)
+        _LOGGER.error("XML API connection failed: %s", err)
         raise CannotConnectError from err
     except Exception as err:
-        _LOGGER.error("Unexpected error during validation: %s", err)
+        _LOGGER.error("Unexpected error during XML API validation: %s", err)
         raise CannotConnectError from err
 
-    _LOGGER.info("API authentication successful for user: %s", data[CONF_USERNAME])
+    _LOGGER.info("XML API authentication successful for user: %s", data[CONF_USERNAME])
 
-    return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
+    return {"title": f"SYR Connect Cloud ({data[CONF_USERNAME]})"}
+
+
+async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+    """Validate the user input for Local/JSON API.
+
+    Args:
+        hass: Home Assistant instance
+        data: User input data with host and model
+
+    Returns:
+        Dictionary with title for the config entry
+
+    Raises:
+        CannotConnectError: If connection to API fails
+    """
+    # Import here to avoid blocking import at module level
+    from .api_json import SyrConnectJsonAPI
+
+    host = data[CONF_HOST]
+    model = data[CONF_MODEL]
+
+    _LOGGER.debug("Validating JSON API connection to host: %s, model: %s", host, model)
+
+    # Get base_path for the selected model
+    base_path = None
+    display_name = model
+    for sig in MODEL_SIGNATURES:
+        if sig["name"] == model:
+            base_path = sig.get("base_path")
+            display_name = sig.get("display_name", model)
+            break
+
+    if base_path is None:
+        _LOGGER.error("Selected model %s does not support local JSON API", model)
+        raise CannotConnectError
+
+    session = async_get_clientsession(hass)
+    api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
+
+    # Test connection by attempting login and fetch
+    _LOGGER.debug("Testing JSON API connection...")
+    try:
+        await api.login()
+        data_result = await api.get_device_status("test")
+        if not data_result:
+            raise CannotConnectError
+    except Exception as err:
+        _LOGGER.error("JSON API connection failed: %s", err)
+        raise CannotConnectError from err
+
+    _LOGGER.info("JSON API connection successful to host: %s", host)
+
+    return {"title": f"SYR Connect Local ({display_name} @ {host})"}
+
+
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+    """Validate the user input allows us to connect.
+
+    DEPRECATED: This function is kept for backward compatibility with reauth/reconfigure flows.
+    New configurations should use validate_input_xml or validate_input_json.
+
+    Args:
+        hass: Home Assistant instance
+        data: User input data with username and password
+
+    Returns:
+        Dictionary with title for the config entry
+
+    Raises:
+        CannotConnectError: If connection to API fails
+        InvalidAuthError: If authentication fails
+    """
+    # Assume XML API for backward compatibility
+    return await validate_input_xml(hass, data)
 
 
 class CannotConnectError(HomeAssistantError):
@@ -214,7 +322,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=STEP_USER_DATA_SCHEMA,
+            data_schema=STEP_CLOUD_XML_DATA_SCHEMA,
             errors=errors,
             description_placeholders={"username": str(self.context.get("username", ""))},
         )
@@ -280,7 +388,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Handle the initial step.
+        """Handle the initial step - show menu to select API type.
+
+        Returns:
+            FlowResult with menu to choose between Cloud (XML) or Local (JSON) API
+        """
+        return self.async_show_menu(
+            step_id="user",
+            menu_options=["cloud_xml", "local_json"],
+        )
+
+    async def async_step_cloud_xml(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Handle Cloud/XML API configuration (username + password).
 
         Args:
             user_input: User input data containing username and password
@@ -291,25 +410,86 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            _LOGGER.debug("Processing config flow for user: %s", user_input[CONF_USERNAME])
+            _LOGGER.debug("Processing Cloud/XML API config flow for user: %s", user_input[CONF_USERNAME])
             try:
-                info = await validate_input(self.hass, user_input)
+                info = await validate_input_xml(self.hass, user_input)
                 _LOGGER.debug("Validation successful")
             except CannotConnectError:
                 errors["base"] = "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected error during config flow: %s", err)
+                _LOGGER.exception("Unexpected error during Cloud/XML API config flow: %s", err)
                 errors["base"] = "unknown"
             else:
-                _LOGGER.debug("Setting unique ID: %s", user_input[CONF_USERNAME])
-                await self.async_set_unique_id(user_input[CONF_USERNAME])
+                # Set unique ID based on username and API type
+                unique_id = f"{API_TYPE_XML}_{user_input[CONF_USERNAME]}"
+                _LOGGER.debug("Setting unique ID: %s", unique_id)
+                await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
-                _LOGGER.info("Creating config entry: %s", info["title"])
-                return self.async_create_entry(title=info["title"], data=user_input)
+                _LOGGER.info("Creating Cloud/XML API config entry: %s", info["title"])
+                return self.async_create_entry(
+                    title=info["title"],
+                    data={
+                        **user_input,
+                        CONF_API_TYPE: API_TYPE_XML,
+                    },
+                )
         else:
-            _LOGGER.debug("Showing config form to user")
+            _LOGGER.debug("Showing Cloud/XML API config form to user")
 
-        return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors)
+        return self.async_show_form(
+            step_id="cloud_xml",
+            data_schema=STEP_CLOUD_XML_DATA_SCHEMA,
+            errors=errors,
+        )
+
+    async def async_step_local_json(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Handle Local/JSON API configuration (host + model).
+
+        Args:
+            user_input: User input data containing host and model
+
+        Returns:
+            FlowResult with config entry or form with validation errors
+        """
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            _LOGGER.debug(
+                "Processing Local/JSON API config flow for host: %s, model: %s",
+                user_input[CONF_HOST],
+                user_input[CONF_MODEL],
+            )
+            try:
+                info = await validate_input_json(self.hass, user_input)
+                _LOGGER.debug("Validation successful")
+            except CannotConnectError:
+                errors["base"] = "cannot_connect"
+            except Exception as err:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
+                errors["base"] = "unknown"
+            else:
+                # Set unique ID based on host and API type
+                unique_id = f"{API_TYPE_JSON}_{user_input[CONF_HOST]}"
+                _LOGGER.debug("Setting unique ID: %s", unique_id)
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
+
+                _LOGGER.info("Creating Local/JSON API config entry: %s", info["title"])
+                return self.async_create_entry(
+                    title=info["title"],
+                    data={
+                        **user_input,
+                        CONF_API_TYPE: API_TYPE_JSON,
+                    },
+                )
+        else:
+            _LOGGER.debug("Showing Local/JSON API config form to user")
+
+        return self.async_show_form(
+            step_id="local_json",
+            data_schema=STEP_LOCAL_JSON_DATA_SCHEMA,
+            errors=errors,
+        )

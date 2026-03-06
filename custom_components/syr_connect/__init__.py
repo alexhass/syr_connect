@@ -5,7 +5,7 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.const import CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -25,9 +25,67 @@ PLATFORMS: list[str | Platform] = [
 ]
 
 
+async def _async_migrate_legacy_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Migrate a legacy config entry to the new format.
+
+    Legacy entries (created before menu-based flow) don't have:
+    - CONF_API_TYPE field
+    - API type prefix in unique_id
+
+    This function:
+    1. Adds CONF_API_TYPE (defaults to XML for backward compatibility)
+    2. Updates unique_id to include API type prefix
+    """
+    from .const import API_TYPE_XML, CONF_API_TYPE
+
+    username = entry.data.get(CONF_USERNAME)
+    if not username:
+        _LOGGER.warning(
+            "Cannot migrate entry '%s': Missing username",
+            entry.title
+        )
+        return
+
+    # Update data with API_TYPE_XML (legacy entries always used XML API)
+    new_data = {**entry.data, CONF_API_TYPE: API_TYPE_XML}
+
+    # Update unique_id to include API type prefix
+    new_unique_id = f"{API_TYPE_XML}_{username}"
+
+    _LOGGER.info(
+        "Migrating entry '%s': Adding API type '%s', updating unique_id from '%s' to '%s'",
+        entry.title,
+        API_TYPE_XML,
+        entry.unique_id,
+        new_unique_id
+    )
+
+    # Update config entry with new data and unique_id
+    hass.config_entries.async_update_entry(
+        entry,
+        data=new_data,
+        unique_id=new_unique_id
+    )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
-    _LOGGER.info("Setting up SYR Connect integration for user: %s", entry.data[CONF_USERNAME])
+    # Get API type for logging
+    from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_HOST
+
+    # Migrate legacy entries without API type
+    if CONF_API_TYPE not in entry.data:
+        _LOGGER.info(
+            "Migrating legacy config entry '%s' to new format with API type",
+            entry.title
+        )
+        await _async_migrate_legacy_entry(hass, entry)
+
+    api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
+    api_identifier = (
+        entry.data.get(CONF_HOST) if api_type == API_TYPE_JSON else entry.data.get(CONF_USERNAME, "unknown")
+    )
+    _LOGGER.info("Setting up SYR Connect integration (%s API) for: %s", api_type.upper(), api_identifier)
 
     session = async_get_clientsession(hass)
 
@@ -37,8 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
         session,
-        entry.data[CONF_USERNAME],
-        entry.data[CONF_PASSWORD],
+        dict(entry.data),
         scan_interval,
     )
 
