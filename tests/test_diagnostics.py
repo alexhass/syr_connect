@@ -2097,7 +2097,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
     mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
 
     # Mock the JSON API
-    mock_json_api = MagicMock()
+    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
     mock_json_api._fetch_json = AsyncMock(return_value={"getSRN": "12345", "getFLO": "10"})
     mock_coordinator.api = mock_json_api
@@ -2380,7 +2380,7 @@ async def test_diagnostics_device_info_xml_api(hass: HomeAssistant) -> None:
                 "available": True,
                 "project_id": "project1",
                 "status": {
-                    "getCNA": "LEX+10S",
+                    "getCNA": "LEXplus10S",
                     "getVER": "1.2.3",
                     "getFIR": "HW_V1",
                     "getMAC": "AA:BB:CC:DD:EE:FF",
@@ -2549,7 +2549,7 @@ async def test_diagnostics_device_info_minimal_status(hass: HomeAssistant) -> No
     assert device["id"] == "UNKNOWN01"
     assert device["name"] == "Unknown Device"
     assert device["available"] is False
-    assert device["model"] is None  # No getCNA in status
+    assert device["model"] == "Unknown model"  # Unknown model detected
     assert device["sw_version"] is None  # No getVER in status
     assert device["hw_version"] is None  # No getFIR in status
     assert device["api_type"] == API_TYPE_XML
