@@ -167,7 +167,7 @@ async def test_login_success() -> None:
 async def test_login_http_error() -> None:
     """Test login raises exception on HTTP error."""
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
-    
+
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 500
@@ -202,7 +202,7 @@ async def test_fetch_json_no_base_url_raises() -> None:
 async def test_fetch_json_non_dict_raises() -> None:
     """Test _fetch_json raises SyrConnectInvalidResponseError when response is not a dict."""
     from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
-    
+
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
@@ -220,7 +220,7 @@ async def test_fetch_json_non_dict_raises() -> None:
 async def test_fetch_json_http_error() -> None:
     """Test _fetch_json raises exception on HTTP error."""
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
-    
+
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 500
@@ -334,7 +334,7 @@ async def test_set_device_status_success() -> None:
 async def test_set_device_status_http_error() -> None:
     """Test set_device_status raises exception on HTTP error."""
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
-    
+
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 403
@@ -575,4 +575,50 @@ async def test_get_device_status_without_cache() -> None:
         status = await client.get_device_status("local")
         assert isinstance(status, dict)
         assert len(status) > 0
+
+
+async def test_get_devices_uses_frn_fallback() -> None:
+    """Test that get_devices uses getFRN when getSRN is missing."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    data = {"getFRN": "67890", "getOther": "value"}  # No getSRN
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("local")
+
+    assert len(devices) == 1
+    assert devices[0]["id"] == "67890"  # Uses getFRN
+    assert devices[0]["name"] == "67890"  # Falls back to device_id
+
+
+async def test_get_devices_uses_local_device_fallback() -> None:
+    """Test that get_devices uses 'local_device' when no serial available."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    data = {"getOther": "value"}  # No getSRN or getFRN
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("local")
+
+    assert len(devices) == 1
+    assert devices[0]["id"] == "local_device"
+    assert devices[0]["name"] == "local_device"
+
+
+async def test_get_devices_calls_login_when_session_invalid() -> None:
+    """Test that get_devices calls login when session is invalid (no base_url)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Mock login
+    client.login = AsyncMock()
+
+    data = {"getSRN": "12345", "getOther": "value"}
+    with patch.object(client, "_fetch_json", return_value=data):
+        devices = await client.get_devices("local")
+
+    # Should have called login because session is invalid
+    client.login.assert_called_once()
+    assert len(devices) == 1
+    assert devices[0]["id"] == "12345"
 
