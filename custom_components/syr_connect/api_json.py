@@ -25,6 +25,7 @@ from typing import Any
 from urllib.parse import quote
 
 import aiohttp
+from yarl import URL
 
 from .exceptions import (
     SyrConnectAuthError,
@@ -270,9 +271,12 @@ class SyrConnectJsonAPI:
         # URL-encode cmd and value to handle special characters (e.g., colons in times)
         encoded_cmd = quote(str(cmd), safe='')
         encoded_value = quote(str(value), safe='')
-        url = f"{base}/set/{encoded_cmd}/{encoded_value}"
+        url_string = f"{base}/set/{encoded_cmd}/{encoded_value}"
+        # Use yarl.URL with encoded=True to prevent aiohttp from decoding our encoded characters
+        url = URL(url_string, encoded=True)
         _LOGGER.warning("DEBUG: Sending URL (raw): %r", url)
-        _LOGGER.warning("DEBUG: Command=%r, Value=%r, Encoded Value=%r", command, value, encoded_value)
+        _LOGGER.warning("DEBUG: URL string: %s", url_string)
+        _LOGGER.warning("DEBUG: Command=%r, Value=%r, Encoded=%r", command, value, encoded_value)
         _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
