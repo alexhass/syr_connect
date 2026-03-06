@@ -38,17 +38,19 @@ STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
 )
 
 # Get list of models that support local JSON API (have base_path)
-LOCAL_API_MODELS = [
-    (sig["name"], sig["display_name"])
-    for sig in MODEL_SIGNATURES
-    if sig.get("base_path") is not None
-]
+# Sort by display_name to ensure first item in list matches first item shown in UI
+LOCAL_API_MODELS = sorted(
+    [
+        (sig["name"], sig["display_name"])
+        for sig in MODEL_SIGNATURES
+        if sig.get("base_path") is not None
+    ],
+    key=lambda x: x[1],  # Sort by display_name
+)
 
 # Schema for Local/JSON API configuration (host + model)
 STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_DEVICE_NAME): str,
-        vol.Required(CONF_HOST): str,
         vol.Required(CONF_MODEL): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
@@ -56,9 +58,10 @@ STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
                     for name, display in LOCAL_API_MODELS
                 ],
                 mode=selector.SelectSelectorMode.DROPDOWN,
-                sort=True,
             )
         ),
+        vol.Required(CONF_HOST): str,
+        vol.Required(CONF_DEVICE_NAME): str,
     }
 )
 
@@ -385,14 +388,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=vol.Schema(
                     {
                         vol.Required(
-                            CONF_DEVICE_NAME,
-                            default=entry.data.get(CONF_DEVICE_NAME, "")
-                        ): str,
-                        vol.Required(
-                            CONF_HOST,
-                            default=entry.data.get(CONF_HOST, "")
-                        ): str,
-                        vol.Required(
                             CONF_MODEL,
                             default=entry.data.get(CONF_MODEL, "")
                         ): selector.SelectSelector(
@@ -405,6 +400,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                 sort=True,
                             )
                         ),
+                        vol.Required(
+                            CONF_HOST,
+                            default=entry.data.get(CONF_HOST, "")
+                        ): str,
+                        vol.Required(
+                            CONF_DEVICE_NAME,
+                            default=entry.data.get(CONF_DEVICE_NAME, "")
+                        ): str,
                     }
                 ),
                 errors=errors,
