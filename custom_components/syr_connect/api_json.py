@@ -190,7 +190,8 @@ class SyrConnectJsonAPI:
 
         # Derive id and name from common fields if available
         device_id = status.get("getSRN") or status.get("getFRN") or "local_device"
-        name = status.get("getCNA") or status.get("getVER") or device_id
+        # TODO: Decide if we add one more name setting.
+        name = device_id
 
         return [{"id": str(device_id), "dclg": str(device_id), "name": str(name)}]
 

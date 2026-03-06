@@ -61,7 +61,7 @@ async def test_form_cloud_xml(hass: HomeAssistant, mock_syr_api) -> None:
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.CREATE_ENTRY
-    assert result3["title"] == "SYR Connect Cloud (test@example.com)"
+    assert result3["title"] == "SYR Connect (test@example.com)"
     assert result3["data"][CONF_USERNAME] == "test@example.com"
     assert result3["data"][CONF_API_TYPE] == API_TYPE_XML
 
