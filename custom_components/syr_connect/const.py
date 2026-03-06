@@ -344,6 +344,14 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getNET',       # Value: "", unclear meaning
     'getTSD',       # Value: "", unclear meaning
 
+    # JSON API only sensors (not available in XML API):
+    'getALH',
+    'getALL',
+    'getCLC',
+    'getCLM',
+    'getDVL',
+    'getFRN',
+
     # Sensors exits in devices:
     # - Trio DFR/LS
 
@@ -435,14 +443,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     'getEIP',  # Ethernet IP address
     'getWGW',  # Wi-Fi gateway
     'getWIP',  # Wi-Fi IP address
-
-    # JSON API only sensors (not available in XML API):
-    'getALH',
-    'getALL',
-    'getCLC',
-    'getCLM',
-    'getDVL',
-    'getFRN',
 
     # Sensors exits in devices only:
     # - NeoSoft 5000
