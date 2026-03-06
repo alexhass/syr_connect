@@ -328,7 +328,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle reconfiguration of the integration.
 
         Args:
-            user_input: User input data with new credentials
+            user_input: User input data with new credentials or settings
 
         Returns:
             FlowResult with updated config entry or form with errors
@@ -336,22 +336,33 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
 
+        if entry is None:
+            return self.async_abort(reason="reconfigure_failed")
+
+        # Determine API type from current entry
+        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
+
         if user_input is not None:
-            if entry is None:
-                return self.async_abort(reason="reconfigure_failed")
-
             try:
-                # Validate new credentials
-                await validate_input(self.hass, user_input)
-
-                # Update the config entry with new credentials
-                self.hass.config_entries.async_update_entry(
-                    entry,
-                    data={
+                # Validate based on API type
+                if api_type == API_TYPE_JSON:
+                    await validate_input_json(self.hass, user_input)
+                    new_data = {
+                        CONF_API_TYPE: API_TYPE_JSON,
+                        CONF_HOST: user_input[CONF_HOST],
+                        CONF_MODEL: user_input[CONF_MODEL],
+                        CONF_DEVICE_NAME: user_input[CONF_DEVICE_NAME],
+                    }
+                else:
+                    await validate_input_xml(self.hass, user_input)
+                    new_data = {
+                        CONF_API_TYPE: API_TYPE_XML,
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
-                    },
-                )
+                    }
+
+                # Update the config entry
+                self.hass.config_entries.async_update_entry(entry, data=new_data)
 
                 # Reload the config entry
                 await self.hass.config_entries.async_reload(entry.entry_id)
@@ -366,23 +377,53 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
                 errors["base"] = "unknown"
 
-        # Pre-fill with current username
-        current_data = {}
-        if entry:
-            current_data = {
-                CONF_USERNAME: entry.data.get(CONF_USERNAME, ""),
-            }
-
-        return self.async_show_form(
-            step_id="reconfigure",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_USERNAME, default=current_data.get(CONF_USERNAME, "")): str,
-                    vol.Required(CONF_PASSWORD): str,
-                }
-            ),
-            errors=errors,
-        )
+        # Show appropriate form based on API type
+        if api_type == API_TYPE_JSON:
+            # Pre-fill with current values for JSON API
+            return self.async_show_form(
+                step_id="reconfigure",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(
+                            CONF_DEVICE_NAME,
+                            default=entry.data.get(CONF_DEVICE_NAME, "")
+                        ): str,
+                        vol.Required(
+                            CONF_HOST,
+                            default=entry.data.get(CONF_HOST, "")
+                        ): str,
+                        vol.Required(
+                            CONF_MODEL,
+                            default=entry.data.get(CONF_MODEL, "")
+                        ): selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=[
+                                    selector.SelectOptionDict(value=name, label=display)
+                                    for name, display in LOCAL_API_MODELS
+                                ],
+                                mode=selector.SelectSelectorMode.DROPDOWN,
+                                sort=True,
+                            )
+                        ),
+                    }
+                ),
+                errors=errors,
+            )
+        else:
+            # Pre-fill with current username for XML API
+            return self.async_show_form(
+                step_id="reconfigure",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(
+                            CONF_USERNAME,
+                            default=entry.data.get(CONF_USERNAME, "")
+                        ): str,
+                        vol.Required(CONF_PASSWORD): str,
+                    }
+                ),
+                errors=errors,
+            )
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step - show menu to select API type.

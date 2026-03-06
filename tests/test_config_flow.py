@@ -11,6 +11,7 @@ from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
+    CONF_DEVICE_NAME,
     CONF_HOST,
     CONF_MODEL,
     DOMAIN,
@@ -191,6 +192,7 @@ async def test_form_local_json(hass: HomeAssistant) -> None:
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             {
+                CONF_DEVICE_NAME: "Test Device",
                 CONF_HOST: "192.168.1.100",
                 CONF_MODEL: "neosoft5000",
             },
@@ -220,6 +222,7 @@ async def test_form_local_json_cannot_connect(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
+                CONF_DEVICE_NAME: "Test Device",
                 CONF_HOST: "192.168.1.100",
                 CONF_MODEL: "neosoft5000",
             },
@@ -235,6 +238,7 @@ async def test_form_local_json_already_configured(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="json_192.168.1.100",
         data={
+            CONF_DEVICE_NAME: "Test Device",
             CONF_HOST: "192.168.1.100",
             CONF_MODEL: "neosoft5000",
             CONF_API_TYPE: API_TYPE_JSON,
@@ -263,6 +267,7 @@ async def test_form_local_json_already_configured(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
+                CONF_DEVICE_NAME: "Test Device",
                 CONF_HOST: "192.168.1.100",
                 CONF_MODEL: "neosoft5000",
             },

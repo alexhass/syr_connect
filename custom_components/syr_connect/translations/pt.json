@@ -40,10 +40,13 @@
       },
       "reconfigure": {
         "data": {
+          "device_name": "Nome do dispositivo",
+          "host": "Nome do host ou endereço IP",
+          "model": "Modelo do dispositivo",
           "password": "Senha",
           "username": "Nome de usuário"
         },
-        "description": "Atualize suas credenciais do SYR Connect.",
+        "description": "Atualize sua configuração do SYR Connect.",
         "title": "Reconfigurar SYR Connect"
       },
       "user": {
