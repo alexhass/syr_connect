@@ -401,7 +401,7 @@ async def test_set_device_status_success() -> None:
 
 async def test_set_device_status_http_error() -> None:
     """Test set_device_status raises exception on HTTP error."""
-    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
     
     sess = MagicMock()
     mock_response = MagicMock()
@@ -418,7 +418,7 @@ async def test_set_device_status_http_error() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with pytest.raises(SyrConnectConnectionError):
+    with pytest.raises(SyrConnectAuthError):
         await client.set_device_status("device1", "AB", "false")
 
 

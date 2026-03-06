@@ -13,11 +13,14 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+    config_data = {
+        "username": "test@example.com",
+        "password": "password",
+    }
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
         MagicMock(),
-        "test@example.com",
-        "password",
+        config_data,
         60,
     )
     coordinator.async_set_updated_data(data)
