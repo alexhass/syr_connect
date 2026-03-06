@@ -46,22 +46,6 @@ async def test_json_client_parses_fixture(fixture: str) -> None:
     assert any(k.startswith("get") for k in status.keys())
 
 
-async def test_get_devices_builds_device_entry_from_fixture() -> None:
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://127.0.0.1:5333/local/")
-
-    data = load_fixture("SafeTech_get_all_v4.json")
-
-    with patch.object(client, "_fetch_json", return_value=data):
-        devices = await client.get_devices("local")
-
-    assert isinstance(devices, list)
-    assert len(devices) == 1
-    dev = devices[0]
-    assert "id" in dev and dev["id"]
-    assert "name" in dev and dev["name"]
-
-
 def test_init_with_base_url() -> None:
     """Test initialization with explicit base_url."""
     sess = MagicMock()
@@ -272,57 +256,6 @@ async def test_fetch_json_success() -> None:
     assert result == {"getAB": "value", "getCD": "123"}
 
 
-async def test_get_devices_calls_login_when_needed() -> None:
-    """Test get_devices calls login when session invalid and no explicit base_url."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        host="192.168.1.100",
-        base_path="/api/v1/"
-    )
-
-    # Mock login
-    client.login = AsyncMock()
-
-    data = {"getSRN": "12345", "getCNA": "TestDevice"}
-    with patch.object(client, "_fetch_json", return_value=data):
-        devices = await client.get_devices("project1")
-
-    # Verify login was called
-    client.login.assert_called_once()
-    assert len(devices) == 1
-    assert devices[0]["id"] == "12345"
-
-
-async def test_get_devices_uses_get_frn_fallback() -> None:
-    """Test get_devices uses getFRN when getSRN missing."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    data = {"getFRN": "67890", "getCNA": "Device"}
-    with patch.object(client, "_fetch_json", return_value=data):
-        devices = await client.get_devices("project1")
-
-    assert len(devices) == 1
-    assert devices[0]["id"] == "67890"
-
-
-async def test_get_devices_fallback_device_id_and_name() -> None:
-    """Test get_devices uses fallback values for id and name."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    # Provide data with no getSRN, getFRN, getCNA, getVER
-    data = {"getOtherKey": "value"}
-    with patch.object(client, "_fetch_json", return_value=data):
-        devices = await client.get_devices("project1")
-
-    assert len(devices) == 1
-    # Should fall back to "local_device"
-    assert devices[0]["id"] == "local_device"
-    assert devices[0]["name"] == "local_device"
-
-
 async def test_get_device_status_calls_login() -> None:
     """Test get_device_status calls login when session invalid."""
     sess = MagicMock()
@@ -422,23 +355,6 @@ async def test_set_device_status_http_error() -> None:
         await client.set_device_status("device1", "AB", "false")
 
 
-async def test_get_devices_skips_login_with_base_url() -> None:
-    """Test get_devices skips login when explicit base_url provided."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    # Mock login as a spy to verify it's not called
-    client.login = AsyncMock()
-
-    data = {"getSRN": "123", "getCNA": "Device"}
-    with patch.object(client, "_fetch_json", return_value=data):
-        devices = await client.get_devices("project1")
-
-    # Verify login was NOT called
-    client.login.assert_not_called()
-    assert len(devices) == 1
-
-
 async def test_get_device_status_skips_login_with_base_url() -> None:
     """Test get_device_status skips login when explicit base_url provided."""
     sess = MagicMock()
@@ -455,19 +371,6 @@ async def test_get_device_status_skips_login_with_base_url() -> None:
     # Verify login was NOT called even though we could
     client.login.assert_not_called()
     assert status == {"getAB": "value"}
-
-
-async def test_get_devices_with_serial_name_fallback() -> None:
-    """Test get_devices uses device_id (serial) for name when getCNA missing."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    data = {"getSRN": "12345", "getVER": "v1.2.3"}
-    with patch.object(client, "_fetch_json", return_value=data):
-        devices = await client.get_devices("project1")
-
-    assert len(devices) == 1
-    assert devices[0]["name"] == "12345"  # Falls back to serial number, not firmware
 
 
 def test_build_base_url_strips_trailing_slash() -> None:
@@ -613,4 +516,55 @@ async def test_check_api_error_codes_ignores_non_string_values() -> None:
     client._check_api_error_codes({"key2": None}, "http://test")
     client._check_api_error_codes({"key3": []}, "http://test")
     client._check_api_error_codes({"key4": {}}, "http://test")
+
+
+async def test_get_devices_returns_static_device() -> None:
+    """Test that get_devices returns static device without API call."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # get_devices should not make any API calls
+    with patch("aiohttp.ClientSession.get") as mock_get:
+        devices = await client.get_devices("local")
+        
+        # Should return one device
+        assert len(devices) == 1
+        assert devices[0]["id"] == "local_device"
+        assert devices[0]["name"] == "Local Device"
+        
+        # Should not have called the API
+        mock_get.assert_not_called()
+
+
+async def test_get_devices_uses_custom_device_name() -> None:
+    """Test that get_devices uses custom device name if provided."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/", device_name="My Custom Device")
+
+    devices = await client.get_devices("local")
+    
+    assert len(devices) == 1
+    assert devices[0]["name"] == "My Custom Device"
+
+
+async def test_get_device_status_fetches_from_api() -> None:
+    """Test that get_device_status fetches directly from API."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    data = load_fixture("SafeTech_get_all_v4.json")
+
+    with patch("aiohttp.ClientSession.get") as mock_get:
+        mock_response = AsyncMock()
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=None)
+        mock_response.status = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.json = AsyncMock(return_value=data)
+        mock_get.return_value = mock_response
+
+        # Call get_device_status - should fetch from API
+        status = await client.get_device_status("local")
+        assert isinstance(status, dict)
+        assert mock_get.call_count == 1
 
