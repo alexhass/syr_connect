@@ -7,6 +7,13 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
+from custom_components.syr_connect.const import (
+    API_TYPE_JSON,
+    CONF_API_TYPE,
+    CONF_DEVICE_NAME,
+    CONF_HOST,
+    CONF_MODEL,
+)
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
@@ -161,10 +168,9 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
 
         with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()) as mock_task:
             mock_task.return_value = None
-            with patch.object(coordinator, "async_refresh", new_callable=AsyncMock) as mock_refresh:
-                await coordinator.async_set_device_value("device1", "setSIR", 0)
-                # Verify refresh was scheduled
-                mock_task.assert_called_once()
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
+            # Verify refresh was scheduled
+            mock_task.assert_called_once()
 
         assert coordinator.data is not None
         device = coordinator.data["devices"][0]
@@ -1051,3 +1057,122 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
             assert isinstance(result, dict)
             assert result.get("devices") == []
 
+
+async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
+    """Test coordinator initialization with JSON API."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_api = MagicMock()
+        mock_json_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "SafeTech",
+            CONF_HOST: "192.168.1.100",
+            CONF_DEVICE_NAME: "test_device",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+
+        # Verify JSON API was created with correct parameters
+        mock_json_api_class.assert_called_once()
+        call_args = mock_json_api_class.call_args
+        assert call_args.kwargs["host"] == "192.168.1.100"
+        assert call_args.kwargs["base_path"] == "/cmd"
+        assert call_args.kwargs["device_name"] == "test_device"
+        assert coordinator._api_type == API_TYPE_JSON
+        assert coordinator._username is None
+
+
+async def test_coordinator_init_json_api_invalid_model(hass: HomeAssistant) -> None:
+    """Test coordinator initialization with JSON API and invalid model."""
+    config_data = {
+        CONF_API_TYPE: API_TYPE_JSON,
+        CONF_MODEL: "InvalidModel",
+        CONF_HOST: "192.168.1.100",
+        CONF_DEVICE_NAME: "test_device",
+    }
+
+    with pytest.raises(ValueError, match="Model InvalidModel does not support local JSON API"):
+        SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+
+
+async def test_coordinator_init_defaults_to_xml_api(hass: HomeAssistant) -> None:
+    """Test coordinator initialization defaults to XML API when API type not specified."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
+        mock_api = MagicMock()
+        mock_xml_api_class.return_value = mock_api
+
+        # No CONF_API_TYPE specified
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+
+        # Verify XML API was created
+        mock_xml_api_class.assert_called_once()
+        assert coordinator._api_type == "xml"
+        assert coordinator._username == "test@example.com"
+
+
+async def test_delayed_refresh_exception_handling(hass: HomeAssistant) -> None:
+    """Test _delayed_refresh handles exceptions gracefully."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+
+        # Mock async_refresh to raise an exception
+        with patch.object(coordinator, "async_refresh", side_effect=Exception("Refresh failed")):
+            # _delayed_refresh should catch the exception and not re-raise
+            await coordinator._delayed_refresh(delay=0)
+            # Test passes if no exception is raised
+
+
+async def test_coordinator_json_api_with_no_device_name(hass: HomeAssistant) -> None:
+    """Test coordinator initialization with JSON API without device name."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_api = MagicMock()
+        mock_json_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "SafeTech",
+            CONF_HOST: "192.168.1.100",
+            # No CONF_DEVICE_NAME
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+
+        # Verify JSON API was created with device_name=None
+        call_args = mock_json_api_class.call_args
+        assert call_args.kwargs["device_name"] is None
+        assert coordinator._api_type == API_TYPE_JSON
