@@ -2059,6 +2059,7 @@ async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> Non
 
 async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> None:
     """Test diagnostics with JSON API collects raw_json, not raw_xml."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 
     # Create config entry with JSON API
     config_entry = ConfigEntry(
