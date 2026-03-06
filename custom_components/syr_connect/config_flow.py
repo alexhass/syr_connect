@@ -347,7 +347,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 # Determine API type from current entry
                 api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
-                
+
                 # Validate based on API type
                 if api_type == API_TYPE_JSON:
                     await validate_input_json(self.hass, user_input)
