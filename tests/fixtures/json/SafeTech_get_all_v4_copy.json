@@ -129,6 +129,6 @@
     "getWFC": "WIFI",
     "getWFR": "32",
     "getWFS": "2",
-    "getWGW": "192.168.x.x",
-    "getWIP": "192.168.x.x"
+    "getWGW": "192.168.178.1",
+    "getWIP": "192.168.178.20"
 }

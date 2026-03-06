@@ -13,21 +13,13 @@
       "unknown": "Si è verificato un errore imprevisto. Riprova più tardi."
     },
     "step": {
-      "user": {
-        "menu_options": {
-          "cloud_xml": "Accesso cloud",
-          "local_json": "Accesso locale"
-        },
-        "description": "Scegli come connetterti al tuo dispositivo SYR:\n\n- **Accesso cloud**: Usa le credenziali dell'app SYR Connect per accedere a tutti i tuoi dispositivi tramite il servizio cloud SYR. Richiede connessione Internet.\n\n- **Accesso locale**: Connettiti direttamente a un dispositivo sulla tua rete locale utilizzando il suo indirizzo IP. Funziona offline e fornisce tempi di risposta più rapidi.",
-        "title": "SYR Connect"
-      },
       "cloud_xml": {
         "data": {
           "password": "Password",
           "username": "Nome utente"
         },
         "description": "Inserisci le credenziali dell'app SYR Connect per l'accesso cloud",
-        "title": "SYR Connect (Cloud)"
+        "title": "SYR Connect"
       },
       "local_json": {
         "data": {
@@ -52,7 +44,14 @@
         },
         "description": "Aggiorna le credenziali di SYR Connect.",
         "title": "Riconfigurare SYR Connect"
-
+      },
+      "user": {
+        "description": "Scegli come connetterti al tuo dispositivo SYR:\n\n- **Accesso cloud**: Usa le credenziali dell'app SYR Connect per accedere a tutti i tuoi dispositivi tramite il servizio cloud SYR. Richiede connessione Internet.\n\n- **Accesso locale**: Connettiti direttamente a un dispositivo sulla tua rete locale utilizzando il suo indirizzo IP. Funziona offline e fornisce tempi di risposta più rapidi.",
+        "menu_options": {
+          "cloud_xml": "Accesso cloud",
+          "local_json": "Accesso locale"
+        },
+        "title": "SYR Connect"
       }
     }
   },

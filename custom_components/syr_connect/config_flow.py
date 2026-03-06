@@ -102,7 +102,7 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
 
     _LOGGER.info("XML API authentication successful for user: %s", data[CONF_USERNAME])
 
-    return {"title": f"SYR Connect Cloud ({data[CONF_USERNAME]})"}
+    return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
 
 
 async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -128,11 +128,9 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     # Get base_path for the selected model
     base_path = None
-    display_name = model
     for sig in MODEL_SIGNATURES:
         if sig["name"] == model:
             base_path = sig.get("base_path")
-            display_name = sig.get("display_name", model)
             break
 
     if base_path is None:
@@ -155,7 +153,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     _LOGGER.info("JSON API connection successful to host: %s", host)
 
-    return {"title": f"SYR Connect Local ({display_name} @ {host})"}
+    return {"title": f"SYR Connect Local ({host})"}
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:

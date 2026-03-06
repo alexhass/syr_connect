@@ -13,21 +13,13 @@
       "unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
     },
     "step": {
-      "user": {
-        "menu_options": {
-          "cloud_xml": "Cloud-Zugriff",
-          "local_json": "Lokaler Zugriff"
-        },
-        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:\n\n- **Cloud-Zugriff**: Verwenden Sie Ihre SYR Connect App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Benötigt Internetverbindung.\n\n- **Lokaler Zugriff**: Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Funktioniert offline und bietet schnellere Reaktionszeiten.",
-        "title": "SYR Connect"
-      },
       "cloud_xml": {
         "data": {
           "password": "Passwort",
           "username": "Benutzername"
         },
         "description": "Geben Sie Ihre SYR Connect App Anmeldedaten für den Cloud-Zugriff ein",
-        "title": "SYR Connect (Cloud)"
+        "title": "SYR Connect"
       },
       "local_json": {
         "data": {
@@ -52,6 +44,14 @@
         },
         "description": "Aktualisieren Sie Ihre SYR Connect Anmeldedaten.",
         "title": "SYR Connect neu konfigurieren"
+      },
+      "user": {
+        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:\n\n- **Cloud-Zugriff**: Verwenden Sie Ihre SYR Connect App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Benötigt Internetverbindung.\n\n- **Lokaler Zugriff**: Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Funktioniert offline und bietet schnellere Reaktionszeiten.",
+        "menu_options": {
+          "cloud_xml": "Cloud-Zugriff",
+          "local_json": "Lokaler Zugriff"
+        },
+        "title": "SYR Connect"
       }
     }
   },
@@ -725,7 +725,7 @@
         "name": "Regenerationstage",
         "state": {
           "0": "Nicht festgelegt"
-        }        
+        }
       },
       "getrth": {
         "name": "Stunden der Regeneration"
@@ -917,7 +917,7 @@
     "step": {
       "init": {
         "data": {
-            "scan_interval": "Aktualisierungsintervall"
+          "scan_interval": "Aktualisierungsintervall"
         },
         "description": "Definiert den Zeitabstand zwischen API-Aufrufen.",
         "title": "SYR Connect Optionen"
