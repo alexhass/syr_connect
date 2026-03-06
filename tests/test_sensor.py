@@ -6216,7 +6216,7 @@ async def test_sensor_registry_cleanup_exception_async_get(hass: HomeAssistant) 
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getPRS": "50", "getRTIME": "02:00"},  # getRTIME is excluded
+                "status": {"getPRS": "50"},  # Normal sensor, cleanup tries all excluded keys
             }
         ]
     }

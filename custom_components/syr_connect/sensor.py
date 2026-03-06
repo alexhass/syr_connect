@@ -167,14 +167,14 @@ async def async_setup_entry(
                 else:
                     # Remove group sensors from entity registry when PA flag is false
                     for gk in group_keys:
-                        entity_id = build_entity_id("sensor", device_id, gk)
-                        registry_entry = registry.async_get(entity_id)
-                        if registry_entry is not None and hasattr(registry_entry, "entity_id"):
-                            _LOGGER.debug("Removing sensor due to getPA=false: %s", entity_id)
-                            try:
+                        try:
+                            entity_id = build_entity_id("sensor", device_id, gk)
+                            registry_entry = registry.async_get(entity_id)
+                            if registry_entry is not None and hasattr(registry_entry, "entity_id"):
+                                _LOGGER.debug("Removing sensor due to getPA=false: %s", entity_id)
                                 registry.async_remove(registry_entry.entity_id)
-                            except RuntimeError:
-                                _LOGGER.exception("Failed to remove sensor %s", entity_id)
+                        except RuntimeError:
+                            _LOGGER.exception("Failed to remove sensor %s", entity_id)
                         # Ensure group keys are marked as handled so they are not recreated
                         # later when iterating over status.items().
                         handled_keys.add(gk)
