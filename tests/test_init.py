@@ -5,10 +5,10 @@ from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import (
     async_options_update_listener,
@@ -21,7 +21,7 @@ from custom_components.syr_connect.const import DOMAIN
 
 async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
     """Test successful setup of config entry."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -30,9 +30,6 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     config_entry.add_to_hass(hass)
     
@@ -52,7 +49,7 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
 
 async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None:
     """Test setup fails when connection to API fails."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -61,9 +58,6 @@ async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     config_entry.add_to_hass(hass)
     
@@ -80,7 +74,7 @@ async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None
 
 async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) -> None:
     """Test setup with custom scan interval from options."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -89,9 +83,7 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
         options={"scan_interval": 120},  # Custom interval
-        subentries_data={},
     )
     config_entry.add_to_hass(hass)
     
@@ -113,7 +105,7 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
 
 async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
     """Test successful unload of config entry."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -122,9 +114,6 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     
     with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
@@ -136,7 +125,7 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
 
 async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
     """Test unload returns False when platforms fail to unload."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -145,9 +134,6 @@ async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     
     with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
@@ -159,7 +145,7 @@ async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
 
 async def test_async_options_update_listener_interval_changed(hass: HomeAssistant) -> None:
     """Test options update listener when scan interval changes."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -168,9 +154,7 @@ async def test_async_options_update_listener_interval_changed(hass: HomeAssistan
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
         options={"scan_interval": 120},  # New interval
-        subentries_data={},
     )
     
     mock_coordinator = MagicMock()
@@ -187,7 +171,7 @@ async def test_async_options_update_listener_interval_changed(hass: HomeAssistan
 
 async def test_async_options_update_listener_interval_unchanged(hass: HomeAssistant) -> None:
     """Test options update listener when scan interval unchanged."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -196,9 +180,7 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
         options={"scan_interval": 60},  # Same as current
-        subentries_data={},
     )
     
     mock_coordinator = MagicMock()
@@ -214,7 +196,7 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
 
 async def test_async_reload_entry(hass: HomeAssistant) -> None:
     """Test reload entry."""
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -223,9 +205,6 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     
     with patch.object(hass.config_entries, "async_reload", new_callable=AsyncMock) as mock_reload:
@@ -239,7 +218,7 @@ async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> N
     from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
     
     # Create a legacy entry without CONF_API_TYPE
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -248,9 +227,6 @@ async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> N
         source="user",
         entry_id="legacy_entry_id",
         unique_id="legacy@example.com",  # Old format without prefix
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     config_entry.add_to_hass(hass)
     
@@ -287,7 +263,7 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
     from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
     
     # Create a new entry with CONF_API_TYPE already set
-    config_entry = ConfigEntry(
+    config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -300,9 +276,6 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
         source="user",
         entry_id="new_entry_id",
         unique_id=f"{API_TYPE_XML}_new@example.com",
-        discovery_keys={},
-        options={},
-        subentries_data={},
     )
     config_entry.add_to_hass(hass)
     

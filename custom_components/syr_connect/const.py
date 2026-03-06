@@ -436,6 +436,14 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     'getWGW',  # Wi-Fi gateway
     'getWIP',  # Wi-Fi IP address
 
+    # JSON API only sensors (not available in XML API):
+    'getALH',
+    'getALL',
+    'getCLC',
+    'getCLM',
+    'getDVL',
+    'getFRN',
+
     # Sensors exits in devices only:
     # - NeoSoft 5000
 
@@ -449,6 +457,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
+
 }
 
 # Sensor icons (Material Design Icons) - internal

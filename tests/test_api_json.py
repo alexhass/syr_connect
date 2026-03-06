@@ -457,8 +457,8 @@ async def test_get_device_status_skips_login_with_base_url() -> None:
     assert status == {"getAB": "value"}
 
 
-async def test_get_devices_with_get_ver_name_fallback() -> None:
-    """Test get_devices uses getVER for name when getCNA missing."""
+async def test_get_devices_with_serial_name_fallback() -> None:
+    """Test get_devices uses device_id (serial) for name when getCNA missing."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
@@ -467,7 +467,7 @@ async def test_get_devices_with_get_ver_name_fallback() -> None:
         devices = await client.get_devices("project1")
 
     assert len(devices) == 1
-    assert devices[0]["name"] == "v1.2.3"
+    assert devices[0]["name"] == "12345"  # Falls back to serial number, not firmware
 
 
 def test_build_base_url_strips_trailing_slash() -> None:
