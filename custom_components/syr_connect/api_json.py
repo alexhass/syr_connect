@@ -235,6 +235,9 @@ class SyrConnectJsonAPI:
                     _LOGGER.error("JSON API %s - Non-dict payload from %s", operation, url)
                     raise SyrConnectInvalidResponseError("API returned unexpected payload type")
 
+                # --- Log Response Data ---
+                _LOGGER.debug("JSON API %s - Response data: %s", operation, data)
+
                 # --- Check for API-Level Error Codes ---
                 # Even with HTTP 200, the API may return error codes like "NSC" or "MIMA"
                 self._validate_response_errors(data, str(url))
