@@ -1060,7 +1060,7 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
 
 async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
     """Test coordinator initialization with JSON API."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
+    with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI") as mock_json_api_class:
         mock_api = MagicMock()
         mock_json_api_class.return_value = mock_api
 
@@ -1155,7 +1155,7 @@ async def test_delayed_refresh_exception_handling(hass: HomeAssistant) -> None:
 
 async def test_coordinator_json_api_with_no_device_name(hass: HomeAssistant) -> None:
     """Test coordinator initialization with JSON API without device name."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
+    with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI") as mock_json_api_class:
         mock_api = MagicMock()
         mock_json_api_class.return_value = mock_api
 

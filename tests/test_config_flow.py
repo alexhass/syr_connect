@@ -943,11 +943,11 @@ async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
     """Test validate_input_json with empty API result."""
     with (
         patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
             return_value={},
         ),
         pytest.raises(CannotConnectError),
@@ -966,11 +966,11 @@ async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) ->
     """Test validate_input_json with missing getSRN/getFRN fields."""
     with (
         patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
             return_value={"someOtherField": "value"},
         ),
         pytest.raises(CannotConnectError),
@@ -1068,11 +1068,11 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI._fetch_json",
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._fetch_json",
             return_value={"getSRN": "12345"},
         ),
     ):

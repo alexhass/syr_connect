@@ -2119,6 +2119,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
 
 async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
     """Test diagnostics with JSON API when login is required."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 
     config_entry = ConfigEntry(
         version=1,
@@ -2147,8 +2148,8 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
 
-    # Mock JSON API that requires login
-    mock_json_api = MagicMock()
+    # Mock JSON API that requires login with proper spec
+    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=False)
     mock_json_api.login = AsyncMock()
     mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
@@ -2166,6 +2167,7 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
     """Test diagnostics with JSON API when login fails."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 
     config_entry = ConfigEntry(
         version=1,
@@ -2194,8 +2196,8 @@ async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
 
-    # Mock JSON API where login fails
-    mock_json_api = MagicMock()
+    # Mock JSON API where login fails with proper spec
+    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=False)
     mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
     mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
@@ -2211,6 +2213,8 @@ async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
     """Test diagnostics with JSON API when fetch fails."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -2238,8 +2242,8 @@ async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
 
-    # Mock JSON API where fetch fails
-    mock_json_api = MagicMock()
+    # Mock JSON API where fetch fails with proper spec
+    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
     mock_json_api._fetch_json = AsyncMock(side_effect=Exception("Fetch failed"))
     mock_coordinator.api = mock_json_api
@@ -2301,6 +2305,8 @@ async def test_diagnostics_xml_api_skips_raw_xml_collection(hass: HomeAssistant)
 
 async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
     """Test diagnostics with JSON API when coordinator has no devices."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -2328,7 +2334,8 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
 
-    mock_json_api = MagicMock()
+    # Mock JSON API with proper spec
+    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
     mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api

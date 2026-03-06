@@ -263,9 +263,11 @@ async def async_get_config_entry_diagnostics(
                         device_id = coordinator.data["devices"][0].get("id", "local_device")
                     raw_json[device_id] = redacted
                 except Exception:  # pragma: no cover - diagnostics should never fail
-                    raw_json = {"error": "failed to fetch JSON data from device"}
+                    # Set error but don't overwrite the entire dict
+                    raw_json["error"] = "failed to fetch JSON data from device"
         except Exception:  # pragma: no cover - diagnostics should never fail
-            raw_json = {"error": "failed to collect raw json for JSON API"}
+            # Set error but don't overwrite the entire dict
+            raw_json["error"] = "failed to collect raw json for JSON API"
     else:
         # For XML API, attempt to collect JSON data from devices with base_path
         try:
