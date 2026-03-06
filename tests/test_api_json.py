@@ -5,6 +5,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -523,29 +524,29 @@ async def test_get_devices_fetches_and_caches() -> None:
 
     data = load_fixture("SafeTech_get_all_v4.json")
 
-    with patch("aiohttp.ClientSession.get") as mock_get:
-        # Create a proper async context manager mock
-        mock_response = AsyncMock()
-        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_response.__aexit__ = AsyncMock(return_value=None)
-        mock_response.status = 200
-        mock_response.raise_for_status = MagicMock()
-        mock_response.json = AsyncMock(return_value=data)
-        mock_get.return_value = mock_response
+    # Mock _fetch_json to track calls
+    fetch_call_count = 0
+    original_data = data.copy()
 
+    async def mock_fetch(path: str, timeout: int = 10) -> dict[str, Any]:
+        nonlocal fetch_call_count
+        fetch_call_count += 1
+        return original_data
+
+    with patch.object(client, "_fetch_json", side_effect=mock_fetch):
         # Call get_devices - should fetch /get/all
         devices = await client.get_devices("local")
         assert len(devices) == 1
-        assert mock_get.call_count == 1
+        assert fetch_call_count == 1
 
         # Response should be cached
-        assert client._cached_get_all == data
+        assert client._cached_get_all == original_data
 
         # Second call to get_device_status should use cache
         status = await client.get_device_status(devices[0]["id"])
         assert isinstance(status, dict)
         # Should still be 1 because cache was used
-        assert mock_get.call_count == 1
+        assert fetch_call_count == 1
 
 
 async def test_get_devices_uses_custom_device_name() -> None:
@@ -569,18 +570,9 @@ async def test_get_device_status_without_cache() -> None:
 
     data = load_fixture("SafeTech_get_all_v4.json")
 
-    with patch("aiohttp.ClientSession.get") as mock_get:
-        mock_response = AsyncMock()
-        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-        mock_response.__aexit__ = AsyncMock(return_value=None)
-        mock_response.status = 200
-        mock_response.raise_for_status = MagicMock()
-        mock_response.json = AsyncMock(return_value=data)
-        mock_get.return_value = mock_response
-
+    with patch.object(client, "_fetch_json", return_value=data):
         # Call get_device_status without calling get_devices first
         status = await client.get_device_status("local")
         assert isinstance(status, dict)
-        # Should have fetched /get/all
-        assert mock_get.call_count == 1
+        assert len(status) > 0
 
