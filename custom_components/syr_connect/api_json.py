@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta
 from typing import Any
+from urllib.parse import quote
 
 import aiohttp
 
@@ -266,7 +267,10 @@ class SyrConnectJsonAPI:
 
         # Strip leading "set" if caller sends full command like "setAB"
         cmd = command[3:] if command.lower().startswith("set") else command
-        url = f"{base}/set/{cmd}/{value}"
+        # URL-encode cmd and value to handle special characters (e.g., colons in times)
+        encoded_cmd = quote(str(cmd), safe='')
+        encoded_value = quote(str(value), safe='')
+        url = f"{base}/set/{encoded_cmd}/{encoded_value}"
         _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=_SYR_CONNECT_DEFAULT_API_TIMEOUT)

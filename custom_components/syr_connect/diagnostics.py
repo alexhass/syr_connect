@@ -180,27 +180,34 @@ async def async_get_config_entry_diagnostics(
                     api = None
 
             if api and api.projects:
+                # Capture api in local variable for type narrowing in closures
+                # mypy doesn't understand that api is not None after the check above
+                xml_api: SyrConnectXmlAPI = api  # type: ignore[assignment]
                 semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
 
                 async def _fetch(url: str, payload: dict[str, Any]) -> str:
                     try:
                         async with semaphore:
-                            return await api.http_client.post(url, payload)
+                            return await xml_api.http_client.post(url, payload)  # type: ignore[union-attr]
                     except Exception:  # pragma: no cover - diagnostics should never fail
                         return ""
 
                 # Iterate all projects
                 projects_raw: dict[str, Any] = {}
-                for project in api.projects:
+                for project in xml_api.projects:
                     pid = project.get("id")
+                    if not pid:
+                        continue
                     projects_raw[pid] = {"device_list": "", "devices": {}}
-                    payload = api.payload_builder.build_device_list_payload(api.session_data, pid)
+                    payload = xml_api.payload_builder.build_device_list_payload(
+                        xml_api.session_data or "", pid
+                    )
                     xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
-                    projects_raw[pid]["device_list"] = _redact_xml(xml_resp, api)
+                    projects_raw[pid]["device_list"] = _redact_xml(xml_resp, xml_api)
 
                     # Parse devices (best-effort)
                     try:
-                        devices = api.response_parser.parse_device_list_response(xml_resp)
+                        devices = xml_api.response_parser.parse_device_list_response(xml_resp)
                     except Exception:  # pragma: no cover - diagnostics should never fail
                         devices = []
 
@@ -212,9 +219,11 @@ async def async_get_config_entry_diagnostics(
                             continue
 
                         async def _fetch_status(did: str):
-                            payload2 = api.payload_builder.build_device_status_payload(api.session_data, did)
+                            payload2 = xml_api.payload_builder.build_device_status_payload(
+                                xml_api.session_data or "", did
+                            )
                             xml_status = await _fetch(_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL, {"xml": payload2})
-                            return did, _redact_xml(xml_status, api)
+                            return did, _redact_xml(xml_status, xml_api)
 
                         status_tasks.append(_fetch_status(device_id))
 
@@ -368,8 +377,7 @@ async def async_get_config_entry_diagnostics(
 
         return obj
 
-    diagnostics_data = _redact_obj(diagnostics_data)
-
+    # Populate devices and projects BEFORE redaction
     if coordinator.data:
         # Add device information
         for device in coordinator.data.get("devices", []):
@@ -409,6 +417,9 @@ async def async_get_config_entry_diagnostics(
                 "name": project.get("name"),
             }
             projects_info.append(project_info)
+
+    # Apply redaction after populating devices and projects
+    diagnostics_data = _redact_obj(diagnostics_data)
 
     # Redact sensitive information from the dict fields (not raw XML strings)
     return async_redact_data(diagnostics_data, _TO_REDACT)

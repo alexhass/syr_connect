@@ -491,6 +491,33 @@ async def test_set_device_status_logs_mima_error(caplog: pytest.LogCaptureFixtur
     assert "Value for 'setPRF9' is outside valid range (MIMA error)" in caplog.text
 
 
+async def test_set_device_status_url_encodes_special_characters() -> None:
+    """Test set_device_status URL-encodes special characters in command and value."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Test with time value containing colon (e.g., "02:15")
+    result = await client.set_device_status("device1", "RTM", "02:15")
+
+    # Verify URL contains URL-encoded value (%3A for colon)
+    called_url = sess.get.call_args[0][0]
+    assert "/set/RTM/02%3A15" in called_url
+    assert result is True
+
+    # Test with value containing slash
+    result2 = await client.set_device_status("device1", "CMD", "value/with/slash")
+    called_url2 = sess.get.call_args[0][0]
+    assert "%2F" in called_url2  # slash should be encoded
+    assert result2 is True
+
+
 async def test_check_api_error_codes_case_insensitive() -> None:
     """Test _check_api_error_codes handles case-insensitive error codes."""
     sess = MagicMock()
