@@ -6945,7 +6945,7 @@ async def test_registry_remove_exception(hass: HomeAssistant) -> None:
     mock_entry.entity_id = "sensor.syr_connect_device1_getpa1"
     registry.async_get.return_value = mock_entry
     # Make async_remove raise exception
-    registry.async_remove.side_effect = Exception("Registry error")
+    registry.async_remove.side_effect = RuntimeError("Registry error")
 
     mock_add_entities = Mock()
 

@@ -371,7 +371,7 @@ async def test_async_open_handles_write_state_exception(hass: HomeAssistant) -> 
 
     # Make async_write_ha_state raise; async_open should swallow it
     def _fail():
-        raise Exception("ui fail")
+        raise RuntimeError("ui fail")
 
     valve.async_write_ha_state = _fail
 
@@ -700,7 +700,7 @@ async def test_async_close_handles_write_state_exception(hass: HomeAssistant) ->
 
     # Make async_write_ha_state raise; async_close should swallow it
     def _fail():
-        raise Exception("ui fail")
+        raise RuntimeError("ui fail")
 
     valve.async_write_ha_state = _fail
 
@@ -772,7 +772,7 @@ async def test_async_open_second_write_state_exception_on_failure(hass: HomeAssi
 
     # Make async_write_ha_state always raise
     def _write_fail():
-        raise Exception("write state failed")
+        raise RuntimeError("write state failed")
 
     valve.async_write_ha_state = _write_fail
 
@@ -798,7 +798,7 @@ async def test_async_close_second_write_state_exception_on_failure(hass: HomeAss
 
     # Make async_write_ha_state always raise
     def _write_fail():
-        raise Exception("write state failed")
+        raise RuntimeError("write state failed")
 
     valve.async_write_ha_state = _write_fail
 
