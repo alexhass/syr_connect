@@ -6208,15 +6208,15 @@ async def test_sensor_getcs_with_invalid_getsv_typeerror(hass: HomeAssistant) ->
     assert "getCS1" not in sensor_keys
 
 
-async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
-    """Test exception handling during registry cleanup in async_setup_entry."""
+async def test_sensor_registry_cleanup_exception_async_get(hass: HomeAssistant) -> None:
+    """Test exception handling during registry cleanup in async_setup_entry when async_get fails."""
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getPRS": "50"},
+                "status": {"getPRS": "50", "getRTIME": "02:00"},  # getRTIME is excluded
             }
         ]
     }
