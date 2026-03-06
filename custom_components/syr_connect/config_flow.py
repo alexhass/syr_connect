@@ -112,7 +112,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     Args:
         hass: Home Assistant instance
-        data: User input data with host and model
+        data: User input data with host, model, and device_name
 
     Returns:
         Dictionary with title for the config entry
@@ -125,6 +125,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     host = data[CONF_HOST]
     model = data[CONF_MODEL]
+    device_name = data[CONF_DEVICE_NAME]
 
     _LOGGER.debug("Validating JSON API connection to host: %s, model: %s", host, model)
 
@@ -140,7 +141,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         raise CannotConnectError
 
     session = async_get_clientsession(hass)
-    api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
+    api = SyrConnectJsonAPI(session, host=host, base_path=base_path, device_name=device_name)
 
     # Test connection by attempting login and fetch
     _LOGGER.debug("Testing JSON API connection...")
