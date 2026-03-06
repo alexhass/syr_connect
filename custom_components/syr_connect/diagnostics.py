@@ -30,6 +30,8 @@ _TO_REDACT = {
     CONF_PASSWORD,
     CONF_USERNAME,
     "session_data",
+    "getSRN",   # Serial number
+    "getFRN",   # Factory reference number (fallback for device ID)
     "getMAC",   # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # Ethernet MAC address
