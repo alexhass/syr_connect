@@ -5144,7 +5144,7 @@ async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) 
         mock_registry.async_get = Mock(return_value=mock_entry)
 
         # Make async_remove raise an exception
-        mock_registry.async_remove = Mock(side_effect=Exception("Remove failed"))
+        mock_registry.async_remove = Mock(side_effect=RuntimeError("Remove failed"))
         mock_er.return_value = mock_registry
 
         mock_add_entities = Mock()
@@ -5304,7 +5304,7 @@ async def test_sensor_icon_ala_exception_in_mapping(hass: HomeAssistant) -> None
     )
 
     # Mock get_sensor_ala_map to raise exception
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("Mapping error")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Mapping error")):
         icon = sensor.icon
         # Should fall back to checking for "no_alarm" or return alert icon
         assert icon in ("mdi:bell-outline", "mdi:bell-alert")
@@ -6286,7 +6286,7 @@ async def test_sensor_pa_group_remove_exception(hass: HomeAssistant) -> None:
     with patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry:
         mock_reg = MagicMock()
         mock_reg.async_get.return_value = mock_reg_entry
-        mock_reg.async_remove.side_effect = Exception("Remove failed")
+        mock_reg.async_remove.side_effect = RuntimeError("Remove failed")
         mock_registry.return_value = mock_reg
 
         mock_add_entities = Mock()
@@ -6492,7 +6492,7 @@ async def test_sensor_icon_alm_ala_exception(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
 
     # When mapping exception occurs but raw value exists, should return alert icon
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("Mapping error")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Mapping error")):
         icon = sensor.icon
         # Should return bell-alert when raw value exists (alarm active)
         assert icon == "mdi:bell-alert"
@@ -6565,7 +6565,7 @@ async def test_sensor_native_value_ala_exception(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
 
     # Mock get_sensor_ala_map to raise exception
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("Map error")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Map error")):
         assert sensor.native_value is None
 
 
@@ -6587,7 +6587,7 @@ async def test_sensor_native_value_not_exception(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
 
     # Mock get_sensor_not_map to raise exception
-    with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=Exception("Map error")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=ValueError("Map error")):
         assert sensor.native_value is None
 
 
@@ -6609,7 +6609,7 @@ async def test_sensor_native_value_wrn_exception(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
 
     # Mock get_sensor_wrn_map to raise exception
-    with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=Exception("Map error")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=ValueError("Map error")):
         assert sensor.native_value is None
 
 
@@ -6678,7 +6678,7 @@ async def test_sensor_native_value_alm_exception(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
     # Mock get_sensor_ala_map to raise exception
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("Map error")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Map error")):
         # Should fallback to raw value when exception occurs
         assert sensor.native_value == "test_value"
 
@@ -6702,7 +6702,7 @@ async def test_sensor_native_value_rpw_exception_in_loop(hass: HomeAssistant) ->
     sensor.hass = hass
 
     # Mock format_datetime to raise exception
-    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=Exception("Format error")):
+    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=ValueError("Format error")):
         value = sensor.native_value
         # Should fallback to strftime and return weekday names
         assert value is not None
