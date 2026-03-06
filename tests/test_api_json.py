@@ -181,9 +181,17 @@ async def test_login_success() -> None:
 
 async def test_login_http_error() -> None:
     """Test login raises exception on HTTP error."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+    
     sess = MagicMock()
     mock_response = MagicMock()
-    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientError("HTTP 401"))
+    mock_response.status = 500
+    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientResponseError(
+        request_info=MagicMock(),
+        history=(),
+        status=500,
+        message="Internal Server Error"
+    ))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -194,7 +202,7 @@ async def test_login_http_error() -> None:
         base_path="/api/v1/"
     )
 
-    with pytest.raises(aiohttp.ClientError):
+    with pytest.raises(SyrConnectConnectionError):
         await client.login()
 
 
@@ -207,7 +215,9 @@ async def test_fetch_json_no_base_url_raises() -> None:
 
 
 async def test_fetch_json_non_dict_raises() -> None:
-    """Test _fetch_json raises ValueError when response is not a dict."""
+    """Test _fetch_json raises SyrConnectInvalidResponseError when response is not a dict."""
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+    
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.raise_for_status = MagicMock()
@@ -218,22 +228,30 @@ async def test_fetch_json_non_dict_raises() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with pytest.raises(ValueError, match="JSON API returned unexpected payload"):
+    with pytest.raises(SyrConnectInvalidResponseError, match="API returned unexpected payload"):
         await client._fetch_json("/get/all")
 
 
 async def test_fetch_json_http_error() -> None:
     """Test _fetch_json raises exception on HTTP error."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+    
     sess = MagicMock()
     mock_response = MagicMock()
-    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientError("HTTP 500"))
+    mock_response.status = 500
+    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientResponseError(
+        request_info=MagicMock(),
+        history=(),
+        status=500,
+        message="Internal Server Error"
+    ))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with pytest.raises(aiohttp.ClientError):
+    with pytest.raises(SyrConnectConnectionError):
         await client._fetch_json("/get/all")
 
 
@@ -383,16 +401,24 @@ async def test_set_device_status_success() -> None:
 
 async def test_set_device_status_http_error() -> None:
     """Test set_device_status raises exception on HTTP error."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+    
     sess = MagicMock()
     mock_response = MagicMock()
-    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientError("HTTP 403"))
+    mock_response.status = 403
+    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientResponseError(
+        request_info=MagicMock(),
+        history=(),
+        status=403,
+        message="Forbidden"
+    ))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with pytest.raises(aiohttp.ClientError):
+    with pytest.raises(SyrConnectConnectionError):
         await client.set_device_status("device1", "AB", "false")
 
 
