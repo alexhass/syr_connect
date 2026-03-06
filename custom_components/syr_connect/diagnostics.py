@@ -16,6 +16,9 @@ from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 
@@ -158,70 +161,76 @@ async def async_get_config_entry_diagnostics(
         return cleaned
 
     raw_xml: dict[str, Any] = {}
-    try:
-        api = getattr(coordinator, "api", None)
-        if api:
-            # Ensure we have a valid session for read-only calls
-            try:
-                if not api.is_session_valid():
-                    await api.login()
-            except Exception:  # pragma: no cover - diagnostics should never fail
-                # Don't fail diagnostics if login fails
-                api = None
 
-        if api and api.projects:
-            semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
+    # Determine API type from config entry
+    api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
 
-            async def _fetch(url: str, payload: dict[str, Any]) -> str:
+    # Only collect raw XML for XML API (not for JSON API)
+    if api_type == API_TYPE_XML:
+        try:
+            api = getattr(coordinator, "api", None)
+            if api:
+                # Ensure we have a valid session for read-only calls
                 try:
-                    async with semaphore:
-                        return await api.http_client.post(url, payload)
+                    if not api.is_session_valid():
+                        await api.login()
                 except Exception:  # pragma: no cover - diagnostics should never fail
-                    return ""
+                    # Don't fail diagnostics if login fails
+                    api = None
 
-            # Iterate all projects
-            projects_raw: dict[str, Any] = {}
-            for project in api.projects:
-                pid = project.get("id")
-                projects_raw[pid] = {"device_list": "", "devices": {}}
-                payload = api.payload_builder.build_device_list_payload(api.session_data, pid)
-                xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
-                projects_raw[pid]["device_list"] = _redact_xml(xml_resp, api)
+            if api and api.projects:
+                semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
 
-                # Parse devices (best-effort)
-                try:
-                    devices = api.response_parser.parse_device_list_response(xml_resp)
-                except Exception:  # pragma: no cover - diagnostics should never fail
-                    devices = []
+                async def _fetch(url: str, payload: dict[str, Any]) -> str:
+                    try:
+                        async with semaphore:
+                            return await api.http_client.post(url, payload)
+                    except Exception:  # pragma: no cover - diagnostics should never fail
+                        return ""
 
-                # Fetch status for each device (limited concurrency by semaphore)
-                status_tasks = []
-                for device in devices:
-                    device_id = device.get("dclg") or device.get("id")
-                    if not device_id:
-                        continue
+                # Iterate all projects
+                projects_raw: dict[str, Any] = {}
+                for project in api.projects:
+                    pid = project.get("id")
+                    projects_raw[pid] = {"device_list": "", "devices": {}}
+                    payload = api.payload_builder.build_device_list_payload(api.session_data, pid)
+                    xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
+                    projects_raw[pid]["device_list"] = _redact_xml(xml_resp, api)
 
-                    async def _fetch_status(did: str):
-                        payload2 = api.payload_builder.build_device_status_payload(api.session_data, did)
-                        xml_status = await _fetch(_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL, {"xml": payload2})
-                        return did, _redact_xml(xml_status, api)
+                    # Parse devices (best-effort)
+                    try:
+                        devices = api.response_parser.parse_device_list_response(xml_resp)
+                    except Exception:  # pragma: no cover - diagnostics should never fail
+                        devices = []
 
-                    status_tasks.append(_fetch_status(device_id))
-
-                if status_tasks:
-                    results = await asyncio.gather(*status_tasks, return_exceptions=True)
-                    for res in results:
-                        if isinstance(res, Exception):
+                    # Fetch status for each device (limited concurrency by semaphore)
+                    status_tasks = []
+                    for device in devices:
+                        device_id = device.get("dclg") or device.get("id")
+                        if not device_id:
                             continue
-                        if isinstance(res, tuple) and len(res) == 2:
-                            did, xmls = res
-                            projects_raw[pid]["devices"][did] = xmls
 
-            raw_xml = projects_raw
+                        async def _fetch_status(did: str):
+                            payload2 = api.payload_builder.build_device_status_payload(api.session_data, did)
+                            xml_status = await _fetch(_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL, {"xml": payload2})
+                            return did, _redact_xml(xml_status, api)
 
-    except Exception:  # pragma: no cover - diagnostics should never fail
-        # Never raise from diagnostics
-        raw_xml = {"error": "failed to collect raw xml for all projects"}
+                        status_tasks.append(_fetch_status(device_id))
+
+                    if status_tasks:
+                        results = await asyncio.gather(*status_tasks, return_exceptions=True)
+                        for res in results:
+                            if isinstance(res, Exception):
+                                continue
+                            if isinstance(res, tuple) and len(res) == 2:
+                                did, xmls = res
+                                projects_raw[pid]["devices"][did] = xmls
+
+                raw_xml = projects_raw
+
+        except Exception:  # pragma: no cover - diagnostics should never fail
+            # Never raise from diagnostics
+            raw_xml = {"error": "failed to collect raw xml for all projects"}
 
     diagnostics_data["raw_xml"] = raw_xml
 
@@ -230,73 +239,102 @@ async def async_get_config_entry_diagnostics(
     # redact sensitive keys using `async_redact_data` before including
     # the result in diagnostics.
     raw_json: dict[str, Any] = {}
-    try:
-        # Use the coordinator's aiohttp session so we reuse the existing
-        # HA-managed ClientSession and its connectors.
-        session = getattr(coordinator, "_session", None)
-        if session is None:
-            # If coordinator unexpectedly lacks a session, skip JSON collection
-            raw_json = {"error": "no http session available on coordinator"}
-            diagnostics_data["raw_json"] = raw_json
-        else:
-            async def _fetch_device_json(dev: dict[str, Any]):
-                dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
-                base_path = dev.get("base_path")
-                if not base_path:
-                    return dev_id, None
 
-                # Determine IP from device fields or status
-                ip = dev.get("ip") or dev.get("getWIP") or dev.get("getEIP")
-                if not ip:
-                    # try status dict
-                    status = dev.get("status") or {}
-                    ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
-
-                json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)
+    # For JSON API, collect data directly from coordinator.api
+    if api_type == API_TYPE_JSON:
+        try:
+            api = getattr(coordinator, "api", None)
+            if api and isinstance(api, SyrConnectJsonAPI):
                 try:
-                    # Login is required for some devices
-                    try:
-                        if not json_api.is_session_valid():
-                            await json_api.login()
-                    except Exception:  # pragma: no cover - diagnostics should never fail
-                        # If login fails, still attempt to fetch once
-                        pass
+                    # Ensure we have a valid session
+                    if not api.is_session_valid():
+                        await api.login()
+                except Exception:  # pragma: no cover - diagnostics should never fail
+                    # If login fails, still attempt to fetch once
+                    pass
 
-                    base = json_api._build_base_url()
-                    if not base:
-                        return dev_id, None
-
-                    try:
-                        data = await json_api._fetch_json("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
-                    except Exception:  # pragma: no cover - diagnostics should never fail
-                        return dev_id, None
-
+                try:
+                    data = await api._fetch_json("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
                     # Redact sensitive keys from the parsed JSON payload
                     redacted = async_redact_data(data, _TO_REDACT)
-                    return dev_id, redacted
+                    # Use the first device ID from coordinator data as key, or "local_device"
+                    device_id = "local_device"
+                    if coordinator.data and coordinator.data.get("devices"):
+                        device_id = coordinator.data["devices"][0].get("id", "local_device")
+                    raw_json[device_id] = redacted
                 except Exception:  # pragma: no cover - diagnostics should never fail
-                    return dev_id, None
+                    raw_json = {"error": "failed to fetch JSON data from device"}
+        except Exception:  # pragma: no cover - diagnostics should never fail
+            raw_json = {"error": "failed to collect raw json for JSON API"}
+    else:
+        # For XML API, attempt to collect JSON data from devices with base_path
+        try:
+            # Use the coordinator's aiohttp session so we reuse the existing
+            # HA-managed ClientSession and its connectors.
+            session = getattr(coordinator, "_session", None)
+            if session is None:
+                # If coordinator unexpectedly lacks a session, skip JSON collection
+                raw_json = {"error": "no http session available on coordinator"}
+                diagnostics_data["raw_json"] = raw_json
+            else:
+                async def _fetch_device_json(dev: dict[str, Any]):
+                    dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
+                    base_path = dev.get("base_path")
+                    if not base_path:
+                        return dev_id, None
 
-            if coordinator and getattr(coordinator, "data", None):
-                devices = coordinator.data.get("devices", [])
-                semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
+                    # Determine IP from device fields or status
+                    ip = dev.get("ip") or dev.get("getWIP") or dev.get("getEIP")
+                    if not ip:
+                        # try status dict
+                        status = dev.get("status") or {}
+                        ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
 
-                async def _wrap(dev):
-                    async with semaphore:
-                        return await _fetch_device_json(dev)
+                    json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)
+                    try:
+                        # Login is required for some devices
+                        try:
+                            if not json_api.is_session_valid():
+                                await json_api.login()
+                        except Exception:  # pragma: no cover - diagnostics should never fail
+                            # If login fails, still attempt to fetch once
+                            pass
 
-                tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("base_path")]
-                if tasks:
-                    results = await asyncio.gather(*tasks, return_exceptions=True)
-                    for res in results:
-                        if isinstance(res, Exception):
-                            continue
-                        if isinstance(res, tuple) and len(res) == 2:
-                            did, payload = res
-                            if payload is not None:
-                                raw_json[did] = payload
-    except Exception:  # pragma: no cover - diagnostics should never fail
-        raw_json = {"error": "failed to collect raw json for devices"}
+                        base = json_api._build_base_url()
+                        if not base:
+                            return dev_id, None
+
+                        try:
+                            data = await json_api._fetch_json("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
+                        except Exception:  # pragma: no cover - diagnostics should never fail
+                            return dev_id, None
+
+                        # Redact sensitive keys from the parsed JSON payload
+                        redacted = async_redact_data(data, _TO_REDACT)
+                        return dev_id, redacted
+                    except Exception:  # pragma: no cover - diagnostics should never fail
+                        return dev_id, None
+
+                if coordinator and getattr(coordinator, "data", None):
+                    devices = coordinator.data.get("devices", [])
+                    semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
+
+                    async def _wrap(dev):
+                        async with semaphore:
+                            return await _fetch_device_json(dev)
+
+                    tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("base_path")]
+                    if tasks:
+                        results = await asyncio.gather(*tasks, return_exceptions=True)
+                        for res in results:
+                            if isinstance(res, Exception):
+                                continue
+                            if isinstance(res, tuple) and len(res) == 2:
+                                did, payload = res
+                                if payload is not None:
+                                    raw_json[did] = payload
+        except Exception:  # pragma: no cover - diagnostics should never fail
+            raw_json = {"error": "failed to collect raw json for devices"}
 
     diagnostics_data["raw_json"] = raw_json
 
