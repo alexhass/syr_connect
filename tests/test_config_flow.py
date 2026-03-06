@@ -1,4 +1,5 @@
 """Test the SYR Connect config flow."""
+
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -6,7 +7,12 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.syr_connect.config_flow import (
+    CannotConnectError,
+    validate_input_json,
+)
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -16,7 +22,6 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
     DOMAIN,
 )
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 # Patch path for API class (lazy-loaded in config_flow)
 _API_PATCH_PATH = "custom_components.syr_connect.api_xml.SyrConnectXmlAPI"
@@ -813,14 +818,14 @@ async def test_options_flow_with_existing_interval(hass: HomeAssistant, mock_syr
 async def test_options_flow_entry_none_attribute(hass: HomeAssistant) -> None:
     """Test options flow when _config_entry attribute is None."""
     from custom_components.syr_connect.config_flow import SyrConnectOptionsFlow
-    
+
     # Create options flow without proper config entry
     options_flow = SyrConnectOptionsFlow(None)
     # Manually set the _config_entry to None to test the fallback
     options_flow._config_entry = None
-    
+
     result = await options_flow.async_step_init(user_input=None)
-    
+
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "init"
     # Should use default scan interval when entry is None
@@ -836,7 +841,7 @@ async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
             "entry_id": "nonexistent_id",
         },
     )
-    
+
     # Form should be shown with empty default (no crash)
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "reconfigure"
@@ -845,7 +850,7 @@ async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
 async def test_form_api_xml_with_auth_error_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with SyrConnectAuthError."""
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
-    
+
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -872,7 +877,7 @@ async def test_form_api_xml_with_auth_error_exception(hass: HomeAssistant) -> No
 async def test_form_api_xml_with_connection_error_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with SyrConnectConnectionError."""
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
-    
+
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -920,3 +925,169 @@ async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "unknown"}
 
+
+async def test_validate_input_json_invalid_model(hass: HomeAssistant) -> None:
+    """Test validate_input_json with model not having base_path."""
+    with pytest.raises(CannotConnectError):
+        await validate_input_json(
+            hass,
+            {
+                CONF_MODEL: "InvalidModel",
+                CONF_HOST: "192.168.1.100",
+                CONF_DEVICE_NAME: "test_device",
+            },
+        )
+
+
+async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
+    """Test validate_input_json with empty API result."""
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI.login",
+            return_value=None,
+        ),
+        patch(
+            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI._fetch_json",
+            return_value={},
+        ),
+        pytest.raises(CannotConnectError),
+    ):
+        await validate_input_json(
+            hass,
+            {
+                CONF_MODEL: "SafeTech",
+                CONF_HOST: "192.168.1.100",
+                CONF_DEVICE_NAME: "test_device",
+            },
+        )
+
+
+async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) -> None:
+    """Test validate_input_json with missing getSRN/getFRN fields."""
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI.login",
+            return_value=None,
+        ),
+        patch(
+            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI._fetch_json",
+            return_value={"someOtherField": "value"},
+        ),
+        pytest.raises(CannotConnectError),
+    ):
+        await validate_input_json(
+            hass,
+            {
+                CONF_MODEL: "SafeTech",
+                CONF_HOST: "192.168.1.100",
+                CONF_DEVICE_NAME: "test_device",
+            },
+        )
+
+
+async def test_async_get_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
+    """Test the async_get_options_flow method."""
+    # Create a config entry
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="SYR Connect Device",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        unique_id="test_unique_id",
+    )
+    entry.add_to_hass(hass)
+
+    # Get the options flow
+    flow = await hass.config_entries.options.async_init(entry.entry_id)
+
+    # Verify the flow was created
+    assert flow is not None
+    assert flow["type"] == FlowResultType.FORM
+    assert flow["step_id"] == "init"
+
+
+async def test_async_step_reauth(hass: HomeAssistant) -> None:
+    """Test the async_step_reauth entry point."""
+    # Create a config entry
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="SYR Connect Device",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+        },
+        unique_id="test_unique_id",
+    )
+    entry.add_to_hass(hass)
+
+    # Start reauth flow
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": entry.entry_id,
+            "unique_id": entry.unique_id,
+        },
+        data=entry.data,
+    )
+
+    # Verify the reauth flow goes directly to reauth_confirm
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reauth_confirm"
+
+
+async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
+    """Test reconfigure flow with JSON API type."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="SYR Connect Device",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "SafeTech",
+            CONF_HOST: "192.168.1.100",
+            CONF_DEVICE_NAME: "test_device",
+        },
+        unique_id="test_unique_id",
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI.login",
+            return_value=None,
+        ),
+        patch(
+            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI._fetch_json",
+            return_value={"getSRN": "12345"},
+        ),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_MODEL: "SafeTech",
+                CONF_HOST: "192.168.1.200",
+                CONF_DEVICE_NAME: "new_device_name",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "reconfigure_successful"
+
+    # Verify the entry was updated
+    assert entry.data[CONF_HOST] == "192.168.1.200"
+    assert entry.data[CONF_DEVICE_NAME] == "new_device_name"
