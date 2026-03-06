@@ -348,7 +348,7 @@ async def test_get_device_status_exception_returns_none() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Mock _fetch_json to raise exception
-    with patch.object(client, "_fetch_json", side_effect=Exception("Network error")):
+    with patch.object(client, "_fetch_json", side_effect=ValueError("Network error")):
         status = await client.get_device_status("device1")
 
     assert status is None

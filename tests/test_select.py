@@ -476,7 +476,7 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     entities, async_add_entities = mock_add_entities()
 
     # Force the entity registry accessor to raise to hit the exception branch
-    with patch("custom_components.syr_connect.select.er.async_get", side_effect=Exception("boom")):
+    with patch("custom_components.syr_connect.select.er.async_get", side_effect=RuntimeError("boom")):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     # Should still proceed and add the regeneration select
@@ -719,7 +719,7 @@ async def test_regeneration_select_handles_coordinator_exception(hass: HomeAssis
     }
     coordinator = _build_coordinator(hass, data)
     async def raiser(*args, **kwargs):
-        raise Exception("boom")
+        raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
@@ -769,7 +769,7 @@ async def test_numeric_select_handles_coordinator_exception(hass: HomeAssistant)
     }
     coordinator = _build_coordinator(hass, data)
     async def raiser(*args, **kwargs):
-        raise Exception("boom")
+        raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getSV1", 0, 25, 1)
@@ -1297,7 +1297,7 @@ async def test_prf_select_handles_coordinator_exception(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
 
     async def raiser(*args, **kwargs):
-        raise Exception("boom")
+        raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")

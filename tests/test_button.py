@@ -431,7 +431,7 @@ async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypa
     coordinator.async_set_device_value = AsyncMock()
 
     # Make detect_model raise
-    monkeypatch.setattr(button_mod, "detect_model", lambda *_: (_ for _ in ()).throw(Exception("boom")))
+    monkeypatch.setattr(button_mod, "detect_model", lambda *_: (_ for _ in ()).throw(ValueError("boom")))
 
     button = SyrConnectButton(coordinator, "device3", "Device 3", "project1", "setALA", "Reset alarm")
 

@@ -635,7 +635,7 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
         await coordinator.async_config_entry_first_refresh()
 
         # Mock async_set_updated_data to raise exception
-        with patch.object(coordinator, "async_set_updated_data", side_effect=Exception("Update failed")):
+        with patch.object(coordinator, "async_set_updated_data", side_effect=ValueError("Update failed")):
             with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()) as mock_task:
                 mock_task.return_value = None
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):

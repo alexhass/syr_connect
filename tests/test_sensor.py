@@ -870,7 +870,7 @@ async def test_sensor_rpw_with_babel_fallback(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
 
     # Mock format_datetime to raise exception
-    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=Exception("Babel error")):
+    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=ValueError("Babel error")):
         result = sensor.native_value
         # Should still return weekday names using strftime fallback
         assert result is not None
@@ -2475,7 +2475,7 @@ async def test_sensor_rpw_format_datetime_exception(hass: HomeAssistant) -> None
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
 
     # Mock format_datetime to raise exception
-    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=Exception("Test error")):
+    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=ValueError("Test error")):
         result = sensor.native_value
         # Should fallback to strftime and still return weekday names
         assert result is not None
@@ -6238,7 +6238,7 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     # Mock registry to raise exception during cleanup
     with patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry:
         mock_reg = MagicMock()
-        mock_reg.async_get.side_effect = Exception("Registry error")
+        mock_reg.async_get.side_effect = RuntimeError("Registry error")
         mock_registry.return_value = mock_reg
 
         mock_add_entities = Mock()
