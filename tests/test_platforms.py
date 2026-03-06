@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, Mock
 
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from custom_components.syr_connect.binary_sensor import async_setup_entry as async_setup_binary_sensor
@@ -17,11 +18,14 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+    config_data = {
+        CONF_USERNAME: "test@example.com",
+        CONF_PASSWORD: "password",
+    }
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
         MagicMock(),
-        "test@example.com",
-        "password",
+        config_data,
         60,
     )
     coordinator.async_set_updated_data(data)

@@ -34,13 +34,15 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
         options={},
         subentries_data={},
     )
+    config_entry.add_to_hass(hass)
     
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
         
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+            mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
     
     assert result is True
@@ -63,6 +65,7 @@ async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None
         options={},
         subentries_data={},
     )
+    config_entry.add_to_hass(hass)
     
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
@@ -90,20 +93,22 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
         options={"scan_interval": 120},  # Custom interval
         subentries_data={},
     )
+    config_entry.add_to_hass(hass)
     
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
         
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+            mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
     
     assert result is True
     # Verify coordinator was created with custom scan interval
     mock_coordinator_class.assert_called_once()
     call_args = mock_coordinator_class.call_args
-    assert call_args[0][4] == 120  # scan_interval argument
+    assert call_args[0][3] == 120  # scan_interval is now 4th positional argument (index 3)
 
 
 async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
@@ -247,6 +252,7 @@ async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> N
         options={},
         subentries_data={},
     )
+    config_entry.add_to_hass(hass)
     
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
@@ -298,6 +304,7 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
         options={},
         subentries_data={},
     )
+    config_entry.add_to_hass(hass)
     
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
