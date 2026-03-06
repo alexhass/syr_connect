@@ -23,6 +23,7 @@ from .const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
+    CONF_DEVICE_NAME,
     CONF_HOST,
     CONF_MODEL,
     DOMAIN,
@@ -69,6 +70,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Local JSON API
             from .api_json import SyrConnectJsonAPI
 
+            device_name = config_data.get(CONF_DEVICE_NAME)
             host = config_data[CONF_HOST]
             model = config_data[CONF_MODEL]
 
@@ -82,7 +84,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             if base_path is None:
                 raise ValueError(f"Model {model} does not support local JSON API")
 
-            self.api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
+            self.api = SyrConnectJsonAPI(
+                session,
+                host=host,
+                base_path=base_path,
+                device_name=device_name,
+            )
             self._username = None  # Not used for JSON API
             _LOGGER.info("Coordinator initialized with JSON API (host=%s, model=%s)", host, model)
         else:

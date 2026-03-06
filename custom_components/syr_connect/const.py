@@ -21,6 +21,7 @@ DOMAIN = "syr_connect"
 CONF_API_TYPE = "api_type"
 CONF_HOST = "host"
 CONF_MODEL = "model"
+CONF_DEVICE_NAME = "device_name"
 
 # API type values
 API_TYPE_XML = "xml"
@@ -450,6 +451,8 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     'getVPS2', # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
     'getEGW',  # Ethernet gateway
     'getEIP',  # Ethernet IP address
+    'getWFC',  # Wi-Fi channel
+    'getWFR',  # Wi-Fi frequency
     'getWGW',  # Wi-Fi gateway
     'getWIP',  # Wi-Fi IP address
 

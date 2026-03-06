@@ -48,6 +48,7 @@ class SyrConnectJsonAPI:
         host: IP address or hostname of the device (optional if base_url provided)
         base_path: path component for the device (optional)
         base_url: explicit base URL (overrides host/base_path)
+        device_name: optional custom device name to use instead of serial number
     """
 
     def __init__(
@@ -56,11 +57,13 @@ class SyrConnectJsonAPI:
         host: str | None = None,
         base_path: str | None = None,
         base_url: str | None = None,
+        device_name: str | None = None,
     ) -> None:
         self._session = session
         self._host = host
         self._base_path = base_path
         self._base_url = base_url
+        self._device_name = device_name
         self._last_login: datetime | None = None
         self.projects: list[dict[str, Any]] = []
 
@@ -190,8 +193,8 @@ class SyrConnectJsonAPI:
 
         # Derive id and name from common fields if available
         device_id = status.get("getSRN") or status.get("getFRN") or "local_device"
-        # TODO: Decide if we add one more name setting.
-        name = device_id
+        # Use configured device name if provided, otherwise fall back to getCNA or device_id
+        name = self._device_name or device_id
 
         return [{"id": str(device_id), "dclg": str(device_id), "name": str(name)}]
 

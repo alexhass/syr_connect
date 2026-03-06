@@ -20,6 +20,7 @@ from .const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
+    CONF_DEVICE_NAME,
     CONF_HOST,
     CONF_MODEL,
     DOMAIN,
@@ -46,6 +47,8 @@ LOCAL_API_MODELS = [
 # Schema for Local/JSON API configuration (host + model)
 STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_DEVICE_NAME): str,
+        vol.Required(CONF_HOST): str,
         vol.Required(CONF_MODEL): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
@@ -56,7 +59,6 @@ STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
                 sort=True,
             )
         ),
-        vol.Required(CONF_HOST): str,
     }
 )
 

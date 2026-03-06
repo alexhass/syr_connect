@@ -23,6 +23,7 @@
       },
       "local_json": {
         "data": {
+          "device_name": "Device name",
           "host": "Hostname or IP address",
           "model": "Device model"
         },
