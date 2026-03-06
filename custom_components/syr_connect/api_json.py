@@ -274,8 +274,6 @@ class SyrConnectJsonAPI:
         url_string = f"{base}/set/{encoded_cmd}/{encoded_value}"
         # Use yarl.URL with encoded=True to prevent aiohttp from decoding our encoded characters
         url = URL(url_string, encoded=True)
-        _LOGGER.warning("DEBUG: Sending URL (raw): %r", url)
-        _LOGGER.warning("DEBUG: URL string: %s", url_string)
         _LOGGER.warning("DEBUG: Command=%r, Value=%r, Encoded=%r", command, value, encoded_value)
         _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
