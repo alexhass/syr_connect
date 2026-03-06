@@ -37,15 +37,11 @@ STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
 )
 
 # Get list of models that support local JSON API (have base_path)
-# Sorted alphabetically by display_name
-LOCAL_API_MODELS = sorted(
-    [
-        (sig["name"], sig["display_name"])
-        for sig in MODEL_SIGNATURES
-        if sig.get("base_path") is not None
-    ],
-    key=lambda x: x[1],  # Sort by display_name
-)
+LOCAL_API_MODELS = [
+    (sig["name"], sig["display_name"])
+    for sig in MODEL_SIGNATURES
+    if sig.get("base_path") is not None
+]
 
 # Schema for Local/JSON API configuration (host + model)
 STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
@@ -57,6 +53,7 @@ STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
                     for name, display in LOCAL_API_MODELS
                 ],
                 mode=selector.SelectSelectorMode.DROPDOWN,
+                sort=True,
             )
         ),
         vol.Required(CONF_HOST): str,
