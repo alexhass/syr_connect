@@ -21,6 +21,7 @@ from .const import (
     CONF_API_TYPE,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .models import detect_model
 
 # Maximum concurrent API calls for diagnostics data collection
 _SYR_CONNECT_CONCURRENT_API_CALLS = 5
@@ -372,14 +373,33 @@ async def async_get_config_entry_diagnostics(
     if coordinator.data:
         # Add device information
         for device in coordinator.data.get("devices", []):
+            status = device.get("status", {})
+
+            # Extract model information
+            model_info = detect_model(status)
+            model_display = model_info.get("display_name") if isinstance(model_info, dict) else None
+
             device_info = {
                 "id": device.get("id"),
                 "name": device.get("name"),
                 "available": device.get("available", True),
                 "project_id": device.get("project_id"),
-                "status_count": len(device.get("status", {})),
-                "status_keys": list(device.get("status", {}).keys()),
+                "model": model_display,
+                "sw_version": status.get("getVER"),
+                "hw_version": status.get("getFIR"),
+                "api_type": api_type,
+                "status_count": len(status),
+                "status_keys": list(status.keys()),
             }
+
+            # Add XML API specific fields
+            if api_type == API_TYPE_XML and device.get("dclg"):
+                device_info["dclg"] = device.get("dclg")
+
+            # Add JSON API specific fields
+            if api_type == API_TYPE_JSON and device.get("base_path"):
+                device_info["base_path"] = device.get("base_path")
+
             devices_info.append(device_info)
 
         # Add project information

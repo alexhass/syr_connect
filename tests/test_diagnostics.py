@@ -2065,10 +2065,10 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="SafeTech",
+        title="Safe-Tech+ Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "SafeTech",
+            CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
             CONF_DEVICE_NAME: "test_device",
         },
@@ -2086,7 +2086,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "12345",
-                "name": "SafeTech",
+                "name": "Safe-Tech+ Connect",
                 "available": True,
                 "status": {"getSRN": "12345"},
             },
@@ -2125,10 +2125,10 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="SafeTech",
+        title="Safe-Tech+ Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "SafeTech",
+            CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
             CONF_DEVICE_NAME: "test_device",
         },
@@ -2173,10 +2173,10 @@ async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="SafeTech",
+        title="Safe-Tech+ Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "SafeTech",
+            CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
             CONF_DEVICE_NAME: "test_device",
         },
@@ -2219,10 +2219,10 @@ async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="SafeTech",
+        title="Safe-Tech+ Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "SafeTech",
+            CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
             CONF_DEVICE_NAME: "test_device",
         },
@@ -2311,10 +2311,10 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="SafeTech",
+        title="Safe-Tech+ Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "SafeTech",
+            CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
             CONF_DEVICE_NAME: "test_device",
         },
@@ -2348,3 +2348,211 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
     # Should still have raw_json with local_device key
     assert "raw_json" in diagnostics
     assert "local_device" in diagnostics["raw_json"]
+
+
+async def test_diagnostics_device_info_xml_api(hass: HomeAssistant) -> None:
+    """Test that devices_info contains all expected fields for XML API."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="LEX Plus 10 S",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "SN12345",
+                "name": "LEX Plus 10 S",
+                "dclg": "device_collection_id",
+                "available": True,
+                "project_id": "project1",
+                "status": {
+                    "getCNA": "LEX+10S",
+                    "getVER": "1.2.3",
+                    "getFIR": "HW_V1",
+                    "getMAC": "AA:BB:CC:DD:EE:FF",
+                    "getFLO": "100",
+                },
+            },
+        ],
+        "projects": [{"id": "project1", "name": "Main Project"}],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "project1", "name": "Main Project"}]
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # Verify devices_info contains all expected fields
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) == 1
+
+    device = diagnostics["devices"][0]
+    assert device["id"] == "SN12345"
+    assert device["name"] == "LEX Plus 10 S"
+    assert device["available"] is True
+    assert device["project_id"] == "project1"
+    assert device["model"] == "LEX Plus 10 S Connect"  # Mapped from getCNA
+    assert device["sw_version"] == "1.2.3"
+    assert device["hw_version"] == "HW_V1"
+    assert device["api_type"] == API_TYPE_XML
+    assert device["dclg"] == "device_collection_id"  # XML API specific
+    assert device["status_count"] == 5
+    assert "getCNA" in device["status_keys"]
+    assert "getVER" in device["status_keys"]
+    assert "base_path" not in device  # Should not be present for XML API
+
+
+async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
+    """Test that devices_info contains all expected fields for JSON API."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Safe-Tech+ Connect",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetech",
+            CONF_HOST: "192.168.1.100",
+            CONF_DEVICE_NAME: "my_device",
+        },
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "SAFETECH01",
+                "name": "Safe-Tech+ Connect",
+                "base_path": "/trio",
+                "available": True,
+                "status": {
+                    "getCNA": "Safe-Tech",
+                    "getVER": "Safe-Tech-2.0.5",
+                    "getFIR": "FW_ST_01",
+                    "getWIP": "192.168.1.100",
+                    "getMAC1": "11:22:33:44:55:66",
+                    "getPRS": "50",
+                },
+            },
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+
+    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
+    mock_json_api.is_session_valid = MagicMock(return_value=True)
+    mock_json_api._fetch_json = AsyncMock(return_value={"data": "value"})
+    mock_coordinator.api = mock_json_api
+    mock_coordinator._session = MagicMock()
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # Verify devices_info contains all expected fields
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) == 1
+
+    device = diagnostics["devices"][0]
+    assert device["id"] == "SAFETECH01"
+    assert device["name"] == "Safe-Tech+ Connect"
+    assert device["available"] is True
+    assert device["model"] == "Safe-Tech+ Connect"  # Mapped from getCNA
+    assert device["sw_version"] == "Safe-Tech-2.0.5"
+    assert device["hw_version"] == "FW_ST_01"
+    assert device["api_type"] == API_TYPE_JSON
+    assert device["base_path"] == "/trio"  # JSON API specific
+    assert device["status_count"] == 6
+    assert "getCNA" in device["status_keys"]
+    assert "getPRS" in device["status_keys"]
+    assert "dclg" not in device  # Should not be present for JSON API
+
+
+async def test_diagnostics_device_info_minimal_status(hass: HomeAssistant) -> None:
+    """Test devices_info with minimal status data (fallbacks)."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Unknown Device",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        },
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "UNKNOWN01",
+                "name": "Unknown Device",
+                "available": False,
+                "status": {},  # Empty status
+            },
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = []
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # Verify devices_info handles missing data gracefully
+    assert "devices" in diagnostics
+    assert len(diagnostics["devices"]) == 1
+
+    device = diagnostics["devices"][0]
+    assert device["id"] == "UNKNOWN01"
+    assert device["name"] == "Unknown Device"
+    assert device["available"] is False
+    assert device["model"] is None  # No getCNA in status
+    assert device["sw_version"] is None  # No getVER in status
+    assert device["hw_version"] is None  # No getFIR in status
+    assert device["api_type"] == API_TYPE_XML
+    assert device["status_count"] == 0
+    assert device["status_keys"] == []
+    assert "dclg" not in device  # No dclg in device dict
