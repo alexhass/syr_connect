@@ -13,7 +13,7 @@
       "unknown": "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde."
     },
     "step": {
-      "cloud_xml": {
+      "api_xml": {
         "data": {
           "password": "Senha",
           "username": "Nome de usuário"
@@ -21,7 +21,7 @@
         "description": "Digite as credenciais do aplicativo SYR Connect para acesso à nuvem",
         "title": "SYR Connect"
       },
-      "local_json": {
+      "api_json": {
         "data": {
           "device_name": "Nome do dispositivo",
           "host": "Nome do host ou endereço IP",
@@ -52,8 +52,8 @@
       "user": {
         "description": "Escolha como conectar ao seu dispositivo SYR:\n\n- **Acesso à nuvem**: Use as credenciais do aplicativo SYR Connect para acessar todos os seus dispositivos através do serviço de nuvem SYR. Requer conexão com a Internet.\n\n- **Acesso local**: Conecte-se diretamente a um dispositivo na sua rede local usando seu endereço IP. Funciona offline e oferece tempos de resposta mais rápidos.",
         "menu_options": {
-          "cloud_xml": "Acesso à nuvem",
-          "local_json": "Acesso local"
+          "api_xml": "Acesso à nuvem",
+          "api_json": "Acesso local"
         },
         "title": "SYR Connect"
       }

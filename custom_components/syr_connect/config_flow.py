@@ -433,10 +433,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         return self.async_show_menu(
             step_id="user",
-            menu_options=["cloud_xml", "local_json"],
+            menu_options=["api_xml", "api_json"],
         )
 
-    async def async_step_cloud_xml(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_api_xml(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle Cloud/XML API configuration (username + password).
 
         Args:
@@ -478,12 +478,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug("Showing Cloud/XML API config form to user")
 
         return self.async_show_form(
-            step_id="cloud_xml",
+            step_id="api_xml",
             data_schema=STEP_CLOUD_XML_DATA_SCHEMA,
             errors=errors,
         )
 
-    async def async_step_local_json(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_api_json(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle Local/JSON API configuration (host + model).
 
         Args:
@@ -527,7 +527,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.debug("Showing Local/JSON API config form to user")
 
         return self.async_show_form(
-            step_id="local_json",
+            step_id="api_json",
             data_schema=STEP_LOCAL_JSON_DATA_SCHEMA,
             errors=errors,
         )

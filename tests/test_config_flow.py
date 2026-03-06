@@ -29,23 +29,23 @@ async def test_form_menu(hass: HomeAssistant) -> None:
     )
     assert result["type"] == FlowResultType.MENU
     assert result["step_id"] == "user"
-    assert "cloud_xml" in result["menu_options"]
-    assert "local_json" in result["menu_options"]
+    assert "api_xml" in result["menu_options"]
+    assert "api_json" in result["menu_options"]
 
 
-async def test_form_cloud_xml(hass: HomeAssistant, mock_syr_api) -> None:
+async def test_form_api_xml(hass: HomeAssistant, mock_syr_api) -> None:
     """Test cloud/XML API configuration flow."""
-    # Start flow and select cloud_xml from menu
+    # Start flow and select api_xml from menu
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     assert result["type"] == FlowResultType.MENU
 
     result2 = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
     assert result2["type"] == FlowResultType.FORM
-    assert result2["step_id"] == "cloud_xml"
+    assert result2["step_id"] == "api_xml"
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",
@@ -67,13 +67,13 @@ async def test_form_cloud_xml(hass: HomeAssistant, mock_syr_api) -> None:
     assert result3["data"][CONF_API_TYPE] == API_TYPE_XML
 
 
-async def test_form_cloud_xml_invalid_auth(hass: HomeAssistant) -> None:
+async def test_form_api_xml_invalid_auth(hass: HomeAssistant) -> None:
     """Test we handle invalid auth for cloud/XML API."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
 
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
@@ -94,13 +94,13 @@ async def test_form_cloud_xml_invalid_auth(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "invalid_auth"}
 
 
-async def test_form_cloud_xml_cannot_connect(hass: HomeAssistant) -> None:
+async def test_form_api_xml_cannot_connect(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error for cloud/XML API."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
 
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
@@ -121,7 +121,7 @@ async def test_form_cloud_xml_cannot_connect(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_form_cloud_xml_already_configured(hass: HomeAssistant, mock_syr_api) -> None:
+async def test_form_api_xml_already_configured(hass: HomeAssistant, mock_syr_api) -> None:
     """Test we handle already configured for cloud/XML API."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -138,7 +138,7 @@ async def test_form_cloud_xml_already_configured(hass: HomeAssistant, mock_syr_a
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
 
     with patch(
@@ -159,19 +159,19 @@ async def test_form_cloud_xml_already_configured(hass: HomeAssistant, mock_syr_a
     assert result2["reason"] == "already_configured"
 
 
-async def test_form_local_json(hass: HomeAssistant) -> None:
+async def test_form_api_json(hass: HomeAssistant) -> None:
     """Test local/JSON API configuration flow."""
-    # Start flow and select local_json from menu
+    # Start flow and select api_json from menu
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     assert result["type"] == FlowResultType.MENU
 
     result2 = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "local_json"}
+        result["flow_id"], {"next_step_id": "api_json"}
     )
     assert result2["type"] == FlowResultType.FORM
-    assert result2["step_id"] == "local_json"
+    assert result2["step_id"] == "api_json"
 
     with (
         patch(
@@ -206,13 +206,13 @@ async def test_form_local_json(hass: HomeAssistant) -> None:
     assert result3["data"][CONF_API_TYPE] == API_TYPE_JSON
 
 
-async def test_form_local_json_cannot_connect(hass: HomeAssistant) -> None:
+async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
     """Test local/JSON API cannot connect error."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "local_json"}
+        result["flow_id"], {"next_step_id": "api_json"}
     )
 
     with patch(
@@ -232,7 +232,7 @@ async def test_form_local_json_cannot_connect(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_form_local_json_already_configured(hass: HomeAssistant) -> None:
+async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
     """Test local/JSON API already configured."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -250,7 +250,7 @@ async def test_form_local_json_already_configured(hass: HomeAssistant) -> None:
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "local_json"}
+        result["flow_id"], {"next_step_id": "api_json"}
     )
 
     with (
@@ -842,7 +842,7 @@ async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
     assert result["step_id"] == "reconfigure"
 
 
-async def test_form_cloud_xml_with_auth_error_exception(hass: HomeAssistant) -> None:
+async def test_form_api_xml_with_auth_error_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with SyrConnectAuthError."""
     from custom_components.syr_connect.exceptions import SyrConnectAuthError
     
@@ -850,7 +850,7 @@ async def test_form_cloud_xml_with_auth_error_exception(hass: HomeAssistant) -> 
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
 
     with patch(
@@ -869,7 +869,7 @@ async def test_form_cloud_xml_with_auth_error_exception(hass: HomeAssistant) -> 
     assert result2["errors"] == {"base": "invalid_auth"}
 
 
-async def test_form_cloud_xml_with_connection_error_exception(hass: HomeAssistant) -> None:
+async def test_form_api_xml_with_connection_error_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with SyrConnectConnectionError."""
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
     
@@ -877,7 +877,7 @@ async def test_form_cloud_xml_with_connection_error_exception(hass: HomeAssistan
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
 
     with patch(
@@ -896,13 +896,13 @@ async def test_form_cloud_xml_with_connection_error_exception(hass: HomeAssistan
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_form_cloud_xml_with_generic_exception(hass: HomeAssistant) -> None:
+async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {"next_step_id": "cloud_xml"}
+        result["flow_id"], {"next_step_id": "api_xml"}
     )
 
     with patch(

@@ -13,7 +13,7 @@
       "unknown": "Se ha producido un error inesperado. Inténtelo de nuevo más tarde."
     },
     "step": {
-      "cloud_xml": {
+      "api_xml": {
         "data": {
           "password": "Contraseña",
           "username": "Nombre de usuario"
@@ -21,7 +21,7 @@
         "description": "Introduzca sus credenciales de la aplicación SYR Connect para acceso en la nube",
         "title": "SYR Connect"
       },
-      "local_json": {
+      "api_json": {
         "data": {
           "device_name": "Nombre del dispositivo",
           "host": "Nombre de host o dirección IP",
@@ -52,8 +52,8 @@
       "user": {
         "description": "Elija cómo conectarse a su dispositivo SYR:\n\n- **Acceso en la nube**: Use las credenciales de su aplicación SYR Connect para acceder a todos sus dispositivos a través del servicio en la nube de SYR. Requiere conexión a Internet.\n\n- **Acceso local**: Conéctese directamente a un dispositivo en su red local usando su dirección IP. Funciona sin conexión y proporciona tiempos de respuesta más rápidos.",
         "menu_options": {
-          "cloud_xml": "Acceso en la nube",
-          "local_json": "Acceso local"
+          "api_xml": "Acceso en la nube",
+          "api_json": "Acceso local"
         },
         "title": "SYR Connect"
       }
