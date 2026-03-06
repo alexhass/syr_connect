@@ -204,7 +204,7 @@ class SyrConnectJsonAPI:
         name = self._device_name or device_id
 
         _LOGGER.debug(
-            "JSON API: Returning device (id=%s, name=%s), cached response for reuse",
+            "JSON API: Returning device (device_id=%s, name=%s), cached response for reuse",
             device_id,
             name,
         )
