@@ -271,6 +271,8 @@ class SyrConnectJsonAPI:
         encoded_cmd = quote(str(cmd), safe='')
         encoded_value = quote(str(value), safe='')
         url = f"{base}/set/{encoded_cmd}/{encoded_value}"
+        _LOGGER.warning("DEBUG: Sending URL (raw): %r", url)
+        _LOGGER.warning("DEBUG: Command=%r, Value=%r, Encoded Value=%r", command, value, encoded_value)
         _LOGGER.debug("JSON API: Setting value - URL: %s", url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
