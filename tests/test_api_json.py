@@ -12,6 +12,7 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "json"
 

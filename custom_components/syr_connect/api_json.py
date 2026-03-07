@@ -306,6 +306,7 @@ class SyrConnectJsonAPI:
         # Make request and get JSON response with login confirmation
         # _execute_http_get with expect_json=True guarantees a dict is returned
         response = await self._execute_http_get(url, expect_json=True, operation="login")
+        assert response is not None  # expect_json=True guarantees dict or raises exception
 
         # Validate set-command response: {"setADM(2)f":"OK"}
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
@@ -561,6 +562,7 @@ class SyrConnectJsonAPI:
         # Response format: {"set{cmd}{value}": "OK"} or {"set{cmd}{value}": "MIMA"}
         # Example: {"setSIR0": "OK"} or {"setRTM02:30": "MIMA"}
         response = await self._execute_http_get(url, expect_json=True, operation=f"set {cmd}")
+        assert response is not None  # expect_json=True guarantees dict or raises exception
 
         # --- Validate Response Status ---
         # Use shared validation logic that checks for OK/MIMA/NSC status codes

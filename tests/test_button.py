@@ -177,11 +177,11 @@ async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock(side_effect=Exception("Unexpected error"))
+    coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("Unexpected error"))
     
     button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR", "Regenerate Now")
 
-    with pytest.raises(HomeAssistantError, match="Unexpected error pressing button"):
+    with pytest.raises(HomeAssistantError, match="Failed to press button"):
         await button.async_press()
 
 

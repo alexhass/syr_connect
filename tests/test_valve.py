@@ -298,7 +298,7 @@ async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None
 
     # Simulate failure
     async def _fail(*args, **kwargs):
-        raise Exception("boom")
+        raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve._cached_ab = None
@@ -717,7 +717,7 @@ async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
 
     # Make async_set_device_value fail
     async def _fail(*args, **kwargs):
-        raise Exception("command failed")
+        raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve = SyrConnectValve(coordinator, "cf1", "CF1")
@@ -741,7 +741,7 @@ async def test_async_open_clears_cache_on_failure(hass: HomeAssistant) -> None:
 
     # Make async_set_device_value fail
     async def _fail(*args, **kwargs):
-        raise Exception("command failed")
+        raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve = SyrConnectValve(coordinator, "of1", "OF1")
@@ -765,7 +765,7 @@ async def test_async_open_second_write_state_exception_on_failure(hass: HomeAssi
 
     # Make async_set_device_value fail
     async def _fail(*args, **kwargs):
-        raise Exception("command failed")
+        raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve = SyrConnectValve(coordinator, "ws1", "WS1")
@@ -791,7 +791,7 @@ async def test_async_close_second_write_state_exception_on_failure(hass: HomeAss
 
     # Make async_set_device_value fail
     async def _fail(*args, **kwargs):
-        raise Exception("command failed")
+        raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve = SyrConnectValve(coordinator, "ws2", "WS2")
