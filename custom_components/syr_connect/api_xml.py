@@ -55,7 +55,7 @@ from .response_parser import ResponseParser
 _LOGGER = logging.getLogger(__name__)
 
 # Session timeout in minutes
-_SESSION_TIMEOUT_MINUTES = 30
+_SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 
 class SyrConnectXmlAPI:
@@ -137,7 +137,7 @@ class SyrConnectXmlAPI:
         Sessions expire after 30 minutes of inactivity, matching the
         server-side timeout to avoid unnecessary re-authentication attempts.
         """
-        self.session_expires_at = datetime.now() + timedelta(minutes=_SESSION_TIMEOUT_MINUTES)
+        self.session_expires_at = datetime.now() + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
 
     async def login(self) -> bool:
         """Authenticate with the SYR Connect cloud service.

@@ -40,7 +40,7 @@ _SYR_CONNECT_JSON_API_SCHEME = "http"
 _SYR_CONNECT_JSON_API_PORT = 5333
 
 # Session timeout (minutes) - mirror XML client behaviour
-_SESSION_TIMEOUT_MINUTES = 30
+_SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # Default timeout for local JSON API requests (seconds)
 _SYR_CONNECT_DEFAULT_API_TIMEOUT = 10
@@ -137,7 +137,7 @@ class SyrConnectJsonAPI:
         """
         return (
             self._last_login is not None
-            and datetime.now() < self._last_login + timedelta(minutes=_SESSION_TIMEOUT_MINUTES)
+            and datetime.now() < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
         )
 
     def _construct_encoded_url(self, *path_parts: str, encode: bool = True) -> URL:
