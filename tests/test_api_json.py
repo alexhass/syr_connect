@@ -144,6 +144,7 @@ async def test_login_success() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setADM(2)f": "OK"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -188,6 +189,52 @@ async def test_login_http_error() -> None:
     )
 
     with pytest.raises(SyrConnectConnectionError):
+        await client.login()
+
+
+async def test_login_invalid_response_status() -> None:
+    """Test login raises exception when response status is not 'OK'."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setADM(2)f": "ERROR"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/api/v1/"
+    )
+
+    with pytest.raises(SyrConnectAuthError, match="Login failed: Device returned status 'ERROR'"):
+        await client.login()
+
+
+async def test_login_missing_status_key() -> None:
+    """Test login raises exception when response is missing the status key."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"someOtherKey": "value"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/api/v1/"
+    )
+
+    with pytest.raises(SyrConnectAuthError, match="Login failed: Device returned status 'None'"):
         await client.login()
 
 
@@ -840,6 +887,7 @@ async def test_login_clears_cached_data() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setADM(2)f": "OK"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)

@@ -289,12 +289,24 @@ class SyrConnectJsonAPI:
         Raises:
             SyrConnectAuthError: On authentication failure
             SyrConnectConnectionError: On network/HTTP errors
+            SyrConnectInvalidResponseError: If login response is not "OK"
         """
         # Build login URL: /set/ADM/(2)f with literal parentheses (encode=False)
         url = self._construct_encoded_url("set", "ADM", "(2)f", encode=False)
 
-        # Make request (no JSON response expected, just HTTP 2xx = success)
-        await self._execute_http_get(url, expect_json=False, operation="login")
+        # Make request and expect JSON response with login confirmation
+        response = await self._execute_http_get(url, expect_json=True, operation="login")
+
+        # Validate login response: {"setADM(2)f":"OK"}
+        if not response or not isinstance(response, dict):
+            _LOGGER.error("JSON API login - Invalid response type: %s", type(response))
+            raise SyrConnectInvalidResponseError("Login response is not a valid JSON object")
+
+        # Check if the response contains "OK" value
+        login_status = response.get("setADM(2)f")
+        if login_status != "OK":
+            _LOGGER.error("JSON API login - Unexpected status: %s (expected 'OK')", login_status)
+            raise SyrConnectAuthError(f"Login failed: Device returned status '{login_status}'")
 
         # Update session tracking
         self._last_login = datetime.now()
