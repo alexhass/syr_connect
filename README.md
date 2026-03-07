@@ -72,7 +72,7 @@ For devices with local JSON API support (NeoSoft 2500/5000 Connect, SafeTech Con
 3. Search for "SYR Connect"
 4. Choose "Local Access"
 5. Enter the device information:
-   - **Device Model**: Select your device model (NeoSoft 2500 Connect, NeoSoft 5000 Connect, SafeTech Connect, or TRIO DFR/LS Connect)
+   - **Device Model**: Select your device model (e.g. NeoSoft 2500 Connect)
    - **Host**: IP address of your device (e.g., `192.168.178.199`)
    - **Device Name**: Custom name for the device
 
