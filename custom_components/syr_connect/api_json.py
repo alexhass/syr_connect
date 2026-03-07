@@ -341,9 +341,8 @@ class SyrConnectJsonAPI:
 
         # Make request with JSON parsing enabled
         data = await self._execute_http_get(url, timeout=timeout, operation=f"fetch {path}")
-
-
-
+        if data is None:
+            raise SyrConnectInvalidResponseError(f"No data returned from {path}")
         return data
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
