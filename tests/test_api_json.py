@@ -258,7 +258,7 @@ async def test_login_mima_status() -> None:
         base_path="/api/v1/"
     )
 
-    with pytest.raises(SyrConnectAuthError, match="Login failed: Value .* is outside valid range"):
+    with pytest.raises(SyrConnectAuthError, match="Login failed: Value .* is outside valid range for ADM"):
         await client.login()
 
 
@@ -591,7 +591,7 @@ async def test_set_device_status_raises_on_mima_error() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with pytest.raises(SyrConnectInvalidResponseError, match="Value 999 is outside valid range"):
+    with pytest.raises(SyrConnectInvalidResponseError, match="Value 999 is outside valid range for PRF9"):
         await client.set_device_status("device1", "PRF9", "999")
 
 
