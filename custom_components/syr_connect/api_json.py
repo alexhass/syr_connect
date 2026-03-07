@@ -8,6 +8,7 @@ local JSON API at the URL pattern:
 The expected endpoints used here are:
 - GET {BASE_URL}/set/ADM/(2)f    -> login (side-effect required before /get/all)
 - GET {BASE_URL}/get/all         -> returns a flat JSON object with getXXX keys
+- GET {BASE_URL}/get/{key}       -> returns single value: {"get{key}": value}
 
 Known API error codes in responses:
 - "NSC": Command does not exist (No Such Command)
@@ -44,6 +45,9 @@ _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # Default timeout for local JSON API requests (seconds)
 _SYR_CONNECT_DEFAULT_API_TIMEOUT = 10
+
+# JSON API endpoint paths
+_SYR_CONNECT_JSON_ENDPOINT_GET_ALL = "/get/all"
 
 
 class SyrConnectJsonAPI:
@@ -385,7 +389,7 @@ class SyrConnectJsonAPI:
         # Fetch device status from /get/all endpoint
         # Note: Support tests that patch _request_json_data with a synchronous callable
         # (hasattr check handles both async and sync for test compatibility)
-        maybe: Any = self._request_json_data("/get/all")
+        maybe: Any = self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
         status = await maybe if hasattr(maybe, "__await__") else maybe
 
         # Cache the response so get_device_status() can reuse it without another API call
@@ -449,7 +453,7 @@ class SyrConnectJsonAPI:
                     await self.login()
 
                 # Fetch fresh data (with test support for sync callables)
-                maybe: Any = self._request_json_data("/get/all")
+                maybe: Any = self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
                 status = await maybe if hasattr(maybe, "__await__") else maybe
 
             # --- Return Status Dictionary ---
@@ -464,6 +468,65 @@ class SyrConnectJsonAPI:
         except (ValueError, KeyError, TypeError, AttributeError):
             _LOGGER.exception("Failed to parse JSON device status for %s", device_id)
             return None
+
+    async def get_value(self, key: str) -> dict[str, Any]:
+        """Fetch a single value from the device using /get/{key}.
+
+        The JSON API supports fetching individual values instead of all data:
+        - /get/all returns all values: {"getFLO": 0, "getTMP": 25, ...}
+        - /get/FLO returns single value: {"getFLO": 0}
+
+        This method provides flexible access to individual device values without
+        fetching the entire state.
+
+        Args:
+            key: Value key to fetch (e.g., "FLO", "TMP", "AB")
+                 The "get" prefix is optional and will be stripped if present.
+
+        Returns:
+            Dictionary with single key-value pair: {"get{key}": value}
+
+        Raises:
+            SyrConnectAuthError: On authentication errors
+            SyrConnectConnectionError: On connection errors
+            SyrConnectInvalidResponseError: If response is invalid
+
+        Example:
+            >>> result = await api.get_value("FLO")
+            >>> print(result)
+            {"getFLO": 0}
+        """
+        # --- Normalize Key ---
+        # Accept both "FLO" and "getFLO", normalize to just "FLO" for URL
+        normalized_key = key[3:] if key.lower().startswith("get") else key
+
+        # --- Ensure Valid Session ---
+        # Skip login if base_url is set (test mode) or session is still valid
+        if not self._base_url and not self.is_session_valid():
+            await self.login()
+
+        # --- Build URL and Fetch ---
+        # Format: /get/{key} (e.g., /get/FLO)
+        path = f"/get/{normalized_key}"
+        _LOGGER.debug("JSON API: Fetching single value for key=%s (path=%s)", key, path)
+
+        # Fetch data using existing request infrastructure
+        data = await self._request_json_data(path)
+
+        # --- Validate Response ---
+        # Expected format: {"get{key}": value}
+        expected_key = f"get{normalized_key}"
+        if expected_key not in data:
+            _LOGGER.error(
+                "JSON API: Response missing expected key '%s' for get_value(%s) - got: %s",
+                expected_key,
+                key,
+                data,
+            )
+            raise SyrConnectInvalidResponseError(f"Response missing expected key '{expected_key}'")
+
+        _LOGGER.debug("JSON API: Retrieved %s=%s", expected_key, data[expected_key])
+        return data
 
     async def set_device_status(self, device_id: str, command: str, value: Any) -> bool:
         """Attempt to set a device value using the JSON API.

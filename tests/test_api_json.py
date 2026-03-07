@@ -1101,3 +1101,116 @@ async def test_get_devices_skips_login_when_session_valid() -> None:
     # Should NOT have called login because session is valid
     client.login.assert_not_called()
 
+
+async def test_get_value_success() -> None:
+    """Test get_value fetches single value successfully."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"getFLO": 0})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+    client._last_login = datetime.now()  # Valid session
+
+    result = await client.get_value("FLO")
+
+    # Should return the single value dict
+    assert result == {"getFLO": 0}
+
+    # Verify correct URL was called
+    called_url = str(sess.get.call_args[0][0])
+    assert "api/get/FLO" in called_url
+
+
+async def test_get_value_strips_get_prefix() -> None:
+    """Test get_value strips 'get' prefix from key."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"getTMP": 25})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+    client._last_login = datetime.now()  # Valid session
+
+    # Pass key with 'get' prefix
+    result = await client.get_value("getTMP")
+
+    # Should return the value
+    assert result == {"getTMP": 25}
+
+    # Verify URL has normalized key without 'get' prefix
+    called_url = str(sess.get.call_args[0][0])
+    assert "api/get/TMP" in called_url
+
+
+async def test_get_value_calls_login_when_needed() -> None:
+    """Test get_value calls login when session is invalid."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.100", base_path="/api/")
+
+    # No valid session
+    client._last_login = None
+
+    # Mock login
+    client.login = AsyncMock()
+
+    # Mock _request_json_data
+    client._request_json_data = AsyncMock(return_value={"getAB": 1})
+
+    await client.get_value("AB")
+
+    # Should have called login
+    client.login.assert_called_once()
+
+
+async def test_get_value_missing_key_raises() -> None:
+    """Test get_value raises exception when response missing expected key."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    # Response has wrong key
+    mock_response.json = AsyncMock(return_value={"getSomeOtherKey": 123})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+    client._last_login = datetime.now()  # Valid session
+
+    # Should raise SyrConnectInvalidResponseError
+    with pytest.raises(SyrConnectInvalidResponseError) as exc_info:
+        await client.get_value("FLO")
+
+    assert "Response missing expected key 'getFLO'" in str(exc_info.value)
+
+
+async def test_get_value_skips_login_with_base_url() -> None:
+    """Test get_value skips login when base_url is set (test mode)."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"getSRN": "12345"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    # Use base_url (test mode)
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Mock login to verify it's not called
+    client.login = AsyncMock()
+
+    await client.get_value("SRN")
+
+    # Should NOT have called login in test mode
+    client.login.assert_not_called()
