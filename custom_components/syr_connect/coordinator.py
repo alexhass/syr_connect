@@ -354,7 +354,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             await self.api.set_device_status(dclg, command, value)
         except Exception:  # pragma: no cover - defensive
-            _LOGGER.exception("Failed to set device %s via API", device_id)
+            # Log at debug level since the exception will be caught and logged
+            # properly by the calling entity (select, button, etc.)
+            _LOGGER.debug("Failed to set device %s via API, re-raising to caller", device_id)
             raise
         finally:
             # Schedule a delayed refresh in the background to give the API
