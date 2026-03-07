@@ -9,18 +9,11 @@
     },
     "error": {
       "cannot_connect": "Não foi possível conectar ao SYR Connect. Verifique sua conexão com a Internet e tente novamente.",
+      "cannot_connect_local": "Não é possível conectar ao dispositivo local. Por favor, verifique se o endereço IP está correto e se o dispositivo está ligado e conectado à sua rede local.",
       "invalid_auth": "Nome de usuário ou senha inválidos. Verifique suas credenciais.",
       "unknown": "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde."
     },
     "step": {
-      "api_xml": {
-        "data": {
-          "password": "Senha",
-          "username": "Nome de usuário"
-        },
-        "description": "Digite as credenciais do aplicativo SYR Connect para acesso à nuvem",
-        "title": "SYR Connect"
-      },
       "api_json": {
         "data": {
           "device_name": "Nome do dispositivo",
@@ -29,6 +22,14 @@
         },
         "description": "Digite o modelo e o nome do host/IP para acesso local",
         "title": "SYR Connect (Local)"
+      },
+      "api_xml": {
+        "data": {
+          "password": "Senha",
+          "username": "Nome de usuário"
+        },
+        "description": "Digite as credenciais do aplicativo SYR Connect para acesso à nuvem",
+        "title": "SYR Connect"
       },
       "reauth_confirm": {
         "data": {
@@ -52,8 +53,8 @@
       "user": {
         "description": "Escolha como conectar ao seu dispositivo SYR:\n\n- **Acesso à nuvem**: Use as credenciais do aplicativo SYR Connect para acessar todos os seus dispositivos através do serviço de nuvem SYR. Requer conexão com a Internet.\n\n- **Acesso local**: Conecte-se diretamente a um dispositivo na sua rede local usando seu endereço IP. Funciona offline e oferece tempos de resposta mais rápidos.",
         "menu_options": {
-          "api_xml": "Acesso à nuvem",
-          "api_json": "Acesso local"
+          "api_json": "Acesso local",
+          "api_xml": "Acesso à nuvem"
         },
         "title": "SYR Connect"
       }

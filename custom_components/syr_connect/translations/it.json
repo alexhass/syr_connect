@@ -9,18 +9,11 @@
     },
     "error": {
       "cannot_connect": "Impossibile connettersi a SYR Connect. Controlla la connessione a Internet e riprova.",
+      "cannot_connect_local": "Impossibile connettersi al dispositivo locale. Verifica che l'indirizzo IP sia corretto e che il dispositivo sia acceso e connesso alla rete locale.",
       "invalid_auth": "Nome utente o password non validi. Controlla le credenziali.",
       "unknown": "Si è verificato un errore imprevisto. Riprova più tardi."
     },
     "step": {
-      "api_xml": {
-        "data": {
-          "password": "Password",
-          "username": "Nome utente"
-        },
-        "description": "Inserisci le credenziali dell'app SYR Connect per l'accesso cloud",
-        "title": "SYR Connect"
-      },
       "api_json": {
         "data": {
           "device_name": "Nome del dispositivo",
@@ -29,6 +22,14 @@
         },
         "description": "Inserisci il modello e il nome host/IP per l'accesso locale",
         "title": "SYR Connect (Locale)"
+      },
+      "api_xml": {
+        "data": {
+          "password": "Password",
+          "username": "Nome utente"
+        },
+        "description": "Inserisci le credenziali dell'app SYR Connect per l'accesso cloud",
+        "title": "SYR Connect"
       },
       "reauth_confirm": {
         "data": {
@@ -52,8 +53,8 @@
       "user": {
         "description": "Scegli come connetterti al tuo dispositivo SYR:\n\n- **Accesso cloud**: Usa le credenziali dell'app SYR Connect per accedere a tutti i tuoi dispositivi tramite il servizio cloud SYR. Richiede connessione Internet.\n\n- **Accesso locale**: Connettiti direttamente a un dispositivo sulla tua rete locale utilizzando il suo indirizzo IP. Funziona offline e fornisce tempi di risposta più rapidi.",
         "menu_options": {
-          "api_xml": "Accesso cloud",
-          "api_json": "Accesso locale"
+          "api_json": "Accesso locale",
+          "api_xml": "Accesso cloud"
         },
         "title": "SYR Connect"
       }

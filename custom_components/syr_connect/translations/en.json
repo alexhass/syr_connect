@@ -9,18 +9,11 @@
     },
     "error": {
       "cannot_connect": "Unable to connect to SYR Connect. Please check your internet connection and try again.",
+      "cannot_connect_local": "Unable to connect to local device. Please verify the device IP address is correct and the device is powered on and connected to your local network.",
       "invalid_auth": "Invalid username or password. Please check your credentials.",
       "unknown": "An unexpected error occurred. Please try again later."
     },
     "step": {
-      "api_xml": {
-        "data": {
-          "password": "Password",
-          "username": "Username"
-        },
-        "description": "Enter your SYR Connect App credentials for cloud access",
-        "title": "SYR Connect"
-      },
       "api_json": {
         "data": {
           "device_name": "Device name",
@@ -29,6 +22,14 @@
         },
         "description": "Enter model and hostname/IP for local access",
         "title": "SYR Connect (Local)"
+      },
+      "api_xml": {
+        "data": {
+          "password": "Password",
+          "username": "Username"
+        },
+        "description": "Enter your SYR Connect App credentials for cloud access",
+        "title": "SYR Connect"
       },
       "reauth_confirm": {
         "data": {
@@ -52,8 +53,8 @@
       "user": {
         "description": "Choose how to connect to your SYR device:\n\n- **Cloud Access**: Use your SYR Connect App credentials to access all your devices via the SYR cloud service. Requires internet connection.\n\n- **Local Access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
         "menu_options": {
-          "api_xml": "Cloud Access",
-          "api_json": "Local Access"
+          "api_json": "Local Access",
+          "api_xml": "Cloud Access"
         },
         "title": "SYR Connect"
       }

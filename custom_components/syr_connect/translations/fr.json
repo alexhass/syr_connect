@@ -9,18 +9,11 @@
     },
     "error": {
       "cannot_connect": "Impossible de se connecter à SYR Connect. Veuillez vérifier votre connexion Internet et réessayer.",
+      "cannot_connect_local": "Impossible de se connecter à l'appareil local. Veuillez vérifier que l'adresse IP est correcte et que l'appareil est allumé et connecté à votre réseau local.",
       "invalid_auth": "Nom d'utilisateur ou mot de passe invalide. Veuillez vérifier vos identifiants.",
       "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
     },
     "step": {
-      "api_xml": {
-        "data": {
-          "password": "Mot de passe",
-          "username": "Nom d'utilisateur"
-        },
-        "description": "Entrez vos identifiants de l'application SYR Connect pour l'accès cloud",
-        "title": "SYR Connect"
-      },
       "api_json": {
         "data": {
           "device_name": "Nom de l'appareil",
@@ -29,6 +22,14 @@
         },
         "description": "Entrez le modèle et le nom d'hôte/IP pour l'accès local",
         "title": "SYR Connect (Local)"
+      },
+      "api_xml": {
+        "data": {
+          "password": "Mot de passe",
+          "username": "Nom d'utilisateur"
+        },
+        "description": "Entrez vos identifiants de l'application SYR Connect pour l'accès cloud",
+        "title": "SYR Connect"
       },
       "reauth_confirm": {
         "data": {
@@ -52,8 +53,8 @@
       "user": {
         "description": "Choisissez comment vous connecter à votre appareil SYR:\n\n- **Accès cloud**: Utilisez vos identifiants de l'application SYR Connect pour accéder à tous vos appareils via le service cloud SYR. Nécessite une connexion Internet.\n\n- **Accès local**: Connectez-vous directement à un appareil sur votre réseau local en utilisant son adresse IP. Fonctionne hors ligne et offre des temps de réponse plus rapides.",
         "menu_options": {
-          "api_xml": "Accès cloud",
-          "api_json": "Accès local"
+          "api_json": "Accès local",
+          "api_xml": "Accès cloud"
         },
         "title": "SYR Connect"
       }

@@ -392,7 +392,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason="reconfigure_successful")
 
             except CannotConnectError:
-                errors["base"] = "cannot_connect"
+                # Use appropriate error message based on API type
+                api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
+                errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except Exception as err:  # pylint: disable=broad-except
@@ -528,7 +530,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 info = await validate_input_json(self.hass, user_input)
                 _LOGGER.debug("Validation successful")
             except CannotConnectError:
-                errors["base"] = "cannot_connect"
+                errors["base"] = "cannot_connect_local"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
                 errors["base"] = "unknown"
