@@ -439,5 +439,5 @@ MIT License - siehe LICENSE Datei
 
 ## Danksagungen
 
-- [ioBroker.syrconnectapp](https://github.com/TA2k/ioBroker.syrconnectapp) von TA2k.
+- Inspiriert durch den Adapter [ioBroker.syrconnectapp](https://github.com/TA2k/ioBroker.syrconnectapp) von TA2k.
 - Vielen Dank an das SYR IoT-Entwicklungsteam für das Bereitstellen der Logos.
