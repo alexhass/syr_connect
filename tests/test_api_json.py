@@ -520,13 +520,13 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     result = await client.set_device_status("device1", "RTM", "02:15")
 
     # Verify URL contains URL-encoded value (%3A for colon)
-    called_url = sess.get.call_args[0][0]
+    called_url = str(sess.get.call_args[0][0])
     assert "/set/RTM/02%3A15" in called_url
     assert result is True
 
     # Test with value containing slash
     result2 = await client.set_device_status("device1", "CMD", "value/with/slash")
-    called_url2 = sess.get.call_args[0][0]
+    called_url2 = str(sess.get.call_args[0][0])
     assert "%2F" in called_url2  # slash should be encoded
     assert result2 is True
 
