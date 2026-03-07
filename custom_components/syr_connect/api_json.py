@@ -661,6 +661,11 @@ class SyrConnectJsonAPI:
 
         # Scan response values for error codes
         for key, val in data.items():
+            # Skip set-command keys (e.g., "setRPD4") - these are validated by _validate_set_response()
+            # Only log warnings for get-command keys (e.g., "getRTM") with error codes
+            if key.lower().startswith("set"):
+                continue
+
             # Check if value is a string matching a known error code
             if isinstance(val, str) and (msg := error_messages.get(val.upper())):
                 _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)

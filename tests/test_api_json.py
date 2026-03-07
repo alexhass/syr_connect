@@ -543,7 +543,8 @@ async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixtur
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setPRF9": "MIMA", "getABC": "value"})
+    # Use a GET key (not SET) to test warning logging for error codes
+    mock_response.json = AsyncMock(return_value={"getPRF": "MIMA", "getABC": "value"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -551,10 +552,10 @@ async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixtur
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with caplog.at_level(logging.WARNING):
-        result = await client._request_json_data("/set/prf9/invalid")
+        result = await client._request_json_data("/get/all")
 
-    assert result == {"setPRF9": "MIMA", "getABC": "value"}
-    assert "JSON API: 'setPRF9' Value is outside valid range (MIMA error)" in caplog.text
+    assert result == {"getPRF": "MIMA", "getABC": "value"}
+    assert "JSON API: 'getPRF' Value is outside valid range (MIMA error)" in caplog.text
 
 
 async def test_set_device_status_raises_on_nsc_error() -> None:
