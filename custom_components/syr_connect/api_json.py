@@ -185,23 +185,19 @@ class SyrConnectJsonAPI:
         url: URL | str,
         *,
         timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT,
-        expect_json: bool = True,
         operation: str = "request",
-    ) -> dict[str, Any] | None:
+    ) -> dict[str, Any]:
         """Central method for all HTTP requests with unified error handling.
 
         Args:
             url: Target URL (yarl.URL or string)
             timeout: Request timeout in seconds
-            expect_json: If True, parse and return JSON response as dict.
-                        If False, return None (for endpoints without response body).
             operation: Description of operation for error messages
 
         Returns:
-            - dict[str, Any]: Parsed JSON response when expect_json=True
-            - None: When expect_json=False
+            dict[str, Any]: Parsed JSON response (always expected)
 
-            Note: When expect_json=True, this method ALWAYS returns a dict or raises
+            Note: This method ALWAYS returns a dict or raises
             an exception. Callers don't need to check for None or validate dict type.
 
         Raises:
@@ -227,11 +223,6 @@ class SyrConnectJsonAPI:
 
                 # Raise exception on HTTP errors (4xx, 5xx)
                 resp.raise_for_status()
-
-                # --- Handle Non-JSON Responses ---
-                # Some endpoints (like login) don't return JSON, just success/failure via HTTP status
-                if not expect_json:
-                    return None
 
                 # --- Parse and Validate JSON Response ---
                 # Note: SYR devices return JSON without proper Content-Type header (application/json).
@@ -304,9 +295,7 @@ class SyrConnectJsonAPI:
         url = self._construct_encoded_url("set", "ADM", "(2)f", encode=False)
 
         # Make request and get JSON response with login confirmation
-        # _execute_http_get with expect_json=True guarantees a dict is returned
-        response = await self._execute_http_get(url, expect_json=True, operation="login")
-        assert response is not None  # expect_json=True guarantees dict or raises exception
+        response = await self._execute_http_get(url, operation="login")
 
         # Validate set-command response: {"setADM(2)f":"OK"}
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
@@ -561,8 +550,7 @@ class SyrConnectJsonAPI:
         # --- Make Request ---
         # Response format: {"set{cmd}{value}": "OK"} or {"set{cmd}{value}": "MIMA"}
         # Example: {"setSIR0": "OK"} or {"setRTM02:30": "MIMA"}
-        response = await self._execute_http_get(url, expect_json=True, operation=f"set {cmd}")
-        assert response is not None  # expect_json=True guarantees dict or raises exception
+        response = await self._execute_http_get(url, operation=f"set {cmd}")
 
         # --- Validate Response Status ---
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
