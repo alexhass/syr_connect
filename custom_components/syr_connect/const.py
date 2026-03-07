@@ -426,6 +426,20 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getDPV",
     "getDSP",
     "getDVS",
+
+    "getSMC",
+    "getPW",
+    "getPV",
+    "getPT",
+    "getPM",
+    "getPF",
+    "getPB",
+    "getMM",
+    "getLDT",
+    "getFFM",
+    "getFCM",
+    "getFCD",
+    "getCEN",
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
