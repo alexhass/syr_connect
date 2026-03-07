@@ -340,11 +340,9 @@ class SyrConnectJsonAPI:
         url = self._construct_encoded_url(path.lstrip("/"), encode=False)
 
         # Make request with JSON parsing enabled
-        data = await self._execute_http_get(url, timeout=timeout, expect_json=True, operation=f"fetch {path}")
+        data = await self._execute_http_get(url, timeout=timeout, operation=f"fetch {path}")
 
-        # Sanity check: _execute_http_get with expect_json=True should never return None
-        if data is None:
-            raise SyrConnectInvalidResponseError(f"No data returned from {path}")
+
 
         return data
 
