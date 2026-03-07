@@ -74,7 +74,6 @@ Für Geräte mit lokaler JSON-API-Unterstützung (NeoSoft 2500/5000 Connect, Saf
 5. Gib die Geräteinformationen ein:
    - **Gerätemodell**: Wähle dein Gerätemodell (z.b. NeoSoft 2500 Connect)
    - **Host**: IP-Adresse deines Geräts (z.B. `192.168.178.199`)
-   - **Gerätename**: Benutzerdefinierter Name für das Gerät
 
 **Hinweis**: Um die IP-Adresse deines Geräts zu finden, überprüfe die DHCP-Client-Liste deines Routers oder das Display-Menü des Geräts.
 

@@ -74,7 +74,6 @@ For devices with local JSON API support (NeoSoft 2500/5000 Connect, SafeTech Con
 5. Enter the device information:
    - **Device Model**: Select your device model (e.g. NeoSoft 2500 Connect)
    - **Host**: IP address of your device (e.g., `192.168.178.199`)
-   - **Device Name**: Custom name for the device
 
 **Note**: To find your device's IP address, check your router's DHCP client list or the device's display menu.
 
