@@ -221,7 +221,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.debug("Requested regeneration time set commands for device %s: %s", self._device_id, commands)
             _LOGGER.debug("Regeneration time select changed for %s to %s", self._device_id, option)
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.exception("Failed to set regeneration time for device %s", self._device_id)
+            _LOGGER.error("Failed to set regeneration time for device %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to set regeneration time: {err}") from err
 
     @property
@@ -341,7 +341,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                 option,
             )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
+            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
             raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
 
     @property
@@ -443,7 +443,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
             await coordinator.async_set_device_value(self._device_id, "setPRF", selected_idx)
             _LOGGER.debug("Requested setPRF for device %s (profile=%s)", self._device_id, selected_idx)
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.exception("Failed to set PRF for device %s", self._device_id)
+            _LOGGER.error("Failed to set PRF for device %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to set profile: {err}") from err
 
     @property

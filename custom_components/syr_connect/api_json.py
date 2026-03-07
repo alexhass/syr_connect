@@ -619,11 +619,15 @@ class SyrConnectJsonAPI:
             return
         elif status == "MIMA":
             msg = f"Value {value} is outside valid range for command {cmd}"
-            _LOGGER.error("JSON API: %s (device: %s)", msg, device_id)
+            # Log at debug level since the exception will be caught and logged
+            # properly by the calling entity (select, button, etc.)
+            _LOGGER.debug("JSON API: %s (device: %s)", msg, device_id)
             raise SyrConnectInvalidResponseError(msg)
         elif status == "NSC":
             msg = f"Command {cmd} does not exist for device {device_id}"
-            _LOGGER.error("JSON API: %s", msg)
+            # Log at debug level since the exception will be caught and logged
+            # properly by the calling entity (select, button, etc.)
+            _LOGGER.debug("JSON API: %s", msg)
             raise SyrConnectInvalidResponseError(msg)
         else:
             # Unknown/unexpected status
