@@ -209,11 +209,11 @@ class SyrConnectJsonAPI:
             SyrConnectConnectionError: On connection/HTTP errors
             SyrConnectInvalidResponseError: On invalid JSON response or non-dict payload
         """
-        _LOGGER.debug("JSON API %s - URL: %s", operation, url)
+        _LOGGER.debug("JSON API: %s - URL: %s", operation, url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=timeout)
             async with self._session.get(url, timeout=timeout_obj) as resp:
-                _LOGGER.debug("JSON API %s - Response status: %s", operation, resp.status)
+                _LOGGER.debug("JSON API: %s - Response status: %s", operation, resp.status)
 
                 # --- Error Response Debugging ---
                 # Read response body BEFORE raise_for_status() so we can log it
@@ -221,9 +221,9 @@ class SyrConnectJsonAPI:
                 if resp.status >= 400:
                     try:
                         response_text = await resp.text()
-                        _LOGGER.debug("JSON API %s - Error response: %r", operation, response_text)
+                        _LOGGER.debug("JSON API: %s - Error response: %r", operation, response_text)
                     except Exception as err:
-                        _LOGGER.debug("JSON API %s - Could not read error response: %s", operation, err)
+                        _LOGGER.debug("JSON API: %s - Could not read error response: %s", operation, err)
 
                 # Raise exception on HTTP errors (4xx, 5xx)
                 resp.raise_for_status()
@@ -238,38 +238,38 @@ class SyrConnectJsonAPI:
                 # Use content_type=None to skip Content-Type validation
                 data = await resp.json(content_type=None)
                 if not isinstance(data, dict):
-                    _LOGGER.error("JSON API %s - Non-dict payload from %s", operation, url)
+                    _LOGGER.error("JSON API: %s - Non-dict payload from %s", operation, url)
                     raise SyrConnectInvalidResponseError("API returned unexpected payload type")
 
                 # --- Log Response Data ---
-                _LOGGER.debug("JSON API %s - Response data: %s", operation, data)
+                _LOGGER.debug("JSON API: %s - Response data: %s", operation, data)
 
                 # --- Check for API-Level Error Codes ---
                 # Even with HTTP 200, the API may return error codes like "NSC" or "MIMA"
                 self._validate_response_errors(data, str(url))
 
-                _LOGGER.debug("JSON API %s - Success", operation)
+                _LOGGER.debug("JSON API: %s - Success", operation)
                 return data
 
         # --- HTTP Error Handling ---
         except aiohttp.ClientResponseError as err:
             # 404: Endpoint doesn't exist (wrong base_path or device model?)
             if err.status == 404:
-                _LOGGER.error("JSON API %s - Endpoint not found: %s (HTTP %s)", operation, url, err.status)
+                _LOGGER.error("JSON API: %s - Endpoint not found: %s (HTTP %s)", operation, url, err.status)
                 raise SyrConnectConnectionError(
                     f"{operation.capitalize()} failed: Endpoint not found (HTTP 404)"
                 ) from err
             # 401/403: Authentication failed (login required or invalid credentials)
             if err.status in (401, 403):
-                _LOGGER.error("JSON API %s - Authentication failed: %s (HTTP %s)", operation, url, err.status)
+                _LOGGER.error("JSON API: %s - Authentication failed: %s (HTTP %s)", operation, url, err.status)
                 raise SyrConnectAuthError(f"Authentication failed: {err.message}") from err
             # Other HTTP errors (400, 500, etc.)
-            _LOGGER.error("JSON API %s - HTTP error: %s (HTTP %s - %s)", operation, url, err.status, err.message)
+            _LOGGER.error("JSON API: %s - HTTP error: %s (HTTP %s - %s)", operation, url, err.status, err.message)
             raise SyrConnectConnectionError(f"HTTP {err.status}: {err.message}") from err
 
         # --- Network/Connection Errors ---
         except (aiohttp.ClientError, TimeoutError) as err:
-            _LOGGER.error("JSON API %s - Connection error: %s", operation, err)
+            _LOGGER.error("JSON API: %s - Connection error: %s", operation, err)
             raise SyrConnectConnectionError(f"Connection failed: {err}") from err
 
         # --- API Validation Errors ---
@@ -280,7 +280,7 @@ class SyrConnectJsonAPI:
         # --- Unexpected Errors ---
         # Catch-all for any other exceptions
         except Exception as err:
-            _LOGGER.error("JSON API %s - Unexpected error: %s", operation, err)
+            _LOGGER.error("JSON API: %s - Unexpected error: %s", operation, err)
             raise SyrConnectConnectionError(f"Unexpected error: {err}") from err
 
     async def login(self) -> bool:
@@ -324,7 +324,7 @@ class SyrConnectJsonAPI:
         # Create single-project placeholder (coordinator expects projects list)
         self.projects = [{"id": "local", "name": "Local JSON API"}]
 
-        _LOGGER.info("Logged into local JSON API at %s", self._build_base_url())
+        _LOGGER.info("JSON API: Logged in at %s", self._build_base_url())
         return True
 
     async def _request_json_data(self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT) -> dict[str, Any]:
@@ -566,7 +566,7 @@ class SyrConnectJsonAPI:
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
         self._validate_set_response(response, cmd, value, device_id)
 
-        _LOGGER.info("Set %s=%s via JSON API for device %s (status: OK)", cmd, value, device_id)
+        _LOGGER.info("JSON API: Set %s=%s for device %s (status: OK)", cmd, value, device_id)
         return True
 
     def _validate_set_response(
