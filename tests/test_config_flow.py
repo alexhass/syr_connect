@@ -234,7 +234,7 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "cannot_connect"}
+    assert result2["errors"] == {"base": "cannot_connect_local"}
 
 
 async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:

@@ -303,6 +303,7 @@ async def test_set_device_status_strips_set_prefix() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -324,6 +325,7 @@ async def test_set_device_status_success() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -406,6 +408,7 @@ async def test_set_device_status_command_without_set_prefix() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -437,7 +440,7 @@ async def test_request_json_data_logs_nsc_error(caplog: pytest.LogCaptureFixture
         result = await client._request_json_data("/get/all")
 
     assert result == {"getXYZ": "NSC", "getABC": "value"}
-    assert "Command 'getXYZ' does not exist (NSC error)" in caplog.text
+    assert "JSON API: 'getXYZ' Command does not exist (NSC error)" in caplog.text
 
 
 async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
@@ -457,7 +460,7 @@ async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixtur
         result = await client._request_json_data("/set/prf9/invalid")
 
     assert result == {"setPRF9": "MIMA", "getABC": "value"}
-    assert "Value for 'setPRF9' is outside valid range (MIMA error)" in caplog.text
+    assert "JSON API: 'setPRF9' Value is outside valid range (MIMA error)" in caplog.text
 
 
 async def test_set_device_status_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> None:
@@ -477,7 +480,7 @@ async def test_set_device_status_logs_nsc_error(caplog: pytest.LogCaptureFixture
         result = await client.set_device_status("device1", "INVALID", "value")
 
     assert result is True
-    assert "Command 'setINVALID' does not exist (NSC error)" in caplog.text
+    assert "JSON API: 'setINVALID' Command does not exist (NSC error)" in caplog.text
 
 
 async def test_set_device_status_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
@@ -497,13 +500,14 @@ async def test_set_device_status_logs_mima_error(caplog: pytest.LogCaptureFixtur
         result = await client.set_device_status("device1", "PRF9", "999")
 
     assert result is True
-    assert "Value for 'setPRF9' is outside valid range (MIMA error)" in caplog.text
+    assert "JSON API: 'setPRF9' Value is outside valid range (MIMA error)" in caplog.text
 
 
 async def test_set_device_status_url_encodes_special_characters() -> None:
     """Test set_device_status URL-encodes special characters in command and value."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)

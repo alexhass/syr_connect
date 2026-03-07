@@ -51,7 +51,7 @@
         "title": "SYR Connect neu konfigurieren"
       },
       "user": {
-        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:\n\n- **Cloud-Zugriff**: Verwenden Sie Ihre SYR Connect App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Benötigt Internetverbindung.\n\n- **Lokaler Zugriff**: Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Funktioniert offline und bietet schnellere Reaktionszeiten.",
+        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:\n\n- **Cloud-Zugriff**: Verwenden Sie Ihre SYR Connect App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Dies benötigt eine Internetverbindung.\n\n- **Lokaler Zugriff**: Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Dies funktioniert offline und bietet schnellere Reaktionszeiten.",
         "menu_options": {
           "api_json": "Lokaler-Zugriff",
           "api_xml": "Cloud-Zugriff"

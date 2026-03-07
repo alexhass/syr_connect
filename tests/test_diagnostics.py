@@ -2111,7 +2111,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
     # Should have raw_json with device data
     assert "raw_json" in diagnostics
     assert "12345" in diagnostics["raw_json"]
-    assert diagnostics["raw_json"]["12345"]["getSRN"] == "***REDACTED_GETSRN***"
+    assert diagnostics["raw_json"]["12345"]["getSRN"] == "**REDACTED**"
 
     # Should NOT have raw_xml (only for XML API)
     assert "raw_xml" in diagnostics
