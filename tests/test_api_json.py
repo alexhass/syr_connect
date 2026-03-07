@@ -234,7 +234,53 @@ async def test_login_missing_status_key() -> None:
         base_path="/api/v1/"
     )
 
-    with pytest.raises(SyrConnectAuthError, match="Login failed: Device returned status 'None'"):
+    with pytest.raises(SyrConnectAuthError, match="Login failed: Response missing expected key"):
+        await client.login()
+
+
+async def test_login_mima_status() -> None:
+    """Test login raises exception when response status is MIMA."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setADM(2)f": "MIMA"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/api/v1/"
+    )
+
+    with pytest.raises(SyrConnectAuthError, match="Login failed: Value .* is outside valid range"):
+        await client.login()
+
+
+async def test_login_nsc_status() -> None:
+    """Test login raises exception when response status is NSC."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setADM(2)f": "NSC"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/api/v1/"
+    )
+
+    with pytest.raises(SyrConnectAuthError, match="Login failed: Command .* does not exist"):
         await client.login()
 
 
@@ -367,12 +413,12 @@ async def test_set_device_status_strips_set_prefix() -> None:
 
 
 async def test_set_device_status_success() -> None:
-    """Test set_device_status returns True on success."""
+    """Test set_device_status returns True when response status is OK."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={})
+    mock_response.json = AsyncMock(return_value={"setXY123": "OK"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -510,44 +556,42 @@ async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixtur
     assert "JSON API: 'setPRF9' Value is outside valid range (MIMA error)" in caplog.text
 
 
-async def test_set_device_status_logs_nsc_error(caplog: pytest.LogCaptureFixture) -> None:
-    """Test set_device_status logs warning when response contains NSC error code."""
+async def test_set_device_status_raises_on_nsc_error() -> None:
+    """Test set_device_status raises SyrConnectInvalidResponseError when response contains NSC error code."""
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setINVALID": "NSC"})
+    mock_response.json = AsyncMock(return_value={"setINVALIDvalue": "NSC"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with caplog.at_level(logging.WARNING):
-        result = await client.set_device_status("device1", "INVALID", "value")
-
-    assert result is True
-    assert "JSON API: 'setINVALID' Command does not exist (NSC error)" in caplog.text
+    with pytest.raises(SyrConnectInvalidResponseError, match="Command INVALID does not exist"):
+        await client.set_device_status("device1", "INVALID", "value")
 
 
-async def test_set_device_status_logs_mima_error(caplog: pytest.LogCaptureFixture) -> None:
-    """Test set_device_status logs warning when response contains MIMA error code."""
+async def test_set_device_status_raises_on_mima_error() -> None:
+    """Test set_device_status raises SyrConnectInvalidResponseError when response contains MIMA error code."""
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setPRF9": "mima"})
+    mock_response.json = AsyncMock(return_value={"setPRF9999": "MIMA"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with caplog.at_level(logging.WARNING):
-        result = await client.set_device_status("device1", "PRF9", "999")
-
-    assert result is True
-    assert "JSON API: 'setPRF9' Value is outside valid range (MIMA error)" in caplog.text
+    with pytest.raises(SyrConnectInvalidResponseError, match="Value 999 is outside valid range"):
+        await client.set_device_status("device1", "PRF9", "999")
 
 
 async def test_set_device_status_url_encodes_special_characters() -> None:
@@ -556,7 +600,7 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={})
+    mock_response.json = AsyncMock(return_value={"setRTM02:15": "OK"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -572,10 +616,53 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     assert result is True
 
     # Test with value containing slash
+    mock_response.json = AsyncMock(return_value={"setCMDvalue/with/slash": "OK"})
     result2 = await client.set_device_status("device1", "CMD", "value/with/slash")
     called_url2 = str(sess.get.call_args[0][0])
     assert "%2F" in called_url2  # slash should be encoded
     assert result2 is True
+
+
+async def test_set_device_status_missing_response_key(caplog: pytest.LogCaptureFixture) -> None:
+    """Test set_device_status handles missing response key gracefully."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"someOtherKey": "OK"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        result = await client.set_device_status("device1", "TEST", "123")
+
+    # Should not raise exception, just log warning and return True
+    assert result is True
+    assert "Response missing expected key 'setTEST123'" in caplog.text
+
+
+async def test_set_device_status_unknown_status_code(caplog: pytest.LogCaptureFixture) -> None:
+    """Test set_device_status handles unknown status codes gracefully."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setUNKNOWN42": "WEIRD"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        result = await client.set_device_status("device1", "UNKNOWN", "42")
+
+    # Should not raise exception, just log warning and return True
+    assert result is True
+    assert "Unexpected status 'WEIRD'" in caplog.text
 
 
 async def test_validate_response_errors_case_insensitive() -> None:

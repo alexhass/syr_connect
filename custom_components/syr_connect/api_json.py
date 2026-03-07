@@ -189,16 +189,21 @@ class SyrConnectJsonAPI:
         Args:
             url: Target URL (yarl.URL or string)
             timeout: Request timeout in seconds
-            expect_json: If True, parse and return JSON response
+            expect_json: If True, parse and return JSON response as dict.
+                        If False, return None (for endpoints without response body).
             operation: Description of operation for error messages
 
         Returns:
-            Parsed JSON dict if expect_json=True, None otherwise
+            - dict[str, Any]: Parsed JSON response when expect_json=True
+            - None: When expect_json=False
+
+            Note: When expect_json=True, this method ALWAYS returns a dict or raises
+            an exception. Callers don't need to check for None or validate dict type.
 
         Raises:
             SyrConnectAuthError: On 401/403 errors
             SyrConnectConnectionError: On connection/HTTP errors
-            SyrConnectInvalidResponseError: On invalid JSON response
+            SyrConnectInvalidResponseError: On invalid JSON response or non-dict payload
         """
         _LOGGER.debug("JSON API %s - URL: %s", operation, url)
         try:
@@ -287,26 +292,24 @@ class SyrConnectJsonAPI:
             True on successful login
 
         Raises:
-            SyrConnectAuthError: On authentication failure
+            SyrConnectAuthError: On authentication failure or invalid status
             SyrConnectConnectionError: On network/HTTP errors
-            SyrConnectInvalidResponseError: If login response is not "OK"
+            SyrConnectInvalidResponseError: On validation errors (NSC, MIMA)
         """
         # Build login URL: /set/ADM/(2)f with literal parentheses (encode=False)
         url = self._construct_encoded_url("set", "ADM", "(2)f", encode=False)
 
-        # Make request and expect JSON response with login confirmation
+        # Make request and get JSON response with login confirmation
+        # _execute_http_get with expect_json=True guarantees a dict is returned
         response = await self._execute_http_get(url, expect_json=True, operation="login")
 
-        # Validate login response: {"setADM(2)f":"OK"}
-        if not response or not isinstance(response, dict):
-            _LOGGER.error("JSON API login - Invalid response type: %s", type(response))
-            raise SyrConnectInvalidResponseError("Login response is not a valid JSON object")
-
-        # Check if the response contains "OK" value
-        login_status = response.get("setADM(2)f")
-        if login_status != "OK":
-            _LOGGER.error("JSON API login - Unexpected status: %s (expected 'OK')", login_status)
-            raise SyrConnectAuthError(f"Login failed: Device returned status '{login_status}'")
+        # Validate set-command response: {"setADM(2)f":"OK"}
+        # Use shared validation logic that checks for OK/MIMA/NSC status codes
+        try:
+            self._validate_set_response(response, "ADM", "(2)f", "login", is_login=True)
+        except SyrConnectInvalidResponseError as err:
+            # Convert validation errors to auth errors for login context
+            raise SyrConnectAuthError(f"Login failed: {err}") from err
 
         # Update session tracking
         self._last_login = datetime.now()
@@ -476,6 +479,7 @@ class SyrConnectJsonAPI:
         Raises:
             SyrConnectAuthError: On authentication errors
             SyrConnectConnectionError: On connection errors
+            SyrConnectInvalidResponseError: On validation errors (NSC, MIMA)
         """
         # --- Normalize Command Name ---
         # Some callers send "setAB", others send "AB" - we need just "AB" for the URL
@@ -491,14 +495,80 @@ class SyrConnectJsonAPI:
         _LOGGER.debug("JSON API: Setting %s=%s for device %s", cmd, value, device_id)
 
         # --- Make Request ---
-        # Response may be:
-        # - Success: {"status":"ok", "key":"getRTM", "old_value":"02:00", "new_value":"02:30"}
-        # - Error: {"getRTM": "NSC"} or {"getRTM": "MIMA"}
-        # The _execute_http_get() method will check for error codes and log warnings
-        await self._execute_http_get(url, expect_json=True, operation=f"set {cmd}")
+        # Response format: {"set{cmd}{value}": "OK"} or {"set{cmd}{value}": "MIMA"}
+        # Example: {"setSIR0": "OK"} or {"setRTM02:30": "MIMA"}
+        response = await self._execute_http_get(url, expect_json=True, operation=f"set {cmd}")
 
-        _LOGGER.info("Set %s=%s via JSON API for device %s", cmd, value, device_id)
+        # --- Validate Response Status ---
+        # Use shared validation logic that checks for OK/MIMA/NSC status codes
+        self._validate_set_response(response, cmd, value, device_id)
+
+        _LOGGER.info("Set %s=%s via JSON API for device %s (status: OK)", cmd, value, device_id)
         return True
+
+    def _validate_set_response(
+        self,
+        response: dict[str, Any],
+        cmd: str,
+        value: Any,
+        device_id: str,
+        is_login: bool = False,
+    ) -> None:
+        """Validate a set-command response for success or error status codes.
+
+        Set-commands return responses like:
+        - Success: {"set{cmd}{value}": "OK"}
+        - Errors: {"set{cmd}{value}": "MIMA"} or {"set{cmd}{value}": "NSC"}
+
+        Args:
+            response: JSON response from set-command
+            cmd: Command name (e.g., "ADM", "SIR", "RTM")
+            value: Value that was set
+            device_id: Device identifier (for logging)
+            is_login: Whether this is a login command (raises on any non-OK status)
+
+        Raises:
+            SyrConnectInvalidResponseError: On MIMA/NSC errors or unexpected status
+                (always raises for non-OK when is_login=True)
+        """
+        # Construct expected response key by concatenating set + cmd + value
+        # Example: cmd="SIR", value="0" -> response_key="setSIR0"
+        # Example: cmd="ADM", value="(2)f" -> response_key="setADM(2)f"
+        response_key = f"set{cmd}{value}"
+
+        # Check if response contains the expected key
+        if response_key not in response:
+            msg = f"Response missing expected key '{response_key}'"
+            _LOGGER.warning("JSON API: %s for device %s (response: %s)", msg, device_id, response)
+            # For login, missing key is a failure
+            if is_login:
+                raise SyrConnectInvalidResponseError(msg)
+            # For other commands, don't fail hard (graceful degradation)
+            return
+
+        status = response[response_key]
+
+        # Check status value
+        if status == "OK":
+            # Success - no action needed, caller will log
+            return
+        elif status == "MIMA":
+            msg = f"Value {value} is outside valid range for command {cmd}"
+            _LOGGER.error("JSON API: %s (device: %s)", msg, device_id)
+            raise SyrConnectInvalidResponseError(msg)
+        elif status == "NSC":
+            msg = f"Command {cmd} does not exist for device {device_id}"
+            _LOGGER.error("JSON API: %s", msg)
+            raise SyrConnectInvalidResponseError(msg)
+        else:
+            # Unknown/unexpected status
+            msg = f"Unexpected status '{status}' for command {cmd} (device: {device_id})"
+            _LOGGER.warning("JSON API: %s", msg)
+            # For login, any non-OK status is a failure
+            if is_login:
+                raise SyrConnectInvalidResponseError(f"Device returned status '{status}'")
+            # For other commands, don't fail hard on unknown status codes
+            return
 
     def _validate_response_errors(self, data: dict[str, Any], url: str) -> None:
         """Check response for API-level error codes and log warnings.
