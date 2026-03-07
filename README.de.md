@@ -36,9 +36,9 @@ Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken 
 
 ## Installation
 
-### Home Assistant Community Store - HACS (empfohlen)
+### Home Assistant Community Store - [HACS](https://hacs.xyz/) (empfohlen)
 
-1. Öffne [HACS](https://hacs.xyz/) in Home Assistant
+1. Öffne HACS in Home Assistant
 2. Gehe zu „Integrationen“
 3. Suche nach „SYR Connect“
 4. Klicke auf „Installieren“
@@ -51,12 +51,34 @@ Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken 
 
 ## Konfiguration
 
+Die Integration unterstützt zwei Konfigurationsmodi:
+
+### Cloud-API Einrichtung (Alle Geräte)
+
 1. Gehe zu Einstellungen > Geräte & Dienste
 2. Klicke auf "+ Integration hinzufügen"
 3. Suche nach "SYR Connect"
-4. Gib deine SYR Connect App-Zugangsdaten ein:
-   - Benutzername
-   - Passwort
+4. Wähle "Cloud-Zugriff"
+5. Gib deine SYR Connect App-Zugangsdaten ein:
+   - **Benutzername**: Deine SYR Connect Konto-E-Mail
+   - **Passwort**: Dein SYR Connect Konto-Passwort
+
+### Lokale API Einrichtung (Nur neuere Geräte)
+
+Für Geräte mit lokaler JSON-API-Unterstützung (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect):
+
+1. Gehe zu Einstellungen > Geräte & Dienste
+2. Klicke auf "+ Integration hinzufügen"
+3. Suche nach "SYR Connect"
+4. Wähle "Lokaler-Zugriff"
+5. Gib die Geräteinformationen ein:
+   - **Gerätemodell**: Wähle dein Gerätemodell (NeoSoft 2500 Connect, NeoSoft 5000 Connect, SafeTech Connect oder TRIO DFR/LS Connect)
+   - **Host**: IP-Adresse deines Geräts (z.B. `192.168.178.199`)
+   - **Gerätename**: Benutzerdefinierter Name für das Gerät
+
+**Hinweis**: Um die IP-Adresse deines Geräts zu finden, überprüfe die DHCP-Client-Liste deines Routers oder das Display-Menü des Geräts.
+
+**Wichtig**: Für einen stabilen Betrieb muss das Gerät eine **statische IP-Adresse** oder eine **reservierte DHCP-Adresse** (DHCP-Reservierung) haben. Wenn sich die IP-Adresse des Geräts ändert, verliert die Integration die Verbindung und muss neu konfiguriert werden. Alternativ kannst du einen Hostnamen verwenden, wenn dein Netzwerk lokale DNS-Auflösung unterstützt.
 
 ## Funktionen
 
@@ -64,9 +86,9 @@ Die Integration erstellt automatisch Entitäten für alle SYR Connect Geräte in
 
 ### Unterstützte Geräte
 
-Diese Integration funktioniert mit SYR-Wasserenthärtern, die im SYR Connect-Cloud-Portal (über die SYR Connect App) sichtbar sind.
+Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräte und anderen, die im SYR Connect-Cloud-Portal (über die SYR Connect App) sichtbar sind.
 
-Getestet und gemeldet funktionierend:
+Getestet und gemeldet als funktionierend:
 
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
@@ -85,7 +107,7 @@ Nicht getestet, sollte aber funktionieren (bitte melden):
 - SYR NeoSoft 5000 Connect
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
-Auch Leckage-Erkennungsgeräte sind interessant, können aber zusätzlichen Aufwand erfordern:
+Andere Geräte sind auch interessant, können aber zusätzlichen Aufwand erfordern:
 
 - HygBox Connect
 - NeoDos Connect
@@ -158,21 +180,52 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 
 ### Bekannte Einschränkungen
 
-- **Cloud-Abhängigkeit**: Diese Integration benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
-- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits zu vermeiden
+- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
+- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
 - **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
-- **Keine lokale API**: Die Integration nutzt die Cloud-API; keine lokale Netzwerkkommunikation verfügbar
+- **Lokale API-Unterstützung**: Nur einige neuere Gerätemodelle (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) bieten eine lokale JSON-API. Die meisten anderen Modelle, einschließlich aller LEXplus-Varianten, benötigen Cloud-API-Zugriff
+
+### API-Modi
+
+Die Integration unterstützt zwei API-Modi:
+
+#### Cloud-API (XML-basiert)
+
+- **Unterstützt von**: Allen SYR Connect-Geräten
+- **Verbindung**: Über den SYR Connect-Cloud-Dienst (syrconnect.de)
+- **Authentifizierung**: Benutzername und Passwort vom SYR Connect-Konto
+- **Vorteile**: Funktioniert mit allen Gerätemodellen, Fernzugriff von überall
+- **Voraussetzungen**: Internetverbindung, SYR Connect-Konto
+
+#### Lokale API (JSON-basiert)
+
+- **Unterstützt von**: Ausgewählte neuere Modelle mit integrierter lokaler API (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect)
+- **Verbindung**: Direkt zum Gerät über lokales Netzwerk (Port 5333)
+- **Authentifizierung**: Keine Zugangsdaten erforderlich
+- **Vorteile**: Keine Internetabhängigkeit, schnellere Reaktionszeiten, keine Cloud-Rate-Limits
+- **Voraussetzungen**: Gerät muss im selben Netzwerk wie Home Assistant sein, Gerät benötigt statische IP-Adresse oder Hostnamen
+
+Die Integration erkennt automatisch, welcher API-Modus basierend auf der bei der Einrichtung angegebenen Konfiguration zu verwenden ist.
 
 ## Wie Daten aktualisiert werden
 
-Die Integration pollt die SYR Connect-Cloud API in regelmäßigen Abständen (Standard: 60 Sekunden):
+Die Integration pollt die Geräte-API in regelmäßigen Abständen (Standard: 60 Sekunden). Der Aktualisierungsprozess hängt vom API-Modus ab:
 
-1. **Login**: Authentifiziert sich bei der SYR Connect API mit deinen Zugangsdaten
+### Cloud-API Aktualisierungsprozess
+
+1. **Login**: Authentifiziert sich bei der SYR Connect-Cloud-API mit deinen Zugangsdaten
 2. **Geräte-Erkennung**: Ruft alle Projekte und Geräte ab, die mit deinem Konto verknüpft sind
 3. **Status-Updates**: Holt für jedes Gerät die aktuellen Statuswerte
 4. **Entitäts-Updates**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
 
-Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten bis zum nächsten erfolgreichen Update als nicht verfügbar markiert.
+### Lokale API Aktualisierungsprozess
+
+1. **Status-Updates**: Holt den Gerätestatus direkt vom lokalen Endpunkt
+2. **Entitäts-Updates**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
+
+Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuverlässiger für Echtzeit-Überwachung und Automatisierungen macht.
+
+Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten bis zum nächsten erfolgreichen Update als nicht verfügbar markiert.
 
 ## Anwendungsbeispiele
 

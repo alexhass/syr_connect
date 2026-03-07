@@ -36,9 +36,9 @@ By installing and using this integration, you acknowledge these risks and agree 
 
 ## Installation
 
-### Home Assistant Community Store - HACS (recommended)
+### Home Assistant Community Store - [HACS](https://hacs.xyz/) (recommended)
 
-1. Open [HACS](https://hacs.xyz/) in Home Assistant
+1. Open HACS in Home Assistant
 2. Go to "Integrations"
 3. Search for "SYR Connect"
 4. Click "Install"
@@ -51,12 +51,34 @@ By installing and using this integration, you acknowledge these risks and agree 
 
 ## Configuration
 
+The integration supports two configuration modes:
+
+### Cloud API Setup (All Devices)
+
 1. Go to Settings > Devices & Services
 2. Click "+ Add Integration"
 3. Search for "SYR Connect"
-4. Enter your SYR Connect App credentials:
-   - Username
-   - Password
+4. Choose "Cloud Access"
+5. Enter your SYR Connect App credentials:
+   - **Username**: Your SYR Connect account email
+   - **Password**: Your SYR Connect account password
+
+### Local API Setup (Newer Devices Only)
+
+For devices with local JSON API support (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect):
+
+1. Go to Settings > Devices & Services
+2. Click "+ Add Integration"
+3. Search for "SYR Connect"
+4. Choose "Local Access"
+5. Enter the device information:
+   - **Device Model**: Select your device model (NeoSoft 2500 Connect, NeoSoft 5000 Connect, SafeTech Connect, or TRIO DFR/LS Connect)
+   - **Host**: IP address of your device (e.g., `192.168.178.199`)
+   - **Device Name**: Custom name for the device
+
+**Note**: To find your device's IP address, check your router's DHCP client list or the device's display menu.
+
+**Important**: For stable operation, the device must have a **static IP address** or a **reserved DHCP lease** (DHCP reservation). If the device's IP address changes, the integration will lose connection and needs to be reconfigured. Alternatively, you can use a hostname if your network supports local DNS resolution.
 
 ## Features
 
@@ -64,9 +86,9 @@ The integration automatically creates entities for all your SYR Connect devices.
 
 ### Supported Devices
 
-This integration works with SYR water softeners that appear in the SYR Connect cloud (via the SYR Connect app).
+This integration works with SYR water softeners and leakage detection devices and other that appear in the SYR Connect cloud (via the SYR Connect app).
 
-Tested and reported working:
+Tested and reported as working:
 
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
@@ -85,7 +107,7 @@ Not tested, but should work (please report):
 - SYR NeoSoft 5000 Connect
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
-Leakage detection devices are also of interrest, but may require additonal work:
+Other devices are also of interrest, but may require additonal work:
 
 - HygBox Connect
 - NeoDos Connect
@@ -158,19 +180,50 @@ The integration provides comprehensive monitoring of your water softener:
 
 ### Known Limitations
 
-- **Cloud Dependency**: This integration requires an active internet connection and functioning SYR Connect cloud service
-- **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting
+- **Cloud Dependency**: The cloud API requires an active internet connection and functioning SYR Connect cloud service
+- **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting when using cloud API
 - **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
-- **No Local API**: The integration uses the cloud API; no local network communication is possible
+- **Local API Support**: Only some newer device models (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) provide a local JSON API. Most other models, including all LEXplus variants, require cloud API access
+
+### API Modes
+
+The integration supports two API modes:
+
+#### Cloud API (XML-based)
+
+- **Supported by**: All SYR Connect devices
+- **Connection**: Via SYR Connect cloud service (syrconnect.de)
+- **Authentication**: Username and password from SYR Connect account
+- **Advantages**: Works with all device models, remote access from anywhere
+- **Requirements**: Internet connection, SYR Connect account
+
+#### Local API (JSON-based)
+
+- **Supported by**: Select newer models with built-in local API (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect)
+- **Connection**: Direct to device via local network (port 5333)
+- **Authentication**: No credentials required
+- **Advantages**: No internet dependency, faster response times, no cloud rate limits
+- **Requirements**: Device must be on same network as Home Assistant, device needs static IP address or hostname
+
+The integration automatically detects which API mode to use based on the configuration provided during setup.
 
 ## How Data is Updated
 
-The integration polls the SYR Connect cloud API at regular intervals (default: 60 seconds):
+The integration polls the device API at regular intervals (default: 60 seconds). The update process depends on the API mode:
 
-1. **Login**: Authenticates with the SYR Connect API using your credentials
+### Cloud API Update Process
+
+1. **Login**: Authenticates with the SYR Connect cloud API using your credentials
 2. **Device Discovery**: Retrieves all projects and devices associated with your account
 3. **Status Updates**: For each device, fetches current status including all sensor values
 4. **Entity Updates**: Updates all Home Assistant entities with the latest values
+
+### Local API Update Process
+
+1. **Status Updates**: Directly fetches device status from the local endpoint
+2. **Entity Updates**: Updates all Home Assistant entities with the latest values
+
+The local API is faster and doesn't depend on internet connectivity, making it more reliable for real-time monitoring and automations.
 
 If a device becomes unavailable (e.g., offline or communication error), its entities are marked as unavailable until the next successful update.
 
