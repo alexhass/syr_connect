@@ -157,7 +157,7 @@ async def test_login_success() -> None:
     result = await client.login()
 
     # Verify GET called with login URL pattern
-    called_url = sess.get.call_args[0][0]
+    called_url = str(sess.get.call_args[0][0])
     assert "/set/ADM/(2)f" in called_url
     assert result is True
     assert client._last_login is not None
@@ -205,6 +205,7 @@ async def test_request_json_data_non_dict_raises() -> None:
 
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value=["not", "a", "dict"])
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
@@ -244,6 +245,7 @@ async def test_request_json_data_success() -> None:
     """Test _request_json_data returns dict on success."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={"getAB": "value", "getCD": "123"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
@@ -299,6 +301,7 @@ async def test_set_device_status_strips_set_prefix() -> None:
     """Test set_device_status strips 'set' prefix from command."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
@@ -309,7 +312,7 @@ async def test_set_device_status_strips_set_prefix() -> None:
     result = await client.set_device_status("device1", "setAB", "true")
 
     # Verify URL contains "/set/AB/true" (not "/set/setAB/true")
-    called_url = sess.get.call_args[0][0]
+    called_url = str(sess.get.call_args[0][0])
     assert "/set/AB/true" in called_url
     assert "/set/setAB/" not in called_url
     assert result is True
@@ -319,6 +322,7 @@ async def test_set_device_status_success() -> None:
     """Test set_device_status returns True on success."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
@@ -400,6 +404,7 @@ async def test_set_device_status_command_without_set_prefix() -> None:
     """Test set_device_status handles command without 'set' prefix correctly."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
@@ -410,7 +415,7 @@ async def test_set_device_status_command_without_set_prefix() -> None:
     result = await client.set_device_status("device1", "AB", "true")
 
     # Verify URL contains "/set/AB/true"
-    called_url = sess.get.call_args[0][0]
+    called_url = str(sess.get.call_args[0][0])
     assert "/set/AB/true" in called_url
     assert result is True
 
@@ -419,6 +424,7 @@ async def test_request_json_data_logs_nsc_error(caplog: pytest.LogCaptureFixture
     """Test _request_json_data logs warning when response contains NSC error code."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={"getXYZ": "NSC", "getABC": "value"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
@@ -438,6 +444,7 @@ async def test_request_json_data_logs_mima_error(caplog: pytest.LogCaptureFixtur
     """Test _request_json_data logs warning when response contains MIMA error code."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={"setPRF9": "MIMA", "getABC": "value"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
@@ -457,6 +464,7 @@ async def test_set_device_status_logs_nsc_error(caplog: pytest.LogCaptureFixture
     """Test set_device_status logs warning when response contains NSC error code."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={"setINVALID": "NSC"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
@@ -476,6 +484,7 @@ async def test_set_device_status_logs_mima_error(caplog: pytest.LogCaptureFixtur
     """Test set_device_status logs warning when response contains MIMA error code."""
     sess = MagicMock()
     mock_response = MagicMock()
+    mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     mock_response.json = AsyncMock(return_value={"setPRF9": "mima"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
