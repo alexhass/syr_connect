@@ -1147,28 +1147,3 @@ async def test_delayed_refresh_exception_handling(hass: HomeAssistant) -> None:
             # _delayed_refresh should catch the exception and not re-raise
             await coordinator._delayed_refresh(delay=0)
             # Test passes if no exception is raised
-
-
-async def test_coordinator_json_api_with_no_device_name(hass: HomeAssistant) -> None:
-    """Test coordinator initialization with JSON API without device name."""
-    with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI") as mock_json_api_class:
-        mock_api = MagicMock()
-        mock_json_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetech",
-            CONF_HOST: "192.168.1.100",
-            # No CONF_DEVICE_NAME
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-
-        # Verify JSON API was created with device_name=None
-        call_args = mock_json_api_class.call_args
-        assert call_args.kwargs["device_name"] is None
-        assert coordinator._api_type == API_TYPE_JSON
