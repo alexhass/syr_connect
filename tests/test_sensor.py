@@ -7817,11 +7817,13 @@ async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
 
-    await async_setup_entry(hass, entry, AsyncMock())
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
 
     # getSV1 should not be created when None
-    state = hass.states.get("sensor.device1_getsv1")
-    assert state is None
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getSV1" not in sensor_keys
 
 
 async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
@@ -7841,11 +7843,13 @@ async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) 
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
 
-    await async_setup_entry(hass, entry, AsyncMock())
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
 
     # getSRE should not be created when empty/whitespace
-    state = hass.states.get("sensor.device1_getsre")
-    assert state is None
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getSRE" not in sensor_keys
 
 
 async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
@@ -7871,7 +7875,7 @@ async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
         
         # RuntimeError from er.async_get is not caught, so it propagates
         with pytest.raises(RuntimeError, match="Registry error"):
-            await async_setup_entry(hass, entry, AsyncMock())
+            await async_setup_entry(hass, entry, Mock())
 
 
 async def test_getpa_is_true_bool_true(hass: HomeAssistant) -> None:
@@ -7918,11 +7922,14 @@ async def test_getpa_is_true_bool_false(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
 
-    await async_setup_entry(hass, entry, AsyncMock())
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
 
     # getPA group sensors should NOT be created
-    state = hass.states.get("sensor.device1_getpv2")
-    assert state is None
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA2" not in sensor_keys
+    assert "getPV2" not in sensor_keys
 
 
 async def test_getpa_is_true_numeric_int(hass: HomeAssistant) -> None:
@@ -7994,11 +8001,13 @@ async def test_getpa_is_true_string_true(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
 
-    await async_setup_entry(hass, entry, AsyncMock())
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
 
     # getPA group sensors should be created
-    state = hass.states.get("sensor.device1_getpa5")
-    assert state is not None
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA5" in sensor_keys
 
 
 async def test_getpa_is_true_string_numeric(hass: HomeAssistant) -> None:
@@ -8018,11 +8027,13 @@ async def test_getpa_is_true_string_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
 
-    await async_setup_entry(hass, entry, AsyncMock())
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
 
     # getPA group sensors should be created
-    state = hass.states.get("sensor.device1_getpa6")
-    assert state is not None
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA6" in sensor_keys
 
 
 async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
@@ -8042,9 +8053,12 @@ async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
 
-    await async_setup_entry(hass, entry, AsyncMock())
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
 
     # Should treat as false (don't create group sensors)
-    state = hass.states.get("sensor.device1_getpv7")
-    assert state is None
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA7" not in sensor_keys
+    assert "getPV7" not in sensor_keys
 
