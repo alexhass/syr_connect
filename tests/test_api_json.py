@@ -808,7 +808,7 @@ async def test_execute_http_get_404_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectConnectionError, match="Endpoint not found"):
-        await client._execute_http_get("http://test:5333/api/missing", expect_json=False)
+        await client._execute_http_get("http://test:5333/api/missing")
 
 
 async def test_execute_http_get_timeout_error() -> None:
@@ -821,7 +821,7 @@ async def test_execute_http_get_timeout_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectConnectionError, match="Connection failed"):
-        await client._execute_http_get("http://test:5333/api/slow", expect_json=False)
+        await client._execute_http_get("http://test:5333/api/slow")
 
 
 async def test_execute_http_get_client_error() -> None:
@@ -834,7 +834,7 @@ async def test_execute_http_get_client_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectConnectionError, match="Connection failed"):
-        await client._execute_http_get("http://test:5333/api/test", expect_json=False)
+        await client._execute_http_get("http://test:5333/api/test")
 
 
 async def test_execute_http_get_unexpected_error() -> None:
@@ -847,7 +847,7 @@ async def test_execute_http_get_unexpected_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectConnectionError, match="Unexpected error"):
-        await client._execute_http_get("http://test:5333/api/test", expect_json=False)
+        await client._execute_http_get("http://test:5333/api/test")
 
 
 async def test_execute_http_get_logs_error_response_body() -> None:
@@ -873,7 +873,7 @@ async def test_execute_http_get_logs_error_response_body() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectConnectionError):
-        await client._execute_http_get("http://test:5333/api/error", expect_json=False)
+        await client._execute_http_get("http://test:5333/api/error")
 
 
 async def test_execute_http_get_logs_error_response_read_failure(caplog: pytest.LogCaptureFixture) -> None:
@@ -901,7 +901,7 @@ async def test_execute_http_get_logs_error_response_read_failure(caplog: pytest.
 
     with caplog.at_level(logging.DEBUG):
         with pytest.raises(SyrConnectConnectionError):
-            await client._execute_http_get("http://test:5333/api/error", expect_json=False)
+            await client._execute_http_get("http://test:5333/api/error")
 
     # Should log that it couldn't read the error response
     assert "Could not read error response" in caplog.text
@@ -924,7 +924,7 @@ async def test_execute_http_get_reraises_invalid_response_error() -> None:
 
     # The error should be raised as-is, not wrapped
     with pytest.raises(SyrConnectInvalidResponseError, match="unexpected payload type"):
-        await client._execute_http_get("http://test:5333/api/test", expect_json=True)
+        await client._execute_http_get("http://test:5333/api/test")
 
 
 async def test_construct_encoded_url_no_base_url_raises() -> None:
