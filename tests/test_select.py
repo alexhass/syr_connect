@@ -778,7 +778,7 @@ async def test_numeric_select_handles_coordinator_exception(hass: HomeAssistant)
     select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getSV1", 0, 25, 1)
 
     # Should raise HomeAssistantError to display error in UI
-    with pytest.raises(HomeAssistantError, match="Failed to set SV1"):
+    with pytest.raises(HomeAssistantError, match="Failed to set getSV1"):
         await select.async_select_option("10 kg")
 
 
@@ -1307,7 +1307,7 @@ async def test_prf_select_handles_coordinator_exception(hass: HomeAssistant) -> 
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
 
     # Should raise HomeAssistantError to display error in UI
-    with pytest.raises(HomeAssistantError, match="Failed to set PRF"):
+    with pytest.raises(HomeAssistantError, match="Failed to set profile"):
         await select.async_select_option("Profile A")
 
 
