@@ -20,7 +20,6 @@ from .const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
-    CONF_DEVICE_NAME,
     CONF_HOST,
     CONF_MODEL,
     DOMAIN,
@@ -67,7 +66,6 @@ STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
             )
         ),
         vol.Required(CONF_HOST): str,
-        vol.Required(CONF_DEVICE_NAME): str,
     }
 )
 
@@ -373,7 +371,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_API_TYPE: API_TYPE_JSON,
                         CONF_HOST: user_input[CONF_HOST],
                         CONF_MODEL: user_input[CONF_MODEL],
-                        CONF_DEVICE_NAME: user_input[CONF_DEVICE_NAME],
                     }
                 else:
                     await validate_input_xml(self.hass, user_input)
@@ -426,10 +423,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         vol.Required(
                             CONF_HOST,
                             default=entry.data.get(CONF_HOST, "") if entry else ""
-                        ): str,
-                        vol.Required(
-                            CONF_DEVICE_NAME,
-                            default=entry.data.get(CONF_DEVICE_NAME, "") if entry else ""
                         ): str,
                     }
                 ),

@@ -21,7 +21,6 @@ DOMAIN = "syr_connect"
 CONF_API_TYPE = "api_type"
 CONF_HOST = "host"
 CONF_MODEL = "model"
-CONF_DEVICE_NAME = "device_name"
 
 # API type values
 API_TYPE_XML = "xml"

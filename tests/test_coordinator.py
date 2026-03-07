@@ -10,7 +10,6 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     CONF_API_TYPE,
-    CONF_DEVICE_NAME,
     CONF_HOST,
     CONF_MODEL,
 )
@@ -1068,7 +1067,6 @@ async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
-            CONF_DEVICE_NAME: "test_device",
         }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
@@ -1082,7 +1080,6 @@ async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
         call_args = mock_json_api_class.call_args
         assert call_args.kwargs["host"] == "192.168.1.100"
         assert call_args.kwargs["base_path"] == "/trio"
-        assert call_args.kwargs["device_name"] == "test_device"
         assert coordinator._api_type == API_TYPE_JSON
         assert coordinator._username is None
 
@@ -1093,7 +1090,6 @@ async def test_coordinator_init_json_api_invalid_model(hass: HomeAssistant) -> N
         CONF_API_TYPE: API_TYPE_JSON,
         CONF_MODEL: "InvalidModel",
         CONF_HOST: "192.168.1.100",
-        CONF_DEVICE_NAME: "test_device",
     }
 
     with pytest.raises(ValueError, match="Model InvalidModel does not support local JSON API"):

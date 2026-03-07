@@ -17,7 +17,6 @@ from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
-    CONF_DEVICE_NAME,
     CONF_HOST,
     CONF_MODEL,
     DOMAIN,
@@ -197,7 +196,6 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             {
-                CONF_DEVICE_NAME: "Test Device",
                 CONF_HOST: "192.168.1.100",
                 CONF_MODEL: "neosoft5000",
             },
@@ -227,7 +225,6 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                CONF_DEVICE_NAME: "Test Device",
                 CONF_HOST: "192.168.1.100",
                 CONF_MODEL: "neosoft5000",
             },
@@ -243,7 +240,6 @@ async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="json_192.168.1.100",
         data={
-            CONF_DEVICE_NAME: "Test Device",
             CONF_HOST: "192.168.1.100",
             CONF_MODEL: "neosoft5000",
             CONF_API_TYPE: API_TYPE_JSON,
@@ -272,7 +268,6 @@ async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                CONF_DEVICE_NAME: "Test Device",
                 CONF_HOST: "192.168.1.100",
                 CONF_MODEL: "neosoft5000",
             },
@@ -934,7 +929,6 @@ async def test_validate_input_json_invalid_model(hass: HomeAssistant) -> None:
             {
                 CONF_MODEL: "InvalidModel",
                 CONF_HOST: "192.168.1.100",
-                CONF_DEVICE_NAME: "test_device",
             },
         )
 
@@ -957,7 +951,6 @@ async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
             {
                 CONF_MODEL: "safetech",
                 CONF_HOST: "192.168.1.100",
-                CONF_DEVICE_NAME: "test_device",
             },
         )
 
@@ -980,7 +973,6 @@ async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) ->
             {
                 CONF_MODEL: "safetech",
                 CONF_HOST: "192.168.1.100",
-                CONF_DEVICE_NAME: "test_device",
             },
         )
 
@@ -1049,7 +1041,6 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetech",
             CONF_HOST: "192.168.1.100",
-            CONF_DEVICE_NAME: "test_device",
         },
         unique_id="test_unique_id",
     )
@@ -1081,7 +1072,6 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
             {
                 CONF_MODEL: "safetech",
                 CONF_HOST: "192.168.1.200",
-                CONF_DEVICE_NAME: "new_device_name",
             },
         )
 
@@ -1090,4 +1080,3 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
 
     # Verify the entry was updated
     assert entry.data[CONF_HOST] == "192.168.1.200"
-    assert entry.data[CONF_DEVICE_NAME] == "new_device_name"

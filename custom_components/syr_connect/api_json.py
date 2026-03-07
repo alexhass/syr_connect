@@ -54,7 +54,6 @@ class SyrConnectJsonAPI:
         host: IP address or hostname of the device (optional if base_url provided)
         base_path: path component for the device (optional)
         base_url: explicit base URL (overrides host/base_path)
-        device_name: optional custom device name to use instead of serial number
     """
 
     def __init__(
@@ -63,7 +62,6 @@ class SyrConnectJsonAPI:
         host: str | None = None,
         base_path: str | None = None,
         base_url: str | None = None,
-        device_name: str | None = None,
     ) -> None:
         """Initialize the JSON API client.
 
@@ -80,9 +78,6 @@ class SyrConnectJsonAPI:
 
         # URL construction parameters (option 2: explicit base_url, overrides host/base_path)
         self._base_url = base_url
-
-        # Optional custom device name (otherwise uses serial number)
-        self._device_name = device_name
 
         # Session tracking (devices require login before /get/all returns data)
         self._last_login: datetime | None = None
@@ -389,8 +384,8 @@ class SyrConnectJsonAPI:
         # 3. "local_device": Last resort if neither is present
         device_id = status.get("getSRN") or status.get("getFRN") or "local_device"
 
-        # Use custom device name if configured, otherwise use extracted device_id
-        name = self._device_name or device_id
+        # Use device_id as name
+        name = device_id
 
         # --- Return Device List ---
         # Format matches XML API client output for coordinator compatibility

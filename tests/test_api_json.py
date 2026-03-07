@@ -589,20 +589,6 @@ async def test_get_devices_fetches_and_caches() -> None:
         assert fetch_call_count == 1
 
 
-async def test_get_devices_uses_custom_device_name() -> None:
-    """Test that get_devices uses custom device name if provided."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/", device_name="My Custom Device")
-
-    data = {"getSRN": "12345", "getOther": "value"}
-    with patch.object(client, "_request_json_data", return_value=data):
-        devices = await client.get_devices("local")
-
-    assert len(devices) == 1
-    assert devices[0]["id"] == "12345"  # Real serial
-    assert devices[0]["name"] == "My Custom Device"  # Custom name
-
-
 async def test_get_device_status_without_cache() -> None:
     """Test that get_device_status fetches directly if no cached data."""
     sess = MagicMock()

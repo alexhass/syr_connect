@@ -16,7 +16,6 @@
     "step": {
       "api_json": {
         "data": {
-          "device_name": "Nome do dispositivo",
           "host": "Nome do host ou endereço IP",
           "model": "Modelo do dispositivo"
         },
@@ -41,7 +40,6 @@
       },
       "reconfigure": {
         "data": {
-          "device_name": "Nome do dispositivo",
           "host": "Nome do host ou endereço IP",
           "model": "Modelo do dispositivo",
           "password": "Senha",
