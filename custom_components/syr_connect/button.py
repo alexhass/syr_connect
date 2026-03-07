@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .exceptions import SyrConnectError
 from .helpers import build_device_info, build_entity_id
 from .models import detect_model
 
@@ -192,10 +193,8 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
             # Default action: Send value 0 for `setSIR`, otherwise 1
             value = 0 if self._command == "setSIR" else 1
             await coordinator.async_set_device_value(self._device_id, self._command, value)
-        except ValueError as err:
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err
-        except Exception as err:
-            raise HomeAssistantError(f"Unexpected error pressing button: {err}") from err
 
     @property
     def available(self) -> bool:

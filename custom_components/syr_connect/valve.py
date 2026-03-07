@@ -17,6 +17,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import _SYR_CONNECT_SENSOR_ICON
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .exceptions import SyrConnectError
 from .helpers import (
     build_device_info,
     build_entity_id,
@@ -335,7 +336,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
             # Send command to backend; await result but do not block UI update
             await self._sc_coordinator.async_set_device_value(self._device_id, set_key, set_val)
-        except Exception as err:  # pragma: no cover - defensive
+        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
             # On failure, clear optimistic cache and restore state
             _LOGGER.exception("Failed to open valve %s", self._device_id)
             self._cached_ab = None
@@ -370,7 +371,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
             # Send command to backend; await result but do not block UI update
             await self._sc_coordinator.async_set_device_value(self._device_id, set_key, set_val)
-        except Exception as err:  # pragma: no cover - defensive
+        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
             # On failure, clear optimistic cache and restore state
             _LOGGER.exception("Failed to close valve %s", self._device_id)
             self._cached_ab = None

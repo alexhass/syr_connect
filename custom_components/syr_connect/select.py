@@ -7,6 +7,7 @@ from typing import Any, cast
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -20,6 +21,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_UNIT,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .exceptions import SyrConnectError
 from .helpers import (
     build_device_info,
     build_entity_id,
@@ -218,8 +220,9 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
                 await coordinator.async_set_device_value(self._device_id, key, val)
             _LOGGER.debug("Requested regeneration time set commands for device %s: %s", self._device_id, commands)
             _LOGGER.debug("Regeneration time select changed for %s to %s", self._device_id, option)
-        except (ValueError, TypeError, KeyError):
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.exception("Failed to set regeneration time for device %s", self._device_id)
+            raise HomeAssistantError(f"Failed to set regeneration time: {err}") from err
 
     @property
     def available(self) -> bool:
@@ -337,8 +340,9 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                 self._device_id,
                 option,
             )
-        except (ValueError, TypeError, KeyError):
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.exception("Failed to set %s for device %s", set_key, self._device_id)
+            raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
 
     @property
     def available(self) -> bool:
@@ -438,8 +442,9 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         try:
             await coordinator.async_set_device_value(self._device_id, "setPRF", selected_idx)
             _LOGGER.debug("Requested setPRF for device %s (profile=%s)", self._device_id, selected_idx)
-        except (ValueError, TypeError, KeyError):
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.exception("Failed to set PRF for device %s", self._device_id)
+            raise HomeAssistantError(f"Failed to set profile: {err}") from err
 
     @property
     def available(self) -> bool:
