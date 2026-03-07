@@ -230,7 +230,9 @@ class SyrConnectJsonAPI:
                     return None
 
                 # --- Parse and Validate JSON Response ---
-                data = await resp.json()
+                # Note: SYR devices return JSON without proper Content-Type header (application/json).
+                # Use content_type=None to skip Content-Type validation
+                data = await resp.json(content_type=None)
                 if not isinstance(data, dict):
                     _LOGGER.error("JSON API %s - Non-dict payload from %s", operation, url)
                     raise SyrConnectInvalidResponseError("API returned unexpected payload type")
