@@ -34,22 +34,20 @@ For testing without a real SYR device, use the **SYR Connect Emulator**:
 The emulator provides:
 
 - Full JSON API implementation (port 5333) for local device testing
-- Simulated device responses for various SYR models (LEXplus, SafeTech, NeoSoft)
-- No hardware or credentials required
+- Simulated device responses for various SYR models (SafeTech, NeoSoft)
 - Perfect for integration development, testing, and debugging
+- It cannot be guaranteed that it will work exactly the same way 100% of the time. Please report issues to fix them.
 
-To use the emulator:
+To use the emulator and install to Apache:
 
-1. Clone and run the emulator:
+1. Clone the emulator:
 
    ```bash
    git clone https://github.com/alexhass/syr_connect_emulator.git
-   cd syr_connect_emulator
-   python emulator.py
    ```
 
-2. Configure the integration to use `localhost` (or emulator's IP) as the device host
-3. Select JSON API mode when adding the integration
+2. Configure the integration to use your webservers hostname or IP as the device host
+3. Select "Local Access" mode when adding the integration hub
 
 The emulator responds to all standard API calls and allows testing features without accessing real devices.
 
