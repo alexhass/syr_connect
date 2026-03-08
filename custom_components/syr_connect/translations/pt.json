@@ -1,7 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Esta conta já está configurada",
+      "already_configured": "Este hub já está configurado",
       "reauth_failed": "Reautenticação falhou. Por favor, tente novamente.",
       "reauth_successful": "Reautenticação bem-sucedida",
       "reconfigure_failed": "Reconfiguração falhou. Por favor, tente novamente.",

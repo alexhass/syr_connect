@@ -1,7 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Ce compte est déjà configuré",
+      "already_configured": "Ce hub est déjà configuré",
       "reauth_failed": "Échec de la réauthentification. Veuillez réessayer.",
       "reauth_successful": "Réauthentification réussie",
       "reconfigure_failed": "Échec de la reconfiguration. Veuillez réessayer.",
