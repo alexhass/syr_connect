@@ -351,6 +351,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     'getCLM',
     'getDVL',
     'getFRN',
+    'getPAH',       # Error: "sensor.syr_connect_xxx_getpah is longer than 255, falling back to unknown"
 
     # Sensors exits in devices:
     # - Trio DFR/LS
