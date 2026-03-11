@@ -414,7 +414,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getVTO",       # Value: "", unclear meaning - likely related to service or maintenance mode
     #"getWAD",      # Value: "False", unclear meaning (duplicate of getWAD from NeoSoft 2500/5000)
     #"getWAH",      # Value: "", unclear meaning (duplicate of getWAH from NeoSoft 2500/5000)
-    "getWFL",       # Value: "", unclear meaning - likely related to water flow or similar
+    "getWFL",       # Emtpy in XML, visible in JSON API. Nearby wifi networks with signal strength - value: "SSID1:Strength1;SSID2:Strength2;..."
     "getWNS",       # Value: "", unclear meaning - likely related to water flow or similar
     #"getWTI",      # Value: e.g. "1720", unclear meaning (duplicate of getWTI from NeoSoft 2500/5000)
     #"getNET",      # Value: "", unclear meaning (duplicate of getNET from NeoSoft 2500/5000)
