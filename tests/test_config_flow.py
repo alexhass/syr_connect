@@ -236,12 +236,14 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
 
 async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
     """Test local/JSON API already configured."""
+    # Create an entry with host+serial
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="json_192.168.1.100",
+        unique_id="json_192.168.1.100_12345",
         data={
             CONF_HOST: "192.168.1.100",
             CONF_MODEL: "neosoft5000",
+            "serial": "12345",
             CONF_API_TYPE: API_TYPE_JSON,
         },
     )
@@ -275,6 +277,58 @@ async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "already_configured"
+
+
+async def test_form_api_json_same_ip_different_serial(hass: HomeAssistant) -> None:
+    """Test that two hubs with the same IP but different serial numbers are allowed."""
+    # Create an entry with host+serial1
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_192.168.1.100_12345",
+        data={
+            CONF_HOST: "192.168.1.100",
+            CONF_MODEL: "neosoft5000",
+            "serial": "12345",
+            CONF_API_TYPE: API_TYPE_JSON,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with (
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI._request_json_data",
+            new_callable=AsyncMock,
+            return_value={"getSRN": "67890", "getVER": "test"},
+        ),
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+        await hass.async_block_till_done()
+
+    # A new entry should be created
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
+    assert result2["data"]["serial"] == "67890"
 
 
 async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
