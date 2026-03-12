@@ -126,6 +126,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     """
     # Import here to avoid blocking import at module level
     from .api_json import SyrConnectJsonAPI
+    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
     host = data[CONF_HOST]
     model = data[CONF_MODEL]
