@@ -158,8 +158,8 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
             raise CannotConnectError
 
         # Verify this is a SYR device by checking for serial number fields
-        has_srn = "getSRN" in data_result or "getFRN" in data_result
-        if not has_srn:
+        serial = "getSRN" in data_result or "getFRN" in data_result
+        if not serial:
             _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
             raise CannotConnectError
 
