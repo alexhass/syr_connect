@@ -158,13 +158,13 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
             _LOGGER.error("JSON API: returned empty result")
             raise CannotConnectError
 
-        # Verify this is a SYR device by checking for serial number fields
-        serial = "getSRN" in data_result or "getFRN" in data_result
+        # Verify this is a SYR device by checking for serial number fields and extract serial
+        serial = data_result.get("getSRN") or data_result.get("getFRN")
         if not serial:
             _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
             raise CannotConnectError
 
-        _LOGGER.debug("JSON API: Successfully validated SYR device with %d status keys", len(data_result))
+        _LOGGER.debug("JSON API: Successfully validated SYR device with serial %s and %d status keys", serial, len(data_result))
 
     except SyrConnectAuthError as err:
         _LOGGER.error("JSON API: authentication failed: %s", err)
