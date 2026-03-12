@@ -97,16 +97,16 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
     try:
         await api.login()
     except SyrConnectAuthError as err:
-        _LOGGER.error("XML API authentication failed: %s", err)
+        _LOGGER.error("XML API: authentication failed: %s", err)
         raise InvalidAuthError from err
     except SyrConnectConnectionError as err:
-        _LOGGER.error("XML API connection failed: %s", err)
+        _LOGGER.error("XML API: connection failed: %s", err)
         raise CannotConnectError from err
     except Exception as err:
-        _LOGGER.error("Unexpected error during XML API validation: %s", err)
+        _LOGGER.error("XML API: unexpected error during validation: %s", err)
         raise CannotConnectError from err
 
-    _LOGGER.info("XML API authentication successful for user: %s", data[CONF_USERNAME])
+    _LOGGER.info("XML API: authentication successful for user: %s", data[CONF_USERNAME])
 
     return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
 
@@ -154,22 +154,28 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         # Fetch device data directly to validate connection and check for SYR device
         data_result = await api._request_json_data("get/all")
         if not data_result:
-            _LOGGER.error("JSON API returned empty result")
+            _LOGGER.error("JSON API: returned empty result")
             raise CannotConnectError
 
         # Verify this is a SYR device by checking for serial number fields
         has_srn = "getSRN" in data_result or "getFRN" in data_result
         if not has_srn:
-            _LOGGER.error("JSON API response missing getSRN/getFRN - not a SYR device?")
+            _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
             raise CannotConnectError
 
         _LOGGER.debug("JSON API: Successfully validated SYR device with %d status keys", len(data_result))
 
+    except SyrConnectAuthError as err:
+        _LOGGER.error("JSON API: authentication failed: %s", err)
+        raise InvalidAuthError from err
+    except SyrConnectConnectionError as err:
+        _LOGGER.error("JSON API: connection failed: %s", err)
+        raise CannotConnectError from err
     except Exception as err:
-        _LOGGER.error("JSON API connection failed: %s", err)
+        _LOGGER.error("JSON API: unexpected error during validation: %s", err)
         raise CannotConnectError from err
 
-    _LOGGER.info("JSON API connection successful to host: %s", host)
+    _LOGGER.info("JSON API: connection successful to host: %s", host)
 
     return {"title": f"SYR Connect Local ({serial} @ {host})", "serial": serial}
 
