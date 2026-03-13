@@ -65,23 +65,17 @@ async def async_setup_entry(
         # Add action buttons
         action_buttons = [
             ("setSIR", "Regenerate Now"),
-            # Reset buttons: setALA, setNOT, setWRN send value 255 to clear codes
             ("setALA", "Reset alarm"),
             ("setNOT", "Reset notification"),
             ("setWRN", "Reset warning"),
         ]
 
         for command, name in action_buttons:
-            # Only add setSIR button if getSIR is available in device status
-            if command == "setSIR" and "getSIR" not in status:
-                continue
-
-            # For reset buttons, ensure the corresponding getXXX exists
-            if command == "setALA" and "getALA" not in status:
-                continue
-            if command == "setNOT" and "getNOT" not in status:
-                continue
-            if command == "setWRN" and "getWRN" not in status:
+            # Derive the corresponding "getXXX" key from the command name
+            # (e.g. 'setALA' -> 'getALA') and skip if it's not present
+            # in the device status.
+            get_key = "get" + command[3:]
+            if get_key not in status:
                 continue
 
             entities.append(
@@ -94,7 +88,7 @@ async def async_setup_entry(
                     name,
                 )
             )
-
+            _LOGGER.debug("Added button: %s (%s)", device_name, command)
 
     _LOGGER.debug("Adding %d button(s) total", len(entities))
     async_add_entities(entities)
