@@ -1,4 +1,17 @@
-"""Button platform for SYR Connect."""
+"""Button platform for SYR Connect.
+
+This module implements `ButtonEntity` objects for SYR Connect devices.
+
+Reset buttons (`setALA`, `setNOT`, `setWRN`) have special behavior: a
+reset is only performed when the device reports an active code. Values
+that represent "no code" include an empty string (`""`), the hex code
+`"FF"` (case-insensitive), or the numeric value `255`. When no code is
+present, the integration will not send a reset command.
+
+Some device families require a model-specific reset payload: for
+Safe-T+ / LEXplus10 variants the reset payload is an empty string;
+other models expect the string `"FF"`.
+"""
 from __future__ import annotations
 
 import logging
@@ -133,6 +146,11 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         Sends the command to the device with value 0 to trigger the action.
 
+        Reset buttons (`setALA`, `setNOT`, `setWRN`) perform additional
+        validation before triggering a reset: they check the device's
+        reported `getXXX` value and only send a model-appropriate reset
+        payload when a code is present.
+
         Raises:
             HomeAssistantError: If the button press fails
         """
@@ -153,23 +171,38 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 else:
                     get_key = "getWRN"
 
-                # Find device status
+                # Find the device's status dictionary in the coordinator
+                # payload. `coordinator.data['devices']` is expected to be
+                # a list of device dictionaries; locate the entry with the
+                # matching `id` and read its `status` sub-dictionary.
                 status = None
-                for device in coordinator.data.get('devices', []):
-                    if device['id'] == self._device_id:
-                        status = device.get('status', {})
+                for device in coordinator.data.get("devices", []):
+                    if device["id"] == self._device_id:
+                        status = device.get("status", {})
                         break
 
+                # Read the raw reported value for the corresponding get key
+                # (e.g. `getALA`, `getNOT`, `getWRN`). `raw` may be `None`, a
+                # string, or a numeric type depending on the backend.
                 raw = None
                 if status is not None:
                     raw = status.get(get_key)
 
-                # If there's no value, no reset required
-                if raw is None or (isinstance(raw, str) and raw.strip() == ""):
-                    raise HomeAssistantError(f"No reset required for {get_key} on {self._device_id}")
+                # Explicit rules for "no code" (no reset required):
+                # - raw is None (no reported value)
+                # - raw is an empty string ("")
+                # - raw equals "FF" (case-insensitive)
+                # - raw equals numeric 255
+                #
+                # Use an explicit None check so that other falsy values like
+                # 0 are not treated as empty.
+                if raw is None or str(raw).strip().lower() in ("", "ff", "255"):
+                    raise HomeAssistantError(
+                        f"No reset required for {get_key} on {self._device_id}"
+                    )
 
                 # For safetplus and all lex10 models we reset by sending
-                # an empty string; for other models send "FF".
+                # an empty string; for other models send "FF" (255).
                 try:
                     model = detect_model(status or {}).get("name")
                 except (ValueError, KeyError, AttributeError, TypeError) as err:
