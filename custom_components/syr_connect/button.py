@@ -160,6 +160,11 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
+            # Handle setSIR explicitly: only send when the setSIR button is pressed.
+            if self._command == "setSIR":
+                await coordinator.async_set_device_value(self._device_id, self._command, 0)
+                return
+
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
             # corresponding getXXX value is neither "FF" nor empty.
             if self._command in ("setALA", "setNOT", "setWRN"):
@@ -223,9 +228,8 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 await coordinator.async_set_device_value(self._device_id, self._command, send_value)
                 return
 
-            # Default action: Send value 0 for `setSIR`, otherwise 1
-            value = 0 if self._command == "setSIR" else 1
-            await coordinator.async_set_device_value(self._device_id, self._command, value)
+            # Default: do nothing for commands we don't explicitly handle.
+            return
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err
 
