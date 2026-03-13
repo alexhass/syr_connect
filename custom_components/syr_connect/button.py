@@ -88,10 +88,13 @@ async def async_setup_entry(
                     name,
                 )
             )
-            _LOGGER.debug("Added button: %s (%s)", device_name, command)
+            _LOGGER.debug("Adding button: %s (%s)", device_name, command)
 
-    _LOGGER.debug("Adding %d button(s) total", len(entities))
-    async_add_entities(entities)
+    if entities:
+        _LOGGER.debug("Adding %d button(s) total", len(entities))
+        async_add_entities(entities)
+    else:
+        _LOGGER.debug("No button entities to add")
 
 
 class SyrConnectButton(CoordinatorEntity, ButtonEntity):

@@ -85,6 +85,7 @@ async def async_setup_entry(
 
         if create:
             entities.append(SyrConnectValve(coordinator, device_id, device_name))
+            _LOGGER.debug("Adding valve: %s", device_name)
 
     if entities:
         _LOGGER.debug("Adding %d valve(s) total", len(entities))
