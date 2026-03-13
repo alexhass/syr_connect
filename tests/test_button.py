@@ -160,8 +160,8 @@ async def test_button_press_other_command(hass: HomeAssistant) -> None:
 
     await button.async_press()
 
-    # Should use value=1 for non-setSIR commands
-    coordinator.async_set_device_value.assert_called_once_with("device1", "setOTHER", 1)
+    # Default action is a no-op for commands we don't explicitly handle
+    coordinator.async_set_device_value.assert_not_called()
 
 
 async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
