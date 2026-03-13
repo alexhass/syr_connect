@@ -38,13 +38,13 @@ PARALLEL_UPDATES = 1
 
 def _build_time_options(step_minutes: int = 15) -> list[str]:
     """Build list of time strings (HH:MM) for a 24h day with given step."""
-    opts: list[str] = []
+    options: list[str] = []
     for h in range(24):
         m = 0
         while m < 60:
-            opts.append(f"{h:02d}:{m:02d}")
+            options.append(f"{h:02d}:{m:02d}")
             m += step_minutes
-    return opts
+    return options
 
 
 async def async_setup_entry(
