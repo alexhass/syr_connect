@@ -315,6 +315,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # - NeoSoft 2500 / 5000
 
     'getBMX',       # Value: "", unclear meaning
+    'getCMS',       # Value: "", unclear meaning
     'getERE',       # Value: "", unclear meaning
     #'getLDF',      # Value: "", unclear meaning
     'getLMS',       # Value: "", unclear meaning
