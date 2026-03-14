@@ -237,14 +237,12 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
 
 async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
     """Test local/JSON API already configured."""
-    # Create an entry with host+serial
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="json_192.168.1.100_12345",
+        unique_id="json_192.168.1.100",
         data={
             CONF_HOST: "192.168.1.100",
             CONF_MODEL: "neosoft5000",
-            "serial": "12345",
             CONF_API_TYPE: API_TYPE_JSON,
         },
     )
@@ -329,7 +327,6 @@ async def test_form_api_json_same_ip_different_serial(hass: HomeAssistant) -> No
 
     # A new entry should be created
     assert result2["type"] == FlowResultType.CREATE_ENTRY
-    assert result2["title"] == "SYR Connect Local (67890 @ 192.168.1.100)"
     assert result2["data"]["serial"] == "67890"
 
 

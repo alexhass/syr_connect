@@ -178,7 +178,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     _LOGGER.info("JSON API: connection successful to host: %s", host)
 
-    return {"title": f"SYR Connect Local ({serial} @ {host})", "serial": serial}
+    return {"title": f"SYR Connect Local ({host})"}
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -535,9 +535,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
                 errors["base"] = "unknown"
             else:
-                # Set unique ID based on host and serial number
-                serial = info.get("serial")
-                unique_id = f"{API_TYPE_JSON}_{user_input[CONF_HOST]}_{serial}"
+                # Set unique ID based on host and API type
+                unique_id = f"{API_TYPE_JSON}_{user_input[CONF_HOST]}"
                 _LOGGER.debug("Setting unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
@@ -547,7 +546,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title=info["title"],
                     data={
                         **user_input,
-                        "serial": serial,
                         CONF_API_TYPE: API_TYPE_JSON,
                     },
                 )
