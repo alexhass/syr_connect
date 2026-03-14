@@ -327,6 +327,7 @@ async def test_form_api_json_same_ip_different_serial(hass: HomeAssistant) -> No
 
     # A new entry should be created
     assert result2["type"] == FlowResultType.CREATE_ENTRY
+    assert result2["title"] == "SYR Connect Local (192.168.1.100)"
     assert result2["data"]["serial"] == "67890"
 
 
