@@ -155,43 +155,39 @@ def detect_model(flat: dict[str, object]) -> dict:
             return False
         return True
 
+    # Step 1: Check all serial number prefix/contains matches first (highest priority)
+    # If a model signature defines 'srn_prefix' or 'srn_contains' and the serial number matches,
+    # return this model immediately. This ensures serial number detection always wins over other methods.
+    for sig in MODEL_SIGNATURES:
+        if (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
+            base_path = sig.get("base_path")
+            name = sig.get("name")
+            display = sig.get("display_name", name)
+            _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
+            return {"name": name, "display_name": display, "base_path": base_path}
+
+    # Step 2: Check all getCNA (model name) exact matches
+    # If a model signature defines 'cna_equals' and getCNA matches, return this model.
+    for sig in MODEL_SIGNATURES:
+        if sig.get("cna_equals") and cna == sig.get("cna_equals"):
+            base_path = sig.get("base_path")
+            name = sig.get("name")
+            display = sig.get("display_name", name)
+            _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
+            return {"name": name, "display_name": display, "base_path": base_path}
+
+    # Step 3: Check attribute matches, fingerprint keys, and version matches
+    # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
     for sig in MODEL_SIGNATURES:
         base_path = sig.get("base_path")
         name = sig.get("name")
         display = sig.get("display_name", name)
 
-        _LOGGER.debug(
-            "detect_model: testing signature %s (attrs=%s base_path=%s cna_equals=%s srn_prefix=%s srn_contains=%s ver_prefix=%s ver_contains=%s v_keys=%s v_keys_required=%s)",
-            name,
-            sig.get("attrs_equals"),
-            base_path,
-            sig.get("cna_equals"),
-            sig.get("srn_prefix"),
-            sig.get("srn_contains"),
-            sig.get("ver_prefix"),
-            sig.get("ver_contains"),
-            sig.get("v_keys"),
-            sig.get("v_keys_required"),
-        )
-
-        # 1) Explicit model (getTYP) match from serial number prefix wins immediately.
-        if (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
-            _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
-            result = {"name": name, "display_name": display, "base_path": base_path}
-            return result
-
-        # 2) explicit CNA match wins immediately.
-        if sig.get("cna_equals") and cna == sig.get("cna_equals"):
-            _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            result = {"name": name, "display_name": display, "base_path": base_path}
-            return result
-
-        # 3) attributes must match if provided; if attrs are required and
-        # they don't match, this signature is skipped.
+        # If the signature requires certain attributes to match, skip if not satisfied.
         if not attrs_match(sig):
             continue
 
-        # 4) if the signature defines v_keys, require the fingerprint match.
+        # If the signature defines fingerprint keys (v_keys), require enough keys to match.
         v_keys = set(sig.get("v_keys") or set())
         if v_keys:
             matches = len(v_keys & keys)
@@ -199,24 +195,23 @@ def detect_model(flat: dict[str, object]) -> dict:
             if matches < required:
                 _LOGGER.debug("detect_model: signature %s v_keys matched %d < %d", name, matches, required)
                 continue
+            # If version constraints are present, require them to match as well.
             if not ver_match(sig):
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            result = {"name": name, "display_name": display, "base_path": base_path}
-            return result
+            return {"name": name, "display_name": display, "base_path": base_path}
 
-        # 5) no v_keys: if attrs were present and matched, we've already
-        # satisfied detection above. Otherwise fall back to version checks.
+        # If only attribute equality is required and already matched, return this model.
         if sig.get("attrs_equals"):
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            result = {"name": name, "display_name": display, "base_path": base_path}
-            return result
+            return {"name": name, "display_name": display, "base_path": base_path}
 
+        # If version prefix or contains is specified and matches, return this model.
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            result = {"name": name, "display_name": display, "base_path": base_path}
-            return result
+            return {"name": name, "display_name": display, "base_path": base_path}
 
+    # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
     return {"name": "unknown", "display_name": "Unknown model", "base_path": None}
