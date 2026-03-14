@@ -30,13 +30,13 @@ MODEL_SIGNATURES: Iterable[dict] = [
     {
         "base_path": None,
         "display_name": "Sanibel Softwater UNO A25",
-        "name": "sanibelneosoft2500",
+        "name": "sanibelsoftwateruno",
         "srn_prefix": "207",
     },
     {
         "base_path": None,
         "display_name": "Sanibel Leak protection module A25",
-        "name": "sanibelleakprotecta25",
+        "name": "sanibelleakprotect",
         "srn_prefix": "501",
     },
     {
