@@ -96,17 +96,27 @@ MODEL_SIGNATURES: Iterable[dict] = [
 
 
 def detect_model(flat: dict[str, object]) -> dict:
-    """Return a detected model as {'name':..., 'display_name':...}.
-    If no signature matches, return an 'unknown' model dict.
+    """Detect the device model from a flattened attribute dictionary.
 
-    The function applies a small set of rules in order:
-    1. `getCNA` exact match
-      2. If a signature declares `v_keys`, at least `v_keys_required` of those
-          keys must be present in the flattened response. If the signature
-         also specifies `ver_prefix`/`ver_contains` or `attrs_equals`, those
-         are required in addition to the `v_keys` match.
-     3. If a signature does not define `v_keys`, fall back to
-         `getVER` prefix/contains and `attrs_equals` checks.
+    Returns:
+        dict: {"name": ..., "display_name": ..., "base_path": ...}
+        If no signature matches, returns an 'unknown' model dict.
+
+    Detection priority (highest to lowest):
+    1. Serial number prefix (srn_prefix):
+        If a signature defines 'srn_prefix', and the serial number (getSRN) starts with srn_prefix + 'AAA', this model is selected immediately.
+    2. Serial number contains (srn_contains):
+        If a signature defines 'srn_contains' and it is found in the serial number, this model is selected.
+    3. getCNA exact match (cna_equals):
+        If a signature defines 'cna_equals' and getCNA matches, this model is selected.
+    4. Attribute match (attrs_equals):
+        If a signature defines 'attrs_equals' and all specified attributes match, this model is selected.
+    5. v_keys fingerprint:
+        If a signature defines 'v_keys', at least 'v_keys_required' of those keys must be present in the flattened response. If version or attribute constraints are also specified, they must match as well.
+    6. Version prefix/contains:
+        If a signature defines 'ver_prefix' or 'ver_contains', and getVER matches, this model is selected.
+
+    If no signature matches, returns the unknown model structure.
     """
     if not isinstance(flat, dict):
         return None
