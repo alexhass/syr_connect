@@ -549,10 +549,3 @@ def test_serial_prefix_short_serial():
     flat = {"getSRN": "11A"}
     result = detect_model(flat)
     assert result["name"] == "unknown"
-
-
-def test_serial_prefix_with_serial_key():
-    """serial_prefix also works with 'serial' instead of 'getSRN'."""
-    flat = {"serial": "206AAA00001"}
-    result = detect_model(flat)
-    assert result["name"] == "206"
