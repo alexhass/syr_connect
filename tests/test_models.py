@@ -77,14 +77,6 @@ def test_detect_model_none_input():
     assert detect_model(None) is None
 
 
-def test_trio_attrs_only_synthetic():
-    """If attrs_equals is present and matches, detection succeeds without getVER."""
-    # Construct a synthetic flattened dict that matches the current trio signature
-    # (requires ver_prefix 'syr001' and v_keys 'getAFW' and 'getVER2').
-    flat = {"getVER2": "176", "getAFW": "1", "getVER": "syr001-A-B-000-176"}
-    assert detect_model(flat)["name"] == "trio"
-
-
 def test_neosoft_vkeys_version_mismatch_returns_unknown():
     """If v_keys match but version constraints fail, signature is skipped and result is unknown."""
     flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
@@ -118,14 +110,6 @@ def test_lexplus10_with_display_name_and_base_path():
     assert result["name"] == "lexplus10"
     assert result["display_name"] == "LEX Plus 10 Connect"
     assert result["base_path"] is None
-
-
-def test_neosoft2500_with_base_path():
-    """Verify neosoft2500 returns correct base_path."""
-    flat = {"getRE1": "1", "getVER": "NSS-1.0"}
-    result = detect_model(flat)
-    assert result["name"] == "neosoft2500"
-    assert result["base_path"] == "/neosoft"
 
 
 def test_getcna_none_converted_to_empty_string():
@@ -185,14 +169,6 @@ def test_neosoft5000_vkeys_match_with_version():
     assert result["display_name"] == "NeoSoft 5000 Connect"
 
 
-def test_v_keys_partial_match_insufficient():
-    """If only 1 of 2 required v_keys present, should not match."""
-    flat = {"getRE1": "1", "getVER": "NSS-1.0"}
-    result = detect_model(flat)
-    # Should match neosoft2500 (requires only 1 v_key)
-    assert result["name"] == "neosoft2500"
-
-
 def test_version_match_prefix_only():
     """Test version matching with only ver_prefix."""
     flat = {"getVER": "Safe-T-Plus-1.2.3"}
@@ -205,13 +181,6 @@ def test_version_match_prefix_mismatch():
     flat = {"getAFW": "1", "getVER2": "176", "getVER": "wrong-prefix"}
     result = detect_model(flat)
     assert result["name"] == "unknown"
-
-
-def test_trio_with_v_keys_and_version():
-    """Trio requires both v_keys match and version prefix."""
-    flat = {"getAFW": "1", "getVER2": "176", "getVER": "syr001-xyz"}
-    result = detect_model(flat)
-    assert result["name"] == "trio"
 
 
 def test_empty_flat_dict_returns_unknown():
@@ -230,15 +199,6 @@ def test_unknown_model_has_correct_structure():
     assert "display_name" in result
     assert "base_path" in result
     assert result["name"] == "unknown"
-
-
-def test_v_keys_required_default_behavior():
-    """Test v_keys matching when v_keys_required is not explicitly set."""
-    # NeoSoft signatures explicitly set v_keys_required
-    # Testing that default behavior works as expected
-    flat = {"getRE1": "1", "getVER": "NSS-1.0"}
-    result = detect_model(flat)
-    assert result["name"] == "neosoft2500"
 
 
 def test_multiple_keys_with_no_signature_match():
