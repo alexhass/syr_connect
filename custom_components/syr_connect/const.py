@@ -454,7 +454,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     #"getENV",       # Value: "", unclear meaning
 
     # Sensors exits in devices:
-    # - Sanibel Leak protection module A25
+    # - Sanibel Leak Protection Module A25
     "getBMA",       # Value: "", unclear meaning
     "getBMI",       # Value: "", unclear meaning
     "getCSE2",      # Value: "", unclear meaning - duplicate of getCSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
