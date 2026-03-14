@@ -64,6 +64,7 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
     "lexplus10sl": 25,
     "neosoft2500": 40,
     "neosoft5000": 35,
+    "sanibelsoftwateruno": 35,
     # TODO: Below names are not confirmed models.
     # Names are guessed from data sheets with similar pattern, values are documented in data sheets.
     "unknown_lex10": 25,
