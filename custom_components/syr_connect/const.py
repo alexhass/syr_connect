@@ -490,6 +490,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
 
+    # Sensors exits in devices:
+    # - comfort by Sanibel - Leak Protection Module A25
+    "getAVO",  # Current flow (liters) - value "" means no available volume, so not useful to show.
+    "getBAT",  # Battery level - value "" means sensor does not exists or not measured.
 }
 
 # Sensor icons (Material Design Icons) - internal

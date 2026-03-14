@@ -209,15 +209,27 @@ def get_sensor_vol_value(value: str | int | float) -> str | int | float:
     and unit in brackets, e.g., 'Vol[L]6530', 'Temp[C]25', etc.
     This function extracts the numeric value from such strings.
 
+    Examples:
+        >>> get_sensor_vol_value("")
+        None
+        >>> get_sensor_vol_value(6530)
+        6530
+        >>> get_sensor_vol_value("Vol[L]6530")
+        '6530'
+
     Args:
         value: The raw sensor value
 
     Returns:
-        Cleaned value with prefix removed if applicable
+        Cleaned value with prefix removed if applicable, or None for empty string
     """
     # Only process string values
     if not isinstance(value, str):
         return value
+
+    # Return None for empty string
+    if value.strip() == "":
+        return None
 
     # Pattern to match values like 'Vol[L]6530', 'Temp[C]25', etc.
     # Format: word characters, optional brackets with content, then the actual value
