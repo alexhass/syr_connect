@@ -429,25 +429,39 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getDSP",
     "getDVS",
 
-    "getSMC",
-    "getPW",
-    "getPV",
-    "getPT",
-    "getPM",
-    "getPF",
-    "getPB",
-    "getMM",
-    "getLDT",
-    "getFFM",
-    "getFCM",
-    "getFCD",
+    # Sensors exits in devices:
+    # - SaveTech
+
+    # JSON API only sensors (not available in XML API):
     "getCEN",
+    "getFCD",
+    "getFCM",
+    "getFFM",
+    "getLDT",
+    "getMM",
+    "getPB",
+    "getPF",
+    "getPM",
+    "getPT",
+    "getPV",
+    "getPW",
+    "getSMC",
 
     # Sensors exits in devices:
-    # - comfort by Sanibel - Enthärtungsanlage Softwater Uno A25
-    "getCMS",       # Value: "", unclear meaning
+    # - Sanibel Softwater UNO A25
     #"getCFW",       # Value: "", unclear meaning
+    "getCMS",       # Value: "", unclear meaning
     #"getENV",       # Value: "", unclear meaning
+
+    # Sensors exits in devices:
+    # - Sanibel Leak protection module A25
+    "getBMA",       # Value: "", unclear meaning
+    "getBMI",       # Value: "", unclear meaning
+    "getCSE2",      # Value: "", unclear meaning - duplicate of getCSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
+    "getDFM",       # Value: "", unclear meaning
+    "getMPO",       # Value: "", unclear meaning
+    "getPSE2",      # Value: "", unclear meaning - duplicate of getPSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
+    "getSUP",       # Value: "", unclear meaning
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
