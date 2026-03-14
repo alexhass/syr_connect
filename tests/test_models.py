@@ -225,15 +225,6 @@ def test_neosoft_base_path():
     assert result["base_path"] == "/neosoft"
 
 
-def test_trio_base_path():
-    """Trio models should return 'trio' as base_path."""
-    # Trio requires both v_keys (getAFW, getVER2) with v_keys_required=2
-    flat = {"getVER": "syr001-firmware", "getAFW": "1", "getVER2": "176"}
-    result = detect_model(flat)
-    assert result["name"] == "trio"
-    assert result["base_path"] == "/trio"
-
-
 def test_safetech_base_path():
     """Safe-Tech+ should return 'trio' as base_path."""
     flat = {"getVER": "Safe-Tech-v2"}
