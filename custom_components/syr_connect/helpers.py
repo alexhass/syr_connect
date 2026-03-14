@@ -471,7 +471,7 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_LEX10.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
-    if model in ("neosoft2500", "neosoft5000", "trio"):
+    if model in ("neosoft2500", "neosoft5000", "safetech", "trio"):
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
