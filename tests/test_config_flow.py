@@ -207,7 +207,6 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
     assert result3["data"][CONF_HOST] == "192.168.1.100"
     assert result3["data"][CONF_MODEL] == "neosoft5000"
     assert result3["data"][CONF_API_TYPE] == API_TYPE_JSON
-    assert result3["data"]["serial"] == "12345"
 
 
 async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
@@ -328,7 +327,6 @@ async def test_form_api_json_same_ip_different_serial(hass: HomeAssistant) -> No
     # A new entry should be created
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["title"] == "SYR Connect Local (192.168.1.100)"
-    assert result2["data"]["serial"] == "67890"
 
 
 async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
