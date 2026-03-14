@@ -16,10 +16,10 @@ _LOGGER = logging.getLogger(__name__)
 # fingerprint keys where a threshold of matches is required.
 #
 # Signature fields summary:
+# - `attrs_equals`: dict of `getX` -> value pairs that must all match
 # - `base_path`: json api local access base path for the model or None if not applicable
 # - `cna_equals`: exact match against `getCNA` value (if present)
 # - `ver_prefix` / `ver_contains`: require `getVER` to match the prefix or contain
-# - `attrs_equals`: dict of `getX` -> value pairs that must all match
 # - `v_keys`: set of `getX` keys used as a fingerprint for the model
 # - `v_keys_required`: the minimum number of keys from `v_keys` that must be
 #   present in the flattened response for the signature to match. When
@@ -28,65 +28,68 @@ _LOGGER = logging.getLogger(__name__)
 #
 MODEL_SIGNATURES: Iterable[dict] = [
     {
-        "display_name": "LEX Plus 10 Connect",
         "base_path": None,
-        "name": "lexplus10",
+        "display_name": "Sanibel Softwater UNO A25",
+        "name": "sanibelneosoft2500",
+        "srn_prefix": "207",
+    },
+    {
+        "base_path": None,
+        "display_name": "Sanibel Leak protection module A25",
+        "name": "sanibelleakprotecta25",
+        "srn_prefix": "501",
+    },
+    {
+        "base_path": None,
         "cna_equals": "LEXplus10",
+        "display_name": "LEX Plus 10 Connect",
+        "name": "lexplus10",
         "ver_prefix": None,
     },
     {
-        "display_name": "LEX Plus 10 S Connect",
         "base_path": None,
-        "name": "lexplus10s",
         "cna_equals": "LEXplus10S",
+        "display_name": "LEX Plus 10 S Connect",
+        "name": "lexplus10s",
         "ver_prefix": None,
     },
     {
-        "display_name": "LEX Plus 10 SL Connect",
         "base_path": None,
-        "name": "lexplus10sl",
         "cna_equals": "LEXplus10SL",
+        "display_name": "LEX Plus 10 SL Connect",
+        "name": "lexplus10sl",
         "ver_prefix": None,
     },
     {
-        "display_name": "NeoSoft 5000 Connect",
         "base_path": "/neosoft",
+        "display_name": "NeoSoft 2500 Connect",
+        "name": "neosoft2500",
+        "srn_prefix": "206",
+    },
+    {
+        "base_path": "/neosoft",
+        "display_name": "NeoSoft 5000 Connect",
         "name": "neosoft5000",
-        "cna_equals": None,
         "ver_prefix": "NSS",
         "v_keys": {"getRE1", "getRE2"},
         "v_keys_required": 2,
     },
     {
-        "display_name": "NeoSoft 2500 Connect",
-        "base_path": "/neosoft",
-        "name": "neosoft2500",
-        "cna_equals": None,
-        "ver_prefix": "NSS",
-        "v_keys": {"getRE1"},
-        "v_keys_required": 1,
-    },
-    {
+        "base_path": "/trio",
         "display_name": "Trio DFR/LS Connect",
-        "base_path": "/trio",
         "name": "trio",
-        "cna_equals": None,
-        "ver_prefix": "syr001",
-        "v_keys": {"getAFW", "getVER2"},
-        "v_keys_required": 2,
+        "srn_prefix": "113",
     },
     {
-        "display_name": "Safe-Tech+ Connect",
         "base_path": "/trio",
+        "display_name": "Safe-Tech+ Connect",
         "name": "safetech",
-        "cna_equals": None,
         "ver_prefix": "Safe-Tech",
     },
     {
-        "display_name": "Safe-T+ Connect",
         "base_path": None,
+        "display_name": "Safe-T+ Connect",
         "name": "safetplus",
-        "cna_equals": None,
         "ver_prefix": "Safe-T",
     },
 ]
@@ -110,9 +113,10 @@ def detect_model(flat: dict[str, object]) -> dict:
 
     # Simple normalizations
     cna = str(flat.get("getCNA") or "")
+    srn = str(flat.get("getSRN") or "")
     ver = str(flat.get("getVER") or "")
     keys = set(flat.keys())
-    _LOGGER.debug("detect_model: keys=%s; getCNA=%s; getVER=%s", sorted(keys)[:120], cna, ver)
+    _LOGGER.debug("detect_model: keys=%s; getCNA=%s; getSRN=%s; getVER=%s", sorted(keys)[:120], cna, srn, ver)
 
     def attrs_match(sig: dict) -> bool:
         attrs = sig.get("attrs_equals")
@@ -123,12 +127,21 @@ def detect_model(flat: dict[str, object]) -> dict:
                 return False
         return True
 
-    def version_match(sig: dict) -> bool:
-        vp = sig.get("ver_prefix")
-        vc = sig.get("ver_contains")
-        if vp and not ver.startswith(vp):
+    def srn_match(sig: dict) -> bool:
+        srn_prefix = sig.get("srn_prefix")
+        srn_contains = sig.get("srn_contains")
+        if srn_prefix and not srn.startswith(f"{srn_prefix}AAA"):
             return False
-        if vc and vc not in ver:
+        if srn_contains and srn_contains not in srn:
+            return False
+        return True
+
+    def ver_match(sig: dict) -> bool:
+        ver_prefix = sig.get("ver_prefix")
+        ver_contains = sig.get("ver_contains")
+        if ver_prefix and not ver.startswith(ver_prefix):
+            return False
+        if ver_contains and ver_contains not in ver:
             return False
         return True
 
@@ -136,30 +149,39 @@ def detect_model(flat: dict[str, object]) -> dict:
         base_path = sig.get("base_path")
         name = sig.get("name")
         display = sig.get("display_name", name)
+
         _LOGGER.debug(
-            "detect_model: testing signature %s (base_path=%s cna_equals=%s ver_prefix=%s ver_contains=%s v_keys=%s attrs=%s v_keys_required=%s)",
+            "detect_model: testing signature %s (attrs=%s base_path=%s cna_equals=%s srn_prefix=%s srn_contains=%s ver_prefix=%s ver_contains=%s v_keys=%s v_keys_required=%s)",
             name,
+            sig.get("attrs_equals"),
             base_path,
             sig.get("cna_equals"),
+            sig.get("srn_prefix"),
+            sig.get("srn_contains"),
             sig.get("ver_prefix"),
             sig.get("ver_contains"),
             sig.get("v_keys"),
-            sig.get("attrs_equals"),
             sig.get("v_keys_required"),
         )
 
-        # 1) explicit CNA match wins immediately
+        # 1) Explicit model (getTYP) match from serial number prefix wins immediately.
+        if (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
+            _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
+            result = {"name": name, "display_name": display, "base_path": base_path}
+            return result
+
+        # 2) explicit CNA match wins immediately.
         if sig.get("cna_equals") and cna == sig.get("cna_equals"):
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
             result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
-        # 2) attributes must match if provided; if attrs are required and
+        # 3) attributes must match if provided; if attrs are required and
         # they don't match, this signature is skipped.
         if not attrs_match(sig):
             continue
 
-        # 3) if the signature defines v_keys, require the fingerprint match
+        # 4) if the signature defines v_keys, require the fingerprint match.
         v_keys = set(sig.get("v_keys") or set())
         if v_keys:
             matches = len(v_keys & keys)
@@ -167,21 +189,21 @@ def detect_model(flat: dict[str, object]) -> dict:
             if matches < required:
                 _LOGGER.debug("detect_model: signature %s v_keys matched %d < %d", name, matches, required)
                 continue
-            if not version_match(sig):
+            if not ver_match(sig):
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
             result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
-        # 4) no v_keys: if attrs were present and matched, we've already
+        # 5) no v_keys: if attrs were present and matched, we've already
         # satisfied detection above. Otherwise fall back to version checks.
         if sig.get("attrs_equals"):
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
             result = {"name": name, "display_name": display, "base_path": base_path}
             return result
 
-        if (sig.get("ver_prefix") or sig.get("ver_contains")) and version_match(sig):
+        if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
             result = {"name": name, "display_name": display, "base_path": base_path}
             return result
