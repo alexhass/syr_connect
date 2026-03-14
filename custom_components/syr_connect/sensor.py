@@ -823,15 +823,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Try to convert to number if possible for other sensors
                 if isinstance(value, str):
-                    sval = value.strip()
-                    if sval == "":
-                        return None
                     try:
-                        numeric_value = float(sval)
+                        numeric_value = float(value)
                         return self._apply_numeric_conversion(numeric_value)
                     except (ValueError, TypeError):
-                        # Non-numeric string for a non-string sensor: treat as missing
-                        return None
+                        return value
 
                 # Handle numeric values directly
                 if isinstance(value, int | float):
