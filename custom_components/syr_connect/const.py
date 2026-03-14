@@ -155,24 +155,24 @@ _SYR_CONNECT_SENSOR_CONFIG = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
-    'getCNA',   # Device name
-    'getDGW',   # Gateway
-    'getEGW',   # Ethernet gateway
-    'getEIP',   # Ethernet IP address
-    'getFIR',   # Firmware model
-    'getIPA',   # IP address
-    'getMAC',   # MAC address
-    'getMAC1',  # Wi-Fi MAC address
-    'getMAC2',  # LAN MAC address
-    'getMAN',   # Manufacturer
-    'getSRN',   # Serial number
-    'getTYP',   # Type
-    'getVER',   # Firmware version
-    'getWFC',   # Wi-Fi SSID
-    'getWFR',   # Wifi signal strength (%)
-    'getWFS',   # Wi-Fi connection status (connected / not connected)
-    'getWGW',   # Wi-Fi gateway
-    'getWIP',   # Wi-Fi IP address
+    "getCNA",   # Device name
+    "getDGW",   # Gateway
+    "getEGW",   # Ethernet gateway
+    "getEIP",   # Ethernet IP address
+    "getFIR",   # Firmware model
+    "getIPA",   # IP address
+    "getMAC",   # MAC address
+    "getMAC1",  # Wi-Fi MAC address
+    "getMAC2",  # LAN MAC address
+    "getMAN",   # Manufacturer
+    "getSRN",   # Serial number
+    "getTYP",   # Type
+    "getVER",   # Firmware version
+    "getWFC",   # Wi-Fi SSID
+    "getWFR",   # Wifi signal strength (%)
+    "getWFS",   # Wi-Fi connection status (connected / not connected)
+    "getWGW",   # Wi-Fi gateway
+    "getWIP",   # Wi-Fi IP address
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
@@ -181,43 +181,43 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # - LEXplus10S
     # - LEXplus10SL
 
-    'getCYN',   # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
-    'getCYT',   # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
-    'getDWF',   # Flow Warning Value - advanced setting
-    'getLAN',   # Language of the UI (0=English, 1=German, 3=Spanish)
-    'getNOT',   # Retrieving the current notification
-    'getSRE',   # Regeneration active
-    'getRG2', 'getRG3',  # Regeneration running for tank
-    'getRPD',   # Regeneration interval (days)
-    'getRPW',   # Regeneration permitted weekdays as bit mask
-    'getPST',   # Pressure sensor installed: 1 = not available, 2 = available
-    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds - advanced config
-    'getWHU',   # Water hardness unit
+    "getCYN",   # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
+    "getCYT",   # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
+    "getDWF",   # Flow Warning Value - advanced setting
+    "getLAN",   # Language of the UI (0=English, 1=German, 3=Spanish)
+    "getNOT",   # Retrieving the current notification
+    "getSRE",   # Regeneration active
+    "getRG2", "getRG3",  # Regeneration running for tank
+    "getRPD",   # Regeneration interval (days)
+    "getRPW",   # Regeneration permitted weekdays as bit mask
+    "getPST",   # Pressure sensor installed: 1 = not available, 2 = available
+    "getVS1", "getVS2", "getVS3",  # Volume thresholds - advanced config
+    "getWHU",   # Water hardness unit
 
     # Sensors exits in devices:
     # - LEXplus10SL
 
     # Leak protection profiles (expert setting)
-    'getPA1', 'getPA2', 'getPA3', 'getPA4', 'getPA5', 'getPA6', 'getPA7', 'getPA8',
-    'getPF1', 'getPF2', 'getPF3', 'getPF4', 'getPF5', 'getPF6', 'getPF7', 'getPF8',
-    'getPT1', 'getPT2', 'getPT3', 'getPT4', 'getPT5', 'getPT6', 'getPT7', 'getPT8',
-    'getPV1', 'getPV2', 'getPV3', 'getPV4', 'getPV5', 'getPV6', 'getPV7', 'getPV8',
-    'getPN1', 'getPN2', 'getPN3', 'getPN4', 'getPN5', 'getPN6', 'getPN7', 'getPN8',
-    'getPRN',   # Duplicate of getPRF
-    'getPW1', 'getPW2', 'getPW3', 'getPW4', 'getPW5', 'getPW6', 'getPW7', 'getPW8',
+    "getPA1", "getPA2", "getPA3", "getPA4", "getPA5", "getPA6", "getPA7", "getPA8",
+    "getPF1", "getPF2", "getPF3", "getPF4", "getPF5", "getPF6", "getPF7", "getPF8",
+    "getPT1", "getPT2", "getPT3", "getPT4", "getPT5", "getPT6", "getPT7", "getPT8",
+    "getPV1", "getPV2", "getPV3", "getPV4", "getPV5", "getPV6", "getPV7", "getPV8",
+    "getPN1", "getPN2", "getPN3", "getPN4", "getPN5", "getPN6", "getPN7", "getPN8",
+    "getPRN",   # Duplicate of getPRF
+    "getPW1", "getPW2", "getPW3", "getPW4", "getPW5", "getPW6", "getPW7", "getPW8",
 
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
 
-    'getVPS1',  # No turbine pulses on control head 1 since (timestamp) - technical metric for flow measurement, not useful for most users
-    'getVPS2',  # No turbine pulses on control head 2 since (timestamp) - technical metric for flow measurement, not useful for most users
+    "getVPS1",  # No turbine pulses on control head 1 since (timestamp) - technical metric for flow measurement, not useful for most users
+    "getVPS2",  # No turbine pulses on control head 2 since (timestamp) - technical metric for flow measurement, not useful for most users
 
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000 / Trio DFR/LS
 
-    'getALN',   # List of last 8 notifications
-    'getALM',   # List of last 8 alarms
-    'getALW',   # List of last 8 warnings
+    "getALN",   # List of last 8 notifications
+    "getALM",   # List of last 8 alarms
+    "getALW",   # List of last 8 warnings
 }
 
 # Sensor device classes (for Home Assistant) - internal
@@ -240,118 +240,118 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # - LEXplus10S
     # - LEXplus10SL
 
-    'p1883', 'p1883rd', 'p8883', 'p8883rd',
-    'sbt', 'sta', 'dst', 'ast', 'so',
-    'dclg', 'clb', 'nrs',  # Device collection metadata
-    'nrdt', 'dg',   # Additional device metadata attributes
+    "p1883", "p1883rd", "p8883", "p8883rd",
+    "sbt", "sta", "dst", "ast", "so",
+    "dclg", "clb", "nrs",  # Device collection metadata
+    "nrdt", "dg",   # Additional device metadata attributes
 
     # Other attributes than "n" = "name" / "v" = "value" in XML response
-    'getSRN_dt',    # Serial number timestamp
-    'getALM_acd',   # Active alarm since timestamp
-    'getALM_dt',    # Alarm timestamp
-    'getALM_ih',    # Alarm inhibit flag (unlcear purpose)
-    'getALM_m',     # Alarm message e.g. LowSalt
+    "getSRN_dt",    # Serial number timestamp
+    "getALM_acd",   # Active alarm since timestamp
+    "getALM_dt",    # Alarm timestamp
+    "getALM_ih",    # Alarm inhibit flag (unlcear purpose)
+    "getALM_m",     # Alarm message e.g. LowSalt
 
-    'getDEN',  # Boolean sensor - device enabled/disabled
-    'getRTH',  # Regeneration hour - minutes/combined handled by getRTM
-    'getCDE',  # Unknown constant (some kind of device identifier?) - not useful for users
-    'getSIR',  # Immediate regeneration control
-    'getSMR',  # Manual regeneration control - per documentation unknown what values do
-    'getRST',  # Reset device control - per documentation unknown what values do
-    'getTYP',  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
-    'getRTI',  # Value is always 00:00. Not clear what it represents.
-    'getFCO',  # Iron content (always 0) - not useful
-    'getSCR',  # Unknown, likely number of service regeneration
+    "getDEN",  # Boolean sensor - device enabled/disabled
+    "getRTH",  # Regeneration hour - minutes/combined handled by getRTM
+    "getCDE",  # Unknown constant (some kind of device identifier?) - not useful for users
+    "getSIR",  # Immediate regeneration control
+    "getSMR",  # Manual regeneration control - per documentation unknown what values do
+    "getRST",  # Reset device control - per documentation unknown what values do
+    "getTYP",  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
+    "getRTI",  # Value is always 00:00. Not clear what it represents.
+    "getFCO",  # Iron content (always 0) - not useful
+    "getSCR",  # Unknown, likely number of service regeneration
 
     # BUG: Exclude until the bug is found why these are not shown as translated strings.
     # They also seem to exists as sensor and binary_sensor.
-    'getSRE',  # Regeneration active - now handled as binary_sensor platform
+    "getSRE",  # Regeneration active - now handled as binary_sensor platform
 
     # Sensors exits in devices:
     # - LEXplus10SL
 
     # Technical values without context
-    'get71', 'getBSA', 'getBUZ',
-    'getCDF',
-    'getCES', 'getCND',
-    'getCNO', # Code number - not useful for users
-    'getCNS',
-    'getDAT', 'getDBD', 'getDBT', 'getDCM', 'getDMA', 'getDOM', 'getDPL',
-    'getDST', 'getDTC',
-    'getDWF', # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
-    'getFSL', 'getIDS', 'getLDF', 'getLWT', 'getMTF',
-    'getOHF', 'getYHF',
-    'getSLO', 'getSLP',
-    'getT2', 'getTN',
+    "get71", "getBSA", "getBUZ",
+    "getCDF",
+    "getCES", "getCND",
+    "getCNO", # Code number - not useful for users
+    "getCNS",
+    "getDAT", "getDBD", "getDBT", "getDCM", "getDMA", "getDOM", "getDPL",
+    "getDST", "getDTC",
+    "getDWF", # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
+    "getFSL", "getIDS", "getLDF", "getLWT", "getMTF",
+    "getOHF", "getYHF",
+    "getSLO", "getSLP",
+    "getT2", "getTN",
 
     # Sensors exits in devices:
     # - Safe-T+
 
     # Unknown Safe-T+ specific sensors
-    'f', 'b', 'm',  # CI values from API response, unclear purpose, (m = MAC address)
-    'getALA_acd',   # Last alarm - timestamp - acknowledged?
-    'getALA_dt',    # Last alarm - timestamp - occurence?
-    'getALA_ih',    # Last alarm - e.g. 0 - Unknown
-    'getALA_m',     # Last alarm - alarm codes e.g. A5, A6
-    'getAWY',       # Unknown
-    'getBLT',       # Unknown
-    'getBSI',       # Unknown
-    'getCEO',       # Unknown
-    #'getCNO',      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
-    'getEXI',       # Unknown
-    'getEXT',       # Unknown
-    'getGLE',       # Unknown
-    'getGUL',       # Unknown
-    'getINT',       # Unknown
-    'getREL',       # Unknown
-    #'getT2',       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
-    'getTBS',       # Unknown
-    'getTC',        # Unknown
-    'getTO',        # Unknown
-    'getTPA',       # Unknown
-    'getUNI',       # Unknown
+    "f", "b", "m",  # CI values from API response, unclear purpose, (m = MAC address)
+    "getALA_acd",   # Last alarm - timestamp - acknowledged?
+    "getALA_dt",    # Last alarm - timestamp - occurence?
+    "getALA_ih",    # Last alarm - e.g. 0 - Unknown
+    "getALA_m",     # Last alarm - alarm codes e.g. A5, A6
+    "getAWY",       # Unknown
+    "getBLT",       # Unknown
+    "getBSI",       # Unknown
+    "getCEO",       # Unknown
+    #"getCNO",      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
+    "getEXI",       # Unknown
+    "getEXT",       # Unknown
+    "getGLE",       # Unknown
+    "getGUL",       # Unknown
+    "getINT",       # Unknown
+    "getREL",       # Unknown
+    #"getT2",       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
+    "getTBS",       # Unknown
+    "getTC",        # Unknown
+    "getTO",        # Unknown
+    "getTPA",       # Unknown
+    "getUNI",       # Unknown
 
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
 
-    'getBMX',       # Value: "", unclear meaning
-    'getERE',       # Value: "", unclear meaning
-    #'getLDF',      # Value: "", unclear meaning
-    'getLMS',       # Value: "", unclear meaning
-    'getNRE',       # Value: "", unclear meaning
-    #'getOHF',      # Value: "", unclear meaning
-    'getPRE',       # Value: "", unclear meaning
-    'getVRE1',      # Value: "", unclear meaning
-    'getVRE2',      # Value: "", unclear meaning
-    #'getYHF',      # Value: "", unclear meaning
-    'getHWV',       # Value: e.g. "V1", "0000000001", unclear meaning
-    'getAPT',       # Value: e.g. "600", unclear meaning
-    'getCNF',       # Value: "", unclear meaning
-    'getCSD',       # Value: "", unclear meaning
-    'getEVL',       # Value: "0", unclear meaning
-    #'getIDS',      # Value: "False", unclear meaning
-    'getLNG',       # Value: "0", unclear meaning
-    'getPSD',       # Value: "", unclear meaning
-    'getRTC',       # Value: "", unclear meaning
-    'getRURL',      # Value: "", unclear meaning
-    'getTMZ',       # Value: "4", unclear meaning
-    'getTURL',      # Value: "", unclear meaning
-    'getWAD',       # Value: "False", unclear meaning
-    'getWTI',       # Value: e.g. "1720", unclear meaning
-    'getALD',       # Value: "", unclear meaning
-    'getCNL',       # Value: "", unclear meaning
-    'getWAH',       # Value: "", unclear meaning
-    'getNET',       # Value: "", unclear meaning
-    'getTSD',       # Value: "", unclear meaning
+    "getBMX",       # Value: "", unclear meaning
+    "getERE",       # Value: "", unclear meaning
+    #"getLDF",      # Value: "", unclear meaning
+    "getLMS",       # Value: "", unclear meaning
+    "getNRE",       # Value: "", unclear meaning
+    #"getOHF",      # Value: "", unclear meaning
+    "getPRE",       # Value: "", unclear meaning
+    "getVRE1",      # Value: "", unclear meaning
+    "getVRE2",      # Value: "", unclear meaning
+    #"getYHF",      # Value: "", unclear meaning
+    "getHWV",       # Value: e.g. "V1", "0000000001", unclear meaning
+    "getAPT",       # Value: e.g. "600", unclear meaning
+    "getCNF",       # Value: "", unclear meaning
+    "getCSD",       # Value: "", unclear meaning
+    "getEVL",       # Value: "0", unclear meaning
+    #"getIDS",      # Value: "False", unclear meaning
+    "getLNG",       # Value: "0", unclear meaning
+    "getPSD",       # Value: "", unclear meaning
+    "getRTC",       # Value: "", unclear meaning
+    "getRURL",      # Value: "", unclear meaning
+    "getTMZ",       # Value: "4", unclear meaning
+    "getTURL",      # Value: "", unclear meaning
+    "getWAD",       # Value: "False", unclear meaning
+    "getWTI",       # Value: e.g. "1720", unclear meaning
+    "getALD",       # Value: "", unclear meaning
+    "getCNL",       # Value: "", unclear meaning
+    "getWAH",       # Value: "", unclear meaning
+    "getNET",       # Value: "", unclear meaning
+    "getTSD",       # Value: "", unclear meaning
 
     # JSON API only sensors (not available in XML API):
-    'getALH',
-    'getALL',
-    'getCLC',
-    'getCLM',
-    'getDVL',
-    'getFRN',
-    'getPAH',       # Error: "sensor.syr_connect_xxx_getpah is longer than 255, falling back to unknown"
+    "getALH",
+    "getALL",
+    "getCLC",
+    "getCLM",
+    "getDVL",
+    "getFRN",
+    "getPAH",       # Error: "sensor.syr_connect_xxx_getpah is longer than 255, falling back to unknown"
 
     # Sensors exits in devices:
     # - Trio DFR/LS
@@ -451,30 +451,30 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 
 # Sensors to exclude only when value is empty (0 or "") - internal
 _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
-    'getCS1', 'getCS2', 'getCS3',  # Remaining resin capacity (percent)
-    'getSS1', 'getSS2', 'getSS3',  # Salt storage (weeks)
-    'getSV1', 'getSV2', 'getSV3',  # Salt amount (kg)
-    'getVS1', 'getVS2', 'getVS3',  # Volume thresholds
+    "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
+    "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
+    "getSV1", "getSV2", "getSV3",  # Salt amount (kg)
+    "getVS1", "getVS2", "getVS3",  # Volume thresholds
 
     # Sensors exits in devices only:
     # - LEXplus10SL
     # - Safe-T+
-    'getCEL',  # Water temperature - value "" means sensor does not exists or not measured.
-    'getNPS',  # Microleakage count - value "" means sensor does not exists.
+    "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
+    "getNPS",  # Microleakage count - value "" means sensor does not exists.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
-    'getBAR',  # Pressure at inlet - value "" means sensor does not exists or not measured
-    'getCYT',  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
-    'getLAR',  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show.
-    'getVPS1', # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
-    'getVPS2', # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
-    'getEGW',  # Ethernet gateway
-    'getEIP',  # Ethernet IP address
-    'getWFC',  # Wi-Fi channel
-    'getWFR',  # Wi-Fi frequency
-    'getWGW',  # Wi-Fi gateway
-    'getWIP',  # Wi-Fi IP address
+    "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
+    "getCYT",  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
+    "getLAR",  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show.
+    "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
+    "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
+    "getEGW",  # Ethernet gateway
+    "getEIP",  # Ethernet IP address
+    "getWFC",  # Wi-Fi channel
+    "getWFR",  # Wi-Fi frequency
+    "getWGW",  # Wi-Fi gateway
+    "getWIP",  # Wi-Fi IP address
 
     # Sensors exits in devices only:
     # - NeoSoft 5000
@@ -482,8 +482,8 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # NOT TESTED
     # RPD and RTM have no influence on the NeoSoft 5000, as this system initiates regeneration automatically as soon
     # as a pillar is exhausted. Softened water is available at all times.
-    #'getRPD',   # Regeneration interval (days) - value "0" means no interval configured.
-    #'getRTM',   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
+    #"getRPD",   # Regeneration interval (days) - value "0" means no interval configured.
+    #"getRTM",   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
 
     # Sensors exits in devices only:
     # - Trio DFR/LS
