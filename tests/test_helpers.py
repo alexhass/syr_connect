@@ -131,7 +131,7 @@ def test_clean_value_string_without_prefix() -> None:
     assert get_sensor_vol_value("6530") == "6530"
     assert get_sensor_vol_value("123.45") == "123.45"
     assert get_sensor_vol_value("normal_string") == "normal_string"
-    assert get_sensor_vol_value("") == ""
+    assert get_sensor_vol_value("") is None
 
 
 def test_clean_value_complex_strings() -> None:

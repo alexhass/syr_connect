@@ -202,7 +202,7 @@ def get_sensor_avo_value(value: str | int | float) -> float | None:
     return None
 
 
-def get_sensor_vol_value(value: str | int | float) -> str | int | float:
+def get_sensor_vol_value(value: str | int | float) -> str | int | float | None:
     """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
 
     Some devices send values with prefixes that include the parameter name
