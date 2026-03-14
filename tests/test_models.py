@@ -555,7 +555,7 @@ def test_attrs_match_none_value_in_flat():
 
 def test_serial_prefix_detection_113():
     """Serial number starting with 113AAA... detects model 113."""
-    flat = {"getSNR": "113AAA35413"}
+    flat = {"getSRN": "113AAA35413"}
     result = detect_model(flat)
     assert result["name"] == "113"
     assert result["display_name"].startswith("Model 113")
@@ -563,7 +563,7 @@ def test_serial_prefix_detection_113():
 
 def test_serial_prefix_detection_206():
     """Serial number starting with 206AAA... detects model 206."""
-    flat = {"getSNR": "206AAA56934"}
+    flat = {"getSRN": "206AAA56934"}
     result = detect_model(flat)
     assert result["name"] == "206"
     assert result["display_name"].startswith("Model 206")
@@ -571,14 +571,14 @@ def test_serial_prefix_detection_206():
 
 def test_serial_prefix_priority_over_getcna():
     """serial_prefix has higher priority than getCNA match."""
-    flat = {"getSNR": "113AAA99999", "getCNA": "LEXplus10"}
+    flat = {"getSRN": "113AAA99999", "getCNA": "LEXplus10"}
     result = detect_model(flat)
     assert result["name"] == "113"
 
 
 def test_serial_prefix_no_match_falls_back():
     """Unknown prefix falls back to other detection or unknown."""
-    flat = {"getSNR": "999AAA12345", "getCNA": "LEXplus10"}
+    flat = {"getSRN": "999AAA12345", "getCNA": "LEXplus10"}
     result = detect_model(flat)
     # Should fall back to getCNA match
     assert result["name"] == "lexplus10"
@@ -586,13 +586,13 @@ def test_serial_prefix_no_match_falls_back():
 
 def test_serial_prefix_short_serial():
     """Too short serial number does not match any prefix."""
-    flat = {"getSNR": "11A"}
+    flat = {"getSRN": "11A"}
     result = detect_model(flat)
     assert result["name"] == "unknown"
 
 
 def test_serial_prefix_with_serial_key():
-    """serial_prefix also works with 'serial' instead of 'getSNR'."""
+    """serial_prefix also works with 'serial' instead of 'getSRN'."""
     flat = {"serial": "206AAA00001"}
     result = detect_model(flat)
     assert result["name"] == "206"
