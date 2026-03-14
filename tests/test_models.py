@@ -515,23 +515,23 @@ def test_serial_prefix_detection_113():
     """Serial number starting with 113AAA... detects model 113."""
     flat = {"getSRN": "113AAA35413"}
     result = detect_model(flat)
-    assert result["name"] == "113"
-    assert result["display_name"].startswith("Model 113")
+    assert result["name"] == "trio"
+    assert result["display_name"].startswith("Trio DFR/LS")
 
 
 def test_serial_prefix_detection_206():
     """Serial number starting with 206AAA... detects model 206."""
     flat = {"getSRN": "206AAA56934"}
     result = detect_model(flat)
-    assert result["name"] == "206"
-    assert result["display_name"].startswith("Model 206")
+    assert result["name"] == "neosoft2500"
+    assert result["display_name"].startswith("NeoSoft 2500")
 
 
 def test_serial_prefix_priority_over_getcna():
     """serial_prefix has higher priority than getCNA match."""
     flat = {"getSRN": "113AAA99999", "getCNA": "LEXplus10"}
     result = detect_model(flat)
-    assert result["name"] == "113"
+    assert result["name"] == "trio"
 
 
 def test_serial_prefix_no_match_falls_back():
