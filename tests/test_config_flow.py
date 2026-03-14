@@ -203,7 +203,7 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.CREATE_ENTRY
-    assert result3["title"] == "SYR Connect Local (12345 @ 192.168.1.100)"
+    assert result3["title"] == "SYR Connect Local (192.168.1.100)"
     assert result3["data"][CONF_HOST] == "192.168.1.100"
     assert result3["data"][CONF_MODEL] == "neosoft5000"
     assert result3["data"][CONF_API_TYPE] == API_TYPE_JSON
