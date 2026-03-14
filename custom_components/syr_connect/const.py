@@ -315,7 +315,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # - NeoSoft 2500 / 5000
 
     'getBMX',       # Value: "", unclear meaning
-    'getCMS',       # Value: "", unclear meaning
     'getERE',       # Value: "", unclear meaning
     #'getLDF',      # Value: "", unclear meaning
     'getLMS',       # Value: "", unclear meaning
@@ -442,6 +441,12 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getFCM",
     "getFCD",
     "getCEN",
+
+    # Sensors exits in devices:
+    # - comfort by Sanibel - Enthärtungsanlage Softwater Uno A25
+    "getCMS",       # Value: "", unclear meaning
+    #"getCFW",       # Value: "", unclear meaning
+    #"getENV",       # Value: "", unclear meaning
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
