@@ -163,9 +163,10 @@ def test_get_current_mac_getIPA_mac_empty_fallback() -> None:
     status = {
         "getIPA": "1.2.3.4",
         "getMAC": "   ",  # whitespace should be treated as empty
+        "getWIP": "192.168.178.21",
         "getMAC1": "11:22:33:44:55:66",
     }
-    assert get_current_mac(status) is None
+    assert get_current_mac(status) == "11:22:33:44:55:66"
 
 
 def test_get_current_mac_zero_ip_treated_as_empty() -> None:
@@ -173,9 +174,10 @@ def test_get_current_mac_zero_ip_treated_as_empty() -> None:
     status = {
         "getIPA": "0.0.0.0",
         "getMAC": "   ",  # preferred MAC empty
+        "getWIP": "192.168.178.22",
         "getMAC1": "11:22:33:44:55:66",
     }
-    assert get_current_mac(status) is None
+    assert get_current_mac(status) == "11:22:33:44:55:66"
 
 
 def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
