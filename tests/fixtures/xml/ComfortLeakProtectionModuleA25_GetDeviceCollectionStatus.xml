@@ -1,23 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <col>
-    <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" sta="3" dst="1" ast="1" clb="1" nrdt="07.02.2026 17:24:19" nrs="0" />
+    <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="15.03.2026 19:21:13" nrs="0" />
   </col>
   <pdvs />
   <dvs>
-    <d dg="084eee9c-2ce6-43f0-9971-61853e8c169f" sbt="" sta="3" dst="1" ast="1" so="1">
+    <d dg="084eee9c-2ce6-43f0-9971-61853e8c169f" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
-      <c n="getSRN" v="501AAA37859" dt="07.02.2026 17:24:19" />
+      <c n="getSRN" v="501AAA12345" dt="15.03.2026 19:21:13" />
+      <c n="getALM" v="" dt="15.03.2026 19:10:34" />
+      <c n="getDAP" v="" />
       <c n="getDAV" v="" />
-      <c n="getDSV" v="0" />
-      <c n="getDTR" v="[0,0,0,0,0,0,0,0]" />
-      <c n="getLWT" v="90" />
-      <c n="getPRN" v="3" />
+      <c n="getDTR" v="[0,1,0,0,0,0,0,0]" />
+      <c n="getDSV" v="3" />
+      <c n="getEGW" v="192.168.178.1" />
+      <c n="getEIP" v="192.168.178.101" />
+      <c n="getMAC1" v="f0:f5:bd:eX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:eX:XX:XY" />
+      <c n="getPRN" v="2" />
+      <c n="getSLF" v="3500" />
+      <c n="getSLT" v="0" />
+      <c n="getSLV" v="0" />
+      <c n="getSUP" v="1" />
+      <c n="getVLV" v="20" />
+      <c n="getWFS" v="0" />
+      <c n="getWGW" v="192.168.178.1" />
+      <c n="getWIP" v="192.168.178.110" />
+      <c n="getCFW" v="118" />
+      <c n="getHWV" v="0" />
       <c n="get71" v="False" />
       <c n="getAB" v="False" />
+      <c n="getALD" v="600" />
+      <c n="getAFW" v="0" />
+      <c n="getAPT" v="300" />
+      <c n="getBMI" v="515" />
+      <c n="getBMA" v="585" />
+      <c n="getBSA" v="True" />
+      <c n="getBUZ" v="True" />
+      <c n="getCSE" v="False" />
+      <c n="getCSE2" v="False" />
+      <c n="getCURL" v="iot-syrconnect.azure-devices.net" />
       <c n="getDBD" v="10" />
       <c n="getDBT" v="15" />
       <c n="getDCM" v="3" />
+      <c n="getDFM" v="1" />
       <c n="getDMA" v="1" />
       <c n="getDMO" v="" />
       <c n="getDOM" v="60" />
@@ -26,10 +52,35 @@
       <c n="getDST" v="180" />
       <c n="getDTC" v="3" />
       <c n="getDTT" v="04:00" />
+      <c n="getEVL" v="0" />
+      <c n="getFCD" v="7776000" />
+      <c n="getFCM" v="" />
       <c n="getFFM" v="1" />
+      <c n="getLNG" v="0" />
+      <c n="getLOCK" v="False" />
+      <c n="getLWT" v="90" />
+      <c n="getMM" v="3" />
+      <c n="getMPO" v="0" />
+      <c n="getPRF" v="1" />
+      <c n="getPSE" v="False" />
+      <c n="getPSE2" v="False" />
+      <c n="getRTC" v="" />
+      <c n="getRURL" v="" />
+      <c n="getSLO" v="10" />
+      <c n="getSLE" v="0" />
+      <c n="getSLP" v="0" />
+      <c n="getSMF" v="2500" />
+      <c n="getSRO" v="0" />
+      <c n="getT2" v="1" />
+      <c n="getTSE" v="False" />
+      <c n="getTURL" v="http://storageiotsyr.blob.core.windows.net/muco/container.rescue" />
+      <c n="getWAD" v="True" />
+      <c n="getWAH" v="False" />
+      <c n="getWTI" v="1800" />
+      <c n="getENV" v="prod" />
       <c n="getPA1" v="True" />
       <c n="getPA2" v="True" />
-      <c n="getPA3" v="True" />
+      <c n="getPA3" v="False" />
       <c n="getPA4" v="False" />
       <c n="getPA5" v="False" />
       <c n="getPA6" v="False" />
@@ -61,7 +112,7 @@
       <c n="getPM8" v="False" />
       <c n="getPN1" v="Anwesend" />
       <c n="getPN2" v="Abwesend" />
-      <c n="getPN3" v="Neues Profil" />
+      <c n="getPN3" v="" />
       <c n="getPN4" v="" />
       <c n="getPN5" v="" />
       <c n="getPN6" v="" />
@@ -75,7 +126,6 @@
       <c n="getPR6" v="0" />
       <c n="getPR7" v="0" />
       <c n="getPR8" v="0" />
-      <c n="getPRF" v="1" />
       <c n="getPT1" v="60" />
       <c n="getPT2" v="30" />
       <c n="getPT3" v="0" />
@@ -100,77 +150,27 @@
       <c n="getPW6" v="False" />
       <c n="getPW7" v="False" />
       <c n="getPW8" v="False" />
-      <c n="getSLE" v="" />
-      <c n="getSLO" v="10" />
-      <c n="getSLP" v="0" />
-      <c n="getSLT" v="0" />
-      <c n="getSLV" v="0" />
-      <c n="getT2" v="1" />
-      <c n="getALM" v="ff" dt="13.03.2026 23:59:23" />
-      <c n="getBUZ" v="True" />
-      <c n="getDAP" v="" />
-      <c n="getEGW" v="0.0.0.0" />
-      <c n="getEIP" v="0.0.0.0" />
-      <c n="getSLF" v="0" />
-      <c n="getMAC1" v="f0:f5:bd:eX:XX:XX" />
-      <c n="getMAC2" v="c4:98:94:eX:XX:XY" />
-      <c n="getSUP" v="1" />
-      <c n="getVLV" v="20" />
-      <c n="getWFS" v="2" />
-      <c n="getWGW" v="192.168.178.1" />
-      <c n="getWIP" v="192.168.178.110" />
-      <c n="getALD" v="600" />
-      <c n="getAPT" v="300" />
-      <c n="getBSA" v="True" />
-      <c n="getBMA" v="585" />
-      <c n="getBMI" v="515" />
-      <c n="getCSE" v="False" />
-      <c n="getCSE2" v="False" />
-      <c n="getCURL" v="iot-syrconnect.azure-devices.net" />
-      <c n="getDFM" v="1" />
-      <c n="getEVL" v="0" />
-      <c n="getFCD" v="7776000" />
-      <c n="getFCM" v="15551049" />
-      <c n="getLNG" v="0" />
-      <c n="getLOCK" v="False" />
-      <c n="getMM" v="3" />
-      <c n="getMPO" v="0" />
-      <c n="getPSE" v="False" />
-      <c n="getPSE2" v="False" />
-      <c n="getRTC" v="" />
-      <c n="getSMF" v="3500" />
-      <c n="getSRO" v="0" />
-      <c n="getRURL" v="" />
-      <c n="getTSE" v="False" />
-      <c n="getTURL" v="http://storageiotsyr.blob.core.windows.net/muco/container.rescue" />
-      <c n="getWAD" v="False" />
-      <c n="getWAH" v="False" />
-      <c n="getWTI" v="1800" />
-      <c n="getALA" v="" dt="13.03.2026 23:59:23" />
-      <c n="getAVO" v="" />
-      <c n="getBAR" v="" />
-      <c n="getBAR2" v="" />
-      <c n="getBAP" v="" />
-      <c n="getBAT" v="" />
-      <c n="getCEL" v="" />
-      <c n="getCND" v="" />
-      <c n="getCND2" v="" />
-      <c n="getFLO" v="" />
-      <c n="getLTV" v="" />
-      <c n="getNET" v="" />
-      <c n="getNOT" v="" />
-      <c n="getNPS" v="" />
-      <c n="getVOL" v="" />
-      <c n="getWFR" v="" />
-      <c n="getWRN" v="" />
-      <c n="getAFW" v="0" />
+      <c n="getALA" v="ff" dt="15.03.2026 19:10:34" />
+      <c n="getAVO" v="0" />
+      <c n="getBAR" v="0" />
+      <c n="getBAR2" v="0" />
+      <c n="getBAP" v="99" />
+      <c n="getBAT" v="629" />
+      <c n="getCEL" v="0" />
+      <c n="getCND" v="0" />
+      <c n="getCND2" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getLTV" v="1" />
+      <c n="getNET" v="500" />
+      <c n="getNOT" v="ff" />
+      <c n="getNPS" v="73" />
+      <c n="getVOL" v="46499" />
+      <c n="getWFR" v="100" />
+      <c n="getWRN" v="ff" />
       <c n="getTYP" v="0" />
       <c n="getRCE" v="" />
-      <c n="getENV" v="prod" />
-      <c n="getCFW" v="118" />
-      <c n="getHWV" v="0" />
       <c n="getVER" v="003-A-B-000-118" />
     </d>
   </dvs>
-  <cs v="15338" />
+  <cs v="15EF2" />
 </sc>

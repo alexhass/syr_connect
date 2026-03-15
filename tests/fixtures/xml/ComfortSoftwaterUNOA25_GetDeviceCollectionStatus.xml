@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <col>
-    <dcl dclg="231d3522-8e1d-f111-8011-be3af2b6059f" sta="3" dst="1" ast="1" clb="1" nrdt="07.02.2026 17:09:45" nrs="0" />
+    <dcl dclg="231d3522-8e1d-f111-8011-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="15.03.2026 19:21:13" nrs="0" />
   </col>
   <pdvs />
   <dvs>
-    <d dg="251d3522-8e1d-f111-8011-be3af2b6059f" sbt="" sta="3" dst="1" ast="1" so="1">
+    <d dg="251d3522-8e1d-f111-8011-be3af2b6059f" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
-      <c n="getSRN" v="207AAA41039" dt="07.02.2026 17:09:45" />
-      <c n="getALM" v="a0,a0,ff,ff,ff,ff,ff,ff" dt="13.03.2026 23:59:20" />
-      <c n="getALN" v="04,01,ff,ff,ff,ff,ff,ff" />
+      <c n="getSRN" v="207AAA12345" dt="15.03.2026 19:21:13" />
+      <c n="getNOT" v="ff" />
+      <c n="getALM" v="a0,a0,ff,ff,ff,ff,ff,ff" dt="15.03.2026 19:10:33" />
+      <c n="getALN" v="04,01,04,01,ff,ff,ff,ff" />
       <c n="getALW" v="ff,ff,ff,ff,ff,ff,ff,ff" />
-      <c n="getCMS" v="[2736,684,0,0,0,0,0,0,0,0,0,0]" />
+      <c n="getCMS" v="[2736,1881,1026,0,0,0,0,0,0,0,0,0]" />
       <c n="getCYN" v="0" />
       <c n="getEGW" v="192.168.178.1" />
-      <c n="getEIP" v="192.168.178.108" />
-      <c n="getERE" v="68" />
-      <c n="getLAR" v="1770401257" />
+      <c n="getEIP" v="192.168.178.100" />
+      <c n="getERE" v="81" />
+      <c n="getLAR" v="1773540386" />
       <c n="getLDF" v="" />
       <c n="getLMS" v="[0,0,0,0,0,0,0,0,1739,1881,2736,3420]" />
       <c n="getMAC1" v="c4:98:94:eX:XX:XX" />
@@ -25,23 +26,23 @@
       <c n="getOWH" v="5" />
       <c n="getPRE" v="0" />
       <c n="getSRE" v="0" />
-      <c n="getVRE1" v="" />
+      <c n="getVRE1" v="85" />
       <c n="getWFC" v="" />
       <c n="getWFS" v="0" />
-      <c n="getWGW" v="192.168.178.1" />
-      <c n="getWIP" v="192.168.178.109" />
-      <c n="getCFW" v="227" />
+      <c n="getWGW" v="" />
+      <c n="getWIP" v="" />
+      <c n="getCFW" v="236" />
       <c n="getHWV" v="V1" />
       <c n="getAPT" v="600" />
       <c n="getBUZ" v="False" />
-      <c n="getEVL" v="0" />
+      <c n="getEVL" v="1" />
       <c n="getIDS" v="False" />
       <c n="getIWH" v="18" />
       <c n="getLNG" v="0" />
       <c n="getRMO" v="4" />
       <c n="getRPD" v="3" />
       <c n="getRPW" v="0" />
-      <c n="getRTM" v="02:00" />
+      <c n="getRTM" v="02:15" />
       <c n="getRTC" v="" />
       <c n="getRURL" v="" />
       <c n="getSRH" v="19.03.2026" />
@@ -50,28 +51,27 @@
       <c n="getTURL" v="" />
       <c n="getWAD" v="False" />
       <c n="getWHU" v="0" />
-      <c n="getWTI" v="1720" />
-      <c n="getENV" v="" />
-      <c n="getALA" v="" dt="13.03.2026 23:59:20" />
-      <c n="getAVO" v="" />
-      <c n="getCYT" v="" />
-      <c n="getFLO" v="" />
-      <c n="getLTV" v="" />
-      <c n="getNOT" v="" />
-      <c n="getRE1" v="" />
-      <c n="getRG1" v="" />
-      <c n="getRTI" v="" />
-      <c n="getSS1" v="" />
-      <c n="getSV1" v="" />
-      <c n="getVOL" v="" />
-      <c n="getVPS1" v="" />
-      <c n="getWFR" v="" />
-      <c n="getWRN" v="" />
+      <c n="getWTI" v="1740" />
+      <c n="getENV" v="PROD" />
       <c n="getALD" v="" />
       <c n="getWAH" v="" />
+      <c n="getALA" v="ff" dt="15.03.2026 19:10:33" />
+      <c n="getAVO" v="0" />
+      <c n="getCYT" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getLTV" v="0" />
       <c n="getNET" v="" />
-      <c n="getVER" v="NSS.V.2.028" />
+      <c n="getRE1" v="615" />
+      <c n="getRG1" v="0" />
+      <c n="getRTI" v="0" />
+      <c n="getSS1" v="23" />
+      <c n="getSV1" v="9" />
+      <c n="getVOL" v="31588" />
+      <c n="getVPS1" v="46260" />
+      <c n="getWFR" v="0" />
+      <c n="getWRN" v="ff" />
+      <c n="getVER" v="NSS.V.2.36" />
     </d>
   </dvs>
-  <cs v="D5FD" />
+  <cs v="DE13" />
 </sc>
