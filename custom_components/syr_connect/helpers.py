@@ -107,7 +107,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
 
     Priority:
     1. If `getIPA` not empty -> use `getMAC`
-    2. If `getWIP` not empty -> use `getMAC1`
+    2. If `getWIP` not empty and getWFS = 2 (Wi-Fi is connected) -> use `getMAC1`
     3. If `getEIP` not empty -> use `getMAC2`
 
     If the selected MAC is missing or empty, fall back to any available
@@ -129,28 +129,46 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
             return True
         return True
 
-    # Priority selection
+
+    # Priority selection for MAC address:
+    # 1. If getIPA (primary IP) is set and not empty, use getMAC (primary MAC)
     if is_not_empty_ip("getIPA"):
         mac_val = status.get("getMAC")
         if mac_val is not None and str(mac_val).strip() != "":
             return str(mac_val)
 
+    # 2. If getWIP (Wi-Fi IP) is set and not empty, only use getMAC1 (Wi-Fi MAC)
+    #    if and only if getWFS == 2 (Wi-Fi is connected).
+    #    This prevents returning a Wi-Fi MAC address when the device is not actually
+    #    connected to a Wi-Fi network, which avoids confusion and ensures that only
+    #    active/connected MAC addresses are reported.
     if is_not_empty_ip("getWIP"):
-        mac_val = status.get("getMAC1")
-        if mac_val is not None and str(mac_val).strip() != "":
-            return str(mac_val)
+        wfs_val = status.get("getWFS")
+        # getWFS meaning:
+        #   2 = Wi-Fi connected
+        #   1 = Wi-Fi not connected
+        #   0 = unknown or not available
+        if wfs_val is not None:
+            try:
+                wfs_int = int(wfs_val)
+            except (ValueError, TypeError):
+                wfs_int = None
+        else:
+            wfs_int = None
+        if wfs_int == 2:
+            # Only return the Wi-Fi MAC if Wi-Fi is confirmed to be connected
+            mac_val = status.get("getMAC1")
+            if mac_val is not None and str(mac_val).strip() != "":
+                return str(mac_val)
+        # If Wi-Fi is not connected, skip getMAC1 and continue to next fallback
 
+    # 3. If getEIP (Ethernet IP) is set and not empty, use getMAC2 (Ethernet MAC)
     if is_not_empty_ip("getEIP"):
         mac_val = status.get("getMAC2")
         if mac_val is not None and str(mac_val).strip() != "":
             return str(mac_val)
 
-    # Fallback: first available MAC
-    for k in ("getMAC", "getMAC1", "getMAC2"):
-        val = status.get(k)
-        if val is not None and str(val).strip() != "":
-            return str(val)
-
+    # No fallback: only return a MAC if it matches the priority rules above
     return None
 
 
