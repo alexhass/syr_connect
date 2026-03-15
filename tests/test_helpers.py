@@ -165,6 +165,7 @@ def test_get_current_mac_getIPA_mac_empty_fallback() -> None:
         "getMAC": "   ",  # whitespace should be treated as empty
         "getWIP": "192.168.178.21",
         "getMAC1": "11:22:33:44:55:66",
+        "getWFS": 2,
     }
     assert get_current_mac(status) == "11:22:33:44:55:66"
 
@@ -176,6 +177,7 @@ def test_get_current_mac_zero_ip_treated_as_empty() -> None:
         "getMAC": "   ",  # preferred MAC empty
         "getWIP": "192.168.178.22",
         "getMAC1": "11:22:33:44:55:66",
+        "getWFS": 2,
     }
     assert get_current_mac(status) == "11:22:33:44:55:66"
 
