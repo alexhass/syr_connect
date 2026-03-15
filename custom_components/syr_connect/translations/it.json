@@ -105,6 +105,15 @@
       "getrtm": {
         "name": "Ora di rigenerazione"
       },
+      "getsro": {
+        "name": "Ruota display",
+        "state": {
+          "0": "0°",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
+      },
       "getsv1": {
         "name": "Quantità sale contenitore 1"
       },
@@ -769,6 +778,15 @@
       },
       "getsrn": {
         "name": "Numero di serie"
+      },
+      "getsro": {
+        "name": "Ruota display",
+        "state": {
+          "0": "0°",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
       },
       "getsrv": {
         "name": "Prossima manutenzione annuale"

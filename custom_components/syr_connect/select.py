@@ -103,6 +103,21 @@ async def async_setup_entry(
         if has_profile:
             entities.append(SyrConnectPrfSelect(coordinator, device_id, device_name))
 
+    # Add select for display rotation (getSRO) - discrete states: 0,90,180,270
+    for device in coordinator.data.get("devices", []):
+        device_id = device.get("id")
+        device_name = device.get("name", device_id)
+        status = device.get("status", {})
+        sro_value = status.get("getSRO")
+        if sro_value is None or sro_value == "":
+            continue
+        try:
+            # accept numeric-like values (e.g., "90" or "90.0")
+            int(float(sro_value))
+        except (ValueError, TypeError):
+            continue
+        entities.append(SyrConnectRotationSelect(coordinator, device_id, device_name))
+
     # Add numeric-controlled selects for salt amounts and regeneration interval
     for device in coordinator.data.get("devices", []):
         device_id = device.get("id")
@@ -343,6 +358,93 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
             raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
+
+    @property
+    def available(self) -> bool:
+        if not self.coordinator.last_update_success:
+            return False
+        for device in self.coordinator.data.get("devices", []):
+            if device.get("id") == self._device_id:
+                return device.get("available", True)
+        return True
+
+
+class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
+    """Select entity exposing display rotation (`getSRO`).
+
+    Options: 0°, 90°, 180°, 270° — selecting sends `setSRO`.
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._device_name = device_name
+
+        self._attr_has_entity_name = True
+        self._attr_translation_key = "getsro"
+        self.entity_id = build_entity_id("select", device_id, "getSRO")
+        self._attr_unique_id = f"{device_id}_getSRO_select"
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getSRO")
+
+        self._options = ["0°", "90°", "180°", "270°"]
+
+        if "getSRO" in _SYR_CONNECT_SENSOR_CONFIG:
+            self._attr_entity_category = EntityCategory.CONFIG
+
+        _LOGGER.debug(
+            "Created SyrConnectRotationSelect object: device=%s name=%s unique_id=%s",
+            self._device_id,
+            self._device_name,
+            self._attr_unique_id,
+        )
+
+    @property
+    def options(self) -> list[str]:
+        return self._options
+
+    @property
+    def current_option(self) -> str | None:
+        for dev in self.coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            status = dev.get("status", {})
+            val = status.get("getSRO")
+            if val is None or val == "":
+                return None
+            try:
+                num = int(float(val))
+                # Return matching option with degree symbol
+                for opt in self._options:
+                    if opt.startswith(f"{num}"):
+                        return opt
+                return f"{num}°"
+            except (ValueError, TypeError, AttributeError):
+                return None
+        return None
+
+    async def async_select_option(self, option: str) -> None:
+        try:
+            token = str(option).rstrip("°").strip()
+            val = int(token)
+        except Exception as err:
+            _LOGGER.error("Invalid option for getSRO: %s", err)
+            return
+
+        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        set_key = "setSRO"
+        try:
+            await coordinator.async_set_device_value(self._device_id, set_key, val)
+            _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
+            _LOGGER.debug("Select getSRO changed for device %s to %s", self._device_id, option)
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
+            raise HomeAssistantError(f"Failed to set getSRO: {err}") from err
 
     @property
     def available(self) -> bool:

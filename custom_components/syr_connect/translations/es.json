@@ -105,6 +105,15 @@
       "getrtm": {
         "name": "Hora de regeneración"
       },
+      "getsro": {
+        "name": "Girar pantalla",
+        "state": {
+          "0": "0°",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
+      },
       "getsv1": {
         "name": "Cantidad de sal depósito 1"
       },
@@ -769,6 +778,15 @@
       },
       "getsrn": {
         "name": "Número de serie"
+      },
+      "getsro": {
+        "name": "Girar pantalla",
+        "state": {
+          "0": "0°",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
       },
       "getsrv": {
         "name": "Próximo mantenimiento anual"

@@ -151,6 +151,7 @@ _SYR_CONNECT_SENSOR_BINARY = {
 _SYR_CONNECT_SENSOR_CONFIG = {
     "getRPD",   # Regeneration interval - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
+    "getSRO",   # Display rotation - also represented as select entity
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
 }
 
@@ -404,7 +405,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getSLP_ed",    # Value: "", unclear meaning - likely end date for maintenance mode or similar
     #"getSLO",      # Value: "", unclear meaning (duplicate of getSLO from LEXplus10SL)
     "getSOF",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    "getSRO",       # Value: "", unclear meaning - likely related to service or maintenance mode
     "getSRV",       # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     #"getTN",       # Value: "", unclear meaning (duplicate of getTN from LEXplus10SL)
     #"getTMZ",      # Value: "4", unclear meaning (duplicate of getTMZ from NeoSoft 2500/5000)
@@ -687,6 +687,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getRMO": "mdi:autorenew",
     "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
     "getSRV": "mdi:calendar-clock",     # Next annual maintenance
+    "getSRO": "mdi:rotate-right",       # Display rotation / orientation
     "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
     "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
     "getWGW": "mdi:router-wireless",

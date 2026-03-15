@@ -105,6 +105,15 @@
       "getrtm": {
         "name": "Regeneration time"
       },
+      "getsro": {
+        "name": "Rotate display",
+        "state": {
+          "0": "0°",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
+      },
       "getsv1": {
         "name": "Salt container volume 1"
       },
@@ -769,6 +778,15 @@
       },
       "getsrn": {
         "name": "Serial number"
+      },
+      "getsro": {
+        "name": "Rotate display",
+        "state": {
+          "0": "0°",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
       },
       "getsrv": {
         "name": "Next annual maintenance"

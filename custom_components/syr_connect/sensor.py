@@ -237,6 +237,17 @@ async def async_setup_entry(
                     continue
 
             # Create sensor if value is valid
+            # Special: only create getSRO sensor when the reported value is an integer
+            if key == "getSRO":
+                if value is None or value == "":
+                    continue
+                try:
+                    v = float(value)
+                    if not v.is_integer():
+                        continue
+                except (ValueError, TypeError):
+                    continue
+
             if isinstance(value, int | float | str):
                 entities.append(
                     SyrConnectSensor(
@@ -248,7 +259,6 @@ async def async_setup_entry(
                     )
                 )
                 sensor_count += 1
-
 
 
         _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
