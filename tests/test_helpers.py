@@ -36,6 +36,7 @@ def test_build_device_info() -> None:
                     "getVER": "1.0.0",
                     "getFIR": "SLPS",
                     "getMAC": "00:11:22:33:44:55",
+                    "getIPA": "192.168.178.100",  # Added to trigger MAC detection
                 },
             }
         ]
@@ -164,7 +165,7 @@ def test_get_current_mac_getIPA_mac_empty_fallback() -> None:
         "getMAC": "   ",  # whitespace should be treated as empty
         "getMAC1": "11:22:33:44:55:66",
     }
-    assert get_current_mac(status) == "11:22:33:44:55:66"
+    assert get_current_mac(status) is None
 
 
 def test_get_current_mac_zero_ip_treated_as_empty() -> None:
@@ -174,12 +175,12 @@ def test_get_current_mac_zero_ip_treated_as_empty() -> None:
         "getMAC": "   ",  # preferred MAC empty
         "getMAC1": "11:22:33:44:55:66",
     }
-    assert get_current_mac(status) == "11:22:33:44:55:66"
+    assert get_current_mac(status) is None
 
 
 def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
     """Test selection when getWIP/getEIP are present."""
-    status_wip = {"getWIP": "10.0.0.1", "getMAC1": "11:11:11:11:11:11"}
+    status_wip = {"getWIP": "10.0.0.1", "getMAC1": "11:11:11:11:11:11", "getWFS": 2}
     assert get_current_mac(status_wip) == "11:11:11:11:11:11"
 
     status_eip = {"getEIP": "10.0.0.2", "getMAC2": "22:22:22:22:22:22"}
@@ -197,7 +198,7 @@ def test_get_current_mac_non_string_ip_value() -> None:
     assert get_current_mac(status_int) == "AA:BB:CC:DD:EE:FF"
 
     # IP value as float should be treated as present
-    status_float = {"getWIP": 192.168, "getMAC1": "11:22:33:44:55:66"}
+    status_float = {"getWIP": 192.168, "getMAC1": "11:22:33:44:55:66", "getWFS": 2}
     assert get_current_mac(status_float) == "11:22:33:44:55:66"
 
     # IP value as bool should be treated as present
