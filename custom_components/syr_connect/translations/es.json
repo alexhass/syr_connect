@@ -92,6 +92,31 @@
           "true": "Cerrada"
         }
       },
+      "getfcd": {
+        "name": "Intervalo de retrolavado del filtro",
+        "state": {
+          "10368000": "4 meses",
+          "12960000": "5 meses",
+          "15552000": "6 meses",
+          "18144000": "7 meses",
+          "20736000": "8 meses",
+          "23328000": "9 meses",
+          "2592000": "1 mes",
+          "25920000": "10 meses",
+          "28512000": "11 meses",
+          "31104000": "12 meses",
+          "5184000": "2 meses",
+          "7776000": "3 meses"
+        }
+      },
+      "getffm": {
+        "name": "Tipo de filtro",
+        "state": {
+          "1": "Filtro de retrolavado",
+          "2": "Filtro intercambiable",
+          "3": "Sin filtro"
+        }
+      },
       "getprf": {
         "name": "Perfil de protección contra fugas activo",
         "state": {
@@ -254,8 +279,33 @@
       "geteip": {
         "name": "Dirección IP (LAN)"
       },
+      "getfcd": {
+        "name": "Intervalo de retrolavado del filtro",
+        "state": {
+          "10368000": "4 meses",
+          "12960000": "5 meses",
+          "15552000": "6 meses",
+          "18144000": "7 meses",
+          "20736000": "8 meses",
+          "23328000": "9 meses",
+          "2592000": "1 mes",
+          "25920000": "10 meses",
+          "28512000": "11 meses",
+          "31104000": "12 meses",
+          "5184000": "2 meses",
+          "7776000": "3 meses"
+        }
+      },
       "getfco": {
         "name": "Contenido de hierro"
+      },
+      "getffm": {
+        "name": "Tipo de filtro",
+        "state": {
+          "1": "Filtro de retrolavado",
+          "2": "Filtro intercambiable",
+          "3": "Sin filtro"
+        }
       },
       "getfir": {
         "name": "Modelo de firmware"

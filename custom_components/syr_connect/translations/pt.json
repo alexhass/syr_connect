@@ -92,6 +92,31 @@
           "true": "Fechado"
         }
       },
+      "getfcd": {
+        "name": "Intervalo de retrolavagem do filtro",
+        "state": {
+          "10368000": "4 meses",
+          "12960000": "5 meses",
+          "15552000": "6 meses",
+          "18144000": "7 meses",
+          "20736000": "8 meses",
+          "23328000": "9 meses",
+          "2592000": "1 mês",
+          "25920000": "10 meses",
+          "28512000": "11 meses",
+          "31104000": "12 meses",
+          "5184000": "2 meses",
+          "7776000": "3 meses"
+        }
+      },
+      "getffm": {
+        "name": "Tipo de filtro",
+        "state": {
+          "0": "Sem filtro",
+          "1": "Filtro de cartucho",
+          "2": "Filtro de areia"
+        }
+      },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",
         "state": {
@@ -254,8 +279,33 @@
       "geteip": {
         "name": "Endereço IP (LAN)"
       },
+      "getfcd": {
+        "name": "Intervalo de retrolavagem do filtro",
+        "state": {
+          "10368000": "4 meses",
+          "12960000": "5 meses",
+          "15552000": "6 meses",
+          "18144000": "7 meses",
+          "20736000": "8 meses",
+          "23328000": "9 meses",
+          "2592000": "1 mês",
+          "25920000": "10 meses",
+          "28512000": "11 meses",
+          "31104000": "12 meses",
+          "5184000": "2 meses",
+          "7776000": "3 meses"
+        }
+      },
       "getfco": {
         "name": "Teor de ferro"
+      },
+      "getffm": {
+        "name": "Tipo de filtro",
+        "state": {
+          "0": "Sem filtro",
+          "1": "Filtro de cartucho",
+          "2": "Filtro de areia"
+        }
       },
       "getfir": {
         "name": "Modelo do firmware"

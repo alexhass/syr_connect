@@ -92,6 +92,31 @@
           "true": "Geschlossen"
         }
       },
+      "getfcd": {
+        "name": "Filterspülintervall",
+        "state": {
+          "10368000": "4 Monate",
+          "12960000": "5 Monate",
+          "15552000": "6 Monate",
+          "18144000": "7 Monate",
+          "20736000": "8 Monate",
+          "23328000": "9 Monate",
+          "2592000": "1 Monat",
+          "25920000": "10 Monate",
+          "28512000": "11 Monate",
+          "31104000": "12 Monate",
+          "5184000": "2 Monate",
+          "7776000": "3 Monate"
+        }
+      },
+      "getffm": {
+        "name": "Filtertyp",
+        "state": {
+          "1": "Rückspülfilter",
+          "2": "Wechselfilter",
+          "3": "Ohne Filter"
+        }
+      },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",
         "state": {
@@ -254,8 +279,33 @@
       "geteip": {
         "name": "IP-Adresse (LAN)"
       },
+      "getfcd": {
+        "name": "Filterspülintervall",
+        "state": {
+          "10368000": "4 Monate",
+          "12960000": "5 Monate",
+          "15552000": "6 Monate",
+          "18144000": "7 Monate",
+          "20736000": "8 Monate",
+          "23328000": "9 Monate",
+          "2592000": "1 Monat",
+          "25920000": "10 Monate",
+          "28512000": "11 Monate",
+          "31104000": "12 Monate",
+          "5184000": "2 Monate",
+          "7776000": "3 Monate"
+        }
+      },
       "getfco": {
         "name": "Eisengehalt"
+      },
+      "getffm": {
+        "name": "Filtertyp",
+        "state": {
+          "1": "Rückspülfilter",
+          "2": "Wechselfilter",
+          "3": "Ohne Filter"
+        }
       },
       "getfir": {
         "name": "Firmware-Modell"

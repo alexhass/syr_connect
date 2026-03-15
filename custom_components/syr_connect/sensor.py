@@ -248,6 +248,17 @@ async def async_setup_entry(
                 except (ValueError, TypeError):
                     continue
 
+            # Special: only create getFFM sensor when the reported value is >= 1
+            if key == "getFFM":
+                if value is None or value == "":
+                    continue
+                try:
+                    v = float(value)
+                    if v < 1:
+                        continue
+                except (ValueError, TypeError):
+                    continue
+
             if isinstance(value, int | float | str):
                 entities.append(
                     SyrConnectSensor(

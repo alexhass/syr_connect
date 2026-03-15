@@ -92,6 +92,31 @@
           "true": "Fermé"
         }
       },
+      "getfcd": {
+        "name": "Intervalle de contre‑lavage du filtre",
+        "state": {
+          "10368000": "4 mois",
+          "12960000": "5 mois",
+          "15552000": "6 mois",
+          "18144000": "7 mois",
+          "20736000": "8 mois",
+          "23328000": "9 mois",
+          "2592000": "1 mois",
+          "25920000": "10 mois",
+          "28512000": "11 mois",
+          "31104000": "12 mois",
+          "5184000": "2 mois",
+          "7776000": "3 mois"
+        }
+      },
+      "getffm": {
+        "name": "Type de filtre",
+        "state": {
+          "1": "Filtre à contre‑lavage",
+          "2": "Filtre remplaçable",
+          "3": "Sans filtre"
+        }
+      },
       "getprf": {
         "name": "Profil de protection contre les fuites actif",
         "state": {
@@ -254,8 +279,33 @@
       "geteip": {
         "name": "Adresse IP (LAN)"
       },
+      "getfcd": {
+        "name": "Intervalle de contre‑lavage du filtre",
+        "state": {
+          "10368000": "4 mois",
+          "12960000": "5 mois",
+          "15552000": "6 mois",
+          "18144000": "7 mois",
+          "20736000": "8 mois",
+          "23328000": "9 mois",
+          "2592000": "1 mois",
+          "25920000": "10 mois",
+          "28512000": "11 mois",
+          "31104000": "12 mois",
+          "5184000": "2 mois",
+          "7776000": "3 mois"
+        }
+      },
       "getfco": {
         "name": "Teneur en fer"
+      },
+      "getffm": {
+        "name": "Type de filtre",
+        "state": {
+          "1": "Filtre à contre‑lavage",
+          "2": "Filtre remplaçable",
+          "3": "Sans filtre"
+        }
       },
       "getfir": {
         "name": "Modèle du firmware"

@@ -92,6 +92,31 @@
           "true": "Closed"
         }
       },
+      "getfcd": {
+        "name": "Filter backwash interval",
+        "state": {
+          "10368000": "4 months",
+          "12960000": "5 months",
+          "15552000": "6 months",
+          "18144000": "7 months",
+          "20736000": "8 months",
+          "23328000": "9 months",
+          "2592000": "1 month",
+          "25920000": "10 months",
+          "28512000": "11 months",
+          "31104000": "12 months",
+          "5184000": "2 months",
+          "7776000": "3 months"
+        }
+      },
+      "getffm": {
+        "name": "Filter type",
+        "state": {
+          "1": "Backwash filter",
+          "2": "Replaceable filter",
+          "3": "No filter"
+        }
+      },
       "getprf": {
         "name": "Active leak protection profile",
         "state": {
@@ -254,8 +279,33 @@
       "geteip": {
         "name": "IP address (LAN)"
       },
+      "getfcd": {
+        "name": "Filter backwash interval",
+        "state": {
+          "10368000": "4 months",
+          "12960000": "5 months",
+          "15552000": "6 months",
+          "18144000": "7 months",
+          "20736000": "8 months",
+          "23328000": "9 months",
+          "2592000": "1 month",
+          "25920000": "10 months",
+          "28512000": "11 months",
+          "31104000": "12 months",
+          "5184000": "2 months",
+          "7776000": "3 months"
+        }
+      },
       "getfco": {
         "name": "Iron content"
+      },
+      "getffm": {
+        "name": "Filter type",
+        "state": {
+          "1": "Backwash filter",
+          "2": "Replaceable filter",
+          "3": "No filter"
+        }
       },
       "getfir": {
         "name": "Firmware model"

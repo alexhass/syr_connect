@@ -434,9 +434,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 
     # JSON API only sensors (not available in XML API):
     "getCEN",
-    "getFCD",
     "getFCM",
-    "getFFM",
     "getLDT",
     "getMM",
     "getPB",
@@ -966,6 +964,8 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getDRP": 0,    # Microleakage test interval: show as whole number by default
     "getDSV": 0,    # Microleakage test: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default
+    "getFCD": 0,    # Filter change: show as whole number by default
+    "getFFM": 0,    # Filter fouling level: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
     "getFLO": 0,    # Flow rate: show as whole number by default
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
