@@ -89,6 +89,8 @@ This integration works with SYR water softeners and leakage detection devices an
 
 Tested and reported as working:
 
+- Sanibel Leak Protection Module A25
+- Sanibel Softwater UNO A25
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect

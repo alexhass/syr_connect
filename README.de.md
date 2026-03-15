@@ -89,6 +89,8 @@ Diese Integration funktioniert mit SYR-Wasserenth√§rtern, Leckage-Erkennungsger√
 
 Getestet und gemeldet als funktionierend:
 
+- Sanibel Leckageschutzmodul A25
+- Sanibel Softwater UNO A25
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
