@@ -530,6 +530,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getDWF": "mdi:water-alert",
     "getFCO": "mdi:counter",
     "getFLO": "mdi:waves-arrow-right",
+    "getFCD": "mdi:calendar-filter-outline",
+    "getFFM": "mdi:filter",
     "getPRS": "mdi:gauge",
     # Capacity & Supply
     "getRES": "mdi:gauge",
