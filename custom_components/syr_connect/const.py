@@ -1000,6 +1000,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getSLF": 0,    # Self-learning phase volume (l/h)
     "getSLT": 0,    # Time in self-learning phase (seconds)
     "getSLV": 0,    # Self-learning phase volume (l)
+    "getSRO": 0,    # Display rotation: show as whole number by default
     "getSS1": 0,    # Salt container supply 1: show as whole number by default
     "getSS2": 0,    # Salt container supply 2: show as whole number by default
     "getSS3": 0,    # Salt container supply 3: show as whole number by default
