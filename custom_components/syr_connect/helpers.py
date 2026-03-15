@@ -485,16 +485,27 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
 
     # Select mapping based on detected model. Only attempt mapping for the
     # explicitly-detected model family; do NOT attempt cross-family fallbacks.
-    if model in ("lexplus10", "lexplus10s", "lexplus10sl"):
+    if model in (
+        "lexplus10",
+        "lexplus10s",
+        "lexplus10sl",
+    ):
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_LEX10.get(code_upper)
-        return (mapped, code) if mapped is not None else (None, code)
-
-    if model in ("neosoft2500", "neosoft5000", "safetech", "trio"):
-        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
     if model == "safetplus":
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_SAFET.get(code_upper)
+        return (mapped, code) if mapped is not None else (None, code)
+
+    if model in (
+        "neosoft2500",
+        "neosoft5000",
+        "safetech",
+        "sanibelleakprotect",
+        "sanibelsoftwateruno",
+        "trio",
+    ):
+        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
     # If we reach here, model was something else (not recognized). Do not
