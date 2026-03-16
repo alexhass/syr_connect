@@ -118,6 +118,34 @@ async def async_setup_entry(
             continue
         entities.append(SyrConnectRotationSelect(coordinator, device_id, device_name))
 
+    # Add select for filter backwash interval (getFCD) - use raw state keys so frontend translates the state
+    fcd_map = {
+        "2592000": 2592000,
+        "5184000": 5184000,
+        "7776000": 7776000,
+        "10368000": 10368000,
+        "12960000": 12960000,
+        "15552000": 15552000,
+        "18144000": 18144000,
+        "20736000": 20736000,
+        "23328000": 23328000,
+        "25920000": 25920000,
+        "28512000": 28512000,
+        "31104000": 31104000,
+    }
+    for device in coordinator.data.get("devices", []):
+        device_id = device.get("id")
+        device_name = device.get("name", device_id)
+        status = device.get("status", {})
+        fcd_value = status.get("getFCD")
+        if fcd_value is None or fcd_value == "":
+            continue
+        try:
+            int(float(fcd_value))
+        except (ValueError, TypeError):
+            continue
+        entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getFCD", fcd_map))
+
     # Add numeric-controlled selects for salt amounts and regeneration interval
     for device in coordinator.data.get("devices", []):
         device_id = device.get("id")
@@ -150,6 +178,19 @@ async def async_setup_entry(
                     entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 1, 4, 1))
             except (ValueError, TypeError):
                 pass
+
+        # Add getFFM select (filter type) if present: expose raw numeric keys so frontend translates the state
+        ffm_value = status.get("getFFM")
+        if ffm_value is not None and ffm_value != "":
+            try:
+                int(float(ffm_value))
+            except (ValueError, TypeError):
+                continue
+            # create numeric select and expose raw numeric options (strings) so HA translates the selected state
+            # Use 1..3 as valid filter type values
+            sel = SyrConnectNumericSelect(coordinator, device_id, device_name, "getFFM", 1, 3, 1)
+            sel._options = [str(v) for v in range(1, 4)]
+            entities.append(sel)
 
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
@@ -445,6 +486,93 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
             raise HomeAssistantError(f"Failed to set getSRO: {err}") from err
+
+    @property
+    def available(self) -> bool:
+        if not self.coordinator.last_update_success:
+            return False
+        for device in self.coordinator.data.get("devices", []):
+            if device.get("id") == self._device_id:
+                return device.get("available", True)
+        return True
+
+
+class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
+    """Select entity for discrete, non-sequential option maps (e.g., getFCD)."""
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        sensor_key: str,
+        options_map: dict[str, int],
+    ) -> None:
+        super().__init__(coordinator)
+        self._device_id = device_id
+        self._device_name = device_name
+        self._sensor_key = sensor_key
+        self._options_map = options_map
+
+        self._attr_has_entity_name = True
+        self._attr_translation_key = sensor_key.lower()
+        self.entity_id = build_entity_id("select", device_id, sensor_key)
+        self._attr_unique_id = f"{device_id}_{sensor_key}_select"
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
+
+        # Options are the raw state keys (strings) of the mapping so the frontend
+        # can translate the displayed state using the integration translations.
+        self._options = list(options_map.keys())
+
+        # Mark as configuration if listed in central mapping
+        if self._sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
+            self._attr_entity_category = EntityCategory.CONFIG
+
+        _LOGGER.debug(
+            "Created SyrConnectDiscreteSelect object: device=%s key=%s unique_id=%s",
+            self._device_id,
+            self._sensor_key,
+            self._attr_unique_id,
+        )
+
+    @property
+    def options(self) -> list[str]:
+        return self._options
+
+    @property
+    def current_option(self) -> str | None:
+        for dev in self.coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            status = dev.get("status", {})
+            val = status.get(self._sensor_key)
+            if val is None or val == "":
+                return None
+            try:
+                num = int(float(val))
+            except (ValueError, TypeError):
+                return None
+            for opt, mapped in self._options_map.items():
+                if mapped == num:
+                    return opt
+            return None
+        return None
+
+    async def async_select_option(self, option: str) -> None:
+        if option not in self._options_map:
+            _LOGGER.error("Invalid option for %s: %s", self._sensor_key, option)
+            return
+        val = self._options_map[option]
+        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        set_key = f"set{self._sensor_key[3:]}"
+        try:
+            await coordinator.async_set_device_value(self._device_id, set_key, val)
+            _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
+            _LOGGER.debug("Select %s changed for device %s to %s", self._sensor_key, self._device_id, option)
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
+            raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
 
     @property
     def available(self) -> bool:

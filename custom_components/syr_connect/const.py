@@ -153,6 +153,8 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
     "getSRO",   # Display rotation - also represented as select entity
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
+    "getFCD",   # Filter change
+    "getFFM",   # Filter fouling level
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
