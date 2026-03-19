@@ -98,7 +98,7 @@ class SyrConnectJsonAPI:
 
         Priority order:
         1. Explicit base_url (if provided) - used for tests or custom configurations
-        2. Constructed from host + base_path - standard production use
+        2. Constructed from host + base_path (standard production use)
 
         Returns:
             Base URL with trailing slash, or None if neither option is available
@@ -110,13 +110,14 @@ class SyrConnectJsonAPI:
             return result
 
         # Option 2: Construct from host + base_path (standard production use)
+        _LOGGER.debug("JSON API: Attempting to build base URL - host=%r, base_path=%r", self._host, self._base_path)
         if not self._host or not self._base_path:
-            _LOGGER.debug("JSON API: Cannot build base URL - host=%s, base_path=%s", self._host, self._base_path)
+            _LOGGER.error("JSON API: Cannot build base URL - host=%r, base_path=%r", self._host, self._base_path)
             return None
 
         result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
         _LOGGER.debug(
-            "JSON API: Built base URL from host and base_path: %s (host=%s, port=%s, base_path=%s)",
+            "JSON API: Built base URL from host and base_path: %s (host=%r, port=%s, base_path=%r)",
             result,
             self._host,
             _SYR_CONNECT_JSON_API_PORT,
