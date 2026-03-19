@@ -131,7 +131,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     host = data[CONF_HOST]
     # Validate that host does not contain a port
     if ":" in host:
-        _LOGGER.error("Host field should not include a port. Received: %s", host)
+        _LOGGER.error("Host field must not include a port. Received: %s", host)
         raise HomeAssistantError("Host must not include a port. Please enter only the IP address or hostname.")
     model = data[CONF_MODEL]
 
