@@ -128,11 +128,27 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     from .api_json import SyrConnectJsonAPI
     from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
+    import re
     host = data[CONF_HOST]
-    # Validate that host does not contain a port
+    # Validate host is a non-empty string
+    if not isinstance(host, str) or not host.strip():
+        _LOGGER.error("Host field is empty or not a string. Received: %r", host)
+        raise HomeAssistantError("Host must be a non-empty IP address or hostname.")
+    # Validate host does not contain a port
     if ":" in host:
-        _LOGGER.error("Host field must not include a port. Received: %s", host)
+        _LOGGER.error("Host field should not include a port. Received: %s", host)
         raise HomeAssistantError("Host must not include a port. Please enter only the IP address or hostname.")
+    # Validate host does not contain whitespace
+    if re.search(r"\s", host):
+        _LOGGER.error("Host field contains whitespace. Received: %s", host)
+        raise HomeAssistantError("Host must not contain spaces or tabs.")
+    # Validate host matches IP or hostname pattern
+    ip_pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+    hostname_pattern = r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"
+    if not re.match(ip_pattern, host) and not re.match(hostname_pattern, host):
+        _LOGGER.error("Host field is not a valid IP address or hostname. Received: %s", host)
+        raise HomeAssistantError("Host must be a valid IP address or hostname.")
+
     model = data[CONF_MODEL]
 
     _LOGGER.debug("Validating JSON API connection to host: %s, model: %s", host, model)
