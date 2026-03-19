@@ -275,7 +275,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # - LEXplus10SL
 
     # Technical values without context
-    "get71", "getBSA", "getBUZ",
+    "get71", "getBSA",
     "getCDF",
     "getCES", "getCND",
     "getCNO", # Code number - not useful for users
