@@ -145,10 +145,12 @@ _SYR_CONNECT_SENSOR_WRN_CODES = {
 # Binary sensors mapping with their device classes - internal
 _SYR_CONNECT_SENSOR_BINARY = {
     "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
+    "getBUZ": BinarySensorDeviceClass.POWER,    # Buzzer on/off
 }
 
 # Configuration sensors - settings users do not need for daily use
 _SYR_CONNECT_SENSOR_CONFIG = {
+    "getBUZ",   # Buzzer on/off - also represented as switch entity
     "getRPD",   # Regeneration interval - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
     "getSRO",   # Display rotation - also represented as select entity
@@ -681,6 +683,7 @@ _SYR_CONNECT_SENSOR_ICON = {
 
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
+    "getBUZ": "mdi:volume-high",        # Buzzer on/off
     "getEGW": "mdi:router-network",
     "getEIP": "mdi:ip-network",
     "getMAC1": "mdi:ethernet",          # Wi-Fi MAC address

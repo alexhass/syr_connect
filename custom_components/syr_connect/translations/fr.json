@@ -60,6 +60,13 @@
   },
   "entity": {
     "binary_sensor": {
+      "getbuz": {
+        "name": "Buzzer en cas d'alarme",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
       "getsre": {
         "name": "Régénération active"
       }
@@ -201,13 +208,6 @@
       },
       "getbat": {
         "name": "Tension de batterie"
-      },
-      "getbuz": {
-        "name": "Buzzer en cas d'alarme",
-        "state": {
-          "false": "Désactivé",
-          "true": "Activé"
-        }
       },
       "getcde": {
         "name": "Code de configuration"
@@ -956,6 +956,15 @@
           "no_warning": "Aucun avertissement",
           "power_outage": "Coupure de courant",
           "salt_supply_low": "Faible approvisionnement en sel"
+        }
+      }
+    },
+    "switch": {
+      "getbuz": {
+        "name": "Buzzer en cas d'alarme",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
         }
       }
     },

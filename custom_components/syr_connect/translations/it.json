@@ -60,6 +60,13 @@
   },
   "entity": {
     "binary_sensor": {
+      "getbuz": {
+        "name": "Cicalino in caso di allarme",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
       "getsre": {
         "name": "Rigenerazione attiva"
       }
@@ -201,13 +208,6 @@
       },
       "getbat": {
         "name": "Tensione batteria"
-      },
-      "getbuz": {
-        "name": "Cicalino in caso di allarme",
-        "state": {
-          "false": "Disattivato",
-          "true": "Attivato"
-        }
       },
       "getcde": {
         "name": "Codice di configurazione"
@@ -956,6 +956,15 @@
           "no_warning": "Nessun avviso",
           "power_outage": "Interruzione di corrente",
           "salt_supply_low": "Scorta di sale bassa"
+        }
+      }
+    },
+    "switch": {
+      "getbuz": {
+        "name": "Cicalino in caso di allarme",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
         }
       }
     },

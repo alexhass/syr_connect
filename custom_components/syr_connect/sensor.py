@@ -16,6 +16,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_BINARY,
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
@@ -184,6 +185,10 @@ async def async_setup_entry(
         for key, value in status.items():
             # Skip sensors excluded globally
             if key in _SYR_CONNECT_SENSOR_EXCLUDED:
+                continue
+
+            # Skip keys that are handled as binary sensors
+            if key in _SYR_CONNECT_SENSOR_BINARY:
                 continue
 
             # Skip keys already handled by getPA group logic above

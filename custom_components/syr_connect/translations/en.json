@@ -60,6 +60,13 @@
   },
   "entity": {
     "binary_sensor": {
+      "getbuz": {
+        "name": "Buzzer on alarm",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
+      },
       "getsre": {
         "name": "Regeneration active"
       }
@@ -201,13 +208,6 @@
       },
       "getbat": {
         "name": "Battery voltage"
-      },
-      "getbuz": {
-        "name": "Buzzer on alarm",
-        "state": {
-          "false": "Disabled",
-          "true": "Enabled"
-        }
       },
       "getcde": {
         "name": "Configuration code"
@@ -956,6 +956,15 @@
           "no_warning": "No warning",
           "power_outage": "Power outage",
           "salt_supply_low": "Salt supply low"
+        }
+      }
+    },
+    "switch": {
+      "getbuz": {
+        "name": "Buzzer on alarm",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
         }
       }
     },

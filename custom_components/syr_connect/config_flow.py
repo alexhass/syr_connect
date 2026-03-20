@@ -125,10 +125,10 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         CannotConnectError: If connection to API fails
     """
     # Import here to avoid blocking import at module level
+    import re
+
     from .api_json import SyrConnectJsonAPI
     from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-
-    import re
     host = data[CONF_HOST]
 
     # Validate host is a non-empty string

@@ -60,6 +60,13 @@
   },
   "entity": {
     "binary_sensor": {
+      "getbuz": {
+        "name": "Signalton bei Alarm",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
       "getsre": {
         "name": "Regeneration aktiv"
       }
@@ -201,13 +208,6 @@
       },
       "getbat": {
         "name": "Batteriespannung"
-      },
-      "getbuz": {
-        "name": "Buzzer bei Alarm",
-        "state": {
-          "false": "Deaktiviert",
-          "true": "Aktiviert"
-        }
       },
       "getcde": {
         "name": "Konfigurationscode"
@@ -956,6 +956,15 @@
           "no_warning": "Keine Warnung",
           "power_outage": "Stromunterbrechung",
           "salt_supply_low": "Salzvorrat geht zur neige"
+        }
+      }
+    },
+    "switch": {
+      "getbuz": {
+        "name": "Signalton bei Alarm",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
         }
       }
     },
