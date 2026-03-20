@@ -29,18 +29,6 @@ _LOGGER = logging.getLogger(__name__)
 MODEL_SIGNATURES: Iterable[dict] = [
     {
         "base_path": None,
-        "display_name": "Sanibel Softwater UNO A25",
-        "name": "sanibelsoftwateruno",
-        "srn_prefix": "207",
-    },
-    {
-        "base_path": None,
-        "display_name": "Sanibel Leak Protection Module A25",
-        "name": "sanibelleakprotect",
-        "srn_prefix": "501",
-    },
-    {
-        "base_path": None,
         "cna_equals": "LEXplus10",
         "display_name": "LEX Plus 10 Connect",
         "name": "lexplus10",
@@ -76,12 +64,6 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "base_path": "/trio",
-        "display_name": "Trio DFR/LS Connect",
-        "name": "trio",
-        "srn_prefix": "113",
-    },
-    {
-        "base_path": "/trio",
         "display_name": "Safe-Tech+ Connect",
         "name": "safetech",
         "srn_prefix": "112",
@@ -91,6 +73,24 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "display_name": "Safe-T+ Connect",
         "name": "safetplus",
         "ver_prefix": "Safe-T",
+    },
+    {
+        "base_path": None,
+        "display_name": "Sanibel Leak Protection Module A25",
+        "name": "sanibelleakprotect",
+        "srn_prefix": "501",
+    },
+    {
+        "base_path": None,
+        "display_name": "Sanibel Softwater UNO A25",
+        "name": "sanibelsoftwateruno",
+        "srn_prefix": "207",
+    },
+    {
+        "base_path": "/trio",
+        "display_name": "Trio DFR/LS Connect",
+        "name": "trio",
+        "srn_prefix": "113",
     },
 ]
 
