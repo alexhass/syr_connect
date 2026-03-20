@@ -84,7 +84,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "base_path": "/trio",
         "display_name": "Safe-Tech+ Connect",
         "name": "safetech",
-        "ver_prefix": "Safe-Tech",
+        "srn_prefix": "112",
     },
     {
         "base_path": None,
