@@ -1,6 +1,6 @@
 import os
 
-import defusedxml.ElementTree as etree
+import defusedxml.ElementTree as ElementTree
 import pytest
 
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -310,21 +310,21 @@ def test_flatten_attributes_skip_checksum(parser):
 
 def test_element_to_dict_empty_element(parser):
     """Test converting empty XML element to dict."""
-    element = etree.fromstring("<empty/>")
+    element = ElementTree.fromstring("<empty/>")
     result = parser._element_to_dict(element)
     assert result == {}
 
 
 def test_element_to_dict_text_only(parser):
     """Test converting XML element with text only (no children, no attributes)."""
-    element = etree.fromstring("<simple>text content</simple>")
+    element = ElementTree.fromstring("<simple>text content</simple>")
     result = parser._element_to_dict(element)
     assert result == "text content"
 
 
 def test_element_to_dict_text_with_children(parser):
     """Test converting XML element with both text and children."""
-    element = etree.fromstring("<parent>text<child>value</child></parent>")
+    element = ElementTree.fromstring("<parent>text<child>value</child></parent>")
     result = parser._element_to_dict(element)
     assert "#text" in result
     assert result["#text"] == "text"
@@ -508,7 +508,7 @@ def test_parse_device_list_no_sc(parser):
 
 def test_element_to_dict_multiple_same_tag(parser):
     """Test _element_to_dict with multiple children of same tag name."""
-    element = etree.fromstring("<parent><item>val1</item><item>val2</item><item>val3</item></parent>")
+    element = ElementTree.fromstring("<parent><item>val1</item><item>val2</item><item>val3</item></parent>")
     result = parser._element_to_dict(element)
     # Should create a list for multiple children with same tag
     assert isinstance(result["item"], list)
@@ -580,7 +580,7 @@ def test_validate_structure_empty_path(parser):
 def test_element_to_dict_text_with_attributes_no_children(parser):
     """Test element with text and attributes but no children."""
 
-    element = etree.fromstring('<item id="1">text content</item>')
+    element = ElementTree.fromstring('<item id="1">text content</item>')
     result = parser._element_to_dict(element)
     # Should have both @id attribute and #text
     assert result["@id"] == "1"
@@ -590,7 +590,7 @@ def test_element_to_dict_text_with_attributes_no_children(parser):
 def test_element_to_dict_whitespace_only_text(parser):
     """Test element with whitespace-only text (should be ignored)."""
 
-    element = etree.fromstring('<item>   \n\t   </item>')
+    element = ElementTree.fromstring('<item>   \n\t   </item>')
     result = parser._element_to_dict(element)
     # Whitespace-only text should be stripped and result in empty dict
     assert result == {}
@@ -651,8 +651,6 @@ def test_parse_device_status_dvs_is_list_directly(parser):
     """Test parsing device status when dvs element is a list directly."""
     # This tests the isinstance(dvs, list) branch more explicitly
     xml = '<sc><dvs><d><c n="test" v="value"/></d></dvs></sc>'
-    parsed = parser.parse_xml(xml)
-
     # Manually test the branch by passing list to the function
     # (This is a bit artificial but ensures the branch is covered)
     result = parser.parse_device_status_response(xml)
@@ -698,7 +696,7 @@ def test_parse_statistics_response_no_c_elements(parser):
 def test_element_to_dict_nested_elements_same_tag(parser):
     """Test _element_to_dict with nested elements having same tag converted to list."""
 
-    element = etree.fromstring('''<root>
+    element = ElementTree.fromstring('''<root>
         <item><sub>a</sub></item>
         <item><sub>b</sub></item>
     </root>''')
@@ -743,7 +741,7 @@ def test_parse_login_response_api_dict_no_text_key(parser):
 def test_element_to_dict_child_converted_to_list_multiple_appends(parser):
     """Test that multiple children with same tag are properly appended to list."""
 
-    element = etree.fromstring('<root><x>1</x><x>2</x><x>3</x><x>4</x></root>')
+    element = ElementTree.fromstring('<root><x>1</x><x>2</x><x>3</x><x>4</x></root>')
     result = parser._element_to_dict(element)
     assert isinstance(result["x"], list)
     assert result["x"] == ["1", "2", "3", "4"]

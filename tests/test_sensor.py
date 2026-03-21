@@ -1,4 +1,5 @@
 """Tests for sensor platform."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -9,7 +10,11 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.const import (
+    _SYR_CONNECT_SENSOR_DEVICE_CLASS,
+    _SYR_CONNECT_SENSOR_STATE_CLASS,
+    DOMAIN,
+)
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.sensor import SyrConnectSensor, async_setup_entry
 
@@ -144,9 +149,7 @@ async def test_sensor_native_value_string(hass: HomeAssistant) -> None:
         (True, False, False),
     ],
 )
-async def test_sensor_availability(
-    hass: HomeAssistant, available: bool, last_success: bool, expected: bool
-) -> None:
+async def test_sensor_availability(hass: HomeAssistant, available: bool, last_success: bool, expected: bool) -> None:
     """Test sensor availability."""
     data = {
         "devices": [
@@ -1027,7 +1030,7 @@ async def test_sensor_numeric_int_value(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
 
     # Should convert int to float
-    assert isinstance(sensor.native_value, (int, float))
+    assert isinstance(sensor.native_value, int | float)
     assert sensor.native_value == 100
 
 
@@ -1700,11 +1703,7 @@ def test_icon_getvlv_variants(create_mock_coordinator):
         "99": None,
     }
     for raw, expected in vals.items():
-        data = {
-            "devices": [
-                {"id": "d1", "name": "D1", "project_id": "p1", "status": {"getVLV": raw}}
-            ]
-        }
+        data = {"devices": [{"id": "d1", "name": "D1", "project_id": "p1", "status": {"getVLV": raw}}]}
         coord = create_mock_coordinator(data)
         s = SyrConnectSensor(coord, "d1", "D1", "p1", "getVLV")
         if expected is None:
@@ -1714,29 +1713,17 @@ def test_icon_getvlv_variants(create_mock_coordinator):
 
 
 def test_icon_getpst_values(create_mock_coordinator):
-    data2 = {
-        "devices": [
-            {"id": "d2", "name": "D2", "project_id": "p1", "status": {"getPST": "2"}}
-        ]
-    }
+    data2 = {"devices": [{"id": "d2", "name": "D2", "project_id": "p1", "status": {"getPST": "2"}}]}
     coord2 = create_mock_coordinator(data2)
     s2 = SyrConnectSensor(coord2, "d2", "D2", "p1", "getPST")
     assert s2.icon == "mdi:check-circle"
 
-    data1 = {
-        "devices": [
-            {"id": "d3", "name": "D3", "project_id": "p1", "status": {"getPST": "1"}}
-        ]
-    }
+    data1 = {"devices": [{"id": "d3", "name": "D3", "project_id": "p1", "status": {"getPST": "1"}}]}
     coord1 = create_mock_coordinator(data1)
     s1 = SyrConnectSensor(coord1, "d3", "D3", "p1", "getPST")
     assert s1.icon == "mdi:close-circle"
 
-    data_invalid = {
-        "devices": [
-            {"id": "d4", "name": "D4", "project_id": "p1", "status": {"getPST": "x"}}
-        ]
-    }
+    data_invalid = {"devices": [{"id": "d4", "name": "D4", "project_id": "p1", "status": {"getPST": "x"}}]}
     coord_invalid = create_mock_coordinator(data_invalid)
     sinv = SyrConnectSensor(coord_invalid, "d4", "D4", "p1", "getPST")
     # invalid falls back to base icon or handled gracefully
@@ -1763,11 +1750,7 @@ def test_icon_battery_zero(create_mock_coordinator):
 
 
 async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
-    data = {
-        "devices": [
-            {"id": "devp", "name": "DevP", "project_id": "p1", "status": {"getPA1": "1"}}
-        ]
-    }
+    data = {"devices": [{"id": "devp", "name": "DevP", "project_id": "p1", "status": {"getPA1": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
@@ -1779,12 +1762,7 @@ async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_getpa_group_false_removes_registry(hass: HomeAssistant) -> None:
-
-    data = {
-        "devices": [
-            {"id": "devp2", "name": "DevP2", "project_id": "p1", "status": {"getPA1": "0"}}
-        ]
-    }
+    data = {"devices": [{"id": "devp2", "name": "DevP2", "project_id": "p1", "status": {"getPA1": "0"}}]}
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
@@ -2179,7 +2157,7 @@ async def test_sensor_exclude_when_zero_string_value(hass: HomeAssistant) -> Non
     assert len(cs1_entities) == 0
 
 
-async def test_sensor_icon_getPST_value_2(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getpst_value_2(hass: HomeAssistant) -> None:
     """Test getPST sensor icon when value is 2 (available)."""
     data = {
         "devices": [
@@ -2200,7 +2178,7 @@ async def test_sensor_icon_getPST_value_2(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:check-circle"
 
 
-async def test_sensor_icon_getPST_value_1(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getpst_value_1(hass: HomeAssistant) -> None:
     """Test getPST sensor icon when value is 1 (not available)."""
     data = {
         "devices": [
@@ -2221,7 +2199,7 @@ async def test_sensor_icon_getPST_value_1(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:close-circle"
 
 
-async def test_sensor_icon_getPST_none_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getpst_none_value(hass: HomeAssistant) -> None:
     """Test getPST sensor icon when value is None."""
     data = {
         "devices": [
@@ -2242,7 +2220,7 @@ async def test_sensor_icon_getPST_none_value(hass: HomeAssistant) -> None:
     assert sensor.icon == sensor._base_icon
 
 
-async def test_sensor_icon_getPST_datetime_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getpst_datetime_value(hass: HomeAssistant) -> None:
     """Test getPST sensor icon with datetime value."""
     data = {
         "devices": [
@@ -2264,7 +2242,7 @@ async def test_sensor_icon_getPST_datetime_value(hass: HomeAssistant) -> None:
     assert icon is not None
 
 
-async def test_sensor_icon_getPST_invalid_conversion(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getpst_invalid_conversion(hass: HomeAssistant) -> None:
     """Test getPST sensor icon with value that can't be converted."""
     data = {
         "devices": [
@@ -2285,7 +2263,7 @@ async def test_sensor_icon_getPST_invalid_conversion(hass: HomeAssistant) -> Non
     assert sensor.icon is not None
 
 
-async def test_sensor_icon_getRG_valve_open(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_valve_open(hass: HomeAssistant) -> None:
     """Test getRG sensor icon when valve is open (value 1)."""
     data = {
         "devices": [
@@ -2306,7 +2284,7 @@ async def test_sensor_icon_getRG_valve_open(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:valve"
 
 
-async def test_sensor_icon_getRG_valve_closed(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_valve_closed(hass: HomeAssistant) -> None:
     """Test getRG sensor icon when valve is closed (value 0)."""
     data = {
         "devices": [
@@ -2327,7 +2305,7 @@ async def test_sensor_icon_getRG_valve_closed(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:valve-closed"
 
 
-async def test_sensor_icon_getRG_none_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_none_value(hass: HomeAssistant) -> None:
     """Test getRG sensor icon when value is None."""
     data = {
         "devices": [
@@ -2348,7 +2326,7 @@ async def test_sensor_icon_getRG_none_value(hass: HomeAssistant) -> None:
     assert sensor.icon == sensor._base_icon
 
 
-async def test_sensor_icon_getRG_datetime_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_datetime_value(hass: HomeAssistant) -> None:
     """Test getRG sensor icon with datetime value."""
     data = {
         "devices": [
@@ -2369,7 +2347,7 @@ async def test_sensor_icon_getRG_datetime_value(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:valve-closed"
 
 
-async def test_sensor_icon_getRG_string_active_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_string_active_value(hass: HomeAssistant) -> None:
     """Test getRG sensor icon with string active values."""
     data = {
         "devices": [
@@ -2390,7 +2368,7 @@ async def test_sensor_icon_getRG_string_active_value(hass: HomeAssistant) -> Non
     assert sensor.icon == "mdi:valve"
 
 
-async def test_sensor_icon_getRG_exception_handling(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_exception_handling(hass: HomeAssistant) -> None:
     """Test getRG sensor icon handles exceptions gracefully."""
     # Use invalid data that will cause exception during icon calculation
     data = {
@@ -2628,7 +2606,7 @@ async def test_sensor_icon_alarm_low_salt(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:bell-alert"
 
 
-async def test_sensor_icon_getSRE_falsy_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getsre_falsy_value(hass: HomeAssistant) -> None:
     """Test getSRE sensor icon when value is falsy."""
     data = {
         "devices": [
@@ -2649,7 +2627,7 @@ async def test_sensor_icon_getSRE_falsy_value(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:timer-outline"
 
 
-async def test_sensor_icon_getSRE_off_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getsre_off_value(hass: HomeAssistant) -> None:
     """Test getSRE sensor icon when value is 'off'."""
     data = {
         "devices": [
@@ -2701,7 +2679,7 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
     assert len(invalid_entities) == 0
 
 
-async def test_sensor_icon_getPST_other_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getpst_other_value(hass: HomeAssistant) -> None:
     """Test getPST sensor icon with value other than 1 or 2."""
     data = {
         "devices": [
@@ -2723,7 +2701,7 @@ async def test_sensor_icon_getPST_other_value(hass: HomeAssistant) -> None:
     assert icon is not None
 
 
-async def test_sensor_icon_getRG_string_inactive_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_string_inactive_value(hass: HomeAssistant) -> None:
     """Test getRG sensor icon with string inactive value."""
     data = {
         "devices": [
@@ -2744,7 +2722,7 @@ async def test_sensor_icon_getRG_string_inactive_value(hass: HomeAssistant) -> N
     assert sensor.icon == "mdi:valve-closed"
 
 
-async def test_sensor_icon_getRG_string_on_value(hass: HomeAssistant) -> None:
+async def test_sensor_icon_getrg_string_on_value(hass: HomeAssistant) -> None:
     """Test getRG sensor icon with string 'on' value."""
     data = {
         "devices": [
@@ -3889,7 +3867,7 @@ async def test_sensor_getvol_with_prefix(hass: HomeAssistant) -> None:
     # Test getVOL sensor - should extract numeric value
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     val = vol_sensor.native_value
-    assert isinstance(val, (int, float, str))
+    assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
 
 
@@ -3911,7 +3889,7 @@ async def test_sensor_getvol_normal_value(hass: HomeAssistant) -> None:
 
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     val = vol_sensor.native_value
-    assert isinstance(val, (int, float, str))
+    assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
 
 
@@ -3933,7 +3911,7 @@ async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
 
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     val = vol_sensor.native_value
-    assert isinstance(val, (int, float, str))
+    assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
 
 
@@ -4035,8 +4013,6 @@ async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
 
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
     assert bar_sensor.native_value == 4.1
-
-
 
 
 async def test_sensor_getbar_empty_value(hass: HomeAssistant) -> None:
@@ -4556,6 +4532,7 @@ async def test_async_setup_entry_getpa_group_creation(hass: HomeAssistant) -> No
 # Tests merged from test_sensor_icon_fix.py
 def test_icon_attribute_exists_in_dict() -> None:
     """Test sensor initialization when icon is defined in _SYR_CONNECT_SENSOR_ICON."""
+
     class MockSensorEntity:
         pass
 
@@ -4565,12 +4542,13 @@ def test_icon_attribute_exists_in_dict() -> None:
     base_icon_old = sensor._attr_icon
     assert base_icon_old == "mdi:water-percent"
 
-    base_icon_new = getattr(sensor, '_attr_icon', None)
+    base_icon_new = getattr(sensor, "_attr_icon", None)
     assert base_icon_new == "mdi:water-percent"
 
 
 def test_icon_attribute_missing_old_approach_fails() -> None:
     """Test that old approach fails when icon is not defined."""
+
     class MockSensorEntity:
         pass
 
@@ -4586,36 +4564,44 @@ def test_icon_attribute_missing_old_approach_fails() -> None:
 
 def test_icon_attribute_missing_new_approach_works() -> None:
     """Test that new approach works when icon is not defined."""
+
     class MockSensorEntity:
         pass
 
     sensor = MockSensorEntity()
-    base_icon = getattr(sensor, '_attr_icon', None)
+    base_icon = getattr(sensor, "_attr_icon", None)
     assert base_icon is None
 
 
 def test_real_world_scenario_with_leak_protection_sensors() -> None:
     """Test real-world scenario with LEXplus10SL leak protection sensors."""
+
     class MockSensorEntity:
         pass
 
     leak_sensors = [
-        'getPA1', 'getPA2', 'getPA3',
-        'getPN1', 'getPN2', 'getPN3',
-        'getPF1', 'getPF2', 'getPF3',
-        'getPT1', 'getPT2', 'getPT3',
-        'getPV1', 'getPV2', 'getPV3',
-        'getPRF',
+        "getPA1",
+        "getPA2",
+        "getPA3",
+        "getPN1",
+        "getPN2",
+        "getPN3",
+        "getPF1",
+        "getPF2",
+        "getPF3",
+        "getPT1",
+        "getPT2",
+        "getPT3",
+        "getPV1",
+        "getPV2",
+        "getPV3",
+        "getPRF",
     ]
 
-    for sensor_key in leak_sensors:
+    for _sensor_key in leak_sensors:
         sensor = MockSensorEntity()
-        base_icon = getattr(sensor, '_attr_icon', None)
+        base_icon = getattr(sensor, "_attr_icon", None)
         assert base_icon is None
-
-
-
-
 
 
 async def test_getavo_parsing(hass: HomeAssistant) -> None:
@@ -4634,7 +4620,7 @@ async def test_getavo_parsing(hass: HomeAssistant) -> None:
 
     # 1655 mL -> 1.655 L
     val = sensor.native_value
-    assert isinstance(val, (int, float, str))
+    assert isinstance(val, int | float | str)
     assert abs(float(val) - 1.655) < 1e-6
 
 
@@ -4654,7 +4640,7 @@ async def test_getvol_cleaning_and_conversion(hass: HomeAssistant) -> None:
 
     # Cleaned value should be numeric 6.53 (m³)
     val = sensor.native_value
-    assert isinstance(val, (int, float, str))
+    assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
 
 
@@ -4833,6 +4819,7 @@ async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -
 
     assert sensor.icon == sensor._base_icon
 
+
 async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
     """Test getVLV sensor icon with unknown value returns base icon."""
     data = {
@@ -4905,13 +4892,27 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
         sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM1")
         assert sensor.native_value is None
 
-
     async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> None:
         """Exhaustive-ish test for getALA, getNOT and getWRN with many input variants."""
         truthy = {"true", "True", "TRUE", "on", "ON", "yes", "1", 1, True}
         falsy = {"false", "False", "FALSE", "off", "OFF", "no", "0", 0, False}
 
-        variants = [None, "", "   ", "true", "off", "1", "0", 1, 0, True, False, "UnknownValue", "CompletelyUnknown", 123]
+        variants = [
+            None,
+            "",
+            "   ",
+            "true",
+            "off",
+            "1",
+            "0",
+            1,
+            0,
+            True,
+            False,
+            "UnknownValue",
+            "CompletelyUnknown",
+            123,
+        ]
 
         for key in ("getALA", "getNOT", "getWRN"):
             for raw in variants:
@@ -4933,9 +4934,9 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
                     else:
                         expected = str(raw)
 
-                assert (val is None and expected is None) or (val == expected), f"Key {key} raw={raw!r} -> got {val!r}, expected {expected!r}"
-
-
+                assert (val is None and expected is None) or (
+                    val == expected
+                ), f"Key {key} raw={raw!r} -> got {val!r}, expected {expected!r}"
 
     async def test_sensor_getala_not_and_wrn_various_values(hass: HomeAssistant) -> None:
         """Test getALA, getNOT and getWRN sensors handle None/empty/unmapped values."""
@@ -4958,7 +4959,6 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
                 val = sensor.native_value
                 assert (val is None) or isinstance(val, str)
 
-
     async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
         """Sanity check: mapped values produce a (possibly different) string, unmapped fall back gracefully."""
         # Mapped example (most integrations return string mapping); we don't assert exact mapping
@@ -4968,11 +4968,12 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
         assert (s_m.native_value is None) or isinstance(s_m.native_value, str)
 
         # Unmapped raw value should be returned or handled
-        data_unmapped = {"devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getALA": "CompletelyUnknown"}}]}
+        data_unmapped = {
+            "devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getALA": "CompletelyUnknown"}}]
+        }
         coord_u = _build_coordinator(hass, data_unmapped)
         s_u = SyrConnectSensor(coord_u, "d2", "Device", "p", "getALA")
         assert s_u.native_value is not None
-
 
     # Tests merged from test_getcof_water_consumption.py
     def test_getcof_has_water_device_class():
@@ -4982,12 +4983,10 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
 
         assert _SYR_CONNECT_SENSOR_DEVICE_CLASS["getCOF"] == SensorDeviceClass.WATER
 
-
     def test_getcof_has_total_increasing_state_class():
         """Test that getCOF sensor has state_class=total_increasing for statistics."""
         assert "getCOF" in _SYR_CONNECT_SENSOR_STATE_CLASS
         assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCOF"] == "total_increasing"
-
 
     def test_getcof_returns_correct_value():
         """Test that getCOF sensor returns the correct water consumption value."""
@@ -5017,7 +5016,6 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
         # Test that native_value returns getCOF value
         assert sensor.native_value == 888518
 
-
     def test_getcof_handles_string_values():
         """Test that getCOF sensor correctly converts string values to float."""
         mock_coordinator = Mock()
@@ -5043,8 +5041,7 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
 
         # Should convert string to number (accept int or float)
         assert float(sensor.native_value) == 888518.0
-        assert isinstance(sensor.native_value, (int, float))
-
+        assert isinstance(sensor.native_value, int | float)
 
     def test_getcof_not_excluded():
         """Test that getCOF is not in the excluded sensors list."""
@@ -5099,7 +5096,6 @@ async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) ->
 
         # Should still call add_entities (entities created despite exception)
         assert mock_add_entities.called
-
 
 
 async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) -> None:
@@ -5162,6 +5158,7 @@ async def test_is_true_int_float_exception(hass: HomeAssistant) -> None:
     class BadNumeric:
         def __float__(self):
             raise ValueError("Cannot convert")
+
         def __int__(self):
             raise ValueError("Cannot convert")
 
@@ -5603,7 +5600,7 @@ async def test_sensor_getbar_value_error(hass: HomeAssistant) -> None:
     # Note: "inf" actually converts to float('inf'), so let's use a different test
     # Actually, regex \d+ won't match "inf", so it will return None anyway
     value = sensor.native_value
-    assert value is None or isinstance(value, int |float)
+    assert value is None or isinstance(value, int | float)
 
 
 async def test_sensor_getbat_not_string_int_float(hass: HomeAssistant) -> None:
@@ -5997,6 +5994,7 @@ async def test_sensor_getpmx_getwx_getbx_int_exception(hass: HomeAssistant) -> N
     class BadNumeric(int):
         def __float__(self):
             raise ValueError("Cannot convert")
+
         def __int__(self):
             raise TypeError("Cannot convert")
 
@@ -6752,10 +6750,7 @@ async def test_sensor_apply_numeric_conversion_exception(hass: HomeAssistant) ->
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
 
     # Mock _SYR_CONNECT_SENSOR_UNIT_PRECISION to return value and test exception path
-    with patch(
-        "custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION",
-        {"getPRS": 2}
-    ):
+    with patch("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION", {"getPRS": 2}):
         # Manually test with value that causes exception during round
         result = sensor._apply_numeric_conversion(5.0)
         # Should return the value without precision when exception occurs
@@ -7133,16 +7128,18 @@ async def test_sensor_native_value_caching_returns_last_known_value(hass: HomeAs
     assert value1 == 5.0
 
     # Now update coordinator data to have None/missing value
-    coordinator.async_set_updated_data({
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {},  # getPRS missing
-            }
-        ]
-    })
+    coordinator.async_set_updated_data(
+        {
+            "devices": [
+                {
+                    "id": "device1",
+                    "name": "Device 1",
+                    "project_id": "project1",
+                    "status": {},  # getPRS missing
+                }
+            ]
+        }
+    )
 
     # Should return cached value instead of None
     value2 = sensor.native_value
@@ -8059,4 +8056,3 @@ async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA7" not in sensor_keys
     assert "getPV7" not in sensor_keys
-

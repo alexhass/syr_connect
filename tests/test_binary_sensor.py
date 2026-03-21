@@ -295,7 +295,7 @@ async def test_binary_sensor_string_true(hass: HomeAssistant) -> None:
     assert sensor.is_on is True
 
 
-async def test_binary_sensor_string_False(hass: HomeAssistant) -> None:
+async def test_binary_sensor_string_false(hass: HomeAssistant) -> None:
     """Test binary sensor with string 'False' value."""
     data = {
         "devices": [

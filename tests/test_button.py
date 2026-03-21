@@ -337,14 +337,14 @@ async def test_async_setup_entry_no_getsir(hass: HomeAssistant, create_mock_entr
                 "id": "safe_t_plus",
                 "name": "Safe-T+",
                 "project_id": "project1",
-                "status": {},  # Kein getSIR vorhanden
+                "status": {},  # No getSIR present
             }
         ]
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    # Es sollte kein Button erstellt werden
+    # Should not create any button
     assert len(entities) == 0
 
 
@@ -390,7 +390,7 @@ async def test_button_reset_send_empty_for_lex10_and_safet(hass: HomeAssistant) 
     coordinator.async_set_device_value.assert_called_once_with("device1", "setALA", "")
 
 
-async def test_button_reset_send_FF_for_other_models(hass: HomeAssistant) -> None:
+async def test_button_reset_send_ff_for_other_models(hass: HomeAssistant) -> None:
     """When model unknown/other, reset sends 'FF'."""
     data = {
         "devices": [
@@ -480,7 +480,7 @@ async def test_button_reset_not_send_empty_for_lex10_and_safet(hass: HomeAssista
     coordinator.async_set_device_value.assert_called_once_with("device_not1", "setNOT", "")
 
 
-async def test_button_reset_not_send_FF_for_other_models(hass: HomeAssistant) -> None:
+async def test_button_reset_not_send_ff_for_other_models(hass: HomeAssistant) -> None:
     """When model unknown/other, setNOT reset sends 'FF'."""
     data = {
         "devices": [
@@ -544,7 +544,7 @@ async def test_button_reset_wrn_send_empty_for_lex10_and_safet(hass: HomeAssista
     coordinator.async_set_device_value.assert_called_once_with("device_wrn1", "setWRN", "")
 
 
-async def test_button_reset_wrn_send_FF_for_other_models(hass: HomeAssistant) -> None:
+async def test_button_reset_wrn_send_ff_for_other_models(hass: HomeAssistant) -> None:
     """When model unknown/other, setWRN reset sends 'FF'."""
     data = {
         "devices": [

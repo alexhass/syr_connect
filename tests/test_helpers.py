@@ -145,7 +145,7 @@ def test_get_current_mac_empty_and_none() -> None:
     assert get_current_mac({}) is None
 
 
-def test_get_current_mac_priority_getIPA() -> None:
+def test_get_current_mac_priority_getipa() -> None:
     """If getIPA present, prefer getMAC."""
     status = {
         "getIPA": "1.2.3.4",
@@ -156,7 +156,7 @@ def test_get_current_mac_priority_getIPA() -> None:
     assert get_current_mac(status) == "AA:BB:CC:DD:EE:FF"
 
 
-def test_get_current_mac_getIPA_mac_empty_fallback() -> None:
+def test_get_current_mac_getipa_mac_empty_fallback() -> None:
     """If preferred MAC is empty, fall back to first available MAC."""
     status = {
         "getIPA": "1.2.3.4",
@@ -180,7 +180,7 @@ def test_get_current_mac_zero_ip_treated_as_empty() -> None:
     assert get_current_mac(status) == "11:22:33:44:55:66"
 
 
-def test_get_current_mac_priority_getWIP_and_getEIP() -> None:
+def test_get_current_mac_priority_getwip_and_geteip() -> None:
     """Test selection when getWIP/getEIP are present."""
     status_wip = {"getWIP": "10.0.0.1", "getMAC1": "11:11:11:11:11:11", "getWFS": 2}
     assert get_current_mac(status_wip) == "11:11:11:11:11:11"
