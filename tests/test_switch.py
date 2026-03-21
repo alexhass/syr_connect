@@ -83,6 +83,95 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     assert mock_coordinator.api.set_device_status.call_count >= 2
 
 
+async def test_async_setup_entry_creates_entity(hass: HomeAssistant) -> None:
+    """Test that switch platform creates entity when getBUZ present."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestCreate",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_create",
+        unique_id="test_unique_id_create",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    device = {"id": "SN400", "name": "CreateDevice", "status": {"getBUZ": True}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    mock_add_entities = MagicMock()
+
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    mock_add_entities.assert_called_once()
+    args = mock_add_entities.call_args[0][0]
+    assert len(args) == 1
+    # instance type check
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    assert isinstance(args[0], SyrConnectBuzSwitch)
+
+
+def test_is_on_boolean_and_string_values() -> None:
+    """Test boolean and various string values for is_on parsing."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    dev_bool_true = {"id": "SN500", "name": "BTrue", "status": {"getBUZ": True}}
+    dev_bool_false = {"id": "SN501", "name": "BFalse", "status": {"getBUZ": False}}
+    dev_str_true = {"id": "SN502", "name": "STrue", "status": {"getBUZ": " true "}}
+    dev_str_on = {"id": "SN503", "name": "SOn", "status": {"getBUZ": "On"}}
+    dev_str_yes = {"id": "SN504", "name": "SYes", "status": {"getBUZ": "YES"}}
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [dev_bool_true, dev_bool_false, dev_str_true, dev_str_on, dev_str_yes]}
+
+    sw_bool_true = SyrConnectBuzSwitch(mock_coordinator, "SN500", "BTrue", "getBUZ")
+    sw_bool_false = SyrConnectBuzSwitch(mock_coordinator, "SN501", "BFalse", "getBUZ")
+    sw_str_true = SyrConnectBuzSwitch(mock_coordinator, "SN502", "STrue", "getBUZ")
+    sw_str_on = SyrConnectBuzSwitch(mock_coordinator, "SN503", "SOn", "getBUZ")
+    sw_str_yes = SyrConnectBuzSwitch(mock_coordinator, "SN504", "SYes", "getBUZ")
+
+    assert sw_bool_true.is_on is True
+    assert sw_bool_false.is_on is False
+    assert sw_str_true.is_on is True
+    assert sw_str_on.is_on is True
+    assert sw_str_yes.is_on is True
+
+
+def test_is_on_unrecognized_type_returns_none() -> None:
+    """Unrecognized types (e.g., dict) should return None for is_on."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    dev_bad = {"id": "SN600", "name": "Bad", "status": {"getBUZ": {"foo": "bar"}}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [dev_bad]}
+
+    sw_bad = SyrConnectBuzSwitch(mock_coordinator, "SN600", "Bad", "getBUZ")
+    assert sw_bad.is_on is None
+
+
+def test_entity_category_is_config() -> None:
+    """Entity category should be CONFIG for keys in _SYR_CONNECT_SENSOR_CONFIG."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_CONFIG
+    from homeassistant.helpers.entity import EntityCategory
+
+    # Ensure getBUZ is in the config set (it is by design)
+    assert "getBUZ" in _SYR_CONNECT_SENSOR_CONFIG
+
+    dev = {"id": "SN700", "name": "Cfg", "status": {"getBUZ": 0}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [dev]}
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "SN700", "Cfg", "getBUZ")
+    assert sw._attr_entity_category == EntityCategory.CONFIG
+
+
 def test_is_on_device_missing() -> None:
     """If the device is not present in coordinator data, is_on should be None."""
     from custom_components.syr_connect.switch import SyrConnectBuzSwitch
