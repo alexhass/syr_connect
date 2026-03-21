@@ -95,7 +95,7 @@ def test_attrs_equals_mismatch_skips_signature():
 
 def test_safetech_detection_synthetic():
     """Safe-Tech+ should be detected by ver_prefix 'Safe-Tech'."""
-    flat = {"getVER": "Safe-Tech-1.2.3"}
+    flat = {"getSRN": "112AAA00001", "getVER": "Safe-Tech-1.2.3"}
     result = detect_model(flat)
     assert result["name"] == "safetech"
     assert result["display_name"] == "Safe-Tech+ Connect"
@@ -112,7 +112,7 @@ def test_lexplus10_with_display_name_and_base_path():
 
 def test_getcna_none_converted_to_empty_string():
     """getCNA of None should be safely converted to empty string."""
-    flat = {"getCNA": None, "getVER": "Safe-Tech-1"}
+    flat = {"getSRN": "112AAA12345", "getCNA": None, "getVER": "Safe-Tech-1"}
     result = detect_model(flat)
     # Should still detect by version
     assert result["name"] == "safetech"
@@ -227,7 +227,7 @@ def test_neosoft_base_path():
 
 def test_safetech_base_path():
     """Safe-Tech+ should return 'trio' as base_path."""
-    flat = {"getVER": "Safe-Tech-v2"}
+    flat = {"getSRN": "112AAA22222", "getVER": "Safe-Tech-v2"}
     result = detect_model(flat)
     assert result["name"] == "safetech"
     assert result["base_path"] == "/trio"
