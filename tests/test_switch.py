@@ -28,6 +28,12 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
         subentries_data={},
     )
 
+    # Tests construct a bare ConfigEntry; provide minimal runtime_data
+    # so platform setup can access coordinator data without altering product code.
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": []}
+    config_entry.runtime_data = mock_coordinator
+
     mock_add_entities = MagicMock()
 
     # Should return without adding entities
