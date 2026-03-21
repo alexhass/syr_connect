@@ -225,8 +225,10 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getALM",   # List of last 8 alarms
     "getALW",   # List of last 8 warnings
 
-
-    "getSRO",   # Display rotation (0=normal, 1=90° clockwise, 2=180°, 3=90° counterclockwise) - only relevant for devices with display, not useful for most users
+    # Sensors exits in devices:
+    # - SafeTech+
+    # - Sanibel Leak Protection Module A25
+    "getSRO",   # Display rotation (in degrees, e.g 270=270°) - only relevant for devices with display
 }
 
 # Sensor device classes (for Home Assistant) - internal
@@ -509,6 +511,11 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
+}
+
+# Sensors to exclude only when value is empty string ("") - internal
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
+    "getTMP",  # Leakage protection deactivated - value "" means sensor does not exists.
 }
 
 # Sensor icons (Material Design Icons) - internal

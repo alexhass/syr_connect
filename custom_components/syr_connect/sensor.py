@@ -22,6 +22,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
@@ -79,7 +80,8 @@ async def async_setup_entry(
     try:
         for device in coordinator.data.get('devices', []):
             device_id = device['id']
-            for excluded_key in _SYR_CONNECT_SENSOR_EXCLUDED:
+            # Remove globally excluded sensors and sensors excluded when value is an empty string
+            for excluded_key in (_SYR_CONNECT_SENSOR_EXCLUDED | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING):
                 entity_id = build_entity_id("sensor", device_id, excluded_key)
                 registry_entry = registry.async_get(entity_id)
                 if registry_entry is not None and hasattr(registry_entry, "entity_id"):
@@ -232,6 +234,14 @@ async def async_setup_entry(
                         continue
                     elif isinstance(value, str) and value == "0":
                         continue
+            # Exclude sensors that should only be created when a non-empty string is reported
+            # Some API fields use an empty string "" to indicate the sensor/value does not exist.
+            # _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING lists those keys.
+            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING:
+                if value is None:
+                    continue
+                if isinstance(value, str) and value.strip() == "":
+                    continue
             elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY:
                 # Treat None or empty strings (including whitespace-only) as "empty"
                 if value is None:
