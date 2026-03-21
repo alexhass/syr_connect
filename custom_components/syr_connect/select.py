@@ -188,13 +188,15 @@ async def async_setup_entry(
         ffm_value = status.get("getFFM")
         if ffm_value is not None and ffm_value != "":
             try:
-                int(float(ffm_value))
+                v = float(ffm_value)
             except (ValueError, TypeError):
                 continue
+            # Only create select when value is >= 1 (filter types 1..3); ignore 0
+            if v < 1:
+                continue
             # create numeric select and expose raw numeric options (strings) so HA translates the selected state
-            # Use 1..3 as valid filter type values
             sel = SyrConnectNumericSelect(coordinator, device_id, device_name, "getFFM", 1, 3, 1)
-            sel._options = [str(v) for v in range(1, 4)]
+            sel._options = [str(x) for x in range(1, 4)]
             entities.append(sel)
 
     if entities:
