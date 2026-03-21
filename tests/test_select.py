@@ -14,6 +14,8 @@ from custom_components.syr_connect.select import (
     SyrConnectNumericSelect,
     SyrConnectPrfSelect,
     SyrConnectRegenerationSelect,
+    SyrConnectRotationSelect,
+    SyrConnectDiscreteSelect,
     _build_time_options,
     async_setup_entry,
 )
@@ -1710,4 +1712,80 @@ async def test_prf_select_async_select_option_with_none_pa(hass: HomeAssistant) 
     coordinator.async_set_device_value.reset_mock()
     await select.async_select_option("Profile B")
     coordinator.async_set_device_value.assert_not_called()
+
+
+def _build_coordinator_local(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+    """Local helper to build a coordinator for the appended tests."""
+    config_data = {
+        CONF_USERNAME: "test@example.com",
+        CONF_PASSWORD: "password",
+    }
+    coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+    coordinator.async_set_updated_data(data)
+    coordinator.last_update_success = True
+    return coordinator
+
+
+async def test_rotation_select_current_and_select(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
+
+    assert select.current_option == "90°"
+
+    await select.async_select_option("180°")
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setSRO", 180)
+
+
+async def test_rotation_select_invalid_and_exception(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "status": {"getSRO": "invalid"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
+    assert select.current_option is None
+
+    coordinator.async_set_device_value = AsyncMock()
+    await select.async_select_option("bad")
+    coordinator.async_set_device_value.assert_not_called()
+
+    async def raiser(*args, **kwargs):
+        raise ValueError("boom")
+
+    coordinator = _build_coordinator_local(hass, {"devices": [{"id": "device1", "status": {"getSRO": "90"}}]})
+    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    select = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
+    with pytest.raises(HomeAssistantError, match="Failed to set getSRO"):
+        await select.async_select_option("90°")
+
+
+async def test_discrete_select_current_and_select(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getTEST": "2"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    mapping = {"opt_one": 1, "opt_two": 2}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getTEST", mapping)
+
+    assert select.current_option == "opt_two"
+
+    await select.async_select_option("opt_one")
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setTEST", 1)
+
+
+async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "status": {"getTEST": "2"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    mapping = {"opt_one": 1, "opt_two": 2}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getTEST", mapping)
+
+    await select.async_select_option("not_there")
+    coordinator.async_set_device_value.assert_not_called()
+
+    async def raiser(*args, **kwargs):
+        raise ValueError("boom")
+
+    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    with pytest.raises(HomeAssistantError, match="Failed to set getTEST"):
+        await select.async_select_option("opt_two")
 
