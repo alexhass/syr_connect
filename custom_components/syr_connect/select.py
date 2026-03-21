@@ -175,7 +175,12 @@ async def async_setup_entry(
         if rpd_value is not None and rpd_value != "":
             try:
                 if float(rpd_value) != 0:
-                    entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 1, 4, 1))
+                    # Lex models support up to 4 days, other models only up to 3 days
+                    lex_models = {"lexplus10", "lexplus10s", "lexplus10sl"}
+                    max_rpd = 4 if str(model) in lex_models else 3
+                    entities.append(
+                        SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 1, max_rpd, 1)
+                    )
             except (ValueError, TypeError):
                 pass
 
