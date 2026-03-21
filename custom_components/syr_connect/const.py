@@ -224,6 +224,9 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getALN",   # List of last 8 notifications
     "getALM",   # List of last 8 alarms
     "getALW",   # List of last 8 warnings
+
+
+    "getSRO",   # Display rotation (0=normal, 1=90° clockwise, 2=180°, 3=90° counterclockwise) - only relevant for devices with display, not useful for most users
 }
 
 # Sensor device classes (for Home Assistant) - internal
