@@ -279,7 +279,8 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
                 default=current_scan_interval,
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=_SYR_CONNECT_MIN_SCAN_INTERVAL_SECONDS,
+                    # Minimum depends on API type: JSON devices can poll faster
+                    min=(10 if (self._config_entry and self._config_entry.data.get(CONF_API_TYPE) == API_TYPE_JSON) else _SYR_CONNECT_MIN_SCAN_INTERVAL_SECONDS),
                     max=_SYR_CONNECT_MAX_SCAN_INTERVAL_SECONDS,
                     unit_of_measurement=UnitOfTime.SECONDS,
                     mode=selector.NumberSelectorMode.BOX,

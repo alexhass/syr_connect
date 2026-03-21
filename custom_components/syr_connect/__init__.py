@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
+from .const import _SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT, API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE
 from .coordinator import SyrConnectDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,6 +48,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Get scan interval from options, fall back to default
     scan_interval = entry.options.get(_SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT)
+
+    # Enforce minimum scan interval depending on API type
+    api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
+    min_allowed = 10 if api_type == API_TYPE_JSON else 60
+    if scan_interval < min_allowed:
+        _LOGGER.warning(
+            "Configured scan interval %s is below minimum for %s API; clamping to %s seconds",
+            scan_interval,
+            api_type,
+            min_allowed,
+        )
+        scan_interval = min_allowed
 
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
