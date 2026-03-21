@@ -1,7 +1,7 @@
 """Tests for diagnostics platform."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
 from homeassistant.config_entries import ConfigEntry
@@ -2560,7 +2560,7 @@ async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:
     # Build a fake coordinator with api that mimics SyrConnectXmlAPI
     coordinator = MagicMock()
     coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.now(timezone.utc)
+    coordinator.last_update_success_time = datetime.now(UTC)
     coordinator.data = {"devices": [], "projects": []}
 
     class FakeHTTPClient:
@@ -2605,7 +2605,7 @@ async def test_diagnostics_json_redacts_data(hass) -> None:
     """Ensure JSON API path redacts sensitive fields."""
     coordinator = MagicMock()
     coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.now(timezone.utc)
+    coordinator.last_update_success_time = datetime.now(UTC)
     coordinator.data = {"devices": [{"id": "local", "base_path": "/"}]}
 
     # Create a fake JSON API type and monkeypatch diag.SyrConnectJsonAPI to our dummy
@@ -2643,15 +2643,15 @@ async def test_diagnostics_json_redacts_data(hass) -> None:
     # The single key should be 'local' and MAC should be redacted in the payload
     assert "local" in raw_json
     payload = raw_json["local"]
-    # async_redact_data replaces keys; ensure session_data not present
-    assert "session_data" not in payload or payload.get("session_data") is None
+    # async_redact_data should redact sensitive values; ensure session_data is redacted
+    assert payload.get("session_data") == "**REDACTED**"
 
 
 async def test_diagnostics_no_http_session_sets_error(hass) -> None:
     """When coordinator lacks an HTTP session, raw_json should indicate an error."""
     coordinator = MagicMock()
     coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.now(timezone.utc)
+    coordinator.last_update_success_time = datetime.now(UTC)
     # Provide a device with no base_path (no fetch tasks) and no _session
     coordinator.data = {"devices": [{"id": "x", "name": "X"}]}
     coordinator._session = None
