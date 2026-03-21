@@ -96,6 +96,7 @@ Tested and reported as working:
 - SYR LEX Plus 10 SL Connect
 - SYR NeoSoft 2500 Connect
 - SYR Safe-T+ Connect
+- SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
 
 Not tested, but should work (please report):
@@ -112,9 +113,8 @@ Other devices are also of interrest, but may require additonal work:
 
 - HygBox Connect
 - NeoDos Connect
-- SafeTech Connect
-- SafeTech plus Connect
 - SafeFloor Connect
+- SafeTech Connect
 
 **Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
 
