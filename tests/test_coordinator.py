@@ -6,6 +6,7 @@ import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
