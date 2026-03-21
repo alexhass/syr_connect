@@ -416,14 +416,18 @@ class SyrConnectJsonAPI:
         # --- Ensure Valid Session ---
         # Skip login if base_url is set (test mode) or session is still valid
         if not self._base_url and not self.is_session_valid():
-            # If we've previously determined that ADM login is not required,
-            # skip attempting to call `login()` to avoid unnecessary network calls
-            # and to allow callers/tests to rely on this flag.
-            if self._login_required is True:
-                _LOGGER.debug("JSON API: ADM login required; login for %s", self._build_base_url())
-                await self.login()
-            else:
+            # If we've explicitly determined that ADM login is not required,
+            # skip attempting to call `login()` to avoid unnecessary network calls.
+            # Otherwise (login required or unknown), call login() so the client
+            # can establish a valid session before fetching /get/all.
+            if self._login_required is False:
                 _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
+            else:
+                _LOGGER.debug(
+                    "JSON API: ADM login required or unknown; calling login for %s",
+                    self._build_base_url(),
+                )
+                await self.login()
 
         # Fetch device status from /get/all endpoint
         # Note: Support tests that patch _request_json_data with a synchronous callable
