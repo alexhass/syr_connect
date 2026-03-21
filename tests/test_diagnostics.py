@@ -1,7 +1,7 @@
 """Tests for diagnostics platform."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 
 from homeassistant.config_entries import ConfigEntry
@@ -2560,7 +2560,7 @@ async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:
     # Build a fake coordinator with api that mimics SyrConnectXmlAPI
     coordinator = MagicMock()
     coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.utcnow()
+    coordinator.last_update_success_time = datetime.now(timezone.utc)
     coordinator.data = {"devices": [], "projects": []}
 
     class FakeHTTPClient:
@@ -2579,9 +2579,8 @@ async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:
 
     coordinator.api = fake_api
 
-    entry = MockConfigEntry(domain="syr_connect", data={})
+    entry = MockConfigEntry(domain="syr_connect", data={}, title="SYR Connect (user)")
     entry.runtime_data = coordinator
-    entry.title = "SYR Connect (user)"
     entry.version = 1
 
     res = await async_get_config_entry_diagnostics(hass, entry)
@@ -2605,7 +2604,7 @@ async def test_diagnostics_json_redacts_data(hass) -> None:
     """Ensure JSON API path redacts sensitive fields."""
     coordinator = MagicMock()
     coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.utcnow()
+    coordinator.last_update_success_time = datetime.now(timezone.utc)
     coordinator.data = {"devices": [{"id": "local", "base_path": "/"}]}
 
     # Create a fake JSON API type and monkeypatch diag.SyrConnectJsonAPI to our dummy
@@ -2628,9 +2627,10 @@ async def test_diagnostics_json_redacts_data(hass) -> None:
     fake_api = DummyJSONAPI()
     coordinator.api = fake_api
 
-    entry = MockConfigEntry(domain="syr_connect", data={CONF_API_TYPE: API_TYPE_JSON})
+    entry = MockConfigEntry(
+        domain="syr_connect", data={CONF_API_TYPE: API_TYPE_JSON}, title="SYR Connect (json)"
+    )
     entry.runtime_data = coordinator
-    entry.title = "SYR Connect (json)"
     entry.version = 1
 
     res = await async_get_config_entry_diagnostics(hass, entry)
@@ -2648,14 +2648,13 @@ async def test_diagnostics_no_http_session_sets_error(hass) -> None:
     """When coordinator lacks an HTTP session, raw_json should indicate an error."""
     coordinator = MagicMock()
     coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.utcnow()
+    coordinator.last_update_success_time = datetime.now(timezone.utc)
     # Provide a device with no base_path (no fetch tasks) and no _session
     coordinator.data = {"devices": [{"id": "x", "name": "X"}]}
     coordinator._session = None
 
-    entry = MockConfigEntry(domain="syr_connect", data={})
+    entry = MockConfigEntry(domain="syr_connect", data={}, title="SYR Connect (no session)")
     entry.runtime_data = coordinator
-    entry.title = "SYR Connect (no session)"
     entry.version = 1
 
     res = await async_get_config_entry_diagnostics(hass, entry)
