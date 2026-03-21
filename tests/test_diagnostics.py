@@ -2579,9 +2579,10 @@ async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:
 
     coordinator.api = fake_api
 
-    entry = MockConfigEntry(domain="syr_connect", data={}, title="SYR Connect (user)")
+    entry = MockConfigEntry(
+        domain="syr_connect", data={}, title="SYR Connect (user)", version=1
+    )
     entry.runtime_data = coordinator
-    entry.version = 1
 
     res = await async_get_config_entry_diagnostics(hass, entry)
 
@@ -2628,10 +2629,12 @@ async def test_diagnostics_json_redacts_data(hass) -> None:
     coordinator.api = fake_api
 
     entry = MockConfigEntry(
-        domain="syr_connect", data={CONF_API_TYPE: API_TYPE_JSON}, title="SYR Connect (json)"
+        domain="syr_connect",
+        data={CONF_API_TYPE: API_TYPE_JSON},
+        title="SYR Connect (json)",
+        version=1,
     )
     entry.runtime_data = coordinator
-    entry.version = 1
 
     res = await async_get_config_entry_diagnostics(hass, entry)
 
@@ -2653,9 +2656,10 @@ async def test_diagnostics_no_http_session_sets_error(hass) -> None:
     coordinator.data = {"devices": [{"id": "x", "name": "X"}]}
     coordinator._session = None
 
-    entry = MockConfigEntry(domain="syr_connect", data={}, title="SYR Connect (no session)")
+    entry = MockConfigEntry(
+        domain="syr_connect", data={}, title="SYR Connect (no session)", version=1
+    )
     entry.runtime_data = coordinator
-    entry.version = 1
 
     res = await async_get_config_entry_diagnostics(hass, entry)
 
