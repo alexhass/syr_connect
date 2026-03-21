@@ -1,4 +1,4 @@
-name: CI - Tests & Coverage
+name: CI
 
 on:
   push:
@@ -6,47 +6,62 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    name: Run tests and upload coverage
+    name: Tests & Coverage
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install system deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-requirements-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-requirements-
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential
 
       - name: Install Python dev requirements
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
 
+      - name: Export PYTHONPATH for tests
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
+
       - name: Run tests with coverage
         run: |
           python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing --cov-report=xml:coverage.xml -q
 
-      - name: Upload coverage.xml
+      - name: Generate HTML coverage report
+        if: always()
+        run: |
+          python -m pip install coverage
+          coverage html -d coverage_html || true
+
+      - name: Upload coverage XML
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
           path: coverage.xml
 
-      - name: Upload HTML coverage report
-        if: always()
-        run: |
-          python -m pip install coverage
-          coverage html -d coverage_html || true
-        continue-on-error: true
-
-      - name: Upload HTML report artifact
+      - name: Upload coverage HTML
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -58,93 +73,60 @@ jobs:
         with:
           files: coverage.xml
         env:
-          # For private repos set CODECOV_TOKEN in repo secrets. For public repos this is optional.
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-name: ci
-
-permissions:
-  contents: read
-  pull-requests: write
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-
-      - name: Set PYTHONPATH
-        run: |
-          echo "PYTHONPATH=$PYTHONPATH:$(pwd)/custom_components" >> $GITHUB_ENV
-
-      - name: Test Import
-        run: python -c "import syr_connect; print(syr_connect)"
-
-      - name: Run unit tests with coverage
-        run: |
-          pip install pytest-cov
-          pytest --cov=custom_components --cov-report=xml -q tests || pytest --cov=custom_components --cov-report=xml -q
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
+    name: Lint (ruff)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v4
         with:
           python-version: '3.13'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-requirements-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-requirements-
 
       - name: Install dev dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Ruff Lint
-        run: |
-          ruff --version
-          ruff check .
+      - name: Run ruff lint
+        run: ruff check .
 
   typecheck:
+    name: Type Check (mypy)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v4
         with:
           python-version: '3.13'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-requirements-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-requirements-
 
       - name: Install dev dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: MyPy Type Check
-        run: |
-          mypy --version
-          mypy .
+      - name: Run mypy
+        run: mypy custom_components/syr_connect
