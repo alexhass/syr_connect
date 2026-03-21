@@ -48,7 +48,7 @@ jobs:
         run: |
           python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing --cov-report=xml:coverage.xml -q
 
-      - name: Debug: show coverage artifacts
+      - name: "Debug: show coverage artifacts"
         if: always()
         run: |
           echo "Listing repo root files"
