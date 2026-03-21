@@ -172,6 +172,79 @@ def test_entity_category_is_config() -> None:
     assert sw._attr_entity_category == EntityCategory.CONFIG
 
 
+async def test_async_setup_entry_handles_instantiation_error(hass: HomeAssistant) -> None:
+    """If creating SyrConnectBuzSwitch raises, async_setup_entry should log and continue."""
+    import importlib
+
+    import custom_components.syr_connect.switch as switch_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestErr",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_err",
+        unique_id="test_unique_id_err",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    # Device contains getBUZ so code will attempt to instantiate
+    device = {"id": "SN800", "name": "ErrDevice", "status": {"getBUZ": 1}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    # Monkeypatch the constructor to raise
+    original_cls = switch_mod.SyrConnectBuzSwitch
+
+    def raise_on_init(*args, **kwargs):
+        raise RuntimeError("ctor boom")
+
+    switch_mod.SyrConnectBuzSwitch = raise_on_init
+
+    mock_add_entities = MagicMock()
+
+    # Should not raise
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    mock_add_entities.assert_not_called()
+
+    # restore
+    switch_mod.SyrConnectBuzSwitch = original_cls
+
+
+async def test_async_setup_entry_device_without_getbuz(hass: HomeAssistant) -> None:
+    """Device present but without getBUZ should not create entities."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestNoBUZ",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_nobuz",
+        unique_id="test_unique_id_nobuz",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    device = {"id": "SN900", "name": "NoBuz", "status": {"getXYZ": 1}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    mock_add_entities = MagicMock()
+
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    mock_add_entities.assert_not_called()
+
+
 def test_is_on_device_missing() -> None:
     """If the device is not present in coordinator data, is_on should be None."""
     from custom_components.syr_connect.switch import SyrConnectBuzSwitch
