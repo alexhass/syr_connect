@@ -553,13 +553,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 info = await validate_input_json(self.hass, user_input)
                 _LOGGER.debug("Validation successful")
+            except InvalidAuthError:
+                errors["base"] = "invalid_auth"
+            except CannotConnectError:
+                errors["base"] = "cannot_connect_local"
             except HomeAssistantError as err:
                 if "port" in str(err).lower():
                     errors[CONF_HOST] = "host_no_port"
                 else:
                     errors["base"] = "unknown"
-            except CannotConnectError:
-                errors["base"] = "cannot_connect_local"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
                 errors["base"] = "unknown"

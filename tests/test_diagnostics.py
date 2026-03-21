@@ -2448,6 +2448,7 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
                 "base_path": "/trio",
                 "available": True,
                 "status": {
+                    "getSRN": "112AAA12345",
                     "getCNA": "Safe-Tech",
                     "getVER": "Safe-Tech-2.0.5",
                     "getFIR": "FW_ST_01",
