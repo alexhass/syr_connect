@@ -6965,7 +6965,7 @@ async def test_getcs_with_getsv_value_error(hass: HomeAssistant) -> None:
             }
         ]
     }
-    coordinator = _build_coordinator(hass, data)
+    _build_coordinator(hass, data)
 
     # getCS1 should be excluded because getSV1 is invalid and getCS1 is zero
     state = hass.states.get("sensor.syr_connect_device1_getcs1")
@@ -6987,7 +6987,7 @@ async def test_getcs_with_getsv_type_error(hass: HomeAssistant) -> None:
             }
         ]
     }
-    coordinator = _build_coordinator(hass, data)
+    _build_coordinator(hass, data)
 
     # getCS2 should be excluded because getSV2 is None (TypeError) and getCS2 is zero
     state = hass.states.get("sensor.syr_connect_device2_getcs2")
@@ -7055,7 +7055,7 @@ async def test_getcs_with_missing_getsv_int_zero(hass: HomeAssistant) -> None:
             }
         ]
     }
-    coordinator = _build_coordinator(hass, data)
+    _build_coordinator(hass, data)
 
     # getCS3 should be excluded because getSV3 is missing and getCS3 is zero
     state = hass.states.get("sensor.syr_connect_device1_getcs3")
@@ -7077,7 +7077,7 @@ async def test_getcs_with_getsv_zero_int(hass: HomeAssistant) -> None:
             }
         ]
     }
-    coordinator = _build_coordinator(hass, data)
+    _build_coordinator(hass, data)
 
     # getCS1 should be excluded because getSV1 is zero and getCS1 is zero
     state = hass.states.get("sensor.syr_connect_device1_getcs1")
@@ -7099,7 +7099,7 @@ async def test_getcs_with_getsv_zero_float(hass: HomeAssistant) -> None:
             }
         ]
     }
-    coordinator = _build_coordinator(hass, data)
+    _build_coordinator(hass, data)
 
     # getCS2 should be excluded because getSV2 is zero and getCS2 is zero
     state = hass.states.get("sensor.syr_connect_device1_getcs2")

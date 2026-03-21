@@ -414,7 +414,7 @@ def test_attrs_match_with_version_constraints():
 
 def test_attrs_match_pass_but_version_fail():
     """When attrs match but version doesn't, model is still detected.
-    
+
     attrs_equals takes precedence in detection logic, version is not checked
     when attrs_equals matches.
     """
