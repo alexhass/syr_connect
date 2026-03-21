@@ -119,6 +119,7 @@
       "getffm": {
         "name": "Tipo de filtro",
         "state": {
+          "0": "Desconocido",
           "1": "Filtro de retrolavado",
           "2": "Filtro intercambiable",
           "3": "Sin filtro"
@@ -302,6 +303,7 @@
       "getffm": {
         "name": "Tipo de filtro",
         "state": {
+          "0": "Desconocido",
           "1": "Filtro de retrolavado",
           "2": "Filtro intercambiable",
           "3": "Sin filtro"

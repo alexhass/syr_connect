@@ -121,7 +121,8 @@
         "state": {
           "0": "Sem filtro",
           "1": "Filtro de cartucho",
-          "2": "Filtro de areia"
+          "2": "Filtro de areia",
+          "3": "Sem filtro"
         }
       },
       "getprf": {
@@ -304,7 +305,8 @@
         "state": {
           "0": "Sem filtro",
           "1": "Filtro de cartucho",
-          "2": "Filtro de areia"
+          "2": "Filtro de areia",
+          "3": "Sem filtro"
         }
       },
       "getfir": {

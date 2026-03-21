@@ -121,7 +121,8 @@
         "state": {
           "0": "Nessun filtro",
           "1": "Filtro a cartuccia",
-          "2": "Filtro a sabbia"
+          "2": "Filtro a sabbia",
+          "3": "Nessun filtro"
         }
       },
       "getprf": {
@@ -304,7 +305,8 @@
         "state": {
           "0": "Nessun filtro",
           "1": "Filtro a cartuccia",
-          "2": "Filtro a sabbia"
+          "2": "Filtro a sabbia",
+          "3": "Nessun filtro"
         }
       },
       "getfir": {
