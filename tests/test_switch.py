@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 from unittest.mock import MagicMock, AsyncMock
 
 from homeassistant.config_entries import ConfigEntry
