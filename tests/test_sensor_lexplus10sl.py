@@ -11,7 +11,7 @@ Firmware: 2.9 (SLPL)
 
 import unittest
 
-import defusedxml.ElementTree as etree
+import defusedxml.ElementTree as ElementTree
 
 # Real XML response from LEXplus10SL
 REAL_XML_RESPONSE = """<?xml version="1.0" encoding="utf-8"?>
@@ -90,7 +90,7 @@ class TestLEXplus10SL(unittest.TestCase):
 
     def setUp(self):
         """Parse real XML data."""
-        self.root = etree.fromstring(REAL_XML_RESPONSE)
+        self.root = ElementTree.fromstring(REAL_XML_RESPONSE)
         self.device = self.root.find('.//d')
         self.sensors = {c.get('n'): c.get('v') for c in self.device.findall('c')}
 
@@ -114,7 +114,7 @@ class TestLEXplus10SL(unittest.TestCase):
         # Value 39 = 3.9 bar
         self.assertEqual(self.sensors['getPRS'], '39')
 
-    def test_volume_uses_getTOR_not_getVOL(self):
+    def test_volume_uses_gettor_not_getvol(self):
         """
         IMPORTANT: LEXplus10SL uses getTOR instead of getVOL!
 
@@ -279,7 +279,7 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         - getTOR or getVOL: volume (important for statistics)
         - getSRE: regeneration (important for maintenance)
         """
-        root = etree.fromstring(REAL_XML_RESPONSE)
+        root = ElementTree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -293,7 +293,7 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         self.assertTrue('getTOR' in sensors or 'getVOL' in sensors,
                        "Neither getTOR nor getVOL present - volume display impossible!")
 
-    def test_backward_compatibility_with_getVOL(self):
+    def test_backward_compatibility_with_getvol(self):
         """
         Test that code can handle both volume sensors.
 
@@ -303,7 +303,7 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         Code should support both (or treat getTOR as an alias for getVOL).
         """
         # LEXplus10SL hat getTOR
-        root = etree.fromstring(REAL_XML_RESPONSE)
+        root = ElementTree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -324,7 +324,7 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
 
         Profiles 4-8 have empty names ("") - the code must handle this.
         """
-        root = etree.fromstring(REAL_XML_RESPONSE)
+        root = ElementTree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -341,7 +341,7 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         Even if profiles 4-8 are deactivated (getPA=0), they have default values.
         These should not cause errors.
         """
-        root = etree.fromstring(REAL_XML_RESPONSE)
+        root = ElementTree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
@@ -361,7 +361,7 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         - Profile 3 must be activated (getPA3=1)
         - Profile 3 must have a name (getPN3 not empty)
         """
-        root = etree.fromstring(REAL_XML_RESPONSE)
+        root = ElementTree.fromstring(REAL_XML_RESPONSE)
         device = root.find('.//d')
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 

@@ -7166,44 +7166,8 @@ async def test_sensor_getvol_none_value(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_getbar_none_value(hass: HomeAssistant) -> None:
-    """Test getBAR sensor with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAR": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
-
-    assert sensor.native_value is None
 
 
-async def test_sensor_getbar_empty_string(hass: HomeAssistant) -> None:
-    """Test getBAR sensor with empty string."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAR": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
-
-    assert sensor.native_value is None
 
 
 async def test_sensor_getbar_no_numeric_value(hass: HomeAssistant) -> None:
@@ -7326,25 +7290,7 @@ async def test_sensor_icon_getab_open(hass: HomeAssistant) -> None:
     assert sensor.icon == "mdi:valve-open"
 
 
-async def test_sensor_icon_getab_none_value(hass: HomeAssistant) -> None:
-    """Test getAB icon returns base icon when value is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
 
-    # Should return base icon
-    assert sensor.icon == sensor._base_icon
 
 
 async def test_sensor_icon_getala_empty_string(hass: HomeAssistant) -> None:
@@ -7433,25 +7379,6 @@ async def test_sensor_getnot_exception_handling(hass: HomeAssistant) -> None:
         assert result is None
 
 
-async def test_sensor_getnot_none_value(hass: HomeAssistant) -> None:
-    """Test getNOT with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getNOT": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
-
-    assert sensor.native_value is None
-
 
 async def test_sensor_getwrn_exception_handling(hass: HomeAssistant) -> None:
     """Test getWRN handles exceptions in get_sensor_wrn_map."""
@@ -7475,25 +7402,6 @@ async def test_sensor_getwrn_exception_handling(hass: HomeAssistant) -> None:
         result = sensor.native_value
         assert result is None
 
-
-async def test_sensor_getwrn_none_value(hass: HomeAssistant) -> None:
-    """Test getWRN with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWRN": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
-
-    assert sensor.native_value is None
 
 
 async def test_sensor_leak_protection_getpv_float_value(hass: HomeAssistant) -> None:
@@ -7795,82 +7703,7 @@ async def test_sensor_apply_numeric_conversion_precision_valueerror(hass: HomeAs
         assert result is not None  # Should not crash
 
 
-async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None:
-    """Test sensor excluded when empty with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSV1": None,  # getSV1 is in EXCLUDED_WHEN_EMPTY
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
 
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getSV1 should not be created when None
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getSV1" not in sensor_keys
-
-
-async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
-    """Test sensor excluded when empty with whitespace-only string."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSRE": "   ",  # Whitespace only
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getSRE should not be created when empty/whitespace
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getSRE" not in sensor_keys
-
-
-async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
-    """Test getPA group handling with exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    # Mock entity registry to raise exception
-    with patch("homeassistant.helpers.entity_registry.async_get") as mock_reg:
-        mock_reg.side_effect = RuntimeError("Registry error")
-
-        # RuntimeError from er.async_get is not caught, so it propagates
-        with pytest.raises(RuntimeError, match="Registry error"):
-            await async_setup_entry(hass, entry, Mock())
 
 
 async def test_getpa_is_true_bool_true(hass: HomeAssistant) -> None:

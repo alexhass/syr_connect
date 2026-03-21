@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady, UpdateFailed
 
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
@@ -513,7 +513,7 @@ async def test_coordinator_connection_error_during_login(hass: HomeAssistant, se
         coordinator.config_entry = setup_in_progress_config_entry
 
         # Should raise UpdateFailed wrapped in ConfigEntryNotReady by async_config_entry_first_refresh
-        with pytest.raises(Exception):  # Can be UpdateFailed or ConfigEntryNotReady
+        with pytest.raises((UpdateFailed, ConfigEntryNotReady)):
             await coordinator.async_config_entry_first_refresh()
 
 
