@@ -285,6 +285,46 @@ async def test_login_nsc_status() -> None:
         await client.login()
 
 
+async def test_login_404_treated_as_not_required() -> None:
+    """Test login treats HTTP 404 as 'login not required' and sets flag."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/api/v1/"
+    )
+
+    # Simulate _execute_http_get raising a connection error for 404 endpoint
+    from custom_components.syr_connect.exceptions import SyrConnectHTTPError
+
+    exc = SyrConnectHTTPError("Endpoint not found (HTTP 404)", status=404)
+    with patch.object(client, "_execute_http_get", side_effect=exc):
+        result = await client.login()
+
+    assert result is True
+    assert client._login_required is False
+
+
+async def test_get_device_status_does_not_call_login_if_not_required() -> None:
+    """Ensure get_device_status skips login when login not required."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.100", base_path="/api/v1/")
+
+    # Mark that login is known not required
+    client._login_required = False
+    client.login = AsyncMock()
+
+    data = {"getAB": "value"}
+    with patch.object(client, "_request_json_data", return_value=data):
+        status = await client.get_device_status("device1")
+
+    # Verify login was NOT called
+    client.login.assert_not_called()
+    assert status == data
+
+
 async def test_request_json_data_no_base_url_raises() -> None:
     """Test _request_json_data raises ValueError when base URL not configured."""
     sess = MagicMock()

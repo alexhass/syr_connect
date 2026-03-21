@@ -21,6 +21,7 @@ from .const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_LOGIN_REQUIRED,
     CONF_MODEL,
     DOMAIN,
 )
@@ -202,7 +203,8 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     _LOGGER.info("JSON API: connection successful to host: %s", host)
 
-    return {"title": f"SYR Connect Local ({host})"}
+    # Return whether the device required login so the config flow can persist it
+    return {"title": f"SYR Connect Local ({host})", "login_required": api._login_required}
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -573,12 +575,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 _LOGGER.info("Creating Local/JSON API config entry: %s", info["title"])
+                entry_data = {
+                    **user_input,
+                    CONF_API_TYPE: API_TYPE_JSON,
+                }
+                # Persist login_required flag if available (hidden config)
+                if "login_required" in info and info["login_required"] is not None:
+                    entry_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
+
                 return self.async_create_entry(
                     title=info["title"],
-                    data={
-                        **user_input,
-                        CONF_API_TYPE: API_TYPE_JSON,
-                    },
+                    data=entry_data,
                 )
         else:
             _LOGGER.debug("Showing Local/JSON API config form to user")

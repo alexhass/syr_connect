@@ -31,6 +31,7 @@ from yarl import URL
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
 )
 
@@ -66,6 +67,7 @@ class SyrConnectJsonAPI:
         host: str | None = None,
         base_path: str | None = None,
         base_url: str | None = None,
+        login_required: bool | None = None,
     ) -> None:
         """Initialize the JSON API client.
 
@@ -85,6 +87,13 @@ class SyrConnectJsonAPI:
 
         # Session tracking (devices require login before /get/all returns data)
         self._last_login: datetime | None = None
+
+        # Tracks whether ADM login is required for this device:
+        # - None: unknown (not checked yet)
+        # - True: login required
+        # - False: login not required (skip attempts)
+        # Allow pre-seeding this value from persisted config entry
+        self._login_required: bool | None = login_required
 
         # Project list (single-item placeholder for coordinator compatibility)
         self.projects: list[dict[str, Any]] = []
@@ -248,16 +257,16 @@ class SyrConnectJsonAPI:
             # 404: Endpoint doesn't exist (wrong base_path or device model?)
             if err.status == 404:
                 _LOGGER.error("JSON API: %s - Endpoint not found: %s (HTTP %s)", operation, url, err.status)
-                raise SyrConnectConnectionError(
-                    f"{operation.capitalize()} failed: Endpoint not found (HTTP 404)"
-                ) from err
+                # Raise an HTTP-specific exception carrying the numeric status
+                raise SyrConnectHTTPError(f"{operation.capitalize()} failed: Endpoint not found (HTTP 404)", status=err.status) from err
             # 401/403: Authentication failed (login required or invalid credentials)
             if err.status in (401, 403):
                 _LOGGER.error("JSON API: %s - Authentication failed: %s (HTTP %s)", operation, url, err.status)
                 raise SyrConnectAuthError(f"Authentication failed: {err.message}") from err
             # Other HTTP errors (400, 500, etc.)
             _LOGGER.error("JSON API: %s - HTTP error: %s (HTTP %s - %s)", operation, url, err.status, err.message)
-            raise SyrConnectConnectionError(f"HTTP {err.status}: {err.message}") from err
+            # Raise an HTTP-specific exception carrying the numeric status
+            raise SyrConnectHTTPError(f"HTTP {err.status}: {err.message}", status=err.status) from err
 
         # --- Network/Connection Errors ---
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -295,8 +304,43 @@ class SyrConnectJsonAPI:
         # Build login URL: /set/ADM/(2)f with literal parentheses (encode=False)
         url = self._construct_encoded_url("set", "ADM", "(2)f", encode=False)
 
+        # If we've already determined login is not required, skip network call
+        if self._login_required is False:
+            _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
+            # Mark session as valid for the timeout period so callers won't retry
+            self._last_login = datetime.now()
+            self.projects = [{"id": "local", "name": "Local JSON API"}]
+            return True
+
         # Make request and get JSON response with login confirmation
-        response = await self._execute_http_get(url, operation="login")
+        # Some newer devices do not implement the ADM login endpoint and
+        # will return HTTP 404. Treat 404 as "login not required" so the
+        # client can continue to fetch /get/all without failing.
+        try:
+            response = await self._execute_http_get(url, operation="login")
+        except SyrConnectHTTPError as err:
+            # HTTP-specific errors: treat 404 as "login not required"
+            if err.status == 404:
+                _LOGGER.info(
+                    "JSON API: Login endpoint not found (404) at %s; skipping ADM login",
+                    self._build_base_url(),
+                )
+                # Mark session as valid to avoid retrying login
+                self._last_login = datetime.now()
+                # Remember that this device doesn't require ADM login
+                self._login_required = False
+                # Clear any cached data and provide projects placeholder
+                self._cached_get_all = None
+                self.projects = [{"id": "local", "name": "Local JSON API"}]
+                return True
+            # Re-raise other HTTP errors
+            raise
+        except SyrConnectConnectionError:
+            # Non-HTTP connection errors (network, timeouts) should propagate
+            raise
+        else:
+            # Successful HTTP call to login endpoint - record that login is required
+            self._login_required = True
 
         # Validate set-command response: {"setADM(2)f":"OK"}
         # Use shared validation logic that checks for OK/MIMA/NSC status codes

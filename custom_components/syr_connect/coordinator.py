@@ -24,6 +24,7 @@ from .const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_LOGIN_REQUIRED,
     CONF_MODEL,
     DOMAIN,
 )
@@ -92,6 +93,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 session,
                 host=host,
                 base_path=base_path,
+                login_required=config_data.get(CONF_LOGIN_REQUIRED),
             )
             self._username = None  # Not used for JSON API
             _LOGGER.info("Coordinator initialized with JSON API (host=%s, model=%s)", host, model)

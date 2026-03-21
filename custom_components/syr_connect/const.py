@@ -21,6 +21,7 @@ DOMAIN = "syr_connect"
 CONF_API_TYPE = "api_type"
 CONF_HOST = "host"
 CONF_MODEL = "model"
+CONF_LOGIN_REQUIRED = "login_required"
 
 # API type values
 API_TYPE_XML = "xml"
@@ -453,6 +454,17 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getPV",
     "getPW",
     "getSMC",
+
+    # Sensors exits in devices:
+    # - SaveTech+
+
+    # JSON API only sensors (not available in XML API):
+    "getAMA",       # Value: "", unclear meaning
+    "getFLF",       # Value: "", unclear meaning
+    "getOLS",       # Value: "", unclear meaning
+    "getPCI",       # Value: "", unclear meaning
+    "getPCO",       # Value: "", unclear meaning
+    "getPCS",       # Value: "", unclear meaning
 
     # Sensors exits in devices:
     # - Sanibel Softwater UNO A25
