@@ -287,7 +287,6 @@ async def test_login_nsc_status() -> None:
 
 async def test_login_404_treated_as_not_required() -> None:
     """Test login treats HTTP 404 as 'login not required' and sets flag."""
-    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 
     sess = MagicMock()
     client = SyrConnectJsonAPI(

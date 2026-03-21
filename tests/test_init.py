@@ -32,16 +32,16 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
         unique_id="test_unique_id",
     )
     config_entry.add_to_hass(hass)
-    
+
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
-        
+
         with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
             mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
-    
+
     assert result is True
     assert config_entry.runtime_data == mock_coordinator
     mock_coordinator.async_config_entry_first_refresh.assert_called_once()
@@ -60,14 +60,14 @@ async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None
         unique_id="test_unique_id",
     )
     config_entry.add_to_hass(hass)
-    
+
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock(
             side_effect=Exception("Connection failed")
         )
         mock_coordinator_class.return_value = mock_coordinator
-        
+
         with pytest.raises(ConfigEntryNotReady, match="Unable to connect to SYR Connect"):
             await async_setup_entry(hass, config_entry)
 
@@ -86,16 +86,16 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
         options={"scan_interval": 120},  # Custom interval
     )
     config_entry.add_to_hass(hass)
-    
+
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
-        
+
         with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
             mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
-    
+
     assert result is True
     # Verify coordinator was created with custom scan interval
     mock_coordinator_class.assert_called_once()
@@ -115,11 +115,11 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
         entry_id="test_entry_id",
         unique_id="test_unique_id",
     )
-    
+
     with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
         mock_unload.return_value = True
         result = await async_unload_entry(hass, config_entry)
-    
+
     assert result is True
 
 
@@ -135,11 +135,11 @@ async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
         entry_id="test_entry_id",
         unique_id="test_unique_id",
     )
-    
+
     with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
         mock_unload.return_value = False
         result = await async_unload_entry(hass, config_entry)
-    
+
     assert result is False
 
 
@@ -156,14 +156,14 @@ async def test_async_options_update_listener_interval_changed(hass: HomeAssistan
         unique_id="test_unique_id",
         options={"scan_interval": 120},  # New interval
     )
-    
+
     mock_coordinator = MagicMock()
     mock_coordinator.update_interval = timedelta(seconds=60)  # Old interval
     mock_coordinator.async_request_refresh = AsyncMock()
     config_entry.runtime_data = mock_coordinator
-    
+
     await async_options_update_listener(hass, config_entry)
-    
+
     # Verify interval was updated
     assert config_entry.runtime_data.update_interval == timedelta(seconds=120)
     mock_coordinator.async_request_refresh.assert_called_once()
@@ -182,14 +182,14 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
         unique_id="test_unique_id",
         options={"scan_interval": 60},  # Same as current
     )
-    
+
     mock_coordinator = MagicMock()
     mock_coordinator.update_interval = timedelta(seconds=60)  # Same interval
     mock_coordinator.async_request_refresh = AsyncMock()
     config_entry.runtime_data = mock_coordinator
-    
+
     await async_options_update_listener(hass, config_entry)
-    
+
     # Verify refresh was not called
     mock_coordinator.async_request_refresh.assert_not_called()
 
@@ -206,17 +206,17 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         entry_id="test_entry_id",
         unique_id="test_unique_id",
     )
-    
+
     with patch.object(hass.config_entries, "async_reload", new_callable=AsyncMock) as mock_reload:
         await async_reload_entry(hass, config_entry)
-        
+
         mock_reload.assert_called_once_with("test_entry_id")
 
 
 async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> None:
     """Test that legacy config entries without API_TYPE are migrated automatically."""
     from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
-    
+
     # Create a legacy entry without CONF_API_TYPE
     config_entry = MockConfigEntry(
         version=1,
@@ -229,12 +229,12 @@ async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> N
         unique_id="legacy@example.com",  # Old format without prefix
     )
     config_entry.add_to_hass(hass)
-    
+
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
-        
+
         with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
             with patch.object(
                 hass.config_entries,
@@ -242,18 +242,18 @@ async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> N
                 new_callable=MagicMock
             ) as mock_update:
                 result = await async_setup_entry(hass, config_entry)
-    
+
     # Verify setup succeeded
     assert result is True
-    
+
     # Verify migration was called
     mock_update.assert_called_once()
     call_args = mock_update.call_args
-    
+
     # Check that data was updated with API_TYPE_XML
     assert CONF_API_TYPE in call_args.kwargs["data"]
     assert call_args.kwargs["data"][CONF_API_TYPE] == API_TYPE_XML
-    
+
     # Check that unique_id was updated to new format
     assert call_args.kwargs["unique_id"] == f"{API_TYPE_XML}_legacy@example.com"
 
@@ -261,7 +261,7 @@ async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> N
 async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssistant) -> None:
     """Test that new config entries with API_TYPE are not migrated."""
     from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
-    
+
     # Create a new entry with CONF_API_TYPE already set
     config_entry = MockConfigEntry(
         version=1,
@@ -278,12 +278,12 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
         unique_id=f"{API_TYPE_XML}_new@example.com",
     )
     config_entry.add_to_hass(hass)
-    
+
     with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
-        
+
         with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
             with patch.object(
                 hass.config_entries,
@@ -291,10 +291,10 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
                 new_callable=MagicMock
             ) as mock_update:
                 result = await async_setup_entry(hass, config_entry)
-    
+
     # Verify setup succeeded
     assert result is True
-    
+
     # Verify migration was NOT called (entry already has API_TYPE)
     mock_update.assert_not_called()
 

@@ -11,11 +11,11 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.select import (
+    SyrConnectDiscreteSelect,
     SyrConnectNumericSelect,
     SyrConnectPrfSelect,
     SyrConnectRegenerationSelect,
     SyrConnectRotationSelect,
-    SyrConnectDiscreteSelect,
     _build_time_options,
     async_setup_entry,
 )

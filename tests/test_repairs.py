@@ -19,7 +19,7 @@ async def test_create_issue(hass: HomeAssistant) -> None:
             "test_translation_key",
             severity=ir.IssueSeverity.WARNING,
         )
-        
+
         mock_create.assert_called_once_with(
             hass,
             DOMAIN,
@@ -41,7 +41,7 @@ async def test_create_issue_with_kwargs(hass: HomeAssistant) -> None:
             data={"some": "data"},
             placeholders={"key": "value"},
         )
-        
+
         mock_create.assert_called_once_with(
             hass,
             DOMAIN,
@@ -58,5 +58,5 @@ async def test_delete_issue(hass: HomeAssistant) -> None:
     """Test deleting a repair issue."""
     with patch("homeassistant.helpers.issue_registry.async_delete_issue") as mock_delete:
         delete_issue(hass, "test_issue_to_delete")
-        
+
         mock_delete.assert_called_once_with(hass, DOMAIN, "test_issue_to_delete")

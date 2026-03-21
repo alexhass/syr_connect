@@ -652,7 +652,7 @@ def test_parse_device_status_dvs_is_list_directly(parser):
     # This tests the isinstance(dvs, list) branch more explicitly
     xml = '<sc><dvs><d><c n="test" v="value"/></d></dvs></sc>'
     parsed = parser.parse_xml(xml)
-    
+
     # Manually test the branch by passing list to the function
     # (This is a bit artificial but ensures the branch is covered)
     result = parser.parse_device_status_response(xml)

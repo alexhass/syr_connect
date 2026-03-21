@@ -1,17 +1,17 @@
 """Tests for sensor platform."""
 from __future__ import annotations
 
-from datetime import UTC, datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, Mock, PropertyMock, patch
+from datetime import UTC, datetime
+from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.sensor import SyrConnectSensor, async_setup_entry
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -379,7 +379,7 @@ async def test_sensor_excluded_cs_with_salt(hass: HomeAssistant) -> None:
 
     entities = add_entities.call_args.args[0]
     cs1_sensors = [e for e in entities if e._sensor_key == "getCS1"]
-    
+
     # Should create getCS1 even though value is 0, because getSV1 is not zero
     assert len(cs1_sensors) == 1
 
@@ -409,7 +409,7 @@ async def test_sensor_excluded_cs_no_salt(hass: HomeAssistant) -> None:
 
     entities = add_entities.call_args.args[0]
     cs1_sensors = [e for e in entities if e._sensor_key == "getCS1"]
-    
+
     # Should not create getCS1 because both are zero
     assert len(cs1_sensors) == 0
 
@@ -638,7 +638,7 @@ def test_extra_getwhu_and_getlar_and_getrpw(create_mock_coordinator):
     lar = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getLAR")
     assert isinstance(lar.native_value, datetime)
     # Check timestamp matches (allow timezone differences by comparing UTC timestamp)
-    assert int(lar.native_value.replace(tzinfo=timezone.utc).timestamp()) == ts
+    assert int(lar.native_value.replace(tzinfo=UTC).timestamp()) == ts
 
     rpw = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getRPW")
     # Should return a comma-separated list for mask with multiple days
@@ -701,7 +701,7 @@ async def test_sensor_missing_device(hass: HomeAssistant) -> None:
 async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     """Test entity registry cleanup for excluded sensors."""
     from homeassistant.helpers import entity_registry as er
-    
+
     # Create registry entry for an excluded sensor
     registry = er.async_get(hass)
     entry_to_remove = registry.async_get_or_create(
@@ -710,7 +710,7 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
         "device1_getDTY",  # getDTY is in _SYR_CONNECT_SENSOR_EXCLUDED
         suggested_object_id="device1_getdty",
     )
-    
+
     data = {
         "devices": [
             {
@@ -727,7 +727,7 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     # Excluded sensor should be removed during setup
     # The entity was created, so verify it exists initially
     assert entry_to_remove is not None
@@ -796,7 +796,7 @@ async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     # getCS1 should be excluded because both are 0
     entities = add_entities.call_args.args[0]
     assert len(entities) == 0
@@ -823,7 +823,7 @@ async def test_sensor_cs_int_zero_with_sv_zero(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     # getCS1 should be excluded
     entities = add_entities.call_args.args[0]
     assert len(entities) == 0
@@ -853,7 +853,7 @@ async def test_sensor_rpw_invalid_string_mask(hass: HomeAssistant) -> None:
 async def test_sensor_rpw_with_babel_fallback(hass: HomeAssistant) -> None:
     """Test getRPW falls back to strftime if Babel fails."""
     from unittest.mock import patch
-    
+
     data = {
         "devices": [
             {
@@ -1068,7 +1068,7 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
             }
         ]
     }
-    
+
     # Mock the async setup
     mock_coordinator = _build_coordinator(hass, data_non_zero)
     mock_entry = _build_entry(mock_coordinator)
@@ -1081,7 +1081,7 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
         mock_registry.async_get.return_value = None
         mock_registry.async_remove = Mock()
         mock_registry_getter.return_value = mock_registry
-        
+
         entities = []
         await async_setup_entry(
             hass,
@@ -1368,7 +1368,7 @@ async def test_sensor_getcs_with_missing_getsv(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     entities = add_entities.call_args.args[0]
     # Should exclude getCS2 when value is 0 and getSV2 is missing
     cs2_sensors = [e for e in entities if e._sensor_key == "getCS2"]
@@ -1396,7 +1396,7 @@ async def test_sensor_getcs3_with_nonzero_sv(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     entities = add_entities.call_args.args[0]
     # Should include getCS3 because getSV3 is non-zero
     cs3_sensors = [e for e in entities if e._sensor_key == "getCS3"]
@@ -1423,7 +1423,7 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     entities = add_entities.call_args.args[0]
     # getSV1 with value 0 should be excluded
     sv1_sensors = [e for e in entities if e._sensor_key == "getSV1"]
@@ -1450,7 +1450,7 @@ async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     entities = add_entities.call_args.args[0]
     # getSV2 with value 0.0 should be excluded
     sv2_sensors = [e for e in entities if e._sensor_key == "getSV2"]
@@ -1478,7 +1478,7 @@ async def test_sensor_getcs_int_zero(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     entities = add_entities.call_args.args[0]
     # Should exclude getCS1
     cs1_sensors = [e for e in entities if e._sensor_key == "getCS1"]
@@ -1659,8 +1659,7 @@ async def test_sensor_icon_valve_none_value(hass: HomeAssistant) -> None:
 
 async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     """Test entity registry cleanup handles exceptions gracefully."""
-    from homeassistant.helpers import entity_registry as er
-    
+
     data = {
         "devices": [
             {
@@ -1676,7 +1675,7 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     add_entities = Mock()
-    
+
     # Provide a dummy registry that safely ignores async_remove calls
     class DummyRegistry:
         def async_get(self, entity_id):
@@ -1780,7 +1779,6 @@ async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_getpa_group_false_removes_registry(hass: HomeAssistant) -> None:
-    from unittest.mock import Mock
 
     data = {
         "devices": [
@@ -1895,7 +1893,7 @@ async def test_getpa_group_false_removes_registry_entries(hass: HomeAssistant) -
 async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:
     """Test cleanup of controlled sensors from registry."""
     from homeassistant.helpers import entity_registry as er
-    
+
     # Create registry entry for a controlled sensor
     registry = er.async_get(hass)
     controlled_entry = registry.async_get_or_create(
@@ -1904,7 +1902,7 @@ async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:
         "device1_getRTM",  # getRTM is controlled
         suggested_object_id="device1_getrtm",
     )
-    
+
     data = {
         "devices": [
             {
@@ -1921,7 +1919,7 @@ async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
-    
+
     # Controlled sensor entry should be handled
     assert controlled_entry is not None
 
@@ -1942,7 +1940,7 @@ async def test_sensor_rpw_locale_exception(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
-    
+
     # The exception handling in sensor.py catches Exception when accessing locale
     # Just verify the sensor can still return weekday names
     result = sensor.native_value
@@ -2698,7 +2696,7 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
     entities = add_entities.call_args.args[0] if add_entities.called else []
     valid_entities = [e for e in entities if e._sensor_key == "getVALID"]
     invalid_entities = [e for e in entities if e._sensor_key == "getINVALID"]
-    
+
     assert len(valid_entities) == 1
     assert len(invalid_entities) == 0
 
@@ -3887,7 +3885,7 @@ async def test_sensor_getvol_with_prefix(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     # Test getVOL sensor - should extract numeric value
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     val = vol_sensor.native_value
@@ -3910,7 +3908,7 @@ async def test_sensor_getvol_normal_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     val = vol_sensor.native_value
     assert isinstance(val, (int, float, str))
@@ -3932,7 +3930,7 @@ async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     val = vol_sensor.native_value
     assert isinstance(val, (int, float, str))
@@ -3954,7 +3952,7 @@ async def test_sensor_getbat_with_multiple_values(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
     assert bat_sensor.native_value == 6.12
 
@@ -3974,7 +3972,7 @@ async def test_sensor_getbat_empty_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
     assert bat_sensor.native_value is None
 
@@ -3994,7 +3992,7 @@ async def test_sensor_getbat_invalid_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
     assert bat_sensor.native_value is None
 
@@ -4014,7 +4012,7 @@ async def test_sensor_getbar_with_unit(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
     assert bar_sensor.native_value == 4.1
 
@@ -4034,7 +4032,7 @@ async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
     assert bar_sensor.native_value == 4.1
 
@@ -4056,7 +4054,7 @@ async def test_sensor_getbar_empty_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
     assert bar_sensor.native_value is None
 
@@ -4076,7 +4074,7 @@ async def test_sensor_getbar_invalid_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
     assert bar_sensor.native_value is None
 
@@ -4096,7 +4094,7 @@ async def test_sensor_getavo_with_ml_suffix(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
     assert avo_sensor.native_value == 1.655  # mL converted to L
 
@@ -4116,7 +4114,7 @@ async def test_sensor_getavo_numeric_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
     assert avo_sensor.native_value == 1.655
 
@@ -4136,7 +4134,7 @@ async def test_sensor_getavo_empty_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
     assert avo_sensor.native_value is None
 
@@ -4156,7 +4154,7 @@ async def test_sensor_getavo_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
     assert avo_sensor.native_value is None
 
@@ -4176,7 +4174,7 @@ async def test_sensor_gettmp_numeric_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getTMP")
     assert tmp_sensor.native_value == 300.0
 
@@ -4196,7 +4194,7 @@ async def test_sensor_gettmp_zero_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getTMP")
     assert tmp_sensor.native_value == 0.0
 
@@ -4216,7 +4214,7 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
     # Mapped display value (matches mapping in const.py)
     assert le_sensor.native_value == 250  # Mapped display value
@@ -4237,7 +4235,7 @@ async def test_sensor_getul_value_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
     # Integration returns scaled integer (value*10)
     assert ul_sensor.native_value == 30  # Mapped display value as int
@@ -4258,7 +4256,7 @@ async def test_sensor_gett1_value_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
     assert t1_sensor.native_value == 5.0  # Mapped display value
 
@@ -4316,7 +4314,7 @@ async def test_sensor_icon_getab_open_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
     assert ab_sensor.icon == "mdi:valve-open"
 
@@ -4336,7 +4334,7 @@ async def test_sensor_icon_getab_closed_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
     assert ab_sensor.icon == "mdi:valve-closed"
 
@@ -4356,7 +4354,7 @@ async def test_sensor_icon_getab_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
     # Should return base icon (from const.py)
     assert ab_sensor.icon == ab_sensor._base_icon
@@ -4377,7 +4375,7 @@ async def test_sensor_icon_getab_unknown_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
     assert ab_sensor.icon == ab_sensor._base_icon
 
@@ -4397,7 +4395,7 @@ async def test_sensor_icon_getvlv_closed_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == "mdi:valve-closed"
 
@@ -4417,7 +4415,7 @@ async def test_sensor_icon_getvlv_closing_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == "mdi:valve"
 
@@ -4437,7 +4435,7 @@ async def test_sensor_icon_getvlv_open_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == "mdi:valve-open"
 
@@ -4457,7 +4455,7 @@ async def test_sensor_icon_getvlv_opening_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == "mdi:valve"
 
@@ -4477,7 +4475,7 @@ async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == vlv_sensor._base_icon
 
@@ -4850,7 +4848,7 @@ async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    
+
     vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
     assert vlv_sensor.icon == vlv_sensor._base_icon
 
@@ -7788,12 +7786,12 @@ async def test_sensor_apply_numeric_conversion_precision_valueerror(hass: HomeAs
 
     # Temporarily patch round() to raise ValueError
     original_round = round
-    
+
     def mock_round(value, precision):
         if precision is not None:
             raise ValueError("Test error")
         return original_round(value)
-    
+
     with patch("builtins.round", side_effect=mock_round):
         # Should handle ValueError and return original value
         result = sensor.native_value
@@ -7872,7 +7870,7 @@ async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
     # Mock entity registry to raise exception
     with patch("homeassistant.helpers.entity_registry.async_get") as mock_reg:
         mock_reg.side_effect = RuntimeError("Registry error")
-        
+
         # RuntimeError from er.async_get is not caught, so it propagates
         with pytest.raises(RuntimeError, match="Registry error"):
             await async_setup_entry(hass, entry, Mock())

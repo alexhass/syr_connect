@@ -1,19 +1,17 @@
 """Tests for helpers module."""
 from __future__ import annotations
 
-from homeassistant.core import HomeAssistant
-
 from custom_components.syr_connect.helpers import (
     build_device_info,
     build_entity_id,
-    get_sensor_vol_value,
-    get_sensor_avo_value,
     get_current_mac,
-    get_sensor_bat_value,
-    get_sensor_ala_map,
-    get_sensor_not_map,
-    get_sensor_wrn_map,
     get_sensor_ab_value,
+    get_sensor_ala_map,
+    get_sensor_avo_value,
+    get_sensor_bat_value,
+    get_sensor_not_map,
+    get_sensor_vol_value,
+    get_sensor_wrn_map,
 )
 
 
@@ -274,8 +272,8 @@ def test_get_sensor_rtm_and_setters() -> None:
 def test_get_sensor_ab_and_build_command() -> None:
     """Test parsing of getAB and building set commands."""
     from custom_components.syr_connect.helpers import (
-        get_sensor_ab_value,
         build_set_ab_command,
+        get_sensor_ab_value,
     )
 
     # Numeric values

@@ -1,13 +1,13 @@
 """Test the SYR Connect exceptions."""
-import pytest
+
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.exceptions import (
-    SyrConnectError,
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectError,
     SyrConnectInvalidResponseError,
 )
-from homeassistant.exceptions import HomeAssistantError
 
 
 def test_exception_hierarchy():
@@ -50,7 +50,7 @@ def test_exception_can_be_caught_as_base():
 def test_exception_with_cause():
     """Test exceptions with cause."""
     original = ValueError("Original error")
-    
+
     try:
         raise SyrConnectAuthError("Auth failed") from original
     except SyrConnectAuthError as e:

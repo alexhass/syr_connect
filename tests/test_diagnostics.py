@@ -7,7 +7,9 @@ from unittest.mock import AsyncMock, MagicMock
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -2551,3 +2553,114 @@ async def test_diagnostics_device_info_minimal_status(hass: HomeAssistant) -> No
     assert device["status_count"] == 0
     assert device["status_keys"] == []
     assert "dclg" not in device  # No dclg in device dict
+
+
+async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:
+    """Ensure raw XML collection redacts MAC/IP/emails and includes raw_xml."""
+    # Build a fake coordinator with api that mimics SyrConnectXmlAPI
+    coordinator = MagicMock()
+    coordinator.last_update_success = True
+    coordinator.last_update_success_time = datetime.utcnow()
+    coordinator.data = {"devices": [], "projects": []}
+
+    class FakeHTTPClient:
+        async def post(self, url, payload):
+            # include items that should be redacted
+            return '<root getMAC="AA:BB:CC:DD:EE:FF">Contact me at alice@example.com 1.2.3.4</root>'
+
+    fake_api = MagicMock()
+    fake_api.is_session_valid.return_value = True
+    fake_api.projects = [{"id": "p1"}]
+    fake_api.payload_builder.build_device_list_payload.return_value = "<p/>"
+    fake_api.response_parser.parse_device_list_response.return_value = [{"id": "d1"}]
+    fake_api.payload_builder.build_device_status_payload.return_value = "<s/>"
+    fake_api.http_client = FakeHTTPClient()
+    fake_api.session_data = "sess"
+
+    coordinator.api = fake_api
+
+    entry = MockConfigEntry(domain="syr_connect", data={})
+    entry.runtime_data = coordinator
+    entry.title = "SYR Connect (user)"
+    entry.version = 1
+
+    res = await async_get_config_entry_diagnostics(hass, entry)
+
+    # raw_xml should contain the project/device and redacted placeholders
+    raw_xml = res.get("raw_xml")
+    assert isinstance(raw_xml, dict)
+    # The returned XML should have redacted MAC and IP tokens
+    # Find the xml string inside structure values
+    found = False
+    for _pid, pdata in raw_xml.items():
+        if isinstance(pdata, dict):
+            # device list and device statuses exist
+            for _k, v in pdata.items():
+                if isinstance(v, str) and "***REDACTED_" in v:
+                    found = True
+    assert found
+
+
+async def test_diagnostics_json_redacts_data(hass) -> None:
+    """Ensure JSON API path redacts sensitive fields."""
+    coordinator = MagicMock()
+    coordinator.last_update_success = True
+    coordinator.last_update_success_time = datetime.utcnow()
+    coordinator.data = {"devices": [{"id": "local", "base_path": "/"}]}
+
+    # Create a fake JSON API type and monkeypatch diag.SyrConnectJsonAPI to our dummy
+    class DummyJSONAPI:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return None
+
+        async def _request_json_data(self, path, timeout=None):
+            return {"getMAC": "AA:BB:CC:DD:EE:FF", "session_data": "secret", "user": "bob"}
+
+    # Monkeypatch the SyrConnectJsonAPI type used in diagnostics
+    diag.SyrConnectJsonAPI = DummyJSONAPI
+
+    fake_api = DummyJSONAPI()
+    coordinator.api = fake_api
+
+    entry = MockConfigEntry(domain="syr_connect", data={CONF_API_TYPE: API_TYPE_JSON})
+    entry.runtime_data = coordinator
+    entry.title = "SYR Connect (json)"
+    entry.version = 1
+
+    res = await async_get_config_entry_diagnostics(hass, entry)
+
+    raw_json = res.get("raw_json")
+    assert isinstance(raw_json, dict)
+    # The single key should be 'local' and MAC should be redacted in the payload
+    assert "local" in raw_json
+    payload = raw_json["local"]
+    # async_redact_data replaces keys; ensure session_data not present
+    assert "session_data" not in payload or payload.get("session_data") is None
+
+
+async def test_diagnostics_no_http_session_sets_error(hass) -> None:
+    """When coordinator lacks an HTTP session, raw_json should indicate an error."""
+    coordinator = MagicMock()
+    coordinator.last_update_success = True
+    coordinator.last_update_success_time = datetime.utcnow()
+    # Provide a device with no base_path (no fetch tasks) and no _session
+    coordinator.data = {"devices": [{"id": "x", "name": "X"}]}
+    coordinator._session = None
+
+    entry = MockConfigEntry(domain="syr_connect", data={})
+    entry.runtime_data = coordinator
+    entry.title = "SYR Connect (no session)"
+    entry.version = 1
+
+    res = await async_get_config_entry_diagnostics(hass, entry)
+
+    raw_json = res.get("raw_json")
+    # Should include the error message
+    assert isinstance(raw_json, dict)
+    assert raw_json.get("error") == "no http session available on coordinator"

@@ -10,10 +10,8 @@ Firmware: 2.9 (SLPL)
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
 
 import defusedxml.ElementTree as etree
-
 
 # Real XML response from LEXplus10SL
 REAL_XML_RESPONSE = """<?xml version="1.0" encoding="utf-8"?>

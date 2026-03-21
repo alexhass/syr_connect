@@ -1,18 +1,17 @@
-"""Tests for valve platform.""" 
+"""Tests for valve platform."""
 from __future__ import annotations
 
 import time
 from unittest.mock import AsyncMock, MagicMock, Mock
 
-from homeassistant.components.valve import ValveEntityFeature
+import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-import pytest
-
-from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
-from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -118,9 +117,9 @@ async def test_valve_from_vlv_only(hass: HomeAssistant, create_mock_entry_with_c
     # Inspect created valve entity's runtime properties
     valve = entities[0]
     # coordinator was set on created entity in async_setup_entry; ensure properties
-    assert getattr(valve, "is_opening") is True
-    assert getattr(valve, "is_closing") is False
-    assert getattr(valve, "is_closed") is False
+    assert valve.is_opening is True
+    assert valve.is_closing is False
+    assert valve.is_closed is False
 
 
 async def test_available(hass: HomeAssistant) -> None:
