@@ -75,7 +75,9 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         self._sensor_key = sensor_key
 
         # Set unique ID and translation platform
-        self._attr_unique_id = f"{device_id}_{sensor_key}"
+        # Use a platform-specific suffix to avoid unique_id collision with the
+        # binary_sensor that represents the same underlying key (getBUZ).
+        self._attr_unique_id = f"{device_id}_{sensor_key}_switch"
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
 
