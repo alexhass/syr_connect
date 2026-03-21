@@ -916,6 +916,28 @@ async def test_async_setup_entry_getab_valid_values_1_and_2(hass: HomeAssistant)
     assert len(entities) == 2
 
 
+async def test_async_setup_entry_boolean_and_boolean_string(hass: HomeAssistant) -> None:
+    """Test that native boolean and boolean-string getAB values create valves."""
+    data = {
+        "devices": [
+            {"id": "btrue", "name": "BTrue", "status": {"getAB": True}},
+            {"id": "bfalse", "name": "BFalse", "status": {"getAB": False}},
+            {"id": "strtrue", "name": "StrTrue", "status": {"getAB": "true"}},
+            {"id": "strfalse", "name": "StrFalse", "status": {"getAB": "false"}},
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    add_entities.assert_called_once()
+    entities = add_entities.call_args.args[0]
+    assert len(entities) == 4
+
+
 async def test_valve_initialization_with_sensor_key(hass: HomeAssistant) -> None:
     """Test valve initialization with explicit sensor_key parameter."""
     data = {"devices": [{"id": "sk1", "name": "SK1", "status": {}}]}
