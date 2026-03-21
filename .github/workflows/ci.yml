@@ -18,10 +18,10 @@ jobs:
         python-version: [3.11]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -47,6 +47,16 @@ jobs:
       - name: Run tests with coverage
         run: |
           python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing --cov-report=xml:coverage.xml -q
+
+      - name: Debug: show coverage artifacts
+        if: always()
+        run: |
+          echo "Listing repo root files"
+          ls -la || true
+          echo "Coverage XML exists:"
+          [ -f coverage.xml ] && echo yes || echo no
+          echo "Coverage HTML dir exists:"
+          [ -d coverage_html ] && echo yes || echo no
 
       - name: Generate HTML coverage report
         if: always()
@@ -80,10 +90,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
@@ -108,10 +118,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
