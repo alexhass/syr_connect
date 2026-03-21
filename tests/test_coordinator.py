@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady, UpdateFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
