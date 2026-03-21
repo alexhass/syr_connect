@@ -80,3 +80,60 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
 
     await sw_on.async_turn_off()
     assert mock_coordinator.api.set_device_status.call_count >= 2
+
+
+def test_is_on_device_missing() -> None:
+    """If the device is not present in coordinator data, is_on should be None."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": []}
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "MISSING", "Missing", "getBUZ")
+    assert sw.is_on is None
+
+
+def test_is_on_with_int_and_float_values() -> None:
+    """Ensure numeric getBUZ values are interpreted correctly."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    dev_int = {"id": "SN200", "name": "I", "status": {"getBUZ": 1}}
+    dev_float = {"id": "SN201", "name": "F", "status": {"getBUZ": 0.0}}
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [dev_int, dev_float]}
+
+    sw_int = SyrConnectBuzSwitch(mock_coordinator, "SN200", "I", "getBUZ")
+    sw_float = SyrConnectBuzSwitch(mock_coordinator, "SN201", "F", "getBUZ")
+
+    assert sw_int.is_on is True
+    assert sw_float.is_on is False
+
+
+@pytest.mark.asyncio
+async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> None:
+    """If API raises during set, the switch should still request a refresh and swallow the error."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_ICON
+
+    device = {"id": "SN300", "name": "DeviceErr", "status": {"getBUZ": "0"}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+
+    async def raising_set(dclg, cmd, value):
+        raise RuntimeError("boom")
+
+    mock_coordinator.api = MagicMock()
+    mock_coordinator.api.set_device_status = AsyncMock(side_effect=raising_set)
+    mock_coordinator.async_request_refresh = AsyncMock()
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "SN300", "DeviceErr", "getBUZ")
+
+    # Icon should be set according to const mapping
+    expected_icon = _SYR_CONNECT_SENSOR_ICON.get("getBUZ")
+    assert sw._attr_icon == expected_icon
+
+    # Calling turn_on should not raise despite API exception
+    await sw.async_turn_on()
+    mock_coordinator.api.set_device_status.assert_awaited_once()
+    mock_coordinator.async_request_refresh.assert_awaited_once()
