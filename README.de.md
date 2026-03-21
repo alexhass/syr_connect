@@ -111,6 +111,7 @@ Nicht getestet, sollte aber funktionieren (bitte melden):
 
 Andere Geräte sind auch interessant, können aber zusätzlichen Aufwand erfordern:
 
+- Hansgrohe PontosBase
 - HygBox Connect
 - NeoDos Connect
 - SafeFloor Connect

@@ -111,6 +111,7 @@ Not tested, but should work (please report):
 
 Other devices are also of interrest, but may require additonal work:
 
+- Hansgrohe PontosBase
 - HygBox Connect
 - NeoDos Connect
 - SafeFloor Connect
