@@ -561,6 +561,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getPRS": "mdi:gauge",
     # Capacity & Supply
     "getRES": "mdi:gauge",
+    "getRE1": "mdi:gas-cylinder",
+    "getRE2": "mdi:gas-cylinder",
     "getSS1": "mdi:calendar-week",
     "getSS2": "mdi:calendar-week",
     "getSS3": "mdi:calendar-week",
