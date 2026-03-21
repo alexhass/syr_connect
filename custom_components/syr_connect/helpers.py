@@ -424,6 +424,11 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
     if val is None or val == "":
         return None
 
+    # Boolean values (native JSON booleans)
+    if isinstance(val, bool):
+        # In JSON API boolean True means closed, False means open
+        return bool(val)
+
     # Numeric values (int/float or digit strings)
     try:
         if isinstance(val, (int | float)):

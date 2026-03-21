@@ -62,11 +62,18 @@ async def async_setup_entry(
         ab_value = status.get("getAB")
         vlv_value = status.get("getVLV")
         create = False
-        # If `getAB` looks numeric and in the expected domain (1/2),
+        # If `getAB` looks like a control value (numeric 1/2 or boolean),
         # treat the device as a valve that can be controlled.
         try:
             if ab_value is not None and ab_value != "":
-                if int(float(ab_value)) in (1, 2):
+                # Native boolean from JSON
+                if isinstance(ab_value, bool):
+                    create = True
+                # Boolean-like strings
+                elif isinstance(ab_value, str) and ab_value.strip().lower() in ("true", "false"):
+                    create = True
+                # Numeric representation (1=open, 2=closed)
+                elif int(float(ab_value)) in (1, 2):
                     create = True
         except (ValueError, TypeError):
             create = False
