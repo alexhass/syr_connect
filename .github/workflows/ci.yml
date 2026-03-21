@@ -1,3 +1,65 @@
+name: CI - Tests & Coverage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run tests and upload coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Install Python dev requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing --cov-report=xml:coverage.xml -q
+
+      - name: Upload coverage.xml
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Upload HTML coverage report
+        if: always()
+        run: |
+          python -m pip install coverage
+          coverage html -d coverage_html || true
+        continue-on-error: true
+
+      - name: Upload HTML report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage_html
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+        env:
+          # For private repos set CODECOV_TOKEN in repo secrets. For public repos this is optional.
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 name: ci
 
 permissions:
