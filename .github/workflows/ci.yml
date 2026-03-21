@@ -23,7 +23,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: ${{ matrix.python-version }}
 
       - name: Cache pip
         uses: actions/cache@v5
@@ -92,6 +92,9 @@ jobs:
   lint:
     name: Lint (ruff)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.13]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -99,7 +102,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: ${{ matrix.python-version }}
 
       - name: Cache pip
         uses: actions/cache@v5
@@ -120,6 +123,9 @@ jobs:
   typecheck:
     name: Type Check (mypy)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.13]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -127,7 +133,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: ${{ matrix.python-version }}
 
       - name: Cache pip
         uses: actions/cache@v5
