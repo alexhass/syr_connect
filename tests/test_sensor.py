@@ -7889,3 +7889,79 @@ async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA7" not in sensor_keys
     assert "getPV7" not in sensor_keys
+
+
+def test_getbar_no_digits(create_mock_coordinator):
+    """getBAR with no digits should return None."""
+    data = {
+        "devices": [
+            {"id": "d1", "name": "D", "project_id": "p1", "status": {"getBAR": "no digits"}}
+        ]
+    }
+    coord = create_mock_coordinator(data)
+    s = SyrConnectSensor(coord, "d1", "D", "p1", "getBAR")
+    assert s.native_value is None
+
+
+def test_getbat_invalid_type(create_mock_coordinator):
+    """getBAT with an unsupported type should return None."""
+    data = {
+        "devices": [
+            {"id": "d1", "name": "D", "project_id": "p1", "status": {"getBAT": []}}
+        ]
+    }
+    coord = create_mock_coordinator(data)
+    s = SyrConnectSensor(coord, "d1", "D", "p1", "getBAT")
+    assert s.native_value is None
+
+
+def test_getavo_empty(create_mock_coordinator):
+    """Empty getAVO should return None instead of raising."""
+    data = {
+        "devices": [
+            {"id": "d1", "name": "D", "project_id": "p1", "status": {"getAVO": ""}}
+        ]
+    }
+    coord = create_mock_coordinator(data)
+    s = SyrConnectSensor(coord, "d1", "D", "p1", "getAVO")
+    assert s.native_value is None
+
+
+def test_pm_boolean_edgecases(create_mock_coordinator):
+    """Various boolean-like values for getPMx should be handled gracefully."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D",
+                "project_id": "p1",
+                "status": {"getPM1": "ON", "getPM2": "off", "getPM3": "xyz", "getPM4": 0},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    pm1 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM1")
+    pm2 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM2")
+    pm3 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM3")
+    pm4 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM4")
+
+    assert pm1.native_value == "true"
+    assert pm2.native_value == "false"
+    assert pm3.native_value == "xyz"
+    assert pm4.native_value == "false"
+
+
+def test_native_value_caching(create_mock_coordinator):
+    """When API returns None later, the sensor should keep the last known non-None value."""
+    data1 = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getFLO": "10"}}]}
+    coord = create_mock_coordinator(data1)
+    s = SyrConnectSensor(coord, "d1", "D", "p1", "getFLO")
+    # first read should return parsed numeric
+    assert s.native_value == 10
+
+    # simulate API later returning None for the value
+    coord.data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getFLO": None}}]}
+
+    # native_value should return the previously cached value
+    assert s.native_value == 10
