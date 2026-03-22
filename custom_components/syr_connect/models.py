@@ -75,13 +75,13 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "ver_prefix": "Safe-T",
     },
     {
-        "base_path": None,
+        "base_path": "/trio",
         "display_name": "Sanibel Leak Protection Module A25",
         "name": "sanibelleakprotect",
         "srn_prefix": "501",
     },
     {
-        "base_path": None,
+        "base_path": "/neosoft",
         "display_name": "Sanibel Softwater UNO A25",
         "name": "sanibelsoftwateruno",
         "srn_prefix": "207",
