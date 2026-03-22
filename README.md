@@ -99,23 +99,21 @@ Tested and reported as working:
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
 
-Not tested, but should work (please report):
+Other devices are also of interest, but still need to be integrated (please let us know):
 
+- Hansgrohe PontosBase
+- Sanibel Softwater DUO A25
+- SYR HygBox Connect
+- SYR IT 3000 Pendulum system
 - SYR LEX 1500 Connect Single
 - SYR LEX 1500 Connect Duplex
 - SYR LEX 1500 Connect Alternating
 - SYR LEX 1500 Connect Triple
-- SYR IT 3000 Pendulum system
+- SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
+- SYR SafeFloor Connect
+- SYR SafeTech Connect
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
-
-Other devices are also of interrest, but may require additonal work:
-
-- Hansgrohe PontosBase
-- HygBox Connect
-- NeoDos Connect
-- SafeFloor Connect
-- SafeTech Connect
 
 **Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
 

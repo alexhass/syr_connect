@@ -467,7 +467,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getPCS",       # Value: "", unclear meaning
 
     # Sensors exits in devices:
-    # - Sanibel Softwater UNO A25
+    # - Sanibel Softwater UNO A25 (comfort-Enthärtungsanlage Softwater UNO A25)
     #"getCFW",       # Value: "", unclear meaning
     "getCMS",       # Value: "", unclear meaning
     #"getENV",       # Value: "", unclear meaning
@@ -477,7 +477,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getNIC",       # Value: "", unclear meaning
 
     # Sensors exits in devices:
-    # - Sanibel Leak Protection Module A25
+    # - Sanibel Leak Protection Module A25 (comfort-Multicontroller)
     "getBMA",       # Value: "", unclear meaning
     "getBMI",       # Value: "", unclear meaning
     "getCSE2",      # Value: "", unclear meaning - duplicate of getCSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
