@@ -16,7 +16,6 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
-    _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -25,6 +24,7 @@ from .const import (
     CONF_MODEL,
     DOMAIN,
 )
+from .helpers import get_default_scan_interval_for_entry
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
@@ -264,13 +264,9 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 
             return self.async_create_entry(title="", data=options)
 
-        # Get current scan interval with safe fallback
+        # Compute current scan interval with centralized helper
         entry = getattr(self, "_config_entry", None)
-        current_scan_interval = (
-            entry.options.get(_SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT)
-            if entry and entry.options
-            else _SYR_CONNECT_SCAN_INTERVAL_DEFAULT
-        )
+        current_scan_interval = get_default_scan_interval_for_entry(entry)
 
         # Build schema for options: scan interval only
         schema_dict: dict = {

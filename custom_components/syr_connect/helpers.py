@@ -8,15 +8,58 @@ from typing import Any
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import (
+    _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
+    _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_CONFIGURATION_URL,
+    _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
     _SYR_CONNECT_SENSOR_NOT_CODES,
     _SYR_CONNECT_SENSOR_WRN_CODES,
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
     DOMAIN,
 )
 from .models import detect_model
+
+
+def get_default_scan_interval_for_entry(entry) -> int:
+    """Return the default scan interval for a config entry.
+
+    Logic:
+    - If `entry` is None -> return XML default
+    - If the entry has an explicit `scan_interval` option -> return it
+    - Otherwise, return the per-API default: JSON -> JSON default, else XML default
+    """
+    # If no entry provided, preserve legacy XML default
+    if entry is None:
+        return _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+
+    # Accept either a ConfigEntry or a mapping-like object
+    try:
+        options = getattr(entry, "options", None) or {}
+        data = getattr(entry, "data", None) or {}
+    except Exception:
+        # Fallback: treat entry as mapping
+        options = entry.get("options", {}) if isinstance(entry, dict) else {}
+        data = entry.get("data", {}) if isinstance(entry, dict) else {}
+
+    # If user explicitly set a scan interval option, use it
+    if _SYR_CONNECT_SCAN_INTERVAL_CONF in options:
+        try:
+            return int(options[_SYR_CONNECT_SCAN_INTERVAL_CONF])
+        except (TypeError, ValueError):
+            pass
+
+    # Otherwise use per-API default (default to XML for legacy)
+    api_type = data.get(CONF_API_TYPE, API_TYPE_XML)
+    return (
+        _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
+        if api_type == API_TYPE_JSON
+        else _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+    )
 
 _LOGGER = logging.getLogger(__name__)
 

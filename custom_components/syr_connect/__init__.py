@@ -11,13 +11,12 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
-    _SYR_CONNECT_SCAN_INTERVAL_CONF,
-    _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .helpers import get_default_scan_interval_for_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,8 +51,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     session = async_get_clientsession(hass)
 
-    # Get scan interval from options, fall back to default
-    scan_interval = entry.options.get(_SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT)
+    # Get scan interval from options. If not set, use per-API default (JSON uses
+    # a faster default). This ensures new JSON/local entries default to
+    # `_SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT`.
+    scan_interval = get_default_scan_interval_for_entry(entry)
 
     # Enforce minimum scan interval depending on API type
     api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
@@ -114,7 +115,9 @@ async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry)
     through the Options Flow (e.g., updates the scan interval).
     """
     old_scan_interval = entry.runtime_data.update_interval.total_seconds()
-    new_scan_interval = entry.options.get(_SYR_CONNECT_SCAN_INTERVAL_CONF, _SYR_CONNECT_SCAN_INTERVAL_DEFAULT)
+    # When checking for option updates, fall back to the per-API default
+    # so that JSON entries without explicit options use the JSON default.
+    new_scan_interval = get_default_scan_interval_for_entry(entry)
 
     if old_scan_interval != new_scan_interval:
         _LOGGER.info(

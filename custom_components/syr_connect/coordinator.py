@@ -19,7 +19,6 @@ from homeassistant.helpers.update_coordinator import (
 
 from .api_xml import SyrConnectXmlAPI
 from .const import (
-    _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -29,6 +28,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+from .helpers import get_default_scan_interval_for_entry
 from .models import MODEL_SIGNATURES
 from .repairs import create_issue, delete_issue
 
@@ -51,7 +51,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         session: aiohttp.ClientSession,
         config_data: dict[str, Any],
-        scan_interval: int = _SYR_CONNECT_SCAN_INTERVAL_DEFAULT,
+        scan_interval: int | None = None,
     ) -> None:
         """Initialize the coordinator.
 
@@ -61,6 +61,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             config_data: Configuration data containing API type and credentials
             scan_interval: Update interval in seconds
         """
+        # If caller didn't provide a scan_interval, compute per-API default
+        if scan_interval is None:
+            # Pass a mapping-like object to the helper so it can inspect
+            # `data` (config_data) and `options` consistently.
+            scan_interval = get_default_scan_interval_for_entry({"data": config_data, "options": {}})
+
         super().__init__(
             hass,
             _LOGGER,
