@@ -472,6 +472,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getCMS",       # Value: "", unclear meaning
     #"getENV",       # Value: "", unclear meaning
 
+    # JSON API only sensors (not available in XML API):
+    "getARS",       # Value: "", unclear meaning
+    "getNIC",       # Value: "", unclear meaning
+
     # Sensors exits in devices:
     # - Sanibel Leak Protection Module A25
     "getBMA",       # Value: "", unclear meaning
@@ -481,6 +485,71 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getMPO",       # Value: "", unclear meaning
     "getPSE2",      # Value: "", unclear meaning - duplicate of getPSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
     "getSUP",       # Value: "", unclear meaning
+
+    # JSON API only sensors (not available in XML API):
+    "getPRC",       # Value: "", unclear meaning
+    "getRCC",       # Value: "", unclear meaning
+    "getRCD",       # Value: "", unclear meaning
+    "getRCN",       # Value: "", unclear meaning
+    "getRMN",       # Value: "", unclear meaning
+    "getRMT",       # Value: "", unclear meaning
+    "getRVT",       # Value: "", unclear meaning
+    "getTPR",       # Value: "", unclear meaning
+    "getTRT",       # Value: "", unclear meaning
+    "getTRV",       # Value: "", unclear meaning
+    "getPSI",       # Value: "", unclear meaning
+    "getWTR",       # Value: "", unclear meaning
+    "getCCS",       # Value: "", unclear meaning
+    "getRSA",       # Value: "", unclear meaning
+    "getRSD",       # Value: "", unclear meaning
+    "getRSE",       # Value: "", unclear meaning
+    "getRSI",       # Value: "", unclear meaning
+    "getSSA",       # Value: "", unclear meaning
+    "getSSE",       # Value: "", unclear meaning
+    "getCOA",       # Value: "", unclear meaning
+    "getCOM",       # Value: "", unclear meaning
+    "getMIH",       # Value: "", unclear meaning
+    "getMXH",       # Value: "", unclear meaning
+    "getMXT",       # Value: "", unclear meaning
+    "getCNL2",      # Value: "", unclear meaning
+    "getCNF2",      # Value: "", unclear meaning
+    "getEMR",       # Value: "", unclear meaning
+    "getRCP",       # Value: "", unclear meaning
+    "getRP1",       # Value: "", unclear meaning
+    "getRP2",       # Value: "", unclear meaning
+    "getRP3",       # Value: "", unclear meaning
+    "getRMP",       # Value: "", unclear meaning
+    "getNMT",       # Value: "", unclear meaning
+    "getNMS",       # Value: "", unclear meaning
+    "getDTX",       # Value: "", unclear meaning
+    "getBAO",       # Value: "", unclear meaning
+    "getBAH",       # Value: "", unclear meaning
+    "getMIT",       # Value: "", unclear meaning
+    "getAPA",       # Value: "", unclear meaning
+    "getAPW",       # Value: "", unclear meaning
+    "getAPN",       # Value: "", unclear meaning
+    "getCFT",       # Value: "", unclear meaning
+    "getCFV",       # Value: "", unclear meaning
+    "getCRS",       # Value: "", unclear meaning
+    "getCRT",       # Value: "", unclear meaning
+    "getCWL",       # Value: "", unclear meaning
+    "getDFI",       # Value: "", unclear meaning
+    "getFCS",       # Value: "", unclear meaning
+    "getFMT",       # Value: "", unclear meaning
+    "getFVT",       # Value: "", unclear meaning
+    "getHPR",       # Value: "", unclear meaning
+    "getIFL",       # Value: "", unclear meaning
+    "getLFT",       # Value: "", unclear meaning
+    "getLFV",       # Value: "", unclear meaning
+    "getLMD",       # Value: "", unclear meaning
+    "getLMF",       # Value: "", unclear meaning
+    "getLOT",       # Value: "", unclear meaning
+    "getLPD",       # Value: "", unclear meaning
+    "getLRC",       # Value: "", unclear meaning
+    "getMFL",       # Value: "", unclear meaning
+    "getMPR",       # The set water pressure - value "" means sensor does not exists or not measured.
+    "getNRT",       # Value: "", unclear meaning
+    "getOHW",       # Value: "", unclear meaning
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
