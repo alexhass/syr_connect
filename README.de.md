@@ -104,11 +104,11 @@ Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
-- SYR IT 3000 Pendulum system
-- SYR LEX 1500 Connect Single
-- SYR LEX 1500 Connect Duplex
-- SYR LEX 1500 Connect Alternating
-- SYR LEX 1500 Connect Triple
+- SYR IT 3000 Pendelanlage
+- SYR LEX 1500 Connect Einzel
+- SYR LEX 1500 Connect Doppel
+- SYR LEX 1500 Connect Pendel
+- SYR LEX 1500 Connect Dreifach
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
 - SYR SafeFloor Connect
