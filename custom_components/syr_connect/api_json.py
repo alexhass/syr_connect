@@ -190,6 +190,35 @@ class SyrConnectJsonAPI:
         # Without this, yarl would decode our %3A back to : which breaks the API
         return URL(url_string, encoded=encode)
 
+    def _strip_set_prefix(self, command: str) -> str:
+        """Strip leading 'set' prefix from a command if present.
+
+        Accepts either 'setRTM' or 'RTM' and returns the base command
+        portion (e.g., 'RTM').
+        """
+        return command[3:] if command.lower().startswith("set") else command
+
+    def _normalize_cmd_for_url(self, cmd: str) -> str:
+        """Normalize command for use in URL path.
+
+        - 'ADM' remains uppercase (device login command)
+        - other commands are lowercase in the URL
+        """
+        return "ADM" if str(cmd).upper() == "ADM" else str(cmd).lower()
+
+    def _response_key_for(self, cmd: str, value: Any) -> str:
+        """Construct the expected response key for a set-command.
+
+        Devices return set-command keys with the command portion UPPERCASE,
+        e.g. 'setSLP7'. This helper centralizes that logic.
+        """
+        return f"set{str(cmd).upper()}{value}"
+
+    def _build_set_url(self, cmd: str, value: Any) -> URL:
+        """Build the encoded URL for a set command using normalized cmd."""
+        url_cmd = self._normalize_cmd_for_url(cmd)
+        return self._construct_encoded_url("set", url_cmd, str(value), encode=True)
+
     async def _execute_http_get(
         self,
         url: URL | str,
@@ -568,7 +597,7 @@ class SyrConnectJsonAPI:
         # --- Build URL and Fetch ---
         # Format: /get/{cmd} (e.g., /get/FLO)
         path = f"/get/{cmd}"
-        _LOGGER.debug("JSON API: Fetching single value for cmd=%s (path=%s)", key, path)
+        _LOGGER.debug("JSON API: Fetching single value for cmd=%s (path=%s)", command, path)
 
         # Fetch data using existing request infrastructure
         data = await self._request_json_data(path)
@@ -605,34 +634,25 @@ class SyrConnectJsonAPI:
             SyrConnectInvalidResponseError: On validation errors (NSC, MIMA)
         """
         # --- Normalize Command Name ---
-        # Some callers send "setAB", others send "AB" - we need just "AB" for the URL
-        # Example: "setRTM" -> "RTM", "RTM" -> "RTM"
-        cmd = command[3:] if command.lower().startswith("set") else command
+        # Some callers send "setAB", others send "AB" - normalize to base
+        # command and build the correct URL form via helpers.
+        base_cmd = self._strip_set_prefix(command)
 
-        # Normalize command casing: ADM must remain uppercase, all other
-        # commands should be lowercase when used in the URL and when
-        # constructing expected response keys. This mirrors device
-        # behaviour where ADM is a special control command.
-        cmd = "ADM" if str(cmd).upper() == "ADM" else str(cmd).lower()
+        # Build URL with Path Encoding using helper (handles ADM exception)
+        url = self._build_set_url(base_cmd, value)
 
-        # --- Build URL with Path Encoding ---
-        # Format: {base}/set/{cmd}/{value}
-        # Example: http://192.168.1.100:5333/neosoft/set/rtm/02%3A30
-        # Note: encode=True to handle special characters (colons in times, slashes, etc.)
-        url = self._construct_encoded_url("set", cmd, str(value), encode=True)
-
-        _LOGGER.debug("JSON API: Setting %s=%s for device %s", cmd, value, device_id)
+        _LOGGER.debug("JSON API: Setting %s=%s for device %s", base_cmd, value, device_id)
 
         # --- Make Request ---
         # Response format: {"set{cmd}{value}": "OK"} or {"set{cmd}{value}": "MIMA"}
         # Example: {"setSIR0": "OK"} or {"setRTM02:30": "MIMA"}
-        response = await self._execute_http_get(url, operation=f"set {cmd}")
+        response = await self._execute_http_get(url, operation=f"set {base_cmd}")
 
         # --- Validate Response Status ---
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
-        self._validate_set_response(response, cmd, value, device_id)
+        self._validate_set_response(response, base_cmd, value, device_id)
 
-        _LOGGER.info("JSON API: Set %s=%s for device %s (status: OK)", cmd, value, device_id)
+        _LOGGER.info("JSON API: Set %s=%s for device %s (status: OK)", base_cmd, value, device_id)
         return True
 
     def _validate_set_response(
@@ -667,7 +687,7 @@ class SyrConnectJsonAPI:
         # Construct expected response key by concatenating set + cmd + value
         # Example: cmd="sir", value="0" -> response_key="setSIR0"
         # Example: cmd="ADM", value="(2)f" -> response_key="setADM(2)f"
-        response_key = f"set{str(cmd).upper()}{value}"
+        response_key = self._response_key_for(cmd, value)
 
         # Check if response contains the expected key
         if response_key not in response:

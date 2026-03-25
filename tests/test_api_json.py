@@ -706,6 +706,49 @@ async def test_set_device_status_unknown_status_code(caplog: pytest.LogCaptureFi
     assert "Unexpected status 'WEIRD'" in caplog.text
 
 
+def test_strip_set_prefix_and_cases():
+    sess = MagicMock()
+    api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    assert api._strip_set_prefix("setRTM") == "RTM"
+    assert api._strip_set_prefix("RTM") == "RTM"
+    assert api._strip_set_prefix("setAB") == "AB"
+    assert api._strip_set_prefix("setadm") == "adm"
+
+
+def test_normalize_cmd_for_url():
+    sess = MagicMock()
+    api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # ADM is special and must remain uppercase
+    assert api._normalize_cmd_for_url("ADM") == "ADM"
+    assert api._normalize_cmd_for_url("adm") == "ADM"
+
+    # Other commands should be lowercased for URL usage
+    assert api._normalize_cmd_for_url("RTM") == "rtm"
+    assert api._normalize_cmd_for_url("prf9") == "prf9"
+
+
+def test_response_key_for():
+    sess = MagicMock()
+    api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    assert api._response_key_for("rtm", "02:15") == "setRTM02:15"
+    assert api._response_key_for("PRF9", "999") == "setPRF9999"
+
+
+def test_build_set_url_encodes_and_cases():
+    sess = MagicMock()
+    api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    url = api._build_set_url("RTM", "02:15")
+    assert "/set/rtm/02%3A15" in str(url)
+
+    url2 = api._build_set_url("ADM", "(2)f")
+    # _build_set_url encodes by default; parentheses should be percent-encoded
+    assert "/set/ADM/%282%29f" in str(url2)
+
+
 async def test_validate_response_errors_case_insensitive() -> None:
     """Test _validate_response_errors handles case-insensitive error codes."""
     sess = MagicMock()
