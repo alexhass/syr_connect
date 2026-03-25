@@ -520,7 +520,7 @@ class SyrConnectJsonAPI:
             _LOGGER.exception("Failed to parse JSON device status for %s", device_id)
             return None
 
-    async def get_value(self, key: str) -> dict[str, Any]:
+    async def get_value(self, command: str) -> dict[str, Any]:
         """Fetch a single value from the device using /get/{key}.
 
         The JSON API supports fetching individual values instead of all data:
@@ -549,32 +549,38 @@ class SyrConnectJsonAPI:
         """
         # --- Normalize Key ---
         # Accept both "FLO" and "getFLO", normalize to just "FLO" for URL
-        normalized_key = key[3:] if key.lower().startswith("get") else key
+        cmd = command[3:] if command.lower().startswith("get") else command
+
+        # Normalize command casing: ADM must remain uppercase, all other
+        # commands should be lowercase when used in the URL and when
+        # constructing expected response keys. This mirrors device
+        # behaviour where ADM is a special control command.
+        cmd = "ADM" if str(cmd).upper() == "ADM" else str(cmd).lower()
 
         # --- Ensure Valid Session ---
         # Skip login if base_url is set (test mode) or session is still valid
         if not self._base_url and not self.is_session_valid():
             if self._login_required is False:
-                _LOGGER.debug("JSON API: ADM login not required; skipping login for get_value(%s)", key)
+                _LOGGER.debug("JSON API: ADM login not required; skipping login for get_value(%s)", command)
             else:
                 await self.login()
 
         # --- Build URL and Fetch ---
-        # Format: /get/{key} (e.g., /get/FLO)
-        path = f"/get/{normalized_key}"
-        _LOGGER.debug("JSON API: Fetching single value for key=%s (path=%s)", key, path)
+        # Format: /get/{cmd} (e.g., /get/FLO)
+        path = f"/get/{cmd}"
+        _LOGGER.debug("JSON API: Fetching single value for cmd=%s (path=%s)", key, path)
 
         # Fetch data using existing request infrastructure
         data = await self._request_json_data(path)
 
         # --- Validate Response ---
-        # Expected format: {"get{key}": value}
-        expected_key = f"get{normalized_key}"
+        # Expected format: {"get{cmd}": value}
+        expected_key = f"get{str(cmd).upper()}"
         if expected_key not in data:
             _LOGGER.error(
-                "JSON API: Response missing expected key '%s' for get_value(%s) - got: %s",
+                "JSON API: Response missing expected cmd '%s' for get_value(%s) - got: %s",
                 expected_key,
-                key,
+                command,
                 data,
             )
             raise SyrConnectInvalidResponseError(f"Response missing expected key '{expected_key}'")
