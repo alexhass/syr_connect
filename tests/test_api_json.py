@@ -445,9 +445,9 @@ async def test_set_device_status_strips_set_prefix() -> None:
 
     result = await client.set_device_status("device1", "setAB", "true")
 
-    # Verify URL contains "/set/AB/true" (not "/set/setAB/true")
+    # Verify URL contains "/set/ab/true" (not "/set/setAB/true")
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/AB/true" in called_url
+    assert "/set/ab/true" in called_url
     assert "/set/setAB/" not in called_url
     assert result is True
 
@@ -550,9 +550,9 @@ async def test_set_device_status_command_without_set_prefix() -> None:
 
     result = await client.set_device_status("device1", "AB", "true")
 
-    # Verify URL contains "/set/AB/true"
+    # Verify URL contains "/set/ab/true"
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/AB/true" in called_url
+    assert "/set/ab/true" in called_url
     assert result is True
 
 
@@ -653,7 +653,7 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
 
     # Verify URL contains URL-encoded value (%3A for colon)
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/RTM/02%3A15" in called_url
+    assert "/set/rtm/02%3A15" in called_url
     assert result is True
 
     # Test with value containing slash

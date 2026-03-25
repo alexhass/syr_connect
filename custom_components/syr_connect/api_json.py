@@ -603,9 +603,15 @@ class SyrConnectJsonAPI:
         # Example: "setRTM" -> "RTM", "RTM" -> "RTM"
         cmd = command[3:] if command.lower().startswith("set") else command
 
+        # Normalize command casing: ADM must remain uppercase, all other
+        # commands should be lowercase when used in the URL and when
+        # constructing expected response keys. This mirrors device
+        # behaviour where ADM is a special control command.
+        cmd = "ADM" if str(cmd).upper() == "ADM" else str(cmd).lower()
+
         # --- Build URL with Path Encoding ---
         # Format: {base}/set/{cmd}/{value}
-        # Example: http://192.168.1.100:5333/neosoft/set/RTM/02%3A30
+        # Example: http://192.168.1.100:5333/neosoft/set/rtm/02%3A30
         # Note: encode=True to handle special characters (colons in times, slashes, etc.)
         url = self._construct_encoded_url("set", cmd, str(value), encode=True)
 
@@ -648,10 +654,14 @@ class SyrConnectJsonAPI:
             SyrConnectInvalidResponseError: On MIMA/NSC errors or unexpected status
                 (always raises for non-OK when is_login=True)
         """
+        # Devices return the command portion UPPERCASE in the response key
+        # (e.g., "setABtrue": "OK"). Require the exact uppercase response
+        # key to be present.
+        #
         # Construct expected response key by concatenating set + cmd + value
-        # Example: cmd="SIR", value="0" -> response_key="setSIR0"
+        # Example: cmd="sir", value="0" -> response_key="setSIR0"
         # Example: cmd="ADM", value="(2)f" -> response_key="setADM(2)f"
-        response_key = f"set{cmd}{value}"
+        response_key = f"set{str(cmd).upper()}{value}"
 
         # Check if response contains the expected key
         if response_key not in response:
