@@ -551,6 +551,7 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         "neosoft2500",
         "neosoft5000",
         "safetech",
+        "safetechplus",
         "sanibelleakprotect",
         "sanibelsoftwateruno",
         "trio",

@@ -1066,7 +1066,7 @@ async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
 
         config_data = {
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetech",
+            CONF_MODEL: "safetechplus",
             CONF_HOST: "192.168.1.100",
         }
         coordinator = SyrConnectDataUpdateCoordinator(

@@ -1001,7 +1001,7 @@ async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
         await validate_input_json(
             hass,
             {
-                CONF_MODEL: "safetech",
+                CONF_MODEL: "safetechplus",
                 CONF_HOST: "192.168.1.100",
             },
         )
@@ -1023,7 +1023,7 @@ async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) ->
         await validate_input_json(
             hass,
             {
-                CONF_MODEL: "safetech",
+                CONF_MODEL: "safetechplus",
                 CONF_HOST: "192.168.1.100",
             },
         )
@@ -1091,7 +1091,7 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
         title="SYR Connect Device",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetech",
+            CONF_MODEL: "safetechplus",
             CONF_HOST: "192.168.1.100",
         },
         unique_id="test_unique_id",
@@ -1122,7 +1122,7 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                CONF_MODEL: "safetech",
+                CONF_MODEL: "safetechplus",
                 CONF_HOST: "192.168.1.200",
             },
         )
