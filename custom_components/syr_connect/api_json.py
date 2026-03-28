@@ -751,13 +751,27 @@ class SyrConnectJsonAPI:
             "MIMA": "Value is outside valid range (MIMA error)",
         }
 
-        # Scan response values for error codes
+        # Scan response values for error codes. Only exact uppercase codes
+        # are accepted as API error indicators (logged as warnings). Any
+        # value that matches a known code in a non-uppercase form is
+        # treated as an invalid response and raises an exception.
         for key, val in data.items():
             # Skip set-command keys (e.g., "setRPD4") - these are validated by _validate_set_response()
             # Only log warnings for get-command keys (e.g., "getRTM") with error codes
             if key.lower().startswith("set"):
                 continue
 
-            # Check if value is a string matching a known error code
-            if isinstance(val, str) and (msg := error_messages.get(val.upper())):
+            # Check if value is a string
+            if not isinstance(val, str):
+                continue
+
+            # Exact uppercase match: log a warning
+            if (msg := error_messages.get(val)):
                 _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
+                continue
+
+            # Non-uppercase variant of a known code: treat as invalid
+            if val.upper() in error_messages:
+                raise SyrConnectInvalidResponseError(
+                    f"Invalid error code case for key '{key}': '{val}' - URL: {url}"
+                )

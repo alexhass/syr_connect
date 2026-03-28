@@ -749,18 +749,33 @@ def test_build_set_url_encodes_and_cases():
     assert "/set/ADM/%282%29f" in str(url2)
 
 
-async def test_validate_response_errors_case_insensitive() -> None:
-    """Test _validate_response_errors handles case-insensitive error codes."""
+async def test_validate_response_errors_case_sensitive() -> None:
+    """Test _validate_response_errors requires exact uppercase error codes.
+
+    Uppercase codes should log warnings; any non-uppercase variant
+    should raise SyrConnectInvalidResponseError.
+    """
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # Should not raise any exceptions, just log warnings
-    client._validate_response_errors({"key1": "nsc"}, "http://test")
-    client._validate_response_errors({"key2": "NSC"}, "http://test")
-    client._validate_response_errors({"key3": "Nsc"}, "http://test")
-    client._validate_response_errors({"key4": "mima"}, "http://test")
-    client._validate_response_errors({"key5": "MIMA"}, "http://test")
-    client._validate_response_errors({"key6": "MiMa"}, "http://test")
+    # Uppercase is accepted (no exception)
+    client._validate_response_errors({"key_ok": "NSC"}, "http://test")
+    client._validate_response_errors({"key_ok2": "MIMA"}, "http://test")
+
+    # Non-uppercase variants are invalid and should raise
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key1": "nsc"}, "http://test")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key3": "Nsc"}, "http://test")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key4": "mima"}, "http://test")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key6": "MiMa"}, "http://test")
 
 
 async def test_validate_response_errors_ignores_non_string_values() -> None:
@@ -1094,7 +1109,7 @@ async def test_construct_encoded_url_with_encode_true() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Test with encode=True (used for set commands with special chars)
-    url = client._construct_encoded_url("set", "RTM", "02:30", encode=True)
+    url = client._construct_encoded_url("set", "rtm", "02:30", encode=True)
 
     # Colon should be URL-encoded as %3A
     assert "02%3A30" in str(url)
@@ -1200,7 +1215,7 @@ async def test_get_value_success() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
     client._last_login = datetime.now()  # Valid session
 
-    result = await client.get_value("FLO")
+    result = await client.get_value("flo")
 
     # Should return the single value dict
     assert result == {"getFLO": 0}
