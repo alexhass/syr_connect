@@ -554,7 +554,7 @@ class SyrConnectJsonAPI:
 
         The JSON API supports fetching individual values instead of all data:
         - /get/all returns all values: {"getFLO": 0, "getTMP": 25, ...}
-        - /get/FLO returns single value: {"getFLO": 0}
+        - /get/flo returns single value: {"getFLO": 0}
 
         This method provides flexible access to individual device values without
         fetching the entire state.

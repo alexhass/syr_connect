@@ -1207,7 +1207,7 @@ async def test_get_value_success() -> None:
 
     # Verify correct URL was called
     called_url = str(sess.get.call_args[0][0])
-    assert "api/get/FLO" in called_url
+    assert "api/get/flo" in called_url
 
 
 async def test_get_value_strips_get_prefix() -> None:
@@ -1232,7 +1232,7 @@ async def test_get_value_strips_get_prefix() -> None:
 
     # Verify URL has normalized key without 'get' prefix
     called_url = str(sess.get.call_args[0][0])
-    assert "api/get/TMP" in called_url
+    assert "api/get/tmp" in called_url
 
 
 async def test_get_value_calls_login_when_needed() -> None:
