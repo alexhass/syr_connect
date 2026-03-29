@@ -7,6 +7,7 @@ import logging
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -14,8 +15,8 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_ICON,
+    DOMAIN,
 )
-from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_entity_id
 
