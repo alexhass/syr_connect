@@ -14,6 +14,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_wrn_map,
 )
 from unittest.mock import MagicMock, patch
+from types import SimpleNamespace
 
 from custom_components.syr_connect import helpers
 from custom_components.syr_connect.const import API_TYPE_JSON, API_TYPE_XML
@@ -24,11 +25,12 @@ def test_get_default_scan_interval_for_entry_none():
 
 
 def test_get_default_scan_interval_for_entry_options_and_data():
-    entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
+    # Use an object with attributes (ConfigEntry-like) rather than a plain dict
+    entry = SimpleNamespace(options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, data={helpers.CONF_API_TYPE: API_TYPE_JSON})
     assert helpers.get_default_scan_interval_for_entry(entry) == 30
 
     # invalid option falls back to API default
-    entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "bad"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
+    entry = SimpleNamespace(options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "bad"}, data={helpers.CONF_API_TYPE: API_TYPE_JSON})
     assert helpers.get_default_scan_interval_for_entry(entry) == helpers._SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
 
 
@@ -36,8 +38,9 @@ def test_build_device_info_fallback_and_entity_id_additional():
     # No device info in coordinator -> fallback model
     coord = {"devices": []}
     di = helpers.build_device_info("dev123", "My Dev", coord)
-    assert di.serial_number == "dev123"
-    assert di.model == "Unknown model"
+    # DeviceInfo is a mapping-like object; assert via keys
+    assert di["serial_number"] == "dev123"
+    assert di["model"] == "Unknown model"
     # entity id builder
     assert helpers.build_entity_id("sensor", "DevID", "getFOO").startswith("sensor.")
 
