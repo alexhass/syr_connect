@@ -1131,3 +1131,105 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
     assert result2["reason"] == "reconfigure_successful"
     # Verify the entry was updated
     assert entry.data[CONF_HOST] == "192.168.1.200"
+
+
+async def test_form_api_json_host_port_error(hass: HomeAssistant) -> None:
+    """Test local/JSON API host 'port' validation maps to host_no_port error."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    # Simulate validate_input_json raising a HomeAssistantError mentioning a port
+    from homeassistant.exceptions import HomeAssistantError
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("Host must not include port :8080"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100:8080",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    # Host-specific error should be set
+    assert result2["errors"] == {CONF_HOST: "host_no_port"}
+
+
+async def test_form_api_json_persists_login_required(hass: HomeAssistant) -> None:
+    """Test that login_required returned by validation is persisted in entry data."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    # Patch validate_input_json to return login_required flag
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        new_callable=AsyncMock,
+        return_value={"title": "SYR Connect Local (192.168.1.100)", "login_required": True},
+    ), patch(
+        "custom_components.syr_connect.async_setup_entry",
+        new_callable=AsyncMock,
+        return_value=True,
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
+    # Confirm login_required persisted
+    assert result2["data"].get(CONF_LOGIN_REQUIRED) is True
+
+
+async def test_reconfigure_flow_json_cannot_connect_local(hass: HomeAssistant) -> None:
+    """Test reconfigure flow sets cannot_connect_local for JSON API failures."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_test@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetechplus",
+            CONF_HOST: "192.168.1.100",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    # Cause validate_input_json to raise CannotConnectError
+    from custom_components.syr_connect.config_flow import CannotConnectError
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=CannotConnectError,
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_MODEL: "safetechplus",
+                CONF_HOST: "192.168.1.200",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "cannot_connect_local"}
