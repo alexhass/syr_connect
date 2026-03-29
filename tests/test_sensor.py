@@ -6058,11 +6058,11 @@ async def test_sensor_getwhu_none_value(hass: HomeAssistant) -> None:
 
 async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None:
     """Test sensor setup skips sensors in EXCLUDED_WHEN_EMPTY with None value."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
 
     # Pick a sensor from the excluded list that's not getCS1/2/3
     test_key = None
-    for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY:
+    for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
         if key not in ("getCS1", "getCS2", "getCS3"):
             test_key = key
             break
@@ -6109,10 +6109,10 @@ async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None
 
 async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
     """Test sensor setup skips sensors in EXCLUDED_WHEN_EMPTY with whitespace string."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
 
     test_key = None
-    for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY:
+    for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
         if key not in ("getCS1", "getCS2", "getCS3"):
             test_key = key
             break

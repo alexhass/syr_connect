@@ -554,7 +554,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
-_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
     "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg)

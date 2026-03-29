@@ -21,7 +21,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
@@ -200,7 +200,7 @@ async def async_setup_entry(
             # Special logic for getCS1/2/3:
             # These sensors represent the remaining resin capacity in percent (getCSx),
             # while getSVx represents the salt amount in kg for the same compartment.
-            # By default, sensors in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY are hidden if their value is 0.
+            # By default, sensors in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE are hidden if their value is 0.
             # However, for getCS1/2/3, we want to show them if the corresponding getSV1/2/3 is not zero,
             # even if getCSx itself is zero. This ensures that users see the resin capacity as long as
             # there is salt present, which is relevant for maintenance and monitoring.
@@ -242,7 +242,7 @@ async def async_setup_entry(
                     continue
                 if isinstance(value, str) and value.strip() == "":
                     continue
-            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY:
+            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
                 # Treat None or empty strings (including whitespace-only) as "empty"
                 if value is None:
                     continue
