@@ -313,6 +313,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     #"getCNO",      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
     "getEXI",       # Unknown
     "getEXT",       # Unknown
+    "getFLL",       # Unknown
     "getGLE",       # Unknown
     "getGUL",       # Unknown
     "getINT",       # Unknown
