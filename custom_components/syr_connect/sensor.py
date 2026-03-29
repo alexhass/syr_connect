@@ -23,6 +23,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
@@ -241,6 +242,13 @@ async def async_setup_entry(
                 if value is None:
                     continue
                 if isinstance(value, str) and value.strip() == "":
+                    continue
+            # Exclude sensors that report IP addresses only when empty
+            # Treat empty string or the placeholder "0.0.0.0" as empty
+            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS:
+                if value is None:
+                    continue
+                if isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"):
                     continue
             elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
                 # Treat None or empty strings (including whitespace-only) as "empty"

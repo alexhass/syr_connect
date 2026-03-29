@@ -588,13 +588,9 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
     "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
-    "getEGW",  # Ethernet gateway
-    "getEIP",  # Ethernet IP address
     "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
     "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
     "getWFC",  # Wi-Fi channel
-    "getWGW",  # Wi-Fi gateway
-    "getWIP",  # Wi-Fi IP address
 
     # Sensors exits in devices only:
     # - SafeTech Plus
@@ -604,6 +600,14 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
+}
+
+# Sensors to exclude only when value is empty ip ("" or "0.0.0.0") - internal
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS = {
+    "getEGW",  # Ethernet gateway
+    "getEIP",  # Ethernet IP address
+    "getWGW",  # Wi-Fi gateway
+    "getWIP",  # Wi-Fi IP address
 }
 
 # Sensor icons (Material Design Icons) - internal

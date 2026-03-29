@@ -304,6 +304,14 @@ async def async_get_config_entry_diagnostics(
                         status = dev.get("status") or {}
                         ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
 
+                    # Normalize IP: treat empty string or the placeholder 0.0.0.0 as absent
+                    if isinstance(ip, str) and (ip.strip() == "" or ip == "0.0.0.0"):
+                        ip = None
+
+                    # If no usable IP, skip JSON fetch for this device
+                    if not ip:
+                        return dev_id, None
+
                     json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)
                     try:
                         # Login is required for some devices
