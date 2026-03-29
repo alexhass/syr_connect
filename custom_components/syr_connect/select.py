@@ -408,7 +408,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
 class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
     """Select entity exposing display rotation (`getSRO`).
 
-    Options: 0°, 90°, 180°, 270° — selecting sends `setSRO`.
+    Options: raw state keys 0, 90, 180, 270 — frontend shows translated labels; selecting sends `setSRO`.
     """
 
     def __init__(
@@ -428,7 +428,8 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getSRO")
 
-        self._options = ["0°", "90°", "180°", "270°"]
+        # Use raw state keys so the frontend will translate them via the translation files
+        self._options = ["0", "90", "180", "270"]
 
         if "getSRO" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
@@ -459,7 +460,7 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
                 for opt in self._options:
                     if opt.startswith(f"{num}"):
                         return opt
-                return f"{num}°"
+                return str(num)
             except (ValueError, TypeError, AttributeError):
                 return None
         return None
