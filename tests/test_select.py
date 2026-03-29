@@ -1732,7 +1732,7 @@ async def test_rotation_select_current_and_select(hass: HomeAssistant) -> None:
     coordinator.async_set_device_value = AsyncMock()
     select = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
 
-    assert select.current_option == "90°"
+    assert select.current_option == "90"
 
     await select.async_select_option("180°")
     coordinator.async_set_device_value.assert_called_once_with("device1", "setSRO", 180)
