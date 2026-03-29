@@ -561,24 +561,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     "getVS1", "getVS2", "getVS3",  # Volume thresholds
 
     # Sensors exits in devices only:
-    # - LEXplus10SL
-    # - Safe-T+
-    "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
-    "getNPS",  # Microleakage count - value "" means sensor does not exists.
-
-    # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
-    "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
     "getCYT",  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
     "getLAR",  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show.
-    "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
-    "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
-    "getEGW",  # Ethernet gateway
-    "getEIP",  # Ethernet IP address
-    "getWFC",  # Wi-Fi channel
-    "getWFR",  # Wi-Fi frequency
-    "getWGW",  # Wi-Fi gateway
-    "getWIP",  # Wi-Fi IP address
+    "getWFR",  # Wi-Fi frequency - "0": "Not connected"
 
     # Sensors exits in devices only:
     # - NeoSoft 5000
@@ -588,16 +574,36 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
     # as a pillar is exhausted. Softened water is available at all times.
     #"getRPD",   # Regeneration interval (days) - value "0" means no interval configured.
     #"getRTM",   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
+}
+
+# Sensors to exclude only when value is empty string ("") - internal
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
+    # Sensors exits in devices only:
+    # - LEXplus10SL
+    # - Safe-T+
+    # - NeoSoft 2500 / 5000
+    "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
+    "getNPS",  # Microleakage count - value "" means sensor does not exists.
+
+    # Sensors exits in devices only:
+    # - NeoSoft 2500 / 5000
+    "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
+    "getEGW",  # Ethernet gateway
+    "getEIP",  # Ethernet IP address
+    "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
+    "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
+    "getWFC",  # Wi-Fi channel
+    "getWGW",  # Wi-Fi gateway
+    "getWIP",  # Wi-Fi IP address
+
+    # Sensors exits in devices only:
+    # - SafeTech Plus
+    "getTMP",  # Leakage protection deactivated - value "" means sensor does not exists.
 
     # Sensors exits in devices only:
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
-}
-
-# Sensors to exclude only when value is empty string ("") - internal
-_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
-    "getTMP",  # Leakage protection deactivated - value "" means sensor does not exists.
 }
 
 # Sensor icons (Material Design Icons) - internal
