@@ -456,7 +456,7 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
                 return None
             try:
                 num = int(float(val))
-                # Return matching option with degree symbol
+                # Return matching raw option (string)
                 for opt in self._options:
                     if opt.startswith(f"{num}"):
                         return opt
