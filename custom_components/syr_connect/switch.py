@@ -15,6 +15,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_ICON,
 )
+from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import build_entity_id
 
@@ -38,6 +39,12 @@ async def async_setup_entry(
         _LOGGER.debug(f"Checking device: id={device_id}, name={device_name}, status_keys={list(status.keys())}")
         if "getBUZ" in status:
             _LOGGER.debug(f"getBUZ found in status for device {device_id}. Creating SyrConnectBuzSwitch.")
+            _LOGGER.debug(
+                "getBUZ raw value for device %s: %r (type=%s)",
+                device_id,
+                status.get("getBUZ"),
+                type(status.get("getBUZ")).__name__,
+            )
             try:
                 entity = SyrConnectBuzSwitch(
                     coordinator,
@@ -45,13 +52,59 @@ async def async_setup_entry(
                     device_name,
                     "getBUZ",
                 )
+                # If a registry entry already exists for this unique_id,
+                # prefer the registry's entity_id to avoid creating a new
+                # entity with a "_2" suffix.
+                try:
+                    registry = er.async_get(hass)
+                    uid = getattr(entity, "_attr_unique_id", None)
+                    if uid:
+                        existing_entity_id = registry.async_get_entity_id("switch", DOMAIN, uid)
+                        if existing_entity_id:
+                            entity.entity_id = existing_entity_id
+                            _LOGGER.debug(
+                                "Using existing registry entity_id %s for unique_id %s",
+                                existing_entity_id,
+                                uid,
+                            )
+                except Exception:
+                    _LOGGER.exception("Failed to check entity registry for existing switch entity")
+
                 entities.append(entity)
+                _LOGGER.debug(
+                    "Appended SyrConnectBuzSwitch for device %s (entity_id=%s, unique_id=%s)",
+                    device_id,
+                    getattr(entity, "entity_id", None),
+                    getattr(entity, "_attr_unique_id", None),
+                )
             except Exception as e:
                 _LOGGER.error(f"Failed to instantiate SyrConnectBuzSwitch for device {device_id}: {e}")
         else:
             _LOGGER.debug(f"getBUZ not found in status for device {device_id}.")
     if entities:
         async_add_entities(entities)
+        try:
+            registry = er.async_get(hass)
+            missing = []
+            for ent in entities:
+                entity_id = getattr(ent, "entity_id", None)
+                unique_id = getattr(ent, "_attr_unique_id", None)
+                # Prefer lookup by entity_id; fall back to unique_id lookup
+                if entity_id and registry.async_get(entity_id) is None:
+                    # Try lookup by unique_id
+                    if unique_id:
+                        found = registry.async_get_entity_id("switch", DOMAIN, unique_id)
+                        if found is None:
+                            missing.append((entity_id, unique_id))
+                    else:
+                        missing.append((entity_id, unique_id))
+            if missing:
+                _LOGGER.warning(
+                    "Some switch entities were created but are missing from the entity registry: %s",
+                    missing,
+                )
+        except Exception:
+            _LOGGER.exception("Failed to verify entity registry for created switch entities")
     else:
         _LOGGER.debug("No getBUZ switch entities found for any device.")
 
@@ -77,7 +130,8 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         # Set unique ID and translation platform
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
-        self._attr_unique_id = f"{device_id}_{sensor_key}_switch"
+        # Normalize to lowercase to avoid registry mismatches.
+        self._attr_unique_id = f"{device_id}_{sensor_key}_switch".lower()
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
 
