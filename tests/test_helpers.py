@@ -1,6 +1,11 @@
 """Tests for helpers module."""
 from __future__ import annotations
 
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
+from custom_components.syr_connect import helpers
+from custom_components.syr_connect.const import API_TYPE_JSON
 from custom_components.syr_connect.helpers import (
     build_device_info,
     build_entity_id,
@@ -13,11 +18,6 @@ from custom_components.syr_connect.helpers import (
     get_sensor_vol_value,
     get_sensor_wrn_map,
 )
-from unittest.mock import MagicMock, patch
-from types import SimpleNamespace
-
-from custom_components.syr_connect import helpers
-from custom_components.syr_connect.const import API_TYPE_JSON, API_TYPE_XML
 
 
 def test_get_default_scan_interval_for_entry_none():

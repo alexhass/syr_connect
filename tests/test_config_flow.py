@@ -18,6 +18,7 @@ from custom_components.syr_connect.const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_LOGIN_REQUIRED,
     CONF_MODEL,
     DOMAIN,
 )
