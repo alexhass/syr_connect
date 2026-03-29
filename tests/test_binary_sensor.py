@@ -503,7 +503,7 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     def raise_registry_error(*args, **kwargs):
         raise Exception("Registry error")
 
-    with patch("custom_components.syr_connect.binary_sensor.er.async_get", side_effect=raise_registry_error):
+    with patch("homeassistant.helpers.entity_registry.async_get", side_effect=raise_registry_error):
         # Should not raise exception, continues setup
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 

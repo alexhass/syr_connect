@@ -480,7 +480,7 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     entities, async_add_entities = mock_add_entities()
 
     # Force the entity registry accessor to raise to hit the exception branch
-    with patch("custom_components.syr_connect.select.er.async_get", side_effect=RuntimeError("boom")):
+    with patch("homeassistant.helpers.entity_registry.async_get", side_effect=RuntimeError("boom")):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     # Should still proceed and add the regeneration select
@@ -1207,8 +1207,8 @@ async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssist
     mock_registry.async_get.side_effect = _get
     mock_registry.async_remove = MagicMock()
 
-    # Patch the entity registry accessor used by the module to return our mock
-    with patch("custom_components.syr_connect.select.er.async_get", return_value=mock_registry):
+    # Patch the entity registry accessor used by Home Assistant to return our mock
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
         await select_module.async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     # Verify that async_remove was called at least once for an excluded sensor
