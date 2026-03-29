@@ -8,9 +8,9 @@
     <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" ali="Leckageschutz" dkv="501" mod="0" pg="221d3522-8e1d-f111-8011-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
   </col>
   <dvs>
-    <d dg="251d3522-8e1d-f111-8011-be3af2b6059f" sn="207AAA12345" sbt="" dfw="NSS.V.2.36" dk="1207" dclg="231d3522-8e1d-f111-8011-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="241d3522-8e1d-f111-8011-be3af2b6059f" so="1" ondt="" mac="" cfw="236" ss="23" sv="9" owh="5" whu="0" rmo="4" />
-    <d dg="084eee9c-2ce6-43f0-9971-61853e8c169f" sn="501AAA12345" sbt="" dfw="003-A-B-000-118" dk="1501" dclg="51e93828-8e1d-f111-8011-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="52e93828-8e1d-f111-8011-be3af2b6059f" so="1" ondt="" mac="" cfw="118" dfm="1" apn="Anwesend" apv="300" vlv="20" wh="0" fcm="" ffm="1" />
+    <d dg="251d3522-8e1d-f111-8011-be3af2b6059f" sn="207AAA12345" sbt="" dfw="NSS.V.2.36" dk="1207" dclg="231d3522-8e1d-f111-8011-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="241d3522-8e1d-f111-8011-be3af2b6059f" so="1" ondt="" mac="" cfw="236" ss="36" sv="8" owh="5" whu="0" rmo="4" />
+    <d dg="084eee9c-2ce6-43f0-9971-61853e8c169f" sn="501AAA12345" sbt="" dfw="MuCo+V.2.14" dk="1501" dclg="51e93828-8e1d-f111-8011-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="52e93828-8e1d-f111-8011-be3af2b6059f" so="1" ondt="" mac="" cfw="214" dfm="1" apn="Anwesend" apv="9000" vlv="20" wh="0" fcm="" ffm="1" />
   </dvs>
   <pdvs />
-  <cs v="113B4" />
+  <cs v="112DD" />
 </sc>
