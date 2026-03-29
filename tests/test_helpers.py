@@ -13,6 +13,128 @@ from custom_components.syr_connect.helpers import (
     get_sensor_vol_value,
     get_sensor_wrn_map,
 )
+from unittest.mock import MagicMock, patch
+
+from custom_components.syr_connect import helpers
+from custom_components.syr_connect.const import API_TYPE_JSON, API_TYPE_XML
+
+
+def test_get_default_scan_interval_for_entry_none():
+    assert helpers.get_default_scan_interval_for_entry(None) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+
+
+def test_get_default_scan_interval_for_entry_options_and_data():
+    entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
+    assert helpers.get_default_scan_interval_for_entry(entry) == 30
+
+    # invalid option falls back to API default
+    entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "bad"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
+    assert helpers.get_default_scan_interval_for_entry(entry) == helpers._SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
+
+
+def test_build_device_info_fallback_and_entity_id_additional():
+    # No device info in coordinator -> fallback model
+    coord = {"devices": []}
+    di = helpers.build_device_info("dev123", "My Dev", coord)
+    assert di.serial_number == "dev123"
+    assert di.model == "Unknown model"
+    # entity id builder
+    assert helpers.build_entity_id("sensor", "DevID", "getFOO").startswith("sensor.")
+
+
+def test_cleanup_excluded_registry_handles_exception():
+    hass = MagicMock()
+    # Make er.async_get raise
+    with patch("custom_components.syr_connect.helpers.er.async_get", side_effect=RuntimeError("boom")):
+        # Should not raise
+        helpers.cleanup_excluded_registry(hass, {"devices": []}, "sensor")
+
+
+def test_get_current_mac_priorities_additional():
+    # Primary IP -> getMAC
+    s = {"getIPA": "192.168.1.2", "getMAC": "AA:BB:CC"}
+    assert helpers.get_current_mac(s) == "AA:BB:CC"
+
+    # WiFi IP with WFS==2 -> getMAC1
+    s = {"getWIP": "192.168.1.3", "getWFS": "2", "getMAC1": "11:22:33"}
+    assert helpers.get_current_mac(s) == "11:22:33"
+
+    # Ethernet IP -> getMAC2
+    s = {"getEIP": "10.0.0.1", "getMAC2": "22:33:44"}
+    assert helpers.get_current_mac(s) == "22:33:44"
+
+    # Empty status
+    assert helpers.get_current_mac({}) is None
+
+
+def test_get_sensor_avo_value_variants_additional():
+    assert helpers.get_sensor_avo_value(None) is None
+    assert helpers.get_sensor_avo_value(1655) == 1.655
+    assert helpers.get_sensor_avo_value("1655mL") == 1.655
+    assert helpers.get_sensor_avo_value("1655") == 1.655
+    assert helpers.get_sensor_avo_value("bad") is None
+
+
+def test_get_sensor_vol_value_additional():
+    assert helpers.get_sensor_vol_value(6530) == 6530
+    assert helpers.get_sensor_vol_value("") is None
+    assert helpers.get_sensor_vol_value("Vol[L]6530") == "6530"
+    assert helpers.get_sensor_vol_value("Xyz123") == "Xyz123"
+
+
+def test_get_sensor_bat_value_formats_additional():
+    assert helpers.get_sensor_bat_value(None) is None
+    assert helpers.get_sensor_bat_value(363) == 3.63
+    assert helpers.get_sensor_bat_value("6,11 4,38 3,90") == 6.11
+    assert helpers.get_sensor_bat_value("9,36") == 9.36
+    assert helpers.get_sensor_bat_value("bad") is None
+
+
+def test_get_sensor_rtm_and_set_additional():
+    # Combined string representation
+    status = {"getRTH": "", "getRTM": "07:30"}
+    assert helpers.get_sensor_rtm_value(status) == "07:30"
+    assert helpers.set_sensor_rtm_value(status, "08:15") == [("setRTM", "08:15")]
+
+    # Separate numeric representation
+    status = {"getRTH": "7", "getRTM": "30"}
+    assert helpers.get_sensor_rtm_value(status) == "07:30"
+    assert helpers.set_sensor_rtm_value(status, "09:45") == [("setRTH", 9), ("setRTM", 45)]
+
+    # Invalid option
+    assert helpers.set_sensor_rtm_value(status, "bad") == []
+
+
+def test_get_sensor_ab_and_build_set_additional():
+    assert helpers.get_sensor_ab_value(None) is None
+    assert helpers.get_sensor_ab_value({"getAB": True}) is True
+    assert helpers.get_sensor_ab_value({"getAB": 2}) is True
+    assert helpers.get_sensor_ab_value({"getAB": 1}) is False
+    assert helpers.get_sensor_ab_value({"getAB": "true"}) is True
+    assert helpers.get_sensor_ab_value({"getAB": "2"}) is True
+
+    # build set command prefers boolean-string when input looks boolean
+    assert helpers.build_set_ab_command({"getAB": "true"}, False) == ("setAB", "false")
+    assert helpers.build_set_ab_command({"getAB": 1}, True) == ("setAB", 2)
+
+
+def test_get_sensor_maps_and_visibility_additional():
+    # NOT/WRN mapping
+    assert helpers.get_sensor_not_map({}, "01")[0] == "new_software_available"
+    assert helpers.get_sensor_wrn_map({}, "01")[0] == "power_outage"
+
+    # ALA mapping with detected model
+    status = {"getCNA": "LEXplus10"}
+    assert helpers.get_sensor_ala_map(status, "0")[0] == "no_alarm"
+
+    # Unknown model returns None mapping and raw code
+    assert helpers.get_sensor_ala_map({}, "A5")[0] is None
+
+    # Visibility rules
+    status = {"getPA1": "true", "getPV1": "5"}
+    assert helpers.is_sensor_visible(status, "getPV1", "1") is True
+    # Global exclude
+    assert helpers.is_sensor_visible({}, "getRTIME", "x") is False
 
 
 def test_build_entity_id() -> None:
