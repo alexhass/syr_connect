@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <col>
-    <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="15.03.2026 19:21:13" nrs="0" />
+    <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="29.03.2026 13:16:33" nrs="0" />
   </col>
   <pdvs />
   <dvs>
     <d dg="084eee9c-2ce6-43f0-9971-61853e8c169f" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
-      <c n="getSRN" v="501AAA12345" dt="15.03.2026 19:21:13" />
-      <c n="getALM" v="" dt="15.03.2026 19:10:34" />
+      <c n="getSRN" v="501AAA12345" dt="29.03.2026 13:16:33" />
+      <c n="getNOT" v="ff" />
+      <c n="getWRN" v="ff" />
+      <c n="getALM" v="" dt="29.03.2026 13:16:35" />
       <c n="getDAP" v="" />
       <c n="getDAV" v="" />
       <c n="getDTR" v="[0,1,0,0,0,0,0,0]" />
@@ -24,9 +26,9 @@
       <c n="getSUP" v="1" />
       <c n="getVLV" v="20" />
       <c n="getWFS" v="0" />
-      <c n="getWGW" v="192.168.178.1" />
-      <c n="getWIP" v="192.168.178.110" />
-      <c n="getCFW" v="118" />
+      <c n="getWGW" v="0.0.0.0" />
+      <c n="getWIP" v="0.0.0.0" />
+      <c n="getCFW" v="214" />
       <c n="getHWV" v="0" />
       <c n="get71" v="False" />
       <c n="getAB" v="False" />
@@ -65,7 +67,7 @@
       <c n="getPSE" v="False" />
       <c n="getPSE2" v="False" />
       <c n="getRTC" v="" />
-      <c n="getRURL" v="" />
+      <c n="getRURL" v="https://storageiotsyr.blob.core.windows.net/muco/container.v214" />
       <c n="getSLO" v="10" />
       <c n="getSLE" v="0" />
       <c n="getSLP" v="0" />
@@ -78,6 +80,21 @@
       <c n="getWAH" v="False" />
       <c n="getWTI" v="1800" />
       <c n="getENV" v="prod" />
+      <c n="getALA" v="ff" dt="29.03.2026 13:16:35" />
+      <c n="getAVO" v="0" />
+      <c n="getBAP" v="99" />
+      <c n="getBAR" v="0" />
+      <c n="getBAR2" v="0" />
+      <c n="getBAT" v="629" />
+      <c n="getCEL" v="0" />
+      <c n="getCND" v="0" />
+      <c n="getCND2" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getLTV" v="1" />
+      <c n="getNET" v="500" />
+      <c n="getNPS" v="91" />
+      <c n="getVOL" v="50524" />
+      <c n="getWFR" v="100" />
       <c n="getPA1" v="True" />
       <c n="getPA2" v="True" />
       <c n="getPA3" v="False" />
@@ -88,15 +105,15 @@
       <c n="getPA8" v="False" />
       <c n="getPB1" v="True" />
       <c n="getPB2" v="True" />
-      <c n="getPB3" v="False" />
+      <c n="getPB3" v="True" />
       <c n="getPB4" v="False" />
       <c n="getPB5" v="False" />
       <c n="getPB6" v="False" />
       <c n="getPB7" v="False" />
       <c n="getPB8" v="False" />
-      <c n="getPF1" v="3000" />
+      <c n="getPF1" v="5000" />
       <c n="getPF2" v="3000" />
-      <c n="getPF3" v="0" />
+      <c n="getPF3" v="3000" />
       <c n="getPF4" v="0" />
       <c n="getPF5" v="0" />
       <c n="getPF6" v="0" />
@@ -104,7 +121,7 @@
       <c n="getPF8" v="0" />
       <c n="getPM1" v="True" />
       <c n="getPM2" v="True" />
-      <c n="getPM3" v="False" />
+      <c n="getPM3" v="True" />
       <c n="getPM4" v="False" />
       <c n="getPM5" v="False" />
       <c n="getPM6" v="False" />
@@ -120,7 +137,7 @@
       <c n="getPN8" v="" />
       <c n="getPR1" v="0" />
       <c n="getPR2" v="1" />
-      <c n="getPR3" v="0" />
+      <c n="getPR3" v="24" />
       <c n="getPR4" v="0" />
       <c n="getPR5" v="0" />
       <c n="getPR6" v="0" />
@@ -128,15 +145,15 @@
       <c n="getPR8" v="0" />
       <c n="getPT1" v="60" />
       <c n="getPT2" v="30" />
-      <c n="getPT3" v="0" />
+      <c n="getPT3" v="60" />
       <c n="getPT4" v="0" />
       <c n="getPT5" v="0" />
       <c n="getPT6" v="0" />
       <c n="getPT7" v="0" />
       <c n="getPT8" v="0" />
-      <c n="getPV1" v="300" />
+      <c n="getPV1" v="9000" />
       <c n="getPV2" v="10" />
-      <c n="getPV3" v="0" />
+      <c n="getPV3" v="300" />
       <c n="getPV4" v="0" />
       <c n="getPV5" v="0" />
       <c n="getPV6" v="0" />
@@ -144,33 +161,16 @@
       <c n="getPV8" v="0" />
       <c n="getPW1" v="True" />
       <c n="getPW2" v="False" />
-      <c n="getPW3" v="False" />
+      <c n="getPW3" v="True" />
       <c n="getPW4" v="False" />
       <c n="getPW5" v="False" />
       <c n="getPW6" v="False" />
       <c n="getPW7" v="False" />
       <c n="getPW8" v="False" />
-      <c n="getALA" v="ff" dt="15.03.2026 19:10:34" />
-      <c n="getAVO" v="0" />
-      <c n="getBAR" v="0" />
-      <c n="getBAR2" v="0" />
-      <c n="getBAP" v="99" />
-      <c n="getBAT" v="629" />
-      <c n="getCEL" v="0" />
-      <c n="getCND" v="0" />
-      <c n="getCND2" v="0" />
-      <c n="getFLO" v="0" />
-      <c n="getLTV" v="1" />
-      <c n="getNET" v="500" />
-      <c n="getNOT" v="ff" />
-      <c n="getNPS" v="73" />
-      <c n="getVOL" v="46499" />
-      <c n="getWFR" v="100" />
-      <c n="getWRN" v="ff" />
       <c n="getTYP" v="0" />
-      <c n="getRCE" v="" />
-      <c n="getVER" v="003-A-B-000-118" />
+      <c n="getRCE" v="{&quot;schedules&quot;:{}}" />
+      <c n="getVER" v="MuCo V.2.14" />
     </d>
   </dvs>
-  <cs v="15EF2" />
+  <cs v="180FE" />
 </sc>
