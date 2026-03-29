@@ -21,6 +21,7 @@ from .const import (
     CONF_API_TYPE,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .helpers import is_sensor_visible
 from .models import detect_model
 
 # Maximum concurrent API calls for diagnostics data collection
@@ -397,6 +398,9 @@ async def async_get_config_entry_diagnostics(
             model_info = detect_model(status)
             model_display = model_info.get("display_name") if isinstance(model_info, dict) else None
 
+            # Determine visible status keys using centralized helper
+            visible_keys: list[str] = [k for k, v in status.items() if is_sensor_visible(status, k, v)]
+
             device_info = {
                 "id": device.get("id"),
                 "name": device.get("name"),
@@ -406,8 +410,8 @@ async def async_get_config_entry_diagnostics(
                 "sw_version": status.get("getVER"),
                 "hw_version": status.get("getFIR"),
                 "api_type": api_type,
-                "status_count": len(status),
-                "status_keys": list(status.keys()),
+                "status_count": len(visible_keys),
+                "status_keys": sorted(visible_keys),
             }
 
             # Add XML API specific fields

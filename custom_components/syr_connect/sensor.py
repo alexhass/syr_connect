@@ -20,10 +20,6 @@ from .const import (
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
@@ -39,6 +35,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
     build_device_info,
     build_entity_id,
+    cleanup_excluded_registry,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -47,6 +44,7 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    is_sensor_visible,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,22 +72,11 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for sensors")
         return
 
-    # Prepare entity registry handle
-    registry = er.async_get(hass)
-
     # Remove previously-registered entities that are now excluded
-    try:
-        for device in coordinator.data.get('devices', []):
-            device_id = device['id']
-            # Remove globally excluded sensors and sensors excluded when value is an empty string
-            for excluded_key in (_SYR_CONNECT_SENSOR_EXCLUDED | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING):
-                entity_id = build_entity_id("sensor", device_id, excluded_key)
-                registry_entry = registry.async_get(entity_id)
-                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
-                    _LOGGER.debug("Removing excluded sensor from registry: %s", entity_id)
-                    registry.async_remove(registry_entry.entity_id)
-    except (RuntimeError, KeyError, AttributeError):
-        _LOGGER.exception("Failed to cleanup excluded sensors from entity registry")
+    cleanup_excluded_registry(hass, coordinator.data, "sensor")
+
+    # Registry handle used for per-group removals below
+    registry = er.async_get(hass)
 
     entities = []
 
@@ -186,10 +173,6 @@ async def async_setup_entry(
                 _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
 
         for key, value in status.items():
-            # Skip sensors excluded globally
-            if key in _SYR_CONNECT_SENSOR_EXCLUDED:
-                continue
-
             # Skip keys that are handled as binary sensors
             if key in _SYR_CONNECT_SENSOR_BINARY:
                 continue
@@ -198,66 +181,9 @@ async def async_setup_entry(
             if key in handled_keys:
                 continue
 
-            # Special logic for getCS1/2/3:
-            # These sensors represent the remaining resin capacity in percent (getCSx),
-            # while getSVx represents the salt amount in kg for the same compartment.
-            # By default, sensors in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE are hidden if their value is 0.
-            # However, for getCS1/2/3, we want to show them if the corresponding getSV1/2/3 is not zero,
-            # even if getCSx itself is zero. This ensures that users see the resin capacity as long as
-            # there is salt present, which is relevant for maintenance and monitoring.
-            #
-            # Logic:
-            # - If getSVx exists and is not zero: always show getCSx, regardless of its value.
-            # - If getSVx is missing or zero: only show getCSx if its value is not zero.
-            # - If getSVx cannot be converted to float: fallback to standard logic (hide if getCSx is zero).
-            # This prevents hiding getCSx when salt is present, but still hides it if both are zero or missing.
-            if key in ("getCS1", "getCS2", "getCS3"):
-                getsv_key = "getSV" + key[-1]
-                getsv_value = status.get(getsv_key)
-                if getsv_value is not None:
-                    try:
-                        if float(getsv_value) != 0:
-                            pass  # show getCSx even if value == 0
-                        else:
-                            if isinstance(value, int | float) and value == 0:
-                                continue
-                            elif isinstance(value, str) and value == "0":
-                                continue
-                    except (ValueError, TypeError):
-                        # If getSVx value is not convertible, use standard logic
-                        if isinstance(value, int | float) and value == 0:
-                            continue
-                        elif isinstance(value, str) and value == "0":
-                            continue
-                else:
-                    # If getSVx value is missing, use standard logic
-                    if isinstance(value, int | float) and value == 0:
-                        continue
-                    elif isinstance(value, str) and value == "0":
-                        continue
-            # Exclude sensors that should only be created when a non-empty string is reported
-            # Some API fields use an empty string "" to indicate the sensor/value does not exist.
-            # _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING lists those keys.
-            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING:
-                if value is None:
-                    continue
-                if isinstance(value, str) and value.strip() == "":
-                    continue
-            # Exclude sensors that report IP addresses only when empty
-            # Treat empty string or the placeholder "0.0.0.0" as empty
-            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS:
-                if value is None:
-                    continue
-                if isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"):
-                    continue
-            elif key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
-                # Treat None or empty strings (including whitespace-only) as "empty"
-                if value is None:
-                    continue
-                if isinstance(value, int | float) and value == 0:
-                    continue
-                elif isinstance(value, str) and (value.strip() == "" or value == "0"):
-                    continue
+            # Centralized visibility check
+            if not is_sensor_visible(status, key, value):
+                continue
 
             # Create sensor if value is valid
             # Special: only create getSRO sensor when the reported value is an integer

@@ -5,6 +5,8 @@ import logging
 import re
 from typing import Any
 
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import (
@@ -15,6 +17,10 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
     _SYR_CONNECT_SENSOR_NOT_CODES,
     _SYR_CONNECT_SENSOR_WRN_CODES,
     API_TYPE_JSON,
@@ -143,6 +149,46 @@ def build_entity_id(platform: str, device_id: str, key: str) -> str:
         Formatted entity ID
     """
     return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
+
+
+def cleanup_excluded_registry(hass: HomeAssistant, coordinator_data: dict[str, Any], domain: str, excluded_keys: set[str] | None = None) -> None:
+    """Remove previously-registered entities from the entity registry.
+
+    This removes entities for all devices in the provided coordinator data
+    where the entity key is present in `excluded_keys` (or the central
+    `_SYR_CONNECT_SENSOR_EXCLUDED` set when `excluded_keys` is None).
+
+    Args:
+        hass: Home Assistant instance used to access the entity registry.
+        coordinator_data: Coordinator `.data` mapping containing `devices`.
+        domain: Entity domain string (e.g., "sensor", "select").
+        excluded_keys: Optional set of keys to remove; defaults to central set.
+    """
+    try:
+        registry = er.async_get(hass)
+        keys = (
+            excluded_keys
+            if excluded_keys is not None
+            else (
+                _SYR_CONNECT_SENSOR_EXCLUDED
+                | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING
+                | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
+                | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS
+            )
+        )
+        for device in (coordinator_data or {}).get("devices", []):
+            device_id = device.get("id")
+            for excluded_key in keys:
+                entity_id = build_entity_id(domain, device_id, excluded_key)
+                registry_entry = registry.async_get(entity_id)
+                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
+                    _LOGGER.debug("Removing excluded %s from registry: %s", domain, entity_id)
+                    try:
+                        registry.async_remove(registry_entry.entity_id)
+                    except Exception:
+                        _LOGGER.exception("Failed to remove entity %s", entity_id)
+    except Exception:
+        _LOGGER.exception("Failed to cleanup excluded %s entities from registry", domain)
 
 
 def get_current_mac(status: dict[str, Any]) -> str | None:
@@ -630,3 +676,125 @@ def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any
 
     # Fallback to numeric representation
     return ("setAB", 2 if closed else 1)
+
+
+def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
+    """Decide whether a reported status key/value should produce a sensor.
+
+    This function centralizes all visibility/exclusion rules so both the
+    entity-creation code and diagnostics produce the same set of visible
+    sensors. It is intentionally defensive about input types and accepts
+    values that may be strings, numbers, booleans or None.
+
+    Rules (applied in order):
+    - Global exclusions: keys in ``_SYR_CONNECT_SENSOR_EXCLUDED`` are always
+        hidden.
+    - Group-controlled keys: keys matching ``getPVx,getPTx,getPFx,getPNx,``
+        ``getPMx,getPWx,getPBx,getPRx`` are only visible when the device's
+        corresponding ``getPAx`` flag is truthy (``1``, ``true``, "on", etc.).
+    - Special-case salt counters (``getCS1/2/3``): shown if the associated
+        ``getSVx`` value is non-zero; otherwise they follow the normal empty
+        value rules (hide when 0, "0", empty or None).
+    - Empty-string exclusions: keys listed in
+        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING`` are hidden when the
+        reported value is None or a whitespace-only string.
+    - Empty-value exclusions: keys listed in
+        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE`` are hidden when the
+        reported value is numeric zero (0), the string "0", an empty string,
+        or None.
+    - Empty-IP exclusions: keys listed in
+        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IP`` are hidden when the
+        reported value is None, an empty/whitespace string, or the placeholder
+        IP ``"0.0.0.0"``.
+
+    Args:
+            status: The full flattened device status mapping (used for cross-key
+                    checks such as ``getPAx`` and ``getSVx``).
+            key: The status key being considered (e.g. ``getWIP``, ``getPV1``).
+            value: The raw value reported by the device for this key.
+
+    Returns:
+            True when the key/value should result in a sensor entity; False when
+            the key should be suppressed according to the rules above.
+
+    Examples:
+            >>> is_sensor_visible(status, 'getWIP', '0.0.0.0')
+            False
+
+            >>> # If getSV1 == 5 then getCS1 is visible even if its own value is '0'
+            >>> is_sensor_visible({'getSV1': 5}, 'getCS1', '0')
+            True
+    """
+    # Global exclude
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED:
+        return False
+
+    def _is_true(val: object) -> bool:
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, (int | float)):
+            try:
+                return int(float(val)) != 0
+            except (ValueError, TypeError):
+                return False
+        if isinstance(val, str):
+            sval = val.strip().lower()
+            if sval in ("1", "true", "on", "yes"):
+                return True
+            if sval in ("0", "false", "off", "no"):
+                return False
+            try:
+                return int(float(sval)) != 0
+            except (ValueError, TypeError):
+                return False
+        return False
+
+    # Group keys controlled by getPAx should be hidden when getPAx is false
+    m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
+    if m:
+        idx = m.group(2)
+        pa_key = f"getPA{idx}"
+        if not _is_true(status.get(pa_key)):
+            return False
+
+    # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
+    if key in ("getCS1", "getCS2", "getCS3"):
+        sv_key = "getSV" + key[-1]
+        sv_val = status.get(sv_key)
+        if sv_val is not None:
+            try:
+                if float(sv_val) != 0:
+                    return True
+            except (ValueError, TypeError):
+                pass
+        if value is None:
+            return False
+        if isinstance(value, int | float) and float(value) == 0:
+            return False
+        if isinstance(value, str) and (value.strip() == "" or value == "0"):
+            return False
+
+    # Exclude when empty string
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING:
+        if value is None:
+            return False
+        if isinstance(value, str) and value.strip() == "":
+            return False
+
+    # Exclude when empty value (0 or "")
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
+        if value is None:
+            return False
+        if isinstance(value, int | float) and float(value) == 0:
+            return False
+        if isinstance(value, str) and (value.strip() == "" or value == "0"):
+            return False
+
+    # Exclude empty IPs
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS:
+        if value is None:
+            return False
+        if isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"):
+            return False
+
+    return True

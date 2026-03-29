@@ -9,7 +9,6 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -19,7 +18,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_ICON,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id
+from .helpers import build_device_info, build_entity_id, cleanup_excluded_registry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,18 +48,7 @@ async def async_setup_entry(
         return
 
     # Remove previously-registered entities that are now excluded
-    try:
-        registry = er.async_get(hass)
-        for device in coordinator.data.get('devices', []):
-            device_id = device['id']
-            for excluded_key in _SYR_CONNECT_SENSOR_EXCLUDED:
-                entity_id = build_entity_id("binary_sensor", device_id, excluded_key)
-                registry_entry = registry.async_get(entity_id)
-                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
-                    _LOGGER.debug("Removing excluded binary sensor from registry: %s", entity_id)
-                    registry.async_remove(registry_entry.entity_id)
-    except Exception:  # pragma: no cover - defensive
-        _LOGGER.exception("Failed to cleanup excluded binary sensors from entity registry")
+    cleanup_excluded_registry(hass, coordinator.data, "binary_sensor")
 
     for device in coordinator.data.get('devices', []):
         device_id = device['id']

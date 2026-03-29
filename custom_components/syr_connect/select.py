@@ -8,7 +8,6 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -16,7 +15,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
     _SYR_CONNECT_SENSOR_CONFIG,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
 )
@@ -25,6 +23,7 @@ from .exceptions import SyrConnectError
 from .helpers import (
     build_device_info,
     build_entity_id,
+    cleanup_excluded_registry,
     get_sensor_rtm_value,
     set_sensor_rtm_value,
 )
@@ -61,18 +60,7 @@ async def async_setup_entry(
         return
 
     # Remove previously-registered select entities that are now excluded
-    try:
-        registry = er.async_get(hass)
-        for device in coordinator.data.get("devices", []):
-            device_id = device.get("id")
-            for excluded_key in _SYR_CONNECT_SENSOR_EXCLUDED:
-                entity_id = build_entity_id("select", device_id, excluded_key)
-                registry_entry = registry.async_get(entity_id)
-                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
-                    _LOGGER.debug("Removing excluded select from registry: %s", entity_id)
-                    registry.async_remove(registry_entry.entity_id)
-    except (RuntimeError, KeyError, AttributeError):
-        _LOGGER.exception("Failed to cleanup excluded selects from entity registry")
+    cleanup_excluded_registry(hass, coordinator.data, "select")
 
     entities: list[Any] = []
     for device in coordinator.data.get("devices", []):
