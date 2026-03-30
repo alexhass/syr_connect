@@ -1789,3 +1789,87 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
     with pytest.raises(HomeAssistantError, match="Failed to set getTEST"):
         await select.async_select_option("opt_two")
 
+
+async def test_async_setup_entry_creates_fcd_select(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry creates a discrete select for getFCD values."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getFCD": "2592000",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # Should create a discrete select for getFCD with string options
+    fcd_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getFCD']
+    assert len(fcd_entities) == 1
+    # Options should include the raw mapping key as string
+    assert '2592000' in fcd_entities[0].options
+
+
+async def test_async_setup_entry_creates_ffm_numeric_select(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry creates a numeric select for getFFM when >=1."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getFFM": "2",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    ffm_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getFFM']
+    assert len(ffm_entities) == 1
+    # The numeric select for getFFM should expose string options '1','2','3'
+    assert ffm_entities[0].options == ['1', '2', '3']
+
+
+async def test_discrete_select_current_option_no_match(hass: HomeAssistant) -> None:
+    """Test discrete select current_option returns None when mapping has no match."""
+    data = {"devices": [{"id": "device1", "status": {"getTEST": "99"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+    mapping = {"opt_one": 1, "opt_two": 2}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getTEST", mapping)
+
+    assert select.current_option is None
+
+
+async def test_async_setup_entry_adds_rotation_select(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry creates a rotation select when getSRO is numeric."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getSRO": "90",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rot_entities = [e for e in entities if isinstance(e, SyrConnectRotationSelect)]
+    assert len(rot_entities) == 1
+
