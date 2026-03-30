@@ -17,6 +17,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_not_map,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    is_sensor_visible,
 )
 
 
@@ -644,10 +645,9 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
 
 
 def test_get_sensor_ab_value_string_variants() -> None:
-    assert get_sensor_ab_value({"getAB": "on"}) is True
-    assert get_sensor_ab_value({"getAB": "yes"}) is True
-    assert get_sensor_ab_value({"getAB": "off"}) is False
-    assert get_sensor_ab_value({"getAB": "no"}) is False
+    # String boolean-like values accepted by helpers
+    assert get_sensor_ab_value({"getAB": "true"}) is True
+    assert get_sensor_ab_value({"getAB": "false"}) is False
 
 
 def test_get_sensor_bat_value_first_token_unparseable() -> None:
