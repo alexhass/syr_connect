@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -270,6 +271,65 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         await async_reload_entry(hass, config_entry)
 
         mock_reload.assert_called_once_with("test_entry_id")
+
+
+    async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> None:
+        """Ensure legacy migration branch logs a migration message."""
+        from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
+
+        config_entry = MockConfigEntry(
+            version=1,
+            minor_version=0,
+            domain=DOMAIN,
+            title="Test Legacy Log",
+            data={"username": "legacylog@example.com", "password": "password"},
+            source="user",
+            entry_id="legacy_log_entry",
+            unique_id="legacylog@example.com",
+        )
+        config_entry.add_to_hass(hass)
+
+        with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+            mock_coordinator = MagicMock()
+            mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+            mock_coordinator_class.return_value = mock_coordinator
+
+            caplog.set_level(logging.INFO)
+            with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
+                with patch.object(
+                    hass.config_entries,
+                    "async_update_entry",
+                    new_callable=MagicMock
+                ) as mock_update:
+                    result = await async_setup_entry(hass, config_entry)
+
+        assert result is True
+        assert "Migrating legacy config entry" in caplog.text
+
+
+    async def test_async_options_update_listener_logs_unchanged(hass: HomeAssistant, caplog) -> None:
+        """Ensure options update listener logs when scan interval is unchanged."""
+        config_entry = MockConfigEntry(
+            version=1,
+            minor_version=0,
+            domain=DOMAIN,
+            title="Test",
+            data={"username": "test@example.com", "password": "password"},
+            source="user",
+            entry_id="test_entry_id",
+            unique_id="test_unique_id",
+            options={"scan_interval": 60},  # Same as current
+        )
+
+        mock_coordinator = MagicMock()
+        mock_coordinator.update_interval = timedelta(seconds=60)  # Same interval
+        mock_coordinator.async_request_refresh = AsyncMock()
+        config_entry.runtime_data = mock_coordinator
+
+        caplog.set_level(logging.DEBUG)
+        await async_options_update_listener(hass, config_entry)
+
+        assert "Options updated but scan interval unchanged" in caplog.text
 
 
 async def test_async_setup_entry_migrates_legacy_entry(hass: HomeAssistant) -> None:
