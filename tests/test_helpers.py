@@ -493,3 +493,87 @@ def test_mapping_none_inputs() -> None:
     mapped_not, raw_not = get_sensor_not_map({}, None)
     assert mapped_not is None and raw_not == ""
 
+
+def test_get_default_scan_interval_for_entry_with_dict() -> None:
+    """Entry provided as plain dict should be handled like a mapping."""
+    entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
+    assert helpers.get_default_scan_interval_for_entry(entry) == 30
+
+
+def test_cleanup_excluded_registry_remove_called() -> None:
+    """When registry contains an excluded entity it should be removed."""
+    hass = MagicMock()
+    registry = MagicMock()
+
+    # Determine entity id that will be looked up
+    device_id = "DEV"
+    excluded_key = "getFOO"
+    entity_id = build_entity_id("sensor", device_id, excluded_key)
+
+    # async_get should return a registry entry-like object with entity_id
+    registry.async_get.return_value = SimpleNamespace(entity_id=entity_id)
+    registry.async_remove = MagicMock()
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": device_id}]}
+        # Pass explicit excluded_keys set to control behavior
+        helpers.cleanup_excluded_registry(hass, coordinator, "sensor", excluded_keys={excluded_key})
+
+    registry.async_get.assert_called()
+    registry.async_remove.assert_called_once_with(entity_id)
+
+
+def test_cleanup_excluded_registry_remove_raises_does_not_propagate() -> None:
+    """If registry.async_remove raises, cleanup should not propagate the exception."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV2"
+    excluded_key = "getBAR"
+    entity_id = build_entity_id("sensor", device_id, excluded_key)
+    registry.async_get.return_value = SimpleNamespace(entity_id=entity_id)
+    registry.async_remove.side_effect = RuntimeError("boom")
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": device_id}]}
+        # Should not raise despite async_remove throwing
+        helpers.cleanup_excluded_registry(hass, coordinator, "sensor", excluded_keys={excluded_key})
+
+
+def test_get_current_mac_wip_not_connected_and_unparsable_wfs() -> None:
+    """Ensure getMAC1 is only returned when getWFS == 2; otherwise skip."""
+    # Wi-Fi present but WFS indicates not connected
+    status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}
+    assert get_current_mac(status) is None
+
+    # Wi-Fi present but WFS unparsable -> skip Wi-Fi MAC
+    status2 = {"getWIP": "10.0.0.6", "getWFS": "bad", "getMAC1": "22:22:22:22:22:22"}
+    assert get_current_mac(status2) is None
+
+
+def test_get_sensor_rtm_invalid_values() -> None:
+    """Invalid RTM strings (out-of-range) should return None."""
+    assert helpers.get_sensor_rtm_value({"getRTH": "", "getRTM": "24:00"}) is None
+    assert helpers.get_sensor_rtm_value({"getRTH": "", "getRTM": "12:60"}) is None
+
+
+def test_get_sensor_ala_map_detect_model_raises() -> None:
+    """If detect_model raises an exception, get_sensor_ala_map should return (None, raw)."""
+    with patch("custom_components.syr_connect.helpers.detect_model", side_effect=ValueError("boom")):
+        mapped, raw = helpers.get_sensor_ala_map({}, "A1")
+        assert mapped is None and raw == "A1"
+
+
+def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
+    """Test group-controlled visibility, CS special-case, and empty-IP exclusions."""
+    # Group-controlled: getPA1 false -> getPV1 hidden
+    status = {"getPA1": "0"}
+    assert not helpers.is_sensor_visible(status, "getPV1", "1")
+
+    # CS1 visible when corresponding getSV1 non-zero even if value is '0'
+    status2 = {"getSV1": 5}
+    assert helpers.is_sensor_visible(status2, "getCS1", "0") is True
+
+    # Empty-IP exclusion: pick a key from the exclusion set
+    key_ip = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS))
+    assert helpers.is_sensor_visible({}, key_ip, "0.0.0.0") is False
+
