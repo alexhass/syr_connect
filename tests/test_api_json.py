@@ -1313,3 +1313,25 @@ async def test_get_value_skips_login_with_base_url() -> None:
 
     # Should NOT have called login in test mode
     client.login.assert_not_called()
+
+
+async def test_validate_set_response_missing_key_on_login_raises() -> None:
+    """When a login set-response is missing the expected key, raise SyrConnectInvalidResponseError."""
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_set_response({}, cmd="ADM", value="(2)f", device_id="login", is_login=True)
+
+
+async def test_get_device_status_returns_none_on_invalid_payload() -> None:
+    """get_device_status should return None when the payload cannot be parsed into a dict."""
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    # Ensure no cached response
+    client._cached_get_all = None
+
+    # Patch _request_json_data to return None which will cause parsing to fail
+    with patch.object(client, "_request_json_data", return_value=None):
+        result = await client.get_device_status("device123")
+
+    assert result is None
