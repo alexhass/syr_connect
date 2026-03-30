@@ -56,14 +56,9 @@ jobs:
       - name: Generate coverage XML
         if: always()
         run: |
-          # Ensure coverage package available, combine any partial data and
-          # generate a full coverage.xml for our package only to avoid tool
-          # summaries/omissions.
+          # Ensure coverage package available and generate a full coverage.xml from .coverage data
           python -m pip install coverage
-          # Combine coverage data if present from subprocesses
-          python -m coverage combine || true
-          # Generate XML including only our integration sources
-          python -m coverage xml -o coverage.xml --include "custom_components/syr_connect/*"
+          coverage xml -o coverage.xml
 
       - name: "Debug: show coverage artifacts"
         if: always()
