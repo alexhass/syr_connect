@@ -50,7 +50,15 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing --cov-report=xml:coverage.xml -q
+          # Run pytest with coverage collection but avoid writing XML here
+          python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing -q
+
+      - name: Generate coverage XML
+        if: always()
+        run: |
+          # Ensure coverage package available and generate a full coverage.xml from .coverage data
+          python -m pip install coverage
+          coverage xml -o coverage.xml
 
       - name: "Debug: show coverage artifacts"
         if: always()
