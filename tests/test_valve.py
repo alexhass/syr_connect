@@ -960,3 +960,39 @@ async def test_valve_initialization_default_sensor_key(hass: HomeAssistant) -> N
 
     assert valve._sensor_key == "getAB"
     assert valve._attr_unique_id == "dsk_getAB"
+
+
+async def test_async_open_close_with_native_boolean_status(hass: HomeAssistant) -> None:
+    """When device reports native boolean getAB, setAB should use 'true'/'false'."""
+    data = {"devices": [{"id": "nb1", "name": "NB1", "status": {"getAB": True}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    valve = SyrConnectValve(coordinator, "nb1", "NB1")
+
+    # Patch async_write_ha_state to avoid hass dependency
+    valve.async_write_ha_state = Mock()
+
+    await valve.async_open()
+    # Opening should send 'false' to open (False=open)
+    coordinator.async_set_device_value.assert_awaited_with("nb1", "setAB", "false")
+
+    coordinator.async_set_device_value.reset_mock()
+    await valve.async_close()
+    # Closing should send 'true' to close (True=closed)
+    coordinator.async_set_device_value.assert_awaited_with("nb1", "setAB", "true")
+
+
+async def test_build_set_ab_command_respects_boolean_raw(hass: HomeAssistant) -> None:
+    """Direct check that build_set_ab_command uses boolean/raw types correctly."""
+    from custom_components.syr_connect.helpers import build_set_ab_command
+
+    # Native boolean True/False
+    key, val = build_set_ab_command({"getAB": True}, True)
+    assert key == "setAB" and val == "true"
+    key, val = build_set_ab_command({"getAB": False}, False)
+    assert key == "setAB" and val == "false"
+
+    # Fallback numeric when no raw or non-boolean string
+    key, val = build_set_ab_command({}, True)
+    assert key == "setAB" and val == 2
