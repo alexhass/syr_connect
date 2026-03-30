@@ -6,7 +6,7 @@ import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_API_TYPE
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -110,7 +110,7 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
 async def test_async_migrate_legacy_entry_success(hass: HomeAssistant) -> None:
     """Test migrating a legacy entry updates data and unique_id when username present."""
     from custom_components.syr_connect import _async_migrate_legacy_entry
-    from custom_components.syr_connect.const import API_TYPE_XML
+    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
     # Create a legacy entry with username but without CONF_API_TYPE
     config_entry = MockConfigEntry(
