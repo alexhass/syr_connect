@@ -254,6 +254,73 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
     mock_coordinator.async_request_refresh.assert_not_called()
 
 
+async def test_async_setup_entry_clamps_scan_interval_and_logs(hass: HomeAssistant, caplog) -> None:
+    """Test JSON API clamps scan interval below minimum and logs a warning."""
+    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
+
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test JSON Log",
+        data={
+            CONF_USERNAME: "json@example.com",
+            CONF_PASSWORD: "password",
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "192.0.2.1",
+        },
+        source="user",
+        entry_id="json_log_entry_id",
+        unique_id=f"{API_TYPE_JSON}_json@example.com",
+        options={"scan_interval": 1},
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_coordinator_class.return_value = mock_coordinator
+
+        caplog.set_level(logging.WARNING)
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+            mock_forward.return_value = None
+            result = await async_setup_entry(hass, config_entry)
+
+    assert result is True
+    assert "clamping to" in caplog.text or "below minimum" in caplog.text
+
+
+async def test_async_unload_entry_logs(hass: HomeAssistant, caplog) -> None:
+    """Verify unload logs for both success and failure."""
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+
+    caplog.set_level(logging.INFO)
+    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+        mock_unload.return_value = True
+        result = await async_unload_entry(hass, config_entry)
+
+    assert result is True
+    assert "unloaded successfully" in caplog.text
+
+    caplog.clear()
+    caplog.set_level(logging.WARNING)
+    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload2:
+        mock_unload2.return_value = False
+        result2 = await async_unload_entry(hass, config_entry)
+
+    assert result2 is False
+    assert "Failed to unload" in caplog.text
+
+
 async def test_async_reload_entry(hass: HomeAssistant) -> None:
     """Test reload entry."""
     config_entry = MockConfigEntry(
