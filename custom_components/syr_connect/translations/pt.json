@@ -139,7 +139,7 @@
         "name": "Hora de regeneração"
       },
       "getsro": {
-        "name": "Girar ecrã",
+        "name": "Orientação do ecrã",
         "state": {
           "0": "Padrão",
           "180": "180°",
@@ -832,7 +832,7 @@
         "name": "Número de série"
       },
       "getsro": {
-        "name": "Girar ecrã",
+        "name": "Orientação do ecrã",
         "state": {
           "0": "Padrão",
           "180": "180°",

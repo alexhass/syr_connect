@@ -139,7 +139,7 @@
         "name": "Regeneration time"
       },
       "getsro": {
-        "name": "Rotate display",
+        "name": "Display orientation",
         "state": {
           "0": "Default",
           "180": "180°",
@@ -832,7 +832,7 @@
         "name": "Serial number"
       },
       "getsro": {
-        "name": "Rotate display",
+        "name": "Display orientation",
         "state": {
           "0": "Default",
           "180": "180°",

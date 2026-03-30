@@ -139,7 +139,7 @@
         "name": "Ora di rigenerazione"
       },
       "getsro": {
-        "name": "Ruota display",
+        "name": "Orientamento del display",
         "state": {
           "0": "Predefinito",
           "180": "180°",
@@ -832,7 +832,7 @@
         "name": "Numero di serie"
       },
       "getsro": {
-        "name": "Ruota display",
+        "name": "Orientamento del display",
         "state": {
           "0": "Predefinito",
           "180": "180°",

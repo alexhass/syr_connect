@@ -139,7 +139,7 @@
         "name": "Regenerationsuhrzeit"
       },
       "getsro": {
-        "name": "Display drehen",
+        "name": "Display-Orientierung",
         "state": {
           "0": "Standard",
           "180": "180°",
@@ -832,7 +832,7 @@
         "name": "Seriennummer"
       },
       "getsro": {
-        "name": "Display drehen",
+        "name": "Display-Orientierung",
         "state": {
           "0": "Standard",
           "180": "180°",

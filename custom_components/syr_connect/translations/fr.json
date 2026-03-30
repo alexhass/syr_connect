@@ -139,7 +139,7 @@
         "name": "Heure de régénération"
       },
       "getsro": {
-        "name": "Rotation de l'affichage",
+        "name": "Orientation de l'affichage",
         "state": {
           "0": "Par défaut",
           "180": "180°",
@@ -832,7 +832,7 @@
         "name": "Numéro de série"
       },
       "getsro": {
-        "name": "Rotation de l'affichage",
+        "name": "Orientation de l'affichage",
         "state": {
           "0": "Par défaut",
           "180": "180°",
