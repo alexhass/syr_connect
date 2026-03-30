@@ -654,3 +654,37 @@ def test_get_sensor_bat_value_first_token_unparseable() -> None:
     # First token is non-numeric -> should return None
     assert get_sensor_bat_value("bad 4,38 3,90") is None
 
+
+def test_get_current_mac_eip_fallback_when_wfs_unparsable() -> None:
+    """When getWFS unparsable, ensure getEIP/getMAC2 fallback is used."""
+    status = {
+        "getWIP": "192.168.1.10",
+        "getWFS": "bad",
+        "getMAC1": "",
+        "getEIP": "10.0.0.2",
+        "getMAC2": "22:22:22:22:22:22",
+    }
+    assert get_current_mac(status) == "22:22:22:22:22:22"
+
+
+def test_get_sensor_bat_value_non_str_non_numeric_returns_none() -> None:
+    """Non-string, non-numeric types should return None."""
+    assert get_sensor_bat_value([1, 2, 3]) is None
+
+
+def test_get_sensor_ab_value_unexpected_type_returns_none() -> None:
+    """An unexpected type for getAB should be handled and return None."""
+    assert get_sensor_ab_value({"getAB": object()}) is None
+
+
+def test_is_sensor_visible_group_pa_true_shows_group_keys() -> None:
+    """If getPAx is truthy, related group keys should be visible."""
+    status = {"getPA1": "1"}
+    assert is_sensor_visible(status, "getPV1", "0") is True
+
+
+def test_is_sensor_visible_cs_sv_non_numeric_falls_back() -> None:
+    """When getSVx is non-numeric, CS follows empty/value rules and is hidden for '0'."""
+    status = {"getSV1": "bad", "getCS1": "0"}
+    assert is_sensor_visible(status, "getCS1", "0") is False
+
