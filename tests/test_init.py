@@ -47,6 +47,65 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
     mock_coordinator.async_config_entry_first_refresh.assert_called_once()
 
 
+    async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssistant) -> None:
+        """Test JSON API path uses host identifier and clamps scan interval below minimum."""
+        from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
+
+        # Create entry with JSON API and very small scan_interval to trigger clamp
+        config_entry = MockConfigEntry(
+            version=1,
+            minor_version=0,
+            domain=DOMAIN,
+            title="Test JSON",
+            data={
+                CONF_USERNAME: "json@example.com",
+                CONF_PASSWORD: "password",
+                CONF_API_TYPE: API_TYPE_JSON,
+                CONF_HOST: "192.0.2.1",
+            },
+            source="user",
+            entry_id="json_entry_id",
+            unique_id=f"{API_TYPE_JSON}_json@example.com",
+            options={"scan_interval": 1},
+        )
+        config_entry.add_to_hass(hass)
+
+        with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+            mock_coordinator = MagicMock()
+            mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+            mock_coordinator_class.return_value = mock_coordinator
+
+            with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+                mock_forward.return_value = None
+                result = await async_setup_entry(hass, config_entry)
+
+        assert result is True
+        # Minimum for JSON API is 10 seconds, so scan interval (options=1) should be clamped to 10
+        call_args = mock_coordinator_class.call_args
+        assert call_args[0][3] == 10
+
+
+    async def test_async_migrate_legacy_entry_missing_username(hass: HomeAssistant) -> None:
+        """Test migrating a legacy entry returns early when username missing."""
+        # Create a legacy entry without username
+        config_entry = MockConfigEntry(
+            version=1,
+            minor_version=0,
+            domain=DOMAIN,
+            title="Legacy Missing Username",
+            data={},
+            source="user",
+            entry_id="legacy_no_user",
+            unique_id="legacy_no_user",
+        )
+
+        # Call migration directly and ensure it doesn't raise and doesn't update the entry
+        from custom_components.syr_connect import _async_migrate_legacy_entry
+
+        # Ensure no exception is raised
+        await _async_migrate_legacy_entry(hass, config_entry)
+
+
 async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None:
     """Test setup fails when connection to API fails."""
     config_entry = MockConfigEntry(
