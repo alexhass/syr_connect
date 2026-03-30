@@ -686,7 +686,7 @@ async def test_async_setup_entry_handles_status_get_exception(hass: HomeAssistan
     """Ensure async_setup_entry does not crash when status.get raises."""
     class BadStatus:
         def get(self, key, default=None):
-            raise RuntimeError("boom")
+            raise AttributeError("boom")
 
         def items(self):
             return {}.items()
