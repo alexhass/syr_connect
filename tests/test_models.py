@@ -531,6 +531,36 @@ def test_serial_prefix_short_serial():
     assert result["name"] == "unknown"
 
 
+def test_srn_contains_signature_matches_and_skips():
+    """Test signature using srn_contains matches when present and skips when absent."""
+    test_sig = [
+        {
+            "display_name": "Test SRN Contains",
+            "base_path": "/test",
+            "name": "testsrn",
+            "srn_contains": "XYZ",
+        }
+    ]
+    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+        assert detect_model({"getSRN": "AAAXYZBBB"})["name"] == "testsrn"
+        assert detect_model({"getSRN": "AABBB"})["name"] == "unknown"
+
+
+def test_ver_contains_signature_matches_and_skips():
+    """Test signature using ver_contains matches when present and skips when absent."""
+    test_sig = [
+        {
+            "display_name": "Test Ver Contains",
+            "base_path": "/test",
+            "name": "testver",
+            "ver_contains": "MAGIC",
+        }
+    ]
+    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+        assert detect_model({"getVER": "prefixMAGICsuffix"})["name"] == "testver"
+        assert detect_model({"getVER": "nope"})["name"] == "unknown"
+
+
 def test_v_keys_insufficient_logs_debug(caplog):
     """When v_keys match count is insufficient, a debug log is emitted."""
     caplog.set_level(logging.DEBUG)
