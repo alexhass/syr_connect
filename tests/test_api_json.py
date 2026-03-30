@@ -1367,3 +1367,32 @@ def test_validate_set_response_missing_key_nonlogin_returns() -> None:
 
     # Should not raise for non-login missing key
     client._validate_set_response({}, cmd="TEST", value="123", device_id="dev1", is_login=False)
+
+
+async def test_login_skips_when_flag_false() -> None:
+    """If _login_required is False, login() should skip network calls and mark session valid."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Pre-seed that login is known not required
+    client._login_required = False
+
+    # Call login - should not attempt network call and should set projects/_last_login
+    result = await client.login()
+
+    assert result is True
+    assert client._login_required is False
+    assert client.projects and client.projects[0]["id"] == "local"
+    assert client._last_login is not None
+
+
+def test_validate_set_response_unknown_status_on_login_raises() -> None:
+    """When a login set-response returns an unexpected status, raise SyrConnectInvalidResponseError."""
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    # Provide response with expected key but unknown status and is_login=True
+    resp_key = client._response_key_for("ADM", "(2)f")
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_set_response({resp_key: "WEIRD"}, cmd="ADM", value="(2)f", device_id="login", is_login=True)
