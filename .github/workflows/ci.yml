@@ -50,25 +50,20 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Run pytest with pytest-cov and write XML directly to avoid later
-          # overwrites or combine issues. Also keep human-readable report.
-          python -m pip install pytest-cov
-          python -m pytest tests --cov=custom_components.syr_connect --cov-report=xml:coverage.xml --cov-report=term-missing -q || true
+          # Run pytest with coverage collection but avoid writing XML here
+          python -m pytest tests --cov=custom_components.syr_connect --cov-report=term-missing -q
 
       - name: Generate coverage XML
         if: always()
         run: |
-          # If pytest already produced coverage.xml, keep it. Otherwise
-          # try combining coverage data and generate XML limited to our
-          # integration sources.
-          if [ -f coverage.xml ]; then
-            echo "coverage.xml already exists; skipping generation"
-            ls -la coverage.xml || true
-          else
-            python -m pip install coverage
-            python -m coverage combine || true
-            python -m coverage xml -o coverage.xml --include "custom_components/syr_connect/*"
-          fi
+          # Ensure coverage package available, combine any partial data and
+          # generate a full coverage.xml for our package only to avoid tool
+          # summaries/omissions.
+          python -m pip install coverage
+          # Combine coverage data if present from subprocesses
+          python -m coverage combine || true
+          # Generate XML including only our integration sources
+          python -m coverage xml -o coverage.xml --include "custom_components/syr_connect/*"
 
       - name: "Debug: show coverage artifacts"
         if: always()
@@ -77,11 +72,6 @@ jobs:
           ls -la || true
           echo "Coverage XML exists:"
           [ -f coverage.xml ] && echo yes || echo no
-          echo "Coverage XML size and preview (first 200 lines):"
-          if [ -f coverage.xml ]; then
-            wc -c coverage.xml || true
-            head -n 200 coverage.xml || true
-          fi
           echo "Coverage HTML dir exists:"
           [ -d coverage_html ] && echo yes || echo no
 
