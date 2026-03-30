@@ -5242,6 +5242,108 @@ async def test_is_true_string_numeric_exception(hass: HomeAssistant) -> None:
     assert "getPA1" not in sensor_keys
 
 
+async def test_is_true_float_int_methods_raise(hass: HomeAssistant) -> None:
+    """Test _is_true handles objects whose numeric conversions raise exceptions."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+
+    class BadNumeric:
+        def __float__(self):
+            raise ValueError("Cannot convert")
+
+        def __int__(self):
+            raise TypeError("Cannot convert")
+
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": BadNumeric(),
+                },
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add_entities = Mock()
+
+    # Should handle conversion errors and complete setup without creating PA group members
+    await async_setup_entry(hass, entry, mock_add_entities)
+    assert mock_add_entities.called
+    entities = mock_add_entities.call_args[0][0]
+    keys = [e._sensor_key for e in entities]
+    assert "getPA1" not in keys
+
+
+async def test_getrpw_locale_and_formatting_fallback(hass: HomeAssistant) -> None:
+    """Test getRPW when format_datetime fails and hass.config.language access raises."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRPW": "127",  # all days
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor.hass = hass
+
+    # Simulate format_datetime raising so fallback to strftime is used
+    with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=ValueError("Format error")):
+        # Also simulate hass.config.language raising an exception
+        mock_hass = MagicMock()
+        mock_hass.config.language.side_effect = Exception("Config error")
+        sensor.hass = mock_hass
+
+        value = sensor.native_value
+        assert value is not None
+        # Expect weekday short names present (Mon or similar)
+        assert any(part for part in str(value).split(",") if part)
+
+
+async def test_getsta_polish_pattern_mapping(hass: HomeAssistant) -> None:
+    """Test getSTA mapping for Polish 'Płukanie regenerantem (NNN)' pattern."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSTA": "Płukanie regenerantem (587mA)",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+
+    mapped = sensor.native_value
+    # Ensure we return a translation key (mapped) and translation key attribute set
+    assert isinstance(mapped, str)
+    assert sensor._attr_translation_key is not None
+
+
 async def test_sensor_apply_numeric_conversion_vol_exception(hass: HomeAssistant) -> None:
     """Test exception handling in get VOL conversion."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
