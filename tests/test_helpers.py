@@ -579,3 +579,78 @@ def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
     key_ip = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS))
     assert helpers.is_sensor_visible({}, key_ip, "0.0.0.0") is False
 
+
+def test_get_default_scan_interval_entry_getattr_raises() -> None:
+    """If accessing attributes on entry raises, function should handle it and return XML default."""
+
+    class BadEntry:
+        @property
+        def options(self):
+            raise RuntimeError("boom")
+
+        @property
+        def data(self):
+            raise RuntimeError("boom")
+
+    be = BadEntry()
+    assert helpers.get_default_scan_interval_for_entry(be) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+
+
+def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
+    """Known models but with unmapped raw codes should return (None, raw)."""
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "lexplus10"}):
+        mapped, raw = get_sensor_ala_map({"getCNA": "LEXplus10"}, "ZZ")
+        assert mapped is None and raw == "ZZ"
+
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safetplus"}):
+        mapped, raw = get_sensor_ala_map({"getVER": "Safe-T+ V2"}, "ZZ")
+        assert mapped is None and raw == "ZZ"
+
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "neosoft2500"}):
+        mapped, raw = get_sensor_ala_map({"getVER": "NSS"}, "ZZ")
+        assert mapped is None and raw == "ZZ"
+
+
+def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
+    # unmapped code
+    mapped_not, raw_not = get_sensor_not_map({}, "ZZ")
+    assert mapped_not is None and raw_not == "ZZ"
+
+    # none input returns empty raw
+    mapped_not2, raw_not2 = get_sensor_not_map({}, None)
+    assert mapped_not2 is None and raw_not2 == ""
+
+    mapped_wrn, raw_wrn = get_sensor_wrn_map({}, "ZZ")
+    assert mapped_wrn is None and raw_wrn == "ZZ"
+
+
+def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
+    # Use a key from the empty-string exclusion set
+    key_es = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING))
+    assert not is_sensor_visible({}, key_es, None)
+    assert not is_sensor_visible({}, key_es, "   ")
+
+    # Use a key from the empty-value exclusion set
+    key_ev = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE))
+    assert not is_sensor_visible({}, key_ev, None)
+    assert not is_sensor_visible({}, key_ev, 0)
+    assert not is_sensor_visible({}, key_ev, "0")
+
+    # Empty IP exclusion set
+    key_ip = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS))
+    assert not is_sensor_visible({}, key_ip, None)
+    assert not is_sensor_visible({}, key_ip, "   ")
+    assert not is_sensor_visible({}, key_ip, "0.0.0.0")
+
+
+def test_get_sensor_ab_value_string_variants() -> None:
+    assert get_sensor_ab_value({"getAB": "on"}) is True
+    assert get_sensor_ab_value({"getAB": "yes"}) is True
+    assert get_sensor_ab_value({"getAB": "off"}) is False
+    assert get_sensor_ab_value({"getAB": "no"}) is False
+
+
+def test_get_sensor_bat_value_first_token_unparseable() -> None:
+    # First token is non-numeric -> should return None
+    assert get_sensor_bat_value("bad 4,38 3,90") is None
+
