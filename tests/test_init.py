@@ -107,6 +107,35 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
         await _async_migrate_legacy_entry(hass, config_entry)
 
 
+async def test_async_migrate_legacy_entry_success(hass: HomeAssistant) -> None:
+    """Test migrating a legacy entry updates data and unique_id when username present."""
+    from custom_components.syr_connect import _async_migrate_legacy_entry
+    from custom_components.syr_connect.const import API_TYPE_XML
+
+    # Create a legacy entry with username but without CONF_API_TYPE
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Legacy With Username",
+        data={
+            CONF_USERNAME: "legacy_user@example.com",
+        },
+        source="user",
+        entry_id="legacy_with_user",
+        unique_id="legacy_with_user",
+    )
+    config_entry.add_to_hass(hass)
+
+    # Patch hass.config_entries.async_update_entry to observe the call
+    with patch.object(hass.config_entries, "async_update_entry") as mock_update:
+        await _async_migrate_legacy_entry(hass, config_entry)
+
+    expected_data = {**config_entry.data, CONF_API_TYPE: API_TYPE_XML}
+    expected_unique = f"{API_TYPE_XML}_{config_entry.data[CONF_USERNAME]}"
+    mock_update.assert_called_once_with(config_entry, data=expected_data, unique_id=expected_unique)
+
+
 async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None:
     """Test setup fails when connection to API fails."""
     config_entry = MockConfigEntry(
