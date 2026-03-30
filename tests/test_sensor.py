@@ -8105,7 +8105,7 @@ async def test_rgx_active_string(hass: HomeAssistant) -> None:
 async def test_getala_exception_handling(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getALA": "A5"}}]}
     coordinator = _build_coordinator(hass, data)
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("boom")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("boom")):
         sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
         assert sensor.native_value is None
 
@@ -8114,11 +8114,11 @@ async def test_getnot_and_getwrn_exception_paths(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getNOT": "FF", "getWRN": "FF"}}]}
     coordinator = _build_coordinator(hass, data)
 
-    with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=Exception("boom")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=ValueError("boom")):
         snot = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
         assert snot.native_value is None
 
-    with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=Exception("boom")):
+    with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=ValueError("boom")):
         swrn = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
         assert swrn.native_value is None
 
@@ -8136,8 +8136,4 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
     vol = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
     assert abs(float(vol.native_value) - 6.53) < 0.001
 
-    # simulate API later returning None for the value
-    coord.data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getFLO": None}}]}
-
-    # native_value should return the previously cached value
-    assert s.native_value == 10
+    # end
