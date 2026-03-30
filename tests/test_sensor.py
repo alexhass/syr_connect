@@ -7961,6 +7961,101 @@ def test_native_value_caching(create_mock_coordinator):
     assert s.native_value == 10
 
 
+async def test_async_setup_entry_no_coordinator_data(hass: HomeAssistant) -> None:
+    """async_setup_entry should return early when coordinator has no data."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = None
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add_entities = Mock()
+
+    # Should return without calling add_entities
+    await async_setup_entry(hass, entry, mock_add_entities)
+    assert not mock_add_entities.called
+
+
+def test_sensor_disabled_by_default_flag(create_mock_coordinator) -> None:
+    """Sensors in the disabled-by-default set should be disabled by default."""
+    data = {"devices": [{"id": "DEV", "name": "D", "project_id": "p1", "status": {"getIPA": "1"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "DEV", "D", "p1", "getIPA")
+
+    assert sensor._attr_entity_registry_enabled_default is False
+
+
+def test_apply_numeric_conversion_precision_zero_returns_int(create_mock_coordinator):
+    """When precision == 0, _apply_numeric_conversion should return int."""
+    data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getPRS": "50"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getPRS")
+
+    with patch("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION", {"getPRS": 0}):
+        result = sensor._apply_numeric_conversion(50.0)
+        assert isinstance(result, int)
+        assert result == 5
+
+
+async def test_sensor_available_coordinator_fails(hass: HomeAssistant) -> None:
+    """Entity should be unavailable when coordinator update failed."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    coordinator.last_update_success = False
+
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    assert sensor.available is False
+
+
+async def test_sensor_available_device_marked_unavailable(hass: HomeAssistant) -> None:
+    """Entity should be unavailable when device available flag is False."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}, "available": False}]}
+    coordinator.last_update_success = True
+
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    assert sensor.available is False
+
+
+async def test_sensor_available_true(hass: HomeAssistant) -> None:
+    """Entity should be available when coordinator OK and device available or missing flag."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}, "available": True}]}
+    coordinator.last_update_success = True
+
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    assert sensor.available is True
+
+
+def test_whu_invalid_sets_none(create_mock_coordinator) -> None:
+    """When getWHU cannot be parsed the unit mapping attribute should be None."""
+    data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getWHU": "invalid"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getIWH")
+
+    assert sensor._attr_native_unit_of_measurement is None
+
+
+def test_getala_returns_raw_for_unknown_model(create_mock_coordinator) -> None:
+    """When model is unknown getALA should return the raw code unchanged."""
+    data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getALA": "A5"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getALA")
+
+    assert sensor.native_value == "A5"
+
+
 async def test_icon_getab_no_status(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
