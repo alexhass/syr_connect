@@ -761,6 +761,7 @@ async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None
             await validate_input_json(
                 hass,
                 {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+            )
 
 
 async def test_validate_input_json_host_empty_and_nonstring(hass: HomeAssistant) -> None:
@@ -793,7 +794,6 @@ async def test_validate_input_json_host_with_port_and_whitespace_and_invalid_pat
     # Invalid host pattern
     with pytest.raises(HomeAssistantError):
         await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: "not_a_valid_host!"})
-            )
 
 
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
