@@ -1841,6 +1841,47 @@ async def test_async_setup_entry_creates_ffm_numeric_select(hass: HomeAssistant,
     assert ffm_entities[0].options == ['1', '2', '3']
 
 
+async def test_rotation_select_entity_category_when_configured(hass: HomeAssistant) -> None:
+    """When getSRO is in central config, entity_category should be set."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+
+    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_CONFIG", {"getSRO": True}):
+        sel = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
+        assert hasattr(sel, '_attr_entity_category')
+
+
+async def test_discrete_select_entity_category_when_configured(hass: HomeAssistant) -> None:
+    """When a discrete select key is configured centrally, entity_category should be set."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getFCD": "2592000"}}]}
+    coordinator = _build_coordinator_local(hass, data)
+    mapping = {"2592000": 2592000}
+    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_CONFIG", {"getFCD": True}):
+        sel = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getFCD", mapping)
+        assert hasattr(sel, '_attr_entity_category')
+
+
+async def test_async_setup_entry_skips_ffm_zero(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Ensure getFFM == 0 does not create a select entity."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getFFM": "0"},
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    ffm_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getFFM']
+    assert len(ffm_entities) == 0
+
+
 async def test_discrete_select_current_option_no_match(hass: HomeAssistant) -> None:
     """Test discrete select current_option returns None when mapping has no match."""
     data = {"devices": [{"id": "device1", "status": {"getTEST": "99"}}]}
