@@ -690,6 +690,8 @@ async def test_async_setup_entry_handles_status_get_exception(hass: HomeAssistan
 
         def items(self):
             return {}.items()
+        def __len__(self):
+            return 0
 
     data = {
         "devices": [
@@ -752,7 +754,7 @@ def test_sensor_icon_sre_and_rg_and_vlv(create_mock_coordinator):
                 "id": "dev_i",
                 "name": "Device I",
                 "project_id": "p1",
-                "status": {"getSRE": "1", "getRG1": "1", "getVLV": "10"},
+                "status": {"getSRE": "active", "getRG1": "1", "getVLV": "10"},
             }
         ]
     }
