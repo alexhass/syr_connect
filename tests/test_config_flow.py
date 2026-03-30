@@ -761,6 +761,38 @@ async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None
             await validate_input_json(
                 hass,
                 {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+
+
+async def test_validate_input_json_host_empty_and_nonstring(hass: HomeAssistant) -> None:
+    """Host empty string or non-string should raise HomeAssistantError."""
+    from homeassistant.exceptions import HomeAssistantError
+    from custom_components.syr_connect.config_flow import validate_input_json
+
+    # Empty string
+    with pytest.raises(HomeAssistantError):
+        await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: ""})
+
+    # Non-string host
+    with pytest.raises(HomeAssistantError):
+        await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: 12345})
+
+
+async def test_validate_input_json_host_with_port_and_whitespace_and_invalid_pattern(hass: HomeAssistant) -> None:
+    """Host containing a port, whitespace, or invalid pattern should raise HomeAssistantError."""
+    from homeassistant.exceptions import HomeAssistantError
+    from custom_components.syr_connect.config_flow import validate_input_json
+
+    # Host including a port
+    with pytest.raises(HomeAssistantError):
+        await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: "192.168.1.100:8080"})
+
+    # Host containing whitespace
+    with pytest.raises(HomeAssistantError):
+        await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: "host name"})
+
+    # Invalid host pattern
+    with pytest.raises(HomeAssistantError):
+        await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: "not_a_valid_host!"})
             )
 
 
