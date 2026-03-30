@@ -1335,3 +1335,35 @@ async def test_get_device_status_returns_none_on_invalid_payload() -> None:
         result = await client.get_device_status("device123")
 
     assert result is None
+
+
+async def test_execute_http_get_401_auth_error() -> None:
+    """Test _execute_http_get raises SyrConnectAuthError on 401/403."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 401
+    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientResponseError(
+        request_info=MagicMock(),
+        history=(),
+        status=401,
+        message="Unauthorized",
+    ))
+    mock_response.text = AsyncMock(return_value="Unauthorized")
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with pytest.raises(SyrConnectAuthError):
+        await client._execute_http_get("http://test:5333/api/auth")
+
+
+def test_validate_set_response_missing_key_nonlogin_returns() -> None:
+    """When response missing expected key for non-login, do not raise."""
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    # Should not raise for non-login missing key
+    client._validate_set_response({}, cmd="TEST", value="123", device_id="dev1", is_login=False)
