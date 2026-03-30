@@ -1,5 +1,6 @@
 from pathlib import Path
 from unittest.mock import patch
+import logging
 
 from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -528,3 +529,21 @@ def test_serial_prefix_short_serial():
     flat = {"getSRN": "11A"}
     result = detect_model(flat)
     assert result["name"] == "unknown"
+
+
+def test_v_keys_insufficient_logs_debug(caplog):
+    """When v_keys match count is insufficient, a debug log is emitted."""
+    caplog.set_level(logging.DEBUG)
+    flat = {"getRE1": "1", "getVER": "NOTNSS"}
+    result = detect_model(flat)
+    assert result["name"] == "unknown"
+    assert "v_keys matched" in caplog.text
+
+
+def test_v_keys_version_constraints_not_satisfied_logs_debug(caplog):
+    """When v_keys match but version constraints fail, a debug log is emitted."""
+    caplog.set_level(logging.DEBUG)
+    flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
+    result = detect_model(flat)
+    assert result["name"] == "unknown"
+    assert "version constraints not satisfied" in caplog.text
