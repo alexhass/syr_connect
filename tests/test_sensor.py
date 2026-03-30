@@ -682,6 +682,99 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
     assert t1.native_value == 1.5
 
 
+async def test_async_setup_entry_handles_status_get_exception(hass: HomeAssistant) -> None:
+    """Ensure async_setup_entry does not crash when status.get raises."""
+    class BadStatus:
+        def get(self, key, default=None):
+            raise RuntimeError("boom")
+
+        def items(self):
+            return {}.items()
+
+    data = {
+        "devices": [
+            {
+                "id": "bad_dev",
+                "name": "Bad Device",
+                "project_id": "p1",
+                "status": BadStatus(),
+            }
+        ]
+    }
+    coord = _build_coordinator(hass, data)
+    entry = _build_entry(coord)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    # Should not raise
+    await async_setup_entry(hass, entry, add_entities)
+
+
+async def test_getsro_and_getffm_creation_rules(hass: HomeAssistant) -> None:
+    """Test that getSRO only created for integer values and getFFM >=1."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "project_id": "p1",
+                "status": {"getSRO": "12.3", "getFFM": "0.5"},
+            },
+            {
+                "id": "d2",
+                "name": "D2",
+                "project_id": "p1",
+                "status": {"getSRO": "12", "getFFM": "1"},
+            },
+        ]
+    }
+    coord = _build_coordinator(hass, data)
+    entry = _build_entry(coord)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    # d1 should not create getSRO/getFFM sensors, d2 should create two sensors
+    d1 = [e for e in entities if e._device_id == "d1"]
+    d2 = [e for e in entities if e._device_id == "d2"]
+    assert all(e._sensor_key not in ("getSRO", "getFFM") for e in d1)
+    assert any(e._sensor_key == "getSRO" for e in d2)
+    assert any(e._sensor_key == "getFFM" for e in d2)
+
+
+def test_sensor_icon_sre_and_rg_and_vlv(create_mock_coordinator):
+    """Test dynamic icons for getSRE, getRG1 and getVLV."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_i",
+                "name": "Device I",
+                "project_id": "p1",
+                "status": {"getSRE": "1", "getRG1": "1", "getVLV": "10"},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    sre = SyrConnectSensor(coord, "dev_i", "Device I", "p1", "getSRE")
+    assert sre.icon == "mdi:autorenew"
+
+    rg1 = SyrConnectSensor(coord, "dev_i", "Device I", "p1", "getRG1")
+    assert rg1.icon == "mdi:valve"
+
+    vlv = SyrConnectSensor(coord, "dev_i", "Device I", "p1", "getVLV")
+    assert vlv.icon == "mdi:valve-closed"
+
+    # Test other VLV states
+    coord2 = create_mock_coordinator({
+        "devices": [{"id": "dev_j", "name": "Device J", "project_id": "p1", "status": {"getVLV": "20"}}]
+    })
+    vlv2 = SyrConnectSensor(coord2, "dev_j", "Device J", "p1", "getVLV")
+    assert vlv2.icon == "mdi:valve-open"
+
+
 async def test_sensor_missing_device(hass: HomeAssistant) -> None:
     """Test sensor when device not in coordinator data."""
     data = {
