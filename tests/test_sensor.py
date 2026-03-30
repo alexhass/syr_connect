@@ -7960,6 +7960,87 @@ def test_native_value_caching(create_mock_coordinator):
     # first read should return parsed numeric
     assert s.native_value == 10
 
+
+async def test_icon_getab_no_status(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
+
+    assert sensor.icon == sensor._base_icon
+
+
+async def test_battery_zero_icon(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getBAT": "0"}}]}
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    assert sensor.native_value == 0.0
+    assert sensor.icon == "mdi:battery-alert-variant-outline"
+
+
+@pytest.mark.parametrize(
+    ("val", "expected"),
+    [
+        ("10", "mdi:valve-closed"),
+        ("11", "mdi:valve"),
+        ("20", "mdi:valve-open"),
+        ("21", "mdi:valve"),
+        ("99", None),
+    ],
+)
+async def test_vlv_icon_variants(hass: HomeAssistant, val: str, expected: str | None) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getVLV": val}}]}
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
+
+    if expected is None:
+        assert sensor.icon == sensor._base_icon
+    else:
+        assert sensor.icon == expected
+
+
+async def test_rgx_active_string(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getRG1": "active"}}]}
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
+
+    assert sensor.icon == "mdi:valve"
+
+
+async def test_getala_exception_handling(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getALA": "A5"}}]}
+    coordinator = _build_coordinator(hass, data)
+    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=Exception("boom")):
+        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
+        assert sensor.native_value is None
+
+
+async def test_getnot_and_getwrn_exception_paths(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getNOT": "FF", "getWRN": "FF"}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=Exception("boom")):
+        snot = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
+        assert snot.native_value is None
+
+    with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=Exception("boom")):
+        swrn = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
+        assert swrn.native_value is None
+
+
+async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getBAR": "no digits", "getAVO": "abc", "getVOL": "Vol[L]6530"}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    bar = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    assert bar.native_value is None
+
+    avo = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    assert avo.native_value is None
+
+    vol = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    assert abs(float(vol.native_value) - 6.53) < 0.001
+
     # simulate API later returning None for the value
     coord.data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getFLO": None}}]}
 
