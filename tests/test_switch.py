@@ -300,3 +300,125 @@ async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> Non
     await sw.async_turn_on()
     mock_coordinator.api.set_device_status.assert_awaited_once()
     mock_coordinator.async_request_refresh.assert_awaited_once()
+
+
+async def test_async_setup_entry_uses_existing_registry_entity_id(hass: HomeAssistant) -> None:
+    """If registry already has entity for unique_id, use its entity_id."""
+    import homeassistant.helpers.entity_registry as er_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestReg",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_reg",
+        unique_id="test_unique_id_reg",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    device = {"id": "SNREG", "name": "RegDevice", "status": {"getBUZ": True}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    entities = []
+    def _add(ents):
+        entities.extend(ents)
+
+    # Mock registry to return an existing entity id for the unique_id
+    mock_registry = MagicMock()
+    mock_registry.async_get_entity_id = MagicMock(return_value="switch.existing_buz")
+    mock_registry.async_get = MagicMock(return_value=object())
+
+    with pytest.MonkeyPatch.context() as m:
+        m.setattr(er_mod, "async_get", lambda hass: mock_registry)
+        await async_setup_entry(hass, config_entry, _add)
+
+    assert len(entities) == 1
+    # entity_id should be replaced with registry's value
+    assert getattr(entities[0], "entity_id", None) == "switch.existing_buz"
+
+
+async def test_async_setup_entry_detects_missing_registry_entries(hass: HomeAssistant) -> None:
+    """When registry reports no entry for created entity, verification logic runs."""
+    import homeassistant.helpers.entity_registry as er_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestMiss",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_miss",
+        unique_id="test_unique_id_miss",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    device = {"id": "SNMISS", "name": "MissDevice", "status": {"getBUZ": True}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    entities = []
+    def _add(ents):
+        entities.extend(ents)
+
+    # Registry that returns None for lookups -> triggers 'missing' path
+    mock_registry = MagicMock()
+    mock_registry.async_get_entity_id = MagicMock(return_value=None)
+    mock_registry.async_get = MagicMock(return_value=None)
+
+    with pytest.MonkeyPatch.context() as m:
+        m.setattr(er_mod, "async_get", lambda hass: mock_registry)
+        await async_setup_entry(hass, config_entry, _add)
+
+    # Should have created entity and registry lookups attempted
+    assert len(entities) == 1
+    mock_registry.async_get.assert_called()
+    mock_registry.async_get_entity_id.assert_called()
+
+
+async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant) -> None:
+    """If entity registry access raises, setup should continue and add entities."""
+    import homeassistant.helpers.entity_registry as er_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestErrReg",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_errreg",
+        unique_id="test_unique_id_errreg",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    device = {"id": "SNERR", "name": "ErrDevice", "status": {"getBUZ": True}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    entities = []
+    def _add(ents):
+        entities.extend(ents)
+
+    # async_get will raise to hit the exception branch
+    def _raise(_h):
+        raise RuntimeError("registry boom")
+
+    with pytest.MonkeyPatch.context() as m:
+        m.setattr(er_mod, "async_get", _raise)
+        await async_setup_entry(hass, config_entry, _add)
+
+    # Should still add the created entity despite registry exceptions
+    assert len(entities) == 1
