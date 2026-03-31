@@ -489,56 +489,28 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getSUP",       # Value: "", unclear meaning
 
     # JSON API only sensors (not available in XML API):
-    "getPRC",       # Value: "", unclear meaning
-    "getRCC",       # Value: "", unclear meaning
-    "getRCD",       # Value: "", unclear meaning
-    "getRCN",       # Value: "", unclear meaning
-    "getRMN",       # Value: "", unclear meaning
-    "getRMT",       # Value: "", unclear meaning
-    "getRVT",       # Value: "", unclear meaning
-    "getTPR",       # Value: "", unclear meaning
-    "getTRT",       # Value: "", unclear meaning
-    "getTRV",       # Value: "", unclear meaning
-    "getPSI",       # Value: "", unclear meaning
-    "getWTR",       # Value: "", unclear meaning
-    "getCCS",       # Value: "", unclear meaning
-    "getRSA",       # Value: "", unclear meaning
-    "getRSD",       # Value: "", unclear meaning
-    "getRSE",       # Value: "", unclear meaning
-    "getRSI",       # Value: "", unclear meaning
-    "getSSA",       # Value: "", unclear meaning
-    "getSSE",       # Value: "", unclear meaning
-    "getCOA",       # Value: "", unclear meaning
-    "getCOM",       # Value: "", unclear meaning
-    "getMIH",       # Value: "", unclear meaning
-    "getMXH",       # Value: "", unclear meaning
-    "getMXT",       # Value: "", unclear meaning
-    "getCNL2",      # Value: "", unclear meaning
-    "getCNF2",      # Value: "", unclear meaning
-    "getEMR",       # Value: "", unclear meaning
-    "getRCP",       # Value: "", unclear meaning
-    "getRP1",       # Value: "", unclear meaning
-    "getRP2",       # Value: "", unclear meaning
-    "getRP3",       # Value: "", unclear meaning
-    "getRMP",       # Value: "", unclear meaning
-    "getNMT",       # Value: "", unclear meaning
-    "getNMS",       # Value: "", unclear meaning
-    "getDTX",       # Value: "", unclear meaning
-    "getBAO",       # Value: "", unclear meaning
-    "getBAH",       # Value: "", unclear meaning
-    "getMIT",       # Value: "", unclear meaning
     "getAPA",       # Value: "", unclear meaning
-    "getAPW",       # Value: "", unclear meaning
     "getAPN",       # Value: "", unclear meaning
+    "getAPW",       # Value: "", unclear meaning
+    "getBAH",       # Value: "", unclear meaning
+    "getBAO",       # Value: "", unclear meaning
+    "getCCS",       # Value: "", unclear meaning
     "getCFT",       # Value: "", unclear meaning
     "getCFV",       # Value: "", unclear meaning
+    "getCNF2",      # Value: "", unclear meaning
+    "getCNL2",      # Value: "", unclear meaning
+    "getCOA",       # Value: "", unclear meaning
+    "getCOM",       # Value: "", unclear meaning
     "getCRS",       # Value: "", unclear meaning
     "getCRT",       # Value: "", unclear meaning
     "getCWL",       # Value: "", unclear meaning
     "getDFI",       # Value: "", unclear meaning
+    "getDTX",       # Value: "", unclear meaning
+    "getEMR",       # Value: "", unclear meaning
     "getFCS",       # Value: "", unclear meaning
     "getFMT",       # Value: "", unclear meaning
     "getFVT",       # Value: "", unclear meaning
+    "getFWURL",     # Value: "", unclear meaning - likely URL for firmware updates or similar
     "getHPR",       # Value: "", unclear meaning
     "getIFL",       # Value: "", unclear meaning
     "getLFT",       # Value: "", unclear meaning
@@ -549,9 +521,46 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getLPD",       # Value: "", unclear meaning
     "getLRC",       # Value: "", unclear meaning
     "getMFL",       # Value: "", unclear meaning
+    "getMIH",       # Value: "", unclear meaning
+    "getMIT",       # Value: "", unclear meaning
     "getMPR",       # The set water pressure - value "" means sensor does not exists or not measured.
+    "getMXH",       # Value: "", unclear meaning
+    "getMXT",       # Value: "", unclear meaning
+    "getNMS",       # Value: "", unclear meaning
+    "getNMT",       # Value: "", unclear meaning
+    "getNPL",       # Value: "", unclear meaning
+    "getNPT",       # Value: "", unclear meaning
     "getNRT",       # Value: "", unclear meaning
     "getOHW",       # Value: "", unclear meaning
+    "getPBC",       # Value: "", unclear meaning
+    "getPCB",       # Value: "", unclear meaning
+    "getPPL",       # Value: "", unclear meaning
+    "getPRC",       # Value: "", unclear meaning
+    "getPRT",       # Value: "", unclear meaning
+    "getPSI",       # Value: "", unclear meaning
+    "getPVL",       # Value: "", unclear meaning
+    "getRCC",       # Value: "", unclear meaning
+    "getRCD",       # Value: "", unclear meaning
+    "getRCN",       # Value: "", unclear meaning
+    "getRCP",       # Value: "", unclear meaning
+    "getRMN",       # Value: "", unclear meaning
+    "getRMP",       # Value: "", unclear meaning
+    "getRMT",       # Value: "", unclear meaning
+    "getRP1",       # Value: "", unclear meaning
+    "getRP2",       # Value: "", unclear meaning
+    "getRP3",       # Value: "", unclear meaning
+    "getRPR",       # Value: "", unclear meaning
+    "getRSA",       # Value: "", unclear meaning
+    "getRSD",       # Value: "", unclear meaning
+    "getRSE",       # Value: "", unclear meaning
+    "getRSI",       # Value: "", unclear meaning
+    "getRVT",       # Value: "", unclear meaning
+    "getSSA",       # Value: "", unclear meaning
+    "getSSE",       # Value: "", unclear meaning
+    "getTPR",       # Value: "", unclear meaning
+    "getTRT",       # Value: "", unclear meaning
+    "getTRV",       # Value: "", unclear meaning
+    "getWTR",       # Value: "", unclear meaning
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
