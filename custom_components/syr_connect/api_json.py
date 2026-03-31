@@ -689,8 +689,15 @@ class SyrConnectJsonAPI:
         # Example: cmd="ADM", value="(2)f" -> response_key="setADM(2)f"
         response_key = self._response_key_for(cmd, value)
 
-        # Check if response contains the expected key
-        if response_key not in response:
+        # BUG:
+        #   - Neosoft firmware causes "cmd" to become lowercase (e.g., "/set/sv1/15" becomes {"setsv15":"OK"}).
+        #   - Trio firmware does properly and always returns uppercase (e.g., {"setPRF1":"OK"}).
+        # This is inconsistent and seems to be a firmware bug on Neosoft devices.
+        #
+        # Perform a case-insensitive lookup for the response key so that
+        # devices returning e.g. 'setala255' or 'setALA255' are accepted.
+        found_key = next((k for k in response.keys() if k.lower() == response_key.lower()), None)
+        if not found_key:
             msg = f"Response missing expected key '{response_key}'"
             _LOGGER.warning("JSON API: %s for device %s (response: %s)", msg, device_id, response)
             # For login, missing key is a failure
@@ -699,7 +706,7 @@ class SyrConnectJsonAPI:
             # For other commands, don't fail hard (graceful degradation)
             return
 
-        status = response[response_key]
+        status = response[found_key]
 
         # Check status value
         if status == "OK":
