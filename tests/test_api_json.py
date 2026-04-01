@@ -641,19 +641,19 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setRTM02:15": "OK"})
+    mock_response.json = AsyncMock(return_value={"setRTM2:15": "OK"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # Test with time value containing colon (e.g., "02:15")
-    result = await client.set_device_status("device1", "RTM", "02:15")
+    # Test with time value containing colon (e.g., "2:15")
+    result = await client.set_device_status("device1", "RTM", "2:15")
 
     # Verify URL contains URL-encoded value (%3A for colon)
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/rtm/02%3A15" in called_url
+    assert "/set/rtm/2%3A15" in called_url
     assert result is True
 
     # Test with value containing slash
@@ -733,7 +733,9 @@ def test_response_key_for():
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    assert api._response_key_for("rtm", "02:15") == "setRTM02:15"
+    assert api._response_key_for("rtm", "0:15") == "setRTM0:15"
+    assert api._response_key_for("rtm", "2:15") == "setRTM2:15"
+    assert api._response_key_for("rtm", "15:15") == "setRTM15:15"
     assert api._response_key_for("PRF9", "999") == "setPRF9999"
 
 
@@ -741,8 +743,8 @@ def test_build_set_url_encodes_and_cases():
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    url = api._build_set_url("RTM", "02:15")
-    assert "/set/rtm/02%3A15" in str(url)
+    url = api._build_set_url("RTM", "2:15")
+    assert "/set/rtm/2%3A15" in str(url)
 
     url2 = api._build_set_url("ADM", "(2)f")
     # _build_set_url encodes by default; parentheses should be percent-encoded
