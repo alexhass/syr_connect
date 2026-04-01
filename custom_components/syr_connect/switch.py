@@ -175,11 +175,27 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         """Turn the buzzer off."""
         await self._set_buz(False)
 
-    async def _set_buz(self, state: bool):
+    async def _set_buz(self, state: bool) -> None:
         """Set the buzzer state via API."""
-        value = True if state else False
+        # Mirror the exact type of the current getBUZ getter value so the setter
+        # uses the same format the device expects.
+        device = next(
+            (d for d in self.coordinator.data.get("devices", []) if d["id"] == self._device_id),
+            None,
+        )
+        current = device.get("status", {}).get(self._sensor_key) if device else None
+        value: bool | int | str
+        if isinstance(current, bool):
+            value = state
+        elif isinstance(current, int):
+            value = 1 if state else 0
+        elif isinstance(current, str) and current.strip() in ("0", "1"):
+            value = "1" if state else "0"
+        else:
+            value = "True" if state else "False"
         try:
-            await self.coordinator.api.set_device_status(self._device_id, "BUZ", value)
+            # Use coordinator.async_set_device_value so the DCLG is resolved correctly
+            await self.coordinator.async_set_device_value(self._device_id, "setBUZ", value)
         except Exception as err:
             _LOGGER.error("Failed to set getBUZ for device %s: %s", self._device_id, err)
         await self.coordinator.async_request_refresh()
