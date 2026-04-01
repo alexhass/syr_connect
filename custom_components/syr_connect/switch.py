@@ -18,7 +18,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_entity_id
+from .helpers import build_device_info, build_entity_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +36,7 @@ async def async_setup_entry(
     for device in devices:
         device_id = device.get("id")
         device_name = device.get("name", device_id)
+        project_id = device.get("project_id", "")
         status = device.get("status", {})
         _LOGGER.debug(f"Checking device: id={device_id}, name={device_name}, status_keys={list(status.keys())}")
         if "getBUZ" in status:
@@ -51,6 +52,7 @@ async def async_setup_entry(
                     coordinator,
                     device_id,
                     device_name,
+                    project_id,
                     "getBUZ",
                 )
                 # If a registry entry already exists for this unique_id,
@@ -118,6 +120,7 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
+        project_id: str,
         sensor_key: str,
     ) -> None:
         """Initialize the switch."""
@@ -126,6 +129,7 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
 
         self._device_id = device_id
         self._device_name = device_name
+        self._project_id = project_id
         self._sensor_key = sensor_key
 
         # Set unique ID and translation platform
@@ -139,6 +143,9 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         # Override the entity_id to use technical name (serial number) with domain prefix
         self.entity_id = build_entity_id("switch", device_id, sensor_key)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
+
+        # Build device info so the entity is linked to its device in the UI
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Set entity category if getBUZ is a config entity
         if sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
