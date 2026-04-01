@@ -239,6 +239,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
+    "getNET": SensorDeviceClass.VOLTAGE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
     "getPRS": SensorDeviceClass.PRESSURE,
     "getVOL": SensorDeviceClass.WATER,
@@ -355,7 +356,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getALD",       # Value: "", unclear meaning
     "getCNL",       # Value: "", unclear meaning
     "getWAH",       # Value: "", unclear meaning
-    "getNET",       # Value: "", unclear meaning
     "getTSD",       # Value: "", unclear meaning
 
     # JSON API only sensors (not available in XML API):
@@ -430,7 +430,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getWFL",       # Emtpy in XML, visible in JSON API. Nearby wifi networks with signal strength - value: "SSID1:Strength1;SSID2:Strength2;..."
     "getWNS",       # Value: "", unclear meaning - likely related to water flow or similar
     #"getWTI",      # Value: e.g. "1720", unclear meaning (duplicate of getWTI from NeoSoft 2500/5000)
-    #"getNET",      # Value: "", unclear meaning (duplicate of getNET from NeoSoft 2500/5000)
 
     # JSON API only sensors (not available in XML API):
     "getDAP",
@@ -610,6 +609,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
+
+    # Sensors exits in devices:
+    # - Safe-T+, Safe-Tech+, Trio DFR/LS
+    "getNET",  # Mains voltage - value "" means no mains voltage sensor present.
 }
 
 # Sensors to exclude only when value is empty ip ("" or "0.0.0.0") - internal
@@ -630,6 +633,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # Safe-T+ specific
     "getBAR": "mdi:gauge",
     "getBAT": "mdi:battery",
+    "getNET": "mdi:sine-wave",              # Mains voltage
     "getVLV": "mdi:valve",
 
     # - LEXplus10SL
@@ -1036,6 +1040,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
 
     "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
+    "getNET": UnitOfElectricPotential.VOLT,             # Mains voltage
     "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
     "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
     "getT2": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
@@ -1094,6 +1099,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getLAN": 0,    # Language of the UI: show as whole number by default (0=English, 1=German, 3=Spanish)
     "getLE": 0,     # Leakage protection - Present level: show as whole number by default
     "getLTV": 0,    # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
+    "getNET": 2,    # Mains voltage: show with 2 decimal places
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default

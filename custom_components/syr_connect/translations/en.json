@@ -353,6 +353,9 @@
       "getman": {
         "name": "Manufacturer"
       },
+      "getnet": {
+        "name": "Mains voltage"
+      },
       "getnor": {
         "name": "Regenerations (normal operation)"
       },

@@ -349,6 +349,61 @@ def get_sensor_vol_value(value: str | int | float) -> str | int | float | None:
     return value
 
 
+def get_sensor_net_value(value: str | int | float) -> float | None:
+    """Parse mains voltage (getNET) supporting three formats.
+
+    Formats supported:
+    - Safe-T+ format:   "ADC:950 6,16V" -> extract "6,16" and parse comma as decimal -> 6.16
+    - Safe-Tech+ format: "11,86"         -> parse comma as decimal -> 11.86
+    - Trio DFR/LS format: "363"          -> value in 1/100 V, divide by 100 -> 3.63
+
+    Returns the voltage as float rounded to 2 decimals, or None on failure.
+    """
+    if value is None:
+        return None
+
+    # If already numeric, assume it's in 1/100 V (int) and divide
+    if isinstance(value, (int | float)):
+        try:
+            return round(float(value) / 100.0, 2)
+        except (TypeError, ValueError):
+            return None
+
+    if not isinstance(value, str):
+        return None
+
+    s = value.strip()
+    if s == "":
+        return None
+
+    # Safe-T+ format: "ADC:950 6,16V" — extract the token that ends with 'V'
+    if "ADC:" in s:
+        for token in s.split():
+            if token.upper().endswith("V"):
+                raw = token[:-1]  # strip trailing 'V'
+                try:
+                    return round(float(raw.replace(',', '.')), 2)
+                except (ValueError, TypeError):
+                    return None
+        return None
+
+    # Safe-Tech+ format with comma decimal, e.g. "11,86"
+    if ',' in s:
+        try:
+            return round(float(s.replace(',', '.')), 2)
+        except (ValueError, TypeError):
+            return None
+
+    # Digits-only Trio DFR/LS format "363" -> divide by 100
+    if s.isdigit():
+        try:
+            return round(int(s) / 100.0, 2)
+        except (ValueError, TypeError):
+            return None
+
+    return None
+
+
 def get_sensor_bat_value(value: str | int | float) -> float | None:
     """Parse battery voltage supporting two formats.
 

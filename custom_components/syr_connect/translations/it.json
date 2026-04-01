@@ -353,6 +353,9 @@
       "getman": {
         "name": "Produttore"
       },
+      "getnet": {
+        "name": "Tensione di rete"
+      },
       "getnor": {
         "name": "Rigenerazioni (normale)"
       },

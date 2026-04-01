@@ -14,6 +14,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_net_value,
     get_sensor_not_map,
     get_sensor_vol_value,
     get_sensor_wrn_map,
@@ -353,6 +354,66 @@ def test_get_sensor_bat_value_variants() -> None:
     assert get_sensor_bat_value("") is None
     assert get_sensor_bat_value(None) is None
     assert get_sensor_bat_value("not-a-number") is None
+
+
+def test_get_sensor_net_value_safe_t_plus_format() -> None:
+    """Safe-T+ format: 'ADC:950 6,16V' -> 6.16."""
+    assert get_sensor_net_value("ADC:950 6,16V") == 6.16
+
+
+def test_get_sensor_net_value_safe_t_plus_format_uppercase_v() -> None:
+    """Safe-T+ format with uppercase V is handled."""
+    assert get_sensor_net_value("ADC:950 6,16v") == 6.16
+
+
+def test_get_sensor_net_value_safe_tech_plus_format() -> None:
+    """Safe-Tech+ format: '11,86' -> 11.86."""
+    assert get_sensor_net_value("11,86") == 11.86
+
+
+def test_get_sensor_net_value_trio_format() -> None:
+    """Trio DFR/LS format: '363' -> 3.63."""
+    assert get_sensor_net_value("363") == 3.63
+
+
+def test_get_sensor_net_value_numeric_int() -> None:
+    """Integer input assumed in 1/100 V -> divide by 100."""
+    assert get_sensor_net_value(363) == 3.63
+
+
+def test_get_sensor_net_value_numeric_float() -> None:
+    """Float input assumed in 1/100 V -> divide by 100."""
+    assert get_sensor_net_value(363.0) == 3.63
+
+
+def test_get_sensor_net_value_empty_string() -> None:
+    """Empty string returns None."""
+    assert get_sensor_net_value("") is None
+
+
+def test_get_sensor_net_value_none() -> None:
+    """None input returns None."""
+    assert get_sensor_net_value(None) is None
+
+
+def test_get_sensor_net_value_invalid_string() -> None:
+    """Unrecognized string returns None."""
+    assert get_sensor_net_value("not-a-number") is None
+
+
+def test_get_sensor_net_value_non_str_non_numeric() -> None:
+    """Non-string, non-numeric types return None."""
+    assert get_sensor_net_value([1, 2, 3]) is None
+
+
+def test_get_sensor_net_value_adc_format_no_v_token() -> None:
+    """ADC: prefix present but no token ending in V returns None."""
+    assert get_sensor_net_value("ADC:950 616") is None
+
+
+def test_get_sensor_net_value_adc_format_unparseable_v_token() -> None:
+    """ADC: prefix with non-numeric V token returns None."""
+    assert get_sensor_net_value("ADC:950 badV") is None
 
 
 def test_clean_sensor_vol_value() -> None:

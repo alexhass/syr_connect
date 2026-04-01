@@ -40,6 +40,7 @@ from .helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_net_value,
     get_sensor_not_map,
     get_sensor_rtm_value,
     get_sensor_vol_value,
@@ -599,6 +600,18 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return None
                     parsed = get_sensor_bat_value(value)
                     return parsed
+
+                # Special handling for mains voltage (getNET)
+                if self._sensor_key == 'getNET':
+                    # Support three formats:
+                    # - Safe-T+ format ("ADC:950 6,16V" -> 6.16 V)
+                    # - Safe-Tech+ format ("11,86" -> 11.86 V)
+                    # - Trio DFR/LS format ("363" -> 3.63 V)
+                    if value is None:
+                        return None
+                    if not isinstance(value, (str | int | float)):
+                        return None
+                    return get_sensor_net_value(value)
 
                 # Special handling for last regeneration timestamp (getLAR): convert unix seconds to datetime object
                 if self._sensor_key == 'getLAR':
