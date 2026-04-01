@@ -310,7 +310,6 @@ Some further data about the device
 | getSNM          | "255.255.255.0"       |        | Subnet mask
 | getDNS          | "123.123.123.254"     |        | DNS server
 | getDGW          | "123.123.123.254"     |        | Default gateway
-| getNET          | "połączony"           |        | Connection status e.g. "connected" (Polish text)
 
 ### Holiday
 
@@ -407,6 +406,7 @@ These properties are only available on devices that contain leakage protection, 
 | getAB / setAB   | "true"<br>"1"          |         | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed
 | getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"
 | getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.
+| getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists; 
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
 | getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L
 | getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h

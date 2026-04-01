@@ -283,6 +283,7 @@ async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> Non
         raise RuntimeError("boom")
 
     mock_coordinator.async_set_device_value = AsyncMock(side_effect=raising_set)
+    mock_coordinator.async_request_refresh = AsyncMock()
 
     sw = SyrConnectBuzSwitch(mock_coordinator, "SN300", "DeviceErr", "", "getBUZ")
 
