@@ -1046,9 +1046,8 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
         get_devices=_fake_get_devices,
     )
 
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api), \
          patch("custom_components.syr_connect.coordinator.asyncio.gather", new=_fake_gather):
-        mock_api_class.return_value = mock_api
 
         config_data = {
             CONF_USERNAME: "test@example.com",
