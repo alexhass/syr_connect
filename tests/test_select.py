@@ -1195,24 +1195,25 @@ async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssist
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
-    class RegistryEntry:
-        def __init__(self, eid):
+    mock_registry = MagicMock()
+    mock_registry.async_remove = MagicMock()
+
+    # Set up entities dict with a previously-registered stale entity whose key
+    # is not in the current SELECT_KNOWN_KEYS allowlist (e.g. a legacy key).
+    stale_entity_id = f"select.syr_connect_{device_id.lower()}_getrtime"
+
+    class FakeEntry:
+        def __init__(self, eid: str) -> None:
             self.entity_id = eid
 
-    mock_registry = MagicMock()
-    # Make registry.async_get return a RegistryEntry (simulating a previously-registered entity)
-    def _get(eid):
-        return RegistryEntry(eid)
-
-    mock_registry.async_get.side_effect = _get
-    mock_registry.async_remove = MagicMock()
+    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id)}
 
     # Patch the entity registry accessor used by Home Assistant to return our mock
     with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
         await select_module.async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # Verify that async_remove was called at least once for an excluded sensor
-    assert mock_registry.async_remove.called
+    # Verify that async_remove was called for the stale entity
+    mock_registry.async_remove.assert_called_once_with(stale_entity_id)
 
 
 def test_build_time_options_step_60_additional():

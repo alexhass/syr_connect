@@ -2752,8 +2752,8 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getINVALID": {"nested": "dict"},  # Invalid type
-                    "getVALID": 42,  # Valid type
+                    "getCS1": {"nested": "dict"},  # Invalid type (dict)
+                    "getRES": 42,  # Valid type (int)
                 },
             }
         ]
@@ -2767,8 +2767,8 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
 
     # Should only create sensor for valid type
     entities = add_entities.call_args.args[0] if add_entities.called else []
-    valid_entities = [e for e in entities if e._sensor_key == "getVALID"]
-    invalid_entities = [e for e in entities if e._sensor_key == "getINVALID"]
+    valid_entities = [e for e in entities if e._sensor_key == "getRES"]
+    invalid_entities = [e for e in entities if e._sensor_key == "getCS1"]
 
     assert len(valid_entities) == 1
     assert len(invalid_entities) == 0
