@@ -293,6 +293,15 @@ Some further data about the device
 | getTMZ          | "4" (old docs: "01:00" ?)        |        | Timezone (Returns unclear value "4" on LEXplus10SL, NeoSoft2500)
 | getDAT          | "1694635165"                     |        | Current time as UNIX timestamp (seconds since 1.1.1970)
 | getLAN          | "1"                              |        | Language of the UI (0=English, 1=German, 3=Spanish)
+| getHWV          | "V1"                             |        | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+)
+| getCFW          | "176"                            |        | Connected firmware component version (Trio DFR/LS, Sanibel)
+| getVER2         | "2.4.2.0_4.3.2_2.4.6"           |        | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER
+| getENV          | "PROD"                           |        | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel)
+| getRTC          | "1775055037"                     |        | Device RTC as UNIX timestamp (NeoSoft, Sanibel). See also getDAT
+| getRURL         | "https://storageiotsyr.blob..."  |        | Firmware update resource URL (NeoSoft, Sanibel)
+| getFRN          | "A25032111217"                   |        | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel)
+| getSRV          | "14.02.2027"                     |        | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel)
+| getCNO          | "EPFI6860AAPA7S8"                |        | Code number / device sub-identifier (Safe-T+, LEXplus10SL)
 
 ### Device Status
 
@@ -300,6 +309,8 @@ Some further data about the device
 |-----------------|----------------------------------|--------|-------------------------------------------------------
 | getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes.
 | getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"           |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.
+| getDEN          | "1"                              |        | Device enabled/disabled flag (1 = enabled, 0 = disabled)
+| getALH          | "2026-02-07 17:41:10:A0..."      |        | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel)
 
 ### Network
 
@@ -310,6 +321,12 @@ Some further data about the device
 | getSNM          | "255.255.255.0"       |        | Subnet mask
 | getDNS          | "123.123.123.254"     |        | DNS server
 | getDGW          | "123.123.123.254"     |        | Default gateway
+| getCURL         | "iot-syrconnect.azure-devices.net" |  | Azure IoT Hub connection URL (Trio DFR/LS, SafeTech, NeoSoft, Sanibel)
+| getWFL          | ["SSID1:Strength", ...]  |        | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel)
+| getWAD          | "False"               |        | Wi-Fi auto-discovery flag (NeoSoft, Sanibel)
+| getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel)
+| getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)
+| getWNS          | "False"               |        | Wi-Fi network scan flag (Trio DFR/LS)
 
 ### Holiday
 
@@ -345,6 +362,9 @@ These settings can be set by the user.
 | getDWF / setDWF | "200"        | L         | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
 | getFCO / setFCO | "0"          | ppm       | Iron content (always 0?)
 | getCFO          | "0"          |           | Cycle flow offset, numeric counter
+| getLNG          | "0"          |           | Language setting (0=German, 1=English). Not exposed — handled by Home Assistant's own localization
+| getDTR          | "[0,0,0,0,0,0,0,0]" |           | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel)
+| getLOCK         | "False"      |           | Device keypad/remote lock flag (Trio DFR/LS, SafeTech)
 
 ### Measurements
 
@@ -362,6 +382,10 @@ These settings can be set by the user.
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
 | getPA1<br>getPA2<br>getPA3                            | "0"<br>"0"<br>"0"  |          | *unknown*
 | getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  |          | *unknown*
+| getBAR2         | "0"           | mbar     | Measured pressure for second channel (Trio DFR/LS, Sanibel). Duplicate of getBAR with 2 suffix
+| getBPT          | "40"          | mbar?    | Back-pressure threshold (Trio DFR/LS)
+| getPRE          | "0"           |          | Pressure-related value (NeoSoft 2500/5000)
+| getMPO          | "0"           |          | Max pressure offset (Sanibel Leak Protection Module A25)
 
 ### Regeneration
 
@@ -377,6 +401,10 @@ These settings can be set by the user.
 | getSCR                     | "0"                     |          | *unknown, likely number of service regeneration cycles*
 | getINR                     | "2"                     |          | Number of incomplete regeneration cycles
 | setSIR                     | "1"                     |          | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this)
+| getRST          | "0"         |          | Reset device control — unclear what values trigger
+| getERE          | "19"        |          | Expected regenerations remaining (NeoSoft 2500/5000)
+| getNRE          | "3"         |          | Number of remaining regenerations (NeoSoft 2500/5000)
+| getVRE1<br>getVRE2 | "22"<br>"" | L?  | Volume of last regeneration in tank 1 or 2 (NeoSoft 2500/5000)
 
 ### Statistics
 
@@ -396,6 +424,12 @@ These settings can be set by the user.
 | getCMF          | "19751"                                                                                           | L      | Water consumption this month (continuously updated)
 | getLMF          | "37998"                                                                                           | L      | Water consumption last month
 | getCOF          | "583939"                                                                                          | L      | Cumulated water consumption in the past (continuously updated)<br>In theory this should reflect the numbers on your water metering device but the precision seems to be low.
+| getOHF          | "9,0,0,..."   | L      | Hourly water flow for today — 24-element comma-separated array (LEXplus10SL)
+| getYHF          | "2,0,0,6,..." | L      | Hourly water flow for yesterday — 24-element array (LEXplus10SL)
+| getLDF          | "529,749,..." | L      | Daily water flow for the current week — 7-element array (LEXplus10SL)
+| getMTF          | "2873,0,..."  | L      | Monthly water flow — 12-element array (LEXplus10SL)
+| getLMS          | "[0,0,...]"   |        | Monthly flow statistics — 12-element array (NeoSoft 2500/5000)
+| getCMS          | "[2736,1881,...]" |    | Monthly consumption statistics — 12-element array (Sanibel Softwater UNO A25)
 
 ### Leakage protection
 
@@ -418,6 +452,36 @@ These properties are only available on devices that contain leakage protection, 
 | getPF1<br>getPF2<br>getPF3<br>getPF4<br>getPF5<br>getPF6<br>getPF7<br>getPF8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L/h | Leak protection flow rate 1-8
 | getPT1<br>getPT2<br>getPT3<br>getPT4<br>getPT5<br>getPT6<br>getPT7<br>getPT8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | minutes | Leak protection time 1-8
 | getPV1<br>getPV2<br>getPV3<br>getPV4<br>getPV5<br>getPV6<br>getPV7<br>getPV8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L | Leak protection volume 1-8
+| getCND          | "250"         | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)
+| getCND2         | "0"           | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix
+| getBSI          | "2 (16 bar)"  |         | Pressure sensor type and range identifier (Safe-T+)
+| getFLL          | "0 50000"     |         | Minimum and maximum flow limits — two values (Safe-T+)
+| getSLO          | "10"          |         | Service-lock timeout (LEXplus10SL, Trio DFR/LS)
+| getSLP          | "0"           |         | Service-lock protection status (LEXplus10SL, SafeTech)
+| getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, Sanibel)
+| getLWT          | "90"          |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)
+| getPSE          | "True"        |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)
+| getPRN          | "2"           |         | Active profile number, duplicate of getPRF (Trio DFR/LS, Sanibel)
+| getSFV          | "False"       |         | Safe-force-valve flag (Trio DFR/LS)
+| getVTO          | "False"       |         | Valve-timeout flag (Trio DFR/LS)
+| getSMF          | "2500"        | L/h?    | Flow or maintenance threshold (Trio DFR/LS, Sanibel)
+| getLDT          | "0"           | s?      | Leak detection timeout (SafeTech, SafeTech+)
+| getPB           | "true"        |         | Buzzer-pulse enable flag (SafeTech)
+| getPF / setPF   | "3500"        | L/h     | Default leak-protection flow threshold (SafeTech). See getPF1...getPF8
+| getPM / setPM   | "true"        |         | Default leak-protection mode (SafeTech). See getPM1...getPM8
+| getPT / setPT   | "30"          | min     | Default leak-protection time (SafeTech). See getPT1...getPT8
+| getPV / setPV   | "200"         | L       | Default leak-protection volume (SafeTech). See getPV1...getPV8
+| getPW / setPW   | "true"        |         | Default leak-protection weekend mode (SafeTech). See getPW1...getPW8
+| getFLF          | "10"          | L/h?    | Minimum flow filter threshold (SafeTech+)
+| getPCI          | "1"           |         | Profile count or index (SafeTech+)
+| getPCO          | "false"       |         | Profile configuration option (SafeTech+)
+| getPCS          | "2"           |         | Profile configuration setting (SafeTech+)
+| getBMA          | "585"         | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)
+| getBMI          | "515"         | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)
+| getDFM          | "1"           |         | Dry-flow mode flag (Sanibel Leak Protection Module A25)
+| getPSE2         | "false"       |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)
+| getCSE2         | "false"       |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)
+| getSUP          | "1"           |         | Supervision or supply status (Sanibel Leak Protection Module A25)
 
 ### Unknown leakage protection
 
@@ -442,6 +506,26 @@ These properties are only available on devices that contain leakage protection, 
 | getSRE          | "0"          |        | *unknown*
 | getVAC          | "0"          |        | *unknown*
 | getVAT          | "3"          |        | *unknown*
+| get71           | "0"          |        | *unknown* (LEXplus10SL, SafeTech, Sanibel)
+| getAWY          | ""           |        | *unknown* (Safe-T+)
+| getBLT          | "10"         |        | *unknown* (Safe-T+)
+| getCDF          | "402,9,0,..." |       | *unknown* — comma-separated array (LEXplus10SL)
+| getCEO          | ""           |        | *unknown* (Safe-T+)
+| getCES          | "1"          |        | *unknown* (LEXplus10SL)
+| getCNS          | "1"          |        | *unknown* (LEXplus10SL)
+| getEXI          | "0"          |        | *unknown* — possibly external input status (Safe-T+)
+| getEXT          | "1"          |        | *unknown* — possibly external sensor connected (Safe-T+)
+| getFSL          | "[]"         |        | *unknown* — array value (LEXplus10SL, Trio DFR/LS, SafeTech)
+| getGLE          | ""           |        | *unknown* (Safe-T+)
+| getGUL          | ""           |        | *unknown* (Safe-T+)
+| getIDS          | "False"      |        | *unknown* (LEXplus10SL, Sanibel)
+| getINT          | "0 0 0 0 0 0 1 0" |   | *unknown* — 8-element array, possibly interrupt input states (Safe-T+)
+| getREL          | "0"          |        | *unknown* — possibly relay state (Safe-T+)
+| getTBS          | "1"          |        | *unknown* — possibly test or battery status flag (Safe-T+)
+| getTC           | "30"         |        | *unknown* — possibly a timer count value (Safe-T+)
+| getTO           | "30"         |        | *unknown* — possibly a timeout value (Safe-T+)
+| getTPA          | "32"         |        | *unknown* (Safe-T+)
+| getUNI          | "0"          |        | *unknown* (Safe-T+, Sanibel)
 
 ### Unknown statistics
 
@@ -479,6 +563,194 @@ These properties are only available on devices that contain leakage protection, 
 | getSRE          | "0"          |        | *unknown constant?*
 | getVAC          | "0"          |        | *unknown constant?*
 | getVAT          | "3"          |        | *unknown constant?*
+
+**NeoSoft 2500/5000**
+
+| Property        | Example      | Unit   | Description
+|-----------------|--------------|--------|-------------------------------------------------------
+| getAPT          | "600"        | s?     | *unknown* — possibly auto-power timeout
+| getBMX          | ""           |        | *unknown*
+| getCNF          | "10"         |        | *unknown*
+| getCSD          | ""           |        | *unknown*
+| getEVL          | "0"          |        | *unknown* — possibly event level
+| getPSD          | ""           |        | *unknown*
+| getTURL         | ""           |        | *unknown* — possibly test URL
+| getALD          | "600"        | s?     | *unknown* — possibly alarm delay
+| getCNL          | "10"         |        | *unknown*
+| getTSD          | ""           |        | *unknown*
+| getCLC          | "500"        |        | *unknown*
+| getCLM          | "370"        |        | *unknown*
+| getDVL          | "501AAA12345" |       | *unknown* — possibly device volume label
+| getALL          | "0"          |        | *unknown*
+| getPAH          | "[]"         |        | *unknown* — array value (JSON API only; entity name exceeds 255 chars)
+
+**Trio DFR/LS**
+
+| Property        | Example      | Unit   | Description
+|-----------------|--------------|--------|-------------------------------------------------------
+| getAFW          | "0"          |        | *unknown*
+| getBAP          | ""           |        | *unknown*
+| getBFT          | ""           |        | *unknown*
+| getCCK          | ""           |        | *unknown*
+| getCSE          | "True"       |        | *unknown* — possibly cloud-service enable
+| getLED          | ""           |        | *unknown*
+| getRCE          | ""           |        | *unknown*
+| getSOF          | "20"         |        | *unknown* — possibly softening offset
+| getTSE          | "False"      |        | *unknown*
+| getDAP          | ""           |        | *unknown* (JSON API only)
+| getDAV          | ""           |        | *unknown* (JSON API only)
+| getDMO          | ""           |        | *unknown* (JSON API only)
+| getDPP          | ""           |        | *unknown* (JSON API only)
+| getDPV          | ""           |        | *unknown* (JSON API only)
+| getDSP          | ""           |        | *unknown* (JSON API only)
+| getDVS          | ""           |        | *unknown* (JSON API only)
+
+**SafeTech**
+
+| Property        | Example      | Unit   | Description
+|-----------------|--------------|--------|-------------------------------------------------------
+| getCEN          | "true"       |        | *unknown* — possibly cloud-event notifications enable (JSON API only)
+| getFCM          | "0"          |        | *unknown* (JSON API only)
+| getMM           | "2"          |        | *unknown* (JSON API only)
+| getSMC          | "0"          |        | *unknown* (JSON API only)
+
+**SafeTech+**
+
+| Property        | Example      | Unit   | Description
+|-----------------|--------------|--------|-------------------------------------------------------
+| getAMA          | "1"          |        | *unknown* (JSON API only)
+| getOLS          | "0"          |        | *unknown* (JSON API only)
+
+**Sanibel Softwater UNO A25**
+
+| Property        | Example      | Unit   | Description
+|-----------------|--------------|--------|-------------------------------------------------------
+| getARS          | "0"          |        | *unknown* (JSON API only)
+| getNIC          | "1"          |        | *unknown* (JSON API only)
+
+### Protocol Response Structure Attributes
+
+These attributes are parsed from the raw XML or JSON API response but are not exposed as Home Assistant entities. They carry protocol-level metadata about the device, its connection state, and per-property timing.
+
+**`<d>` element attributes (device-level)**
+
+| Attribute   | Example                                    | Description
+|-------------|--------------------------------------------|-------------------------------------------------
+| dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"    | Device GUID
+| sbt         | "7"                                        | Subscription type
+| sta         | "2"                                        | Device status code
+| dst         | "2"                                        | Device state
+| ast         | "1"                                        | Alarm state
+| so          | "1"                                        | *unknown*
+| p1883       | "0"                                        | MQTT port 1883 enabled
+| p1883rd     | "14.06.2022 03:24:57"                      | MQTT port 1883 last active date
+| p8883       | "0"                                        | MQTT port 8883 enabled
+| p8883rd     | "14.06.2022 03:24:57"                      | MQTT port 8883 last active date
+
+**`<dcl>` element attributes (device collection)**
+
+| Attribute   | Example                                    | Description
+|-------------|--------------------------------------------|-------------------------------------------------
+| dclg        | "dbb60fa9-76f0-4221-8e89-69d2214714f1"    | Device collection GUID
+| clb         | "1"                                        | Collection base
+| nrdt        | "06.01.2026 00:35:51"                      | Next regeneration date/time
+| nrs         | "11"                                       | Number of regenerations since install
+
+**Per-property sub-attributes (inside `<c>` elements)**
+
+| Attribute       | Example                      | Description
+|-----------------|------------------------------|-------------------------------------------------
+| getSRN_dt       | "2022-01-01 00:00:00"       | Serial number timestamp
+| getALM_acd      | ""                           | Active alarm acknowledged timestamp
+| getALM_dt       | ""                           | Active alarm occurrence timestamp
+| getALM_ih       | ""                           | Active alarm inhibit flag
+| getALM_m        | "LowSalt"                   | Active alarm message code
+| getALA_acd      | ""                           | Last alarm acknowledged timestamp
+| getALA_dt       | ""                           | Last alarm occurrence timestamp
+| getALA_ih       | "0"                          | Last alarm inhibit flag
+| getALA_m        | "A5"                         | Last alarm message codes
+| f               | "0"                          | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL)
+| b               | "0"                          | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL)
+| m               | "ff:ff:eb:52:ee:12"          | CI metadata attribute — likely MAC address (Safe-T+)
+
+### Sanibel Leak Protection Module A25
+
+These properties appear only on the **Sanibel Leak Protection Module A25** (comfort-Multicontroller). Their function is undocumented; they are available only via the JSON API.
+
+| Property        | Example | Description
+|-----------------|---------|-------------------------------------------------------------
+| getAPA          | ""      | *unknown*
+| getAPN          | ""      | *unknown*
+| getAPW          | ""      | *unknown*
+| getBAH          | ""      | *unknown*
+| getBAO          | ""      | *unknown*
+| getCCS          | ""      | *unknown*
+| getCFT          | ""      | *unknown*
+| getCFV          | ""      | *unknown*
+| getCNF2         | ""      | *unknown*
+| getCNL2         | ""      | *unknown*
+| getCOA          | ""      | *unknown*
+| getCOM          | ""      | *unknown*
+| getCRS          | ""      | *unknown*
+| getCRT          | ""      | *unknown*
+| getCWL          | ""      | *unknown*
+| getDFI          | ""      | *unknown*
+| getDTX          | ""      | *unknown*
+| getEMR          | ""      | *unknown*
+| getFCS          | ""      | *unknown*
+| getFMT          | ""      | *unknown*
+| getFVT          | ""      | *unknown*
+| getFWURL        | ""      | *unknown* — possibly firmware update URL
+| getHPR          | ""      | *unknown*
+| getIFL          | ""      | *unknown*
+| getLFT          | ""      | *unknown*
+| getLFV          | ""      | *unknown*
+| getLMD          | ""      | *unknown*
+| getLMF          | ""      | *unknown*
+| getLOT          | ""      | *unknown*
+| getLPD          | ""      | *unknown*
+| getLRC          | ""      | *unknown*
+| getMFL          | ""      | *unknown*
+| getMIH          | ""      | *unknown*
+| getMIT          | ""      | *unknown*
+| getMPR          | ""      | *unknown* — possibly set water pressure (excluded when empty)
+| getMXH          | ""      | *unknown*
+| getMXT          | ""      | *unknown*
+| getNMS          | ""      | *unknown*
+| getNMT          | ""      | *unknown*
+| getNPL          | ""      | *unknown*
+| getNPT          | ""      | *unknown*
+| getNRT          | ""      | *unknown*
+| getOHW          | ""      | *unknown*
+| getPBC          | ""      | *unknown*
+| getPCB          | ""      | *unknown*
+| getPPL          | ""      | *unknown*
+| getPRC          | ""      | *unknown*
+| getPRT          | ""      | *unknown*
+| getPSI          | ""      | *unknown*
+| getPVL          | ""      | *unknown*
+| getRCC          | ""      | *unknown*
+| getRCD          | ""      | *unknown*
+| getRCN          | ""      | *unknown*
+| getRCP          | ""      | *unknown*
+| getRMN          | ""      | *unknown*
+| getRMP          | ""      | *unknown*
+| getRMT          | ""      | *unknown*
+| getRP1          | ""      | *unknown*
+| getRP2          | ""      | *unknown*
+| getRP3          | ""      | *unknown*
+| getRPR          | ""      | *unknown*
+| getRSA          | ""      | *unknown*
+| getRSD          | ""      | *unknown*
+| getRSE          | ""      | *unknown*
+| getRSI          | ""      | *unknown*
+| getRVT          | ""      | *unknown*
+| getSSA          | ""      | *unknown*
+| getSSE          | ""      | *unknown*
+| getTPR          | ""      | *unknown*
+| getTRT          | ""      | *unknown*
+| getTRV          | ""      | *unknown*
+| getWTR          | ""      | *unknown*
 
 ## Further information
 
