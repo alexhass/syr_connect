@@ -888,3 +888,79 @@ def test_is_sensor_visible_cs_value_none_returns_false() -> None:
     status = {"getSV1": "0"}
     assert is_sensor_visible(status, "getCS1", None) is False
 
+
+# ---------------------------------------------------------------------------
+# Lines 297-298 — get_sensor_avo_value: mL-pattern except branch
+# ---------------------------------------------------------------------------
+
+def test_get_sensor_avo_value_ml_pattern_except() -> None:
+    """Lines 297-298: except(ValueError, TypeError) in the mL pattern block.
+
+    Patch re.match so the first call ('^(<digits>)mL$') returns a mock whose
+    group(1) raises ValueError, triggering the inner except branch.
+    """
+    from unittest.mock import MagicMock, patch
+
+    from custom_components.syr_connect.helpers import get_sensor_avo_value
+
+    bad_match = MagicMock()
+    bad_match.group = MagicMock(side_effect=ValueError("bad group"))
+
+    # Only intercept the first re.match call (the mL pattern)
+    with patch("custom_components.syr_connect.helpers.re.match", return_value=bad_match):
+        result = get_sensor_avo_value("1655mL")
+
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 306-307 — get_sensor_avo_value: fallback-pattern except branch
+# ---------------------------------------------------------------------------
+
+def test_get_sensor_avo_value_fallback_pattern_except() -> None:
+    """Lines 306-307: except(ValueError, TypeError) in the fallback pattern block.
+
+    Make the first re.match (mL pattern) return None so the code falls
+    through to the ^(<digits>) fallback, then patch that match's group(1) to raise.
+    """
+    from unittest.mock import MagicMock, patch
+
+    from custom_components.syr_connect.helpers import get_sensor_avo_value
+
+    bad_match = MagicMock()
+    bad_match.group = MagicMock(side_effect=ValueError("bad group"))
+
+    call_count = 0
+
+    def _match_side_effect(pattern, string):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return None        # mL pattern misses → fall through
+        return bad_match       # fallback pattern → group(1) raises
+
+    with patch("custom_components.syr_connect.helpers.re.match", side_effect=_match_side_effect):
+        result = get_sensor_avo_value("1655")
+
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 793-794 — is_sensor_visible _is_true: int/float except branch
+# ---------------------------------------------------------------------------
+
+def test_is_sensor_visible_is_true_int_subclass_float_raises() -> None:
+    """Lines 793-794: _is_true except(ValueError, TypeError) for int|float branch.
+
+    Use an int subclass whose __float__ raises ValueError so the except path
+    fires and _is_true returns False, hiding the getPA group sensor.
+    """
+    class _BadFloat(int):
+        def __float__(self):
+            raise ValueError("bad float")
+
+    status = {"getPA1": _BadFloat(1), "getPN1": "value"}
+    # getPN1 is a PA-group key controlled by getPA1; _is_true(_BadFloat(1))
+    # hits the except → returns False → getPN1 is hidden
+    assert is_sensor_visible(status, "getPN1", "value") is False
+

@@ -2704,10 +2704,12 @@ async def test_diagnostics_title_redact_except_branch(hass: HomeAssistant) -> No
     import re as real_re
     from unittest.mock import patch
 
+    _real_sub = real_re.sub  # capture before patching to avoid recursion
+
     def _raise_for_title(pattern, *args, **kwargs):
         if pattern == r"\(([^)]+)\)":
             raise real_re.error("forced error")
-        return real_re.sub(pattern, *args, **kwargs)
+        return _real_sub(pattern, *args, **kwargs)
 
     entry = _cov_entry(title="SYR Connect (user@example.com)")
     entry.runtime_data = _cov_coordinator()
@@ -2763,10 +2765,12 @@ async def test_diagnostics_redact_xml_generic_regex_except(hass: HomeAssistant) 
     import re as real_re
     from unittest.mock import patch
 
+    _real_sub = real_re.sub  # capture before patching to avoid recursion
+
     def _raise_for_ip(pattern, *args, **kwargs):
         if r"\d{1,3}" in str(pattern):
             raise ValueError("forced ip error")
-        return real_re.sub(pattern, *args, **kwargs)
+        return _real_sub(pattern, *args, **kwargs)
 
     entry = _cov_entry()
     entry.runtime_data = _cov_coordinator()
@@ -2786,10 +2790,12 @@ async def test_diagnostics_redact_xml_whitespace_except(hass: HomeAssistant) -> 
     import re as real_re
     from unittest.mock import patch
 
+    _real_sub = real_re.sub  # capture before patching to avoid recursion
+
     def _raise_for_ws(pattern, *args, **kwargs):
         if r">\s+<" in str(pattern):
             raise ValueError("forced ws error")
-        return real_re.sub(pattern, *args, **kwargs)
+        return _real_sub(pattern, *args, **kwargs)
 
     entry = _cov_entry()
     entry.runtime_data = _cov_coordinator()

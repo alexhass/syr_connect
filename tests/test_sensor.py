@@ -8387,8 +8387,7 @@ async def test_sensor_setup_pa_group_outer_exception_caught(hass: HomeAssistant)
     handler fires.  Only getPA1 is true; status has no other keys so the
     status-items loop never calls SyrConnectSensor.
     """
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "device1",
@@ -8398,20 +8397,15 @@ async def test_sensor_setup_pa_group_outer_exception_caught(hass: HomeAssistant)
             }
         ]
     }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1, minor_version=0, domain=DOMAIN, title="T",
-        data={}, source="user", entry_id="e2", unique_id="u2",
-    )
-    entry.runtime_data = coordinator
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
     mock_add = Mock()
     with patch("custom_components.syr_connect.sensor.SyrConnectSensor", side_effect=TypeError("boom")):
         await async_setup_entry(hass, entry, mock_add)
-    # Exception was caught; add_entities not called (no entities created)
-    mock_add.assert_not_called()
+    # Exception was caught; add_entities called with empty list (no entities created)
+    mock_add.assert_called_once_with([])
 
 
 # ---------------------------------------------------------------------------
