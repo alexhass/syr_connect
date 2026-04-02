@@ -295,10 +295,10 @@ Some further data about the device
 | getLAN          | "1"                              |        | Language of the UI (0=English, 1=German, 3=Spanish)
 | getHWV          | "V1"                             |        | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+)
 | getCFW          | "176"                            |        | Connected firmware component version (Trio DFR/LS, Sanibel)
-| getVER2         | "2.4.2.0_4.3.2_2.4.6"           |        | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER
+| getVER2         | "2.4.2.0_4.3.2_2.4.6"            |        | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER
 | getENV          | "PROD"                           |        | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel)
 | getRTC          | "1775055037"                     |        | Device RTC as UNIX timestamp (NeoSoft, Sanibel). See also getDAT
-| getRURL         | "https://storageiotsyr.blob..."  |        | Firmware update resource URL (NeoSoft, Sanibel)
+| getRURL         | `"https://storageiotsyr.blob..."`|        | Firmware update resource URL (NeoSoft, Sanibel)
 | getFRN          | "A25032111217"                   |        | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel)
 | getSRV          | "14.02.2027"                     |        | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel)
 | getCNO          | "EPFI6860AAPA7S8"                |        | Code number / device sub-identifier (Safe-T+, LEXplus10SL)
@@ -308,7 +308,7 @@ Some further data about the device
 | Property        | Example                          | Unit   | Description
 |-----------------|----------------------------------|--------|-------------------------------------------------------
 | getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes.
-| getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"           |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.
+| getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"        |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.
 | getDEN          | "1"                              |        | Device enabled/disabled flag (1 = enabled, 0 = disabled)
 | getALH          | "2026-02-07 17:41:10:A0..."      |        | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel)
 
@@ -322,7 +322,7 @@ Some further data about the device
 | getDNS          | "123.123.123.254"     |        | DNS server
 | getDGW          | "123.123.123.254"     |        | Default gateway
 | getCURL         | "iot-syrconnect.azure-devices.net" |  | Azure IoT Hub connection URL (Trio DFR/LS, SafeTech, NeoSoft, Sanibel)
-| getWFL          | ["SSID1:Strength", ...]  |        | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel)
+| getWFL          | ["SSID1:Strength", ...] |      | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel)
 | getWAD          | "False"               |        | Wi-Fi auto-discovery flag (NeoSoft, Sanibel)
 | getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel)
 | getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)
@@ -382,10 +382,10 @@ These settings can be set by the user.
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
 | getPA1<br>getPA2<br>getPA3                            | "0"<br>"0"<br>"0"  |          | *unknown*
 | getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  |          | *unknown*
-| getBAR2         | "0"           | mbar     | Measured pressure for second channel (Trio DFR/LS, Sanibel). Duplicate of getBAR with 2 suffix
-| getBPT          | "40"          | mbar?    | Back-pressure threshold (Trio DFR/LS)
-| getPRE          | "0"           |          | Pressure-related value (NeoSoft 2500/5000)
-| getMPO          | "0"           |          | Max pressure offset (Sanibel Leak Protection Module A25)
+| getBAR2                                               | "0"                | mbar     | Measured pressure for second channel (Trio DFR/LS, Sanibel). Duplicate of getBAR with 2 suffix
+| getBPT                                                | "40"               | mbar?    | Back-pressure threshold (Trio DFR/LS)
+| getPRE                                                | "0"                |          | Pressure-related value (NeoSoft 2500/5000)
+| getMPO                                                | "0"                |          | Max pressure offset (Sanibel Leak Protection Module A25)
 
 ### Regeneration
 
@@ -401,10 +401,10 @@ These settings can be set by the user.
 | getSCR                     | "0"                     |          | *unknown, likely number of service regeneration cycles*
 | getINR                     | "2"                     |          | Number of incomplete regeneration cycles
 | setSIR                     | "1"                     |          | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this)
-| getRST          | "0"         |          | Reset device control — unclear what values trigger
-| getERE          | "19"        |          | Expected regenerations remaining (NeoSoft 2500/5000)
-| getNRE          | "3"         |          | Number of remaining regenerations (NeoSoft 2500/5000)
-| getVRE1<br>getVRE2 | "22"<br>"" | L?  | Volume of last regeneration in tank 1 or 2 (NeoSoft 2500/5000)
+| getRST                     | "0"                     |          | Reset device control — unclear what values trigger
+| getERE                     | "19"                    |          | Expected regenerations remaining (NeoSoft 2500/5000)
+| getNRE                     | "3"                     |          | Number of remaining regenerations (NeoSoft 2500/5000)
+| getVRE1<br>getVRE2         | "22"<br>""              | L?       | Volume of last regeneration in tank 1 or 2 (NeoSoft 2500/5000)
 
 ### Statistics
 
@@ -440,7 +440,7 @@ These properties are only available on devices that contain leakage protection, 
 | getAB / setAB   | "true"<br>"1"          |         | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed
 | getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"
 | getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.
-| getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists; 
+| getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists;
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
 | getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L
 | getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
@@ -452,36 +452,36 @@ These properties are only available on devices that contain leakage protection, 
 | getPF1<br>getPF2<br>getPF3<br>getPF4<br>getPF5<br>getPF6<br>getPF7<br>getPF8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L/h | Leak protection flow rate 1-8
 | getPT1<br>getPT2<br>getPT3<br>getPT4<br>getPT5<br>getPT6<br>getPT7<br>getPT8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | minutes | Leak protection time 1-8
 | getPV1<br>getPV2<br>getPV3<br>getPV4<br>getPV5<br>getPV6<br>getPV7<br>getPV8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L | Leak protection volume 1-8
-| getCND          | "250"         | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)
-| getCND2         | "0"           | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix
-| getBSI          | "2 (16 bar)"  |         | Pressure sensor type and range identifier (Safe-T+)
-| getFLL          | "0 50000"     |         | Minimum and maximum flow limits — two values (Safe-T+)
-| getSLO          | "10"          |         | Service-lock timeout (LEXplus10SL, Trio DFR/LS)
-| getSLP          | "0"           |         | Service-lock protection status (LEXplus10SL, SafeTech)
+| getCND          | "250"        | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)
+| getCND2         | "0"          | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix
+| getBSI          | "2 (16 bar)" |         | Pressure sensor type and range identifier (Safe-T+)
+| getFLL          | "0 50000"    |         | Minimum and maximum flow limits — two values (Safe-T+)
+| getSLO          | "10"         |         | Service-lock timeout (LEXplus10SL, Trio DFR/LS)
+| getSLP          | "0"          |         | Service-lock protection status (LEXplus10SL, SafeTech)
 | getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, Sanibel)
-| getLWT          | "90"          |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)
-| getPSE          | "True"        |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)
-| getPRN          | "2"           |         | Active profile number, duplicate of getPRF (Trio DFR/LS, Sanibel)
-| getSFV          | "False"       |         | Safe-force-valve flag (Trio DFR/LS)
-| getVTO          | "False"       |         | Valve-timeout flag (Trio DFR/LS)
-| getSMF          | "2500"        | L/h?    | Flow or maintenance threshold (Trio DFR/LS, Sanibel)
-| getLDT          | "0"           | s?      | Leak detection timeout (SafeTech, SafeTech+)
-| getPB           | "true"        |         | Buzzer-pulse enable flag (SafeTech)
-| getPF / setPF   | "3500"        | L/h     | Default leak-protection flow threshold (SafeTech). See getPF1...getPF8
-| getPM / setPM   | "true"        |         | Default leak-protection mode (SafeTech). See getPM1...getPM8
-| getPT / setPT   | "30"          | min     | Default leak-protection time (SafeTech). See getPT1...getPT8
-| getPV / setPV   | "200"         | L       | Default leak-protection volume (SafeTech). See getPV1...getPV8
-| getPW / setPW   | "true"        |         | Default leak-protection weekend mode (SafeTech). See getPW1...getPW8
-| getFLF          | "10"          | L/h?    | Minimum flow filter threshold (SafeTech+)
-| getPCI          | "1"           |         | Profile count or index (SafeTech+)
-| getPCO          | "false"       |         | Profile configuration option (SafeTech+)
-| getPCS          | "2"           |         | Profile configuration setting (SafeTech+)
-| getBMA          | "585"         | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)
-| getBMI          | "515"         | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)
-| getDFM          | "1"           |         | Dry-flow mode flag (Sanibel Leak Protection Module A25)
-| getPSE2         | "false"       |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)
-| getCSE2         | "false"       |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)
-| getSUP          | "1"           |         | Supervision or supply status (Sanibel Leak Protection Module A25)
+| getLWT          | "90"         |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)
+| getPSE          | "True"       |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)
+| getPRN          | "2"          |         | Active profile number, duplicate of getPRF (Trio DFR/LS, Sanibel)
+| getSFV          | "False"      |         | Safe-force-valve flag (Trio DFR/LS)
+| getVTO          | "False"      |         | Valve-timeout flag (Trio DFR/LS)
+| getSMF          | "2500"       | L/h?    | Flow or maintenance threshold (Trio DFR/LS, Sanibel)
+| getLDT          | "0"          | s?      | Leak detection timeout (SafeTech, SafeTech+)
+| getPB           | "true"       |         | Buzzer-pulse enable flag (SafeTech)
+| getPF / setPF   | "3500"       | L/h     | Default leak-protection flow threshold (SafeTech). See getPF1...getPF8
+| getPM / setPM   | "true"       |         | Default leak-protection mode (SafeTech). See getPM1...getPM8
+| getPT / setPT   | "30"         | min     | Default leak-protection time (SafeTech). See getPT1...getPT8
+| getPV / setPV   | "200"        | L       | Default leak-protection volume (SafeTech). See getPV1...getPV8
+| getPW / setPW   | "true"       |         | Default leak-protection weekend mode (SafeTech). See getPW1...getPW8
+| getFLF          | "10"         | L/h?    | Minimum flow filter threshold (SafeTech+)
+| getPCI          | "1"          |         | Profile count or index (SafeTech+)
+| getPCO          | "false"      |         | Profile configuration option (SafeTech+)
+| getPCS          | "2"          |         | Profile configuration setting (SafeTech+)
+| getBMA          | "585"        | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)
+| getBMI          | "515"        | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)
+| getDFM          | "1"          |         | Dry-flow mode flag (Sanibel Leak Protection Module A25)
+| getPSE2         | "false"      |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)
+| getCSE2         | "false"      |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)
+| getSUP          | "1"          |         | Supervision or supply status (Sanibel Leak Protection Module A25)
 
 ### Unknown leakage protection
 
@@ -579,7 +579,7 @@ These properties are only available on devices that contain leakage protection, 
 | getTSD          | ""           |        | *unknown*
 | getCLC          | "500"        |        | *unknown*
 | getCLM          | "370"        |        | *unknown*
-| getDVL          | "501AAA12345" |       | *unknown* — possibly device volume label
+| getDVL          | "501AAA12345"|        | *unknown* — possibly device volume label
 | getALL          | "0"          |        | *unknown*
 | getPAH          | "[]"         |        | *unknown* — array value (JSON API only; entity name exceeds 255 chars)
 
@@ -635,7 +635,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
-| dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"    | Device GUID
+| dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"     | Device GUID
 | sbt         | "7"                                        | Subscription type
 | sta         | "2"                                        | Device status code
 | dst         | "2"                                        | Device state
@@ -650,7 +650,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
-| dclg        | "dbb60fa9-76f0-4221-8e89-69d2214714f1"    | Device collection GUID
+| dclg        | "dbb60fa9-76f0-4221-8e89-69d2214714f1"     | Device collection GUID
 | clb         | "1"                                        | Collection base
 | nrdt        | "06.01.2026 00:35:51"                      | Next regeneration date/time
 | nrs         | "11"                                       | Number of regenerations since install
@@ -659,11 +659,11 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 | Attribute       | Example                      | Description
 |-----------------|------------------------------|-------------------------------------------------
-| getSRN_dt       | "2022-01-01 00:00:00"       | Serial number timestamp
+| getSRN_dt       | "2022-01-01 00:00:00"        | Serial number timestamp
 | getALM_acd      | ""                           | Active alarm acknowledged timestamp
 | getALM_dt       | ""                           | Active alarm occurrence timestamp
 | getALM_ih       | ""                           | Active alarm inhibit flag
-| getALM_m        | "LowSalt"                   | Active alarm message code
+| getALM_m        | "LowSalt"                    | Active alarm message code
 | getALA_acd      | ""                           | Last alarm acknowledged timestamp
 | getALA_dt       | ""                           | Last alarm occurrence timestamp
 | getALA_ih       | "0"                          | Last alarm inhibit flag
