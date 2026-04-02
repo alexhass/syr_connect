@@ -1045,6 +1045,8 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
         projects=[{"id": "p1", "name": "P1"}],
         get_devices=_fake_get_devices,
     )
+    # Plain object for session — not used in this code path and avoids AsyncMock warnings
+    fake_session = SimpleNamespace()
 
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api), \
          patch("custom_components.syr_connect.coordinator.asyncio.gather", new=_fake_gather):
@@ -1055,7 +1057,7 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
         }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
-            MagicMock(),
+            fake_session,
             config_data,
             60,
         )
