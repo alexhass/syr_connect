@@ -547,7 +547,6 @@ These properties are only available on devices that contain leakage protection, 
 | getBTM          | "1"          |        | *unknown constant?*
 | getBTS          | "0"          |        | *unknown constant?*
 | getCOR          | "30"         |        | *unknown constant?*
-| getDEN          | "1"          |        | *unknown constant?*
 | getDHC          | "0"          |        | *unknown constant?*
 | getFWM          | "1"          |        | *unknown constant?*
 | getFWS          | "0"          |        | *unknown constant?*
@@ -564,7 +563,7 @@ These properties are only available on devices that contain leakage protection, 
 | getVAC          | "0"          |        | *unknown constant?*
 | getVAT          | "3"          |        | *unknown constant?*
 
-**NeoSoft 2500/5000**
+### NeoSoft 2500/5000
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
@@ -584,7 +583,7 @@ These properties are only available on devices that contain leakage protection, 
 | getALL          | "0"          |        | *unknown*
 | getPAH          | "[]"         |        | *unknown* — array value (JSON API only; entity name exceeds 255 chars)
 
-**Trio DFR/LS**
+### Trio DFR/LS
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
@@ -605,7 +604,7 @@ These properties are only available on devices that contain leakage protection, 
 | getDSP          | ""           |        | *unknown* (JSON API only)
 | getDVS          | ""           |        | *unknown* (JSON API only)
 
-**SafeTech**
+### SafeTech
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
@@ -614,14 +613,14 @@ These properties are only available on devices that contain leakage protection, 
 | getMM           | "2"          |        | *unknown* (JSON API only)
 | getSMC          | "0"          |        | *unknown* (JSON API only)
 
-**SafeTech+**
+### SafeTech+
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
 | getAMA          | "1"          |        | *unknown* (JSON API only)
 | getOLS          | "0"          |        | *unknown* (JSON API only)
 
-**Sanibel Softwater UNO A25**
+### Sanibel Softwater UNO A25
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------

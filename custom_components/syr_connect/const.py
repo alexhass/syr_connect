@@ -484,317 +484,36 @@ _SYR_CONNECT_BUTTON_KNOWN_KEYS = {
     "setWRN",   # Reset warning
 }
 
-# Sensors to always exclude (parameters from XML that should not be exposed) - internal
+# Sensors to always exclude — parameters returned by the API that must not be
+# exposed as sensor entities. Only keys that also appear in
+# _SYR_CONNECT_SENSOR_KNOWN_KEYS need to be listed here; all others are already
+# silently filtered by the KNOWN_KEYS allowlist.
 _SYR_CONNECT_SENSOR_EXCLUDED = {
-    # Uninstall - This will delete the sensors from the entity registry if they were created before.
-    "getRTIME",  # Uninstall custom regeneration time control
+    # Keys that are in KNOWN_KEYS but must not become sensor entities because
+    # they are handled by another entity type, superseded by a derived entity,
+    # or have no practical value for users.
 
-    # Sensors exits in devices:
-    # - LEXplus10S
-    # - LEXplus10SL
+    # --- Overridden by a different entity type ---
+    "getDEN",  # Boolean flag — handled as binary_sensor; no regular sensor needed
+    "getSIR",  # Immediate regeneration trigger — represented as a button, not a sensor
 
-    "p1883", "p1883rd", "p8883", "p8883rd",
-    "sbt", "sta", "dst", "ast", "so",
-    "dclg", "clb", "nrs",  # Device collection metadata
-    "nrdt", "dg",   # Additional device metadata attributes
+    # --- Superseded by a derived / combined entity ---
+    "getRTH",  # Regeneration hour — combined HH:MM representation handled by getRTM
 
-    # Other attributes than "n" = "name" / "v" = "value" in XML response
-    "getSRN_dt",    # Serial number timestamp
-    "getALM_acd",   # Active alarm since timestamp
-    "getALM_dt",    # Alarm timestamp
-    "getALM_ih",    # Alarm inhibit flag (unlcear purpose)
-    "getALM_m",     # Alarm message e.g. LowSalt
+    # --- Always zero / constant / no practical user value ---
+    "getFCO",  # Iron content — always 0, not useful
+    "getRTI",  # Regeneration cycle duration — always "00:00", no useful value
 
-    "getDEN",  # Boolean sensor - device enabled/disabled
-    "getRTH",  # Regeneration hour - minutes/combined handled by getRTM
-    "getCDE",  # Unknown constant (some kind of device identifier?) - not useful for users
-    "getSIR",  # Immediate regeneration control
-    "getSMR",  # Manual regeneration control - per documentation unknown what values do
-    "getRST",  # Reset device control - per documentation unknown what values do
-    "getTYP",  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
-    "getRTI",  # Value is always 00:00. Not clear what it represents.
-    "getFCO",  # Iron content (always 0) - not useful
-    "getSCR",  # Unknown, likely number of service regeneration
-
-    # Sensors exits in devices:
-    # - LEXplus10SL
-
-    # Technical values without context
-    "get71", "getBSA",
-    "getCDF",
-    "getCES", "getCND",
-    "getCNO", # Code number - not useful for users
-    "getCNS",
-    "getDAT", "getDBD", "getDBT", "getDCM", "getDMA", "getDOM", "getDPL",
-    "getDST", "getDTC",
-    "getDWF", # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
-    "getFSL", "getIDS", "getLDF", "getLWT", "getMTF",
-    "getOHF", "getYHF",
-    "getSLO", "getSLP",
-    "getT2", "getTN",
-
-    # Sensors exits in devices:
-    # - Safe-T+
-
-    # Unknown Safe-T+ specific sensors
-    "f", "b", "m",  # CI values from API response, unclear purpose, (m = MAC address)
-    "getALA_acd",   # Last alarm - timestamp - acknowledged?
-    "getALA_dt",    # Last alarm - timestamp - occurence?
-    "getALA_ih",    # Last alarm - e.g. 0 - Unknown
-    "getALA_m",     # Last alarm - alarm codes e.g. A5, A6
-    "getAWY",       # Unknown
-    "getBLT",       # Unknown
-    "getBSI",       # Unknown
-    "getCEO",       # Unknown
-    #"getCNO",      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
-    "getEXI",       # Unknown
-    "getEXT",       # Unknown
-    "getFLL",       # Unknown
-    "getGLE",       # Unknown
-    "getGUL",       # Unknown
-    "getINT",       # Unknown
-    "getREL",       # Unknown
-    #"getT2",       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
-    "getTBS",       # Unknown
-    "getTC",        # Unknown
-    "getTO",        # Unknown
-    "getTPA",       # Unknown
-    "getUNI",       # Unknown
-
-    # Sensors exits in devices:
-    # - NeoSoft 2500 / 5000
-
-    "getBMX",       # Value: "", unclear meaning
-    "getERE",       # Value: "", unclear meaning
-    #"getLDF",      # Value: "", unclear meaning
-    "getLMS",       # Value: "", unclear meaning
-    "getNRE",       # Value: "", unclear meaning
-    #"getOHF",      # Value: "", unclear meaning
-    "getPRE",       # Value: "", unclear meaning
-    "getVRE1",      # Value: "", unclear meaning
-    "getVRE2",      # Value: "", unclear meaning
-    #"getYHF",      # Value: "", unclear meaning
-    "getHWV",       # Value: e.g. "V1", "0000000001", unclear meaning
-    "getAPT",       # Value: e.g. "600", unclear meaning
-    "getCNF",       # Value: "", unclear meaning
-    "getCSD",       # Value: "", unclear meaning
-    "getEVL",       # Value: "0", unclear meaning
-    #"getIDS",      # Value: "False", unclear meaning
-    "getLNG",       # Value: "0", unclear meaning
-    "getPSD",       # Value: "", unclear meaning
-    "getRTC",       # Value: "", unclear meaning
-    "getRURL",      # Value: "", unclear meaning
-    "getTMZ",       # Value: "4", unclear meaning
-    "getTURL",      # Value: "", unclear meaning
-    "getWAD",       # Value: "False", unclear meaning
-    "getWTI",       # Value: e.g. "1720", unclear meaning
-    "getALD",       # Value: "", unclear meaning
-    "getCNL",       # Value: "", unclear meaning
-    "getWAH",       # Value: "", unclear meaning
-    "getTSD",       # Value: "", unclear meaning
-
-    # JSON API only sensors (not available in XML API):
-    "getALH",
-    "getALL",
-    "getCLC",
-    "getCLM",
-    "getDVL",
-    "getFRN",
-    "getPAH",       # Error: "sensor.syr_connect_xxx_getpah is longer than 255, falling back to unknown"
-
-    # Sensors exits in devices:
-    # - Trio DFR/LS
-
-    "getAFW",       # Value: "", unclear meaning
-    #"getALD",      # Value: "", unclear meaning (duplicate of getALD from NeoSoft 2500/5000)
-    #"getAPT",      # Value: e.g. "600", unclear meaning (duplicate of getAPT from NeoSoft 2500/5000)
-    "getBAP",       # Value: "", unclear meaning
-    "getBAR2",      # Value: "", unclear meaning (duplicate of getBAR from LEXplus10S/Safe-T+)
-    "getBFT",       # Value: "", unclear meaning
-    "getBPT",       # Value: "", unclear meaning
-    #"getBSA",      # Value: "", unclear meaning (duplicate of getBSA from LEXplus10SL)
-    "getCCK",       # Value: "", unclear meaning
-    "getCFW",       # Value: "", unclear meaning
-    #"getCND",      # Conductivity in µS/cm
-    "getCND2",      # Value: "", unclear meaning (duplicate of getCND from LEXplus10SL)
-    #"getCNF",      # Value: "", unclear meaning (duplicate of getCNF from NeoSoft 2500/5000)
-    #"getCNL",      # Value: "", unclear meaning (duplicate of getCNL from NeoSoft 2500/5000)
-    #"getCSD",      # Value: "", unclear meaning (duplicate of getCSD from NeoSoft 2500/5000)
-    "getCSE",       # Value: "", unclear meaning
-    "getCURL",      # Value: "", unclear meaning
-    #"getDBT",      # Value: "", unclear meaning (duplicate of getDBT from LEXplus10SL)
-    #"getDCM",      # Value: "", unclear meaning (duplicate of getDCM from LEXplus10SL)
-    #"getDMA",      # Value: "", unclear meaning (duplicate of getDMA from LEXplus10SL)
-    #"getDOM",      # Value: "", unclear meaning (duplicate of getDOM from LEXplus10SL)
-    #"getDPL",      # Value: "", unclear meaning (duplicate of getDPL from LEXplus10SL)
-    #"getDST",      # Value: "", unclear meaning (duplicate of getDST from LEXplus10SL)
-    #"getDTC",      # Value: "", unclear meaning (duplicate of getDTC from LEXplus10SL)
-    "getENV",       # Value: "", unclear meaning
-    #"getEVL",      # Value: "0", unclear meaning (duplicate of getEVL from NeoSoft 2500/5000)
-    "getDTR",       # Value: "", unclear meaning
-    #"getFSL",      # Value: "", unclear meaning (duplicate of getFSL from LEXplus10SL)
-    #"getHWV",      # Value: e.g. "V1", "0000000001", unclear meaning (duplicate of getHWV from NeoSoft 2500/5000)
-    #"getIDS",      # Value: "False", unclear meaning (duplicate of getIDS from NeoSoft 2500/5000)
-    "getLED",       # Value: "", unclear meaning
-    "getLOCK",      # Value: "False", unclear meaning
-    #"getLNG",      # Value: "0", unclear meaning (duplicate of getLNG from NeoSoft 2500/5000)
-    #"getLWT",      # Value: "", unclear meaning (duplicate of getLWT from LEXplus10SL)
-    "getSMF",       # Value: "", unclear meaning
-    #"getPSD",      # Value: "", unclear meaning (duplicate of getPSD from NeoSoft 2500/5000)
-    "getPSE",       # Value: "", unclear meaning
-    "getPRN",       # Value: "", unclear meaning (duplicate of getPRN from LEXplus10SL)
-    "getRCE",       # Value: "", unclear meaning
-    #"getRTC",      # Value: "", unclear meaning (duplicate of getRTC from NeoSoft 2500/5000)
-    #"getRURL",     # Value: "", unclear meaning (duplicate of getRURL from NeoSoft 2500/5000)
-    "getSFV",       # Value: "", unclear meaning
-    "getSLP_m",     # Value: "", unclear meaning - duplicate of getSLP from LEXplus10SL but with "_m" suffix, likely a modified value for maintenance mode or similar
-    "getSLP_sd",    # Value: "", unclear meaning - likely start date for maintenance mode or similar
-    "getSLP_ed",    # Value: "", unclear meaning - likely end date for maintenance mode or similar
-    #"getSLO",      # Value: "", unclear meaning (duplicate of getSLO from LEXplus10SL)
-    "getSOF",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    "getSRV",       # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
-    #"getTN",       # Value: "", unclear meaning (duplicate of getTN from LEXplus10SL)
-    #"getTMZ",      # Value: "4", unclear meaning (duplicate of getTMZ from NeoSoft 2500/5000)
-    #"getTSD",      # Value: "", unclear meaning (duplicate of getTSD from NeoSoft 2500/5000)
-    "getTSE",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    #"getTURL",     # Value: "", unclear meaning (duplicate of getTURL from NeoSoft 2500/5000)
-    "getVER2",      # Value: "", unclear meaning - duplicate of getVER from LEXplus10SL but with "_m" suffix, likely a modified value for maintenance mode or similar
-    "getVTO",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    #"getWAD",      # Value: "False", unclear meaning (duplicate of getWAD from NeoSoft 2500/5000)
-    #"getWAH",      # Value: "", unclear meaning (duplicate of getWAH from NeoSoft 2500/5000)
-    "getWFL",       # Emtpy in XML, visible in JSON API. Nearby wifi networks with signal strength - value: "SSID1:Strength1;SSID2:Strength2;..."
-    "getWNS",       # Value: "", unclear meaning - likely related to water flow or similar
-    #"getWTI",      # Value: e.g. "1720", unclear meaning (duplicate of getWTI from NeoSoft 2500/5000)
-
-    # JSON API only sensors (not available in XML API):
-    "getDAP",
-    "getDAV",
-    "getDMO",
-    "getDPP",
-    "getDPV",
-    "getDSP",
-    "getDVS",
-
-    # Sensors exits in devices:
-    # - SaveTech
-
-    # JSON API only sensors (not available in XML API):
-    "getCEN",
-    "getFCM",
-    "getLDT",
-    "getMM",
-    "getPB",
-    "getPF",
-    "getPM",
-    "getPT",
-    "getPV",
-    "getPW",
-    "getSMC",
-
-    # Sensors exits in devices:
-    # - SaveTech+
-
-    # JSON API only sensors (not available in XML API):
-    "getAMA",       # Value: "", unclear meaning
-    "getFLF",       # Value: "", unclear meaning
-    "getOLS",       # Value: "", unclear meaning
-    "getPCI",       # Value: "", unclear meaning
-    "getPCO",       # Value: "", unclear meaning
-    "getPCS",       # Value: "", unclear meaning
-
-    # Sensors exits in devices:
-    # - Sanibel Softwater UNO A25 (comfort-Enthärtungsanlage Softwater UNO A25)
-    #"getCFW",       # Value: "", unclear meaning
-    "getCMS",       # Value: "", unclear meaning
-    #"getENV",       # Value: "", unclear meaning
-
-    # JSON API only sensors (not available in XML API):
-    "getARS",       # Value: "", unclear meaning
-    "getNIC",       # Value: "", unclear meaning
-
-    # Sensors exits in devices:
-    # - Sanibel Leak Protection Module A25 (comfort-Multicontroller)
-    "getBMA",       # Value: "", unclear meaning
-    "getBMI",       # Value: "", unclear meaning
-    "getCSE2",      # Value: "", unclear meaning - duplicate of getCSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
-    "getDFM",       # Value: "", unclear meaning
-    "getMPO",       # Value: "", unclear meaning
-    "getPSE2",      # Value: "", unclear meaning - duplicate of getPSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
-    "getSUP",       # Value: "", unclear meaning
-
-    # JSON API only sensors (not available in XML API):
-    "getAPA",       # Value: "", unclear meaning
-    "getAPN",       # Value: "", unclear meaning
-    "getAPW",       # Value: "", unclear meaning
-    "getBAH",       # Value: "", unclear meaning
-    "getBAO",       # Value: "", unclear meaning
-    "getCCS",       # Value: "", unclear meaning
-    "getCFT",       # Value: "", unclear meaning
-    "getCFV",       # Value: "", unclear meaning
-    "getCNF2",      # Value: "", unclear meaning
-    "getCNL2",      # Value: "", unclear meaning
-    "getCOA",       # Value: "", unclear meaning
-    "getCOM",       # Value: "", unclear meaning
-    "getCRS",       # Value: "", unclear meaning
-    "getCRT",       # Value: "", unclear meaning
-    "getCWL",       # Value: "", unclear meaning
-    "getDFI",       # Value: "", unclear meaning
-    "getDTX",       # Value: "", unclear meaning
-    "getEMR",       # Value: "", unclear meaning
-    "getFCS",       # Value: "", unclear meaning
-    "getFMT",       # Value: "", unclear meaning
-    "getFVT",       # Value: "", unclear meaning
-    "getFWURL",     # Value: "", unclear meaning - likely URL for firmware updates or similar
-    "getHPR",       # Value: "", unclear meaning
-    "getIFL",       # Value: "", unclear meaning
-    "getLFT",       # Value: "", unclear meaning
-    "getLFV",       # Value: "", unclear meaning
-    "getLMD",       # Value: "", unclear meaning
-    "getLMF",       # Value: "", unclear meaning
-    "getLOT",       # Value: "", unclear meaning
-    "getLPD",       # Value: "", unclear meaning
-    "getLRC",       # Value: "", unclear meaning
-    "getMFL",       # Value: "", unclear meaning
-    "getMIH",       # Value: "", unclear meaning
-    "getMIT",       # Value: "", unclear meaning
-    "getMPR",       # The set water pressure - value "" means sensor does not exists or not measured.
-    "getMXH",       # Value: "", unclear meaning
-    "getMXT",       # Value: "", unclear meaning
-    "getNMS",       # Value: "", unclear meaning
-    "getNMT",       # Value: "", unclear meaning
-    "getNPL",       # Value: "", unclear meaning
-    "getNPT",       # Value: "", unclear meaning
-    "getNRT",       # Value: "", unclear meaning
-    "getOHW",       # Value: "", unclear meaning
-    "getPBC",       # Value: "", unclear meaning
-    "getPCB",       # Value: "", unclear meaning
-    "getPPL",       # Value: "", unclear meaning
-    "getPRC",       # Value: "", unclear meaning
-    "getPRT",       # Value: "", unclear meaning
-    "getPSI",       # Value: "", unclear meaning
-    "getPVL",       # Value: "", unclear meaning
-    "getRCC",       # Value: "", unclear meaning
-    "getRCD",       # Value: "", unclear meaning
-    "getRCN",       # Value: "", unclear meaning
-    "getRCP",       # Value: "", unclear meaning
-    "getRMN",       # Value: "", unclear meaning
-    "getRMP",       # Value: "", unclear meaning
-    "getRMT",       # Value: "", unclear meaning
-    "getRP1",       # Value: "", unclear meaning
-    "getRP2",       # Value: "", unclear meaning
-    "getRP3",       # Value: "", unclear meaning
-    "getRPR",       # Value: "", unclear meaning
-    "getRSA",       # Value: "", unclear meaning
-    "getRSD",       # Value: "", unclear meaning
-    "getRSE",       # Value: "", unclear meaning
-    "getRSI",       # Value: "", unclear meaning
-    "getRVT",       # Value: "", unclear meaning
-    "getSSA",       # Value: "", unclear meaning
-    "getSSE",       # Value: "", unclear meaning
-    "getTPR",       # Value: "", unclear meaning
-    "getTRT",       # Value: "", unclear meaning
-    "getTRV",       # Value: "", unclear meaning
-    "getWTR",       # Value: "", unclear meaning
+    # --- Deliberately suppressed despite being in KNOWN_KEYS ---
+    "getCDE",  # Configuration code — opaque device identifier, not useful for users
+    "getSCR",  # Service regeneration cycle count — function unclear
+    "getTYP",  # Device type code — not user-relevant
+    "getCND",  # Water conductivity — LEXplus10SL only; technical value without context
+    "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold
+    "getSLP",  # Self-learning phase duration — technical value without context
+    "getSRV",  # Next annual maintenance — suppressed when value is empty (no upcoming maintenance)
+    "getT2",   # Max. flow duration absent profile — technical value without context
+    "getWFL",  # Nearby Wi-Fi networks — complex formatted string, not suitable as sensor
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
