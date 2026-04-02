@@ -1027,3 +1027,36 @@ async def test_icon_unknown_returns_base_icon(hass: HomeAssistant) -> None:
     # No getVLV/getAB reported -> is_closed is None -> icon uses base icon
     assert valve.is_closed is None
     assert valve.icon == valve._base_icon
+
+
+async def test_setup_getab_invalid_value_hits_except_branch(hass: HomeAssistant) -> None:
+    """Lines 78-79: getAB value that cannot be converted to float hits except branch.
+    The entity must NOT be created (create stays False).
+    """
+    data = {"devices": [{"id": "bad", "name": "Bad", "status": {"getAB": "not_a_number"}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    entry = MockConfigEntry(
+        version=1, minor_version=0, domain="syr_connect",
+        title="T", data={}, source="user", entry_id="e_bad", unique_id="u_bad",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    added: list = []
+    await async_setup_entry(hass, entry, added.append)
+
+    # int(float("not_a_number")) raises ValueError → except branch → create=False → no entity
+    assert added == []
+
+
+async def test_available_fallback_when_device_not_in_data(hass: HomeAssistant) -> None:
+    """Line 318: available property returns True when device_id is not in coordinator data."""
+    # Coordinator data contains a different device id
+    data = {"devices": [{"id": "other", "name": "Other", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    valve = SyrConnectValve(coordinator, "missing_id", "Missing")
+
+    # Device not found → falls through the loop → return True
+    assert valve.available is True
