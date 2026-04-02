@@ -1005,7 +1005,12 @@ async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
         mock_api.session_data = "test_session"
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.projects = [{"id": "p1", "name": "P1"}]
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "d1", "dclg": "d1"}])
+        # Use MagicMock (not AsyncMock) so calling get_devices() returns a plain
+        # MagicMock object instead of a coroutine. asyncio.gather is patched to
+        # raise before it ever awaits anything, so the tasks don't need to be real
+        # coroutines — and a plain MagicMock won't trigger an unawaited-coroutine
+        # RuntimeWarning when it is garbage-collected.
+        mock_api.get_devices = MagicMock(return_value=[{"id": "d1", "dclg": "d1"}])
         mock_api_class.return_value = mock_api
 
         config_data = {
