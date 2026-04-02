@@ -600,7 +600,31 @@ def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys=set())
 
 
-def test_get_current_mac_wip_not_connected_and_unparsable_wfs() -> None:
+def test_registry_cleanup_allowed_keys_none_is_noop() -> None:
+    """registry_cleanup with allowed_keys=None must return immediately without accessing registry."""
+    hass = MagicMock()
+    with patch("custom_components.syr_connect.helpers.er.async_get") as mock_get:
+        helpers.registry_cleanup(hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys=None)
+        mock_get.assert_not_called()
+
+
+def test_registry_cleanup_skips_device_with_no_id() -> None:
+    """Devices without an 'id' key must be silently skipped."""
+    hass = MagicMock()
+    registry = MagicMock()
+    registry.entities.values.return_value = []
+    registry.async_remove = MagicMock()
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        # One device with no id, one with empty-string id
+        helpers.registry_cleanup(
+            hass,
+            {"devices": [{"name": "no-id"}, {"id": ""}]},
+            "sensor",
+            allowed_keys={"getPRS"},
+        )
+
+    registry.async_remove.assert_not_called()
     """Ensure getMAC1 is only returned when getWFS == 2; otherwise skip."""
     # Wi-Fi present but WFS indicates not connected
     status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}

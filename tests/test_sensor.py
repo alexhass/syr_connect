@@ -2774,6 +2774,79 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
     assert len(invalid_entities) == 0
 
 
+async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> None:
+    """Keys in _SYR_CONNECT_SENSOR_EXCLUDED must be skipped even if they are in KNOWN_KEYS."""
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_KNOWN_KEYS
+
+    # getDEN is in both KNOWN_KEYS and EXCLUDED
+    assert "getDEN" in _SYR_CONNECT_SENSOR_KNOWN_KEYS
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getDEN": "1",   # In KNOWN_KEYS AND in EXCLUDED → must be skipped
+                    "getRES": "42",  # In KNOWN_KEYS, not excluded → must be created
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    assert not any(e._sensor_key == "getDEN" for e in entities)
+    assert any(e._sensor_key == "getRES" for e in entities)
+
+
+async def test_sensor_setup_binary_key_in_known_keys_not_created(hass: HomeAssistant) -> None:
+    """Keys in _SYR_CONNECT_SENSOR_BINARY must be skipped as sensors even if in KNOWN_KEYS."""
+    from custom_components.syr_connect import sensor as sensor_module
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getRES": "10",   # Normal sensor key
+                    "getFAKE": "1",   # Key we'll put into BINARY via patch
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_KNOWN_KEYS
+
+    # Temporarily add getFAKE to KNOWN_KEYS and BINARY so it reaches the binary-sensor guard
+    patched_known = _SYR_CONNECT_SENSOR_KNOWN_KEYS | {"getFAKE"}
+    patched_binary = {"getFAKE": BinarySensorDeviceClass.RUNNING}
+
+    with (
+        patch.object(sensor_module, "_SYR_CONNECT_SENSOR_KNOWN_KEYS", patched_known),
+        patch.object(sensor_module, "_SYR_CONNECT_SENSOR_BINARY", patched_binary),
+    ):
+        await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0] if add_entities.called else []
+    assert not any(e._sensor_key == "getFAKE" for e in entities)
+    assert any(e._sensor_key == "getRES" for e in entities)
+
+
 async def test_sensor_icon_getpst_other_value(hass: HomeAssistant) -> None:
     """Test getPST sensor icon with value other than 1 or 2."""
     data = {
