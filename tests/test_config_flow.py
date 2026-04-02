@@ -1399,3 +1399,51 @@ async def test_form_api_json_generic_exception(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "unknown"}
+
+
+async def test_form_api_json_homeassistant_error_with_port(hass: HomeAssistant) -> None:
+    """Line 556: HomeAssistantError containing 'port' sets host_no_port error."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("invalid port specified"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {CONF_HOST: "host_no_port"}
+
+
+async def test_form_api_json_homeassistant_error_without_port(hass: HomeAssistant) -> None:
+    """Line 563: HomeAssistantError without 'port' in message sets base unknown error."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("something went wrong"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
