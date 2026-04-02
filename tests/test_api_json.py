@@ -1398,3 +1398,102 @@ def test_validate_set_response_unknown_status_on_login_raises() -> None:
     resp_key = client._response_key_for("ADM", "(2)f")
     with pytest.raises(SyrConnectInvalidResponseError):
         client._validate_set_response({resp_key: "WEIRD"}, cmd="ADM", value="(2)f", device_id="login", is_login=True)
+
+
+async def test_login_reraises_connection_error() -> None:
+    """login() must re-raise SyrConnectConnectionError (line 367-369 coverage)."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Patch _execute_http_get to raise SyrConnectConnectionError directly
+    with patch.object(
+        client,
+        "_execute_http_get",
+        side_effect=SyrConnectConnectionError("network down"),
+    ):
+        with pytest.raises(SyrConnectConnectionError, match="network down"):
+            await client.login()
+
+
+async def test_get_device_status_skips_login_when_login_not_required() -> None:
+    """get_device_status skips login when _login_required is False (line 453 coverage)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Explicitly mark login as not required and session as expired
+    client._login_required = False
+    client._last_login = None
+
+    client.login = AsyncMock()
+
+    data = {"getSRN": "99999", "getFLO": "0"}
+    with patch.object(client, "_request_json_data", return_value=data):
+        status = await client.get_device_status("99999")
+
+    # login must NOT have been called
+    client.login.assert_not_called()
+    assert status == data
+
+
+async def test_get_value_skips_login_when_login_not_required() -> None:
+    """get_value skips login when _login_required is False (line 593 coverage)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Explicitly mark login as not required and session as expired
+    client._login_required = False
+    client._last_login = None
+
+    client.login = AsyncMock()
+
+    with patch.object(client, "_request_json_data", return_value={"getFLO": 42}):
+        result = await client.get_value("getFLO")
+
+    # login must NOT have been called
+    client.login.assert_not_called()
+    assert result == {"getFLO": 42}
+
+
+async def test_set_device_status_rtm_strips_leading_zero_from_hour() -> None:
+    """set_device_status strips leading zero from RTM hour (lines 649, 651-653 coverage)."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setRTM2:30": "OK"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # "02:30" -> leading zero stripped -> "2:30"
+    result = await client.set_device_status("device1", "setRTM", "02:30")
+
+    called_url = str(sess.get.call_args[0][0])
+    assert "2%3A30" in called_url  # "2:30" URL-encoded, NOT "02:30"
+    assert "02%3A30" not in called_url
+    assert result is True
+
+
+async def test_set_device_status_rtm_preserves_single_zero_hour() -> None:
+    """set_device_status preserves '0' as hour when it is a single digit (lines 649, 651-653 coverage)."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setRTM0:15": "OK"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # "0:15" -> single-digit zero kept as-is
+    result = await client.set_device_status("device1", "setRTM", "0:15")
+
+    called_url = str(sess.get.call_args[0][0])
+    assert "0%3A15" in called_url
+    assert result is True
