@@ -1027,7 +1027,7 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
     """If asyncio.gather returns Exception objects, they should be skipped."""
     # Patch asyncio.gather to return a list containing an Exception
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-         patch("custom_components.syr_connect.coordinator.asyncio.gather", new_callable=AsyncMock, return_value=[Exception("proj fail")]):
+         patch("custom_components.syr_connect.coordinator.asyncio.gather", new=AsyncMock(return_value=[Exception("proj fail")])):
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.is_session_valid = MagicMock(return_value=True)
