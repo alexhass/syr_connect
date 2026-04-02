@@ -138,7 +138,7 @@ def detect_model(flat: dict[str, object]) -> dict:
     srn = str(flat.get("getSRN") or "")
     ver = str(flat.get("getVER") or "")
     keys = set(flat.keys())
-    _LOGGER.debug("detect_model: keys=%s; getCNA=%s; getSRN=%s; getVER=%s", sorted(keys)[:120], cna, srn, ver)
+    #_LOGGER.debug("detect_model: keys=%s; getCNA=%s; getSRN=%s; getVER=%s", sorted(keys)[:120], cna, srn, ver)
 
     def attrs_match(sig: dict) -> bool:
         attrs = sig.get("attrs_equals")
