@@ -1266,3 +1266,134 @@ async def test_reconfigure_flow_json_cannot_connect_local(hass: HomeAssistant) -
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "cannot_connect_local"}
+
+
+async def test_validate_input_json_auth_error(hass: HomeAssistant) -> None:
+    """Test validate_input_json raises InvalidAuthError on auth failure (lines 195-196)."""
+    from custom_components.syr_connect.config_flow import InvalidAuthError
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    with patch(
+        "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+        side_effect=SyrConnectAuthError("Invalid credentials"),
+    ):
+        with pytest.raises(InvalidAuthError):
+            await validate_input_json(
+                hass,
+                {CONF_HOST: "192.168.1.100", CONF_MODEL: "safetechplus"},
+            )
+
+
+async def test_validate_input_json_syr_connection_error(hass: HomeAssistant) -> None:
+    """Test validate_input_json raises CannotConnectError on SyrConnectConnectionError (lines 198-199)."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+
+    with patch(
+        "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+        side_effect=SyrConnectConnectionError("timeout"),
+    ):
+        with pytest.raises(CannotConnectError):
+            await validate_input_json(
+                hass,
+                {CONF_HOST: "192.168.1.100", CONF_MODEL: "safetechplus"},
+            )
+
+
+async def test_reauth_confirm_unexpected_exception(hass: HomeAssistant) -> None:
+    """Test reauth confirm sets unknown error on unexpected exception (lines 365-367)."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_reauth_unknown@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": entry.entry_id,
+        },
+        data=entry.data,
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input",
+        side_effect=Exception("unexpected boom"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
+
+
+async def test_reconfigure_unexpected_exception(hass: HomeAssistant) -> None:
+    """Test reconfigure sets unknown error on unexpected exception (lines 427-429)."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_reconfigure_unknown@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_xml",
+        side_effect=Exception("unexpected boom"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
+
+
+async def test_form_api_json_generic_exception(hass: HomeAssistant) -> None:
+    """Test local/JSON API flow sets unknown error on unexpected exception (lines 563-566)."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=Exception("unexpected boom"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
