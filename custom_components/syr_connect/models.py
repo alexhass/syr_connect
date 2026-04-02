@@ -28,35 +28,41 @@ _LOGGER = logging.getLogger(__name__)
 #
 MODEL_SIGNATURES: Iterable[dict] = [
     {
+        "base_path": "/pontos-base",
+        "display_name": "Hansgrohe Pontos Base",
+        "name": "pontosbase",
+        "ver_prefix": "PontosBase",
+    },
+    {
         "base_path": None,
         "cna_equals": "LEXplus10",
-        "display_name": "LEX Plus 10 Connect",
+        "display_name": "SYR LEX Plus 10 Connect",
         "name": "lexplus10",
         "ver_prefix": None,
     },
     {
         "base_path": None,
         "cna_equals": "LEXplus10S",
-        "display_name": "LEX Plus 10 S Connect",
+        "display_name": "SYR LEX Plus 10 S Connect",
         "name": "lexplus10s",
         "ver_prefix": None,
     },
     {
         "base_path": None,
         "cna_equals": "LEXplus10SL",
-        "display_name": "LEX Plus 10 SL Connect",
+        "display_name": "SYR LEX Plus 10 SL Connect",
         "name": "lexplus10sl",
         "ver_prefix": None,
     },
     {
         "base_path": "/neosoft",
-        "display_name": "NeoSoft 2500 Connect",
+        "display_name": "SYR NeoSoft 2500 Connect",
         "name": "neosoft2500",
         "srn_prefix": "206",
     },
     {
         "base_path": "/neosoft",
-        "display_name": "NeoSoft 5000 Connect",
+        "display_name": "SYR NeoSoft 5000 Connect",
         "name": "neosoft5000",
         "ver_prefix": "NSS",
         "v_keys": {"getRE1", "getRE2"},
@@ -64,19 +70,19 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "base_path": "/safe-tec",
-        "display_name": "Safe-Tech Connect",
+        "display_name": "SYR Safe-Tech Connect",
         "name": "safetech",
         "ver_prefix": "Safe-Tech V4",
     },
     {
         "base_path": "/trio",
-        "display_name": "Safe-Tech Plus Connect",
+        "display_name": "SYR Safe-Tech Plus Connect",
         "name": "safetechplus",
         "srn_prefix": "112",
     },
     {
         "base_path": None,
-        "display_name": "Safe-T+ Connect",
+        "display_name": "SYR Safe-T+ Connect",
         "name": "safetplus",
         "ver_prefix": "Safe-T",
     },
@@ -94,7 +100,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
     },
     {
         "base_path": "/trio",
-        "display_name": "Trio DFR/LS Connect",
+        "display_name": "SYR Trio DFR/LS Connect",
         "name": "trio",
         "srn_prefix": "113",
     },
