@@ -1026,6 +1026,7 @@ async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
 async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
     """If asyncio.gather returns Exception objects, they should be skipped."""
     import inspect
+    from types import SimpleNamespace
 
     async def _fake_gather(*args, **kwargs):
         # Close any passed coroutines so they don't trigger unawaited warnings.
@@ -1037,13 +1038,16 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
     async def _fake_get_devices(*args, **kwargs):
         return [{"id": "d1", "dclg": "d1"}]
 
+    # Use SimpleNamespace instead of MagicMock to avoid auto-created AsyncMock children
+    mock_api = SimpleNamespace(
+        session_data="test_session",
+        is_session_valid=lambda: True,
+        projects=[{"id": "p1", "name": "P1"}],
+        get_devices=_fake_get_devices,
+    )
+
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
          patch("custom_components.syr_connect.coordinator.asyncio.gather", new=_fake_gather):
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.projects = [{"id": "p1", "name": "P1"}]
-        mock_api.get_devices = _fake_get_devices
         mock_api_class.return_value = mock_api
 
         config_data = {
