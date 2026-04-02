@@ -1497,3 +1497,43 @@ async def test_set_device_status_rtm_preserves_single_zero_hour() -> None:
     called_url = str(sess.get.call_args[0][0])
     assert "0%3A15" in called_url
     assert result is True
+
+
+async def test_set_device_status_rtm_except_branch() -> None:
+    """set_device_status handles unparseable RTM hour gracefully (lines 651-653 except branch)."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    # Value is unchanged ("0xyz:30") because int("0xyz") raises ValueError
+    mock_response.json = AsyncMock(return_value={"setRTM0xyz:30": "OK"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # "0xyz:30" -> len("0xyz") > 1 and starts with "0", so int("0xyz") raises -> except branch
+    result = await client.set_device_status("device1", "setRTM", "0xyz:30")
+
+    assert result is True
+
+
+async def test_get_devices_skips_login_when_login_not_required() -> None:
+    """get_devices skips login when _login_required is False (line 453 coverage)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Explicitly mark login as not required and session as expired
+    client._login_required = False
+    client._last_login = None
+
+    client.login = AsyncMock()
+
+    data = {"getSRN": "ABC123", "getFLO": "0"}
+    with patch.object(client, "_request_json_data", return_value=data):
+        devices = await client.get_devices("local")
+
+    # login must NOT have been called
+    client.login.assert_not_called()
+    assert devices[0]["id"] == "ABC123"
