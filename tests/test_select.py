@@ -1914,3 +1914,322 @@ async def test_async_setup_entry_adds_rotation_select(hass: HomeAssistant, creat
     rot_entities = [e for e in entities if isinstance(e, SyrConnectRotationSelect)]
     assert len(rot_entities) == 1
 
+
+# ---------------------------------------------------------------------------
+# Lines 105-106, 133-134, 180-181 — setup_platform exception branches
+# ---------------------------------------------------------------------------
+
+
+async def test_async_setup_entry_skips_invalid_sro_value(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Invalid getSRO triggers except-continue branch; no RotationSelect created (lines 105-106)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "D1",
+                "project_id": "p1",
+                "status": {"getSRO": "not_a_number"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rot_entities = [e for e in entities if isinstance(e, SyrConnectRotationSelect)]
+    assert len(rot_entities) == 0
+
+
+async def test_async_setup_entry_skips_invalid_fcd_value(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Invalid getFCD triggers except-continue branch; no DiscreteSelect created (lines 133-134)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "D1",
+                "project_id": "p1",
+                "status": {"getFCD": "not_a_number"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    fcd_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFCD"
+    ]
+    assert len(fcd_entities) == 0
+
+
+async def test_async_setup_entry_skips_invalid_ffm_value(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Invalid getFFM triggers except-continue branch; no FFM select created (lines 180-181)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "D1",
+                "project_id": "p1",
+                "status": {"getFFM": "not_a_number"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    ffm_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFFM"
+    ]
+    assert len(ffm_entities) == 0
+
+
+# ---------------------------------------------------------------------------
+# Lines 446, 452, 456, 463, 466 — SyrConnectRotationSelect properties
+# ---------------------------------------------------------------------------
+
+
+async def test_rotation_select_options_property(hass: HomeAssistant) -> None:
+    """options property returns the internal options list (line 446)."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.options == ["0", "90", "180", "270"]
+
+
+async def test_rotation_select_current_option_skips_other_devices(hass: HomeAssistant) -> None:
+    """current_option continues past non-matching device ids (line 452)."""
+    data = {
+        "devices": [
+            {"id": "other", "name": "Other", "status": {"getSRO": "0"}},
+            {"id": "d1", "name": "D1", "status": {"getSRO": "90"}},
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.current_option == "90"
+
+
+async def test_rotation_select_current_option_empty_val_returns_none(hass: HomeAssistant) -> None:
+    """current_option returns None when getSRO is an empty string (line 456)."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getSRO": ""}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.current_option is None
+
+
+async def test_rotation_select_current_option_unmatched_returns_str_num(hass: HomeAssistant) -> None:
+    """current_option returns str(num) when value is not in the options list (line 463)."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getSRO": "45"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.current_option == "45"
+
+
+async def test_rotation_select_current_option_device_not_found(hass: HomeAssistant) -> None:
+    """current_option returns None when the device is absent from coordinator data (line 466)."""
+    data = {"devices": [{"id": "other", "name": "Other", "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.current_option is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 488-493 — SyrConnectRotationSelect.available
+# ---------------------------------------------------------------------------
+
+
+async def test_rotation_select_available_coordinator_failed(hass: HomeAssistant) -> None:
+    """available returns False when coordinator.last_update_success is False (lines 488-493)."""
+    data = {"devices": [{"id": "d1", "available": True, "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.available is False
+
+
+async def test_rotation_select_available_device_found(hass: HomeAssistant) -> None:
+    """available returns device.available when device is found (lines 488-493)."""
+    data = {"devices": [{"id": "d1", "available": True, "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.available is True
+
+
+async def test_rotation_select_available_device_not_found(hass: HomeAssistant) -> None:
+    """available returns True (default) when device not in coordinator data (lines 488-493)."""
+    data = {"devices": [{"id": "other", "status": {"getSRO": "90"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectRotationSelect(coordinator, "d1", "D1")
+
+    assert select.available is True
+
+
+# ---------------------------------------------------------------------------
+# Lines 543, 547, 550-551, 556 — SyrConnectDiscreteSelect.current_option
+# ---------------------------------------------------------------------------
+
+
+async def test_discrete_select_current_option_skips_other_devices(hass: HomeAssistant) -> None:
+    """current_option continues past non-matching device ids (line 543)."""
+    mapping = {"opt_one": 1, "opt_two": 2}
+    data = {
+        "devices": [
+            {"id": "other", "name": "Other", "status": {"getTEST": "1"}},
+            {"id": "d1", "name": "D1", "status": {"getTEST": "2"}},
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.current_option == "opt_two"
+
+
+async def test_discrete_select_current_option_empty_val_returns_none(hass: HomeAssistant) -> None:
+    """current_option returns None when sensor value is an empty string (line 547)."""
+    mapping = {"opt_one": 1, "opt_two": 2}
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getTEST": ""}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.current_option is None
+
+
+async def test_discrete_select_current_option_invalid_val_returns_none(hass: HomeAssistant) -> None:
+    """current_option returns None when value cannot be converted to int (lines 550-551)."""
+    mapping = {"opt_one": 1, "opt_two": 2}
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getTEST": "not_a_number"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.current_option is None
+
+
+async def test_discrete_select_current_option_device_not_found(hass: HomeAssistant) -> None:
+    """current_option returns None when device is absent from coordinator data (line 556)."""
+    mapping = {"opt_one": 1, "opt_two": 2}
+    data = {"devices": [{"id": "other", "status": {"getTEST": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.current_option is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 575-580 — SyrConnectDiscreteSelect.available
+# ---------------------------------------------------------------------------
+
+
+async def test_discrete_select_available_coordinator_failed(hass: HomeAssistant) -> None:
+    """available returns False when coordinator.last_update_success is False (lines 575-580)."""
+    mapping = {"opt_one": 1}
+    data = {"devices": [{"id": "d1", "available": True, "status": {"getTEST": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.available is False
+
+
+async def test_discrete_select_available_device_found(hass: HomeAssistant) -> None:
+    """available returns device.available when device is found (lines 575-580)."""
+    mapping = {"opt_one": 1}
+    data = {"devices": [{"id": "d1", "available": True, "status": {"getTEST": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.available is True
+
+
+async def test_discrete_select_available_device_not_found(hass: HomeAssistant) -> None:
+    """available returns True (default) when device not in coordinator data (lines 575-580)."""
+    mapping = {"opt_one": 1}
+    data = {"devices": [{"id": "other", "status": {"getTEST": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
+
+    assert select.available is True
+
+
+# ---------------------------------------------------------------------------
+# Lines 609, 616, 652 — SyrConnectPrfSelect branches
+# ---------------------------------------------------------------------------
+
+
+async def test_prf_select_entity_category_when_getprf_configured(hass: HomeAssistant) -> None:
+    """entity_category is set when getPRF is in _SYR_CONNECT_SENSOR_CONFIG (line 609)."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "status": {"getPA1": "true", "getPN1": "Profile A", "getPRF": "1"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    with patch(
+        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_CONFIG",
+        {"getPRF": True},
+    ):
+        select = SyrConnectPrfSelect(coordinator, "d1", "D1")
+
+    assert hasattr(select, "_attr_entity_category")
+
+
+async def test_prf_select_options_skips_other_devices(hass: HomeAssistant) -> None:
+    """options continues past non-matching device ids (line 616)."""
+    data = {
+        "devices": [
+            {"id": "other", "name": "Other", "status": {"getPA1": "true", "getPN1": "Other Profile"}},
+            {"id": "d1", "name": "D1", "status": {"getPA1": "true", "getPN1": "My Profile"}},
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "d1", "D1")
+
+    assert select.options == ["My Profile"]
+    assert "Other Profile" not in select.options
+
+
+async def test_prf_select_async_select_option_skips_other_devices(hass: HomeAssistant) -> None:
+    """async_select_option continues past non-matching device ids (line 652)."""
+    data = {
+        "devices": [
+            {"id": "other", "name": "Other", "status": {"getPA1": "true", "getPN1": "Other Profile"}},
+            {
+                "id": "d1",
+                "name": "D1",
+                "status": {"getPA1": "true", "getPN1": "My Profile", "getPRF": "1"},
+            },
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    select = SyrConnectPrfSelect(coordinator, "d1", "D1")
+
+    await select.async_select_option("My Profile")
+
+    coordinator.async_set_device_value.assert_called_once_with("d1", "setPRF", 1)
