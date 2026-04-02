@@ -8334,3 +8334,459 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
     assert abs(float(vol.native_value) - 6.53) < 0.001
 
     # end
+
+
+# ---------------------------------------------------------------------------
+# Lines 111-112 — _is_true except branch for int/float (float() raises)
+# ---------------------------------------------------------------------------
+
+async def test_is_true_int_subclass_bad_float_returns_false(hass: HomeAssistant) -> None:
+    """_is_true except(ValueError,TypeError) for int|float branch (lines 111-112).
+    Use an int subclass whose __float__ raises ValueError so the path is taken.
+    """
+    class _BadFloat(int):
+        def __float__(self):
+            raise ValueError("bad float")
+
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getPA1": _BadFloat(1), "getFLO": "10"},
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1, minor_version=0, domain=DOMAIN, title="T",
+        data={}, source="user", entry_id="e1", unique_id="u1",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add = Mock()
+    await async_setup_entry(hass, entry, mock_add)
+    # _is_true(_BadFloat(1)) hits except → returns False → PA group NOT created
+    assert mock_add.called
+    entities = mock_add.call_args[0][0]
+    pa_group = [e for e in entities if e._sensor_key.startswith("getPA")]
+    assert len(pa_group) == 0
+
+
+# ---------------------------------------------------------------------------
+# Lines 173-174 — outer except in getPA group loop
+# ---------------------------------------------------------------------------
+
+async def test_sensor_setup_pa_group_outer_exception_caught(hass: HomeAssistant) -> None:
+    """Outer except(ValueError,TypeError,..) in getPA loop caught (lines 173-174).
+    Patch SyrConnectSensor to raise TypeError inside the True branch so the outer
+    handler fires.  Only getPA1 is true; status has no other keys so the
+    status-items loop never calls SyrConnectSensor.
+    """
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getPA1": "true"},
+            }
+        ]
+    }
+    coordinator.last_update_success = True
+
+    entry = MockConfigEntry(
+        version=1, minor_version=0, domain=DOMAIN, title="T",
+        data={}, source="user", entry_id="e2", unique_id="u2",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    mock_add = Mock()
+    with patch("custom_components.syr_connect.sensor.SyrConnectSensor", side_effect=TypeError("boom")):
+        await async_setup_entry(hass, entry, mock_add)
+    # Exception was caught; add_entities not called (no entities created)
+    mock_add.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Line 179 — binary-sensor key skipped in status loop
+# ---------------------------------------------------------------------------
+
+async def test_sensor_setup_binary_key_continue(hass: HomeAssistant) -> None:
+    """getSRE is in _SYR_CONNECT_SENSOR_BINARY so continue fires (line 179)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSRE": "1", "getFLO": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    # getSRE must NOT produce a sensor (binary sensor, always skipped)
+    sre_sensors = [e for e in entities if e._sensor_key == "getSRE"]
+    assert len(sre_sensors) == 0
+    # getFLO is created normally
+    flo_sensors = [e for e in entities if e._sensor_key == "getFLO"]
+    assert len(flo_sensors) == 1
+
+
+# ---------------------------------------------------------------------------
+# Lines 193, 198-199 — getSRO empty / non-numeric value
+# ---------------------------------------------------------------------------
+
+async def test_sensor_setup_sro_empty_value_skipped(hass: HomeAssistant) -> None:
+    """getSRO with empty string hits the None/empty continue (line 193)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSRO": "", "getFLO": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    sro = [e for e in entities if e._sensor_key == "getSRO"]
+    assert len(sro) == 0  # getSRO with empty value → not created
+
+
+async def test_sensor_setup_sro_bad_string_skipped(hass: HomeAssistant) -> None:
+    """getSRO with non-numeric string hits except-continue (lines 198-199)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSRO": "bad_value", "getFLO": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    sro = [e for e in entities if e._sensor_key == "getSRO"]
+    assert len(sro) == 0  # non-numeric → not created
+
+
+# ---------------------------------------------------------------------------
+# Lines 204, 209-210 — getFFM empty / non-numeric value
+# ---------------------------------------------------------------------------
+
+async def test_sensor_setup_ffm_empty_value_skipped(hass: HomeAssistant) -> None:
+    """getFFM with empty string hits the None/empty continue (line 204)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getFFM": "", "getFLO": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    ffm = [e for e in entities if e._sensor_key == "getFFM"]
+    assert len(ffm) == 0
+
+
+async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
+    """getFFM with non-numeric string hits except-continue (lines 209-210)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getFFM": "bad_value", "getFLO": "5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    ffm = [e for e in entities if e._sensor_key == "getFFM"]
+    assert len(ffm) == 0
+
+
+# ---------------------------------------------------------------------------
+# Lines 333-334 — getVOL division TypeError in _apply_numeric_conversion
+# ---------------------------------------------------------------------------
+
+def test_apply_numeric_conversion_vol_type_error(create_mock_coordinator):
+    """getVOL division by 1000 TypeError is caught (lines 333-334)."""
+    coord = create_mock_coordinator({"devices": [{"id": "d1", "status": {}}]})
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getVOL")
+
+    class _BadDiv:
+        def __truediv__(self, other):
+            raise TypeError("nope")
+        def __rtruediv__(self, other):
+            raise TypeError("nope")
+
+    # Should not raise; TypeError caught silently, then round() may also fail
+    result = sensor._apply_numeric_conversion(_BadDiv())
+    # result is still the _BadDiv object (pass-through after caught exception)
+    assert isinstance(result, _BadDiv)
+
+
+# ---------------------------------------------------------------------------
+# Lines 409-410 — getBAT icon ValueError (float(sval) fails)
+# ---------------------------------------------------------------------------
+
+def test_sensor_icon_bat_cached_non_numeric_string(create_mock_coordinator):
+    """getBAT icon: float(sval) ValueError caught (lines 409-410).
+    Set _last_native_value to a non-numeric string and status to None so
+    native_value returns the cached string.
+    """
+    data = {"devices": [{"id": "d1", "status": {"getBAT": None}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getBAT")
+    sensor._last_native_value = "not a number"  # force cache
+
+    icon = sensor.icon
+    # ValueError caught → falls through → returns base icon
+    assert icon == sensor._base_icon
+
+
+# ---------------------------------------------------------------------------
+# Line 421 — getPST datetime branch in icon
+# ---------------------------------------------------------------------------
+
+def test_sensor_icon_pst_datetime_branch(create_mock_coordinator):
+    """getPST icon: isinstance(val, datetime) branch is taken (line 421).
+    Cache a datetime so native_value returns it when status has getPST: None.
+    """
+    data = {"devices": [{"id": "d1", "status": {"getPST": None}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPST")
+    sensor._last_native_value = datetime(2024, 1, 1, tzinfo=UTC)
+
+    icon = sensor.icon
+    # timestamp() returns a large positive int → ival != 1 and != 2 → base icon
+    assert icon is not None
+
+
+# ---------------------------------------------------------------------------
+# Lines 433-434 — getPST icon outer except(ValueError,TypeError)
+# ---------------------------------------------------------------------------
+
+def test_sensor_icon_pst_native_value_raises(create_mock_coordinator):
+    """getPST icon outer except catches TypeError from native_value (lines 433-434)."""
+    data = {"devices": [{"id": "d1", "status": {"getPST": "2"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPST")
+
+    with patch.object(type(sensor), "native_value", new_callable=PropertyMock, side_effect=TypeError("boom")):
+        icon = sensor.icon
+    # outer except fires → pass → falls through to next icon check → base icon
+    assert icon is not None
+
+
+# ---------------------------------------------------------------------------
+# Lines 462-463 — getRG1/2/3 icon outer except(ValueError,TypeError,AttributeError)
+# ---------------------------------------------------------------------------
+
+def test_sensor_icon_rg_native_value_raises(create_mock_coordinator):
+    """getRG1 icon outer except catches TypeError from native_value (lines 462-463)."""
+    data = {"devices": [{"id": "d1", "status": {"getRG1": "1"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getRG1")
+
+    with patch.object(type(sensor), "native_value", new_callable=PropertyMock, side_effect=TypeError("boom")):
+        icon = sensor.icon
+    # outer except fires → pass → falls through → base icon
+    assert icon is not None
+
+
+# ---------------------------------------------------------------------------
+# Line 524 — getAB native_value returns None when ab is None
+# ---------------------------------------------------------------------------
+
+def test_sensor_getab_native_value_none_when_ab_none(create_mock_coordinator):
+    """getAB _compute_native_value returns None when get_sensor_ab_value returns None (line 524)."""
+    data = {"devices": [{"id": "d1", "status": {"getAB": None}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getAB")
+
+    assert sensor.native_value is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 537-538 — getALA mapped value returned
+# ---------------------------------------------------------------------------
+
+def test_sensor_getala_mapped_translation_key_returned(create_mock_coordinator):
+    """getALA: mapped truthy value sets translation_key and returns it (lines 537-538).
+    Use LEXplus10SL + code '0' which maps to 'no_alarm'.
+    """
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "status": {"getCNA": "LEXplus10SL", "getALA": "0"},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getALA")
+
+    value = sensor.native_value
+    assert value == "no_alarm"
+    assert sensor._attr_translation_key == "no_alarm"
+
+
+# ---------------------------------------------------------------------------
+# Lines 589-590 — getBAR except(ValueError,TypeError) when str(value) raises
+# ---------------------------------------------------------------------------
+
+def test_sensor_getbar_str_raises_type_error(create_mock_coordinator):
+    """getBAR except(ValueError,TypeError) caught when str(value) raises (lines 589-590)."""
+    class _BadStr:
+        def __str__(self):
+            raise TypeError("no str")
+        def __eq__(self, other):
+            return False
+
+    data = {"devices": [{"id": "d1", "status": {"getBAR": _BadStr()}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getBAR")
+
+    assert sensor.native_value is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 610-614 — getNET native_value branches
+# ---------------------------------------------------------------------------
+
+def test_sensor_getnet_valid_value(create_mock_coordinator):
+    """getNET with a valid value returns get_sensor_net_value result (line 614)."""
+    data = {"devices": [{"id": "d1", "status": {"getNET": "363"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNET")
+
+    value = sensor.native_value
+    assert value is not None
+
+
+def test_sensor_getnet_none_value(create_mock_coordinator):
+    """getNET with None returns None (lines 610-611)."""
+    data = {"devices": [{"id": "d1", "status": {"getNET": None}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNET")
+
+    assert sensor.native_value is None
+
+
+def test_sensor_getnet_non_str_int_float_type(create_mock_coordinator):
+    """getNET with non-str/int/float type returns None (lines 612-613)."""
+    data = {"devices": [{"id": "d1", "status": {"getNET": {"a": 1}}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNET")
+
+    assert sensor.native_value is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 641-645 — getNOT mapped / unmapped branches
+# ---------------------------------------------------------------------------
+
+def test_sensor_getnot_mapped_value_returned(create_mock_coordinator):
+    """getNOT: known code '01' returns mapped translation key (lines 641-643)."""
+    data = {"devices": [{"id": "d1", "status": {"getNOT": "01"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNOT")
+
+    value = sensor.native_value
+    assert value == "new_software_available"
+    assert sensor._attr_translation_key == "new_software_available"
+
+
+def test_sensor_getnot_unmapped_returns_raw_code(create_mock_coordinator):
+    """getNOT: unknown code returns raw string (lines 641, 644-645)."""
+    data = {"devices": [{"id": "d1", "status": {"getNOT": "99"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNOT")
+
+    value = sensor.native_value
+    assert value == "99"
+
+
+# ---------------------------------------------------------------------------
+# Lines 659-660 — getPMx int/float except when int(float(nan)) raises ValueError
+# ---------------------------------------------------------------------------
+
+def test_sensor_leak_flag_float_nan_returns_none(create_mock_coordinator):
+    """getPM1 with float('nan'): int(float(nan)) raises ValueError → None (lines 659-660)."""
+    data = {"devices": [{"id": "d1", "status": {"getPM1": float("nan")}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPM1")
+
+    assert sensor.native_value is None
+
+
+# ---------------------------------------------------------------------------
+# Lines 794-798 — getWRN mapped / unmapped branches
+# ---------------------------------------------------------------------------
+
+def test_sensor_getwrn_mapped_value_returned(create_mock_coordinator):
+    """getWRN: known code '01' returns mapped translation key (lines 794-796)."""
+    data = {"devices": [{"id": "d1", "status": {"getWRN": "01"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getWRN")
+
+    value = sensor.native_value
+    assert value == "power_outage"
+    assert sensor._attr_translation_key == "power_outage"
+
+
+def test_sensor_getwrn_unmapped_returns_raw_code(create_mock_coordinator):
+    """getWRN: unknown code returns raw string (lines 794, 797-798)."""
+    data = {"devices": [{"id": "d1", "status": {"getWRN": "99"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getWRN")
+
+    value = sensor.native_value
+    assert value == "99"
+
