@@ -749,3 +749,142 @@ def test_is_sensor_visible_cs_sv_non_numeric_falls_back() -> None:
     status = {"getSV1": "bad", "getCS1": "0"}
     assert is_sensor_visible(status, "getCS1", "0") is False
 
+
+# ---------------------------------------------------------------------------
+# Coverage fill-ins
+# ---------------------------------------------------------------------------
+
+def test_get_current_mac_wip_present_wfs_none() -> None:
+    """When getWIP is set but getWFS key is absent, wfs_int stays None (line 246)."""
+    # getWFS missing entirely -> else branch sets wfs_int = None -> MAC1 not returned
+    status = {"getWIP": "192.168.1.5", "getMAC1": "AA:BB:CC:DD:EE:FF"}
+    # wfs_int is None, so wfs_int == 2 is False -> falls through to getEIP (absent)
+    assert get_current_mac(status) is None
+
+
+def test_get_sensor_avo_value_non_string_non_numeric_returns_none() -> None:
+    """Non-string, non-numeric types return None from get_sensor_avo_value (line 286)."""
+    assert get_sensor_avo_value([1, 2]) is None
+    assert get_sensor_avo_value({"v": 1}) is None
+
+
+def test_get_sensor_net_value_numeric_type_error() -> None:
+    """Numeric path exception branch in get_sensor_net_value (lines 369-370)."""
+    with patch("builtins.round", side_effect=ValueError("boom")):
+        assert get_sensor_net_value(363) is None
+
+
+def test_get_sensor_net_value_comma_decimal_exception() -> None:
+    """Comma-decimal exception branch in get_sensor_net_value (lines 394-395)."""
+    with patch("builtins.round", side_effect=ValueError("boom")):
+        assert get_sensor_net_value("11,86") is None
+
+
+def test_get_sensor_net_value_digit_only_exception() -> None:
+    """Digit-only exception branch in get_sensor_net_value (lines 401-402)."""
+    with patch("builtins.round", side_effect=ValueError("boom")):
+        assert get_sensor_net_value("363") is None
+
+
+def test_get_sensor_bat_value_numeric_exception() -> None:
+    """Numeric path exception branch in get_sensor_bat_value (lines 424-425)."""
+    with patch("builtins.round", side_effect=TypeError("boom")):
+        assert get_sensor_bat_value(363) is None
+
+
+def test_get_sensor_bat_value_comma_decimal_exception() -> None:
+    """Comma-decimal exception branch in get_sensor_bat_value (lines 446-447)."""
+    with patch("builtins.round", side_effect=ValueError("boom")):
+        assert get_sensor_bat_value("9,36") is None
+
+
+def test_get_sensor_bat_value_digit_only_exception() -> None:
+    """Digit-only exception branch in get_sensor_bat_value (lines 453-454)."""
+    with patch("builtins.round", side_effect=ValueError("boom")):
+        assert get_sensor_bat_value("363") is None
+
+
+def test_get_sensor_rtm_combined_mode_exception_in_parse() -> None:
+    """RTM combined-mode parse exception branch (lines 490-492).
+
+    A match is found by the regex but int() on the group raises – this is
+    only reachable via the except block since int/IndexError are caught.
+    Force by patching int() on the re match groups via a bad match object.
+    """
+    # Patch re.match to return a match whose group() raises ValueError
+    mock_match = MagicMock()
+    mock_match.group.side_effect = ValueError("bad group")
+    with patch("custom_components.syr_connect.helpers.re.match", return_value=mock_match):
+        result = helpers.get_sensor_rtm_value({"getRTH": None, "getRTM": "12:30"})
+    assert result is None
+
+
+def test_set_sensor_rtm_value_empty_option_returns_empty() -> None:
+    """set_sensor_rtm_value returns [] for empty/non-string option (line 521)."""
+    assert helpers.set_sensor_rtm_value({}, "") == []
+    assert helpers.set_sensor_rtm_value({}, None) == []
+    assert helpers.set_sensor_rtm_value({}, 123) == []
+
+
+def test_get_sensor_ab_value_unexpected_exception() -> None:
+    """Unexpected exception in getAB parse is caught and returns None (lines 599-601)."""
+
+    class _BadInt(int):
+        """int subclass whose float() conversion raises TypeError."""
+
+        def __float__(self):
+            raise TypeError("unexpected error in float()")
+
+    # Pass a numeric-like object that causes TypeError inside the try block
+    result = get_sensor_ab_value({"getAB": _BadInt(2)})
+    assert result is None
+
+
+def test_get_sensor_ala_map_unrecognized_known_model() -> None:
+    """Unrecognized model (not in any family) returns (None, code) (line 665)."""
+    # Patch detect_model to return a recognized non-unknown model name not in any family
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "futuredevice2100"},
+    ):
+        mapped, raw = get_sensor_ala_map({"getSRN": "X"}, "FF")
+    assert mapped is None
+    assert raw == "FF"
+
+
+def test_is_true_bool_value() -> None:
+    """is_sensor_visible: _is_true returns bool value directly (line 789)."""
+    # Passing a boolean True for getPAx means the group key must be visible
+    assert is_sensor_visible({"getPA1": True}, "getPV1", "1") is True
+    assert is_sensor_visible({"getPA1": False}, "getPV1", "1") is False
+
+
+def test_is_true_numeric_value() -> None:
+    """is_sensor_visible: _is_true handles int/float (lines 791-794)."""
+    # Non-zero int -> True (PA is active, group key shown)
+    assert is_sensor_visible({"getPA2": 1}, "getPV2", "1") is True
+    # Zero int -> False
+    assert is_sensor_visible({"getPA2": 0}, "getPV2", "1") is False
+    # Float non-zero
+    assert is_sensor_visible({"getPA3": 1.5}, "getPT3", "1") is True
+
+
+def test_is_true_str_numeric_parse() -> None:
+    """is_sensor_visible: _is_true parses numeric strings (lines 801-805)."""
+    # String "2" parses to non-zero -> True
+    assert is_sensor_visible({"getPA1": "2"}, "getPV1", "1") is True
+    # String "0.0" parses to zero -> False
+    assert is_sensor_visible({"getPA1": "0.0"}, "getPV1", "1") is False
+    # String "bad" can't parse -> False (except branch) -> group key hidden
+    assert is_sensor_visible({"getPA1": "bad"}, "getPV1", "1") is False
+    # Non-bool/int/float/str type -> _is_true returns False -> key hidden
+    assert is_sensor_visible({"getPA1": [1, 2]}, "getPV1", "1") is False
+
+
+def test_is_sensor_visible_cs_value_none_returns_false() -> None:
+    """getCS with None value and non-zero getSVx falls through to value is None check (line 826)."""
+    # getSV1 is non-zero so the early True is NOT triggered (sv_val is zero string),
+    # then value=None hits the 'if value is None: return False' branch.
+    status = {"getSV1": "0"}
+    assert is_sensor_visible(status, "getCS1", None) is False
+
