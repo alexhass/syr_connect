@@ -516,10 +516,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getFCO",  # Iron content (always 0) - not useful
     "getSCR",  # Unknown, likely number of service regeneration
 
-    # BUG: Exclude until the bug is found why these are not shown as translated strings.
-    # They also seem to exists as sensor and binary_sensor.
-    "getSRE",  # Regeneration active - now handled as binary_sensor platform
-
     # Sensors exits in devices:
     # - LEXplus10SL
 

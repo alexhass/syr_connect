@@ -16,6 +16,7 @@ from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
     _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_CONFIG,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
 )
@@ -60,7 +61,7 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for select platform")
         return
 
-    registry_cleanup(hass, coordinator.data, "select", allowed_keys=_SYR_CONNECT_SELECT_KNOWN_KEYS)
+    registry_cleanup(hass, coordinator.data, "select", allowed_keys=_SYR_CONNECT_SELECT_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
 
     entities: list[Any] = []
     for device in coordinator.data.get("devices", []):

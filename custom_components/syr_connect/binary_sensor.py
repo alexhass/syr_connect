@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_BINARY,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -49,7 +50,7 @@ async def async_setup_entry(
 
     registry_cleanup(
         hass, coordinator.data, "binary_sensor",
-        allowed_keys=_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
+        allowed_keys=_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
     )
 
     for device in coordinator.data.get('devices', []):
@@ -60,7 +61,7 @@ async def async_setup_entry(
 
         # Create binary sensors for boolean status values
         for sensor_key, device_class in _SYR_CONNECT_SENSOR_BINARY.items():
-            if sensor_key in status:
+            if sensor_key in status and sensor_key not in _SYR_CONNECT_SENSOR_EXCLUDED:
                 entities.append(
                     SyrConnectBinarySensor(
                         coordinator,

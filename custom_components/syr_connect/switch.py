@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_SENSOR_CONFIG,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SWITCH_KNOWN_KEYS,
     DOMAIN,
@@ -31,7 +32,9 @@ async def async_setup_entry(
 ) -> None:
     """Set up switch entities for getBUZ."""
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
-    registry_cleanup(hass, coordinator.data, "switch", allowed_keys=_SYR_CONNECT_SWITCH_KNOWN_KEYS)
+
+    registry_cleanup(hass, coordinator.data, "switch", allowed_keys=_SYR_CONNECT_SWITCH_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
+
     entities = []
     devices = coordinator.data.get("devices", [])
     _LOGGER.debug(f"Found {len(devices)} devices in coordinator data.")

@@ -24,7 +24,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS
+from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import build_device_info, build_entity_id, registry_cleanup
@@ -59,7 +59,7 @@ async def async_setup_entry(
 
     registry_cleanup(
         hass, coordinator.data, "button",
-        allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS,
+        allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
     )
 
     for device in coordinator.data.get('devices', []):
