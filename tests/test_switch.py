@@ -420,8 +420,9 @@ async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant
 
 async def test_async_setup_entry_missing_registry_no_unique_id(hass: HomeAssistant) -> None:
     """Line 103: entity without unique_id and not found by entity_id goes to else-missing branch."""
-    import custom_components.syr_connect.switch as switch_mod
     import homeassistant.helpers.entity_registry as er_mod
+
+    import custom_components.syr_connect.switch as switch_mod
 
     config_entry = ConfigEntry(
         version=1,
@@ -443,9 +444,9 @@ async def test_async_setup_entry_missing_registry_no_unique_id(hass: HomeAssista
     config_entry.runtime_data = mock_coordinator
 
     # Subclass that clears unique_id so the else-missing branch (line 103) is taken.
-    OriginalCls = switch_mod.SyrConnectBuzSwitch
+    original_cls = switch_mod.SyrConnectBuzSwitch
 
-    class _NoUniqueIdSwitch(OriginalCls):
+    class _NoUniqueIdSwitch(original_cls):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._attr_unique_id = None  # force unique_id to be falsy

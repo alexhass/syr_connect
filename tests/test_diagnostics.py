@@ -2667,3 +2667,312 @@ async def test_diagnostics_no_http_session_sets_error(hass) -> None:
     # Should include the error message
     assert isinstance(raw_json, dict)
     assert raw_json.get("error") == "no http session available on coordinator"
+
+
+# ---------------------------------------------------------------------------
+# Helper: minimal entry / coordinator factory for the coverage tests below
+# ---------------------------------------------------------------------------
+
+def _cov_entry(title: str = "SYR Connect (test@example.com)", api_type: str = API_TYPE_XML) -> MockConfigEntry:
+    return MockConfigEntry(
+        domain="syr_connect",
+        data={CONF_API_TYPE: api_type},
+        title=title,
+        version=1,
+    )
+
+
+def _cov_coordinator(data=None, session=None):
+    coord = MagicMock()
+    coord.last_update_success = True
+    coord.last_update_success_time = None
+    coord.data = data if data is not None else {
+        "devices": [{"id": "d1", "name": "Device"}],
+        "projects": [],
+    }
+    coord.api = None
+    coord._session = session if session is not None else MagicMock()
+    return coord
+
+
+# ---------------------------------------------------------------------------
+# Lines 92-93 — title-redaction except branch
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_title_redact_except_branch(hass: HomeAssistant) -> None:
+    """Lines 92-93: except(TypeError, AttributeError, re.error) fires when re.sub raises."""
+    import re as real_re
+    from unittest.mock import patch
+
+    def _raise_for_title(pattern, *args, **kwargs):
+        if pattern == r"\(([^)]+)\)":
+            raise real_re.error("forced error")
+        return real_re.sub(pattern, *args, **kwargs)
+
+    entry = _cov_entry(title="SYR Connect (user@example.com)")
+    entry.runtime_data = _cov_coordinator()
+
+    with patch.object(diag.re, "sub", side_effect=_raise_for_title):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    # Function must complete successfully (exception was caught at lines 92-93)
+    assert "entry" in result
+
+
+# ---------------------------------------------------------------------------
+# Line 113 — _redact_xml: if not key: continue
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_redact_xml_empty_key_continue(hass: HomeAssistant) -> None:
+    """Line 113: empty key in _TO_REDACT hits 'continue' inside _redact_xml."""
+    original = diag._TO_REDACT
+    diag._TO_REDACT = {"", *original}
+    try:
+        entry = _cov_entry()
+        entry.runtime_data = _cov_coordinator()
+        result = await async_get_config_entry_diagnostics(hass, entry)
+    finally:
+        diag._TO_REDACT = original
+
+    assert "entry" in result
+
+
+# ---------------------------------------------------------------------------
+# Lines 125-126, 136-137, 147-148 — _redact_xml per-key regex except branches
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_redact_xml_key_regex_except_branches(hass: HomeAssistant) -> None:
+    """Lines 125-126, 136-137, 147-148: per-key try/except blocks fire when re.escape raises."""
+    from unittest.mock import patch
+
+    entry = _cov_entry()
+    entry.runtime_data = _cov_coordinator()
+
+    with patch.object(diag.re, "escape", side_effect=ValueError("forced escape error")):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "entry" in result
+
+
+# ---------------------------------------------------------------------------
+# Lines 155-156 — _redact_xml generic-redaction except branch
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_redact_xml_generic_regex_except(hass: HomeAssistant) -> None:
+    """Lines 155-156: generic-redaction try/except fires when re.sub raises for IP pattern."""
+    import re as real_re
+    from unittest.mock import patch
+
+    def _raise_for_ip(pattern, *args, **kwargs):
+        if r"\d{1,3}" in str(pattern):
+            raise ValueError("forced ip error")
+        return real_re.sub(pattern, *args, **kwargs)
+
+    entry = _cov_entry()
+    entry.runtime_data = _cov_coordinator()
+
+    with patch.object(diag.re, "sub", side_effect=_raise_for_ip):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "entry" in result
+
+
+# ---------------------------------------------------------------------------
+# Lines 162-163 — _redact_xml whitespace-cleanup except branch
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_redact_xml_whitespace_except(hass: HomeAssistant) -> None:
+    """Lines 162-163: whitespace-cleanup try/except fires when re.sub raises for '>\\s+<'."""
+    import re as real_re
+    from unittest.mock import patch
+
+    def _raise_for_ws(pattern, *args, **kwargs):
+        if r">\s+<" in str(pattern):
+            raise ValueError("forced ws error")
+        return real_re.sub(pattern, *args, **kwargs)
+
+    entry = _cov_entry()
+    entry.runtime_data = _cov_coordinator()
+
+    with patch.object(diag.re, "sub", side_effect=_raise_for_ws):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "entry" in result
+
+
+# ---------------------------------------------------------------------------
+# Line 203 — XML API project loop: continue when pid is falsy
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_xml_project_no_id_continue(hass: HomeAssistant) -> None:
+    """Line 203: project with no 'id' key hits continue in the for-project loop."""
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"name": "unnamed project"}]  # no "id" key
+    mock_api.session_data = "sess"
+    mock_api.http_client = MagicMock()
+    mock_api.http_client.post = AsyncMock(return_value="<xml/>")
+    mock_api.payload_builder = MagicMock()
+    mock_api.response_parser = MagicMock()
+
+    coordinator = _cov_coordinator()
+    coordinator.api = mock_api
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_xml" in result
+    # No project data collected (pid was falsy → continue skipped all)
+    assert result["raw_xml"] == {}
+
+
+# ---------------------------------------------------------------------------
+# Line 237 — XML API device gather: continue when result is an Exception
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_xml_device_status_gather_exception(hass: HomeAssistant) -> None:
+    """Line 237: continue fires when a gathered _fetch_status task propagates an Exception."""
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
+    mock_api.session_data = "sess"
+
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value="<xml/>")
+    mock_api.http_client = mock_http_client
+
+    mock_payload_builder = MagicMock()
+    mock_payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    # Raising here causes _fetch_status to raise, captured by gather(return_exceptions=True)
+    mock_payload_builder.build_device_status_payload = MagicMock(side_effect=RuntimeError("status fail"))
+    mock_api.payload_builder = mock_payload_builder
+
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(
+        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+    )
+
+    coordinator = _cov_coordinator()
+    coordinator.api = mock_api
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_xml" in result
+
+
+# ---------------------------------------------------------------------------
+# Line 299 — _fetch_device_json: return (dev_id, None) when base_path is falsy
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_fetch_device_json_no_base_path(hass: HomeAssistant) -> None:
+    """Line 299: _fetch_device_json returns (dev_id, None) when base_path becomes falsy.
+
+    Uses a dict subclass whose second get('base_path') call returns None so it
+    passes the tasks list-comprehension filter but hits the internal guard.
+    """
+    class _OnceTrueBasePathDict(dict):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._bp_calls = 0
+
+        def get(self, key, default=None):
+            if key == "base_path":
+                self._bp_calls += 1
+                return "/api" if self._bp_calls == 1 else None
+            return super().get(key, default)
+
+    device = _OnceTrueBasePathDict({"id": "dev1", "name": "Dev1"})
+    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_json" in result
+    assert result["raw_json"] == {}
+
+
+# ---------------------------------------------------------------------------
+# Line 310 — _fetch_device_json: ip = None when IP is "" or "0.0.0.0"
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_fetch_device_json_empty_ip_normalized(hass: HomeAssistant) -> None:
+    """Line 310: ip is set to None when the status IP field is an empty string."""
+    device = {
+        "id": "dev1",
+        "name": "Dev1",
+        "base_path": "/api",
+        "status": {"getIPA": ""},  # empty string → triggers line 310 → ip = None
+    }
+    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_json" in result
+    assert result["raw_json"] == {}
+
+
+# ---------------------------------------------------------------------------
+# Line 328 — _fetch_device_json: return (dev_id, None) when _build_base_url() is falsy
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_fetch_device_json_empty_base_url(hass: HomeAssistant) -> None:
+    """Line 328: return (dev_id, None) when json_api._build_base_url() returns falsy."""
+    from unittest.mock import patch
+
+    device = {
+        "id": "dev1",
+        "name": "Dev1",
+        "base_path": "/api",
+        "status": {"getIPA": "192.168.1.100"},
+    }
+    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    mock_json_api = MagicMock()
+    mock_json_api.is_session_valid = MagicMock(return_value=True)
+    mock_json_api._build_base_url = MagicMock(return_value=None)  # falsy → line 328
+
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI", return_value=mock_json_api):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_json" in result
+    assert result["raw_json"] == {}
+
+
+# ---------------------------------------------------------------------------
+# Line 354 — JSON device gather: continue when result is an Exception
+# ---------------------------------------------------------------------------
+
+async def test_diagnostics_fetch_device_json_gather_exception(hass: HomeAssistant) -> None:
+    """Line 354: continue fires when SyrConnectJsonAPI raises so _fetch_device_json propagates."""
+    from unittest.mock import patch
+
+    device = {
+        "id": "dev1",
+        "name": "Dev1",
+        "base_path": "/api",
+        "status": {"getIPA": "192.168.1.100"},
+    }
+    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    # Constructor raises outside the inner try/except → propagates → gather captures it
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI", side_effect=RuntimeError("ctor fail")):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_json" in result
+    assert result["raw_json"] == {}

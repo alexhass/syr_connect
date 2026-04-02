@@ -1,8 +1,8 @@
 """Tests for __init__.py integration setup."""
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -371,7 +371,6 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
 
     async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> None:
         """Ensure legacy migration branch logs a migration message."""
-        from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
         config_entry = MockConfigEntry(
             version=1,
@@ -396,7 +395,7 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
                     hass.config_entries,
                     "async_update_entry",
                     new_callable=MagicMock
-                ) as mock_update:
+                ):
                     result = await async_setup_entry(hass, config_entry)
 
         assert result is True

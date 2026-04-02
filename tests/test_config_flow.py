@@ -767,6 +767,7 @@ async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None
 async def test_validate_input_json_host_empty_and_nonstring(hass: HomeAssistant) -> None:
     """Host empty string or non-string should raise HomeAssistantError."""
     from homeassistant.exceptions import HomeAssistantError
+
     from custom_components.syr_connect.config_flow import validate_input_json
 
     # Empty string
@@ -781,6 +782,7 @@ async def test_validate_input_json_host_empty_and_nonstring(hass: HomeAssistant)
 async def test_validate_input_json_host_with_port_and_whitespace_and_invalid_pattern(hass: HomeAssistant) -> None:
     """Host containing a port, whitespace, or invalid pattern should raise HomeAssistantError."""
     from homeassistant.exceptions import HomeAssistantError
+
     from custom_components.syr_connect.config_flow import validate_input_json
 
     # Host including a port

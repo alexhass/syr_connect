@@ -1,6 +1,6 @@
+import logging
 from pathlib import Path
 from unittest.mock import patch
-import logging
 
 from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
