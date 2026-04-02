@@ -16,6 +16,7 @@ from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
+    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -399,7 +400,10 @@ async def async_get_config_entry_diagnostics(
             model_display = model_info.get("display_name") if isinstance(model_info, dict) else None
 
             # Determine visible status keys using centralized helper
-            visible_keys: list[str] = [k for k, v in status.items() if is_sensor_visible(status, k, v)]
+            visible_keys: list[str] = [
+                k for k, v in status.items()
+                if k in _SYR_CONNECT_SENSOR_KNOWN_KEYS and is_sensor_visible(status, k, v)
+            ]
 
             device_info = {
                 "id": device.get("id"),

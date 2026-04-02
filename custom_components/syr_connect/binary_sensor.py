@@ -13,12 +13,12 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_BINARY,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, cleanup_excluded_registry
+from .helpers import build_device_info, build_entity_id, registry_cleanup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,8 +47,10 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for binary sensors")
         return
 
-    # Remove previously-registered entities that are now excluded
-    cleanup_excluded_registry(hass, coordinator.data, "binary_sensor")
+    registry_cleanup(
+        hass, coordinator.data, "binary_sensor",
+        allowed_keys=_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
+    )
 
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
@@ -58,10 +60,6 @@ async def async_setup_entry(
 
         # Create binary sensors for boolean status values
         for sensor_key, device_class in _SYR_CONNECT_SENSOR_BINARY.items():
-            # Skip sensors excluded globally
-            if sensor_key in _SYR_CONNECT_SENSOR_EXCLUDED:
-                continue
-
             if sensor_key in status:
                 entities.append(
                     SyrConnectBinarySensor(

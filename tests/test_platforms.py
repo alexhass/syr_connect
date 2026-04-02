@@ -43,8 +43,8 @@ def _build_entry(coordinator: SyrConnectDataUpdateCoordinator) -> MockConfigEntr
 
 async def test_binary_sensor_platform_creates_entities(hass: HomeAssistant) -> None:
     """Ensure binary_sensor platform creates entities for supported keys."""
-    # Note: getSRE is in _SYR_CONNECT_SENSOR_EXCLUDED, so binary_sensor skips it
-    # The test verifies that no entities are created when all binary sensors are excluded
+    # getSRE is in _SYR_CONNECT_SENSOR_BINARY — the exclusion check was removed,
+    # so one binary sensor entity should be created.
     data = {
         "devices": [
             {
@@ -64,13 +64,10 @@ async def test_binary_sensor_platform_creates_entities(hass: HomeAssistant) -> N
     add_entities = Mock()
     await async_setup_binary_sensor(hass, entry, add_entities)
 
-    # getSRE is excluded, so no entities should be created
-    if add_entities.called:
-        entities = add_entities.call_args.args[0]
-        assert len(entities) == 0
-    else:
-        # Platform may not call add_entities if no entities to add
-        pass
+    # getSRE is a known binary sensor key, so one entity should be created.
+    add_entities.assert_called_once()
+    entities = add_entities.call_args.args[0]
+    assert len(entities) == 1
 
 
 async def test_button_platform_creates_entities(hass: HomeAssistant) -> None:

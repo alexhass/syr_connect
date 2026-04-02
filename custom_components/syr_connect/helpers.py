@@ -17,7 +17,6 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
@@ -151,42 +150,49 @@ def build_entity_id(platform: str, device_id: str, key: str) -> str:
     return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
 
 
-def cleanup_excluded_registry(hass: HomeAssistant, coordinator_data: dict[str, Any], domain: str, excluded_keys: set[str] | None = None) -> None:
+def registry_cleanup(
+    hass: HomeAssistant,
+    coordinator_data: dict[str, Any],
+    domain: str,
+    allowed_keys: set[str] | None = None,
+) -> None:
     """Remove previously-registered entities from the entity registry.
 
-    This removes entities for all devices in the provided coordinator data
-    where the entity key is present in `excluded_keys` (or the central
-    `_SYR_CONNECT_SENSOR_EXCLUDED` set when `excluded_keys` is None).
+    Scans all registered entities for the given domain/devices and removes
+    any whose key is NOT in ``allowed_keys``. If ``allowed_keys`` is None,
+    nothing is removed.
 
     Args:
-        hass: Home Assistant instance used to access the entity registry.
-        coordinator_data: Coordinator `.data` mapping containing `devices`.
-        domain: Entity domain string (e.g., "sensor", "select").
-        excluded_keys: Optional set of keys to remove; defaults to central set.
+        hass: Home Assistant instance.
+        coordinator_data: Coordinator ``.data`` mapping containing ``devices``.
+        domain: Entity domain string (e.g. ``"sensor"``).
+        allowed_keys: Set of permitted sensor keys. Entities whose key is not
+            in this set will be removed from the entity registry.
     """
+    if allowed_keys is None:
+        return
     try:
         registry = er.async_get(hass)
-        keys = (
-            excluded_keys
-            if excluded_keys is not None
-            else (
-                _SYR_CONNECT_SENSOR_EXCLUDED
-                | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING
-                | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
-                | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS
-            )
-        )
+        allowed_lower = {k.lower() for k in allowed_keys}
         for device in (coordinator_data or {}).get("devices", []):
             device_id = device.get("id")
-            for excluded_key in keys:
-                entity_id = build_entity_id(domain, device_id, excluded_key)
-                registry_entry = registry.async_get(entity_id)
-                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
-                    _LOGGER.debug("Removing excluded %s from registry: %s", domain, entity_id)
+            if not device_id:
+                continue
+            prefix = f"{domain}.{DOMAIN}_{device_id.lower()}_"
+            for entry in list(registry.entities.values()):
+                if not entry.entity_id.startswith(prefix):
+                    continue
+                key_lower = entry.entity_id[len(prefix):]
+                if key_lower not in allowed_lower:
+                    _LOGGER.debug(
+                        "Removing unlisted %s from registry: %s",
+                        domain,
+                        entry.entity_id,
+                    )
                     try:
-                        registry.async_remove(registry_entry.entity_id)
+                        registry.async_remove(entry.entity_id)
                     except Exception:
-                        _LOGGER.exception("Failed to remove entity %s", entity_id)
+                        _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
     except Exception:
         _LOGGER.exception("Failed to cleanup excluded %s entities from registry", domain)
 
@@ -742,8 +748,6 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     values that may be strings, numbers, booleans or None.
 
     Rules (applied in order):
-    - Global exclusions: keys in ``_SYR_CONNECT_SENSOR_EXCLUDED`` are always
-        hidden.
     - Group-controlled keys: keys matching ``getPVx,getPTx,getPFx,getPNx,``
         ``getPMx,getPWx,getPBx,getPRx`` are only visible when the device's
         corresponding ``getPAx`` flag is truthy (``1``, ``true``, "on", etc.).
@@ -780,10 +784,6 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
             >>> is_sensor_visible({'getSV1': 5}, 'getCS1', '0')
             True
     """
-    # Global exclude
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED:
-        return False
-
     def _is_true(val: object) -> bool:
         if isinstance(val, bool):
             return val

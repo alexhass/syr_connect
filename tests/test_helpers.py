@@ -47,12 +47,12 @@ def test_build_device_info_fallback_and_entity_id_additional():
     assert helpers.build_entity_id("sensor", "DevID", "getFOO").startswith("sensor.")
 
 
-def test_cleanup_excluded_registry_handles_exception():
+def test_registry_cleanup_handles_exception():
     hass = MagicMock()
     # Make er.async_get raise
     with patch("custom_components.syr_connect.helpers.er.async_get", side_effect=RuntimeError("boom")):
         # Should not raise
-        helpers.cleanup_excluded_registry(hass, {"devices": []}, "sensor")
+        helpers.registry_cleanup(hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys={"getPRS"})
 
 
 def test_get_current_mac_priorities_additional():
@@ -138,8 +138,9 @@ def test_get_sensor_maps_and_visibility_additional():
     # Visibility rules
     status = {"getPA1": "true", "getPV1": "5"}
     assert helpers.is_sensor_visible(status, "getPV1", "1") is True
-    # Global exclude
-    assert helpers.is_sensor_visible({}, "getRTIME", "x") is False
+    # getRTIME is not in the allowlist, so it is never passed to is_sensor_visible;
+    # the function only applies visibility rules, not exclusions.
+    assert helpers.is_sensor_visible({}, "getRTIME", "x") is True
 
 
 def test_build_entity_id() -> None:
@@ -564,43 +565,39 @@ def test_get_default_scan_interval_for_entry_with_dict() -> None:
     assert helpers.get_default_scan_interval_for_entry(entry) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
 
 
-def test_cleanup_excluded_registry_remove_called() -> None:
-    """When registry contains an excluded entity it should be removed."""
+def test_registry_cleanup_remove_called() -> None:
+    """Allowlist mode: entity with key NOT in allowed_keys is removed."""
     hass = MagicMock()
     registry = MagicMock()
-
-    # Determine entity id that will be looked up
     device_id = "DEV"
-    excluded_key = "getFOO"
-    entity_id = build_entity_id("sensor", device_id, excluded_key)
-
-    # async_get should return a registry entry-like object with entity_id
-    registry.async_get.return_value = SimpleNamespace(entity_id=entity_id)
+    unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
+    listed_entity_id = build_entity_id("sensor", device_id, "getPRS")
+    registry.entities.values.return_value = [
+        SimpleNamespace(entity_id=unlisted_entity_id),
+        SimpleNamespace(entity_id=listed_entity_id),
+    ]
     registry.async_remove = MagicMock()
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
         coordinator = {"devices": [{"id": device_id}]}
-        # Pass explicit excluded_keys set to control behavior
-        helpers.cleanup_excluded_registry(hass, coordinator, "sensor", excluded_keys={excluded_key})
+        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getPRS"})
 
-    registry.async_get.assert_called()
-    registry.async_remove.assert_called_once_with(entity_id)
+    registry.async_remove.assert_called_once_with(unlisted_entity_id)
 
 
-def test_cleanup_excluded_registry_remove_raises_does_not_propagate() -> None:
+def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
     """If registry.async_remove raises, cleanup should not propagate the exception."""
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV2"
-    excluded_key = "getBAR"
-    entity_id = build_entity_id("sensor", device_id, excluded_key)
-    registry.async_get.return_value = SimpleNamespace(entity_id=entity_id)
+    unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
+    registry.entities.values.return_value = [SimpleNamespace(entity_id=unlisted_entity_id)]
     registry.async_remove.side_effect = RuntimeError("boom")
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
         coordinator = {"devices": [{"id": device_id}]}
         # Should not raise despite async_remove throwing
-        helpers.cleanup_excluded_registry(hass, coordinator, "sensor", excluded_keys={excluded_key})
+        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys=set())
 
 
 def test_get_current_mac_wip_not_connected_and_unparsable_wfs() -> None:

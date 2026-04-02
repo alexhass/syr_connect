@@ -150,6 +150,208 @@ _SYR_CONNECT_SENSOR_BINARY = {
     "getBUZ": BinarySensorDeviceClass.POWER,    # Buzzer on/off
 }
 
+# Allowlist of known sensor keys.
+#
+# Only API keys listed here will become sensor entities. Any key returned by
+# a firmware update that is not listed here is silently ignored.
+_SYR_CONNECT_SENSOR_KNOWN_KEYS = {
+    # --- Valve & Flow ---
+    "getAB",    # Valve shutoff state (open / closed)
+    "getAVO",   # Current instantaneous flow rate
+    "getFLO",   # Water flow rate (l/min)
+    "getVLV",   # Valve position (10=closed, 11=closing, 20=open, 21=opening)
+    # --- Alarm / Notification / Warning ---
+    "getALA",   # Current alarm code
+    "getALM",   # List of last alarms (e.g. low salt level)
+    "getALN",   # List of last 8 notifications
+    "getALW",   # List of last 8 warnings
+    "getNOT",   # Current notification code
+    "getWRN",   # Current warning code
+    # --- Pressure ---
+    "getBAR",   # Inlet pressure – mbar sensor (Safe-T+)
+    "getPRS",   # Inlet pressure – bar sensor (LEXplus10SL)
+    # --- Voltage ---
+    "getBAT",   # Battery voltage (V)
+    "getNET",   # Mains (AC) voltage (V)
+    # --- Water Quality ---
+    "getCEL",   # Water temperature (°C)
+    "getCND",   # Water conductivity (µS/cm)
+    "getIWH",   # Incoming (raw) water hardness
+    "getOWH",   # Outgoing (softened) water hardness
+    "getWHU",   # Water hardness unit (°dH / °fH / ppm / mmol/l)
+    # --- Water Consumption & Volume ---
+    "getCOF",   # Total water consumption counter (l)
+    "getLTV",   # Last dispensed (tapped) volume (l)
+    "getVOL",   # Total volume (m³)
+    # --- Device Status ---
+    "getDEN",   # Device enabled flag
+    "getSTA",   # Device operating status
+    # --- Resin Capacity ---
+    "getCS1",   # Remaining resin capacity – tank 1 (%)
+    "getCS2",   # Remaining resin capacity – tank 2 (%)
+    "getCS3",   # Remaining resin capacity – tank 3 (%)
+    # --- Salt ---
+    "getRDO",   # Salt dosing (g/l)
+    "getRE1",   # Reserve capacity – bottle 1 (l)
+    "getRE2",   # Reserve capacity – bottle 2 (l)
+    "getRES",   # Remaining softening capacity (l)
+    "getSS1",   # Salt supply – container 1 (weeks)
+    "getSS2",   # Salt supply – container 2 (weeks)
+    "getSS3",   # Salt supply – container 3 (weeks)
+    "getSV1",   # Salt amount – container 1 (kg)
+    "getSV2",   # Salt amount – container 2 (kg)
+    "getSV3",   # Salt amount – container 3 (kg)
+    # --- Regeneration ---
+    "getCYN",   # Regeneration cycle counter
+    "getCYT",   # Regeneration cycle time (remaining)
+    "getINR",   # Incomplete regeneration count
+    "getLAR",   # Timestamp of last regeneration
+    "getNOR",   # Regeneration count (normal operation)
+    "getRG1",   # Regeneration status (which tank is regenerating)
+    "getRG2",   # Regeneration running – tank 2 flag
+    "getRG3",   # Regeneration running – tank 3 flag
+    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
+    "getRPD",   # Regeneration interval (days)
+    "getRPW",   # Regeneration permitted weekdays (bitmask)
+    "getRTH",   # Regeneration scheduled hour
+    "getRTI",   # Total regeneration cycle duration
+    "getRTM",   # Regeneration time (combined HH:MM string)
+    "getSCR",   # Service regeneration cycle count
+    "getSIR",   # Immediate regeneration trigger
+    "getTOR",   # Total regeneration count (all time)
+    # --- Self-Learning Phase (Trio DFR/LS) ---
+    "getSLE",   # Remaining time in active self-learning phase (s)
+    "getSLF",   # Flow rate during self-learning phase (l/h)
+    "getSLP",   # Duration of self-learning phase
+    "getSLT",   # Elapsed time in self-learning phase (s)
+    "getSLV",   # Volume accumulated in self-learning phase (l)
+    # --- Microleakage Test (Trio DFR/LS) ---
+    "getDRP",   # Microleakage test interval (daily / weekly / monthly)
+    "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
+    "getDTT",   # Microleakage test duration / time
+    "getNPS",   # Microleakage event count
+    # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
+    "getLE",    # Leak protection volume limit – present profile (l)
+    "getT1",    # Max. flow duration – present profile (h, 0.5 h steps)
+    "getT2",    # Max. flow duration – absent profile (h, 0.5 h steps)
+    "getTMP",   # Leak protection temporarily deactivated – remaining time (s)
+    "getUL",    # Leak protection volume limit – absent profile (l)
+    # --- Leak Protection Profiles 1–8 (LEXplus10SL) ---
+    "getPA1",   # Profile 1 active flag (true/false)
+    "getPA2",   # Profile 2 active flag (true/false)
+    "getPA3",   # Profile 3 active flag (true/false)
+    "getPA4",   # Profile 4 active flag (true/false)
+    "getPA5",   # Profile 5 active flag (true/false)
+    "getPA6",   # Profile 6 active flag (true/false)
+    "getPA7",   # Profile 7 active flag (true/false)
+    "getPA8",   # Profile 8 active flag (true/false)
+    "getPB1",   # Profile 1 buzzer alert (true/false)
+    "getPB2",   # Profile 2 buzzer alert (true/false)
+    "getPB3",   # Profile 3 buzzer alert (true/false)
+    "getPB4",   # Profile 4 buzzer alert (true/false)
+    "getPB5",   # Profile 5 buzzer alert (true/false)
+    "getPB6",   # Profile 6 buzzer alert (true/false)
+    "getPB7",   # Profile 7 buzzer alert (true/false)
+    "getPB8",   # Profile 8 buzzer alert (true/false)
+    "getPF1",   # Profile 1 flow leak threshold (l/h)
+    "getPF2",   # Profile 2 flow leak threshold (l/h)
+    "getPF3",   # Profile 3 flow leak threshold (l/h)
+    "getPF4",   # Profile 4 flow leak threshold (l/h)
+    "getPF5",   # Profile 5 flow leak threshold (l/h)
+    "getPF6",   # Profile 6 flow leak threshold (l/h)
+    "getPF7",   # Profile 7 flow leak threshold (l/h)
+    "getPF8",   # Profile 8 flow leak threshold (l/h)
+    "getPM1",   # Profile 1 microleakage test enabled (true/false)
+    "getPM2",   # Profile 2 microleakage test enabled (true/false)
+    "getPM3",   # Profile 3 microleakage test enabled (true/false)
+    "getPM4",   # Profile 4 microleakage test enabled (true/false)
+    "getPM5",   # Profile 5 microleakage test enabled (true/false)
+    "getPM6",   # Profile 6 microleakage test enabled (true/false)
+    "getPM7",   # Profile 7 microleakage test enabled (true/false)
+    "getPM8",   # Profile 8 microleakage test enabled (true/false)
+    "getPN1",   # Profile 1 name
+    "getPN2",   # Profile 2 name
+    "getPN3",   # Profile 3 name
+    "getPN4",   # Profile 4 name
+    "getPN5",   # Profile 5 name
+    "getPN6",   # Profile 6 name
+    "getPN7",   # Profile 7 name
+    "getPN8",   # Profile 8 name
+    "getPR1",   # Profile 1 return time to present profile (h)
+    "getPR2",   # Profile 2 return time to present profile (h)
+    "getPR3",   # Profile 3 return time to present profile (h)
+    "getPR4",   # Profile 4 return time to present profile (h)
+    "getPR5",   # Profile 5 return time to present profile (h)
+    "getPR6",   # Profile 6 return time to present profile (h)
+    "getPR7",   # Profile 7 return time to present profile (h)
+    "getPR8",   # Profile 8 return time to present profile (h)
+    "getPT1",   # Profile 1 max. leak duration (min)
+    "getPT2",   # Profile 2 max. leak duration (min)
+    "getPT3",   # Profile 3 max. leak duration (min)
+    "getPT4",   # Profile 4 max. leak duration (min)
+    "getPT5",   # Profile 5 max. leak duration (min)
+    "getPT6",   # Profile 6 max. leak duration (min)
+    "getPT7",   # Profile 7 max. leak duration (min)
+    "getPT8",   # Profile 8 max. leak duration (min)
+    "getPV1",   # Profile 1 max. leak volume (l)
+    "getPV2",   # Profile 2 max. leak volume (l)
+    "getPV3",   # Profile 3 max. leak volume (l)
+    "getPV4",   # Profile 4 max. leak volume (l)
+    "getPV5",   # Profile 5 max. leak volume (l)
+    "getPV6",   # Profile 6 max. leak volume (l)
+    "getPV7",   # Profile 7 max. leak volume (l)
+    "getPV8",   # Profile 8 max. leak volume (l)
+    "getPW1",   # Profile 1 leak warning enabled (true/false)
+    "getPW2",   # Profile 2 leak warning enabled (true/false)
+    "getPW3",   # Profile 3 leak warning enabled (true/false)
+    "getPW4",   # Profile 4 leak warning enabled (true/false)
+    "getPW5",   # Profile 5 leak warning enabled (true/false)
+    "getPW6",   # Profile 6 leak warning enabled (true/false)
+    "getPW7",   # Profile 7 leak warning enabled (true/false)
+    "getPW8",   # Profile 8 leak warning enabled (true/false)
+    "getPRF",   # Currently active leak protection profile index
+    "getPST",   # Pressure sensor installed (1=not available, 2=available)
+    # --- Filter (NeoSoft) ---
+    "getFCD",   # Filter flush interval
+    "getFCO",   # Iron content (ppm)
+    "getFFM",   # Filter type (backwash / replaceable / none)
+    # --- Maintenance ---
+    "getDWF",   # Expected daily water consumption (l)
+    "getSRH",   # Next semi-annual maintenance (timestamp)
+    "getSRV",   # Next annual maintenance (timestamp)
+    "getVS1",   # Volume threshold 1 (l)
+    "getVS2",   # Volume threshold 2 (l)
+    "getVS3",   # Volume threshold 3 (l)
+    # --- Display ---
+    "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+    # --- Device Info & Diagnostics ---
+    "getCDE",   # Configuration code
+    "getCNA",   # Device name
+    "getDGW",   # Cloud gateway address
+    "getEGW",   # Ethernet (LAN) gateway
+    "getEIP",   # Ethernet (LAN) IP address
+    "getFIR",   # Firmware model identifier
+    "getIPA",   # IP address
+    "getLAN",   # UI language (0=English, 1=German, 3=Spanish)
+    "getMAC",   # MAC address
+    "getMAC1",  # Wi-Fi MAC address
+    "getMAC2",  # LAN MAC address
+    "getMAN",   # Manufacturer name
+    "getSRN",   # Device serial number
+    "getTYP",   # Device type code
+    "getVER",   # Firmware version string
+    # --- Turbine / Pulse Monitoring (NeoSoft) ---
+    "getVPS1",  # No turbine pulses on control head 1 since (s)
+    "getVPS2",  # No turbine pulses on control head 2 since (s)
+    # --- Wi-Fi ---
+    "getWFC",   # Wi-Fi SSID
+    "getWFL",   # Nearby Wi-Fi networks with signal strength
+    "getWFR",   # Wi-Fi signal strength (%)
+    "getWFS",   # Wi-Fi connection status (not connected / connecting / connected)
+    "getWGW",   # Wi-Fi gateway
+    "getWIP",   # Wi-Fi IP address
+}
+
 # Configuration sensors - settings users do not need for daily use
 _SYR_CONNECT_SENSOR_CONFIG = {
     "getBUZ",   # Buzzer on/off - also represented as switch entity
@@ -243,6 +445,43 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getLAR": SensorDeviceClass.TIMESTAMP,
     "getPRS": SensorDeviceClass.PRESSURE,
     "getVOL": SensorDeviceClass.WATER,
+}
+
+# Known keys for the select platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SELECT_KNOWN_KEYS = {
+    "getRTM",   # Regeneration time (HH:MM combined or minutes)
+    "getPRF",   # Active leak-protection profile
+    "getSRO",   # Display rotation (0 / 90 / 180 / 270 °)
+    "getFCD",   # Filter backwash interval
+    "getSV1",   # Salt amount container 1
+    "getSV2",   # Salt amount container 2
+    "getSV3",   # Salt amount container 3
+    "getRPD",   # Regeneration interval (days)
+    "getFFM",   # Filter type (1..3)
+}
+
+# Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
+    "getSRE",   # Regeneration active
+    "getBUZ",   # Buzzer on/off
+}
+
+# Known keys for the valve platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_VALVE_KNOWN_KEYS = {
+    "getAB",    # Valve shutoff control / state
+}
+
+# Known keys for the switch platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SWITCH_KNOWN_KEYS = {
+    "getBUZ",   # Buzzer on/off
+}
+
+# Known keys for the button platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BUTTON_KNOWN_KEYS = {
+    "setSIR",   # Trigger manual regeneration
+    "setALA",   # Reset alarm
+    "setNOT",   # Reset notification
+    "setWRN",   # Reset warning
 }
 
 # Sensors to always exclude (parameters from XML that should not be exposed) - internal

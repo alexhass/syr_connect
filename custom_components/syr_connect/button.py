@@ -24,9 +24,10 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
-from .helpers import build_device_info, build_entity_id
+from .helpers import build_device_info, build_entity_id, registry_cleanup
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,6 +56,11 @@ async def async_setup_entry(
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for buttons")
         return
+
+    registry_cleanup(
+        hass, coordinator.data, "button",
+        allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS,
+    )
 
     for device in coordinator.data.get('devices', []):
         device_id = device['id']

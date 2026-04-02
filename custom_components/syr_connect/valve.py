@@ -15,7 +15,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_SENSOR_ICON
+from .const import _SYR_CONNECT_SENSOR_ICON, _SYR_CONNECT_VALVE_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import (
@@ -23,6 +23,7 @@ from .helpers import (
     build_entity_id,
     build_set_ab_command,
     get_sensor_ab_value,
+    registry_cleanup,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,6 +51,8 @@ async def async_setup_entry(
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for valve platform")
         return
+
+    registry_cleanup(hass, coordinator.data, "valve", allowed_keys=_SYR_CONNECT_VALVE_KNOWN_KEYS)
 
     entities: list[SyrConnectValve] = []
     for device in coordinator.data.get("devices", []):

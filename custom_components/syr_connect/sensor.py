@@ -20,7 +20,9 @@ from .const import (
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
+    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
@@ -35,7 +37,6 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
     build_device_info,
     build_entity_id,
-    cleanup_excluded_registry,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -46,6 +47,7 @@ from .helpers import (
     get_sensor_vol_value,
     get_sensor_wrn_map,
     is_sensor_visible,
+    registry_cleanup,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,8 +75,9 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for sensors")
         return
 
-    # Remove previously-registered entities that are now excluded
-    cleanup_excluded_registry(hass, coordinator.data, "sensor")
+    # Remove previously-registered entities that are now excluded.
+    # The effective set of allowed sensor keys is KNOWN_KEYS minus EXCLUDED.
+    registry_cleanup(hass, coordinator.data, "sensor", allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
 
     # Registry handle used for per-group removals below
     registry = er.async_get(hass)
@@ -174,6 +177,18 @@ async def async_setup_entry(
                 _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
 
         for key, value in status.items():
+            # Allowlist check: the definitive list of keys this integration handles.
+            # Anything not listed here is ignored unconditionally, regardless of
+            # what other checks follow. This takes precedence over all other logic.
+            if key not in _SYR_CONNECT_SENSOR_KNOWN_KEYS:
+                _LOGGER.debug("Skipping unknown sensor key %s (not in allowlist)", key)
+                continue
+
+            # Exclusion check: skip keys that are explicitly excluded.
+            if key in _SYR_CONNECT_SENSOR_EXCLUDED:
+                _LOGGER.debug("Skipping excluded sensor key %s", key)
+                continue
+
             # Skip keys that are handled as binary sensors
             if key in _SYR_CONNECT_SENSOR_BINARY:
                 continue

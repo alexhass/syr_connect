@@ -805,7 +805,7 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     entry_to_remove = registry.async_get_or_create(
         "sensor",
         "syr_connect",
-        "device1_getDTY",  # getDTY is in _SYR_CONNECT_SENSOR_EXCLUDED
+        "device1_getDTY",  # getDTY is not in _SYR_CONNECT_SENSOR_KNOWN_KEYS (allowlist) — will be cleaned up
         suggested_object_id="device1_getdty",
     )
 

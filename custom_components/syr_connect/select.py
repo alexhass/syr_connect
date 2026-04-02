@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
+    _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
@@ -23,8 +24,8 @@ from .exceptions import SyrConnectError
 from .helpers import (
     build_device_info,
     build_entity_id,
-    cleanup_excluded_registry,
     get_sensor_rtm_value,
+    registry_cleanup,
     set_sensor_rtm_value,
 )
 from .models import detect_model
@@ -59,8 +60,7 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for select platform")
         return
 
-    # Remove previously-registered select entities that are now excluded
-    cleanup_excluded_registry(hass, coordinator.data, "select")
+    registry_cleanup(hass, coordinator.data, "select", allowed_keys=_SYR_CONNECT_SELECT_KNOWN_KEYS)
 
     entities: list[Any] = []
     for device in coordinator.data.get("devices", []):
