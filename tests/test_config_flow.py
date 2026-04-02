@@ -1447,3 +1447,27 @@ async def test_form_api_json_homeassistant_error_without_port(hass: HomeAssistan
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "unknown"}
+
+
+async def test_form_api_json_invalid_auth_error(hass: HomeAssistant) -> None:
+    """Line 556: InvalidAuthError sets base invalid_auth error in the JSON API flow."""
+    from custom_components.syr_connect.config_flow import InvalidAuthError
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=InvalidAuthError("bad credentials"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "invalid_auth"}
