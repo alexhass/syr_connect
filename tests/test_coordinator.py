@@ -21,11 +21,6 @@ from custom_components.syr_connect.exceptions import (
 )
 
 
-async def _coro(value):
-    """Return a value as a coroutine (avoids unawaited-coroutine warnings from AsyncMock)."""
-    return value
-
-
 async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test successful coordinator update."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
@@ -1030,9 +1025,12 @@ async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
 
 async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
     """If asyncio.gather returns Exception objects, they should be skipped."""
-    # Patch asyncio.gather to return a list containing an Exception
+
+    async def _fake_gather(*args, **kwargs):
+        return [Exception("proj fail")]
+
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-         patch("custom_components.syr_connect.coordinator.asyncio.gather", side_effect=lambda *args, **kwargs: _coro([Exception("proj fail")])):
+         patch("custom_components.syr_connect.coordinator.asyncio.gather", new=_fake_gather):
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.is_session_valid = MagicMock(return_value=True)
