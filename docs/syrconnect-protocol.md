@@ -26,7 +26,7 @@ The water softening unit is asking the server in an interval of ~10s for new com
 
 The following shows a sample conversation between unit and server (confidential values like SRN and MAC have been replaced by dummy values):
 
-#### First request
+### First request
 
 The first request is to the web service GetBasicCommands which basically requests the unit to identify:
 
@@ -47,7 +47,7 @@ The first request is to the web service GetBasicCommands which basically request
   </sc>
   ```
 
-#### Second Request
+### Second Request
 
 The second request is to the web service GetAllCommands and answers the previous request:
 
@@ -129,7 +129,7 @@ The second request is to the web service GetAllCommands and answers the previous
   </sc>
   ```
 
-#### Third and following requests
+### Third and following requests
 
 The third request and all following requests are also to GetAllCommands answering the previous requests:
 
