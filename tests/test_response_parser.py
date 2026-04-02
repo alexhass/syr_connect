@@ -708,6 +708,44 @@ def test_element_to_dict_nested_elements_same_tag(parser):
     assert result["item"][1]["sub"] == "b"
 
 
+def test_parse_device_status_dvs_is_python_list(parser):
+    """dvs becomes a Python list when multiple <dvs> elements exist (line 265)."""
+    # Two <dvs> elements at the same level cause parse_xml to return dvs as a list.
+    # Each entry needs a 'c' child to pass the has_c check.
+    xml = """<sc>
+        <dvs><c n="getSRN" v="SN1"/><c n="getFLO" v="10"/></dvs>
+        <dvs><c n="getSRN" v="SN2"/><c n="getFLO" v="20"/></dvs>
+    </sc>"""
+    result = parser.parse_device_status_response(xml)
+    # dvs is a list; both entries have 'c' so parsing should succeed
+    assert result is not None
+
+
+def test_parse_device_status_broken_response_ignored(parser):
+    """Responses with only broken-set c-names are ignored (line 275)."""
+    # dvs has @dclg so device_list = [dvs]; all c-names are in the broken set
+    xml = """<sc>
+        <dvs dclg="abc-123">
+            <c n="getSRN" v="SN1"/>
+            <c n="getALA" v="00"/>
+            <c n="getNOT" v="00"/>
+            <c n="getWRN" v="00"/>
+        </dvs>
+    </sc>"""
+    result = parser.parse_device_status_response(xml)
+    assert result is None
+
+
+def test_ignore_broken_response_non_dict_entry(parser):
+    """get_c_names returns empty set immediately for non-dict entry (line 308)."""
+    # Pass a list that contains a non-dict (e.g. a string) — get_c_names must
+    # return an empty set, which means the overall all(...) check fails and
+    # _ignore_broken_response returns False (not a broken response).
+    result = parser._ignore_broken_response(["not_a_dict"])
+    # Non-dict entry produces empty names set; all(names and ...) is False -> False
+    assert result is False
+
+
 def test_flatten_attributes_empty_dict(parser):
     """Test flattening empty dictionary."""
     data = {}
