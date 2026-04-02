@@ -631,7 +631,7 @@ These properties are only available on devices that contain leakage protection, 
 
 These attributes are parsed from the raw XML or JSON API response but are not exposed as Home Assistant entities. They carry protocol-level metadata about the device, its connection state, and per-property timing.
 
-**`<d>` element attributes (device-level)**
+#### `<d>` element attributes (device-level)
 
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
@@ -646,7 +646,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | p8883       | "0"                                        | MQTT port 8883 enabled
 | p8883rd     | "14.06.2022 03:24:57"                      | MQTT port 8883 last active date
 
-**`<dcl>` element attributes (device collection)**
+#### `<dcl>` element attributes (device collection)
 
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
@@ -655,7 +655,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | nrdt        | "06.01.2026 00:35:51"                      | Next regeneration date/time
 | nrs         | "11"                                       | Number of regenerations since install
 
-**Per-property sub-attributes (inside `<c>` elements)**
+#### Per-property sub-attributes (inside `<c>` elements)
 
 | Attribute       | Example                      | Description
 |-----------------|------------------------------|-------------------------------------------------
