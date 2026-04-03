@@ -448,6 +448,8 @@ async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) 
     # Return device_list for the first call, then status XML for subsequent status fetches
     mock_api.http_client = MagicMock()
     mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
+    # Ensure diagnostics sees projects to iterate
+    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
 
     # Minimal payload builder and parser
     mock_api.payload_builder = MagicMock()
@@ -2312,6 +2314,9 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
     mock_json_api._request_json_data = AsyncMock(return_value={"getSRN": "12345", "getFLO": "10"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
+    # Ensure diagnostics module recognizes our MagicMock as the JSON API class
+    import custom_components.syr_connect.diagnostics as diag_mod
+    diag_mod.SyrConnectJsonAPI = mock_json_api.__class__
 
     config_entry.runtime_data = mock_coordinator
 
@@ -2364,6 +2369,9 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
     mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
+    # Make diagnostics.isinstance check succeed for our mock
+    import custom_components.syr_connect.diagnostics as diag_mod
+    diag_mod.SyrConnectJsonAPI = mock_json_api.__class__
 
     config_entry.runtime_data = mock_coordinator
 
@@ -2455,6 +2463,9 @@ async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
     mock_json_api._request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
+    # Make diagnostics recognize our mock as the JSON API class
+    import custom_components.syr_connect.diagnostics as diag_mod
+    diag_mod.SyrConnectJsonAPI = mock_json_api.__class__
 
     config_entry.runtime_data = mock_coordinator
 
@@ -2546,6 +2557,9 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
     mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
+    # Patch diagnostics module to accept our MagicMock class for isinstance checks
+    import custom_components.syr_connect.diagnostics as diag_mod
+    diag_mod.SyrConnectJsonAPI = mock_json_api.__class__
 
     config_entry.runtime_data = mock_coordinator
 
