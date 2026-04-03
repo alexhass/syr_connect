@@ -1758,6 +1758,145 @@ async def test_diagnostics_raw_json_no_session(hass: HomeAssistant) -> None:
     # Should have error message in raw_json
     assert "raw_json" in diagnostics
     assert "error" in diagnostics["raw_json"]
+
+
+async def test_redact_xml_handles_re_sub_exceptions(hass: HomeAssistant, monkeypatch) -> None:
+    """Force `re.sub` to raise for getSRN/com patterns and ensure diagnostics handles it."""
+    from custom_components.syr_connect import diagnostics as diag
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    # XML with getSRN and com attribute
+    device_list_xml = '<devices><device com="Firstname+Lastname" id="dev1"/></devices>'
+    status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
+
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.http_client = MagicMock()
+    mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_status_payload = MagicMock(return_value="p2")
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
+    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
+
+    # Monkeypatch re.sub to raise when pattern contains getSRN or com
+    orig_sub = diag.re.sub
+
+    def fake_sub(pattern, repl, string, *args, **kwargs):
+        if "getSRN" in str(pattern) or "com" in str(pattern):
+            raise diag.re.error("boom")
+        return orig_sub(pattern, repl, string, *args, **kwargs)
+
+    monkeypatch.setattr(diag.re, "sub", fake_sub)
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "available": True, "project_id": "proj1", "status": {}}], "projects": [{"id": "proj1", "name": "Project 1"}]}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    # Should not raise despite re.sub raising for some patterns
+    diagnostics = await diag.async_get_config_entry_diagnostics(hass, config_entry)
+    assert "raw_xml" in diagnostics
+
+
+async def test_json_redact_assignment_exception(monkeypatch, hass: HomeAssistant) -> None:
+    """Force async_redact_data to return a dict-like that raises on setitem."""
+    from custom_components.syr_connect import diagnostics as diag
+
+    class BadDict(dict):
+        def __setitem__(self, key, value):
+            raise RuntimeError("cannot set")
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_USERNAME: "u", CONF_PASSWORD: "p"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_json_api = MagicMock()
+    mock_json_api.is_session_valid = MagicMock(return_value=True)
+
+    async def fake_request(*args, **kwargs):
+        return {"getSRN": "206AAA67890"}
+
+    mock_json_api._request_json_data = AsyncMock(side_effect=fake_request)
+
+    # Make async_redact_data return our BadDict so assignment to getSRN raises
+    monkeypatch.setattr(diag, "async_redact_data", lambda data, keys: BadDict(data))
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_json_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await diag.async_get_config_entry_diagnostics(hass, config_entry)
+    assert "raw_json" in diagnostics
+
+
+async def test_xml_jsonapi_constructor_raises(monkeypatch, hass: HomeAssistant) -> None:
+    """If `SyrConnectJsonAPI` constructor raises, diagnostics should set an error."""
+    from custom_components.syr_connect import diagnostics as diag
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1", "base_path": "/api"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = MagicMock()
+
+    # Make the SyrConnectJsonAPI constructor raise when called
+    class FakeExc:
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("fail")
+
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeExc)
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await diag.async_get_config_entry_diagnostics(hass, config_entry)
+    assert "raw_json" in diagnostics
+    assert diagnostics["raw_json"].get("error") == "failed to collect raw json for devices"
     assert "no http session" in diagnostics["raw_json"]["error"].lower()
 
 
