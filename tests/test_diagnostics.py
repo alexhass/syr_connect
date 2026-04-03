@@ -402,6 +402,10 @@ async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
     mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = None
+    # Patch the SyrConnectJsonAPI class used by diagnostics so the isinstance check succeeds
+    import custom_components.syr_connect.diagnostics as diag_mod
+
+    diag_mod.SyrConnectJsonAPI = DummyJsonAPI
     mock_coordinator.api = DummyJsonAPI()
 
     config_entry.runtime_data = mock_coordinator
@@ -441,13 +445,9 @@ async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) 
     # status XML includes <c n="getSRN" v="206AAA67890"/>
     status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
 
-    async def fake_post(url, payload):
-        if "DeviceList" in url or "DeviceCollection" in url:
-            return device_list_xml
-        return status_xml
-
+    # Return device_list for the first call, then status XML for subsequent status fetches
     mock_api.http_client = MagicMock()
-    mock_api.http_client.post = AsyncMock(side_effect=fake_post)
+    mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
 
     # Minimal payload builder and parser
     mock_api.payload_builder = MagicMock()
