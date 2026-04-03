@@ -437,11 +437,11 @@ async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) 
         subentries_data={},
     )
 
-    # Mock an XML API that returns a device_list containing com and a device status containing getSRN
+    # Mock an XML API that returns a device_list containing com/pn and a device status containing getSRN
     mock_api = MagicMock()
     mock_api.is_session_valid = MagicMock(return_value=True)
-    # device_list XML includes com attribute
-    device_list_xml = '<devices><device com="Firstname+Lastname" id="dev1"/></devices>'
+    # device_list XML includes "pn" and "com" attributes
+    device_list_xml = '<devices><device pn="My+House" com="John+Smith" id="dev1"/></devices>'
     # status XML includes <c n="getSRN" v="206AAA67890"/>
     status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
 
@@ -471,6 +471,7 @@ async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) 
     # device_list should have com replaced
     assert "raw_xml" in diagnostics
     proj = next(iter(diagnostics["raw_xml"].values()))
+    assert "Firstname+Lastname" in proj["device_list"]
     assert "My+Project" in proj["device_list"]
     # status SRN should be masked (trailing digits -> 12345) in device xml
     # find device xml for dev1
@@ -1778,8 +1779,8 @@ async def test_redact_xml_handles_re_sub_exceptions(hass: HomeAssistant, monkeyp
         subentries_data={},
     )
 
-    # XML with getSRN and com attribute
-    device_list_xml = '<devices><device com="Firstname+Lastname" id="dev1"/></devices>'
+    # XML with getSRN, com, and pn attributes
+    device_list_xml = '<devices><device com="John Smith" pn="Zuhause" id="dev1"/></devices>'
     status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
 
     mock_api = MagicMock()
@@ -1797,7 +1798,7 @@ async def test_redact_xml_handles_re_sub_exceptions(hass: HomeAssistant, monkeyp
     orig_sub = diag.re.sub
 
     def fake_sub(pattern, repl, string, *args, **kwargs):
-        if "getSRN" in str(pattern) or "com" in str(pattern):
+        if "getSRN" in str(pattern) or "com" in str(pattern) or "\\bpn" in str(pattern):
             raise diag.re.error("boom")
         return orig_sub(pattern, repl, string, *args, **kwargs)
 

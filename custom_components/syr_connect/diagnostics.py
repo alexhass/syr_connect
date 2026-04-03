@@ -282,11 +282,18 @@ async def async_get_config_entry_diagnostics(
                         xml_api.session_data or "", pid
                     )
                     xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
-                    # Redact the device list XML and replace any `com="..."` attribute
-                    # with the project-safe value `My+Project` to avoid leaking names.
+
+                    # Redact the device list XML and replace personal attributes:
+                    # - `pn="..."` -> `My+Project` (project name)
+                    # - `com="..."` -> `Firstname+Lastname` (contact/owner name)
                     cleaned_list = _redact_xml(xml_resp, xml_api)
                     try:
-                        cleaned_list = re.sub(r'(\bcom\s*=\s*")([^"]*)(")', r'\1My+Project\3', cleaned_list)
+                        cleaned_list = re.sub(r'(\bpn\s*=\s*")([^"]*)(")', r'\1My+Project\3', cleaned_list)
+                    except (re.error, TypeError, ValueError):
+                        # If replacement fails, keep the redacted content as-is
+                        pass
+                    try:
+                        cleaned_list = re.sub(r'(\bcom\s*=\s*")([^"]*)(")', r'\1Firstname+Lastname\3', cleaned_list)
                     except (re.error, TypeError, ValueError):
                         # If replacement fails, keep the redacted content as-is
                         pass
