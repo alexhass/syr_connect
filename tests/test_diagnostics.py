@@ -374,8 +374,8 @@ def test_mask_srn_value_re_match_exception(monkeypatch) -> None:
 
 async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
     """Test JSON API path ensures getSRN is explicitly redacted to **REDACTED**."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
 
     config_entry = ConfigEntry(
         version=1,
@@ -3351,3 +3351,186 @@ async def test_diagnostics_fetch_device_json_gather_exception(hass: HomeAssistan
 
     assert "raw_json" in result
     assert result["raw_json"] == {}
+
+
+# ---------------------------------------------------------------------------
+# Lines 361-362 – except Exception: pass in JSON-API getSRN assignment block
+# ---------------------------------------------------------------------------
+
+async def test_json_api_getsrn_except_block(monkeypatch, hass: HomeAssistant) -> None:
+    """Cover except Exception: pass when getSRN assignment into BadDict raises (JSON API path)."""
+    from custom_components.syr_connect import diagnostics as diag
+
+    class OnceRaiseDict(dict):
+        """dict whose __setitem__ raises RuntimeError for 'getSRN' on the first call only."""
+        def __init__(self, *args, **kwargs):
+            dict.__init__(self, *args, **kwargs)
+            self._srn_raised = False
+
+        def __setitem__(self, key, value):
+            if key == "getSRN" and not self._srn_raised:
+                self._srn_raised = True
+                raise RuntimeError("blocked once")
+            dict.__setitem__(self, key, value)
+
+    class FakeJsonApi:
+        def is_session_valid(self):
+            return True
+
+        async def _request_json_data(self, *a, **kw):
+            return {"getSRN": "206AAA67890", "getFLO": "10"}
+
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
+    monkeypatch.setattr(
+        diag,
+        "async_redact_data",
+        lambda data, keys: OnceRaiseDict(data),
+    )
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_USERNAME: "u", CONF_PASSWORD: "p"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # coordinator.data = None → _mask_sensitive is never called, avoiding BadDict mutation issues
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = FakeJsonApi()
+
+    config_entry.runtime_data = mock_coordinator
+
+    result = await diag.async_get_config_entry_diagnostics(hass, config_entry)
+    # The except block swallowed the error; raw_json must contain the device key
+    assert "raw_json" in result
+    assert "local_device" in result["raw_json"]
+
+
+# ---------------------------------------------------------------------------
+# Lines 430-432 – except Exception: pass in XML-device getSRN assignment block
+# ---------------------------------------------------------------------------
+
+async def test_xml_device_json_getsrn_except_block(monkeypatch, hass: HomeAssistant) -> None:
+    """Cover except Exception: pass when getSRN assignment raises inside _fetch_device_json."""
+    from custom_components.syr_connect import diagnostics as diag
+
+    class OnceRaiseDict(dict):
+        def __init__(self, *args, **kwargs):
+            dict.__init__(self, *args, **kwargs)
+            self._srn_raised = False
+
+        def __setitem__(self, key, value):
+            if key == "getSRN" and not self._srn_raised:
+                self._srn_raised = True
+                raise RuntimeError("blocked once")
+            dict.__setitem__(self, key, value)
+
+    class FakeJsonApi:
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            pass
+
+        def _build_base_url(self):
+            return "http://192.168.1.1"
+
+        async def _request_json_data(self, *a, **kw):
+            return {"getSRN": "206AAA67890", "getFLO": "5"}
+
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", lambda *a, **kw: FakeJsonApi())
+    monkeypatch.setattr(
+        diag,
+        "async_redact_data",
+        lambda data, keys: OnceRaiseDict(data),
+    )
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "u", CONF_PASSWORD: "p"},  # default XML API
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [{"id": "dev1", "base_path": "/api", "ip": "192.168.1.1", "status": {}}],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = MagicMock()
+    mock_coordinator.api = None
+
+    config_entry.runtime_data = mock_coordinator
+
+    result = await diag.async_get_config_entry_diagnostics(hass, config_entry)
+    # except block swallowed the error; dev1 is still returned in raw_json (with original getSRN)
+    assert "raw_json" in result
+    assert "dev1" in result["raw_json"]
+
+
+# ---------------------------------------------------------------------------
+# Lines 555-556 – _mask_sensitive: getMAC2 branch
+# ---------------------------------------------------------------------------
+
+async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -> None:
+    """Cover the getMAC2 branch in _mask_sensitive (lines 555-556)."""
+    from custom_components.syr_connect import diagnostics as diag
+
+    class FakeJsonApi:
+        def is_session_valid(self):
+            return True
+
+        async def _request_json_data(self, *a, **kw):
+            # Return a dict with getMAC2 so _mask_sensitive hits that branch
+            return {"getMAC2": "AA:BB:CC:DD:EE:FF", "getFLO": "8"}
+
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_USERNAME: "u", CONF_PASSWORD: "p"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = FakeJsonApi()
+
+    config_entry.runtime_data = mock_coordinator
+
+    result = await diag.async_get_config_entry_diagnostics(hass, config_entry)
+    # getMAC2 must have been masked by mask_mac_value with last_char_replace='Y'
+    assert "raw_json" in result
+    assert "dev1" in result["raw_json"]
+    mac2 = result["raw_json"]["dev1"].get("getMAC2")
+    assert mac2 is not None
+    assert "XX" in mac2
