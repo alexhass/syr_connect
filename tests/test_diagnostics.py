@@ -535,7 +535,7 @@ async def test_diagnostics_masks_id_srn(hass: HomeAssistant) -> None:
     # Use an id that matches the SRN pattern: 3 digits, 3 uppercase letters, 5 digits
     mock_coordinator.data = {
         "devices": [
-            {"id": "501AAA37859", "name": "Device SRN", "available": True, "project_id": "proj"}
+            {"id": "501AAA54321", "name": "Device SRN", "available": True, "project_id": "proj"}
         ],
         "projects": [],
     }
