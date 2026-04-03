@@ -149,7 +149,7 @@ class SyrConnectJsonAPI:
             and datetime.now() < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
         )
 
-    def _construct_encoded_url(self, *path_parts: str, encode: bool = True) -> URL:
+    def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
         """Build a URL from path components with optional encoding.
 
         This method handles URL construction with proper encoding for special characters.
@@ -160,8 +160,8 @@ class SyrConnectJsonAPI:
         - We use quote() to encode, then yarl.URL(encoded=True) to prevent re-decoding
 
         Examples:
-            _construct_encoded_url("set", "RTM", "02:30", encode=True)
-            -> URL("http://device:5333/neosoft/set/RTM/02%3A30", encoded=True)
+            _construct_encoded_url("set", "RTM", "02:30", encode=False)
+            -> URL("http://device:5333/neosoft/set/RTM/02%3A30", encoded=False)
 
             _construct_encoded_url("set", "ADM", "(2)f", encode=False)
             -> URL("http://device:5333/neosoft/set/ADM/(2)f")
@@ -215,9 +215,15 @@ class SyrConnectJsonAPI:
         return f"set{str(cmd).upper()}{value}"
 
     def _build_set_url(self, cmd: str, value: Any) -> URL:
-        """Build the encoded URL for a set command using normalized cmd."""
+        """Build the URL for a set command using normalized cmd.
+
+        Values are sent without percent-encoding because the device firmware
+        does not decode percent-encoded characters (e.g. %3A → :) and rejects
+        encoded values. Special characters such as colons in RTM time strings
+        (e.g. "02:30") must therefore be sent literally.
+        """
         url_cmd = self._normalize_cmd_for_url(cmd)
-        return self._construct_encoded_url("set", url_cmd, str(value), encode=True)
+        return self._construct_encoded_url("set", url_cmd, str(value), encode=False)
 
     async def _execute_http_get(
         self,
