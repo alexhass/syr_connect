@@ -644,20 +644,6 @@ class SyrConnectJsonAPI:
         # command and build the correct URL form via helpers.
         base_cmd = self._strip_set_prefix(command)
 
-        # For RTM (time) values some devices expect hour without leading zero
-        # (e.g., "2:15" not "02:15"). Normalize here to keep URL building
-        # consistent and minimal.
-        if str(base_cmd).upper() == "RTM" and isinstance(value, str) and ":" in value:
-            try:
-                h, m = value.split(":", 1)
-                # Remove a single leading zero from hour (preserve '0' -> '0')
-                if len(h) > 1 and h.startswith("0"):
-                    h = str(int(h))
-                value = f"{h}:{m}"
-            except Exception:
-                # If parsing fails, leave value unchanged
-                pass
-
         # Build URL with Path Encoding using helper (handles ADM exception)
         url = self._build_set_url(base_cmd, value)
 

@@ -641,20 +641,20 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setRTM2:15": "OK"})
+    mock_response.json = AsyncMock(return_value={"setRTM02:15": "OK"})
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # Test with time value containing colon (e.g., "2:15")
-    result = await client.set_device_status("device1", "RTM", "2:15")
+    # Test with time value containing colon (e.g., "02:15")
+    result = await client.set_device_status("device1", "RTM", "02:15")
 
     # Verify URL contains literal colon (not percent-encoded) because device
     # firmware does not decode %3A and rejects encoded values.
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/rtm/2:15" in called_url
+    assert "/set/rtm/02:15" in called_url
     assert result is True
 
     # Test with value containing slash – also sent without encoding
@@ -734,9 +734,7 @@ def test_response_key_for():
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    assert api._response_key_for("rtm", "0:15") == "setRTM0:15"
-    assert api._response_key_for("rtm", "2:15") == "setRTM2:15"
-    assert api._response_key_for("rtm", "15:15") == "setRTM15:15"
+    assert api._response_key_for("rtm", "02:15") == "setRTM02:15"
     assert api._response_key_for("PRF9", "999") == "setPRF9999"
 
 
@@ -745,8 +743,8 @@ def test_build_set_url_encodes_and_cases():
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # All values are now sent WITHOUT percent-encoding
-    url = api._build_set_url("RTM", "2:15")
-    assert "/set/rtm/2:15" in str(url)
+    url = api._build_set_url("RTM", "02:15")
+    assert "/set/rtm/02:15" in str(url)
 
     url2 = api._build_set_url("ADM", "(2)f")
     # Parentheses are also sent as-is
@@ -1456,69 +1454,6 @@ async def test_get_value_skips_login_when_login_not_required() -> None:
     # login must NOT have been called
     client.login.assert_not_called()
     assert result == {"getFLO": 42}
-
-
-async def test_set_device_status_rtm_strips_leading_zero_from_hour() -> None:
-    """set_device_status strips leading zero from RTM hour (lines 649, 651-653 coverage)."""
-    sess = MagicMock()
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setRTM2:30": "OK"})
-    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-    mock_response.__aexit__ = AsyncMock(return_value=None)
-    sess.get = MagicMock(return_value=mock_response)
-
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    # "02:30" -> leading zero stripped -> "2:30"
-    result = await client.set_device_status("device1", "setRTM", "02:30")
-
-    called_url = str(sess.get.call_args[0][0])
-    assert "2:30" in called_url  # leading zero stripped, sent as literal "2:30"
-    assert called_url.count("02:30") == 0
-    assert result is True
-
-
-async def test_set_device_status_rtm_preserves_single_zero_hour() -> None:
-    """set_device_status preserves '0' as hour when it is a single digit (lines 649, 651-653 coverage)."""
-    sess = MagicMock()
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setRTM0:15": "OK"})
-    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-    mock_response.__aexit__ = AsyncMock(return_value=None)
-    sess.get = MagicMock(return_value=mock_response)
-
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    # "0:15" -> single-digit zero kept as-is
-    result = await client.set_device_status("device1", "setRTM", "0:15")
-
-    called_url = str(sess.get.call_args[0][0])
-    assert "0:15" in called_url  # single-digit zero kept, sent as literal "0:15"
-    assert result is True
-
-
-async def test_set_device_status_rtm_except_branch() -> None:
-    """set_device_status handles unparseable RTM hour gracefully (lines 651-653 except branch)."""
-    sess = MagicMock()
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_response.raise_for_status = MagicMock()
-    # Value is unchanged ("0xyz:30") because int("0xyz") raises ValueError
-    mock_response.json = AsyncMock(return_value={"setRTM0xyz:30": "OK"})
-    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
-    mock_response.__aexit__ = AsyncMock(return_value=None)
-    sess.get = MagicMock(return_value=mock_response)
-
-    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-
-    # "0xyz:30" -> len("0xyz") > 1 and starts with "0", so int("0xyz") raises -> except branch
-    result = await client.set_device_status("device1", "setRTM", "0xyz:30")
-
-    assert result is True
 
 
 async def test_get_devices_skips_login_when_login_not_required() -> None:
