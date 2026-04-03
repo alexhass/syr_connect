@@ -7,7 +7,7 @@
   <dvs>
     <d dg="41985e4a-8b09-f111-8010-be3af2b6059f" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
-      <c n="getSRN" v="206AAA56934" dt="16.02.2026 21:18:56" />
+      <c n="getSRN" v="206AAA12345" dt="16.02.2026 21:18:56" />
       <c n="getALM" v="ff,ff,ff,ff,ff,ff,ff,ff" dt="16.02.2026 21:19:03" />
       <c n="getALN" v="ff,ff,ff,ff,ff,ff,ff,ff" />
       <c n="getALW" v="ff,ff,ff,ff,ff,ff,ff,ff" />
@@ -19,8 +19,8 @@
       <c n="getLAR" v="1771200000" />
       <c n="getLDF" v="" />
       <c n="getLMS" v="[0,0,0,0,0,0,0,0,0,0,0,0]" />
-      <c n="getMAC1" v="c4:98:94:eX:XX:Xb" />
-      <c n="getMAC2" v="c4:98:94:eX:XX:Xa" />
+      <c n="getMAC1" v="c4:98:94:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
       <c n="getNRE" v="1" />
       <c n="getOHF" v="" />
       <c n="getOWH" v="7" />

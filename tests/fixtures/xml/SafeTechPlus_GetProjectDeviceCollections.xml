@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <prs>
-    <pr pg="0a2bf13e-3222-f111-8011-be3af2b6059f" pn="KH25" pt="1" com="My+Project" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="01:00:00" />
+    <pr pg="0a2bf13e-3222-f111-8011-be3af2b6059f" pn="My+Project" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="01:00:00" />
   </prs>
   <col>
-    <dcl dclg="0b2bf13e-3222-f111-8011-be3af2b6059f" ali="KH25" dkv="112" mod="0" pg="0a2bf13e-3222-f111-8011-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+    <dcl dclg="0b2bf13e-3222-f111-8011-be3af2b6059f" ali="Example+SafeTechPlus" dkv="112" mod="0" pg="0a2bf13e-3222-f111-8011-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
   </col>
   <dvs>
     <d dg="0d2bf13e-3222-f111-8011-be3af2b6059f" sn="112AAA12345" sbt="" dfw="syr001-A-B-000-176" dk="1112" dclg="0b2bf13e-3222-f111-8011-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="0c2bf13e-3222-f111-8011-be3af2b6059f" so="1" ondt="" mac="" cfw="176" apn="Anwesend" apv="300" vlv="20" wh="7" bap="100" />

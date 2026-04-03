@@ -20,8 +20,8 @@
       <c n="getLAR" v="1771200000" />
       <c n="getLDF" v="" />
       <c n="getLMS" v="[0,0,0,0,0,0,0,0,0,0,0,0]" />
-      <c n="getMAC1" v="c4:98:94:eX:XX:Xb" />
-      <c n="getMAC2" v="c4:98:94:eX:XX:Xa" />
+      <c n="getMAC1" v="c4:98:94:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
       <c n="getNRE" v="1" />
       <c n="getOHF" v="" />
       <c n="getOWH" v="7" />

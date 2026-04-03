@@ -495,7 +495,7 @@ def test_attrs_match_none_value_in_flat():
 
 def test_serial_prefix_detection_113():
     """Serial number starting with 113AAA... detects model 113."""
-    flat = {"getSRN": "113AAA35413"}
+    flat = {"getSRN": "113AAA54321"}
     result = detect_model(flat)
     assert result["name"] == "trio"
     assert result["display_name"].startswith("Trio DFR/LS")
@@ -503,7 +503,7 @@ def test_serial_prefix_detection_113():
 
 def test_serial_prefix_detection_206():
     """Serial number starting with 206AAA... detects model 206."""
-    flat = {"getSRN": "206AAA56934"}
+    flat = {"getSRN": "206AAA54321"}
     result = detect_model(flat)
     assert result["name"] == "neosoft2500"
     assert result["display_name"].startswith("NeoSoft 2500")

@@ -17,8 +17,8 @@
       <c n="getDSV" v="3" />
       <c n="getEGW" v="192.168.178.1" />
       <c n="getEIP" v="192.168.178.101" />
-      <c n="getMAC1" v="f0:f5:bd:eX:XX:XX" />
-      <c n="getMAC2" v="c4:98:94:eX:XX:XY" />
+      <c n="getMAC1" v="f0:f5:bd:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
       <c n="getPRN" v="2" />
       <c n="getSLF" v="3500" />
       <c n="getSLT" v="0" />

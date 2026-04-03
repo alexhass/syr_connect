@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <prs>
-    <pr pg="221d3522-8e1d-f111-8011-be3af2b6059f" pn="FXB2025" pt="1" com="My+Project" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="01:00:00" />
+    <pr pg="221d3522-8e1d-f111-8011-be3af2b6059f" pn="My+Project" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="01:00:00" />
   </prs>
   <col>
-    <dcl dclg="231d3522-8e1d-f111-8011-be3af2b6059f" ali="FXB2025" dkv="207" mod="0" pg="221d3522-8e1d-f111-8011-be3af2b6059f" ag="" aif="" pclg="51e93828-8e1d-f111-8011-be3af2b6059f" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
-    <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" ali="Leckageschutz" dkv="501" mod="0" pg="221d3522-8e1d-f111-8011-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+    <dcl dclg="231d3522-8e1d-f111-8011-be3af2b6059f" ali="Example+Water+Softener+Uno+A25" dkv="207" mod="0" pg="221d3522-8e1d-f111-8011-be3af2b6059f" ag="" aif="" pclg="51e93828-8e1d-f111-8011-be3af2b6059f" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+    <dcl dclg="51e93828-8e1d-f111-8011-be3af2b6059f" ali="Example+Leakage+Protection" dkv="501" mod="0" pg="221d3522-8e1d-f111-8011-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
   </col>
   <dvs>
     <d dg="251d3522-8e1d-f111-8011-be3af2b6059f" sn="207AAA12345" sbt="" dfw="NSS.V.2.36" dk="1207" dclg="231d3522-8e1d-f111-8011-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="241d3522-8e1d-f111-8011-be3af2b6059f" so="1" ondt="" mac="" cfw="236" ss="36" sv="8" owh="5" whu="0" rmo="4" />
