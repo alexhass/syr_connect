@@ -334,6 +334,148 @@ def test_mask_mac_value_last_char_replace_no_error() -> None:
     assert out.startswith("AA:BB:CC")
 
 
+def test_mask_mac_value_non_string_returns_original() -> None:
+    assert mask_mac_value(None) is None
+
+
+def test_mask_srn_value_non_string_returns_original() -> None:
+    assert mask_srn_value(None) is None
+
+
+def test_mask_mac_value_re_sub_exception(monkeypatch) -> None:
+    # Simulate re.sub raising inside mask_mac_value's last_char_replace branch
+    import re as _re
+
+    import custom_components.syr_connect.diagnostics as diag
+
+    def fake_sub(*args, **kwargs):
+        raise _re.error("boom")
+
+    monkeypatch.setattr(diag.re, "sub", fake_sub)
+    # Should not raise, should return the normal masked result or original
+    out = diag.mask_mac_value("AA:BB:CC:DD:EE:FF", last_char_replace="Y")
+    assert out is not None
+
+
+def test_mask_srn_value_re_match_exception(monkeypatch) -> None:
+    """Ensure mask_srn_value handles regex.match raising an error gracefully."""
+    import re as _re
+
+    import custom_components.syr_connect.diagnostics as diag
+
+    def fake_match(*args, **kwargs):
+        raise _re.error("boom")
+
+    monkeypatch.setattr(diag.re, "match", fake_match)
+
+    # Should not raise, and return the original string when match fails with exception
+    assert diag.mask_srn_value("206AAA67890") == "206AAA67890"
+
+
+async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
+    """Test JSON API path ensures getSRN is explicitly redacted to **REDACTED**."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password", CONF_API_TYPE: API_TYPE_JSON},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class DummyJsonAPI:
+        def is_session_valid(self):
+            return True
+
+        async def _request_json_data(self, *args, **kwargs):
+            return {"getSRN": "206AAA67890", "value": 1}
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = DummyJsonAPI()
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    # device id should be used as key
+    assert "dev1" in diagnostics["raw_json"]
+    # getSRN must be explicitly redacted to the literal value
+    assert diagnostics["raw_json"]["dev1"]["getSRN"] == "**REDACTED**"
+
+
+async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) -> None:
+    """Verify XML SRN masking and com replacement in device_list."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    # Mock an XML API that returns a device_list containing com and a device status containing getSRN
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    # device_list XML includes com attribute
+    device_list_xml = '<devices><device com="Firstname+Lastname" id="dev1"/></devices>'
+    # status XML includes <c n="getSRN" v="206AAA67890"/>
+    status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
+
+    async def fake_post(url, payload):
+        if "DeviceList" in url or "DeviceCollection" in url:
+            return device_list_xml
+        return status_xml
+
+    mock_api.http_client = MagicMock()
+    mock_api.http_client.post = AsyncMock(side_effect=fake_post)
+
+    # Minimal payload builder and parser
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_status_payload = MagicMock(return_value="payload2")
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1", "name": "Device 1", "available": True, "project_id": "proj1", "status": {}}], "projects": [{"id": "proj1", "name": "Project 1"}]}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # device_list should have com replaced
+    assert "raw_xml" in diagnostics
+    proj = next(iter(diagnostics["raw_xml"].values()))
+    assert "My+Project" in proj["device_list"]
+    # status SRN should be masked (trailing digits -> 12345) in device xml
+    # find device xml for dev1
+    devices = proj.get("devices", {})
+    assert any("206AAA12345" in v for v in devices.values())
+
+
 async def test_diagnostics_api_login_fails(hass: HomeAssistant) -> None:
     """Test diagnostics when API login fails."""
     from unittest.mock import AsyncMock
