@@ -2830,6 +2830,7 @@ async def test_sensor_setup_binary_key_in_known_keys_not_created(hass: HomeAssis
     add_entities = Mock()
 
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+
     from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_KNOWN_KEYS
 
     # Temporarily add getFAKE to KNOWN_KEYS and BINARY so it reaches the binary-sensor guard
