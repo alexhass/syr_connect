@@ -651,16 +651,17 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     # Test with time value containing colon (e.g., "2:15")
     result = await client.set_device_status("device1", "RTM", "2:15")
 
-    # Verify URL contains URL-encoded value (%3A for colon)
+    # Verify URL contains literal colon (not percent-encoded) because device
+    # firmware does not decode %3A and rejects encoded values.
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/rtm/2%3A15" in called_url
+    assert "/set/rtm/2:15" in called_url
     assert result is True
 
-    # Test with value containing slash
+    # Test with value containing slash – also sent without encoding
     mock_response.json = AsyncMock(return_value={"setCMDvalue/with/slash": "OK"})
     result2 = await client.set_device_status("device1", "CMD", "value/with/slash")
     called_url2 = str(sess.get.call_args[0][0])
-    assert "%2F" in called_url2  # slash should be encoded
+    assert "value/with/slash" in called_url2
     assert result2 is True
 
 
@@ -743,12 +744,13 @@ def test_build_set_url_encodes_and_cases():
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
+    # All values are now sent WITHOUT percent-encoding
     url = api._build_set_url("RTM", "2:15")
-    assert "/set/rtm/2%3A15" in str(url)
+    assert "/set/rtm/2:15" in str(url)
 
     url2 = api._build_set_url("ADM", "(2)f")
-    # _build_set_url encodes by default; parentheses should be percent-encoded
-    assert "/set/ADM/%282%29f" in str(url2)
+    # Parentheses are also sent as-is
+    assert "/set/ADM/(2)f" in str(url2)
 
 
 async def test_validate_response_errors_case_sensitive() -> None:
@@ -1473,8 +1475,8 @@ async def test_set_device_status_rtm_strips_leading_zero_from_hour() -> None:
     result = await client.set_device_status("device1", "setRTM", "02:30")
 
     called_url = str(sess.get.call_args[0][0])
-    assert "2%3A30" in called_url  # "2:30" URL-encoded, NOT "02:30"
-    assert "02%3A30" not in called_url
+    assert "2:30" in called_url  # leading zero stripped, sent as literal "2:30"
+    assert called_url.count("02:30") == 0
     assert result is True
 
 
@@ -1495,7 +1497,7 @@ async def test_set_device_status_rtm_preserves_single_zero_hour() -> None:
     result = await client.set_device_status("device1", "setRTM", "0:15")
 
     called_url = str(sess.get.call_args[0][0])
-    assert "0%3A15" in called_url
+    assert "0:15" in called_url  # single-digit zero kept, sent as literal "0:15"
     assert result is True
 
 
