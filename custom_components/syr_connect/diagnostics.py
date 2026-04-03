@@ -28,23 +28,61 @@ from .models import detect_model
 # Maximum concurrent API calls for diagnostics data collection
 _SYR_CONNECT_CONCURRENT_API_CALLS = 5
 
+# Some keys are handled specially and MUST NOT be fully redacted:
+# - `getMAC`/`getMAC1`/`getMAC2` are masked with custom rules below,
+# - `getSRN` (device serial)
 _TO_REDACT = {
     CONF_PASSWORD,
     CONF_USERNAME,
     "session_data",
-    "getSRN",   # Serial number
-    "getFRN",   # Factory reference number (fallback for device ID)
-    "getMAC",   # MAC address
-    "getMAC1",  # Wi-Fi MAC address
-    "getMAC2",  # Ethernet MAC address
-    "getIPA",   # IP address
     "getDGW",   # Default gateway
     "getEGW",   # Ethernet gateway
     "getEIP",   # Ethernet IP address
-    "getWGW",   # Wi-Fi gateway
+    "getIPA",   # IP address
     "getWFC",   # Wi-Fi SSID
+    "getWGW",   # Wi-Fi gateway
     "getWIP",   # Wi-Fi IP address
 }
+
+
+def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
+    """Mask a MAC address while preserving the vendor (first three octets).
+
+    If the input does not parse as six octets, return the original string.
+    If `last_char_replace` is provided, replace the final hex character
+    in the resulting masked string with that value (used for `getMAC2`).
+    """
+    if not isinstance(val, str) or val.strip() == "":
+        return val
+    s = val.strip()
+    pairs = re.findall(r"[0-9A-Fa-f]{2}", s)
+    if len(pairs) < 6:
+        return s
+    sep = ':' if ':' in s else '-' if '-' in s else ':'
+    preserved = [p.upper() for p in pairs[:3]]
+    masked_tail = ['XX'] * (len(pairs) - 3)
+    result = sep.join(preserved + masked_tail)
+    if last_char_replace is not None:
+        try:
+            result = re.sub(r"([0-9A-F])$", last_char_replace, result)
+        except re.error:
+            pass
+    return result
+
+
+def mask_srn_value(val: Any) -> Any:
+    """Mask a SRN value when it matches the expected serial format.
+
+    Expected format: 3 digits, 3 uppercase letters, 5 digits — e.g. '206AAA12345'.
+    When matched, replace the trailing 5 digits with the constant '12345'.
+    """
+    if not isinstance(val, str):
+        return val
+    try:
+        m = re.match(r"^(\d{3}[A-Z]{3})(\d{5})$", val)
+    except re.error:
+        return val
+    return f"{m.group(1)}12345" if m else val
 
 
 async def async_get_config_entry_diagnostics(
@@ -82,6 +120,8 @@ async def async_get_config_entry_diagnostics(
         "projects": projects_info,
     }
 
+    # Use module-level `mask_mac_value` helper defined above.
+
     # Redact username in entry title if present, e.g. "SYR Connect (username)" ->
     # "SYR Connect (***REDACTED_USERNAME***)" to avoid leaking usernames in diagnostics.
     try:
@@ -107,6 +147,34 @@ async def async_get_config_entry_diagnostics(
             return ""
 
         cleaned = xml
+
+        # Replace standalone MAC addresses in text using the shared helper
+        cleaned = re.sub(
+            r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",
+            lambda m: mask_mac_value(m.group(0), None),
+            cleaned,
+        )
+
+        # Mask SRN values inside XML attribute forms and <c n="getSRN" v="..."/> entries
+        try:
+            cleaned = re.sub(
+                r'(<c\b[^>]*\bn\s*=\s*"getSRN"[^>]*\bv\s*=\s*")([^\"]*)(")',
+                lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
+                cleaned,
+                flags=re.IGNORECASE,
+            )
+        except (re.error, TypeError, ValueError):
+            pass
+
+        try:
+            cleaned = re.sub(
+                r'(\bgetSRN\s*=\s*")([^\"]*)(")',
+                lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
+                cleaned,
+                flags=re.IGNORECASE,
+            )
+        except (re.error, TypeError, ValueError):
+            pass
 
         # For each redact key, replace attribute values like key="..."
         for key in _TO_REDACT:
@@ -151,7 +219,14 @@ async def async_get_config_entry_diagnostics(
         # Generic redactions
         try:
             cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "***REDACTED_IP***", cleaned)
-            cleaned = re.sub(r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b", "***REDACTED_MAC***", cleaned)
+
+            # Replace standalone MAC addresses in text using the shared helper
+            cleaned = re.sub(
+                r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",
+                lambda m: mask_mac_value(m.group(0), None),
+                cleaned,
+            )
+
             cleaned = re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "***REDACTED_USERNAME***", cleaned)
         except (re.error, TypeError, ValueError):
             pass
@@ -207,7 +282,15 @@ async def async_get_config_entry_diagnostics(
                         xml_api.session_data or "", pid
                     )
                     xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
-                    projects_raw[pid]["device_list"] = _redact_xml(xml_resp, xml_api)
+                    # Redact the device list XML and replace any `com="..."` attribute
+                    # with the project-safe value `My+Project` to avoid leaking names.
+                    cleaned_list = _redact_xml(xml_resp, xml_api)
+                    try:
+                        cleaned_list = re.sub(r'(\bcom\s*=\s*")([^"]*)(")', r'\1My+Project\3', cleaned_list)
+                    except (re.error, TypeError, ValueError):
+                        # If replacement fails, keep the redacted content as-is
+                        pass
+                    projects_raw[pid]["device_list"] = cleaned_list
 
                     # Parse devices (best-effort)
                     try:
@@ -436,8 +519,48 @@ async def async_get_config_entry_diagnostics(
             }
             projects_info.append(project_info)
 
-    # Apply redaction after populating devices and projects
-    diagnostics_data = _redact_obj(diagnostics_data)
+        # Mask sensitive values BEFORE global redaction.
+        # 1) `getSRN`: If value matches `\d{3}[A-Z]{3}\d{5}`, replace trailing 5 digits with '12345'.
+        # 2) `getMAC` / `getMAC1`: Replace vendor part (first 3 octets) with 'XX'.
+        # 3) `getMAC2`: Same vendor masking, then replace final character with 'Y'.
+        # Use module-level `mask_srn_value` helper defined above
+
+        def _mask_sensitive(obj: Any) -> Any:
+            if isinstance(obj, dict):
+                for k, v in list(obj.items()):
+                    key = str(k)
+
+                    # Mask SRN value when the key is `getSRN` (case-insensitive)
+                    if key.lower() == 'getsrn':
+                        obj[k] = mask_srn_value(v)
+                        continue
+
+                    # Mask MACs with custom rules using shared helper
+                    if isinstance(v, str) and key.lower() in ('getmac', 'getmac1'):
+                        obj[k] = mask_mac_value(v, last_char_replace=None)
+                        continue
+                    if isinstance(v, str) and key.lower() == 'getmac2':
+                        obj[k] = mask_mac_value(v, last_char_replace='Y')
+                        continue
+
+                    # Also mask SRN-like strings found in arbitrary keys (e.g. `id`)
+                    if isinstance(v, str):
+                        masked = mask_srn_value(v)
+                        if masked != v:
+                            obj[k] = masked
+                            continue
+
+                    # Recurse for nested structures
+                    obj[k] = _mask_sensitive(v)
+                return obj
+            if isinstance(obj, list):
+                return [_mask_sensitive(i) for i in obj]
+            return obj
+
+        diagnostics_data = _mask_sensitive(diagnostics_data)
+
+        # Apply redaction after populating devices and projects
+        diagnostics_data = _redact_obj(diagnostics_data)
 
     # Redact sensitive information from the dict fields (not raw XML strings)
     return async_redact_data(diagnostics_data, _TO_REDACT)

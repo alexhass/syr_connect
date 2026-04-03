@@ -19,7 +19,7 @@ from custom_components.syr_connect.const import (
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics, mask_mac_value, mask_srn_value
 
 
 async def test_diagnostics(hass: HomeAssistant) -> None:
@@ -304,6 +304,36 @@ async def test_diagnostics_api_login_required(hass: HomeAssistant) -> None:
     assert "raw_xml" in diagnostics
 
 
+def test_mask_srn_value_matches_and_masks() -> None:
+    assert mask_srn_value("206AAA67890") == "206AAA12345"
+    # non-matching SRN should be returned unchanged
+    assert mask_srn_value("not-a-srn") == "not-a-srn"
+
+
+def test_mask_mac_value_colon_separator() -> None:
+    inp = "aa:bb:cc:dd:ee:ff"
+    out = mask_mac_value(inp)
+    assert out == "AA:BB:CC:XX:XX:XX"
+
+
+def test_mask_mac_value_hyphen_separator() -> None:
+    inp = "aa-bb-cc-dd-ee-ff"
+    out = mask_mac_value(inp)
+    assert out == "AA-BB-CC-XX-XX-XX"
+
+
+def test_mask_mac_value_not_enough_octets() -> None:
+    inp = "00:11:22:33:44"
+    out = mask_mac_value(inp)
+    assert out == inp
+
+
+def test_mask_mac_value_last_char_replace_no_error() -> None:
+    inp = "AA:BB:CC:DD:EE:FF"
+    out = mask_mac_value(inp, last_char_replace="Y")
+    assert out.startswith("AA:BB:CC")
+
+
 async def test_diagnostics_api_login_fails(hass: HomeAssistant) -> None:
     """Test diagnostics when API login fails."""
     from unittest.mock import AsyncMock
@@ -339,6 +369,43 @@ async def test_diagnostics_api_login_fails(hass: HomeAssistant) -> None:
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
     assert "raw_xml" in diagnostics
+
+
+async def test_diagnostics_masks_id_srn(hass: HomeAssistant) -> None:
+    """Verify that SRN-like strings in arbitrary fields (like `id`) are masked."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Use an id that matches the SRN pattern: 3 digits, 3 uppercase letters, 5 digits
+    mock_coordinator.data = {
+        "devices": [
+            {"id": "501AAA37859", "name": "Device SRN", "available": True, "project_id": "proj"}
+        ],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # The device id should be masked by mask_srn_value -> trailing 5 digits replaced
+    assert diagnostics.get("devices")
+    masked_id = diagnostics["devices"][0]["id"]
+    assert masked_id == "501AAA12345"
 
 
 async def test_diagnostics_xml_redaction_patterns(hass: HomeAssistant) -> None:
