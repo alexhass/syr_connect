@@ -96,32 +96,6 @@ async def test_async_setup_entry_creates_valve(hass: HomeAssistant, create_mock_
     assert len(entities) >= 1
 
 
-async def test_valve_from_vlv_only(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
-    """Valve should be created when only getVLV present and state properties derive from it."""
-    data = {
-        "devices": [
-            {
-                "id": "device2",
-                "name": "Test Device 2",
-                "project_id": "project1",
-                "status": {"getVLV": "21"},
-            }
-        ]
-    }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    assert len(entities) >= 1
-    # Inspect created valve entity's runtime properties
-    valve = entities[0]
-    # coordinator was set on created entity in async_setup_entry; ensure properties
-    assert valve.is_opening is True
-    assert valve.is_closing is False
-    assert valve.is_closed is False
-
-
 async def test_available(hass: HomeAssistant) -> None:
     data = {
         "devices": [
@@ -188,8 +162,8 @@ async def test_async_setup_entry_creates_valves(hass: HomeAssistant) -> None:
 
     add_entities.assert_called_once()
     entities = add_entities.call_args.args[0]
-    # Two devices should produce two valve entities
-    assert len(entities) == 2
+    # Only device 1 (getAB) should produce a valve entity; device 2 (getVLV only) does not.
+    assert len(entities) == 1
 
 
 async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> None:
@@ -588,7 +562,7 @@ async def test_async_setup_entry_getab_value_3_not_valid(hass: HomeAssistant) ->
 
 
 async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -> None:
-    """Test that getVLV value of 5 is not valid (only 10/11/20/21 are valid)."""
+    """Test that a Pontos-Base device with only getVLV (no getAB) does not create a valve entity."""
     data = {
         "devices": [
             {
@@ -606,7 +580,7 @@ async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # getVLV=5 should not create valve
+    # getVLV-only device must not create a valve entity
     add_entities.assert_not_called()
 
 
@@ -872,7 +846,7 @@ async def test_is_closing_typeerror(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_getvlv_all_valid_codes(hass: HomeAssistant) -> None:
-    """Test async_setup_entry creates valves for all valid getVLV codes."""
+    """Test that Pontos-Base devices with only getVLV (no getAB) do not create valve entities."""
     data = {
         "devices": [
             {"id": "v10", "name": "V10", "status": {"getVLV": "10"}},  # closed
@@ -888,10 +862,8 @@ async def test_async_setup_entry_getvlv_all_valid_codes(hass: HomeAssistant) -> 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # Should create 4 valves
-    add_entities.assert_called_once()
-    entities = add_entities.call_args.args[0]
-    assert len(entities) == 4
+    # getVLV-only devices must NOT create valve entities — getVLV is a sensor, not a control key
+    add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_getab_valid_values_1_and_2(hass: HomeAssistant) -> None:

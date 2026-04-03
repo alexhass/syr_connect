@@ -60,10 +60,10 @@ async def async_setup_entry(
         device_name = device.get("name", device_id)
         # Per-device status dictionary from the coordinator payload
         status = device.get("status", {})
-        # Create valve entity when device exposes either getAB (control)
-        # or getVLV (status)
+        # Create a valve entity only when the device exposes `getAB` (the
+        # actual valve control key). `getVLV` is a read-only status sensor
+        # and is handled exclusively by the sensor platform.
         ab_value = status.get("getAB")
-        vlv_value = status.get("getVLV")
         create = False
         # If `getAB` looks like a control value (numeric 1/2 or boolean),
         # treat the device as a valve that can be controlled.
@@ -77,18 +77,6 @@ async def async_setup_entry(
                     create = True
                 # Numeric representation (1=open, 2=closed)
                 elif int(float(ab_value)) in (1, 2):
-                    create = True
-        except (ValueError, TypeError):
-            create = False
-
-        # If `getVLV` looks numeric and matches our known status codes
-        # (10/11/20/21), also create a valve entity. We only create one
-        # entity per device regardless of whether both sensors are
-        # present; the entity will prefer `getVLV` for its reported
-        # state and use `getAB` for control.
-        try:
-            if not create and vlv_value is not None and vlv_value != "":
-                if int(float(vlv_value)) in (10, 11, 20, 21):
                     create = True
         except (ValueError, TypeError):
             create = False
