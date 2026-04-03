@@ -161,7 +161,7 @@ class SyrConnectJsonAPI:
 
         Examples:
             _construct_encoded_url("set", "RTM", "02:30", encode=False)
-            -> URL("http://device:5333/neosoft/set/RTM/02%3A30", encoded=False)
+            -> URL("http://device:5333/neosoft/set/RTM/02:30", encoded=False)
 
             _construct_encoded_url("set", "ADM", "(2)f", encode=False)
             -> URL("http://device:5333/neosoft/set/ADM/(2)f")
