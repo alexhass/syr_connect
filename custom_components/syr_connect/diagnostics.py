@@ -354,6 +354,12 @@ async def async_get_config_entry_diagnostics(
                     data = await api._request_json_data("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
                     # Redact sensitive keys from the parsed JSON payload
                     redacted = async_redact_data(data, _TO_REDACT)
+                    # Ensure SRN is fully redacted for raw_json payloads
+                    try:
+                        if isinstance(redacted, dict) and "getSRN" in redacted:
+                            redacted["getSRN"] = "**REDACTED**"
+                    except Exception:
+                        pass
                     # Use the first device ID from coordinator data as key, or "local_device"
                     device_id = "local_device"
                     if coordinator.data and coordinator.data.get("devices"):
@@ -418,6 +424,12 @@ async def async_get_config_entry_diagnostics(
 
                         # Redact sensitive keys from the parsed JSON payload
                         redacted = async_redact_data(data, _TO_REDACT)
+                        # Ensure SRN is fully redacted for raw_json payloads
+                        try:
+                            if isinstance(redacted, dict) and "getSRN" in redacted:
+                                redacted["getSRN"] = "**REDACTED**"
+                        except Exception:
+                            pass
                         return dev_id, redacted
                     except Exception:  # pragma: no cover - diagnostics should never fail
                         return dev_id, None
