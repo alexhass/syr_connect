@@ -118,9 +118,11 @@ def test_get_sensor_ab_and_build_set_additional():
     assert helpers.get_sensor_ab_value({"getAB": "true"}) is True
     assert helpers.get_sensor_ab_value({"getAB": "2"}) is True
 
-    # build set command prefers boolean-string when input looks boolean
+    # build set command mirrors device format
     assert helpers.build_set_ab_command({"getAB": "true"}, False) == ("setAB", "false")
+    assert helpers.build_set_ab_command({"getAB": True}, False) == ("setAB", "false")
     assert helpers.build_set_ab_command({"getAB": 1}, True) == ("setAB", 2)
+    assert helpers.build_set_ab_command({"getAB": "1"}, True) == ("setAB", 2)
 
 
 def test_get_sensor_maps_and_visibility_additional():
@@ -457,7 +459,7 @@ def test_get_sensor_rtm_and_setters() -> None:
     assert ("setRTH", 4) in cmds2 and ("setRTM", 20) in cmds2
 
 
-def test_get_sensor_ab_and_build_command() -> None:
+def test_get_sensor_ab_and_build_command(caplog) -> None:
     """Test parsing of getAB and building set commands."""
     from custom_components.syr_connect.helpers import (
         build_set_ab_command,
@@ -481,9 +483,25 @@ def test_get_sensor_ab_and_build_command() -> None:
 
     # build_set_ab_command: prefer boolean-string if raw looks boolean
     assert build_set_ab_command({"getAB": "true"}, closed=True) == ("setAB", "true")
+    assert build_set_ab_command({"getAB": "false"}, closed=True) == ("setAB", "true")
     assert build_set_ab_command({"getAB": True}, closed=False) == ("setAB", "false")
-    # fallback numeric
-    assert build_set_ab_command({"getAB": None}, closed=True) == ("setAB", 2)
+    assert build_set_ab_command({"getAB": False}, closed=True) == ("setAB", "true")
+    # native integer (JSON API devices reporting getAB as int 1/2) → numeric
+    assert build_set_ab_command({"getAB": 1}, closed=True) == ("setAB", 2)
+    assert build_set_ab_command({"getAB": 1}, closed=False) == ("setAB", 1)
+    assert build_set_ab_command({"getAB": 2}, closed=True) == ("setAB", 2)
+    assert build_set_ab_command({"getAB": 2}, closed=False) == ("setAB", 1)
+    # numeric string (XML API and some JSON API devices) → numeric
+    assert build_set_ab_command({"getAB": "1"}, closed=True) == ("setAB", 2)
+    assert build_set_ab_command({"getAB": "2"}, closed=False) == ("setAB", 1)
+    # absent getAB (missing key) → no log, numeric default
+    assert build_set_ab_command({}, closed=True) == ("setAB", 2)
+    # unknown format (None value) → logs error and returns None
+    import logging
+    with caplog.at_level(logging.ERROR, logger="custom_components.syr_connect.helpers"):
+        result = build_set_ab_command({"getAB": None}, closed=True)
+    assert result is None
+    assert "unexpected getAB format" in caplog.text
 
 
 def test_sensor_code_mappings_and_unknown_model() -> None:

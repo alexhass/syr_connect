@@ -316,7 +316,10 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         `HomeAssistantError` so callers receive a clear failure.
         """
         # Build the correct setAB command based on device representation
-        set_key, set_val = build_set_ab_command(self._get_status() or {}, False)
+        ab_cmd = build_set_ab_command(self._get_status() or {}, False)
+        if ab_cmd is None:
+            raise HomeAssistantError(f"Cannot open valve {self._device_id}: unknown getAB format")
+        set_key, set_val = ab_cmd
 
         # Optimistically cache the requested boolean value (False = opened)
         self._cached_ab = {"value": False, "expires": time.time() + self._ab_cache_seconds}
@@ -351,7 +354,10 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         See `async_open` for behavior and error handling.
         """
         # Build the correct setAB command based on device representation
-        set_key, set_val = build_set_ab_command(self._get_status() or {}, True)
+        ab_cmd = build_set_ab_command(self._get_status() or {}, True)
+        if ab_cmd is None:
+            raise HomeAssistantError(f"Cannot close valve {self._device_id}: unknown getAB format")
+        set_key, set_val = ab_cmd
 
         # Optimistically cache the requested boolean value (True = closed)
         self._cached_ab = {"value": True, "expires": time.time() + self._ab_cache_seconds}

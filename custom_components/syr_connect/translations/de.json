@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Ventilabsperrung",
-        "state": {
-          "false": "Geöffnet",
-          "true": "Geschlossen"
-        }
-      },
       "getfcd": {
         "name": "Filterspülintervall",
         "state": {

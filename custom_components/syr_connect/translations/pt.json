@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Fechamento da válvula",
-        "state": {
-          "false": "Aberto",
-          "true": "Fechado"
-        }
-      },
       "getfcd": {
         "name": "Intervalo de retrolavagem do filtro",
         "state": {

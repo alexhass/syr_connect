@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Chiusura valvola",
-        "state": {
-          "false": "Aperta",
-          "true": "Chiusa"
-        }
-      },
       "getfcd": {
         "name": "Intervallo di controlavaggio del filtro",
         "state": {

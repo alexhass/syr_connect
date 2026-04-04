@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Valve shut-off",
-        "state": {
-          "false": "Opened",
-          "true": "Closed"
-        }
-      },
       "getfcd": {
         "name": "Filter backwash interval",
         "state": {

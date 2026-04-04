@@ -712,32 +712,49 @@ def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     return (mapped, code) if mapped is not None else (None, code)
 
 
-def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any]:
+def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any] | None:
     """Build the appropriate (`setAB`, value) command for desired closed state.
 
     This function mirrors the device's own format for `getAB` when sending `setAB`:
-    - If device reports `getAB` as boolean-like strings, use "true"/"false"
-    - Otherwise use numeric representation: `1` (open) / `2` (closed)
+    - Native bool (`True`/`False`) or boolean strings ("true"/"false") → "true" (closed) / "false" (open)
+    - Native integer or numeric string ("1"/"2") → numeric `1` (open) / `2` (closed)
+    - Unknown or absent → `None` (error is logged; caller must not send the command)
 
     Using the device's native format prevents potential parsing errors or
     firmware issues when the device receives commands in an unexpected format.
 
-    Returns a tuple (set_key, value).
+    Returns a tuple (set_key, value), or None when the format is unrecognised.
     """
     raw = None
     if status:
         raw = status.get("getAB")
 
-    # Prefer boolean-string representation if current value looks boolean
-    if isinstance(raw, str) and raw.strip().lower() in ("true", "false"):
-        return ("setAB", "true" if closed else "false")
-
-    # If raw is explicitly boolean type (unlikely), use string representation
+    # Native bool (JSON API devices like SafeTech/Trio) → boolean string
+    # Must be checked before int because bool is a subclass of int in Python.
     if isinstance(raw, bool):
         return ("setAB", "true" if closed else "false")
 
-    # Fallback to numeric representation
-    return ("setAB", 2 if closed else 1)
+    # Boolean-like strings ("true"/"false") → boolean string
+    if isinstance(raw, str) and raw.strip().lower() in ("true", "false"):
+        return ("setAB", "true" if closed else "false")
+
+    # Native integer (JSON API devices that report getAB as int 1/2) → numeric
+    if isinstance(raw, int | float):
+        return ("setAB", 2 if closed else 1)
+
+    # Numeric string ("1"/"2") → numeric (XML API and some JSON API devices)
+    if isinstance(raw, str) and raw.strip().isdigit():
+        return ("setAB", 2 if closed else 1)
+
+    # Unknown format — this should not happen with known device firmware.
+    # Log an error and return None so the caller knows not to send a command.
+    _LOGGER.error(
+        "build_set_ab_command: unexpected getAB format %r (type %s); "
+        "command will not be sent. Please report this issue.",
+        raw,
+        type(raw).__name__,
+    )
+    return None
 
 
 def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:

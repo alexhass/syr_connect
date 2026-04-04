@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Coupure de vanne",
-        "state": {
-          "false": "Ouvert",
-          "true": "Fermé"
-        }
-      },
       "getfcd": {
         "name": "Intervalle de contre‑lavage du filtre",
         "state": {
