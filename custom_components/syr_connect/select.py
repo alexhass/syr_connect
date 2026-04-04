@@ -188,6 +188,18 @@ async def async_setup_entry(
             sel._options = [str(x) for x in range(1, 4)]
             entities.append(sel)
 
+        # Add getRMO select (regeneration mode: 1=Standard, 2=ECO, 3=Power, 4=Automatic)
+        # Raw string keys are exposed so the frontend can translate the displayed state.
+        rmo_value = status.get("getRMO")
+        if rmo_value is not None and rmo_value != "":
+            try:
+                rmo_int = int(float(rmo_value))
+            except (ValueError, TypeError):
+                rmo_int = 0
+            if rmo_int >= 1:
+                rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRMO", rmo_map))
+
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
         async_add_entities(entities)

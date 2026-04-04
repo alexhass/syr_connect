@@ -355,6 +355,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
 _SYR_CONNECT_SENSOR_CONFIG = {
     "getBUZ",   # Buzzer on/off - also represented as switch entity
     "getRPD",   # Regeneration interval - also represented as select entity
+    "getRMO",   # Regeneration mode - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
     "getSRO",   # Display rotation - also represented as select entity
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
@@ -457,6 +458,7 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     "getSV3",   # Salt amount container 3
     "getRPD",   # Regeneration interval (days)
     "getFFM",   # Filter type (1..3)
+    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
 }
 
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.

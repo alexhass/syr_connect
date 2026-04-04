@@ -2234,3 +2234,320 @@ async def test_prf_select_async_select_option_skips_other_devices(hass: HomeAssi
     await select.async_select_option("My Profile")
 
     coordinator.async_set_device_value.assert_called_once_with("d1", "setPRF", 1)
+
+
+# ---------------------------------------------------------------------------
+# getRMO select (SyrConnectDiscreteSelect) — regeneration mode 1–4
+# ---------------------------------------------------------------------------
+
+
+async def test_async_setup_entry_creates_rmo_select(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test async_setup_entry creates a discrete select for getRMO when value >= 1."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getRMO": "2"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmo_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getRMO"
+    ]
+    assert len(rmo_entities) == 1
+    assert isinstance(rmo_entities[0], SyrConnectDiscreteSelect)
+
+
+async def test_async_setup_entry_no_rmo_select_when_missing(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test async_setup_entry does not create an RMO select when getRMO absent."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmo_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getRMO"
+    ]
+    assert len(rmo_entities) == 0
+
+
+async def test_async_setup_entry_no_rmo_select_when_zero(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test async_setup_entry does not create an RMO select when getRMO == '0'."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getRMO": "0"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmo_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getRMO"
+    ]
+    assert len(rmo_entities) == 0
+
+
+async def test_async_setup_entry_no_rmo_select_when_none(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test async_setup_entry does not create an RMO select when getRMO is None."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getRMO": None},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmo_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getRMO"
+    ]
+    assert len(rmo_entities) == 0
+
+
+async def test_async_setup_entry_no_rmo_select_when_empty(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test async_setup_entry does not create an RMO select when getRMO is empty string."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getRMO": ""},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmo_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getRMO"
+    ]
+    assert len(rmo_entities) == 0
+
+
+async def test_async_setup_entry_no_rmo_select_when_invalid(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test async_setup_entry does not create an RMO select when getRMO is not numeric."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getRMO": "invalid"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmo_entities = [
+        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getRMO"
+    ]
+    assert len(rmo_entities) == 0
+
+
+async def test_rmo_select_options(hass: HomeAssistant) -> None:
+    """Test RMO select exposes options '1' through '4'."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.options == ["1", "2", "3", "4"]
+
+
+async def test_rmo_select_current_option(hass: HomeAssistant) -> None:
+    """Test RMO select current_option matches the active mode key."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "2"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.current_option == "2"
+
+
+async def test_rmo_select_current_option_all_modes(hass: HomeAssistant) -> None:
+    """Test RMO select current_option for all four valid mode values."""
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    for mode in ("1", "2", "3", "4"):
+        data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": mode}}]}
+        coordinator = _build_coordinator(hass, data)
+        select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+        assert select.current_option == mode
+
+
+async def test_rmo_select_current_option_none_when_invalid(hass: HomeAssistant) -> None:
+    """Test RMO select current_option is None when value cannot be converted to int."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "invalid"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.current_option is None
+
+
+async def test_rmo_select_current_option_none_when_missing(hass: HomeAssistant) -> None:
+    """Test RMO select current_option is None when getRMO is absent from status."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.current_option is None
+
+
+async def test_rmo_select_option_selection(hass: HomeAssistant) -> None:
+    """Test selecting an RMO option sends setRMO with the correct int value."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    await select.async_select_option("3")
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setRMO", 3)
+
+
+async def test_rmo_select_option_selection_all_modes(hass: HomeAssistant) -> None:
+    """Test that each RMO option correctly sends the corresponding int value."""
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    for option, expected_int in rmo_map.items():
+        data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": option}}]}
+        coordinator = _build_coordinator(hass, data)
+        coordinator.async_set_device_value = AsyncMock()
+        select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+        await select.async_select_option(option)
+
+        coordinator.async_set_device_value.assert_called_once_with("device1", "setRMO", expected_int)
+
+
+async def test_rmo_select_option_selection_invalid(hass: HomeAssistant) -> None:
+    """Test that selecting an unknown RMO option does not call the coordinator."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    await select.async_select_option("99")
+
+    coordinator.async_set_device_value.assert_not_called()
+
+
+async def test_rmo_select_error_on_set(hass: HomeAssistant) -> None:
+    """Test RMO select raises HomeAssistantError when coordinator fails."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "2"}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    async def raiser(*args, **kwargs):
+        raise ValueError("boom")
+
+    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    with pytest.raises(HomeAssistantError, match="Failed to set getRMO"):
+        await select.async_select_option("2")
+
+
+async def test_rmo_select_unavailable_coordinator(hass: HomeAssistant) -> None:
+    """Test RMO select is unavailable when coordinator update failed."""
+    data = {"devices": [{"id": "device1", "available": True, "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.available is False
+
+
+async def test_rmo_select_unavailable_device(hass: HomeAssistant) -> None:
+    """Test RMO select is unavailable when the device reports unavailable."""
+    data = {"devices": [{"id": "device1", "available": False, "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.available is False
+
+
+async def test_rmo_select_available_true(hass: HomeAssistant) -> None:
+    """Test RMO select is available when coordinator and device are healthy."""
+    data = {"devices": [{"id": "device1", "available": True, "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select.available is True
+
+
+async def test_rmo_select_entity_category_is_config(hass: HomeAssistant) -> None:
+    """Test RMO select entity_category is EntityCategory.CONFIG (getRMO in SENSOR_CONFIG)."""
+    from homeassistant.const import EntityCategory
+
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
+
+    assert select._attr_entity_category == EntityCategory.CONFIG
