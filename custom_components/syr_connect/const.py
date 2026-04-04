@@ -628,10 +628,12 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
     # System & Status
-    "getALM": "mdi:bell-alert",
+    "getALM": "mdi:bell-plus",
     "getALA": "mdi:bell-alert",
+    "getALN": "mdi:bell-plus",
+    "getALW": "mdi:alert-plus-outline",
     "getNOT": "mdi:bell",
-    "getWRN": "mdi:alert",
+    "getWRN": "mdi:alert-outline",
     "getSTA": "mdi:list-status",
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",
@@ -761,8 +763,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getMAC2": "mdi:ethernet",          # LAN MAC address
     "getLTV": "mdi:faucet",             # Last dispensed volume
     "getRMO": "mdi:autorenew",
-    "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
-    "getSRV": "mdi:calendar-clock",     # Next annual maintenance
+    "getSRH": "mdi:wrench-clock",       # Next semi-annual maintenance
+    "getSRV": "mdi:wrench",             # Next annual maintenance
     "getSRO": "mdi:rotate-right",       # Display rotation / orientation
     "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
     "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
