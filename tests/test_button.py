@@ -368,6 +368,45 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
     assert len(entities) == 0
 
 
+async def test_async_setup_entry_removes_stale_setsir_from_registry(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Test that a previously-registered setSIR button is removed from the registry
+    when the device reports getSIR == 'false' (device is not a water softener)."""
+    from unittest.mock import MagicMock, patch
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSIR": "false"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    stale_entity_id = "button.syr_connect_device1_setsir"
+
+    class FakeEntry:
+        def __init__(self, eid: str) -> None:
+            self.entity_id = eid
+
+    mock_registry = MagicMock()
+    mock_registry.async_remove = MagicMock()
+    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id)}
+
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    mock_registry.async_remove.assert_called_once_with(stale_entity_id)
+    assert len(entities) == 0
+
+
 async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
     """Reset button raises when no reset required (missing/empty get key)."""
     data = {

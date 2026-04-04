@@ -21,6 +21,7 @@ from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -76,6 +77,8 @@ async def async_setup_entry(
             ("setWRN", "Reset warning"),
         ]
 
+        created_commands: set[str] = set()
+
         for command, name in action_buttons:
             # Derive the corresponding "getXXX" key from the command name
             # (e.g. 'setALA' -> 'getALA') and skip if it's not present
@@ -103,7 +106,34 @@ async def async_setup_entry(
                     name,
                 )
             )
+            created_commands.add(command)
             _LOGGER.debug("Adding button: %s (%s)", device_name, command)
+
+        # Remove any previously-registered button that was conditionally skipped
+        # (e.g. setSIR when the device is not a water softener).  These buttons
+        # are in _SYR_CONNECT_BUTTON_KNOWN_KEYS and therefore survive the global
+        # registry_cleanup above; they must be removed individually here.
+        try:
+            registry = er.async_get(hass)
+            prefix = f"button.syr_connect_{device_id.lower()}_"
+            for reg_entry in list(registry.entities.values()):
+                if not reg_entry.entity_id.startswith(prefix):
+                    continue
+                key = reg_entry.entity_id[len(prefix):]
+                # Reconstruct the original command (e.g. "setsir" -> "setSIR")
+                # by checking against all known commands case-insensitively.
+                for known_cmd in action_buttons:
+                    if known_cmd[0].lower() == key and known_cmd[0] not in created_commands:
+                        _LOGGER.debug(
+                            "Removing conditionally-skipped button from registry: %s",
+                            reg_entry.entity_id,
+                        )
+                        registry.async_remove(reg_entry.entity_id)
+                        break
+        except Exception:
+            _LOGGER.exception(
+                "Failed to remove conditionally-skipped buttons for device %s", device_id
+            )
 
     if entities:
         _LOGGER.debug("Adding %d button(s) total", len(entities))
