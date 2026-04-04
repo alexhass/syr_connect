@@ -225,13 +225,6 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
   - Aktuelle Ventilposition und Status überwachen
   - Integration mit Leckerkennungs-Automatisierungen für automatisches Absperren
 
-### Bekannte Einschränkungen
-
-- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
-- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
-- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
-- **Lokale API-Unterstützung**: Nur einige neuere Gerätemodelle (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) bieten eine lokale JSON-API. Die meisten anderen Modelle, einschließlich aller LEXplus-Varianten, benötigen Cloud-API-Zugriff
-
 ### API-Modi
 
 Die Integration unterstützt zwei API-Modi:
@@ -273,6 +266,13 @@ Die Integration pollt die Geräte-API in regelmäßigen Abständen (Standard: 60
 Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuverlässiger für Echtzeit-Überwachung und Automatisierungen macht.
 
 Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten bis zum nächsten erfolgreichen Update als nicht verfügbar markiert.
+
+### Bekannte Einschränkungen
+
+- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
+- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
+- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
+- **Lokale API-Unterstützung**: Nur einige neuere Gerätemodelle (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) bieten eine lokale JSON-API. Die meisten anderen Modelle, einschließlich aller LEXplus-Varianten, benötigen Cloud-API-Zugriff
 
 ## Anwendungsbeispiele
 

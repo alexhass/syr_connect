@@ -225,13 +225,6 @@ The integration provides comprehensive monitoring of your devices:
   - Monitor current valve position and status
   - Integrate with leak detection automations for automatic shutoff
 
-### Known Limitations
-
-- **Cloud Dependency**: The cloud API requires an active internet connection and functioning SYR Connect cloud service
-- **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting when using cloud API
-- **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
-- **Local API Support**: Only some newer device models (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) provide a local JSON API. Most other models, including all LEXplus variants, require cloud API access
-
 ### API Modes
 
 The integration supports two API modes:
@@ -273,6 +266,13 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 The local API is faster and doesn't depend on internet connectivity, making it more reliable for real-time monitoring and automations.
 
 If a device becomes unavailable (e.g., offline or communication error), its entities are marked as unavailable until the next successful update.
+
+### Known Limitations
+
+- **Cloud Dependency**: The cloud API requires an active internet connection and functioning SYR Connect cloud service
+- **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting when using cloud API
+- **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
+- **Local API Support**: Only some newer device models (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) provide a local JSON API. Most other models, including all LEXplus variants, require cloud API access
 
 ## Use Cases & Examples
 
