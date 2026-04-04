@@ -84,6 +84,15 @@ async def async_setup_entry(
             if get_key not in status:
                 continue
 
+            # For setSIR: skip when getSIR reports "false".
+            # A value of "false" indicates that the device is not a water
+            # softener and does not support regeneration at all. In that
+            # case the button must not be created.
+            if command == "setSIR":
+                raw_sir = status.get(get_key)
+                if str(raw_sir).strip().lower() == "false":
+                    continue
+
             entities.append(
                 SyrConnectButton(
                     coordinator,

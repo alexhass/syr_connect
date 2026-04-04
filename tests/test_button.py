@@ -348,6 +348,26 @@ async def test_async_setup_entry_no_getsir(hass: HomeAssistant, create_mock_entr
     assert len(entities) == 0
 
 
+@pytest.mark.parametrize("falsy_value", ["false"])
+async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, falsy_value) -> None:
+    """Test async_setup_entry skips setSIR button when getSIR is 'false' (device is not a water softener)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSIR": falsy_value},
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    # getSIR is falsy — setSIR button must not be created
+    assert len(entities) == 0
+
+
 async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
     """Reset button raises when no reset required (missing/empty get key)."""
     data = {
