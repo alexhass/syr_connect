@@ -508,7 +508,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getCDE",  # Configuration code — opaque device identifier, not useful for users
     "getSCR",  # Service regeneration cycle count — function unclear
     "getTYP",  # Device type code — not user-relevant
-    "getCND",  # Water conductivity — LEXplus10SL only; technical value without context
     "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold
     "getSLP",  # Self-learning phase duration — technical value without context
     "getT2",   # Max. flow duration absent profile — technical value without context
@@ -536,6 +535,10 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     # as a pillar is exhausted. Softened water is available at all times.
     #"getRPD",   # Regeneration interval (days) - value "0" means no interval configured.
     #"getRTM",   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
+
+    # Sensors exits in devices only:
+    # - Trio DFR/LS
+    "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
 }
 
 # Sensors to exclude only when value is empty string ("") - internal
@@ -561,7 +564,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # Sensors exits in devices only:
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
-    "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
 
     # Sensors exits in devices:
     # - Safe-T+, Safe-Tech+, Trio DFR/LS
