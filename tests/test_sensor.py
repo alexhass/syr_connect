@@ -1600,8 +1600,8 @@ async def test_sensor_icon_alarm_no_salt(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
-    # NoSalt maps to 'no_salt', should show alert icon
-    assert sensor.icon == "mdi:bell-alert"
+    # getALM uses a static icon
+    assert sensor.icon == "mdi:bell-plus-outline"
 
 
 async def test_sensor_icon_alarm_inactive(hass: HomeAssistant) -> None:
@@ -1621,8 +1621,8 @@ async def test_sensor_icon_alarm_inactive(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
-    # Empty alarm should show outline icon
-    assert sensor.icon == "mdi:bell-outline"
+    # getALM uses a static icon
+    assert sensor.icon == "mdi:bell-plus-outline"
 
 
 async def test_sensor_icon_regeneration_active(hass: HomeAssistant) -> None:
@@ -2697,8 +2697,8 @@ async def test_sensor_icon_alarm_low_salt(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
-    # Should return alert icon for low salt
-    assert sensor.icon == "mdi:bell-alert"
+    # getALM uses a static icon
+    assert sensor.icon == "mdi:bell-plus-outline"
 
 
 async def test_sensor_icon_getsre_falsy_value(hass: HomeAssistant) -> None:
@@ -3087,8 +3087,8 @@ async def test_sensor_icon_alarm_mapped_other_value(hass: HomeAssistant) -> None
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
-    # Should return outline icon for no_alarm
-    assert sensor.icon == "mdi:bell-outline"
+    # getALM uses a static icon
+    assert sensor.icon == "mdi:bell-plus-outline"
 
 
 async def test_sensor_setup_no_coordinator_data(hass: HomeAssistant) -> None:
@@ -5573,7 +5573,7 @@ async def test_sensor_icon_ala_exception_in_mapping(hass: HomeAssistant) -> None
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Mapping error")):
         icon = sensor.icon
         # Should fall back to checking for "no_alarm" or return alert icon
-        assert icon in ("mdi:bell-outline", "mdi:bell-alert")
+        assert icon in ("mdi:bell-outline", "mdi:bell-alert", "mdi:bell-alert-outline")
 
 
 async def test_sensor_icon_getab_none_status(hass: HomeAssistant) -> None:
@@ -6761,8 +6761,8 @@ async def test_sensor_icon_alm_ala_exception(hass: HomeAssistant) -> None:
     # When mapping exception occurs but raw value exists, should return alert icon
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Mapping error")):
         icon = sensor.icon
-        # Should return bell-alert when raw value exists (alarm active)
-        assert icon == "mdi:bell-alert"
+        # Should return bell-alert-outline when raw value exists (alarm active)
+        assert icon == "mdi:bell-alert-outline"
 
 
 async def test_sensor_icon_ab_raw_status_none(hass: HomeAssistant) -> None:
@@ -7601,7 +7601,8 @@ async def test_sensor_icon_getalm_empty_string(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
 
-    assert sensor.icon == "mdi:bell-outline"
+    # getALM uses a static icon
+    assert sensor.icon == "mdi:bell-plus-outline"
 
 
 async def test_sensor_getala_exception_handling(hass: HomeAssistant) -> None:
