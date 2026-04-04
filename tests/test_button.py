@@ -407,6 +407,88 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
     assert len(entities) == 0
 
 
+async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Cleanup loop skips registry entries that belong to a different device (line 121 continue)."""
+    from unittest.mock import MagicMock, patch
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSIR": "false"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    # An entry for a completely different device — should be skipped (continue)
+    other_entity_id = "button.syr_connect_other_device_setsir"
+
+    class FakeEntry:
+        def __init__(self, eid: str) -> None:
+            self.entity_id = eid
+
+    mock_registry = MagicMock()
+    mock_registry.async_remove = MagicMock()
+    mock_registry.entities = {other_entity_id: FakeEntry(other_entity_id)}
+
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # The other-device entry must NOT be removed by this device's cleanup pass
+    mock_registry.async_remove.assert_not_called()
+
+
+async def test_async_setup_entry_registry_cleanup_exception_is_caught(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Exception from er.async_get during per-device cleanup is caught (line 134)."""
+    from unittest.mock import patch
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSIR": "false"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    call_count = 0
+
+    def er_async_get_side_effect(hass_instance):
+        nonlocal call_count
+        call_count += 1
+        # First call is for registry_cleanup (let it succeed with an empty registry),
+        # second call is the per-device cleanup in async_setup_entry.
+        from unittest.mock import MagicMock
+        if call_count == 1:
+            empty_reg = MagicMock()
+            empty_reg.entities = {}
+            return empty_reg
+        raise RuntimeError("registry unavailable")
+
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get",
+        side_effect=er_async_get_side_effect,
+    ):
+        # Must not raise — the except block swallows the error
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+
 async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
     """Reset button raises when no reset required (missing/empty get key)."""
     data = {
