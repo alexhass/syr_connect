@@ -99,7 +99,7 @@ Tested and reported as working:
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
 
-Other devices are also of interest, but still need to be integrated (please let us know):
+Other devices are also of interest, but still need to be integrated (please report):
 
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
@@ -121,34 +121,68 @@ Other devices are also of interest, but still need to be integrated (please let 
 
 #### Sensors
 
-The integration provides comprehensive monitoring of your water softener:
+The integration provides comprehensive monitoring of your devices:
 
 #### Water Quality & Capacity
 
 - Input/Output water hardness monitoring
-- Remaining capacity tracking
-- Total capacity information
+- Water conductivity (µS/cm)
+- Water temperature (°C)
+- Remaining softening capacity tracking
+- Resin capacity per tank (up to 3 tanks, %)
+- Total volume monitoring
 - Water hardness unit display
 
 #### Regeneration Information
 
-- Regeneration status
+- Regeneration status and active-tank indicator (up to 3 tanks)
+- Regeneration mode (Standard / ECO / Power / Automatic)
 - Number of regenerations performed
+- Last regeneration timestamp
 - Regeneration interval settings
 - Regeneration time schedule
+- Cycle counters and timing
 
 #### Salt Management
 
 - Salt volume in containers (1-3)
-- Salt stock levels
-- Estimated salt supply duration
+- Salt stock levels (weeks remaining)
+- Resin reserve capacity per bottle
 
 #### System Monitoring
 
 - Water pressure monitoring
-- Flow rate (current)
+- Flow rate (current and instantaneous)
 - Flow counter (total consumption)
-- Alarm status
+- Battery and mains voltage
+- Alarm, notification, and warning status (current code and last 8 history entries)
+
+#### Leak Protection (LEXplus10SL / Trio DFR/LS)
+
+- Leak protection volume and duration limits (present and absent profiles)
+- Active leak protection profile index
+- Leak protection profiles 1–8 (volume limit, max duration, flow threshold, warning and buzzer flags)
+- Temporary deactivation timer
+
+#### Microleakage Testing (Trio DFR/LS)
+
+- Microleakage test interval and status
+- Test duration and event count
+
+#### Self-Learning Phase (Trio DFR/LS)
+
+- Remaining and elapsed self-learning time
+- Flow rate and accumulated volume during self-learning
+
+#### Filter (NeoSoft)
+
+- Filter backwash countdown
+- Iron content measurement
+
+#### Maintenance
+
+- Next scheduled maintenance dates (semi-annual and annual)
+- Expected daily water consumption
 
 #### Device Information
 
@@ -156,6 +190,12 @@ The integration provides comprehensive monitoring of your water softener:
 - Firmware version and model
 - Device type and manufacturer
 - Network information (IP, MAC, Gateway)
+- Wi-Fi connectivity status and signal strength
+
+#### Binary Sensors
+
+- **Regeneration Active**: Indicates whether a regeneration cycle is currently running
+- **Buzzer State**: Indicates whether the device buzzer is currently enabled
 
 #### Buttons (Actions)
 
@@ -164,12 +204,19 @@ The integration provides comprehensive monitoring of your water softener:
 - **Reset Notification**: Clear notification messages
 - **Reset Warning**: Clear warning messages
 
+#### Switch Controls
+
+- **Buzzer**: Enable or disable the device buzzer
+
 #### Select Controls (Configuration)
 
 - **Regeneration Time**: Set the daily regeneration time (15-minute intervals)
 - **Leak Protection Profile**: Select active leak protection profile (for devices with multiple profiles)
-- **Salt Amount**: Configure salt quantity in containers (0-25 kg, varies by model; up to 3 containers)
-- **Regeneration Interval**: Set how often regeneration occurs (1-4 days)
+- **Salt Amount**: Configure salt quantity in containers (varies by model, up to 3 containers)
+- **Regeneration Interval**: Set how often regeneration occurs (model dependent: 1–4 days)
+- **Display Rotation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display)
+- **Filter Backwash Interval**: Configure filter backwash frequency (for NeoSoft devices with filter)
+- **Filter Type**: Select the installed filter type (for NeoSoft devices)
 
 #### Valve Control
 
