@@ -511,7 +511,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getCND",  # Water conductivity — LEXplus10SL only; technical value without context
     "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold
     "getSLP",  # Self-learning phase duration — technical value without context
-    "getSRV",  # Next annual maintenance — suppressed when value is empty (no upcoming maintenance)
     "getT2",   # Max. flow duration absent profile — technical value without context
     "getWFL",  # Nearby Wi-Fi networks — complex formatted string, not suitable as sensor
 }
