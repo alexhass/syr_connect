@@ -800,7 +800,7 @@
         "name": "Service-Regenerationszyklen"
       },
       "getsir": {
-        "name": "Sofortregeneration",
+        "name": "Sofort regenerieren",
         "state": {
           "0": "Sofort starten",
           "1": "Nicht starten"

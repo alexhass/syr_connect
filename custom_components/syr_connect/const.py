@@ -217,7 +217,6 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getRTI",   # Total regeneration cycle duration
     "getRTM",   # Regeneration time (combined HH:MM string)
     "getSCR",   # Service regeneration cycle count
-    "getSIR",   # Immediate regeneration trigger
     "getTOR",   # Total regeneration count (all time)
     # --- Self-Learning Phase (Trio DFR/LS) ---
     "getSLE",   # Remaining time in active self-learning phase (s)
@@ -495,7 +494,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 
     # --- Overridden by a different entity type ---
     "getDEN",  # Boolean flag — handled as binary_sensor; no regular sensor needed
-    "getSIR",  # Immediate regeneration trigger — represented as a button, not a sensor
 
     # --- Superseded by a derived / combined entity ---
     "getRTH",  # Regeneration hour — combined HH:MM representation handled by getRTM
