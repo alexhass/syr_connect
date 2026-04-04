@@ -597,6 +597,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getAVO": "mdi:waves-arrow-right",
 
     # Water & Hardness
+    "getCND": "mdi:flash",
     "getIWH": "mdi:water-percent",
     "getOWH": "mdi:water-percent",
     "getWHU": "mdi:water-opacity",
