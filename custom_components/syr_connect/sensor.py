@@ -384,32 +384,25 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             # True -> closed, False -> open
             return "mdi:valve-closed" if ab else "mdi:valve-open"
 
-        # Dynamic icon for alarm sensors (getALA and getALM): simplified
+        # Dynamic icon for alarm sensor (getALA):
         # Rule: only 'no_alarm' is considered non-alarm; everything else is an alarm.
-        if self._sensor_key in ("getALA", "getALM"):
-            raw = None
+        if self._sensor_key == "getALA":
             raw_status = None
             for device in self.coordinator.data.get('devices', []):
                 if device['id'] == self._device_id:
                     raw_status = device.get('status', {})
-                    if self._sensor_key == "getALM":
-                        raw = raw_status.get('getALM')
-                    else:
-                        raw = raw_status.get('getALA')
                     break
 
+            raw = (raw_status or {}).get('getALA')
             mapped = None
-            if self._sensor_key == "getALM":
-                mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(str(raw))
-            else:
-                try:
-                    mapped, _ = get_sensor_ala_map(raw_status or {}, raw)
-                except (ValueError, KeyError, AttributeError, TypeError):
-                    mapped = None
+            try:
+                mapped, _ = get_sensor_ala_map(raw_status or {}, raw)
+            except (ValueError, KeyError, AttributeError, TypeError):
+                mapped = None
 
             if mapped == "no_alarm" or raw is None or (isinstance(raw, str) and str(raw).strip() == ""):
                 return "mdi:bell-outline"
-            return "mdi:bell-alert"
+            return "mdi:bell-alert-outline"
 
         # Dynamic icon for battery voltage (getBAT)
         if self._sensor_key == "getBAT":

@@ -630,12 +630,12 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
     # System & Status
-    "getALM": "mdi:bell-plus",
-    "getALA": "mdi:bell-alert",
-    "getALN": "mdi:bell-plus",
-    "getALW": "mdi:alert-plus-outline",
-    "getNOT": "mdi:bell",
-    "getWRN": "mdi:alert-outline",
+    "getALA": "mdi:bell-outline",           # Current alarm code
+    "getWRN": "mdi:alert-outline",          # Current warning code
+    "getNOT": "mdi:bell",                   # Current notification code
+    "getALM": "mdi:bell-plus-outline",      # List of last alarms
+    "getALW": "mdi:alert-plus-outline",     # List of last warnings
+    "getALN": "mdi:bell-plus",              # List of last notifications
     "getSTA": "mdi:list-status",
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",
