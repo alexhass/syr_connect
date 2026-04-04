@@ -250,7 +250,7 @@ async def test_available_checks(hass: HomeAssistant) -> None:
 
 
 async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "op", "name": "Op", "status": {}}]}
+    data = {"devices": [{"id": "op", "name": "Op", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     # Replace async_set_device_value with a mock
     coordinator.async_set_device_value = AsyncMock()
@@ -337,7 +337,7 @@ async def test_is_closed_none_when_device_missing(hass: HomeAssistant) -> None:
 
 
 async def test_async_open_handles_write_state_exception(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "w1", "name": "W1", "status": {}}]}
+    data = {"devices": [{"id": "w1", "name": "W1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
     valve = SyrConnectValve(coordinator, "w1", "W1")
@@ -666,7 +666,7 @@ async def test_is_closing_valueerror(hass: HomeAssistant) -> None:
 
 async def test_async_close_handles_write_state_exception(hass: HomeAssistant) -> None:
     """Test async_close handles async_write_ha_state exception."""
-    data = {"devices": [{"id": "w2", "name": "W2", "status": {}}]}
+    data = {"devices": [{"id": "w2", "name": "W2", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
     valve = SyrConnectValve(coordinator, "w2", "W2")
@@ -685,7 +685,7 @@ async def test_async_close_handles_write_state_exception(hass: HomeAssistant) ->
 
 async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
     """Test async_close clears optimistic cache on command failure."""
-    data = {"devices": [{"id": "cf1", "name": "CF1", "status": {}}]}
+    data = {"devices": [{"id": "cf1", "name": "CF1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
@@ -709,7 +709,7 @@ async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
 
 async def test_async_open_clears_cache_on_failure(hass: HomeAssistant) -> None:
     """Test async_open clears optimistic cache on command failure."""
-    data = {"devices": [{"id": "of1", "name": "OF1", "status": {}}]}
+    data = {"devices": [{"id": "of1", "name": "OF1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
@@ -965,9 +965,8 @@ async def test_build_set_ab_command_respects_boolean_raw(hass: HomeAssistant) ->
     key, val = build_set_ab_command({"getAB": False}, False)
     assert key == "setAB" and val == "false"
 
-    # Fallback numeric when no raw or non-boolean string
-    key, val = build_set_ab_command({}, True)
-    assert key == "setAB" and val == 2
+    # Absent getAB key → unknown format → returns None
+    assert build_set_ab_command({}, True) is None
 
 
 async def test_icon_opening_state(hass: HomeAssistant) -> None:

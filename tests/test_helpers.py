@@ -494,13 +494,16 @@ def test_get_sensor_ab_and_build_command(caplog) -> None:
     # numeric string (XML API and some JSON API devices) → numeric
     assert build_set_ab_command({"getAB": "1"}, closed=True) == ("setAB", 2)
     assert build_set_ab_command({"getAB": "2"}, closed=False) == ("setAB", 1)
-    # absent getAB (missing key) → no log, numeric default
-    assert build_set_ab_command({}, closed=True) == ("setAB", 2)
-    # unknown format (None value) → logs error and returns None
+    # absent getAB key or explicit None → logs error and returns None
     import logging
     with caplog.at_level(logging.ERROR, logger="custom_components.syr_connect.helpers"):
-        result = build_set_ab_command({"getAB": None}, closed=True)
+        result = build_set_ab_command({}, closed=True)
     assert result is None
+    assert "unexpected getAB format" in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.ERROR, logger="custom_components.syr_connect.helpers"):
+        result2 = build_set_ab_command({"getAB": None}, closed=True)
+    assert result2 is None
     assert "unexpected getAB format" in caplog.text
 
 
