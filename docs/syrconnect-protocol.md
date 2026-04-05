@@ -362,7 +362,7 @@ These settings can be set by the user.
 | getDWF / setDWF | "200"        | L         | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
 | getFCO / setFCO | "0"          | ppm       | Iron content (always 0?)
 | getCFO          | "0"          |           | Cycle flow offset, numeric counter
-| getLNG          | "0"          |           | Language setting (0=German, 1=English). Not exposed — handled by Home Assistant's own localization
+| getLNG          | "0"          |           | Language setting (0=German, 1=English).
 | getDTR          | "[0,0,0,0,0,0,0,0]" |           | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel)
 | getLOCK         | "False"      |           | Device keypad/remote lock flag (Trio DFR/LS, SafeTech)
 
