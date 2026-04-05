@@ -327,7 +327,7 @@
         "name": "Durezza acqua in ingresso"
       },
       "getlan": {
-        "name": "Lingua",
+        "name": "Lingua del dispositivo",
         "state": {
           "0": "Inglese",
           "1": "Tedesco",
@@ -339,6 +339,13 @@
       },
       "getle": {
         "name": "Protezione perdite - Livello presente"
+      },
+      "getlng": {
+        "name": "Lingua del dispositivo",
+        "state": {
+          "0": "Tedesco",
+          "1": "Inglese"
+        }
       },
       "getltv": {
         "name": "Ultimo volume erogato"

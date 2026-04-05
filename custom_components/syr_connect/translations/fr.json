@@ -327,7 +327,7 @@
         "name": "Dureté de l'eau brute"
       },
       "getlan": {
-        "name": "Langue",
+        "name": "Langue de l'appareil",
         "state": {
           "0": "Anglais",
           "1": "Allemand",
@@ -339,6 +339,13 @@
       },
       "getle": {
         "name": "Protection contre les fuites - Niveau présent"
+      },
+      "getlng": {
+        "name": "Langue de l'appareil",
+        "state": {
+          "0": "Allemand",
+          "1": "Anglais"
+        }
       },
       "getltv": {
         "name": "Dernier volume distribué"

@@ -331,7 +331,8 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getEIP",   # Ethernet (LAN) IP address
     "getFIR",   # Firmware model identifier
     "getIPA",   # IP address
-    "getLAN",   # UI language (0=English, 1=German, 3=Spanish)
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+    "getLNG",   # Device language (0=Deutsch, 1=English) - other models
     "getMAC",   # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
@@ -394,7 +395,8 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getCYN",   # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
     "getCYT",   # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     "getDWF",   # Flow Warning Value - advanced setting
-    "getLAN",   # Language of the UI (0=English, 1=German, 3=Spanish)
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
+    "getLNG",   # Device language (0=Deutsch, 1=English)
     "getNOT",   # Retrieving the current notification
     "getSRE",   # Regeneration active
     "getRG2", "getRG3",  # Regeneration running for tank
@@ -645,6 +647,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getFIR": "mdi:chip",
     "getIPA": "mdi:ip-network",
     "getLAN": "mdi:translate",
+    "getLNG": "mdi:translate",
     "getMAN": "mdi:factory",
     "getMAC": "mdi:ethernet",
     "getSRN": "mdi:identifier",
@@ -1053,8 +1056,9 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getFLO": 0,    # Flow rate: show as whole number by default
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
-    "getLAN": 0,    # Language of the UI: show as whole number by default (0=English, 1=German, 3=Spanish)
+    "getLAN": 0,    # Device language: show as whole number by default (0=English, 1=German, 3=Spanish)
     "getLE": 0,     # Leakage protection - Present level: show as whole number by default
+    "getLNG": 0,    # Device language: show as whole number by default (0=Deutsch, 1=English)
     "getLTV": 0,    # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
     "getNET": 2,    # Mains voltage: show with 2 decimal places
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default

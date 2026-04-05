@@ -41,6 +41,7 @@ from .helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_lng_value,
     get_sensor_net_value,
     get_sensor_not_map,
     get_sensor_rtm_value,
@@ -633,6 +634,13 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return datetime.fromtimestamp(ts, UTC)
                     except (ValueError, TypeError, OverflowError):
                         return None
+
+                # Special handling for getLNG: strip trailing annotation if present
+                # e.g. "0 (0=Deutsch 1=English)" -> "0"
+                if self._sensor_key == 'getLNG':
+                    if value is None or (isinstance(value, str) and value.strip() == ""):
+                        return None
+                    return get_sensor_lng_value(value)
 
                 # Special handling for getLE sensor: map raw API values to display values
                 if self._sensor_key == 'getLE':

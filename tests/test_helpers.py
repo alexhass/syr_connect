@@ -14,6 +14,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_lng_value,
     get_sensor_net_value,
     get_sensor_not_map,
     get_sensor_vol_value,
@@ -427,6 +428,35 @@ def test_clean_sensor_vol_value() -> None:
     # Non-string values are returned unchanged
     assert get_sensor_vol_value(123) == 123
     assert get_sensor_vol_value(12.34) == 12.34
+
+
+def test_get_sensor_lng_value_with_annotation() -> None:
+    """getLNG value with trailing annotation is stripped to the leading integer."""
+    assert get_sensor_lng_value("0 (0=Deutsch 1=English)") == "0"
+    assert get_sensor_lng_value("1 (0=Deutsch 1=English)") == "1"
+
+
+def test_get_sensor_lng_value_plain() -> None:
+    """getLNG plain integer string is returned unchanged."""
+    assert get_sensor_lng_value("0") == "0"
+    assert get_sensor_lng_value("1") == "1"
+
+
+def test_get_sensor_lng_value_non_string() -> None:
+    """Non-string values are returned as-is."""
+    assert get_sensor_lng_value(0) == 0
+    assert get_sensor_lng_value(1.0) == 1.0
+
+
+def test_get_sensor_lng_value_empty() -> None:
+    """Empty string returns None."""
+    assert get_sensor_lng_value("") is None
+    assert get_sensor_lng_value("  ") is None
+
+
+def test_get_sensor_lng_value_non_integer_token() -> None:
+    """Non-integer leading token returns the original value unchanged."""
+    assert get_sensor_lng_value("unknown") == "unknown"
 
 
 def test_get_sensor_rtm_and_setters() -> None:

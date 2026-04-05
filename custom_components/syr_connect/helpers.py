@@ -355,6 +355,43 @@ def get_sensor_vol_value(value: str | int | float) -> str | int | float | None:
     return value
 
 
+def get_sensor_lng_value(value: str | int | float) -> str | int | float | None:
+    """Extract the leading integer from a getLNG value.
+
+    Some devices append a human-readable annotation to the numeric value,
+    e.g. ``"0 (0=Deutsch 1=English)"`` instead of plain ``"0"``.
+    This function returns only the leading integer token so it can be matched
+    against the translation state map.
+
+    Examples:
+        >>> get_sensor_lng_value("0 (0=Deutsch 1=English)")
+        '0'
+        >>> get_sensor_lng_value("1")
+        '1'
+        >>> get_sensor_lng_value(0)
+        0
+
+    Args:
+        value: The raw getLNG sensor value
+
+    Returns:
+        Leading integer token as string, original value if no annotation present,
+        or None for empty string.
+    """
+    if not isinstance(value, str):
+        return value
+
+    if value.strip() == "":
+        return None
+
+    token = value.split()[0]
+    try:
+        int(token)
+        return token
+    except ValueError:
+        return value
+
+
 def get_sensor_net_value(value: str | int | float) -> float | None:
     """Parse mains voltage (getNET) supporting three formats.
 

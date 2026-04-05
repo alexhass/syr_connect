@@ -327,7 +327,7 @@
         "name": "Dureza del agua de entrada"
       },
       "getlan": {
-        "name": "Idioma",
+        "name": "Idioma del dispositivo",
         "state": {
           "0": "Inglés",
           "1": "Alemán",
@@ -339,6 +339,13 @@
       },
       "getle": {
         "name": "Protección contra fugas - Nivel presente"
+      },
+      "getlng": {
+        "name": "Idioma del dispositivo",
+        "state": {
+          "0": "Alemán",
+          "1": "Inglés"
+        }
       },
       "getltv": {
         "name": "Último volumen dispensado"

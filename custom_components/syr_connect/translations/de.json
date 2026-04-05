@@ -327,7 +327,7 @@
         "name": "Rohwasserhärte"
       },
       "getlan": {
-        "name": "Sprache",
+        "name": "Gerätesprache",
         "state": {
           "0": "Englisch",
           "1": "Deutsch",
@@ -339,6 +339,13 @@
       },
       "getle": {
         "name": "Leckageschutz - Stufe Anwesend"
+      },
+      "getlng": {
+        "name": "Gerätesprache",
+        "state": {
+          "0": "Deutsch",
+          "1": "Englisch"
+        }
       },
       "getltv": {
         "name": "Letztes gezapftes Volumen"

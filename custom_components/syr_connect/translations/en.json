@@ -327,7 +327,7 @@
         "name": "Input water hardness"
       },
       "getlan": {
-        "name": "Language",
+        "name": "Device language",
         "state": {
           "0": "English",
           "1": "German",
@@ -339,6 +339,13 @@
       },
       "getle": {
         "name": "Leakage protection - Present level"
+      },
+      "getlng": {
+        "name": "Device language",
+        "state": {
+          "0": "German",
+          "1": "English"
+        }
       },
       "getltv": {
         "name": "Last dispensed volume"
