@@ -510,7 +510,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     "getTYP",  # Device type code — not user-relevant
     "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold
     "getSLP",  # Self-learning phase duration — technical value without context
-    "getT2",   # Max. flow duration absent profile — technical value without context
     "getWFL",  # Nearby Wi-Fi networks — complex formatted string, not suitable as sensor
 }
 
