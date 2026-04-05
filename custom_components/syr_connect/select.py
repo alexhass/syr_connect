@@ -107,33 +107,35 @@ async def async_setup_entry(
             continue
         entities.append(SyrConnectRotationSelect(coordinator, device_id, device_name))
 
-    # Add select for filter backwash interval (getFCD) - use raw state keys so frontend translates the state
-    fcd_map = {
-        "2592000": 2592000,
-        "5184000": 5184000,
-        "7776000": 7776000,
-        "10368000": 10368000,
-        "12960000": 12960000,
-        "15552000": 15552000,
-        "18144000": 18144000,
-        "20736000": 20736000,
-        "23328000": 23328000,
-        "25920000": 25920000,
-        "28512000": 28512000,
-        "31104000": 31104000,
-    }
-    for device in coordinator.data.get("devices", []):
-        device_id = device.get("id")
-        device_name = device.get("name", device_id)
-        status = device.get("status", {})
-        fcd_value = status.get("getFCD")
-        if fcd_value is None or fcd_value == "":
-            continue
-        try:
-            int(float(fcd_value))
-        except (ValueError, TypeError):
-            continue
-        entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getFCD", fcd_map))
+    # TODO: Temporarily disabled - getFCD select (filter backwash interval).
+    # Known bug: After writing a new value, the server resets the setting back to its previous value.
+    # Root cause is unknown. Re-enable once the write-back issue is resolved.
+    # fcd_map = {
+    #     "2592000": 2592000,
+    #     "5184000": 5184000,
+    #     "7776000": 7776000,
+    #     "10368000": 10368000,
+    #     "12960000": 12960000,
+    #     "15552000": 15552000,
+    #     "18144000": 18144000,
+    #     "20736000": 20736000,
+    #     "23328000": 23328000,
+    #     "25920000": 25920000,
+    #     "28512000": 28512000,
+    #     "31104000": 31104000,
+    # }
+    # for device in coordinator.data.get("devices", []):
+    #     device_id = device.get("id")
+    #     device_name = device.get("name", device_id)
+    #     status = device.get("status", {})
+    #     fcd_value = status.get("getFCD")
+    #     if fcd_value is None or fcd_value == "":
+    #         continue
+    #     try:
+    #         int(float(fcd_value))
+    #     except (ValueError, TypeError):
+    #         continue
+    #     entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getFCD", fcd_map))
 
     # Add numeric-controlled selects for salt amounts and regeneration interval
     for device in coordinator.data.get("devices", []):
