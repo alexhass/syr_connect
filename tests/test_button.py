@@ -50,6 +50,50 @@ async def test_button_press_success(hass: HomeAssistant) -> None:
     coordinator.async_set_device_value.assert_called_once_with("device1", "setSIR", 0)
 
 
+async def test_button_press_setsir_when_getsir_false(hass: HomeAssistant) -> None:
+    """Test setSIR button press sends 'true' when getSIR reports False (softener idle)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSIR": False},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR", "Regenerate Now")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setSIR", "true")
+
+
+async def test_button_press_setsir_when_getsir_false_string(hass: HomeAssistant) -> None:
+    """Test setSIR button press sends 'true' when getSIR reports the string 'false' (softener idle)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getSIR": "false"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR", "Regenerate Now")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setSIR", "true")
+
+
 async def test_button_press_failure(hass: HomeAssistant) -> None:
     """Test button press handles failure."""
     data = {
