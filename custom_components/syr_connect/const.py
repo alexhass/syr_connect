@@ -452,7 +452,7 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     "getRTM",   # Regeneration time (HH:MM combined or minutes)
     "getPRF",   # Active leak-protection profile
     "getSRO",   # Display rotation (0 / 90 / 180 / 270 °)
-    "getFCD",   # Filter backwash interval
+    #"getFCD",   # Filter backwash interval
     "getSV1",   # Salt amount container 1
     "getSV2",   # Salt amount container 2
     "getSV3",   # Salt amount container 3
