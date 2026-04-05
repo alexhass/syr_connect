@@ -8877,3 +8877,12 @@ def test_sensor_getlng_empty_string_returns_none(create_mock_coordinator):
 
     assert sensor.native_value is None
 
+
+def test_sensor_getlng_annotated_value_stripped(create_mock_coordinator):
+    """getLNG: annotated value is stripped to the leading integer (line 648)."""
+    data = {"devices": [{"id": "d1", "status": {"getLNG": "0 (0=Deutsch 1=English)"}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
+
+    assert sensor.native_value == "0"
+
