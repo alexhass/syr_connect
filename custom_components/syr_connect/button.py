@@ -87,15 +87,6 @@ async def async_setup_entry(
             if get_key not in status:
                 continue
 
-            # For setSIR: skip when getSIR reports "false".
-            # A value of "false" indicates that the device is not a water
-            # softener and does not support regeneration at all. In that
-            # case the button must not be created.
-            if command == "setSIR":
-                raw_sir = status.get(get_key)
-                if str(raw_sir).strip().lower() == "false":
-                    continue
-
             entities.append(
                 SyrConnectButton(
                     coordinator,
@@ -109,10 +100,10 @@ async def async_setup_entry(
             created_commands.add(command)
             _LOGGER.debug("Adding button: %s (%s)", device_name, command)
 
-        # Remove any previously-registered button that was conditionally skipped
-        # (e.g. setSIR when the device is not a water softener).  These buttons
-        # are in _SYR_CONNECT_BUTTON_KNOWN_KEYS and therefore survive the global
-        # registry_cleanup above; they must be removed individually here.
+        # Remove any previously-registered button that is no longer being created
+        # for this device (e.g. a command whose get-key disappeared from the status).
+        # These buttons are in _SYR_CONNECT_BUTTON_KNOWN_KEYS and therefore survive
+        # the global registry_cleanup above; they must be removed individually here.
         try:
             registry = er.async_get(hass)
             prefix = f"button.syr_connect_{device_id.lower()}_"
@@ -202,9 +193,24 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
-            # Handle setSIR explicitly: only send when the setSIR button is pressed.
+            # Handle setSIR: initiate regeneration with the appropriate value.
+            # getSIR = 1 (integer/string) → send setSIR = 0.
+            # getSIR = False / "false" → send setSIR = True.
             if self._command == "setSIR":
-                await coordinator.async_set_device_value(self._device_id, self._command, 0)
+                status = None
+                for device in coordinator.data.get("devices", []):
+                    if device["id"] == self._device_id:
+                        status = device.get("status", {})
+                        break
+                raw_sir = None if status is None else status.get("getSIR")
+                # Map the reported getSIR value to the correct setSIR payload.
+                # - Boolean False (or the string "false") → send True.
+                # - Anything else (e.g. "1", 1) → send 0.
+                if raw_sir is False or str(raw_sir).strip().lower() == "false":
+                    send_value: int | bool = True
+                else:
+                    send_value = 0
+                await coordinator.async_set_device_value(self._device_id, self._command, send_value)
                 return
 
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
