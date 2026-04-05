@@ -8859,3 +8859,21 @@ def test_sensor_getwrn_unmapped_returns_raw_code(create_mock_coordinator):
     value = sensor.native_value
     assert value == "99"
 
+
+def test_sensor_getlng_none_value_returns_none(create_mock_coordinator):
+    """getLNG: None value returns None (line 642)."""
+    data = {"devices": [{"id": "d1", "status": {"getLNG": None}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
+
+    assert sensor.native_value is None
+
+
+def test_sensor_getlng_empty_string_returns_none(create_mock_coordinator):
+    """getLNG: empty string value returns None (line 642-643)."""
+    data = {"devices": [{"id": "d1", "status": {"getLNG": ""}}]}
+    coord = create_mock_coordinator(data)
+    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
+
+    assert sensor.native_value is None
+

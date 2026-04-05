@@ -635,17 +635,17 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError, OverflowError):
                         return None
 
+                # Special handling for getLE sensor: map raw API values to display values
+                if self._sensor_key == 'getLE':
+                    raw = int(status.get('getLE') or 2)
+                    return _SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw)
+
                 # Special handling for getLNG: strip trailing annotation if present
                 # e.g. "0 (0=Deutsch 1=English)" -> "0"
                 if self._sensor_key == 'getLNG':
                     if value is None or (isinstance(value, str) and value.strip() == ""):
                         return None
                     return get_sensor_lng_value(value)
-
-                # Special handling for getLE sensor: map raw API values to display values
-                if self._sensor_key == 'getLE':
-                    raw = int(status.get('getLE') or 2)
-                    return _SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw)
 
                 # Special handling for getNOT: map notification codes to translation keys
                 if self._sensor_key == 'getNOT':
