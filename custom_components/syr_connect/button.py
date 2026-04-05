@@ -194,8 +194,8 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
             # Handle setSIR: initiate regeneration with the appropriate value.
-            # getSIR = 1 (integer/string) → send setSIR = 0.
-            # getSIR = False / "false" → send setSIR = True.
+            # getSIR = 1 (integer/string) → send setSIR = 0 (integer).
+            # getSIR = False / "false" → send setSIR = "true" (string, lowercase).
             if self._command == "setSIR":
                 status = None
                 for device in coordinator.data.get("devices", []):
@@ -204,13 +204,14 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                         break
                 raw_sir = None if status is None else status.get("getSIR")
                 # Map the reported getSIR value to the correct setSIR payload.
-                # - Boolean False (or the string "false") → send True.
+                # - Boolean False (or the string "false") → send "true" (lowercase string).
                 # - Anything else (e.g. "1", 1) → send 0.
+                value_sir: int | str
                 if raw_sir is False or str(raw_sir).strip().lower() == "false":
-                    send_value: int | bool = True
+                    value_sir = "true"
                 else:
-                    send_value = 0
-                await coordinator.async_set_device_value(self._device_id, self._command, send_value)
+                    value_sir = 0
+                await coordinator.async_set_device_value(self._device_id, self._command, value_sir)
                 return
 
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
@@ -262,18 +263,18 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
                     model = None
 
-                send_value: str
+                reset_value: str
                 if isinstance(model, str) and model.lower() in (
                     "safetplus",
                     "lexplus10",
                     "lexplus10s",
                     "lexplus10sl",
                 ):
-                    send_value = ""
+                    reset_value = ""
                 else:
-                    send_value = "FF"
+                    reset_value = "FF"
 
-                await coordinator.async_set_device_value(self._device_id, self._command, send_value)
+                await coordinator.async_set_device_value(self._device_id, self._command, reset_value)
                 return
 
             # Default: do nothing for commands we don't explicitly handle.

@@ -350,7 +350,11 @@ async def test_async_setup_entry_no_getsir(hass: HomeAssistant, create_mock_entr
 
 @pytest.mark.parametrize("falsy_value", ["false"])
 async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, falsy_value) -> None:
-    """Test async_setup_entry skips setSIR button when getSIR is 'false' (device is not a water softener)."""
+    """Test async_setup_entry creates a setSIR button when getSIR is 'false'.
+
+    getSIR='false' means the water softener is idle (not regenerating).
+    The button must still be created so the user can trigger a regeneration.
+    """
     data = {
         "devices": [
             {
@@ -364,8 +368,8 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    # getSIR is falsy — setSIR button must not be created
-    assert len(entities) == 0
+    # getSIR='false' → softener is idle → setSIR button must be created
+    assert len(entities) == 1
 
 
 async def test_async_setup_entry_removes_stale_setsir_from_registry(
@@ -374,7 +378,7 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
     mock_add_entities,
 ) -> None:
     """Test that a previously-registered setSIR button is removed from the registry
-    when the device reports getSIR == 'false' (device is not a water softener)."""
+    when the device no longer reports a getSIR key in its status."""
     from unittest.mock import MagicMock, patch
 
     data = {
@@ -383,7 +387,7 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": "false"},
+                "status": {},  # getSIR is absent — button must not be created
             }
         ]
     }

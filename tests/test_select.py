@@ -1791,6 +1791,7 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
         await select.async_select_option("opt_two")
 
 
+@pytest.mark.xfail(reason="getFCD select is temporarily disabled (write-back bug: server resets value after change)")
 async def test_async_setup_entry_creates_fcd_select(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry creates a discrete select for getFCD values."""
     data = {
