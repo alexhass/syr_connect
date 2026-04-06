@@ -29,6 +29,8 @@ from .const import (
 )
 from .models import detect_model
 
+_LOGGER = logging.getLogger(__name__)
+
 
 def get_default_scan_interval_for_entry(entry) -> int:
     """Return the default scan interval for a config entry.
@@ -65,8 +67,6 @@ def get_default_scan_interval_for_entry(entry) -> int:
         if api_type == API_TYPE_JSON
         else _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
     )
-
-_LOGGER = logging.getLogger(__name__)
 
 
 def build_device_info(
