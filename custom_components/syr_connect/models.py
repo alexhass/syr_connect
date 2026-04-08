@@ -19,6 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 # - `attrs_equals`: dict of `getX` -> value pairs that must all match
 # - `base_path`: json api local access base path for the model or None if not applicable
 # - `cna_equals`: exact match against `getCNA` value (if present)
+# - `manufacturer`: name of the device manufacturer
 # - `ver_prefix` / `ver_contains`: require `getVER` to match the prefix or contain
 # - `v_keys`: set of `getX` keys used as a fingerprint for the model
 # - `v_keys_required`: the minimum number of keys from `v_keys` that must be
@@ -29,7 +30,8 @@ _LOGGER = logging.getLogger(__name__)
 MODEL_SIGNATURES: Iterable[dict] = [
     {
         "base_path": "/pontos-base",
-        "display_name": "Hansgrohe Pontos Base",
+        "display_name": "Pontos Base",
+        "manufacturer": "Hansgrohe",
         "name": "pontosbase",
         "ver_prefix": "PontosBase",
     },
@@ -37,6 +39,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "base_path": None,
         "cna_equals": "LEXplus10",
         "display_name": "LEX Plus 10 Connect",
+        "manufacturer": "SYR",
         "name": "lexplus10",
         "ver_prefix": None,
     },
@@ -44,6 +47,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "base_path": None,
         "cna_equals": "LEXplus10S",
         "display_name": "LEX Plus 10 S Connect",
+        "manufacturer": "SYR",
         "name": "lexplus10s",
         "ver_prefix": None,
     },
@@ -51,18 +55,21 @@ MODEL_SIGNATURES: Iterable[dict] = [
         "base_path": None,
         "cna_equals": "LEXplus10SL",
         "display_name": "LEX Plus 10 SL Connect",
+        "manufacturer": "SYR",
         "name": "lexplus10sl",
         "ver_prefix": None,
     },
     {
         "base_path": "/neosoft",
         "display_name": "NeoSoft 2500 Connect",
+        "manufacturer": "SYR",
         "name": "neosoft2500",
         "srn_prefix": "206",
     },
     {
         "base_path": "/neosoft",
         "display_name": "NeoSoft 5000 Connect",
+        "manufacturer": "SYR",
         "name": "neosoft5000",
         "ver_prefix": "NSS",
         "v_keys": {"getRE1", "getRE2"},
@@ -71,36 +78,42 @@ MODEL_SIGNATURES: Iterable[dict] = [
     {
         "base_path": "/safe-tec",
         "display_name": "Safe-Tech Connect",
+        "manufacturer": "SYR",
         "name": "safetech",
         "ver_prefix": "Safe-Tech V4",
     },
     {
         "base_path": "/trio",
         "display_name": "Safe-Tech Plus Connect",
+        "manufacturer": "SYR",
         "name": "safetechplus",
         "srn_prefix": "112",
     },
     {
         "base_path": None,
         "display_name": "Safe-T+ Connect",
+        "manufacturer": "SYR",
         "name": "safetplus",
         "ver_prefix": "Safe-T",
     },
     {
         "base_path": "/trio",
-        "display_name": "Sanibel Leak Protection Module A25",
+        "display_name": "Leak Protection Module A25",
+        "manufacturer": "Sanibel",
         "name": "sanibelleakprotect",
         "srn_prefix": "501",
     },
     {
         "base_path": "/neosoft",
-        "display_name": "Sanibel Softwater UNO A25",
+        "display_name": "Softwater UNO A25",
+        "manufacturer": "Sanibel",
         "name": "sanibelsoftwateruno",
         "srn_prefix": "207",
     },
     {
         "base_path": "/trio",
         "display_name": "Trio DFR/LS Connect",
+        "manufacturer": "SYR",
         "name": "trio",
         "srn_prefix": "113",
     },
@@ -175,8 +188,9 @@ def detect_model(flat: dict[str, object]) -> dict:
             base_path = sig.get("base_path")
             name = sig.get("name")
             display = sig.get("display_name", name)
+            manufacturer = sig.get("manufacturer")
             _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
@@ -185,8 +199,9 @@ def detect_model(flat: dict[str, object]) -> dict:
             base_path = sig.get("base_path")
             name = sig.get("name")
             display = sig.get("display_name", name)
+            manufacturer = sig.get("manufacturer")
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
@@ -211,19 +226,22 @@ def detect_model(flat: dict[str, object]) -> dict:
             if not ver_match(sig):
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
+            manufacturer = sig.get("manufacturer")
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            return {"name": name, "display_name": display, "base_path": base_path}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
 
         # If only attribute equality is required and already matched, return this model.
         if sig.get("attrs_equals"):
+            manufacturer = sig.get("manufacturer")
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
 
         # If version prefix or contains is specified and matches, return this model.
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
+            manufacturer = sig.get("manufacturer")
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            return {"name": name, "display_name": display, "base_path": base_path}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
-    return {"name": "unknown", "display_name": "Unknown model", "base_path": None}
+    return {"name": "unknown", "display_name": "Unknown model", "base_path": None, "manufacturer": None}

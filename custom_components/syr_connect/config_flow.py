@@ -47,7 +47,10 @@ STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
 # Sort by display_name to ensure first item in list matches first item shown in UI
 LOCAL_API_MODELS = sorted(
     [
-        (sig["name"], sig["display_name"])
+        (
+            sig["name"],
+            f"{sig['manufacturer']} {sig['display_name']}",
+        )
         for sig in MODEL_SIGNATURES
         if sig.get("base_path") is not None
     ],

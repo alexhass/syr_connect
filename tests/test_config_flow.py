@@ -798,6 +798,46 @@ async def test_validate_input_json_host_with_port_and_whitespace_and_invalid_pat
         await validate_input_json(hass, {CONF_MODEL: "neosoft5000", CONF_HOST: "not_a_valid_host!"})
 
 
+def test_local_api_models_labels_prefixed_with_manufacturer() -> None:
+    """Every LOCAL_API_MODELS label must start with the manufacturer name from MODEL_SIGNATURES."""
+    from custom_components.syr_connect.config_flow import LOCAL_API_MODELS
+    from custom_components.syr_connect.models import MODEL_SIGNATURES
+
+    sig_by_name = {sig["name"]: sig for sig in MODEL_SIGNATURES}
+
+    for model_name, label in LOCAL_API_MODELS:
+        sig = sig_by_name[model_name]
+        manufacturer = sig.get("manufacturer")
+        assert manufacturer, f"Model {model_name!r} has no manufacturer defined"
+        assert label.startswith(manufacturer), (
+            f"Label {label!r} for model {model_name!r} does not start with manufacturer {manufacturer!r}"
+        )
+        display_name = sig["display_name"]
+        assert label == f"{manufacturer} {display_name}", (
+            f"Label {label!r} != '{manufacturer} {display_name}'"
+        )
+
+
+def test_local_api_models_only_includes_models_with_base_path() -> None:
+    """LOCAL_API_MODELS must not contain models without a base_path."""
+    from custom_components.syr_connect.config_flow import LOCAL_API_MODELS
+    from custom_components.syr_connect.models import MODEL_SIGNATURES
+
+    sig_by_name = {sig["name"]: sig for sig in MODEL_SIGNATURES}
+    for model_name, _label in LOCAL_API_MODELS:
+        assert sig_by_name[model_name].get("base_path") is not None, (
+            f"Model {model_name!r} has no base_path but is in LOCAL_API_MODELS"
+        )
+
+
+def test_local_api_models_sorted_by_label() -> None:
+    """LOCAL_API_MODELS must be sorted alphabetically by label."""
+    from custom_components.syr_connect.config_flow import LOCAL_API_MODELS
+
+    labels = [label for _, label in LOCAL_API_MODELS]
+    assert labels == sorted(labels), "LOCAL_API_MODELS is not sorted by label"
+
+
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
     """Test reauth flow when entry is deleted during confirmation."""
     from unittest.mock import AsyncMock, patch

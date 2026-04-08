@@ -86,6 +86,7 @@ def build_device_info(
     """
 
     model = None
+    manufacturer = None
     sw_version = None
     hw_version = None
     mac = None
@@ -96,11 +97,13 @@ def build_device_info(
         if device['id'] == device_id:
             status = device.get('status', {})
 
-            # Get human-friendly model display name
+            # Get human-friendly model display name and manufacturer
             detected = detect_model(status)
-            display_name = detected.get("display_name") if isinstance(detected, dict) else None
-            if display_name:
-                model = str(display_name)
+            if isinstance(detected, dict):
+                display_name = detected.get("display_name")
+                if display_name:
+                    model = str(display_name)
+                manufacturer = detected.get("manufacturer") or None
 
             # Get software version from getVER
             if 'getVER' in status and status['getVER']:
@@ -118,15 +121,17 @@ def build_device_info(
 
             break
 
-    # Use fallback if no model found
+    # Use fallback if no model or manufacturer found
     if model is None:
         model = "Unknown model"
         _LOGGER.debug("No model found for device %s, using fallback", device_id)
+    if manufacturer is None:
+        manufacturer = "Unknown"
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=device_name,
-        manufacturer="SYR",
+        manufacturer=manufacturer,
         model=model,
         sw_version=sw_version,
         hw_version=hw_version,

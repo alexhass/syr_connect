@@ -174,7 +174,7 @@ def test_build_device_info() -> None:
     device_info = build_device_info("DEVICE123", "Test Device", coordinator_data)
 
     assert device_info["name"] == "Test Device"
-    assert device_info["manufacturer"] == "SYR"
+    assert device_info["manufacturer"] == "SYR"  # LEXplus10S is a SYR device
     assert device_info["model"] == "LEX Plus 10 S Connect"
     assert device_info["sw_version"] == "1.0.0"
     assert device_info["hw_version"] == "SLPS"
@@ -197,7 +197,7 @@ def test_build_device_info_minimal() -> None:
     device_info = build_device_info("DEVICE123", "Test Device", coordinator_data)
 
     assert device_info["name"] == "Test Device"
-    assert device_info["manufacturer"] == "SYR"
+    assert device_info["manufacturer"] == "Unknown"  # Fallback when model is undetected
     assert device_info["model"] == "Unknown model"  # Fallback
     assert device_info["serial_number"] == "DEVICE123"
 

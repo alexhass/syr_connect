@@ -16,6 +16,7 @@ def test_lexplus10_detection_synthetic():
     """Synthetic flattened dict with getCNA should detect lexplus10."""
     flat = {"getCNA": "LEXplus10"}
     assert detect_model(flat)["name"] == "lexplus10"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_lexplus10s_detection():
@@ -24,6 +25,7 @@ def test_lexplus10s_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     assert detect_model(flat)["name"] == "lexplus10s"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_lexplus10sl_detection():
@@ -32,6 +34,7 @@ def test_lexplus10sl_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     assert detect_model(flat)["name"] == "lexplus10sl"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_neosoft2500_detection():
@@ -40,6 +43,7 @@ def test_neosoft2500_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     assert detect_model(flat)["name"] == "neosoft2500"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_neosoft5000_detection():
@@ -48,6 +52,7 @@ def test_neosoft5000_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     assert detect_model(flat)["name"] == "neosoft5000"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_trio_dfrls_detection():
@@ -56,6 +61,7 @@ def test_trio_dfrls_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     assert detect_model(flat)["name"] == "trio"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_safetplus_detection():
@@ -64,11 +70,14 @@ def test_safetplus_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     assert detect_model(flat)["name"] == "safetplus"
+    assert detect_model(flat)["manufacturer"] == "SYR"
 
 
 def test_unknown_model_detection():
     """Unknown or empty flattened dict should yield the unknown fallback."""
-    assert detect_model({})["name"] == "unknown"
+    result = detect_model({})
+    assert result["name"] == "unknown"
+    assert result["manufacturer"] is None
 
 
 def test_detect_model_none_input():
@@ -100,15 +109,17 @@ def test_safetechplus_detection_synthetic():
     result = detect_model(flat)
     assert result["name"] == "safetechplus"
     assert result["display_name"] == "Safe-Tech Plus Connect"
+    assert result["manufacturer"] == "SYR"
 
 
 def test_lexplus10_with_display_name_and_base_path():
-    """Verify display_name and base_path are returned correctly."""
+    """Verify display_name, base_path, and manufacturer are returned correctly."""
     flat = {"getCNA": "LEXplus10"}
     result = detect_model(flat)
     assert result["name"] == "lexplus10"
     assert result["display_name"] == "LEX Plus 10 Connect"
     assert result["base_path"] is None
+    assert result["manufacturer"] == "SYR"
 
 
 def test_getcna_none_converted_to_empty_string():
@@ -577,3 +588,119 @@ def test_v_keys_version_constraints_not_satisfied_logs_debug(caplog):
     result = detect_model(flat)
     assert result["name"] == "unknown"
     assert "version constraints not satisfied" in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# Manufacturer field tests
+# ---------------------------------------------------------------------------
+
+def test_manufacturer_syr_via_cna():
+    """SYR devices detected by cna_equals should return manufacturer 'SYR'."""
+    for cna, expected_name in [
+        ("LEXplus10", "lexplus10"),
+        ("LEXplus10S", "lexplus10s"),
+        ("LEXplus10SL", "lexplus10sl"),
+    ]:
+        result = detect_model({"getCNA": cna})
+        assert result["manufacturer"] == "SYR", f"Expected SYR for {cna}, got {result['manufacturer']}"
+        assert result["name"] == expected_name
+
+
+def test_manufacturer_syr_via_srn_prefix():
+    """SYR devices detected by srn_prefix should return manufacturer 'SYR'."""
+    for srn, expected_name in [
+        ("206AAA00001", "neosoft2500"),
+        ("112AAA00001", "safetechplus"),
+        ("113AAA00001", "trio"),
+    ]:
+        result = detect_model({"getSRN": srn})
+        assert result["manufacturer"] == "SYR", f"Expected SYR for SRN {srn}, got {result['manufacturer']}"
+        assert result["name"] == expected_name
+
+
+def test_manufacturer_syr_via_ver_prefix():
+    """SYR devices detected by ver_prefix should return manufacturer 'SYR'."""
+    for ver, expected_name in [
+        ("Safe-Tech V4.1", "safetech"),
+        ("Safe-T-Plus-1.0", "safetplus"),
+        ("NSS-2.0", "neosoft5000"),
+    ]:
+        flat = {"getVER": ver}
+        if expected_name == "neosoft5000":
+            flat["getRE1"] = "1"
+            flat["getRE2"] = "2"
+        result = detect_model(flat)
+        assert result["manufacturer"] == "SYR", f"Expected SYR for VER {ver!r}, got {result['manufacturer']}"
+        assert result["name"] == expected_name
+
+
+def test_manufacturer_hansgrohe_pontosbase():
+    """Hansgrohe Pontos Base should return manufacturer 'Hansgrohe'."""
+    result = detect_model({"getVER": "PontosBase V1.31"})
+    assert result["name"] == "pontosbase"
+    assert result["manufacturer"] == "Hansgrohe"
+
+
+def test_manufacturer_sanibel_via_srn_prefix():
+    """Sanibel devices detected by srn_prefix should return manufacturer 'Sanibel'."""
+    for srn, expected_name in [
+        ("501AAA00001", "sanibelleakprotect"),
+        ("207AAA00001", "sanibelsoftwateruno"),
+    ]:
+        result = detect_model({"getSRN": srn})
+        assert result["manufacturer"] == "Sanibel", f"Expected Sanibel for SRN {srn}, got {result['manufacturer']}"
+        assert result["name"] == expected_name
+
+
+def test_manufacturer_unknown_for_undetected_model():
+    """Unknown model fallback should return manufacturer None."""
+    result = detect_model({})
+    assert result["name"] == "unknown"
+    assert result["manufacturer"] is None
+
+
+def test_manufacturer_field_present_in_all_return_paths():
+    """Every detect_model return value must contain a 'manufacturer' key."""
+    test_cases = [
+        {"getCNA": "LEXplus10"},          # cna_equals path
+        {"getSRN": "113AAA00001"},        # srn_prefix path
+        {"getVER": "Safe-T-1.0"},         # ver_prefix path
+        {"getRE1": "1", "getRE2": "2", "getVER": "NSS-3.0"},  # v_keys path
+        {},                               # unknown fallback
+    ]
+    for flat in test_cases:
+        result = detect_model(flat)
+        assert "manufacturer" in result, f"'manufacturer' key missing for input {flat}"
+
+
+def test_manufacturer_via_xml_fixtures():
+    """Verify manufacturer is correctly set when detecting from real XML fixtures."""
+    FIXTURE_DIR_XML = Path(__file__).parent / "fixtures/xml"
+    parser = ResponseParser()
+
+    expected = [
+        ("SanibelLeakProtectionModuleA25_GetDeviceCollectionStatus.xml", "sanibelleakprotect", "Sanibel"),
+        ("SanibelSoftwaterUNOA25_GetDeviceCollectionStatus.xml", "sanibelsoftwateruno", "Sanibel"),
+        ("SafeTechPlus_GetDeviceCollectionStatus.xml", "safetechplus", "SYR"),
+    ]
+    for filename, expected_name, expected_manufacturer in expected:
+        xml = (FIXTURE_DIR_XML / filename).read_text(encoding="utf-8")
+        flat = parser.parse_device_status_response(xml)
+        assert flat is not None
+        result = detect_model(flat)
+        assert result["name"] == expected_name, f"{filename}: name mismatch"
+        assert result["manufacturer"] == expected_manufacturer, (
+            f"{filename}: expected manufacturer {expected_manufacturer!r}, got {result['manufacturer']!r}"
+        )
+
+
+def test_manufacturer_via_json_fixture_pontosbase():
+    """Verify manufacturer 'Hansgrohe' when detecting from Pontos Base JSON fixture."""
+    import json
+    fixture_path = Path(__file__).parent / "fixtures/json/HansgrohePontosBase_get_all.json"
+    data = json.loads(fixture_path.read_text(encoding="utf-8"))
+    # The JSON fixture is a flat status dict already
+    flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
+    result = detect_model(flat)
+    assert result["name"] == "pontosbase"
+    assert result["manufacturer"] == "Hansgrohe"
