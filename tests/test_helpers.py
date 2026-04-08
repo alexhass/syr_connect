@@ -628,6 +628,8 @@ def test_registry_cleanup_remove_called() -> None:
         SimpleNamespace(entity_id=listed_entity_id),
     ]
     registry.async_remove = MagicMock()
+    # No conditional entities exist in the registry for this test.
+    registry.async_get = MagicMock(return_value=None)
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
         coordinator = {"devices": [{"id": device_id}]}
@@ -689,6 +691,9 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
     registry.async_remove = MagicMock()
 
+    # Only return an entity entry for the specific entity_id under test.
+    registry.async_get = MagicMock(side_effect=lambda eid: SimpleNamespace(entity_id=eid) if eid == entity_id else None)
+
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
@@ -706,6 +711,9 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     registry.entities.values.return_value = []
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
     registry.async_remove = MagicMock()
+
+    # Only return an entity entry for the specific entity_id under test.
+    registry.async_get = MagicMock(side_effect=lambda eid: SimpleNamespace(entity_id=eid) if eid == entity_id else None)
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": "SafeTech"}}]}
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
