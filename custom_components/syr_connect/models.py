@@ -244,4 +244,4 @@ def detect_model(flat: dict[str, object]) -> dict:
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
-    return {"name": "unknown", "display_name": "Unknown model", "base_path": None, "manufacturer": None}
+    return {"name": "unknown", "display_name": "Unknown model", "base_path": None, "manufacturer": "Unknown"}

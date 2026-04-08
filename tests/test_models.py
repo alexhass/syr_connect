@@ -77,7 +77,7 @@ def test_unknown_model_detection():
     """Unknown or empty flattened dict should yield the unknown fallback."""
     result = detect_model({})
     assert result["name"] == "unknown"
-    assert result["manufacturer"] is None
+    assert result["manufacturer"] == "Unknown"
 
 
 def test_detect_model_none_input():
@@ -653,16 +653,16 @@ def test_manufacturer_sanibel_via_srn_prefix():
 
 
 def test_manufacturer_unknown_for_undetected_model():
-    """Unknown model fallback should return manufacturer None."""
+    """Unknown model fallback should return manufacturer 'Unknown'."""
     result = detect_model({})
     assert result["name"] == "unknown"
-    assert result["manufacturer"] is None
+    assert result["manufacturer"] == "Unknown"
 
 
 def test_manufacturer_field_present_in_all_return_paths():
-    """Every detect_model return value must contain a 'manufacturer' key."""
+    """Every detect_model return value must contain a non-None 'manufacturer' key."""
     test_cases = [
-        {"getCNA": "LEXplus10"},          # cna_equals path
+        {"getCNA": "LEXplus10"},         # cna_equals path
         {"getSRN": "113AAA00001"},        # srn_prefix path
         {"getVER": "Safe-T-1.0"},         # ver_prefix path
         {"getRE1": "1", "getRE2": "2", "getVER": "NSS-3.0"},  # v_keys path
@@ -671,6 +671,7 @@ def test_manufacturer_field_present_in_all_return_paths():
     for flat in test_cases:
         result = detect_model(flat)
         assert "manufacturer" in result, f"'manufacturer' key missing for input {flat}"
+        assert result["manufacturer"] is not None, f"'manufacturer' is None for input {flat}"
 
 
 def test_manufacturer_via_xml_fixtures():

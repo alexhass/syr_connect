@@ -121,7 +121,7 @@ def build_device_info(
 
             break
 
-    # Use fallback if no model or manufacturer found
+    # Use fallback if no model found
     if model is None:
         model = "Unknown model"
         _LOGGER.debug("No model found for device %s, using fallback", device_id)
