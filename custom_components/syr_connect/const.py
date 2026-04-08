@@ -520,7 +520,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg)
     "getVS1", "getVS2", "getVS3",  # Volume thresholds
-    "getTYP",  # Device type code
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
