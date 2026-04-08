@@ -18,6 +18,16 @@ class SyrEncryption:
         Args:
             key: Hexadecimal encryption key
             iv: Hexadecimal initialization vector
+
+        Note:
+            Both ``key`` and ``iv`` are fixed constants defined by the SYR Connect
+            cloud API protocol. Using a static IV with AES-CBC is a known weakness:
+            identical plaintext blocks produce identical ciphertext, which can leak
+            patterns to an observer. This is an API constraint that cannot be
+            changed on the client side. The risk is limited in practice because
+            the IV is only used to decrypt server-side login responses, not to
+            encrypt user-controlled data, and each response carries a unique
+            session token that varies per login.
         """
         self.key = bytes.fromhex(key)
         self.iv = bytes.fromhex(iv)
