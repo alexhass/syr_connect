@@ -652,6 +652,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getMAN": "mdi:factory",
     "getMAC": "mdi:ethernet",
     "getSRN": "mdi:identifier",
+    "getTYP": "mdi:devices",
     "getVER": "mdi:chip",
     # Configuration
     "getCS1": "mdi:beaker",
@@ -1096,6 +1097,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getSV1": 0,    # Salt container volume 1: show as whole number by default
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
+    "getTYP": 0,    # Device type: show as whole number by default
     "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
     "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
