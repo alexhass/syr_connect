@@ -551,6 +551,8 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - Safe-T+
     # - NeoSoft 2500 / 5000
     "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
+    "getLNG",   # Device language (0=Deutsch, 1=English)
     "getNPS",  # Microleakage count - value "" means sensor does not exists.
     "getTYP",  # Device type code - value "" means sensor does not exists.
 
