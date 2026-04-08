@@ -377,7 +377,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getMAC2",  # LAN MAC address
     "getMAN",   # Manufacturer
     "getSRN",   # Serial number
-    "getTYP",   # Type
+    "getTYP",   # Device type code
     "getVER",   # Firmware version
     "getWFC",   # Wi-Fi SSID
     "getWFR",   # Wifi signal strength (%)
@@ -509,7 +509,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # --- Deliberately suppressed despite being in KNOWN_KEYS ---
     "getCDE",  # Configuration code — opaque device identifier, not useful for users
     "getSCR",  # Service regeneration cycle count — function unclear
-    "getTYP",  # Device type code — not user-relevant
     "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold
     "getSLP",  # Self-learning phase duration — technical value without context
     "getWFL",  # Nearby Wi-Fi networks — complex formatted string, not suitable as sensor
@@ -521,6 +520,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg)
     "getVS1", "getVS2", "getVS3",  # Volume thresholds
+    "getTYP",  # Device type code
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
@@ -550,6 +550,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - NeoSoft 2500 / 5000
     "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
     "getNPS",  # Microleakage count - value "" means sensor does not exists.
+    "getTYP",  # Device type code - value "" means sensor does not exists.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
