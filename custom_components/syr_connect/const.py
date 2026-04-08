@@ -399,6 +399,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getLNG",   # Device language (0=Deutsch, 1=English)
     "getNOT",   # Retrieving the current notification
     "getSRE",   # Regeneration active
+    "getTYP",   # Device type code
     "getRG2", "getRG3",  # Regeneration running for tank
     "getRPD",   # Regeneration interval (days)
     "getRPW",   # Regeneration permitted weekdays as bit mask
