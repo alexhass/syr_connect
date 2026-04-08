@@ -372,6 +372,8 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getEIP",   # Ethernet IP address
     "getFIR",   # Firmware model
     "getIPA",   # IP address
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+    "getLNG",   # Device language (0=Deutsch, 1=English) - other models
     "getMAC",   # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
