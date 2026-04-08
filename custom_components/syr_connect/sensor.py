@@ -76,9 +76,14 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for sensors")
         return
 
-    # Remove previously-registered entities that are now excluded.
-    # The effective set of allowed sensor keys is KNOWN_KEYS minus EXCLUDED.
-    registry_cleanup(hass, coordinator.data, "sensor", allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
+    # Remove previously-registered entities that are no longer valid.
+    # registry_cleanup also handles conditionally hidden sensors internally.
+    registry_cleanup(
+        hass,
+        coordinator.data,
+        "sensor",
+        allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+    )
 
     # Registry handle used for per-group removals below
     registry = er.async_get(hass)
@@ -236,7 +241,6 @@ async def async_setup_entry(
                     )
                 )
                 sensor_count += 1
-
 
         _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
 

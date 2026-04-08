@@ -676,7 +676,63 @@ def test_registry_cleanup_skips_device_with_no_id() -> None:
         )
 
     registry.async_remove.assert_not_called()
-    """Ensure getMAC1 is only returned when getWFS == 2; otherwise skip."""
+
+
+def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
+    """Stale registry entry for a conditionally hidden sensor is removed when value is empty."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING – registry entry exists but device reports ""
+    entity_id = build_entity_id("sensor", device_id, "getTYP")
+    registry.entities.values.return_value = []
+    registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
+    registry.async_remove = MagicMock()
+
+    coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
+
+    registry.async_remove.assert_called_once_with(entity_id)
+
+
+def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
+    """Registry entry for a conditionally shown sensor is NOT removed when value is non-empty."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING – device reports a real value
+    entity_id = build_entity_id("sensor", device_id, "getTYP")
+    registry.entities.values.return_value = []
+    registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
+    registry.async_remove = MagicMock()
+
+    coordinator = {"devices": [{"id": device_id, "status": {"getTYP": "SafeTech"}}]}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
+
+    registry.async_remove.assert_not_called()
+
+
+def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
+    """Conditional hidden-sensor cleanup must NOT run for non-sensor domains."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    # getTYP is conditionally hidden – but domain is "binary_sensor", so no removal expected
+    entity_id = build_entity_id("binary_sensor", device_id, "getTYP")
+    registry.entities.values.return_value = []
+    registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
+    registry.async_remove = MagicMock()
+
+    coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(hass, coordinator, "binary_sensor", allowed_keys={"getTYP"})
+
+    registry.async_remove.assert_not_called()
+
+
+
     # Wi-Fi present but WFS indicates not connected
     status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}
     assert get_current_mac(status) is None

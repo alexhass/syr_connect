@@ -17,6 +17,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
@@ -167,6 +168,12 @@ def registry_cleanup(
     any whose key is NOT in ``allowed_keys``. If ``allowed_keys`` is None,
     nothing is removed.
 
+    For sensor entities, also removes entries for keys that are conditionally
+    hidden (i.e. listed in ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_*``) when
+    ``is_sensor_visible`` returns ``False`` for the current device status. This
+    covers keys that are absent from the device status entirely as well as keys
+    that are present with an empty or zero value.
+
     Args:
         hass: Home Assistant instance.
         coordinator_data: Coordinator ``.data`` mapping containing ``devices``.
@@ -179,11 +186,21 @@ def registry_cleanup(
     try:
         registry = er.async_get(hass)
         allowed_lower = {k.lower() for k in allowed_keys}
+
+        # Build the set of conditionally visible sensor keys once, outside the device loop.
+        _conditional_keys = (
+            _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
+            | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING
+            | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS
+        ) - _SYR_CONNECT_SENSOR_EXCLUDED
+
         for device in (coordinator_data or {}).get("devices", []):
             device_id = device.get("id")
             if not device_id:
                 continue
             prefix = f"{domain}.{DOMAIN}_{device_id.lower()}_"
+
+            # Remove entities whose key is no longer in the allowed set.
             for entry in list(registry.entities.values()):
                 if not entry.entity_id.startswith(prefix):
                     continue
@@ -198,6 +215,23 @@ def registry_cleanup(
                         registry.async_remove(entry.entity_id)
                     except Exception:
                         _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
+
+            # Remove conditionally hidden sensor entities based on current device status.
+            if domain == "sensor":
+                status = device.get("status", {})
+                for key in _conditional_keys:
+                    value = status.get(key)
+                    if not is_sensor_visible(status, key, value):
+                        entity_id = f"{prefix}{key.lower()}"
+                        if registry.async_get(entity_id) is not None:
+                            _LOGGER.debug(
+                                "Removing conditionally hidden sensor from registry: %s",
+                                entity_id,
+                            )
+                            try:
+                                registry.async_remove(entity_id)
+                            except Exception:
+                                _LOGGER.exception("Failed to remove entity %s", entity_id)
     except Exception:
         _LOGGER.exception("Failed to cleanup excluded %s entities from registry", domain)
 
