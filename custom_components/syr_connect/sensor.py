@@ -57,6 +57,48 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
+def _is_true(val: object) -> bool:
+    """Normalize a heterogeneous API flag value to a Python bool.
+
+    SYR devices report binary activation flags (e.g. ``getPAx``) in varying
+    formats depending on firmware version: native ``bool``, ``int``/``float``,
+    or strings such as ``"1"`` or ``"true"``.  This function
+    provides a single, consistent conversion so callers do not need to handle
+    each format separately.
+
+    Args:
+        val: Raw value received from the device API.
+
+    Returns:
+        ``True`` if *val* represents a truthy/active state, ``False`` otherwise.
+        Unknown or unconvertible values always return ``False``.
+    """
+    # Handle real booleans first
+    if isinstance(val, bool):
+        return val
+
+    # Numeric-like values (including numeric strings)
+    if isinstance(val, (int | float)):
+        try:
+            return int(float(val)) != 0
+        except (ValueError, TypeError):
+            return False
+
+    if isinstance(val, str):
+        sval = val.strip().lower()
+        if sval in ("1", "true"):
+            return True
+        if sval in ("0", "false"):
+            return False
+        # Try parsing numeric string
+        try:
+            return int(float(sval)) != 0
+        except (ValueError, TypeError):
+            return False
+
+    return False
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -107,32 +149,6 @@ async def async_setup_entry(
         # If getPAx evaluates to true, ensure sensors getPVx, getPTx, getPFx, getPMx, getPWx, getPBx, getPRx are created.
         # If getPAx evaluates to false, remove those sensors from the registry if present.
         handled_keys: set[str] = set()
-
-        def _is_true(val: object) -> bool:
-            # Handle real booleans first
-            if isinstance(val, bool):
-                return val
-
-            # Numeric-like values (including numeric strings)
-            if isinstance(val, (int | float)):
-                try:
-                    return int(float(val)) != 0
-                except (ValueError, TypeError):
-                    return False
-
-            if isinstance(val, str):
-                sval = val.strip().lower()
-                if sval in ("1", "true", "on", "yes"):
-                    return True
-                if sval in ("0", "false", "off", "no"):
-                    return False
-                # Try parsing numeric string
-                try:
-                    return int(float(sval)) != 0
-                except (ValueError, TypeError):
-                    return False
-
-            return False
 
         for idx in range(1, 9):
             pa_key = f"getPA{idx}"
