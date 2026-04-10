@@ -24,7 +24,7 @@ The API client coordinates several helper components:
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -128,7 +128,7 @@ class SyrConnectXmlAPI:
             return False
 
         # Check if session hasn't timed out yet
-        return datetime.now() < self.session_expires_at
+        return datetime.now(UTC) < self.session_expires_at
 
     def _update_session_expiry(self) -> None:
         """Update session expiration time.
@@ -137,7 +137,7 @@ class SyrConnectXmlAPI:
         Sessions expire after 30 minutes of inactivity, matching the
         server-side timeout to avoid unnecessary re-authentication attempts.
         """
-        self.session_expires_at = datetime.now() + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
+        self.session_expires_at = datetime.now(UTC) + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
 
     async def login(self) -> bool:
         """Authenticate with the SYR Connect cloud service.

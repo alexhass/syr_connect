@@ -21,7 +21,7 @@ XML API client so it can be integrated into the coordinator later.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import quote
 
@@ -146,7 +146,7 @@ class SyrConnectJsonAPI:
         """
         return (
             self._last_login is not None
-            and datetime.now() < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
+            and datetime.now(UTC) < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
         )
 
     def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
@@ -343,7 +343,7 @@ class SyrConnectJsonAPI:
         if self._login_required is False:
             _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
             # Mark session as valid for the timeout period so callers won't retry
-            self._last_login = datetime.now()
+            self._last_login = datetime.now(UTC)
             self.projects = [{"id": "local", "name": "Local JSON API"}]
             return True
 
@@ -361,7 +361,7 @@ class SyrConnectJsonAPI:
                     self._build_base_url(),
                 )
                 # Mark session as valid to avoid retrying login
-                self._last_login = datetime.now()
+                self._last_login = datetime.now(UTC)
                 # Remember that this device doesn't require ADM login
                 self._login_required = False
                 # Clear any cached data and provide projects placeholder
@@ -386,7 +386,7 @@ class SyrConnectJsonAPI:
             raise SyrConnectAuthError(f"Login failed: {err}") from err
 
         # Update session tracking
-        self._last_login = datetime.now()
+        self._last_login = datetime.now(UTC)
 
         # Clear any cached data from previous session
         self._cached_get_all = None
