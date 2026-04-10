@@ -207,7 +207,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     _LOGGER.info("JSON API: connection successful to host: %s", host)
 
     # Return whether the device required login so the config flow can persist it
-    return {"title": f"SYR Connect Local ({host})", "login_required": api._login_required}
+    return {"title": f"SYR Connect Local ({host})", "login_required": api.login_required}
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:

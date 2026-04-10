@@ -102,6 +102,16 @@ class SyrConnectJsonAPI:
         # is followed immediately by get_device_status()
         self._cached_get_all: dict[str, Any] | None = None
 
+    @property
+    def login_required(self) -> bool | None:
+        """Whether ADM login is required for this device.
+
+        Returns:
+            True if login is required, False if not required,
+            None if not yet determined.
+        """
+        return self._login_required
+
     def _build_base_url(self) -> str | None:
         """Build the base URL for API requests.
 
