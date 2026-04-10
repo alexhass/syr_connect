@@ -40,7 +40,7 @@ async def test_json_client_parses_fixture(fixture: str) -> None:
     data = load_fixture(fixture)
 
     # Patch _request_json_data to return fixture data
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         status = await client.get_device_status("local")
 
     assert isinstance(status, dict)
@@ -316,7 +316,7 @@ async def test_get_device_status_does_not_call_login_if_not_required() -> None:
     client.login = AsyncMock()
 
     data = {"getAB": "value"}
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         status = await client.get_device_status("device1")
 
     # Verify login was NOT called
@@ -401,7 +401,7 @@ async def test_get_device_status_calls_login() -> None:
     client.login = AsyncMock()
 
     data = {"getAB": "value", "getCD": "123"}
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         status = await client.get_device_status("device1")
 
     # Verify login was called (no cached data)
@@ -415,7 +415,7 @@ async def test_get_device_status_exception_returns_none() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Mock _request_json_data to raise exception
-    with patch.object(client, "_request_json_data", side_effect=ValueError("Network error")):
+    with patch.object(client, "_request_json_data", new=AsyncMock(side_effect=ValueError("Network error"))):
         status = await client.get_device_status("device1")
 
     assert status is None
@@ -503,7 +503,7 @@ async def test_get_device_status_skips_login_with_base_url() -> None:
     client.login = AsyncMock()
 
     data = {"getAB": "value"}
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         status = await client.get_device_status("device1")
 
     # Verify login was NOT called even though we could
@@ -808,7 +808,7 @@ async def test_get_devices_fetches_and_caches() -> None:
         fetch_call_count += 1
         return original_data
 
-    with patch.object(client, "_request_json_data", side_effect=mock_fetch):
+    with patch.object(client, "_request_json_data", new=AsyncMock(side_effect=mock_fetch)):
         # Call get_devices - should fetch /get/all
         devices = await client.get_devices("local")
         assert len(devices) == 1
@@ -831,7 +831,7 @@ async def test_get_device_status_without_cache() -> None:
 
     data = load_fixture("SafeTech_get_all_v4.json")
 
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         # Call get_device_status without calling get_devices first
         status = await client.get_device_status("local")
         assert isinstance(status, dict)
@@ -844,7 +844,7 @@ async def test_get_devices_uses_frn_fallback() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     data = {"getFRN": "67890", "getOther": "value"}  # No getSRN
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         devices = await client.get_devices("local")
 
     assert len(devices) == 1
@@ -858,7 +858,7 @@ async def test_get_devices_uses_local_device_fallback() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     data = {"getOther": "value"}  # No getSRN or getFRN
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         devices = await client.get_devices("local")
 
     assert len(devices) == 1
@@ -875,7 +875,7 @@ async def test_get_devices_calls_login_when_session_invalid() -> None:
     client.login = AsyncMock()
 
     data = {"getSRN": "12345", "getOther": "value"}
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         devices = await client.get_devices("local")
 
     # Should have called login because session is invalid
@@ -1046,7 +1046,7 @@ async def test_get_device_status_with_cached_response() -> None:
     client._cached_get_all = cached_data
 
     # get_device_status should use the cached data without calling _request_json_data
-    with patch.object(client, "_request_json_data") as mock_request:
+    with patch.object(client, "_request_json_data", new_callable=AsyncMock) as mock_request:
         status = await client.get_device_status("12345")
 
     # Should NOT have called _request_json_data
@@ -1333,7 +1333,7 @@ async def test_get_device_status_returns_none_on_invalid_payload() -> None:
     client._cached_get_all = None
 
     # Patch _request_json_data to return None which will cause parsing to fail
-    with patch.object(client, "_request_json_data", return_value=None):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=None)):
         result = await client.get_device_status("device123")
 
     assert result is None
@@ -1429,7 +1429,7 @@ async def test_get_device_status_skips_login_when_login_not_required() -> None:
     client.login = AsyncMock()
 
     data = {"getSRN": "99999", "getFLO": "0"}
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         status = await client.get_device_status("99999")
 
     # login must NOT have been called
@@ -1448,7 +1448,7 @@ async def test_get_value_skips_login_when_login_not_required() -> None:
 
     client.login = AsyncMock()
 
-    with patch.object(client, "_request_json_data", return_value={"getFLO": 42}):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value={"getFLO": 42})):
         result = await client.get_value("getFLO")
 
     # login must NOT have been called
@@ -1468,7 +1468,7 @@ async def test_get_devices_skips_login_when_login_not_required() -> None:
     client.login = AsyncMock()
 
     data = {"getSRN": "ABC123", "getFLO": "0"}
-    with patch.object(client, "_request_json_data", return_value=data):
+    with patch.object(client, "_request_json_data", new=AsyncMock(return_value=data)):
         devices = await client.get_devices("local")
 
     # login must NOT have been called

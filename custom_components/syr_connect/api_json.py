@@ -465,10 +465,7 @@ class SyrConnectJsonAPI:
                 await self.login()
 
         # Fetch device status from /get/all endpoint
-        # Note: Support tests that patch _request_json_data with a synchronous callable
-        # (hasattr check handles both async and sync for test compatibility)
-        maybe: Any = self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
-        status = await maybe if hasattr(maybe, "__await__") else maybe
+        status = await self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
 
         # Cache the response so get_device_status() can reuse it without another API call
         # This is an optimization: coordinator calls get_devices() then get_device_status()
@@ -538,9 +535,8 @@ class SyrConnectJsonAPI:
                         _LOGGER.debug("JSON API: Session invalid, calling login for device_id=%s", device_id)
                         await self.login()
 
-                # Fetch fresh data (with test support for sync callables)
-                maybe: Any = self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
-                status = await maybe if hasattr(maybe, "__await__") else maybe
+                # Fetch fresh data
+                status = await self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
 
             # --- Return Status Dictionary ---
             # The JSON API returns a flat dict with getXXX keys (getSRN, getAB, etc.)
