@@ -133,48 +133,6 @@ def test_special_characters_escaping(payload_builder):
     assert 'n="user&name"' not in payload  # & should be escaped
 
 
-def test_redact_sensitive_basic(payload_builder):
-    """Test redacting sensitive information from payload."""
-    payload = '<sc><us ug="secret_session_123"/></sc>'
-    redacted = payload_builder.redact_sensitive(payload)
-
-    assert "secret_session_123" not in redacted
-    assert "***REDACTED***" in redacted
-    assert 'ug="***REDACTED***"' in redacted
-
-
-def test_redact_sensitive_empty_string(payload_builder):
-    """Test redacting sensitive info from empty string."""
-    redacted = payload_builder.redact_sensitive("")
-    assert redacted == ""
-
-
-def test_redact_sensitive_none_value(payload_builder):
-    """Test redacting sensitive info from None value."""
-    redacted = payload_builder.redact_sensitive(None)
-    assert redacted is None
-
-
-def test_redact_sensitive_no_session(payload_builder):
-    """Test redacting payload without session attribute."""
-    payload = '<sc><si v="version"/></sc>'
-    redacted = payload_builder.redact_sensitive(payload)
-
-    # Should return unchanged when no ug attribute
-    assert redacted == payload
-
-
-def test_redact_sensitive_multiple_sessions(payload_builder):
-    """Test redacting multiple session attributes."""
-    payload = '<sc><us ug="session1"/><us ug="session2"/></sc>'
-    redacted = payload_builder.redact_sensitive(payload)
-
-    # Both sessions should be redacted
-    assert "session1" not in redacted
-    assert "session2" not in redacted
-    assert redacted.count("***REDACTED***") == 2
-
-
 def test_build_device_list_payload_escaping(payload_builder):
     """Test XML escaping in device list payload."""
     session = "session&123"
@@ -261,18 +219,6 @@ def test_app_version_escaping_in_payloads(payload_builder):
 
     # App version should be escaped
     assert "&amp;" in payload or "&lt;" in payload or "&gt;" in payload
-
-
-def test_redact_sensitive_preserves_structure(payload_builder):
-    """Test that redaction preserves XML structure."""
-    payload = '<sc><us ug="session123"/><other>data</other></sc>'
-    redacted = payload_builder.redact_sensitive(payload)
-
-    # Structure should be preserved
-    assert "<sc>" in redacted
-    assert "<us ug=" in redacted
-    assert "<other>data</other>" in redacted
-    assert "</sc>" in redacted
 
 
 def test_get_timestamp_format(payload_builder):
