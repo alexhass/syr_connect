@@ -21,12 +21,14 @@ from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
-from .helpers import build_device_info, build_entity_id
+from .helpers import build_device_info, build_entity_id, registry_cleanup
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,6 +58,11 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for buttons")
         return
 
+    registry_cleanup(
+        hass, coordinator.data, "button",
+        allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+    )
+
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
@@ -69,6 +76,8 @@ async def async_setup_entry(
             ("setNOT", "Reset notification"),
             ("setWRN", "Reset warning"),
         ]
+
+        created_commands: set[str] = set()
 
         for command, name in action_buttons:
             # Derive the corresponding "getXXX" key from the command name
@@ -88,7 +97,34 @@ async def async_setup_entry(
                     name,
                 )
             )
+            created_commands.add(command)
             _LOGGER.debug("Adding button: %s (%s)", device_name, command)
+
+        # Remove any previously-registered button that is no longer being created
+        # for this device (e.g. a command whose get-key disappeared from the status).
+        # These buttons are in _SYR_CONNECT_BUTTON_KNOWN_KEYS and therefore survive
+        # the global registry_cleanup above; they must be removed individually here.
+        try:
+            registry = er.async_get(hass)
+            prefix = f"button.syr_connect_{device_id.lower()}_"
+            for reg_entry in list(registry.entities.values()):
+                if not reg_entry.entity_id.startswith(prefix):
+                    continue
+                key = reg_entry.entity_id[len(prefix):]
+                # Reconstruct the original command (e.g. "setsir" -> "setSIR")
+                # by checking against all known commands case-insensitively.
+                for known_cmd in action_buttons:
+                    if known_cmd[0].lower() == key and known_cmd[0] not in created_commands:
+                        _LOGGER.debug(
+                            "Removing conditionally-skipped button from registry: %s",
+                            reg_entry.entity_id,
+                        )
+                        registry.async_remove(reg_entry.entity_id)
+                        break
+        except Exception:
+            _LOGGER.exception(
+                "Failed to remove conditionally-skipped buttons for device %s", device_id
+            )
 
     if entities:
         _LOGGER.debug("Adding %d button(s) total", len(entities))
@@ -157,9 +193,25 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
-            # Handle setSIR explicitly: only send when the setSIR button is pressed.
+            # Handle setSIR: initiate regeneration with the appropriate value.
+            # getSIR = 1 (integer/string) → send setSIR = 0 (integer).
+            # getSIR = False / "false" → send setSIR = "true" (string, lowercase).
             if self._command == "setSIR":
-                await coordinator.async_set_device_value(self._device_id, self._command, 0)
+                status = None
+                for device in coordinator.data.get("devices", []):
+                    if device["id"] == self._device_id:
+                        status = device.get("status", {})
+                        break
+                raw_sir = None if status is None else status.get("getSIR")
+                # Map the reported getSIR value to the correct setSIR payload.
+                # - Boolean False (or the string "false") → send "true" (lowercase string).
+                # - Anything else (e.g. "1", 1) → send 0.
+                value_sir: int | str
+                if raw_sir is False or str(raw_sir).strip().lower() == "false":
+                    value_sir = "true"
+                else:
+                    value_sir = 0
+                await coordinator.async_set_device_value(self._device_id, self._command, value_sir)
                 return
 
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
@@ -211,18 +263,18 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
                     model = None
 
-                send_value: str
+                reset_value: str
                 if isinstance(model, str) and model.lower() in (
                     "safetplus",
                     "lexplus10",
                     "lexplus10s",
                     "lexplus10sl",
                 ):
-                    send_value = ""
+                    reset_value = ""
                 else:
-                    send_value = "FF"
+                    reset_value = "FF"
 
-                await coordinator.async_set_device_value(self._device_id, self._command, send_value)
+                await coordinator.async_set_device_value(self._device_id, self._command, reset_value)
                 return
 
             # Default: do nothing for commands we don't explicitly handle.

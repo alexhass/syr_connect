@@ -5,6 +5,8 @@ import logging
 import re
 from typing import Any
 
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import (
@@ -15,6 +17,10 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX10,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
+    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
     _SYR_CONNECT_SENSOR_NOT_CODES,
     _SYR_CONNECT_SENSOR_WRN_CODES,
     API_TYPE_JSON,
@@ -23,6 +29,8 @@ from .const import (
     DOMAIN,
 )
 from .models import detect_model
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_default_scan_interval_for_entry(entry) -> int:
@@ -61,8 +69,6 @@ def get_default_scan_interval_for_entry(entry) -> int:
         else _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
     )
 
-_LOGGER = logging.getLogger(__name__)
-
 
 def build_device_info(
     device_id: str,
@@ -81,6 +87,7 @@ def build_device_info(
     """
 
     model = None
+    manufacturer = None
     sw_version = None
     hw_version = None
     mac = None
@@ -91,11 +98,13 @@ def build_device_info(
         if device['id'] == device_id:
             status = device.get('status', {})
 
-            # Get human-friendly model display name
+            # Get human-friendly model display name and manufacturer
             detected = detect_model(status)
-            display_name = detected.get("display_name") if isinstance(detected, dict) else None
-            if display_name:
-                model = str(display_name)
+            if isinstance(detected, dict):
+                display_name = detected.get("display_name")
+                if display_name:
+                    model = str(display_name)
+                manufacturer = detected.get("manufacturer") or None
 
             # Get software version from getVER
             if 'getVER' in status and status['getVER']:
@@ -117,11 +126,13 @@ def build_device_info(
     if model is None:
         model = "Unknown model"
         _LOGGER.debug("No model found for device %s, using fallback", device_id)
+    if manufacturer is None:
+        manufacturer = "Unknown"
 
     return DeviceInfo(
         identifiers={(DOMAIN, device_id)},
         name=device_name,
-        manufacturer="SYR",
+        manufacturer=manufacturer,
         model=model,
         sw_version=sw_version,
         hw_version=hw_version,
@@ -143,6 +154,86 @@ def build_entity_id(platform: str, device_id: str, key: str) -> str:
         Formatted entity ID
     """
     return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
+
+
+def registry_cleanup(
+    hass: HomeAssistant,
+    coordinator_data: dict[str, Any],
+    domain: str,
+    allowed_keys: set[str] | None = None,
+) -> None:
+    """Remove previously-registered entities from the entity registry.
+
+    Scans all registered entities for the given domain/devices and removes
+    any whose key is NOT in ``allowed_keys``. If ``allowed_keys`` is None,
+    nothing is removed.
+
+    For sensor entities, also removes entries for keys that are conditionally
+    hidden (i.e. listed in ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_*``) when
+    ``is_sensor_visible`` returns ``False`` for the current device status. This
+    covers keys that are absent from the device status entirely as well as keys
+    that are present with an empty or zero value.
+
+    Args:
+        hass: Home Assistant instance.
+        coordinator_data: Coordinator ``.data`` mapping containing ``devices``.
+        domain: Entity domain string (e.g. ``"sensor"``).
+        allowed_keys: Set of permitted sensor keys. Entities whose key is not
+            in this set will be removed from the entity registry.
+    """
+    if allowed_keys is None:
+        return
+    try:
+        registry = er.async_get(hass)
+        allowed_lower = {k.lower() for k in allowed_keys}
+
+        # Build the set of conditionally visible sensor keys once, outside the device loop.
+        _conditional_keys = (
+            _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
+            | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING
+            | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS
+        ) - _SYR_CONNECT_SENSOR_EXCLUDED
+
+        for device in (coordinator_data or {}).get("devices", []):
+            device_id = device.get("id")
+            if not device_id:
+                continue
+            prefix = f"{domain}.{DOMAIN}_{device_id.lower()}_"
+
+            # Remove entities whose key is no longer in the allowed set.
+            for entry in list(registry.entities.values()):
+                if not entry.entity_id.startswith(prefix):
+                    continue
+                key_lower = entry.entity_id[len(prefix):]
+                if key_lower not in allowed_lower:
+                    _LOGGER.debug(
+                        "Removing unlisted %s from registry: %s",
+                        domain,
+                        entry.entity_id,
+                    )
+                    try:
+                        registry.async_remove(entry.entity_id)
+                    except Exception:
+                        _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
+
+            # Remove conditionally hidden sensor entities based on current device status.
+            if domain == "sensor":
+                status = device.get("status", {})
+                for key in _conditional_keys:
+                    value = status.get(key)
+                    if not is_sensor_visible(status, key, value):
+                        entity_id = f"{prefix}{key.lower()}"
+                        if registry.async_get(entity_id) is not None:
+                            _LOGGER.debug(
+                                "Removing conditionally hidden sensor from registry: %s",
+                                entity_id,
+                            )
+                            try:
+                                registry.async_remove(entity_id)
+                            except Exception:
+                                _LOGGER.exception("Failed to remove entity %s", entity_id)
+    except Exception:
+        _LOGGER.exception("Failed to cleanup excluded %s entities from registry", domain)
 
 
 def get_current_mac(status: dict[str, Any]) -> str | None:
@@ -301,6 +392,98 @@ def get_sensor_vol_value(value: str | int | float) -> str | int | float | None:
         return cleaned
 
     return value
+
+
+def get_sensor_lng_value(value: str | int | float) -> str | int | float | None:
+    """Extract the leading integer from a getLNG value.
+
+    Some devices append a human-readable annotation to the numeric value,
+    e.g. ``"0 (0=Deutsch 1=English)"`` instead of plain ``"0"``.
+    This function returns only the leading integer token so it can be matched
+    against the translation state map.
+
+    Examples:
+        >>> get_sensor_lng_value("0 (0=Deutsch 1=English)")
+        '0'
+        >>> get_sensor_lng_value("1")
+        '1'
+        >>> get_sensor_lng_value(0)
+        0
+
+    Args:
+        value: The raw getLNG sensor value
+
+    Returns:
+        Leading integer token as string, original value if no annotation present,
+        or None for empty string.
+    """
+    if not isinstance(value, str):
+        return value
+
+    if value.strip() == "":
+        return None
+
+    token = value.split()[0]
+    try:
+        int(token)
+        return token
+    except ValueError:
+        return value
+
+
+def get_sensor_net_value(value: str | int | float) -> float | None:
+    """Parse mains voltage (getNET) supporting three formats.
+
+    Formats supported:
+    - Safe-T+ format:   "ADC:950 6,16V" -> extract "6,16" and parse comma as decimal -> 6.16
+    - Safe-Tech+ format: "11,86"         -> parse comma as decimal -> 11.86
+    - Trio DFR/LS format: "363"          -> value in 1/100 V, divide by 100 -> 3.63
+
+    Returns the voltage as float rounded to 2 decimals, or None on failure.
+    """
+    if value is None:
+        return None
+
+    # If already numeric, assume it's in 1/100 V (int) and divide
+    if isinstance(value, (int | float)):
+        try:
+            return round(float(value) / 100.0, 2)
+        except (TypeError, ValueError):
+            return None
+
+    if not isinstance(value, str):
+        return None
+
+    s = value.strip()
+    if s == "":
+        return None
+
+    # Safe-T+ format: "ADC:950 6,16V" — extract the token that ends with 'V'
+    if "ADC:" in s:
+        for token in s.split():
+            if token.upper().endswith("V"):
+                raw = token[:-1]  # strip trailing 'V'
+                try:
+                    return round(float(raw.replace(',', '.')), 2)
+                except (ValueError, TypeError):
+                    return None
+        return None
+
+    # Safe-Tech+ format with comma decimal, e.g. "11,86"
+    if ',' in s:
+        try:
+            return round(float(s.replace(',', '.')), 2)
+        except (ValueError, TypeError):
+            return None
+
+    # Digits-only Trio DFR/LS format "363" -> divide by 100
+    if s.isdigit():
+        try:
+            return round(int(s) / 100.0, 2)
+        except (ValueError, TypeError):
+            return None
+
+    return None
 
 
 def get_sensor_bat_value(value: str | int | float) -> float | None:
@@ -548,6 +731,7 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         return (mapped, code) if mapped is not None else (None, code)
 
     if model in (
+        "pontosbase",
         "neosoft2500",
         "neosoft5000",
         "safetech",
@@ -604,29 +788,162 @@ def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     return (mapped, code) if mapped is not None else (None, code)
 
 
-def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any]:
+def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any] | None:
     """Build the appropriate (`setAB`, value) command for desired closed state.
 
     This function mirrors the device's own format for `getAB` when sending `setAB`:
-    - If device reports `getAB` as boolean-like strings, use "true"/"false"
-    - Otherwise use numeric representation: `1` (open) / `2` (closed)
+    - Native bool (`True`/`False`) or boolean strings ("true"/"false") → "true" (closed) / "false" (open)
+    - Native integer or numeric string ("1"/"2") → numeric `1` (open) / `2` (closed)
+    - Unknown or absent → `None` (error is logged; caller must not send the command)
 
     Using the device's native format prevents potential parsing errors or
     firmware issues when the device receives commands in an unexpected format.
 
-    Returns a tuple (set_key, value).
+    Returns a tuple (set_key, value), or None when the format is unrecognised.
     """
     raw = None
     if status:
         raw = status.get("getAB")
 
-    # Prefer boolean-string representation if current value looks boolean
-    if isinstance(raw, str) and raw.strip().lower() in ("true", "false"):
-        return ("setAB", "true" if closed else "false")
-
-    # If raw is explicitly boolean type (unlikely), use string representation
+    # Native bool (JSON API devices like SafeTech/Trio) → boolean string
+    # Must be checked before int because bool is a subclass of int in Python.
     if isinstance(raw, bool):
         return ("setAB", "true" if closed else "false")
 
-    # Fallback to numeric representation
-    return ("setAB", 2 if closed else 1)
+    # Boolean-like strings ("true"/"false") → boolean string
+    if isinstance(raw, str) and raw.strip().lower() in ("true", "false"):
+        return ("setAB", "true" if closed else "false")
+
+    # Native integer (JSON API devices that report getAB as int 1/2) → numeric
+    if isinstance(raw, int | float):
+        return ("setAB", 2 if closed else 1)
+
+    # Numeric string ("1"/"2") → numeric (XML API and some JSON API devices)
+    if isinstance(raw, str) and raw.strip().isdigit():
+        return ("setAB", 2 if closed else 1)
+
+    # Unknown format — this should not happen with known device firmware.
+    # Log an error and return None so the caller knows not to send a command.
+    _LOGGER.error(
+        "build_set_ab_command: unexpected getAB format %r (type %s); "
+        "command will not be sent. Please report this issue.",
+        raw,
+        type(raw).__name__,
+    )
+    return None
+
+
+def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
+    """Decide whether a reported status key/value should produce a sensor.
+
+    This function centralizes all visibility/exclusion rules so both the
+    entity-creation code and diagnostics produce the same set of visible
+    sensors. It is intentionally defensive about input types and accepts
+    values that may be strings, numbers, booleans or None.
+
+    Rules (applied in order):
+    - Group-controlled keys: keys matching ``getPVx,getPTx,getPFx,getPNx,``
+        ``getPMx,getPWx,getPBx,getPRx`` are only visible when the device's
+        corresponding ``getPAx`` flag is truthy (``1``, ``true``, "on", etc.).
+    - Special-case salt counters (``getCS1/2/3``): shown if the associated
+        ``getSVx`` value is non-zero; otherwise they follow the normal empty
+        value rules (hide when 0, "0", empty or None).
+    - Empty-string exclusions: keys listed in
+        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING`` are hidden when the
+        reported value is None or a whitespace-only string.
+    - Empty-value exclusions: keys listed in
+        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE`` are hidden when the
+        reported value is numeric zero (0), the string "0", an empty string,
+        or None.
+    - Empty-IP exclusions: keys listed in
+        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IP`` are hidden when the
+        reported value is None, an empty/whitespace string, or the placeholder
+        IP ``"0.0.0.0"``.
+
+    Args:
+            status: The full flattened device status mapping (used for cross-key
+                    checks such as ``getPAx`` and ``getSVx``).
+            key: The status key being considered (e.g. ``getWIP``, ``getPV1``).
+            value: The raw value reported by the device for this key.
+
+    Returns:
+            True when the key/value should result in a sensor entity; False when
+            the key should be suppressed according to the rules above.
+
+    Examples:
+            >>> is_sensor_visible(status, 'getWIP', '0.0.0.0')
+            False
+
+            >>> # If getSV1 == 5 then getCS1 is visible even if its own value is '0'
+            >>> is_sensor_visible({'getSV1': 5}, 'getCS1', '0')
+            True
+    """
+    def _is_true(val: object) -> bool:
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, (int | float)):
+            try:
+                return int(float(val)) != 0
+            except (ValueError, TypeError):
+                return False
+        if isinstance(val, str):
+            sval = val.strip().lower()
+            if sval in ("1", "true", "on", "yes"):
+                return True
+            if sval in ("0", "false", "off", "no"):
+                return False
+            try:
+                return int(float(sval)) != 0
+            except (ValueError, TypeError):
+                return False
+        return False
+
+    # Group keys controlled by getPAx should be hidden when getPAx is false
+    m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
+    if m:
+        idx = m.group(2)
+        pa_key = f"getPA{idx}"
+        if not _is_true(status.get(pa_key)):
+            return False
+
+    # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
+    if key in ("getCS1", "getCS2", "getCS3"):
+        sv_key = "getSV" + key[-1]
+        sv_val = status.get(sv_key)
+        if sv_val is not None:
+            try:
+                if float(sv_val) != 0:
+                    return True
+            except (ValueError, TypeError):
+                pass
+        if value is None:
+            return False
+        if isinstance(value, int | float) and float(value) == 0:
+            return False
+        if isinstance(value, str) and (value.strip() == "" or value == "0"):
+            return False
+
+    # Exclude when empty string
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING:
+        if value is None:
+            return False
+        if isinstance(value, str) and value.strip() == "":
+            return False
+
+    # Exclude when empty value (0 or "")
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
+        if value is None:
+            return False
+        if isinstance(value, int | float) and float(value) == 0:
+            return False
+        if isinstance(value, str) and (value.strip() == "" or value == "0"):
+            return False
+
+    # Exclude empty IPs
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS:
+        if value is None:
+            return False
+        if isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"):
+            return False
+
+    return True

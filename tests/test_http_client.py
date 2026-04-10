@@ -196,3 +196,12 @@ async def test_http_client_post_exponential_backoff() -> None:
     assert mock_sleep.call_count == 2
     assert mock_sleep.call_args_list[0][0][0] == 1  # First retry: 1 second
     assert mock_sleep.call_args_list[1][0][0] == 2  # Second retry: 2 seconds
+
+
+async def test_http_client_post_zero_retries_raises() -> None:
+    """If max_retries is zero, the loop is skipped and final raise occurs."""
+    mock_session = MagicMock(spec=aiohttp.ClientSession)
+    client = HTTPClient(mock_session, "TestAgent/1.0", max_retries=0)
+
+    with pytest.raises(aiohttp.ClientError, match="Request failed after all retries"):
+        await client.post("https://example.com/api", {"key": "value"})

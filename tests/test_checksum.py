@@ -159,6 +159,30 @@ def test_checksum_value_wrapping():
     assert result > 0
 
 
+def test_compute_xml_checksum_matches_stateful_path():
+    """Test that compute_xml_checksum returns the same result as the stateful path."""
+    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    xml_string = '<root><element a="value1" b="value2" n="ignored"/></root>'
+
+    # Stateful path
+    checksum.reset_checksum()
+    checksum.add_xml_to_checksum(xml_string)
+    expected = checksum.get_checksum()
+
+    # Pure path must return the same value without touching instance state
+    before = checksum.checksum_value
+    result = checksum.compute_xml_checksum(xml_string)
+    assert result == expected
+    assert checksum.checksum_value == before  # instance state must not change
+
+
+def test_compute_xml_checksum_invalid_xml():
+    """Test that compute_xml_checksum returns '0' for invalid XML."""
+    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    result = checksum.compute_xml_checksum("not valid xml <unclosed")
+    assert result == "0"
+
+
 def test_compute_checksum_next_byte_and_offset_negative() -> None:
     """Force next-byte branch and missing key character offset path."""
     # base characters long enough for wrapping logic and indexing

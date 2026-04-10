@@ -997,65 +997,80 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
             await coordinator.async_config_entry_first_refresh()
 
 
-    async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
-        """If asyncio.gather raises, coordinator should raise UpdateFailed."""
-        from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
+    """If asyncio.gather raises, coordinator should raise UpdateFailed (lines 154-156)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
+         patch("custom_components.syr_connect.coordinator.asyncio.gather", side_effect=Exception("gather failed")):
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.projects = [{"id": "p1", "name": "P1"}]
+        # Use MagicMock (not AsyncMock) so calling get_devices() returns a plain
+        # MagicMock object instead of a coroutine. asyncio.gather is patched to
+        # raise before it ever awaits anything, so the tasks don't need to be real
+        # coroutines — and a plain MagicMock won't trigger an unawaited-coroutine
+        # RuntimeWarning when it is garbage-collected.
+        mock_api.get_devices = MagicMock(return_value=[{"id": "d1", "dclg": "d1"}])
+        mock_api_class.return_value = mock_api
 
-        with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-             patch("custom_components.syr_connect.coordinator.asyncio.gather", side_effect=Exception("gather failed")):
-            mock_api = MagicMock()
-            mock_api.session_data = "test_session"
-            mock_api.is_session_valid = MagicMock(return_value=True)
-            mock_api.projects = [{"id": "p1", "name": "P1"}]
-            mock_api.get_devices = AsyncMock(return_value=[{"id": "d1", "dclg": "d1"}])
-            mock_api_class.return_value = mock_api
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
 
-            config_data = {
-                CONF_USERNAME: "test@example.com",
-                CONF_PASSWORD: "password",
-            }
-            coordinator = SyrConnectDataUpdateCoordinator(
-                hass,
-                MagicMock(),
-                config_data,
-                60,
-            )
-
-            # Calling the internal update should raise UpdateFailed due to gather error
-            from homeassistant.helpers.update_coordinator import UpdateFailed
-            with pytest.raises(UpdateFailed):
-                await coordinator._async_update_data()
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
 
 
-    async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
-        """If asyncio.gather returns Exception objects, they should be skipped."""
-        from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
+    """If asyncio.gather returns Exception objects, they should be skipped."""
+    import inspect
+    from types import SimpleNamespace
 
-        # Patch asyncio.gather to return a list containing an Exception
-        with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-             patch("custom_components.syr_connect.coordinator.asyncio.gather", return_value=[Exception("proj fail")]):
-            mock_api = MagicMock()
-            mock_api.session_data = "test_session"
-            mock_api.is_session_valid = MagicMock(return_value=True)
-            mock_api.projects = [{"id": "p1", "name": "P1"}]
-            mock_api.get_devices = AsyncMock(return_value=[{"id": "d1", "dclg": "d1"}])
-            mock_api_class.return_value = mock_api
+    async def _fake_gather(*args, **kwargs):
+        # Close any passed coroutines so they don't trigger unawaited warnings.
+        for arg in args:
+            if inspect.iscoroutine(arg):
+                arg.close()
+        return [Exception("proj fail")]
 
-            config_data = {
-                CONF_USERNAME: "test@example.com",
-                CONF_PASSWORD: "password",
-            }
-            coordinator = SyrConnectDataUpdateCoordinator(
-                hass,
-                MagicMock(),
-                config_data,
-                60,
-            )
+    async def _fake_get_devices(*args, **kwargs):
+        return [{"id": "d1", "dclg": "d1"}]
 
-            result = await coordinator._async_update_data()
-            # No devices should be returned since the project result was an Exception
-            assert isinstance(result, dict)
-            assert result.get("devices") == []
+    # Use SimpleNamespace instead of MagicMock to avoid auto-created AsyncMock children
+    mock_api = SimpleNamespace(
+        session_data="test_session",
+        is_session_valid=lambda: True,
+        projects=[{"id": "p1", "name": "P1"}],
+        get_devices=_fake_get_devices,
+    )
+    # Plain object for session — not used in this code path and avoids AsyncMock warnings
+    fake_session = SimpleNamespace()
+
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api), \
+         patch("custom_components.syr_connect.coordinator.asyncio.gather", new=_fake_gather):
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            fake_session,
+            config_data,
+            60,
+        )
+
+        result = await coordinator._async_update_data()
+        # No devices should be returned since the project result was an Exception
+        assert isinstance(result, dict)
+        assert result.get("devices") == []
 
 
 async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
@@ -1148,3 +1163,95 @@ async def test_delayed_refresh_exception_handling(hass: HomeAssistant) -> None:
             # _delayed_refresh should catch the exception and not re-raise
             await coordinator._delayed_refresh(delay=0)
             # Test passes if no exception is raised
+
+
+async def test_coordinator_init_default_scan_interval(hass: HomeAssistant) -> None:
+    """Test coordinator uses default scan interval when none is provided (line 68)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api_class.return_value = MagicMock()
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        # Do NOT pass scan_interval so the None branch fires
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+        )
+        # update_interval should be set to a timedelta (default, non-None)
+        assert coordinator.update_interval is not None
+
+
+async def test_coordinator_device_status_result_is_exception(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """Test coordinator handles exception result from _fetch_device_status gather (lines 183-184)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Patch _fetch_device_status to raise so gather captures it as an exception result
+        with patch.object(
+            coordinator,
+            "_fetch_device_status",
+            side_effect=RuntimeError("unexpected internal error"),
+        ):
+            await coordinator.async_config_entry_first_refresh()
+
+        # No devices should appear since the only device fetch raised
+        assert coordinator.data is not None
+        assert coordinator.data["devices"] == []
+
+
+async def test_coordinator_set_value_getab_ignore_until_type_error(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """Test ignore_until assignment TypeError is caught gracefully (lines 356-358)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Replace _ignore_until with a mock whose __setitem__ raises TypeError
+        broken_dict: dict = MagicMock()
+        broken_dict.__setitem__ = MagicMock(side_effect=TypeError("unhashable type"))
+        coordinator._ignore_until = broken_dict
+
+        # Setting getAB triggers the ignore_until assignment; TypeError must be swallowed
+        with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+            await coordinator.async_set_device_value("device1", "setAB", 2)

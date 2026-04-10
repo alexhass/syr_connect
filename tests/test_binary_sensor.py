@@ -120,8 +120,8 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # getSRE should be excluded per _SYR_CONNECT_SENSOR_EXCLUDED
-    assert len(entities) == 0
+    # getSRE is in _SYR_CONNECT_SENSOR_BINARY and is no longer excluded — one entity expected.
+    assert len(entities) == 1
 
 
 async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
@@ -455,7 +455,7 @@ async def test_async_setup_entry_registry_cleanup(hass: HomeAssistant, create_mo
     entry_to_remove = registry.async_get_or_create(
         "binary_sensor",
         "syr_connect",
-        "device1_getSRE",  # getSRE is excluded
+        "device1_getSRE",  # getSRE is a known binary sensor key — should NOT be cleaned up
         suggested_object_id="device1_getsre",
     )
 
@@ -503,7 +503,7 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     def raise_registry_error(*args, **kwargs):
         raise Exception("Registry error")
 
-    with patch("custom_components.syr_connect.binary_sensor.er.async_get", side_effect=raise_registry_error):
+    with patch("homeassistant.helpers.entity_registry.async_get", side_effect=raise_registry_error):
         # Should not raise exception, continues setup
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 

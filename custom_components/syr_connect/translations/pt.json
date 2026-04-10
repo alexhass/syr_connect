@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Fechamento da válvula",
-        "state": {
-          "false": "Aberto",
-          "true": "Fechado"
-        }
-      },
       "getfcd": {
         "name": "Intervalo de retrolavagem do filtro",
         "state": {
@@ -132,6 +125,15 @@
           "2": "Ausente"
         }
       },
+      "getrmo": {
+        "name": "Modo de regeneração",
+        "state": {
+          "1": "Padrão",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automático"
+        }
+      },
       "getrpd": {
         "name": "Intervalo de regeneração"
       },
@@ -139,9 +141,9 @@
         "name": "Hora de regeneração"
       },
       "getsro": {
-        "name": "Girar ecrã",
+        "name": "Orientação do ecrã",
         "state": {
-          "0": "0°",
+          "0": "Padrão",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -325,7 +327,7 @@
         "name": "Dureza da água de entrada"
       },
       "getlan": {
-        "name": "Idioma",
+        "name": "Idioma do dispositivo",
         "state": {
           "0": "Inglês",
           "1": "Alemão",
@@ -337,6 +339,13 @@
       },
       "getle": {
         "name": "Proteção contra vazamento - Nível presente"
+      },
+      "getlng": {
+        "name": "Idioma do dispositivo",
+        "state": {
+          "0": "Alemão",
+          "1": "Inglês"
+        }
       },
       "getltv": {
         "name": "Último volume dispensado"
@@ -352,6 +361,9 @@
       },
       "getman": {
         "name": "Fabricante"
+      },
+      "getnet": {
+        "name": "Tensão da rede elétrica"
       },
       "getnor": {
         "name": "Regenerações (operação normal)"
@@ -832,9 +844,9 @@
         "name": "Número de série"
       },
       "getsro": {
-        "name": "Girar ecrã",
+        "name": "Orientação do ecrã",
         "state": {
-          "0": "0°",
+          "0": "Padrão",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -874,10 +886,10 @@
         "name": "Volume do reservatório de sal 3"
       },
       "gett1": {
-        "name": "Tempo de vazamento"
+        "name": "Tempo de vazamento 1"
       },
       "gett2": {
-        "name": "Tempo de vazamento"
+        "name": "Tempo de vazamento 2"
       },
       "gettmp": {
         "name": "Proteção contra vazamento desativada"
@@ -886,7 +898,7 @@
         "name": "Total de regenerações"
       },
       "gettyp": {
-        "name": "Tipo"
+        "name": "Tipo de dispositivo"
       },
       "getul": {
         "name": "Proteção contra vazamento - Nível ausente"

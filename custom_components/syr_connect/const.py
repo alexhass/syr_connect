@@ -150,10 +150,213 @@ _SYR_CONNECT_SENSOR_BINARY = {
     "getBUZ": BinarySensorDeviceClass.POWER,    # Buzzer on/off
 }
 
+# Allowlist of known sensor keys.
+#
+# Only API keys listed here will become sensor entities. Any key returned by
+# a firmware update that is not listed here is silently ignored.
+_SYR_CONNECT_SENSOR_KNOWN_KEYS = {
+    # --- Valve & Flow ---
+    "getAB",    # Valve shutoff state (open / closed)
+    "getAVO",   # Current instantaneous flow rate
+    "getFLO",   # Water flow rate (l/min)
+    "getVLV",   # Valve position (10=closed, 11=closing, 20=open, 21=opening)
+    # --- Alarm / Notification / Warning ---
+    "getALA",   # Current alarm code
+    "getALM",   # List of last alarms (e.g. low salt level)
+    "getALN",   # List of last 8 notifications
+    "getALW",   # List of last 8 warnings
+    "getNOT",   # Current notification code
+    "getWRN",   # Current warning code
+    # --- Pressure ---
+    "getBAR",   # Inlet pressure – mbar sensor (Safe-T+)
+    "getPRS",   # Inlet pressure – bar sensor (LEXplus10SL)
+    # --- Voltage ---
+    "getBAT",   # Battery voltage (V)
+    "getNET",   # Mains (AC) voltage (V)
+    # --- Water Quality ---
+    "getCEL",   # Water temperature (°C)
+    "getCND",   # Water conductivity (µS/cm)
+    "getIWH",   # Incoming (raw) water hardness
+    "getOWH",   # Outgoing (softened) water hardness
+    "getWHU",   # Water hardness unit (°dH / °fH / ppm / mmol/l)
+    # --- Water Consumption & Volume ---
+    "getCOF",   # Total water consumption counter (l)
+    "getLTV",   # Last dispensed (tapped) volume (l)
+    "getVOL",   # Total volume (m³)
+    # --- Device Status ---
+    "getDEN",   # Device enabled flag
+    "getSTA",   # Device operating status
+    # --- Resin Capacity ---
+    "getCS1",   # Remaining resin capacity – tank 1 (%)
+    "getCS2",   # Remaining resin capacity – tank 2 (%)
+    "getCS3",   # Remaining resin capacity – tank 3 (%)
+    # --- Salt ---
+    "getRDO",   # Salt dosing (g/l)
+    "getRE1",   # Reserve capacity – bottle 1 (l)
+    "getRE2",   # Reserve capacity – bottle 2 (l)
+    "getRES",   # Remaining softening capacity (l)
+    "getSS1",   # Salt supply – container 1 (weeks)
+    "getSS2",   # Salt supply – container 2 (weeks)
+    "getSS3",   # Salt supply – container 3 (weeks)
+    "getSV1",   # Salt amount – container 1 (kg)
+    "getSV2",   # Salt amount – container 2 (kg)
+    "getSV3",   # Salt amount – container 3 (kg)
+    # --- Regeneration ---
+    "getCYN",   # Regeneration cycle counter
+    "getCYT",   # Regeneration cycle time (remaining)
+    "getINR",   # Incomplete regeneration count
+    "getLAR",   # Timestamp of last regeneration
+    "getNOR",   # Regeneration count (normal operation)
+    "getRG1",   # Regeneration status (which tank is regenerating)
+    "getRG2",   # Regeneration running – tank 2 flag
+    "getRG3",   # Regeneration running – tank 3 flag
+    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
+    "getRPD",   # Regeneration interval (days)
+    "getRPW",   # Regeneration permitted weekdays (bitmask)
+    "getRTH",   # Regeneration scheduled hour
+    "getRTI",   # Total regeneration cycle duration
+    "getRTM",   # Regeneration time (combined HH:MM string)
+    "getSCR",   # Service regeneration cycle count
+    "getTOR",   # Total regeneration count (all time)
+    # --- Self-Learning Phase (Trio DFR/LS) ---
+    "getSLE",   # Remaining time in active self-learning phase (s)
+    "getSLF",   # Flow rate during self-learning phase (l/h)
+    "getSLP",   # Duration of self-learning phase
+    "getSLT",   # Elapsed time in self-learning phase (s)
+    "getSLV",   # Volume accumulated in self-learning phase (l)
+    # --- Microleakage Test (Trio DFR/LS) ---
+    "getDRP",   # Microleakage test interval (daily / weekly / monthly)
+    "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
+    "getDTT",   # Microleakage test duration / time
+    "getNPS",   # Microleakage event count
+    # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
+    "getLE",    # Leak protection volume limit – present profile (l)
+    "getT1",    # Max. flow duration – present profile (h, 0.5 h steps)
+    "getT2",    # Max. flow duration – absent profile (h, 0.5 h steps)
+    "getTMP",   # Leak protection temporarily deactivated – remaining time (s)
+    "getUL",    # Leak protection volume limit – absent profile (l)
+    # --- Leak Protection Profiles 1–8 (LEXplus10SL) ---
+    "getPA1",   # Profile 1 active flag (true/false)
+    "getPA2",   # Profile 2 active flag (true/false)
+    "getPA3",   # Profile 3 active flag (true/false)
+    "getPA4",   # Profile 4 active flag (true/false)
+    "getPA5",   # Profile 5 active flag (true/false)
+    "getPA6",   # Profile 6 active flag (true/false)
+    "getPA7",   # Profile 7 active flag (true/false)
+    "getPA8",   # Profile 8 active flag (true/false)
+    "getPB1",   # Profile 1 buzzer alert (true/false)
+    "getPB2",   # Profile 2 buzzer alert (true/false)
+    "getPB3",   # Profile 3 buzzer alert (true/false)
+    "getPB4",   # Profile 4 buzzer alert (true/false)
+    "getPB5",   # Profile 5 buzzer alert (true/false)
+    "getPB6",   # Profile 6 buzzer alert (true/false)
+    "getPB7",   # Profile 7 buzzer alert (true/false)
+    "getPB8",   # Profile 8 buzzer alert (true/false)
+    "getPF1",   # Profile 1 flow leak threshold (l/h)
+    "getPF2",   # Profile 2 flow leak threshold (l/h)
+    "getPF3",   # Profile 3 flow leak threshold (l/h)
+    "getPF4",   # Profile 4 flow leak threshold (l/h)
+    "getPF5",   # Profile 5 flow leak threshold (l/h)
+    "getPF6",   # Profile 6 flow leak threshold (l/h)
+    "getPF7",   # Profile 7 flow leak threshold (l/h)
+    "getPF8",   # Profile 8 flow leak threshold (l/h)
+    "getPM1",   # Profile 1 microleakage test enabled (true/false)
+    "getPM2",   # Profile 2 microleakage test enabled (true/false)
+    "getPM3",   # Profile 3 microleakage test enabled (true/false)
+    "getPM4",   # Profile 4 microleakage test enabled (true/false)
+    "getPM5",   # Profile 5 microleakage test enabled (true/false)
+    "getPM6",   # Profile 6 microleakage test enabled (true/false)
+    "getPM7",   # Profile 7 microleakage test enabled (true/false)
+    "getPM8",   # Profile 8 microleakage test enabled (true/false)
+    "getPN1",   # Profile 1 name
+    "getPN2",   # Profile 2 name
+    "getPN3",   # Profile 3 name
+    "getPN4",   # Profile 4 name
+    "getPN5",   # Profile 5 name
+    "getPN6",   # Profile 6 name
+    "getPN7",   # Profile 7 name
+    "getPN8",   # Profile 8 name
+    "getPR1",   # Profile 1 return time to present profile (h)
+    "getPR2",   # Profile 2 return time to present profile (h)
+    "getPR3",   # Profile 3 return time to present profile (h)
+    "getPR4",   # Profile 4 return time to present profile (h)
+    "getPR5",   # Profile 5 return time to present profile (h)
+    "getPR6",   # Profile 6 return time to present profile (h)
+    "getPR7",   # Profile 7 return time to present profile (h)
+    "getPR8",   # Profile 8 return time to present profile (h)
+    "getPT1",   # Profile 1 max. leak duration (min)
+    "getPT2",   # Profile 2 max. leak duration (min)
+    "getPT3",   # Profile 3 max. leak duration (min)
+    "getPT4",   # Profile 4 max. leak duration (min)
+    "getPT5",   # Profile 5 max. leak duration (min)
+    "getPT6",   # Profile 6 max. leak duration (min)
+    "getPT7",   # Profile 7 max. leak duration (min)
+    "getPT8",   # Profile 8 max. leak duration (min)
+    "getPV1",   # Profile 1 max. leak volume (l)
+    "getPV2",   # Profile 2 max. leak volume (l)
+    "getPV3",   # Profile 3 max. leak volume (l)
+    "getPV4",   # Profile 4 max. leak volume (l)
+    "getPV5",   # Profile 5 max. leak volume (l)
+    "getPV6",   # Profile 6 max. leak volume (l)
+    "getPV7",   # Profile 7 max. leak volume (l)
+    "getPV8",   # Profile 8 max. leak volume (l)
+    "getPW1",   # Profile 1 leak warning enabled (true/false)
+    "getPW2",   # Profile 2 leak warning enabled (true/false)
+    "getPW3",   # Profile 3 leak warning enabled (true/false)
+    "getPW4",   # Profile 4 leak warning enabled (true/false)
+    "getPW5",   # Profile 5 leak warning enabled (true/false)
+    "getPW6",   # Profile 6 leak warning enabled (true/false)
+    "getPW7",   # Profile 7 leak warning enabled (true/false)
+    "getPW8",   # Profile 8 leak warning enabled (true/false)
+    "getPRF",   # Currently active leak protection profile index
+    "getPST",   # Pressure sensor installed (1=not available, 2=available)
+    # --- Filter (NeoSoft) ---
+    "getFCD",   # Filter flush interval
+    "getFCO",   # Iron content (ppm)
+    "getFFM",   # Filter type (backwash / replaceable / none)
+    # --- Maintenance ---
+    "getDWF",   # Expected daily water consumption (l)
+    "getSRH",   # Next semi-annual maintenance (timestamp)
+    "getSRV",   # Next annual maintenance (timestamp)
+    "getVS1",   # Volume threshold 1 (l)
+    "getVS2",   # Volume threshold 2 (l)
+    "getVS3",   # Volume threshold 3 (l)
+    # --- Display ---
+    "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+    # --- Device Info & Diagnostics ---
+    "getCDE",   # Configuration code
+    "getCNA",   # Device name
+    "getDGW",   # Cloud gateway address
+    "getEGW",   # Ethernet (LAN) gateway
+    "getEIP",   # Ethernet (LAN) IP address
+    "getFIR",   # Firmware model identifier
+    "getIPA",   # IP address
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+    "getLNG",   # Device language (0=Deutsch, 1=English) - other models
+    "getMAC",   # MAC address
+    "getMAC1",  # Wi-Fi MAC address
+    "getMAC2",  # LAN MAC address
+    "getMAN",   # Manufacturer name
+    "getSRN",   # Device serial number
+    "getTYP",   # Device type code
+    "getVER",   # Firmware version string
+    # --- Turbine / Pulse Monitoring (NeoSoft) ---
+    "getVPS1",  # No turbine pulses on control head 1 since (s)
+    "getVPS2",  # No turbine pulses on control head 2 since (s)
+    # --- Wi-Fi ---
+    "getWFC",   # Wi-Fi SSID
+    "getWFL",   # Nearby Wi-Fi networks with signal strength
+    "getWFR",   # Wi-Fi signal strength (%)
+    "getWFS",   # Wi-Fi connection status (not connected / connecting / connected)
+    "getWGW",   # Wi-Fi gateway
+    "getWIP",   # Wi-Fi IP address
+}
+
 # Configuration sensors - settings users do not need for daily use
 _SYR_CONNECT_SENSOR_CONFIG = {
     "getBUZ",   # Buzzer on/off - also represented as switch entity
     "getRPD",   # Regeneration interval - also represented as select entity
+    "getRMO",   # Regeneration mode - also represented as select entity
     "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
     "getSRO",   # Display rotation - also represented as select entity
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
@@ -169,12 +372,14 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getEIP",   # Ethernet IP address
     "getFIR",   # Firmware model
     "getIPA",   # IP address
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+    "getLNG",   # Device language (0=Deutsch, 1=English) - other models
     "getMAC",   # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
     "getMAN",   # Manufacturer
     "getSRN",   # Serial number
-    "getTYP",   # Type
+    "getTYP",   # Device type code
     "getVER",   # Firmware version
     "getWFC",   # Wi-Fi SSID
     "getWFR",   # Wifi signal strength (%)
@@ -192,9 +397,11 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getCYN",   # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
     "getCYT",   # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
     "getDWF",   # Flow Warning Value - advanced setting
-    "getLAN",   # Language of the UI (0=English, 1=German, 3=Spanish)
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
+    "getLNG",   # Device language (0=Deutsch, 1=English)
     "getNOT",   # Retrieving the current notification
     "getSRE",   # Regeneration active
+    "getTYP",   # Device type code
     "getRG2", "getRG3",  # Regeneration running for tank
     "getRPD",   # Regeneration interval (days)
     "getRPW",   # Regeneration permitted weekdays as bit mask
@@ -239,346 +446,90 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
+    "getNET": SensorDeviceClass.VOLTAGE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
     "getPRS": SensorDeviceClass.PRESSURE,
     "getVOL": SensorDeviceClass.WATER,
 }
 
-# Sensors to always exclude (parameters from XML that should not be exposed) - internal
+# Known keys for the select platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SELECT_KNOWN_KEYS = {
+    "getRTM",   # Regeneration time (HH:MM combined or minutes)
+    "getPRF",   # Active leak-protection profile
+    "getSRO",   # Display rotation (0 / 90 / 180 / 270 °)
+    #"getFCD",   # Filter backwash interval
+    "getSV1",   # Salt amount container 1
+    "getSV2",   # Salt amount container 2
+    "getSV3",   # Salt amount container 3
+    "getRPD",   # Regeneration interval (days)
+    "getFFM",   # Filter type (1..3)
+    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
+}
+
+# Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
+    "getSRE",   # Regeneration active
+    "getBUZ",   # Buzzer on/off
+}
+
+# Known keys for the valve platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_VALVE_KNOWN_KEYS = {
+    "getAB",    # Valve shutoff control / state
+}
+
+# Known keys for the switch platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SWITCH_KNOWN_KEYS = {
+    "getBUZ",   # Buzzer on/off
+}
+
+# Known keys for the button platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BUTTON_KNOWN_KEYS = {
+    "setSIR",   # Trigger manual regeneration
+    "setALA",   # Reset alarm
+    "setNOT",   # Reset notification
+    "setWRN",   # Reset warning
+}
+
+# Sensors to always exclude — parameters returned by the API that must not be
+# exposed as sensor entities. Only keys that also appear in
+# _SYR_CONNECT_SENSOR_KNOWN_KEYS need to be listed here; all others are already
+# silently filtered by the KNOWN_KEYS allowlist.
 _SYR_CONNECT_SENSOR_EXCLUDED = {
-    # Uninstall - This will delete the sensors from the entity registry if they were created before.
-    "getRTIME",  # Uninstall custom regeneration time control
+    # Keys that are in KNOWN_KEYS but must not become sensor entities because
+    # they are handled by another entity type, superseded by a derived entity,
+    # or have no practical value for users.
 
-    # Sensors exits in devices:
-    # - LEXplus10S
-    # - LEXplus10SL
+    # --- Overridden by a different entity type ---
+    "getDEN",  # Boolean flag — handled as binary_sensor; no regular sensor needed
 
-    "p1883", "p1883rd", "p8883", "p8883rd",
-    "sbt", "sta", "dst", "ast", "so",
-    "dclg", "clb", "nrs",  # Device collection metadata
-    "nrdt", "dg",   # Additional device metadata attributes
+    # --- Superseded by a derived / combined entity ---
+    "getRTH",  # Regeneration hour — combined HH:MM representation handled by getRTM
 
-    # Other attributes than "n" = "name" / "v" = "value" in XML response
-    "getSRN_dt",    # Serial number timestamp
-    "getALM_acd",   # Active alarm since timestamp
-    "getALM_dt",    # Alarm timestamp
-    "getALM_ih",    # Alarm inhibit flag (unlcear purpose)
-    "getALM_m",     # Alarm message e.g. LowSalt
+    # --- Always zero / constant / no practical user value ---
+    "getFCO",  # Iron content — always 0, not useful
+    "getRTI",  # Regeneration cycle duration — always "00:00", no useful value
 
-    "getDEN",  # Boolean sensor - device enabled/disabled
-    "getRTH",  # Regeneration hour - minutes/combined handled by getRTM
-    "getCDE",  # Unknown constant (some kind of device identifier?) - not useful for users
-    "getSIR",  # Immediate regeneration control
-    "getSMR",  # Manual regeneration control - per documentation unknown what values do
-    "getRST",  # Reset device control - per documentation unknown what values do
-    "getTYP",  # Type of device (Known values: 1 = Safe-T+, 80 = Lex water softeners) - not helpful for users
-    "getRTI",  # Value is always 00:00. Not clear what it represents.
-    "getFCO",  # Iron content (always 0) - not useful
-    "getSCR",  # Unknown, likely number of service regeneration
-
-    # BUG: Exclude until the bug is found why these are not shown as translated strings.
-    # They also seem to exists as sensor and binary_sensor.
-    "getSRE",  # Regeneration active - now handled as binary_sensor platform
-
-    # Sensors exits in devices:
-    # - LEXplus10SL
-
-    # Technical values without context
-    "get71", "getBSA",
-    "getCDF",
-    "getCES", "getCND",
-    "getCNO", # Code number - not useful for users
-    "getCNS",
-    "getDAT", "getDBD", "getDBT", "getDCM", "getDMA", "getDOM", "getDPL",
-    "getDST", "getDTC",
-    "getDWF", # Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
-    "getFSL", "getIDS", "getLDF", "getLWT", "getMTF",
-    "getOHF", "getYHF",
-    "getSLO", "getSLP",
-    "getT2", "getTN",
-
-    # Sensors exits in devices:
-    # - Safe-T+
-
-    # Unknown Safe-T+ specific sensors
-    "f", "b", "m",  # CI values from API response, unclear purpose, (m = MAC address)
-    "getALA_acd",   # Last alarm - timestamp - acknowledged?
-    "getALA_dt",    # Last alarm - timestamp - occurence?
-    "getALA_ih",    # Last alarm - e.g. 0 - Unknown
-    "getALA_m",     # Last alarm - alarm codes e.g. A5, A6
-    "getAWY",       # Unknown
-    "getBLT",       # Unknown
-    "getBSI",       # Unknown
-    "getCEO",       # Unknown
-    #"getCNO",      # Code number - not useful for users (duplicate of getCNO from LEXplus10SL)
-    "getEXI",       # Unknown
-    "getEXT",       # Unknown
-    "getGLE",       # Unknown
-    "getGUL",       # Unknown
-    "getINT",       # Unknown
-    "getREL",       # Unknown
-    #"getT2",       # Leakage time? unclear (duplicate of getT2 from LEXplus10SL)
-    "getTBS",       # Unknown
-    "getTC",        # Unknown
-    "getTO",        # Unknown
-    "getTPA",       # Unknown
-    "getUNI",       # Unknown
-
-    # Sensors exits in devices:
-    # - NeoSoft 2500 / 5000
-
-    "getBMX",       # Value: "", unclear meaning
-    "getERE",       # Value: "", unclear meaning
-    #"getLDF",      # Value: "", unclear meaning
-    "getLMS",       # Value: "", unclear meaning
-    "getNRE",       # Value: "", unclear meaning
-    #"getOHF",      # Value: "", unclear meaning
-    "getPRE",       # Value: "", unclear meaning
-    "getVRE1",      # Value: "", unclear meaning
-    "getVRE2",      # Value: "", unclear meaning
-    #"getYHF",      # Value: "", unclear meaning
-    "getHWV",       # Value: e.g. "V1", "0000000001", unclear meaning
-    "getAPT",       # Value: e.g. "600", unclear meaning
-    "getCNF",       # Value: "", unclear meaning
-    "getCSD",       # Value: "", unclear meaning
-    "getEVL",       # Value: "0", unclear meaning
-    #"getIDS",      # Value: "False", unclear meaning
-    "getLNG",       # Value: "0", unclear meaning
-    "getPSD",       # Value: "", unclear meaning
-    "getRTC",       # Value: "", unclear meaning
-    "getRURL",      # Value: "", unclear meaning
-    "getTMZ",       # Value: "4", unclear meaning
-    "getTURL",      # Value: "", unclear meaning
-    "getWAD",       # Value: "False", unclear meaning
-    "getWTI",       # Value: e.g. "1720", unclear meaning
-    "getALD",       # Value: "", unclear meaning
-    "getCNL",       # Value: "", unclear meaning
-    "getWAH",       # Value: "", unclear meaning
-    "getNET",       # Value: "", unclear meaning
-    "getTSD",       # Value: "", unclear meaning
-
-    # JSON API only sensors (not available in XML API):
-    "getALH",
-    "getALL",
-    "getCLC",
-    "getCLM",
-    "getDVL",
-    "getFRN",
-    "getPAH",       # Error: "sensor.syr_connect_xxx_getpah is longer than 255, falling back to unknown"
-
-    # Sensors exits in devices:
-    # - Trio DFR/LS
-
-    "getAFW",       # Value: "", unclear meaning
-    #"getALD",      # Value: "", unclear meaning (duplicate of getALD from NeoSoft 2500/5000)
-    #"getAPT",      # Value: e.g. "600", unclear meaning (duplicate of getAPT from NeoSoft 2500/5000)
-    "getBAP",       # Value: "", unclear meaning
-    "getBAR2",      # Value: "", unclear meaning (duplicate of getBAR from LEXplus10S/Safe-T+)
-    "getBFT",       # Value: "", unclear meaning
-    "getBPT",       # Value: "", unclear meaning
-    #"getBSA",      # Value: "", unclear meaning (duplicate of getBSA from LEXplus10SL)
-    "getCCK",       # Value: "", unclear meaning
-    "getCFW",       # Value: "", unclear meaning
-    #"getCND",      # Conductivity in µS/cm
-    "getCND2",      # Value: "", unclear meaning (duplicate of getCND from LEXplus10SL)
-    #"getCNF",      # Value: "", unclear meaning (duplicate of getCNF from NeoSoft 2500/5000)
-    #"getCNL",      # Value: "", unclear meaning (duplicate of getCNL from NeoSoft 2500/5000)
-    #"getCSD",      # Value: "", unclear meaning (duplicate of getCSD from NeoSoft 2500/5000)
-    "getCSE",       # Value: "", unclear meaning
-    "getCURL",      # Value: "", unclear meaning
-    #"getDBT",      # Value: "", unclear meaning (duplicate of getDBT from LEXplus10SL)
-    #"getDCM",      # Value: "", unclear meaning (duplicate of getDCM from LEXplus10SL)
-    #"getDMA",      # Value: "", unclear meaning (duplicate of getDMA from LEXplus10SL)
-    #"getDOM",      # Value: "", unclear meaning (duplicate of getDOM from LEXplus10SL)
-    #"getDPL",      # Value: "", unclear meaning (duplicate of getDPL from LEXplus10SL)
-    #"getDST",      # Value: "", unclear meaning (duplicate of getDST from LEXplus10SL)
-    #"getDTC",      # Value: "", unclear meaning (duplicate of getDTC from LEXplus10SL)
-    "getENV",       # Value: "", unclear meaning
-    #"getEVL",      # Value: "0", unclear meaning (duplicate of getEVL from NeoSoft 2500/5000)
-    "getDTR",       # Value: "", unclear meaning
-    #"getFSL",      # Value: "", unclear meaning (duplicate of getFSL from LEXplus10SL)
-    #"getHWV",      # Value: e.g. "V1", "0000000001", unclear meaning (duplicate of getHWV from NeoSoft 2500/5000)
-    #"getIDS",      # Value: "False", unclear meaning (duplicate of getIDS from NeoSoft 2500/5000)
-    "getLED",       # Value: "", unclear meaning
-    "getLOCK",      # Value: "False", unclear meaning
-    #"getLNG",      # Value: "0", unclear meaning (duplicate of getLNG from NeoSoft 2500/5000)
-    #"getLWT",      # Value: "", unclear meaning (duplicate of getLWT from LEXplus10SL)
-    "getSMF",       # Value: "", unclear meaning
-    #"getPSD",      # Value: "", unclear meaning (duplicate of getPSD from NeoSoft 2500/5000)
-    "getPSE",       # Value: "", unclear meaning
-    "getPRN",       # Value: "", unclear meaning (duplicate of getPRN from LEXplus10SL)
-    "getRCE",       # Value: "", unclear meaning
-    #"getRTC",      # Value: "", unclear meaning (duplicate of getRTC from NeoSoft 2500/5000)
-    #"getRURL",     # Value: "", unclear meaning (duplicate of getRURL from NeoSoft 2500/5000)
-    "getSFV",       # Value: "", unclear meaning
-    "getSLP_m",     # Value: "", unclear meaning - duplicate of getSLP from LEXplus10SL but with "_m" suffix, likely a modified value for maintenance mode or similar
-    "getSLP_sd",    # Value: "", unclear meaning - likely start date for maintenance mode or similar
-    "getSLP_ed",    # Value: "", unclear meaning - likely end date for maintenance mode or similar
-    #"getSLO",      # Value: "", unclear meaning (duplicate of getSLO from LEXplus10SL)
-    "getSOF",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    "getSRV",       # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
-    #"getTN",       # Value: "", unclear meaning (duplicate of getTN from LEXplus10SL)
-    #"getTMZ",      # Value: "4", unclear meaning (duplicate of getTMZ from NeoSoft 2500/5000)
-    #"getTSD",      # Value: "", unclear meaning (duplicate of getTSD from NeoSoft 2500/5000)
-    "getTSE",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    #"getTURL",     # Value: "", unclear meaning (duplicate of getTURL from NeoSoft 2500/5000)
-    "getVER2",      # Value: "", unclear meaning - duplicate of getVER from LEXplus10SL but with "_m" suffix, likely a modified value for maintenance mode or similar
-    "getVTO",       # Value: "", unclear meaning - likely related to service or maintenance mode
-    #"getWAD",      # Value: "False", unclear meaning (duplicate of getWAD from NeoSoft 2500/5000)
-    #"getWAH",      # Value: "", unclear meaning (duplicate of getWAH from NeoSoft 2500/5000)
-    "getWFL",       # Emtpy in XML, visible in JSON API. Nearby wifi networks with signal strength - value: "SSID1:Strength1;SSID2:Strength2;..."
-    "getWNS",       # Value: "", unclear meaning - likely related to water flow or similar
-    #"getWTI",      # Value: e.g. "1720", unclear meaning (duplicate of getWTI from NeoSoft 2500/5000)
-    #"getNET",      # Value: "", unclear meaning (duplicate of getNET from NeoSoft 2500/5000)
-
-    # JSON API only sensors (not available in XML API):
-    "getDAP",
-    "getDAV",
-    "getDMO",
-    "getDPP",
-    "getDPV",
-    "getDSP",
-    "getDVS",
-
-    # Sensors exits in devices:
-    # - SaveTech
-
-    # JSON API only sensors (not available in XML API):
-    "getCEN",
-    "getFCM",
-    "getLDT",
-    "getMM",
-    "getPB",
-    "getPF",
-    "getPM",
-    "getPT",
-    "getPV",
-    "getPW",
-    "getSMC",
-
-    # Sensors exits in devices:
-    # - SaveTech+
-
-    # JSON API only sensors (not available in XML API):
-    "getAMA",       # Value: "", unclear meaning
-    "getFLF",       # Value: "", unclear meaning
-    "getOLS",       # Value: "", unclear meaning
-    "getPCI",       # Value: "", unclear meaning
-    "getPCO",       # Value: "", unclear meaning
-    "getPCS",       # Value: "", unclear meaning
-
-    # Sensors exits in devices:
-    # - Sanibel Softwater UNO A25 (comfort-Enthärtungsanlage Softwater UNO A25)
-    #"getCFW",       # Value: "", unclear meaning
-    "getCMS",       # Value: "", unclear meaning
-    #"getENV",       # Value: "", unclear meaning
-
-    # JSON API only sensors (not available in XML API):
-    "getARS",       # Value: "", unclear meaning
-    "getNIC",       # Value: "", unclear meaning
-
-    # Sensors exits in devices:
-    # - Sanibel Leak Protection Module A25 (comfort-Multicontroller)
-    "getBMA",       # Value: "", unclear meaning
-    "getBMI",       # Value: "", unclear meaning
-    "getCSE2",      # Value: "", unclear meaning - duplicate of getCSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
-    "getDFM",       # Value: "", unclear meaning
-    "getMPO",       # Value: "", unclear meaning
-    "getPSE2",      # Value: "", unclear meaning - duplicate of getPSE from Trio DFR/LS but with "2" suffix, likely a modified value for leak protection module or similar
-    "getSUP",       # Value: "", unclear meaning
-
-    # JSON API only sensors (not available in XML API):
-    "getPRC",       # Value: "", unclear meaning
-    "getRCC",       # Value: "", unclear meaning
-    "getRCD",       # Value: "", unclear meaning
-    "getRCN",       # Value: "", unclear meaning
-    "getRMN",       # Value: "", unclear meaning
-    "getRMT",       # Value: "", unclear meaning
-    "getRVT",       # Value: "", unclear meaning
-    "getTPR",       # Value: "", unclear meaning
-    "getTRT",       # Value: "", unclear meaning
-    "getTRV",       # Value: "", unclear meaning
-    "getPSI",       # Value: "", unclear meaning
-    "getWTR",       # Value: "", unclear meaning
-    "getCCS",       # Value: "", unclear meaning
-    "getRSA",       # Value: "", unclear meaning
-    "getRSD",       # Value: "", unclear meaning
-    "getRSE",       # Value: "", unclear meaning
-    "getRSI",       # Value: "", unclear meaning
-    "getSSA",       # Value: "", unclear meaning
-    "getSSE",       # Value: "", unclear meaning
-    "getCOA",       # Value: "", unclear meaning
-    "getCOM",       # Value: "", unclear meaning
-    "getMIH",       # Value: "", unclear meaning
-    "getMXH",       # Value: "", unclear meaning
-    "getMXT",       # Value: "", unclear meaning
-    "getCNL2",      # Value: "", unclear meaning
-    "getCNF2",      # Value: "", unclear meaning
-    "getEMR",       # Value: "", unclear meaning
-    "getRCP",       # Value: "", unclear meaning
-    "getRP1",       # Value: "", unclear meaning
-    "getRP2",       # Value: "", unclear meaning
-    "getRP3",       # Value: "", unclear meaning
-    "getRMP",       # Value: "", unclear meaning
-    "getNMT",       # Value: "", unclear meaning
-    "getNMS",       # Value: "", unclear meaning
-    "getDTX",       # Value: "", unclear meaning
-    "getBAO",       # Value: "", unclear meaning
-    "getBAH",       # Value: "", unclear meaning
-    "getMIT",       # Value: "", unclear meaning
-    "getAPA",       # Value: "", unclear meaning
-    "getAPW",       # Value: "", unclear meaning
-    "getAPN",       # Value: "", unclear meaning
-    "getCFT",       # Value: "", unclear meaning
-    "getCFV",       # Value: "", unclear meaning
-    "getCRS",       # Value: "", unclear meaning
-    "getCRT",       # Value: "", unclear meaning
-    "getCWL",       # Value: "", unclear meaning
-    "getDFI",       # Value: "", unclear meaning
-    "getFCS",       # Value: "", unclear meaning
-    "getFMT",       # Value: "", unclear meaning
-    "getFVT",       # Value: "", unclear meaning
-    "getHPR",       # Value: "", unclear meaning
-    "getIFL",       # Value: "", unclear meaning
-    "getLFT",       # Value: "", unclear meaning
-    "getLFV",       # Value: "", unclear meaning
-    "getLMD",       # Value: "", unclear meaning
-    "getLMF",       # Value: "", unclear meaning
-    "getLOT",       # Value: "", unclear meaning
-    "getLPD",       # Value: "", unclear meaning
-    "getLRC",       # Value: "", unclear meaning
-    "getMFL",       # Value: "", unclear meaning
-    "getMPR",       # The set water pressure - value "" means sensor does not exists or not measured.
-    "getNRT",       # Value: "", unclear meaning
-    "getOHW",       # Value: "", unclear meaning
+    # --- Deliberately suppressed despite being in KNOWN_KEYS ---
+    "getCDE",  # Configuration code — opaque device identifier, not useful for users
+    "getSCR",  # Service regeneration cycle count — function unclear
+    "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold
+    "getSLP",  # Self-learning phase duration — technical value without context
+    "getWFL",  # Nearby Wi-Fi networks — complex formatted string, not suitable as sensor
 }
 
 # Sensors to exclude only when value is empty (0 or "") - internal
-_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
     "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg)
     "getVS1", "getVS2", "getVS3",  # Volume thresholds
-
-    # Sensors exits in devices only:
-    # - LEXplus10SL
-    # - Safe-T+
-    "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
-    "getNPS",  # Microleakage count - value "" means sensor does not exists.
+    "getTYP",  # Device type code - value "" means sensor does not exists, type "0" may not exists.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
-    "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
     "getCYT",  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
     "getLAR",  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show.
-    "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
-    "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
-    "getEGW",  # Ethernet gateway
-    "getEIP",  # Ethernet IP address
-    "getWFC",  # Wi-Fi channel
-    "getWFR",  # Wi-Fi frequency
-    "getWGW",  # Wi-Fi gateway
-    "getWIP",  # Wi-Fi IP address
+    "getWFR",  # Wi-Fi frequency - "0": "Not connected"
 
     # Sensors exits in devices only:
     # - NeoSoft 5000
@@ -591,13 +542,46 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY = {
 
     # Sensors exits in devices only:
     # - Trio DFR/LS
-    "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
 }
 
 # Sensors to exclude only when value is empty string ("") - internal
 _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
+    # Sensors exits in devices only:
+    # - LEXplus10SL
+    # - Safe-T+
+    # - NeoSoft 2500 / 5000
+    "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
+    "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
+    "getLNG",   # Device language (0=Deutsch, 1=English)
+    "getNPS",  # Microleakage count - value "" means sensor does not exists.
+
+    # Sensors exits in devices only:
+    # - NeoSoft 2500 / 5000
+    "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
+    "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
+    "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
+    "getWFC",  # Wi-Fi channel
+
+    # Sensors exits in devices only:
+    # - SafeTech Plus
     "getTMP",  # Leakage protection deactivated - value "" means sensor does not exists.
+
+    # Sensors exits in devices only:
+    # - Trio DFR/LS
+    "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
+
+    # Sensors exits in devices:
+    # - Safe-T+, Safe-Tech+, Trio DFR/LS
+    "getNET",  # Mains voltage - value "" means no mains voltage sensor present.
+}
+
+# Sensors to exclude only when value is empty ip ("" or "0.0.0.0") - internal
+_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS = {
+    "getEGW",  # Ethernet gateway
+    "getEIP",  # Ethernet IP address
+    "getWGW",  # Wi-Fi gateway
+    "getWIP",  # Wi-Fi IP address
 }
 
 # Sensor icons (Material Design Icons) - internal
@@ -610,6 +594,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # Safe-T+ specific
     "getBAR": "mdi:gauge",
     "getBAT": "mdi:battery",
+    "getNET": "mdi:sine-wave",              # Mains voltage
     "getVLV": "mdi:valve",
 
     # - LEXplus10SL
@@ -618,6 +603,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getAVO": "mdi:waves-arrow-right",
 
     # Water & Hardness
+    "getCND": "mdi:flash",
     "getIWH": "mdi:water-percent",
     "getOWH": "mdi:water-percent",
     "getWHU": "mdi:water-opacity",
@@ -651,10 +637,12 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
     # System & Status
-    "getALM": "mdi:bell-alert",
-    "getALA": "mdi:bell-alert",
-    "getNOT": "mdi:bell",
-    "getWRN": "mdi:alert",
+    "getALA": "mdi:bell-outline",           # Current alarm code
+    "getWRN": "mdi:alert-outline",          # Current warning code
+    "getNOT": "mdi:bell",                   # Current notification code
+    "getALM": "mdi:bell-plus-outline",      # List of last alarms
+    "getALW": "mdi:alert-plus-outline",     # List of last warnings
+    "getALN": "mdi:bell-plus",              # List of last notifications
     "getSTA": "mdi:list-status",
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",
@@ -664,9 +652,11 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getFIR": "mdi:chip",
     "getIPA": "mdi:ip-network",
     "getLAN": "mdi:translate",
+    "getLNG": "mdi:translate",
     "getMAN": "mdi:factory",
     "getMAC": "mdi:ethernet",
     "getSRN": "mdi:identifier",
+    "getTYP": "mdi:devices",
     "getVER": "mdi:chip",
     # Configuration
     "getCS1": "mdi:beaker",
@@ -784,8 +774,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getMAC2": "mdi:ethernet",          # LAN MAC address
     "getLTV": "mdi:faucet",             # Last dispensed volume
     "getRMO": "mdi:autorenew",
-    "getSRH": "mdi:calendar-clock",     # Next semi-annual maintenance
-    "getSRV": "mdi:calendar-clock",     # Next annual maintenance
+    "getSRH": "mdi:wrench-clock",       # Next semi-annual maintenance
+    "getSRV": "mdi:wrench",             # Next annual maintenance
     "getSRO": "mdi:rotate-right",       # Display rotation / orientation
     "getVPS1": "mdi:turbine",           # No turbine pulses on control head 1 since
     "getVPS2": "mdi:turbine",           # No turbine pulses on control head 2 since
@@ -1016,6 +1006,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
 
     "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
+    "getNET": UnitOfElectricPotential.VOLT,             # Mains voltage
     "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
     "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
     "getT2": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
@@ -1071,9 +1062,11 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getFLO": 0,    # Flow rate: show as whole number by default
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
-    "getLAN": 0,    # Language of the UI: show as whole number by default (0=English, 1=German, 3=Spanish)
+    "getLAN": 0,    # Device language: show as whole number by default (0=English, 1=German, 3=Spanish)
     "getLE": 0,     # Leakage protection - Present level: show as whole number by default
+    "getLNG": 0,    # Device language: show as whole number by default (0=Deutsch, 1=English)
     "getLTV": 0,    # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
+    "getNET": 2,    # Mains voltage: show with 2 decimal places
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
@@ -1108,6 +1101,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getSV1": 0,    # Salt container volume 1: show as whole number by default
     "getSV2": 0,    # Salt container volume 2: show as whole number by default
     "getSV3": 0,    # Salt container volume 3: show as whole number by default
+    "getTYP": 0,    # Device type: show as whole number by default
     "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
     "getTOR": 0,    # Total regenerations: show as whole number by default
     "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API

@@ -167,9 +167,7 @@ class PayloadBuilder:
         Returns:
             XML payload with checksum tag
         """
-        self.checksum.reset_checksum()
-        self.checksum.add_xml_to_checksum(payload)
-        checksum_value = self.checksum.get_checksum()
+        checksum_value = self.checksum.compute_xml_checksum(payload)
         return payload.replace('</sc>', f'<cs v="{checksum_value}"/></sc>')
 
     @staticmethod

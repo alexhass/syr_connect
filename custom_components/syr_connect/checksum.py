@@ -162,6 +162,38 @@ class SyrChecksum:
             # In case of error, silently continue
             pass
 
+    def compute_xml_checksum(self, xml_string: str) -> str:
+        """Compute the checksum for an XML string without modifying instance state.
+
+        This is a pure function equivalent of reset_checksum + add_xml_to_checksum
+        + get_checksum, but uses a local accumulator so it is safe to call
+        concurrently on the same instance.
+
+        Args:
+            xml_string: The XML string to process
+
+        Returns:
+            Checksum value in uppercase hexadecimal
+        """
+        checksum_value = 0
+        try:
+            root = etree.fromstring(xml_string)
+            values: list[str] = []
+
+            def extract_values(element: etree.Element) -> None:
+                for key, value in element.attrib.items():
+                    if key != 'n':
+                        values.append(str(value))
+                for child in element:
+                    extract_values(child)
+
+            extract_values(root)
+            for value in values:
+                checksum_value += self.compute_checksum_value(value)
+        except etree.ParseError:
+            pass
+        return format(checksum_value, 'X')
+
     def reset_checksum(self) -> None:
         """Reset the checksum to zero."""
         self.checksum_value = 0

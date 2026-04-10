@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Ventilabsperrung",
-        "state": {
-          "false": "Geöffnet",
-          "true": "Geschlossen"
-        }
-      },
       "getfcd": {
         "name": "Filterspülintervall",
         "state": {
@@ -132,6 +125,15 @@
           "2": "Abwesend"
         }
       },
+      "getrmo": {
+        "name": "Regenerationsmodus",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatik"
+        }
+      },
       "getrpd": {
         "name": "Regenerationsintervall"
       },
@@ -139,9 +141,9 @@
         "name": "Regenerationsuhrzeit"
       },
       "getsro": {
-        "name": "Display drehen",
+        "name": "Display-Orientierung",
         "state": {
-          "0": "0°",
+          "0": "Standard",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -325,7 +327,7 @@
         "name": "Rohwasserhärte"
       },
       "getlan": {
-        "name": "Sprache",
+        "name": "Gerätesprache",
         "state": {
           "0": "Englisch",
           "1": "Deutsch",
@@ -337,6 +339,13 @@
       },
       "getle": {
         "name": "Leckageschutz - Stufe Anwesend"
+      },
+      "getlng": {
+        "name": "Gerätesprache",
+        "state": {
+          "0": "Deutsch",
+          "1": "Englisch"
+        }
       },
       "getltv": {
         "name": "Letztes gezapftes Volumen"
@@ -352,6 +361,9 @@
       },
       "getman": {
         "name": "Hersteller"
+      },
+      "getnet": {
+        "name": "Netzspannung"
       },
       "getnor": {
         "name": "Regenerationen im Normalbetrieb"
@@ -804,7 +816,7 @@
         "name": "Service-Regenerationszyklen"
       },
       "getsir": {
-        "name": "Sofortregeneration",
+        "name": "Sofort regenerieren",
         "state": {
           "0": "Sofort starten",
           "1": "Nicht starten"
@@ -832,9 +844,9 @@
         "name": "Seriennummer"
       },
       "getsro": {
-        "name": "Display drehen",
+        "name": "Display-Orientierung",
         "state": {
-          "0": "0°",
+          "0": "Standard",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -874,10 +886,10 @@
         "name": "Salzmenge Behälter 3"
       },
       "gett1": {
-        "name": "Zeitleckage"
+        "name": "Zeitleckage 1"
       },
       "gett2": {
-        "name": "Zeitleckage"
+        "name": "Zeitleckage 2"
       },
       "gettmp": {
         "name": "Leckageschutz deaktiviert"
@@ -886,7 +898,7 @@
         "name": "Summe aller Regenerationen"
       },
       "gettyp": {
-        "name": "Typ"
+        "name": "Gerätetyp"
       },
       "getul": {
         "name": "Leckageschutz - Stufe Abwesend"

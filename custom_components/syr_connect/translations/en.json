@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Valve shut-off",
-        "state": {
-          "false": "Opened",
-          "true": "Closed"
-        }
-      },
       "getfcd": {
         "name": "Filter backwash interval",
         "state": {
@@ -132,6 +125,15 @@
           "2": "Absent"
         }
       },
+      "getrmo": {
+        "name": "Regeneration mode",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatic"
+        }
+      },
       "getrpd": {
         "name": "Regeneration interval"
       },
@@ -139,9 +141,9 @@
         "name": "Regeneration time"
       },
       "getsro": {
-        "name": "Rotate display",
+        "name": "Display orientation",
         "state": {
-          "0": "0°",
+          "0": "Default",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -325,7 +327,7 @@
         "name": "Input water hardness"
       },
       "getlan": {
-        "name": "Language",
+        "name": "Device language",
         "state": {
           "0": "English",
           "1": "German",
@@ -337,6 +339,13 @@
       },
       "getle": {
         "name": "Leakage protection - Present level"
+      },
+      "getlng": {
+        "name": "Device language",
+        "state": {
+          "0": "German",
+          "1": "English"
+        }
       },
       "getltv": {
         "name": "Last dispensed volume"
@@ -352,6 +361,9 @@
       },
       "getman": {
         "name": "Manufacturer"
+      },
+      "getnet": {
+        "name": "Mains voltage"
       },
       "getnor": {
         "name": "Regenerations (normal operation)"
@@ -832,9 +844,9 @@
         "name": "Serial number"
       },
       "getsro": {
-        "name": "Rotate display",
+        "name": "Display orientation",
         "state": {
-          "0": "0°",
+          "0": "Default",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -874,10 +886,10 @@
         "name": "Salt container volume 3"
       },
       "gett1": {
-        "name": "Leakage time"
+        "name": "Leakage time 1"
       },
       "gett2": {
-        "name": "Leakage time"
+        "name": "Leakage time 2"
       },
       "gettmp": {
         "name": "Leakage protection deactivated"
@@ -886,7 +898,7 @@
         "name": "Total regenerations"
       },
       "gettyp": {
-        "name": "Type"
+        "name": "Device type"
       },
       "getul": {
         "name": "Leakage protection - Absent level"

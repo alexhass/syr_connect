@@ -651,16 +651,17 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     # Test with time value containing colon (e.g., "02:15")
     result = await client.set_device_status("device1", "RTM", "02:15")
 
-    # Verify URL contains URL-encoded value (%3A for colon)
+    # Verify URL contains literal colon (not percent-encoded) because device
+    # firmware does not decode %3A and rejects encoded values.
     called_url = str(sess.get.call_args[0][0])
-    assert "/set/rtm/02%3A15" in called_url
+    assert "/set/rtm/02:15" in called_url
     assert result is True
 
-    # Test with value containing slash
+    # Test with value containing slash – also sent without encoding
     mock_response.json = AsyncMock(return_value={"setCMDvalue/with/slash": "OK"})
     result2 = await client.set_device_status("device1", "CMD", "value/with/slash")
     called_url2 = str(sess.get.call_args[0][0])
-    assert "%2F" in called_url2  # slash should be encoded
+    assert "value/with/slash" in called_url2
     assert result2 is True
 
 
@@ -741,26 +742,42 @@ def test_build_set_url_encodes_and_cases():
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
+    # All values are now sent WITHOUT percent-encoding
     url = api._build_set_url("RTM", "02:15")
-    assert "/set/rtm/02%3A15" in str(url)
+    assert "/set/rtm/02:15" in str(url)
 
     url2 = api._build_set_url("ADM", "(2)f")
-    # _build_set_url encodes by default; parentheses should be percent-encoded
-    assert "/set/ADM/%282%29f" in str(url2)
+    # Parentheses are also sent as-is
+    assert "/set/ADM/(2)f" in str(url2)
 
 
-async def test_validate_response_errors_case_insensitive() -> None:
-    """Test _validate_response_errors handles case-insensitive error codes."""
+async def test_validate_response_errors_case_sensitive() -> None:
+    """Test _validate_response_errors requires exact uppercase error codes.
+
+    Uppercase codes should log warnings; any non-uppercase variant
+    should raise SyrConnectInvalidResponseError.
+    """
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    # Should not raise any exceptions, just log warnings
-    client._validate_response_errors({"key1": "nsc"}, "http://test")
-    client._validate_response_errors({"key2": "NSC"}, "http://test")
-    client._validate_response_errors({"key3": "Nsc"}, "http://test")
-    client._validate_response_errors({"key4": "mima"}, "http://test")
-    client._validate_response_errors({"key5": "MIMA"}, "http://test")
-    client._validate_response_errors({"key6": "MiMa"}, "http://test")
+    # Uppercase is accepted (no exception)
+    client._validate_response_errors({"key_ok": "NSC"}, "http://test")
+    client._validate_response_errors({"key_ok2": "MIMA"}, "http://test")
+
+    # Non-uppercase variants are invalid and should raise
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key1": "nsc"}, "http://test")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key3": "Nsc"}, "http://test")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key4": "mima"}, "http://test")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_response_errors({"key6": "MiMa"}, "http://test")
 
 
 async def test_validate_response_errors_ignores_non_string_values() -> None:
@@ -1094,7 +1111,7 @@ async def test_construct_encoded_url_with_encode_true() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Test with encode=True (used for set commands with special chars)
-    url = client._construct_encoded_url("set", "RTM", "02:30", encode=True)
+    url = client._construct_encoded_url("set", "rtm", "02:30", encode=True)
 
     # Colon should be URL-encoded as %3A
     assert "02%3A30" in str(url)
@@ -1200,14 +1217,14 @@ async def test_get_value_success() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
     client._last_login = datetime.now()  # Valid session
 
-    result = await client.get_value("FLO")
+    result = await client.get_value("flo")
 
     # Should return the single value dict
     assert result == {"getFLO": 0}
 
     # Verify correct URL was called
     called_url = str(sess.get.call_args[0][0])
-    assert "api/get/FLO" in called_url
+    assert "api/get/flo" in called_url
 
 
 async def test_get_value_strips_get_prefix() -> None:
@@ -1232,7 +1249,7 @@ async def test_get_value_strips_get_prefix() -> None:
 
     # Verify URL has normalized key without 'get' prefix
     called_url = str(sess.get.call_args[0][0])
-    assert "api/get/TMP" in called_url
+    assert "api/get/tmp" in called_url
 
 
 async def test_get_value_calls_login_when_needed() -> None:
@@ -1298,3 +1315,162 @@ async def test_get_value_skips_login_with_base_url() -> None:
 
     # Should NOT have called login in test mode
     client.login.assert_not_called()
+
+
+async def test_validate_set_response_missing_key_on_login_raises() -> None:
+    """When a login set-response is missing the expected key, raise SyrConnectInvalidResponseError."""
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_set_response({}, cmd="ADM", value="(2)f", device_id="login", is_login=True)
+
+
+async def test_get_device_status_returns_none_on_invalid_payload() -> None:
+    """get_device_status should return None when the payload cannot be parsed into a dict."""
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    # Ensure no cached response
+    client._cached_get_all = None
+
+    # Patch _request_json_data to return None which will cause parsing to fail
+    with patch.object(client, "_request_json_data", return_value=None):
+        result = await client.get_device_status("device123")
+
+    assert result is None
+
+
+async def test_execute_http_get_401_auth_error() -> None:
+    """Test _execute_http_get raises SyrConnectAuthError on 401/403."""
+    from custom_components.syr_connect.exceptions import SyrConnectAuthError
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 401
+    mock_response.raise_for_status = MagicMock(side_effect=aiohttp.ClientResponseError(
+        request_info=MagicMock(),
+        history=(),
+        status=401,
+        message="Unauthorized",
+    ))
+    mock_response.text = AsyncMock(return_value="Unauthorized")
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with pytest.raises(SyrConnectAuthError):
+        await client._execute_http_get("http://test:5333/api/auth")
+
+
+def test_validate_set_response_missing_key_nonlogin_returns() -> None:
+    """When response missing expected key for non-login, do not raise."""
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    # Should not raise for non-login missing key
+    client._validate_set_response({}, cmd="TEST", value="123", device_id="dev1", is_login=False)
+
+
+async def test_login_skips_when_flag_false() -> None:
+    """If _login_required is False, login() should skip network calls and mark session valid."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Pre-seed that login is known not required
+    client._login_required = False
+
+    # Call login - should not attempt network call and should set projects/_last_login
+    result = await client.login()
+
+    assert result is True
+    assert client._login_required is False
+    assert client.projects and client.projects[0]["id"] == "local"
+    assert client._last_login is not None
+
+
+def test_validate_set_response_unknown_status_on_login_raises() -> None:
+    """When a login set-response returns an unexpected status, raise SyrConnectInvalidResponseError."""
+    from custom_components.syr_connect.exceptions import SyrConnectInvalidResponseError
+
+    client = SyrConnectJsonAPI(MagicMock(), base_url="http://test:5333/api/")
+
+    # Provide response with expected key but unknown status and is_login=True
+    resp_key = client._response_key_for("ADM", "(2)f")
+    with pytest.raises(SyrConnectInvalidResponseError):
+        client._validate_set_response({resp_key: "WEIRD"}, cmd="ADM", value="(2)f", device_id="login", is_login=True)
+
+
+async def test_login_reraises_connection_error() -> None:
+    """login() must re-raise SyrConnectConnectionError (line 367-369 coverage)."""
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    # Patch _execute_http_get to raise SyrConnectConnectionError directly
+    with patch.object(
+        client,
+        "_execute_http_get",
+        side_effect=SyrConnectConnectionError("network down"),
+    ):
+        with pytest.raises(SyrConnectConnectionError, match="network down"):
+            await client.login()
+
+
+async def test_get_device_status_skips_login_when_login_not_required() -> None:
+    """get_device_status skips login when _login_required is False (line 453 coverage)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Explicitly mark login as not required and session as expired
+    client._login_required = False
+    client._last_login = None
+
+    client.login = AsyncMock()
+
+    data = {"getSRN": "99999", "getFLO": "0"}
+    with patch.object(client, "_request_json_data", return_value=data):
+        status = await client.get_device_status("99999")
+
+    # login must NOT have been called
+    client.login.assert_not_called()
+    assert status == data
+
+
+async def test_get_value_skips_login_when_login_not_required() -> None:
+    """get_value skips login when _login_required is False (line 593 coverage)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Explicitly mark login as not required and session as expired
+    client._login_required = False
+    client._last_login = None
+
+    client.login = AsyncMock()
+
+    with patch.object(client, "_request_json_data", return_value={"getFLO": 42}):
+        result = await client.get_value("getFLO")
+
+    # login must NOT have been called
+    client.login.assert_not_called()
+    assert result == {"getFLO": 42}
+
+
+async def test_get_devices_skips_login_when_login_not_required() -> None:
+    """get_devices skips login when _login_required is False (line 453 coverage)."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
+
+    # Explicitly mark login as not required and session as expired
+    client._login_required = False
+    client._last_login = None
+
+    client.login = AsyncMock()
+
+    data = {"getSRN": "ABC123", "getFLO": "0"}
+    with patch.object(client, "_request_json_data", return_value=data):
+        devices = await client.get_devices("local")
+
+    # login must NOT have been called
+    client.login.assert_not_called()
+    assert devices[0]["id"] == "ABC123"

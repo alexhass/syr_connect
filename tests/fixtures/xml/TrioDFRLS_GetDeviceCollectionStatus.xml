@@ -7,7 +7,7 @@
   <dvs>
     <d dg="1e2f7c68-2657-f011-800d-be3af2b6059f" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
-      <c n="getSRN" v="113AAA35413" dt="17.02.2026 00:30:01" />
+      <c n="getSRN" v="113AAA12345" dt="17.02.2026 00:30:01" />
       <c n="getALA" v="ff" dt="20.08.2025 13:41:10" />
       <c n="getNOT" v="ff" />
       <c n="getWRN" v="ff" />
@@ -18,8 +18,8 @@
       <c n="getEGW" v="0.0.0.0" />
       <c n="getEIP" v="0.0.0.0" />
       <c n="getFSL" v="[]" />
-      <c n="getMAC1" v="34:08:e1:0X:XX:X6" />
-      <c n="getMAC2" v="c4:98:94:eX:XX:X8" />
+      <c n="getMAC1" v="34:08:e1:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
       <c n="getPRN" v="2" />
       <c n="getSLF" v="4315" />
       <c n="getSLT" v="612" />

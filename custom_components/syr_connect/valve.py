@@ -15,7 +15,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_SENSOR_ICON
+from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_SENSOR_ICON, _SYR_CONNECT_VALVE_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import (
@@ -23,6 +23,7 @@ from .helpers import (
     build_entity_id,
     build_set_ab_command,
     get_sensor_ab_value,
+    registry_cleanup,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,16 +52,18 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for valve platform")
         return
 
+    registry_cleanup(hass, coordinator.data, "valve", allowed_keys=_SYR_CONNECT_VALVE_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
+
     entities: list[SyrConnectValve] = []
     for device in coordinator.data.get("devices", []):
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         # Per-device status dictionary from the coordinator payload
         status = device.get("status", {})
-        # Create valve entity when device exposes either getAB (control)
-        # or getVLV (status)
+        # Create a valve entity only when the device exposes `getAB` (the
+        # actual valve control key). `getVLV` is a read-only status sensor
+        # and is handled exclusively by the sensor platform.
         ab_value = status.get("getAB")
-        vlv_value = status.get("getVLV")
         create = False
         # If `getAB` looks like a control value (numeric 1/2 or boolean),
         # treat the device as a valve that can be controlled.
@@ -74,18 +77,6 @@ async def async_setup_entry(
                     create = True
                 # Numeric representation (1=open, 2=closed)
                 elif int(float(ab_value)) in (1, 2):
-                    create = True
-        except (ValueError, TypeError):
-            create = False
-
-        # If `getVLV` looks numeric and matches our known status codes
-        # (10/11/20/21), also create a valve entity. We only create one
-        # entity per device regardless of whether both sensors are
-        # present; the entity will prefer `getVLV` for its reported
-        # state and use `getAB` for control.
-        try:
-            if not create and vlv_value is not None and vlv_value != "":
-                if int(float(vlv_value)) in (10, 11, 20, 21):
                     create = True
         except (ValueError, TypeError):
             create = False
@@ -325,7 +316,10 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         `HomeAssistantError` so callers receive a clear failure.
         """
         # Build the correct setAB command based on device representation
-        set_key, set_val = build_set_ab_command(self._get_status() or {}, False)
+        ab_cmd = build_set_ab_command(self._get_status() or {}, False)
+        if ab_cmd is None:
+            raise HomeAssistantError(f"Cannot open valve {self._device_id}: unknown getAB format")
+        set_key, set_val = ab_cmd
 
         # Optimistically cache the requested boolean value (False = opened)
         self._cached_ab = {"value": False, "expires": time.time() + self._ab_cache_seconds}
@@ -360,7 +354,10 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         See `async_open` for behavior and error handling.
         """
         # Build the correct setAB command based on device representation
-        set_key, set_val = build_set_ab_command(self._get_status() or {}, True)
+        ab_cmd = build_set_ab_command(self._get_status() or {}, True)
+        if ab_cmd is None:
+            raise HomeAssistantError(f"Cannot close valve {self._device_id}: unknown getAB format")
+        set_key, set_val = ab_cmd
 
         # Optimistically cache the requested boolean value (True = closed)
         self._cached_ab = {"value": True, "expires": time.time() + self._ab_cache_seconds}

@@ -121,34 +121,68 @@ Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte
 
 #### Sensoren
 
-Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
+Die Integration bietet umfangreiche Überwachung deiner Geräte:
 
 #### Wasserqualität & Kapazität
 
 - Überwachung Ein-/Ausgangswasserhärte
-- Verbleibende Kapazität
+- Wasserleitfähigkeit (µS/cm)
+- Wassertemperatur (°C)
+- Verbleibende Enthärtekapazität
+- Harzkapazität je Behälter (bis zu 3 Behälter, %)
 - Gesamtvolumen
 - Anzeige der Einheit der Wasserhärte
 
 #### Regenerationsinformationen
 
-- Regenerationsstatus
+- Regenerationsstatus und aktiver Behälter (bis zu 3 Behälter)
+- Regenerationsmodus (Standard / ECO / Power / Automatisch)
 - Anzahl durchgeführter Regenerationen
+- Zeitpunkt der letzten Regeneration
 - Einstellung des Regenerationsintervalls
 - Regenerationszeitplan
+- Zähler und Zeitangaben für Regenerationszyklen
 
 #### Salzverwaltung
 
 - Salzmenge in Behältern (1–3)
-- Salzvorrat
-- Geschätzte Vorratsdauer
+- Salzvorrat (verbleibende Wochen)
+- Reservekapazität je Flasche
 
 #### Systemüberwachung
 
-- Wasserdruck
-- Durchflussrate (aktuell)
+- Wasserdrucküberwachung
+- Durchflussrate (aktuell und Momentanwert)
 - Durchflusszähler (Gesamtverbrauch)
-- Alarmstatus
+- Batterie- und Netzspannung
+- Alarm-, Benachrichtigungs- und Warnstatus (aktueller Code und letzte 8 Einträge)
+
+#### Leckschutz (LEXplus10SL / Trio DFR/LS)
+
+- Volumen- und Zeitgrenzwerte für den Leckschutz (Anwesend- und Abwesendprofil)
+- Index des aktiven Leckschutzprofils
+- Leckschutzprofile 1–8 (Volumenlimit, maximale Dauer, Durchflussschwelle, Warn- und Summer-Flags)
+- Timer für temporäre Deaktivierung
+
+#### Mikroundichtigkeitstest (Trio DFR/LS)
+
+- Testintervall und -status des Mikroundichtigkeitstests
+- Testdauer und Ereigniszähler
+
+#### Selbstlernphase (Trio DFR/LS)
+
+- Verbleibende und abgelaufene Zeit der Selbstlernphase
+- Durchflussrate und kumuliertes Volumen während der Selbstlernphase
+
+#### Filter (NeoSoft)
+
+- Rückspülzähler des Filters
+- Eisengehaltsmessung
+
+#### Wartung
+
+- Nächste geplante Wartungstermine (halbjährlich und jährlich)
+- Erwarteter täglicher Wasserverbrauch
 
 #### Geräteinformationen
 
@@ -156,6 +190,12 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 - Firmware-Version und Modell
 - Gerätetyp und Hersteller
 - Netzwerk-Informationen (IP, MAC, Gateway)
+- WLAN-Verbindungsstatus und Signalstärke
+
+#### Binärsensoren
+
+- **Regeneration aktiv**: Zeigt an, ob gerade ein Regenerationszyklus läuft
+- **Summer-Status**: Zeigt an, ob der Gerätesummer aktuell aktiviert ist
 
 #### Buttons (Aktionen)
 
@@ -164,12 +204,19 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
 - **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen
 - **Warnung zurücksetzen**: Warnungen löschen
 
+#### Schaltersteuerungen
+
+- **Summer**: Gerätesummer aktivieren oder deaktivieren
+
 #### Auswahlsteuerungen (Konfiguration)
 
 - **Regenerationszeit**: Tägliche Regenerationszeit einstellen (15-Minuten-Intervalle)
 - **Leckschutzprofil**: Aktives Leckschutzprofil auswählen (bei Geräten mit mehreren Profilen)
-- **Salzmenge**: Salzmenge in Behältern konfigurieren (0-25 kg, je nach Modell; bis zu 3 Behälter)
-- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (1-4 Tage)
+- **Salzmenge**: Salzmenge in Behältern konfigurieren (je nach Modell; bis zu 3 Behälter)
+- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage)
+- **Display-Rotation**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display)
+- **Filter-Rückspülintervall**: Häufigkeit der Filterrückspülung konfigurieren (für NeoSoft-Geräte mit Filter)
+- **Filtertyp**: Installierten Filtertyp auswählen (für NeoSoft-Geräte)
 
 #### Ventilsteuerung
 
@@ -177,13 +224,6 @@ Die Integration bietet umfangreiche Überwachung deines Wasserenthärters:
   - Ventil öffnen und schließen
   - Aktuelle Ventilposition und Status überwachen
   - Integration mit Leckerkennungs-Automatisierungen für automatisches Absperren
-
-### Bekannte Einschränkungen
-
-- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
-- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
-- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
-- **Lokale API-Unterstützung**: Nur einige neuere Gerätemodelle (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) bieten eine lokale JSON-API. Die meisten anderen Modelle, einschließlich aller LEXplus-Varianten, benötigen Cloud-API-Zugriff
 
 ### API-Modi
 
@@ -226,6 +266,13 @@ Die Integration pollt die Geräte-API in regelmäßigen Abständen (Standard: 60
 Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuverlässiger für Echtzeit-Überwachung und Automatisierungen macht.
 
 Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten bis zum nächsten erfolgreichen Update als nicht verfügbar markiert.
+
+### Bekannte Einschränkungen
+
+- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
+- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
+- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
+- **Lokale API-Unterstützung**: Nur einige neuere Gerätemodelle (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) bieten eine lokale JSON-API. Die meisten anderen Modelle, einschließlich aller LEXplus-Varianten, benötigen Cloud-API-Zugriff
 
 ## Anwendungsbeispiele
 

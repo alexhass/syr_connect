@@ -8,13 +8,13 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
+    _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
@@ -26,6 +26,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     get_sensor_rtm_value,
+    registry_cleanup,
     set_sensor_rtm_value,
 )
 from .models import detect_model
@@ -60,19 +61,7 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for select platform")
         return
 
-    # Remove previously-registered select entities that are now excluded
-    try:
-        registry = er.async_get(hass)
-        for device in coordinator.data.get("devices", []):
-            device_id = device.get("id")
-            for excluded_key in _SYR_CONNECT_SENSOR_EXCLUDED:
-                entity_id = build_entity_id("select", device_id, excluded_key)
-                registry_entry = registry.async_get(entity_id)
-                if registry_entry is not None and hasattr(registry_entry, "entity_id"):
-                    _LOGGER.debug("Removing excluded select from registry: %s", entity_id)
-                    registry.async_remove(registry_entry.entity_id)
-    except (RuntimeError, KeyError, AttributeError):
-        _LOGGER.exception("Failed to cleanup excluded selects from entity registry")
+    registry_cleanup(hass, coordinator.data, "select", allowed_keys=_SYR_CONNECT_SELECT_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
 
     entities: list[Any] = []
     for device in coordinator.data.get("devices", []):
@@ -118,33 +107,35 @@ async def async_setup_entry(
             continue
         entities.append(SyrConnectRotationSelect(coordinator, device_id, device_name))
 
-    # Add select for filter backwash interval (getFCD) - use raw state keys so frontend translates the state
-    fcd_map = {
-        "2592000": 2592000,
-        "5184000": 5184000,
-        "7776000": 7776000,
-        "10368000": 10368000,
-        "12960000": 12960000,
-        "15552000": 15552000,
-        "18144000": 18144000,
-        "20736000": 20736000,
-        "23328000": 23328000,
-        "25920000": 25920000,
-        "28512000": 28512000,
-        "31104000": 31104000,
-    }
-    for device in coordinator.data.get("devices", []):
-        device_id = device.get("id")
-        device_name = device.get("name", device_id)
-        status = device.get("status", {})
-        fcd_value = status.get("getFCD")
-        if fcd_value is None or fcd_value == "":
-            continue
-        try:
-            int(float(fcd_value))
-        except (ValueError, TypeError):
-            continue
-        entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getFCD", fcd_map))
+    # TODO: Temporarily disabled - getFCD select (filter backwash interval).
+    # Known bug: After writing a new value, the server resets the setting back to its previous value.
+    # Root cause is unknown. Re-enable once the write-back issue is resolved.
+    # fcd_map = {
+    #     "2592000": 2592000,
+    #     "5184000": 5184000,
+    #     "7776000": 7776000,
+    #     "10368000": 10368000,
+    #     "12960000": 12960000,
+    #     "15552000": 15552000,
+    #     "18144000": 18144000,
+    #     "20736000": 20736000,
+    #     "23328000": 23328000,
+    #     "25920000": 25920000,
+    #     "28512000": 28512000,
+    #     "31104000": 31104000,
+    # }
+    # for device in coordinator.data.get("devices", []):
+    #     device_id = device.get("id")
+    #     device_name = device.get("name", device_id)
+    #     status = device.get("status", {})
+    #     fcd_value = status.get("getFCD")
+    #     if fcd_value is None or fcd_value == "":
+    #         continue
+    #     try:
+    #         int(float(fcd_value))
+    #     except (ValueError, TypeError):
+    #         continue
+    #     entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getFCD", fcd_map))
 
     # Add numeric-controlled selects for salt amounts and regeneration interval
     for device in coordinator.data.get("devices", []):
@@ -198,6 +189,18 @@ async def async_setup_entry(
             sel = SyrConnectNumericSelect(coordinator, device_id, device_name, "getFFM", 1, 3, 1)
             sel._options = [str(x) for x in range(1, 4)]
             entities.append(sel)
+
+        # Add getRMO select (regeneration mode: 1=Standard, 2=ECO, 3=Power, 4=Automatic)
+        # Raw string keys are exposed so the frontend can translate the displayed state.
+        rmo_value = status.get("getRMO")
+        if rmo_value is not None and rmo_value != "":
+            try:
+                rmo_int = int(float(rmo_value))
+            except (ValueError, TypeError):
+                rmo_int = 0
+            if rmo_int >= 1:
+                rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRMO", rmo_map))
 
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
@@ -420,7 +423,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
 class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
     """Select entity exposing display rotation (`getSRO`).
 
-    Options: 0°, 90°, 180°, 270° — selecting sends `setSRO`.
+    Options: raw state keys 0, 90, 180, 270 — frontend shows translated labels; selecting sends `setSRO`.
     """
 
     def __init__(
@@ -440,7 +443,8 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getSRO")
 
-        self._options = ["0°", "90°", "180°", "270°"]
+        # Use raw state keys so the frontend will translate them via the translation files
+        self._options = ["0", "90", "180", "270"]
 
         if "getSRO" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
@@ -467,11 +471,11 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
                 return None
             try:
                 num = int(float(val))
-                # Return matching option with degree symbol
+                # Return matching raw option (string)
                 for opt in self._options:
                     if opt.startswith(f"{num}"):
                         return opt
-                return f"{num}°"
+                return str(num)
             except (ValueError, TypeError, AttributeError):
                 return None
         return None

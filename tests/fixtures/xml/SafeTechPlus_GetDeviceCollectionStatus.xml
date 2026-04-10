@@ -14,8 +14,8 @@
       <c n="getEGW" v="0.0.0.0" />
       <c n="getEIP" v="0.0.0.0" />
       <c n="getFSL" v="[]" />
-      <c n="getMAC1" v="68:5e:1c:5X:XX:XX" />
-      <c n="getMAC2" v="c4:98:94:eX:XX:XY" />
+      <c n="getMAC1" v="68:5e:1c:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
       <c n="getPRN" v="3" />
       <c n="getSLF" v="0" />
       <c n="getSLT" v="0" />

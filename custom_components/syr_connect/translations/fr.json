@@ -92,13 +92,6 @@
       }
     },
     "select": {
-      "getab": {
-        "name": "Coupure de vanne",
-        "state": {
-          "false": "Ouvert",
-          "true": "Fermé"
-        }
-      },
       "getfcd": {
         "name": "Intervalle de contre‑lavage du filtre",
         "state": {
@@ -132,6 +125,15 @@
           "2": "Absent"
         }
       },
+      "getrmo": {
+        "name": "Mode de régénération",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Power",
+          "4": "Automatique"
+        }
+      },
       "getrpd": {
         "name": "Intervalle de régénération"
       },
@@ -139,9 +141,9 @@
         "name": "Heure de régénération"
       },
       "getsro": {
-        "name": "Rotation de l'affichage",
+        "name": "Orientation de l'affichage",
         "state": {
-          "0": "0°",
+          "0": "Par défaut",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -325,7 +327,7 @@
         "name": "Dureté de l'eau brute"
       },
       "getlan": {
-        "name": "Langue",
+        "name": "Langue de l'appareil",
         "state": {
           "0": "Anglais",
           "1": "Allemand",
@@ -337,6 +339,13 @@
       },
       "getle": {
         "name": "Protection contre les fuites - Niveau présent"
+      },
+      "getlng": {
+        "name": "Langue de l'appareil",
+        "state": {
+          "0": "Allemand",
+          "1": "Anglais"
+        }
       },
       "getltv": {
         "name": "Dernier volume distribué"
@@ -352,6 +361,9 @@
       },
       "getman": {
         "name": "Fabricant"
+      },
+      "getnet": {
+        "name": "Tension secteur"
       },
       "getnor": {
         "name": "Régénérations en fonctionnement normal"
@@ -832,9 +844,9 @@
         "name": "Numéro de série"
       },
       "getsro": {
-        "name": "Rotation de l'affichage",
+        "name": "Orientation de l'affichage",
         "state": {
-          "0": "0°",
+          "0": "Par défaut",
           "180": "180°",
           "270": "270°",
           "90": "90°"
@@ -874,10 +886,10 @@
         "name": "Quantité de sel réservoir 3"
       },
       "gett1": {
-        "name": "Fuite de temps"
+        "name": "Fuite de temps 1"
       },
       "gett2": {
-        "name": "Fuite de temps"
+        "name": "Fuite de temps 2"
       },
       "gettmp": {
         "name": "Protection contre les fuites désactivée"
@@ -886,7 +898,7 @@
         "name": "Total des régénérations"
       },
       "gettyp": {
-        "name": "Type"
+        "name": "Type d'appareil"
       },
       "getul": {
         "name": "Protection contre les fuites - Niveau absent"

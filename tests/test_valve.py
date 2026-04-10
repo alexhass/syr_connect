@@ -96,32 +96,6 @@ async def test_async_setup_entry_creates_valve(hass: HomeAssistant, create_mock_
     assert len(entities) >= 1
 
 
-async def test_valve_from_vlv_only(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
-    """Valve should be created when only getVLV present and state properties derive from it."""
-    data = {
-        "devices": [
-            {
-                "id": "device2",
-                "name": "Test Device 2",
-                "project_id": "project1",
-                "status": {"getVLV": "21"},
-            }
-        ]
-    }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    assert len(entities) >= 1
-    # Inspect created valve entity's runtime properties
-    valve = entities[0]
-    # coordinator was set on created entity in async_setup_entry; ensure properties
-    assert valve.is_opening is True
-    assert valve.is_closing is False
-    assert valve.is_closed is False
-
-
 async def test_available(hass: HomeAssistant) -> None:
     data = {
         "devices": [
@@ -188,8 +162,8 @@ async def test_async_setup_entry_creates_valves(hass: HomeAssistant) -> None:
 
     add_entities.assert_called_once()
     entities = add_entities.call_args.args[0]
-    # Two devices should produce two valve entities
-    assert len(entities) == 2
+    # Only device 1 (getAB) should produce a valve entity; device 2 (getVLV only) does not.
+    assert len(entities) == 1
 
 
 async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> None:
@@ -276,7 +250,7 @@ async def test_available_checks(hass: HomeAssistant) -> None:
 
 
 async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "op", "name": "Op", "status": {}}]}
+    data = {"devices": [{"id": "op", "name": "Op", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     # Replace async_set_device_value with a mock
     coordinator.async_set_device_value = AsyncMock()
@@ -363,7 +337,7 @@ async def test_is_closed_none_when_device_missing(hass: HomeAssistant) -> None:
 
 
 async def test_async_open_handles_write_state_exception(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "w1", "name": "W1", "status": {}}]}
+    data = {"devices": [{"id": "w1", "name": "W1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
     valve = SyrConnectValve(coordinator, "w1", "W1")
@@ -588,7 +562,7 @@ async def test_async_setup_entry_getab_value_3_not_valid(hass: HomeAssistant) ->
 
 
 async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -> None:
-    """Test that getVLV value of 5 is not valid (only 10/11/20/21 are valid)."""
+    """Test that a Pontos-Base device with only getVLV (no getAB) does not create a valve entity."""
     data = {
         "devices": [
             {
@@ -606,7 +580,7 @@ async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # getVLV=5 should not create valve
+    # getVLV-only device must not create a valve entity
     add_entities.assert_not_called()
 
 
@@ -692,7 +666,7 @@ async def test_is_closing_valueerror(hass: HomeAssistant) -> None:
 
 async def test_async_close_handles_write_state_exception(hass: HomeAssistant) -> None:
     """Test async_close handles async_write_ha_state exception."""
-    data = {"devices": [{"id": "w2", "name": "W2", "status": {}}]}
+    data = {"devices": [{"id": "w2", "name": "W2", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
     valve = SyrConnectValve(coordinator, "w2", "W2")
@@ -711,7 +685,7 @@ async def test_async_close_handles_write_state_exception(hass: HomeAssistant) ->
 
 async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
     """Test async_close clears optimistic cache on command failure."""
-    data = {"devices": [{"id": "cf1", "name": "CF1", "status": {}}]}
+    data = {"devices": [{"id": "cf1", "name": "CF1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
@@ -735,7 +709,7 @@ async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
 
 async def test_async_open_clears_cache_on_failure(hass: HomeAssistant) -> None:
     """Test async_open clears optimistic cache on command failure."""
-    data = {"devices": [{"id": "of1", "name": "OF1", "status": {}}]}
+    data = {"devices": [{"id": "of1", "name": "OF1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
@@ -872,7 +846,7 @@ async def test_is_closing_typeerror(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_getvlv_all_valid_codes(hass: HomeAssistant) -> None:
-    """Test async_setup_entry creates valves for all valid getVLV codes."""
+    """Test that Pontos-Base devices with only getVLV (no getAB) do not create valve entities."""
     data = {
         "devices": [
             {"id": "v10", "name": "V10", "status": {"getVLV": "10"}},  # closed
@@ -888,10 +862,8 @@ async def test_async_setup_entry_getvlv_all_valid_codes(hass: HomeAssistant) -> 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # Should create 4 valves
-    add_entities.assert_called_once()
-    entities = add_entities.call_args.args[0]
-    assert len(entities) == 4
+    # getVLV-only devices must NOT create valve entities — getVLV is a sensor, not a control key
+    add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_getab_valid_values_1_and_2(hass: HomeAssistant) -> None:
@@ -960,3 +932,102 @@ async def test_valve_initialization_default_sensor_key(hass: HomeAssistant) -> N
 
     assert valve._sensor_key == "getAB"
     assert valve._attr_unique_id == "dsk_getAB"
+
+
+async def test_async_open_close_with_native_boolean_status(hass: HomeAssistant) -> None:
+    """When device reports native boolean getAB, setAB should use 'true'/'false'."""
+    data = {"devices": [{"id": "nb1", "name": "NB1", "status": {"getAB": True}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    valve = SyrConnectValve(coordinator, "nb1", "NB1")
+
+    # Patch async_write_ha_state to avoid hass dependency
+    valve.async_write_ha_state = Mock()
+
+    await valve.async_open()
+    # Opening should send 'false' to open (False=open)
+    coordinator.async_set_device_value.assert_awaited_with("nb1", "setAB", "false")
+
+    coordinator.async_set_device_value.reset_mock()
+    await valve.async_close()
+    # Closing should send 'true' to close (True=closed)
+    coordinator.async_set_device_value.assert_awaited_with("nb1", "setAB", "true")
+
+
+async def test_build_set_ab_command_respects_boolean_raw(hass: HomeAssistant) -> None:
+    """Direct check that build_set_ab_command uses boolean/raw types correctly."""
+    from custom_components.syr_connect.helpers import build_set_ab_command
+
+    # Native boolean True/False
+    key, val = build_set_ab_command({"getAB": True}, True)
+    assert key == "setAB" and val == "true"
+    key, val = build_set_ab_command({"getAB": False}, False)
+    assert key == "setAB" and val == "false"
+
+    # Absent getAB key → unknown format → returns None
+    assert build_set_ab_command({}, True) is None
+
+
+async def test_icon_opening_state(hass: HomeAssistant) -> None:
+    """Icon should show generic valve when opening (getVLV=21)."""
+    data = {"devices": [{"id": "io1", "name": "IO1", "status": {"getVLV": "21"}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "io1", "IO1")
+
+    assert valve.is_opening is True
+    assert valve.icon == "mdi:valve"
+
+
+async def test_icon_closing_state(hass: HomeAssistant) -> None:
+    """Icon should show generic valve when closing (getVLV=11)."""
+    data = {"devices": [{"id": "ic1", "name": "IC1", "status": {"getVLV": "11"}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "ic1", "IC1")
+
+    assert valve.is_closing is True
+    assert valve.icon == "mdi:valve"
+
+
+async def test_icon_unknown_returns_base_icon(hass: HomeAssistant) -> None:
+    """When state is unknown, icon should fall back to the base icon."""
+    data = {"devices": [{"id": "unk", "name": "UNK", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "unk", "UNK")
+
+    # No getVLV/getAB reported -> is_closed is None -> icon uses base icon
+    assert valve.is_closed is None
+    assert valve.icon == valve._base_icon
+
+
+async def test_setup_getab_invalid_value_hits_except_branch(hass: HomeAssistant) -> None:
+    """Lines 78-79: getAB value that cannot be converted to float hits except branch.
+    The entity must NOT be created (create stays False).
+    """
+    data = {"devices": [{"id": "bad", "name": "Bad", "status": {"getAB": "not_a_number"}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    entry = MockConfigEntry(
+        version=1, minor_version=0, domain="syr_connect",
+        title="T", data={}, source="user", entry_id="e_bad", unique_id="u_bad",
+    )
+    entry.runtime_data = coordinator
+    entry.add_to_hass(hass)
+
+    added: list = []
+    await async_setup_entry(hass, entry, added.append)
+
+    # int(float("not_a_number")) raises ValueError → except branch → create=False → no entity
+    assert added == []
+
+
+async def test_available_fallback_when_device_not_in_data(hass: HomeAssistant) -> None:
+    """Line 318: available property returns True when device_id is not in coordinator data."""
+    # Coordinator data contains a different device id
+    data = {"devices": [{"id": "other", "name": "Other", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    valve = SyrConnectValve(coordinator, "missing_id", "Missing")
+
+    # Device not found → falls through the loop → return True
+    assert valve.available is True

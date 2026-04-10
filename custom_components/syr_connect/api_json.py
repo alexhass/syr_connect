@@ -149,7 +149,7 @@ class SyrConnectJsonAPI:
             and datetime.now() < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
         )
 
-    def _construct_encoded_url(self, *path_parts: str, encode: bool = True) -> URL:
+    def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
         """Build a URL from path components with optional encoding.
 
         This method handles URL construction with proper encoding for special characters.
@@ -160,8 +160,8 @@ class SyrConnectJsonAPI:
         - We use quote() to encode, then yarl.URL(encoded=True) to prevent re-decoding
 
         Examples:
-            _construct_encoded_url("set", "RTM", "02:30", encode=True)
-            -> URL("http://device:5333/neosoft/set/RTM/02%3A30", encoded=True)
+            _construct_encoded_url("set", "RTM", "02:30", encode=False)
+            -> URL("http://device:5333/neosoft/set/RTM/02:30", encoded=False)
 
             _construct_encoded_url("set", "ADM", "(2)f", encode=False)
             -> URL("http://device:5333/neosoft/set/ADM/(2)f")
@@ -215,9 +215,15 @@ class SyrConnectJsonAPI:
         return f"set{str(cmd).upper()}{value}"
 
     def _build_set_url(self, cmd: str, value: Any) -> URL:
-        """Build the encoded URL for a set command using normalized cmd."""
+        """Build the URL for a set command using normalized cmd.
+
+        Values are sent without percent-encoding because the device firmware
+        does not decode percent-encoded characters (e.g. %3A → :) and rejects
+        encoded values. Special characters such as colons in RTM time strings
+        (e.g. "02:30") must therefore be sent literally.
+        """
         url_cmd = self._normalize_cmd_for_url(cmd)
-        return self._construct_encoded_url("set", url_cmd, str(value), encode=True)
+        return self._construct_encoded_url("set", url_cmd, str(value), encode=False)
 
     async def _execute_http_get(
         self,
@@ -554,7 +560,7 @@ class SyrConnectJsonAPI:
 
         The JSON API supports fetching individual values instead of all data:
         - /get/all returns all values: {"getFLO": 0, "getTMP": 25, ...}
-        - /get/FLO returns single value: {"getFLO": 0}
+        - /get/flo returns single value: {"getFLO": 0}
 
         This method provides flexible access to individual device values without
         fetching the entire state.
@@ -689,8 +695,15 @@ class SyrConnectJsonAPI:
         # Example: cmd="ADM", value="(2)f" -> response_key="setADM(2)f"
         response_key = self._response_key_for(cmd, value)
 
-        # Check if response contains the expected key
-        if response_key not in response:
+        # BUG:
+        #   - Neosoft firmware causes "cmd" to become lowercase (e.g., "/set/sv1/15" becomes {"setsv15":"OK"}).
+        #   - Trio firmware does properly and always returns uppercase (e.g., {"setPRF1":"OK"}).
+        # This is inconsistent and seems to be a firmware bug on Neosoft devices.
+        #
+        # Perform a case-insensitive lookup for the response key so that
+        # devices returning e.g. 'setala255' or 'setALA255' are accepted.
+        found_key = next((k for k in response.keys() if k.lower() == response_key.lower()), None)
+        if not found_key:
             msg = f"Response missing expected key '{response_key}'"
             _LOGGER.warning("JSON API: %s for device %s (response: %s)", msg, device_id, response)
             # For login, missing key is a failure
@@ -699,7 +712,7 @@ class SyrConnectJsonAPI:
             # For other commands, don't fail hard (graceful degradation)
             return
 
-        status = response[response_key]
+        status = response[found_key]
 
         # Check status value
         if status == "OK":
@@ -751,13 +764,27 @@ class SyrConnectJsonAPI:
             "MIMA": "Value is outside valid range (MIMA error)",
         }
 
-        # Scan response values for error codes
+        # Scan response values for error codes. Only exact uppercase codes
+        # are accepted as API error indicators (logged as warnings). Any
+        # value that matches a known code in a non-uppercase form is
+        # treated as an invalid response and raises an exception.
         for key, val in data.items():
             # Skip set-command keys (e.g., "setRPD4") - these are validated by _validate_set_response()
             # Only log warnings for get-command keys (e.g., "getRTM") with error codes
             if key.lower().startswith("set"):
                 continue
 
-            # Check if value is a string matching a known error code
-            if isinstance(val, str) and (msg := error_messages.get(val.upper())):
+            # Check if value is a string
+            if not isinstance(val, str):
+                continue
+
+            # Exact uppercase match: log a warning
+            if (msg := error_messages.get(val)):
                 _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
+                continue
+
+            # Non-uppercase variant of a known code: treat as invalid
+            if val.upper() in error_messages:
+                raise SyrConnectInvalidResponseError(
+                    f"Invalid error code case for key '{key}': '{val}' - URL: {url}"
+                )
