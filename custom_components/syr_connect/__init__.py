@@ -55,7 +55,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scan_interval = get_default_scan_interval_for_entry(entry)
 
     # Enforce minimum scan interval depending on API type
-    api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
     min_allowed = 10 if api_type == API_TYPE_JSON else 60
     if scan_interval < min_allowed:
         _LOGGER.warning(
