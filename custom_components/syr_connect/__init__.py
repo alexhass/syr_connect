@@ -14,6 +14,7 @@ from .const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
+    CONF_HOST,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import get_default_scan_interval_for_entry
@@ -32,9 +33,6 @@ PLATFORMS: list[str | Platform] = [
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
-    # Get API type for logging
-    from .const import API_TYPE_XML, CONF_HOST
-
     # Migrate legacy entries without API type
     if CONF_API_TYPE not in entry.data:
         _LOGGER.info(
@@ -153,8 +151,6 @@ async def _async_migrate_legacy_entry(hass: HomeAssistant, entry: ConfigEntry) -
     1. Adds CONF_API_TYPE (defaults to XML for backward compatibility)
     2. Updates unique_id to include API type prefix
     """
-    from .const import CONF_API_TYPE
-
     username = entry.data.get(CONF_USERNAME)
     if not username:
         _LOGGER.warning(
