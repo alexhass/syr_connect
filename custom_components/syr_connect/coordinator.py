@@ -115,10 +115,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session
-        # Map of ((device_id, get_key) -> expire_timestamp) to ignore API
-        # provided values for a short period after we apply an optimistic
-        # update. This is used to avoid immediately overwriting an
-        # optimistic `getAB` change with stale API data.
+        # Tracks valve state (getAB) ignore windows: {(device_id, "getAB") -> expire_timestamp}.
+        # SYR devices can take up to ~60 s to reflect a valve open/close command, so we suppress
+        # incoming API values for getAB during that window to avoid immediately reverting the
+        # optimistic UI state. All other keys are intentionally NOT protected and will be
+        # overwritten by the next regular poll cycle.
         self._ignore_until: dict[tuple[str, str], float] = {}
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -250,11 +251,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
 
-            # If we have any ignore rules for this device, preserve the
-            # optimistic values for keys that are still within their ignore
-            # window (e.g. `getAB`). Replace the API-provided value with the
-            # previously-stored value in coordinator.data so entities retain
-            # the optimistic state until the ignore window expires.
+            # For getAB (valve state): if the ignore window is still active, restore
+            # the previously-stored optimistic value so the entity does not revert
+            # to the stale API state before the device has processed the command.
+            # All other keys are not in _ignore_until and pass through unchanged.
             try:
                 if getattr(self, "data", None) and isinstance(self.data, dict):
                     prev_devices = {d.get("id"): d for d in self.data.get("devices", []) if isinstance(d, dict)}
@@ -347,9 +347,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 # async_set_updated_data is not awaitable; call directly to update data
                 self.async_set_updated_data(new_data)
 
-                # If this was a valve control change (`getAB`), ignore API
-                # responses for that key for the next 60 seconds so we don't
-                # immediately overwrite the optimistic state with stale data.
+                # For valve commands (getAB) only: suppress incoming API values for
+                # 60 s because SYR devices take time to reflect the new state.
+                # All other keys are intentionally not protected — they will be
+                # overwritten by the next poll, which is the desired behaviour.
                 try:
                     if get_key.lower() == "getab":
                         self._ignore_until[(device_id, get_key)] = time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
