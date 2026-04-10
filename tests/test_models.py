@@ -81,8 +81,12 @@ def test_unknown_model_detection():
 
 
 def test_detect_model_none_input():
-    """Passing a non-dict (None) returns None."""
-    assert detect_model(None) is None
+    """Passing a non-dict (None) returns the unknown model dict."""
+    result = detect_model(None)
+    assert result["name"] == "unknown"
+    assert result["display_name"] == "Unknown model"
+    assert result["manufacturer"] == "Unknown"
+    assert result["base_path"] is None
 
 
 def test_neosoft_vkeys_version_mismatch_returns_unknown():
@@ -145,11 +149,14 @@ def test_both_getcna_and_getver_none():
     assert result["name"] == "unknown"
 
 
-def test_non_dict_input_returns_none():
-    """Non-dict inputs like string or list should return None."""
-    assert detect_model("not a dict") is None
-    assert detect_model([1, 2, 3]) is None
-    assert detect_model(123) is None
+def test_non_dict_input_returns_unknown():
+    """Non-dict inputs like string or list should return the unknown model dict."""
+    for invalid in ("not a dict", [1, 2, 3], 123):
+        result = detect_model(invalid)
+        assert result["name"] == "unknown"
+        assert result["display_name"] == "Unknown model"
+        assert result["manufacturer"] == "Unknown"
+        assert result["base_path"] is None
 
 
 def test_ver_contains_synthetic():
