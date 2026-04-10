@@ -48,6 +48,7 @@ from .helpers import (
     get_sensor_vol_value,
     get_sensor_wrn_map,
     is_sensor_visible,
+    is_value_true,
     registry_cleanup,
 )
 
@@ -55,48 +56,6 @@ _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
-
-
-def _is_true(val: object) -> bool:
-    """Normalize a heterogeneous API flag value to a Python bool.
-
-    SYR devices report binary activation flags (e.g. ``getPAx``) in varying
-    formats depending on firmware version: native ``bool``, ``int``/``float``,
-    or strings such as ``"1"`` or ``"true"``.  This function
-    provides a single, consistent conversion so callers do not need to handle
-    each format separately.
-
-    Args:
-        val: Raw value received from the device API.
-
-    Returns:
-        ``True`` if *val* represents a truthy/active state, ``False`` otherwise.
-        Unknown or unconvertible values always return ``False``.
-    """
-    # Handle real booleans first
-    if isinstance(val, bool):
-        return val
-
-    # Numeric-like values (including numeric strings)
-    if isinstance(val, (int | float)):
-        try:
-            return int(float(val)) != 0
-        except (ValueError, TypeError):
-            return False
-
-    if isinstance(val, str):
-        sval = val.strip().lower()
-        if sval in ("1", "true"):
-            return True
-        if sval in ("0", "false"):
-            return False
-        # Try parsing numeric string
-        try:
-            return int(float(sval)) != 0
-        except (ValueError, TypeError):
-            return False
-
-    return False
 
 
 async def async_setup_entry(
@@ -166,7 +125,7 @@ async def async_setup_entry(
             ]
 
             try:
-                if _is_true(pa_val):
+                if is_value_true(pa_val):
                     # Create entities for group keys (instantiate sensor objects so they appear as entities).
                     for gk in group_keys:
                         # Avoid duplicates when iterating over status later

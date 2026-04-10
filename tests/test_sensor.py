@@ -1894,8 +1894,8 @@ async def test_getpa_group_true_creates_group_entities(hass: HomeAssistant) -> N
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    # Use a truthy string that _is_true should accept
-                    "getPA1": "yes",
+                    # Use a truthy string that is_value_true should accept
+                    "getPA1": "true",
                     # Also include an unrelated sensor to ensure normal sensors are added
                     "getFLO": "10",
                 },
@@ -5319,8 +5319,8 @@ async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) 
         assert mock_registry.async_remove.called
 
 
-async def test_is_true_int_float_exception(hass: HomeAssistant) -> None:
-    """Test _is_true exception handling for invalid int/float values."""
+async def test_is_value_true_int_float_exception(hass: HomeAssistant) -> None:
+    """Test is_value_true exception handling for invalid int/float values."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
 
     # Create a value that looks numeric but fails conversion
@@ -5340,7 +5340,7 @@ async def test_is_true_int_float_exception(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getPA1": bad_value,  # Will trigger exception in _is_true
+                    "getPA1": bad_value,  # Will trigger exception in is_value_true
                 },
             }
         ]
@@ -5362,15 +5362,15 @@ async def test_is_true_int_float_exception(hass: HomeAssistant) -> None:
 
     mock_add_entities = Mock()
 
-    # Should handle exception in _is_true and treat as false
+    # Should handle exception in is_value_true and treat as false
     await async_setup_entry(hass, entry, mock_add_entities)
 
     # Should complete without raising exception
     assert mock_add_entities.called
 
 
-async def test_is_true_string_numeric_exception(hass: HomeAssistant) -> None:
-    """Test _is_true exception handling for string that fails numeric conversion."""
+async def test_is_value_true_string_numeric_exception(hass: HomeAssistant) -> None:
+    """Test is_value_true exception handling for string that fails numeric conversion."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     coordinator.data = {
         "devices": [
@@ -5405,14 +5405,14 @@ async def test_is_true_string_numeric_exception(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, mock_add_entities)
 
     entities = mock_add_entities.call_args[0][0]
-    # Since "not_a_number" string fails conversion, _is_true returns False
+    # Since "not_a_number" string fails conversion, is_value_true returns False
     # So getPA1 group shouldn't be created
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA1" not in sensor_keys
 
 
-async def test_is_true_float_int_methods_raise(hass: HomeAssistant) -> None:
-    """Test _is_true handles objects whose numeric conversions raise exceptions."""
+async def test_is_value_true_float_int_methods_raise(hass: HomeAssistant) -> None:
+    """Test is_value_true handles objects whose numeric conversions raise exceptions."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
 
     class BadNumeric:

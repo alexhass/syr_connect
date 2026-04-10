@@ -988,15 +988,15 @@ def test_get_sensor_ala_map_unrecognized_known_model() -> None:
     assert raw == "FF"
 
 
-def test_is_true_bool_value() -> None:
-    """is_sensor_visible: _is_true returns bool value directly (line 789)."""
+def test_is_value_true_bool_value() -> None:
+    """is_sensor_visible: is_value_true returns bool value directly (line 789)."""
     # Passing a boolean True for getPAx means the group key must be visible
     assert is_sensor_visible({"getPA1": True}, "getPV1", "1") is True
     assert is_sensor_visible({"getPA1": False}, "getPV1", "1") is False
 
 
-def test_is_true_numeric_value() -> None:
-    """is_sensor_visible: _is_true handles int/float (lines 791-794)."""
+def test_is_value_true_numeric_value() -> None:
+    """is_sensor_visible: is_value_true handles int/float (lines 791-794)."""
     # Non-zero int -> True (PA is active, group key shown)
     assert is_sensor_visible({"getPA2": 1}, "getPV2", "1") is True
     # Zero int -> False
@@ -1005,15 +1005,15 @@ def test_is_true_numeric_value() -> None:
     assert is_sensor_visible({"getPA3": 1.5}, "getPT3", "1") is True
 
 
-def test_is_true_str_numeric_parse() -> None:
-    """is_sensor_visible: _is_true parses numeric strings (lines 801-805)."""
+def test_is_value_true_str_numeric_parse() -> None:
+    """is_sensor_visible: is_value_true parses numeric strings (lines 801-805)."""
     # String "2" parses to non-zero -> True
     assert is_sensor_visible({"getPA1": "2"}, "getPV1", "1") is True
     # String "0.0" parses to zero -> False
     assert is_sensor_visible({"getPA1": "0.0"}, "getPV1", "1") is False
     # String "bad" can't parse -> False (except branch) -> group key hidden
     assert is_sensor_visible({"getPA1": "bad"}, "getPV1", "1") is False
-    # Non-bool/int/float/str type -> _is_true returns False -> key hidden
+    # Non-bool/int/float/str type -> is_value_true returns False -> key hidden
     assert is_sensor_visible({"getPA1": [1, 2]}, "getPV1", "1") is False
 
 
@@ -1082,21 +1082,21 @@ def test_get_sensor_avo_value_fallback_pattern_except() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Lines 793-794 — is_sensor_visible _is_true: int/float except branch
+# Lines 793-794 — is_sensor_visible is_value_true: int/float except branch
 # ---------------------------------------------------------------------------
 
-def test_is_sensor_visible_is_true_int_subclass_float_raises() -> None:
-    """Lines 793-794: _is_true except(ValueError, TypeError) for int|float branch.
+def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
+    """Lines 793-794: is_value_true except(ValueError, TypeError) for int|float branch.
 
     Use an int subclass whose __float__ raises ValueError so the except path
-    fires and _is_true returns False, hiding the getPA group sensor.
+    fires and is_value_true returns False, hiding the getPA group sensor.
     """
     class _BadFloat(int):
         def __float__(self):
             raise ValueError("bad float")
 
     status = {"getPA1": _BadFloat(1), "getPN1": "value"}
-    # getPN1 is a PA-group key controlled by getPA1; _is_true(_BadFloat(1))
+    # getPN1 is a PA-group key controlled by getPA1; is_value_true(_BadFloat(1))
     # hits the except → returns False → getPN1 is hidden
     assert is_sensor_visible(status, "getPN1", "value") is False
 

@@ -33,6 +33,41 @@ from .models import detect_model
 _LOGGER = logging.getLogger(__name__)
 
 
+def is_value_true(val: object) -> bool:
+    """Normalize a heterogeneous API flag value to a Python bool.
+
+    SYR devices report binary activation flags (e.g. ``getPAx``) in varying
+    formats depending on firmware version: native ``bool``, ``int``/``float``,
+    or strings such as ``"1"`` or ``"true"``.  This function provides a single,
+    consistent conversion so callers do not need to handle each format separately.
+
+    Args:
+        val: Raw value received from the device API.
+
+    Returns:
+        ``True`` if *val* represents a truthy/active state, ``False`` otherwise.
+        Unknown or unconvertible values always return ``False``.
+    """
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int | float)):
+        try:
+            return int(float(val)) != 0
+        except (ValueError, TypeError):
+            return False
+    if isinstance(val, str):
+        sval = val.strip().lower()
+        if sval in ("1", "true"):
+            return True
+        if sval in ("0", "false"):
+            return False
+        try:
+            return int(float(sval)) != 0
+        except (ValueError, TypeError):
+            return False
+    return False
+
+
 def get_default_scan_interval_for_entry(entry) -> int:
     """Return the default scan interval for a config entry.
 
@@ -877,32 +912,12 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
             >>> is_sensor_visible({'getSV1': 5}, 'getCS1', '0')
             True
     """
-    def _is_true(val: object) -> bool:
-        if isinstance(val, bool):
-            return val
-        if isinstance(val, (int | float)):
-            try:
-                return int(float(val)) != 0
-            except (ValueError, TypeError):
-                return False
-        if isinstance(val, str):
-            sval = val.strip().lower()
-            if sval in ("1", "true", "on", "yes"):
-                return True
-            if sval in ("0", "false", "off", "no"):
-                return False
-            try:
-                return int(float(sval)) != 0
-            except (ValueError, TypeError):
-                return False
-        return False
-
     # Group keys controlled by getPAx should be hidden when getPAx is false
     m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
     if m:
         idx = m.group(2)
         pa_key = f"getPA{idx}"
-        if not _is_true(status.get(pa_key)):
+        if not is_value_true(status.get(pa_key)):
             return False
 
     # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
