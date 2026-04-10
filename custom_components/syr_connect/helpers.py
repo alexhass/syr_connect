@@ -100,11 +100,10 @@ def build_device_info(
 
             # Get human-friendly model display name and manufacturer
             detected = detect_model(status)
-            if isinstance(detected, dict):
-                display_name = detected.get("display_name")
-                if display_name:
-                    model = str(display_name)
-                manufacturer = detected.get("manufacturer") or None
+            display_name = detected.get("display_name")
+            if display_name:
+                model = str(display_name)
+            manufacturer = detected.get("manufacturer") or None
 
             # Get software version from getVER
             if 'getVER' in status and status['getVER']:

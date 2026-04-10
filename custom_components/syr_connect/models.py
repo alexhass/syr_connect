@@ -7,9 +7,13 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
+
+# Returned by detect_model when no signature matches or input is invalid.
+UNKNOWN_MODEL: dict[str, Any] = {"name": "unknown", "display_name": "Unknown model", "base_path": None, "manufacturer": "Unknown"}
 
 # Simple model signatures derived from fixtures. Each signature may include
 # explicit checks (exact `getCNA` value or version patterns) and a set of
@@ -120,7 +124,7 @@ MODEL_SIGNATURES: Iterable[dict] = [
 ]
 
 
-def detect_model(flat: dict[str, object]) -> dict:
+def detect_model(flat: dict[str, object]) -> dict[str, Any]:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
@@ -144,7 +148,7 @@ def detect_model(flat: dict[str, object]) -> dict:
     If no signature matches, returns the unknown model structure.
     """
     if not isinstance(flat, dict):
-        return None
+        return UNKNOWN_MODEL
 
     # Simple normalizations
     cna = str(flat.get("getCNA") or "")
@@ -244,4 +248,4 @@ def detect_model(flat: dict[str, object]) -> dict:
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
-    return {"name": "unknown", "display_name": "Unknown model", "base_path": None, "manufacturer": "Unknown"}
+    return UNKNOWN_MODEL
