@@ -17,6 +17,7 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
+from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     API_TYPE_JSON,
@@ -44,7 +45,7 @@ _SYR_CONNECT_DELAYED_REFRESH_SECONDS = 60
 class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching SYR Connect data."""
 
-    api: SyrConnectXmlAPI | Any  # SyrConnectJsonAPI is imported conditionally
+    api: SyrConnectXmlAPI | SyrConnectJsonAPI
 
     def __init__(
         self,
@@ -80,8 +81,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         if api_type == API_TYPE_JSON:
             # Local JSON API
-            from .api_json import SyrConnectJsonAPI
-
             host = config_data[CONF_HOST]
             model = config_data[CONF_MODEL]
 
