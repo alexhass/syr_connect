@@ -422,7 +422,7 @@ def get_sensor_lng_value(value: str | int | float) -> str | int | float | None:
     if value.strip() == "":
         return None
 
-    token = value.split()[0]
+    token = value.split(maxsplit=1)[0]
     try:
         int(token)
         return token
