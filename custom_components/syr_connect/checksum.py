@@ -16,7 +16,6 @@ class SyrChecksum:
         """
         self.base_characters = base_characters
         self.key = key
-        self.checksum_value = 0
 
     @staticmethod
     def extract_bits(byte: int, start: int, length: int) -> int:
@@ -118,56 +117,11 @@ class SyrChecksum:
 
         return contribution
 
-    def add_to_checksum(self, input_str: str) -> None:
-        """Add a string's computed value to the checksum total.
-
-        Args:
-            input_str: The input string to process
-        """
-        self.checksum_value += self.compute_checksum_value(input_str)
-
-    def add_xml_to_checksum(self, xml_string: str) -> None:
-        """Parse an XML string, extract all attribute values, and add them to the checksum.
-
-        Args:
-            xml_string: The XML string to process
-        """
-        try:
-            # Parse XML using ElementTree
-            root = etree.fromstring(xml_string)
-            values: list[str] = []
-
-            def extract_values(element: etree.Element) -> None:
-                """Recursively extract all attribute values from XML element.
-
-                Args:
-                    element: The XML element to extract values from
-                """
-                # Extract attribute values (except 'n')
-                for key, value in element.attrib.items():
-                    if key != 'n':
-                        values.append(str(value))
-
-                # Recursively process child elements
-                for child in element:
-                    extract_values(child)
-
-            extract_values(root)
-
-            # Add each extracted value to the checksum calculation
-            for value in values:
-                self.add_to_checksum(value)
-
-        except etree.ParseError:
-            # In case of error, silently continue
-            pass
-
     def compute_xml_checksum(self, xml_string: str) -> str:
-        """Compute the checksum for an XML string without modifying instance state.
+        """Compute the checksum for an XML string.
 
-        This is a pure function equivalent of reset_checksum + add_xml_to_checksum
-        + get_checksum, but uses a local accumulator so it is safe to call
-        concurrently on the same instance.
+        Uses a local accumulator — does not touch any instance state and is
+        safe to call concurrently on the same instance.
 
         Args:
             xml_string: The XML string to process
@@ -193,23 +147,3 @@ class SyrChecksum:
         except etree.ParseError:
             pass
         return format(checksum_value, 'X')
-
-    def reset_checksum(self) -> None:
-        """Reset the checksum to zero."""
-        self.checksum_value = 0
-
-    def get_checksum(self) -> str:
-        """Return the computed checksum as a hexadecimal string.
-
-        Returns:
-            Checksum value in uppercase hexadecimal
-        """
-        return format(self.checksum_value, 'X')
-
-    def set_checksum(self, hex_string: str) -> None:
-        """Manually set the checksum value from a hex string.
-
-        Args:
-            hex_string: Hexadecimal string representation of the checksum
-        """
-        self.checksum_value = int(hex_string, 16)
