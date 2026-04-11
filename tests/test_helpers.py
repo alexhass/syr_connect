@@ -42,7 +42,7 @@ def test_get_default_scan_interval_for_entry_attribute_access_error_fallback():
     class BrokenDict(dict):
         def __getattribute__(self, name):
             if name in ("options", "data"):
-                raise AttributeError("boom")
+                raise TypeError("boom")
             return super().__getattribute__(name)
 
     entry = BrokenDict({
