@@ -12,6 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import (
+    async_migrate_entry,
     async_options_update_listener,
     async_reload_entry,
     async_setup_entry,
@@ -86,9 +87,10 @@ async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssista
     assert call_args[0][3] == 10
 
 
-async def test_async_migrate_legacy_entry_missing_username(hass: HomeAssistant) -> None:
-    """Test migrating a legacy entry returns early when username missing."""
-    # Create a legacy entry without username
+async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> None:
+    """Test v1->v2 migration bumps version even when username is missing."""
+    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
+
     config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
@@ -99,41 +101,43 @@ async def test_async_migrate_legacy_entry_missing_username(hass: HomeAssistant) 
         entry_id="legacy_no_user",
         unique_id="legacy_no_user",
     )
+    config_entry.add_to_hass(hass)
 
-    # Call migration directly and ensure it doesn't raise and doesn't update the entry
-    from custom_components.syr_connect import _async_migrate_legacy_entry
+    with patch.object(hass.config_entries, "async_update_entry") as mock_update:
+        result = await async_migrate_entry(hass, config_entry)
 
-    # Ensure no exception is raised
-    await _async_migrate_legacy_entry(hass, config_entry)
+    assert result is True
+    call_kwargs = mock_update.call_args[1]
+    assert call_kwargs["version"] == 2
+    assert call_kwargs["data"][CONF_API_TYPE] == API_TYPE_XML
+    # unique_id must NOT be updated when username is missing
+    assert "unique_id" not in call_kwargs
 
 
-async def test_async_migrate_legacy_entry_success(hass: HomeAssistant) -> None:
-    """Test migrating a legacy entry updates data and unique_id when username present."""
-    from custom_components.syr_connect import _async_migrate_legacy_entry
+async def test_async_migrate_entry_v1_with_username(hass: HomeAssistant) -> None:
+    """Test v1->v2 migration adds CONF_API_TYPE and updates unique_id."""
     from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
-    # Create a legacy entry with username but without CONF_API_TYPE
     config_entry = MockConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
         title="Legacy With Username",
-        data={
-            CONF_USERNAME: "legacy_user@example.com",
-        },
+        data={CONF_USERNAME: "legacy_user@example.com"},
         source="user",
         entry_id="legacy_with_user",
         unique_id="legacy_with_user",
     )
     config_entry.add_to_hass(hass)
 
-    # Patch hass.config_entries.async_update_entry to observe the call
     with patch.object(hass.config_entries, "async_update_entry") as mock_update:
-        await _async_migrate_legacy_entry(hass, config_entry)
+        result = await async_migrate_entry(hass, config_entry)
 
-    expected_data = {**config_entry.data, CONF_API_TYPE: API_TYPE_XML}
-    expected_unique = f"{API_TYPE_XML}_{config_entry.data[CONF_USERNAME]}"
-    mock_update.assert_called_once_with(config_entry, data=expected_data, unique_id=expected_unique)
+    assert result is True
+    call_kwargs = mock_update.call_args[1]
+    assert call_kwargs["version"] == 2
+    assert call_kwargs["data"][CONF_API_TYPE] == API_TYPE_XML
+    assert call_kwargs["unique_id"] == f"{API_TYPE_XML}_legacy_user@example.com"
 
 
 async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None:
