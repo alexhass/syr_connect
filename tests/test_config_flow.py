@@ -1272,6 +1272,24 @@ async def test_form_api_json_homeassistant_error_unknown(hass: HomeAssistant) ->
     assert result3["errors"] == {"base": "unknown"}
 
 
+async def test_configflow_async_step_api_json_homeassistant_error_direct(hass: HomeAssistant) -> None:
+    """Directly call ConfigFlow.async_step_api_json to hit HomeAssistantError branch."""
+    from homeassistant.exceptions import HomeAssistantError
+    from custom_components.syr_connect.config_flow import ConfigFlow
+
+    flow = ConfigFlow()
+    flow.hass = hass
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("unexpected"),
+    ):
+        result = await flow.async_step_api_json({CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "unknown"}
+
+
 async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
