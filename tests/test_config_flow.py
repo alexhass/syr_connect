@@ -1023,6 +1023,93 @@ async def test_form_api_xml_with_connection_error_exception(hass: HomeAssistant)
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
+async def test_form_api_json_persists_login_required(hass: HomeAssistant) -> None:
+    """Test local/JSON API flow persists `login_required` flag in entry data."""
+    # Start flow and select api_json from menu
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    # Fake API class that reports login_required=True
+    class FakeJsonAPI:
+        def __init__(self, session, host=None, base_path=None):
+            self.login_required = True
+
+        async def login(self):
+            return None
+
+        async def _request_json_data(self, path):
+            return {"getSRN": "12345", "getVER": "test"}
+
+    with (
+        patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI", new=FakeJsonAPI),
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
+            {
+                CONF_HOST: "192.168.1.100",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result3["type"] == FlowResultType.CREATE_ENTRY
+    # The created entry data should include the login_required flag
+    assert result3["data"][CONF_LOGIN_REQUIRED] is True
+
+
+async def test_reconfigure_flow_update_entry_exception(hass: HomeAssistant) -> None:
+    """Test reconfigure flow catches unexpected exceptions during update_entry."""
+    # Create existing XML entry
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    # Make validation succeed but make async_update_entry raise to trigger broad except
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_xml",
+        new_callable=AsyncMock,
+    ) as mock_validate:
+        mock_validate.return_value = {"title": "SYR Connect (test@example.com)"}
+        with patch.object(hass.config_entries, "async_update_entry", side_effect=RuntimeError("boom")):
+            result2 = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_USERNAME: "new_user@example.com",
+                    CONF_PASSWORD: "new_password",
+                },
+            )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
+
+
 async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
