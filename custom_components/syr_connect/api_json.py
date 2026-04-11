@@ -159,6 +159,27 @@ class SyrConnectJsonAPI:
             and datetime.now(UTC) < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
         )
 
+    async def _ensure_session(self) -> None:
+        """Ensure a valid session exists before making an API request.
+
+        Skips login when:
+        - ``_base_url`` is set (direct/local mode — no authentication needed)
+        - The current session is still within its validity window
+        - ``_login_required`` is explicitly ``False`` (ADM login not required)
+
+        Calls ``login()`` when the session is expired or login status is unknown.
+        """
+        if self._base_url or self.is_session_valid():
+            return
+        if self._login_required is False:
+            _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
+        else:
+            _LOGGER.debug(
+                "JSON API: ADM login required or unknown; calling login for %s",
+                self._build_base_url(),
+            )
+            await self.login()
+
     def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
         """Build a URL from path components with optional encoding.
 
@@ -459,20 +480,7 @@ class SyrConnectJsonAPI:
             SyrConnectConnectionError: On connection errors
         """
         # --- Ensure Valid Session ---
-        # Skip login if base_url is set (test mode) or session is still valid
-        if not self._base_url and not self.is_session_valid():
-            # If we've explicitly determined that ADM login is not required,
-            # skip attempting to call `login()` to avoid unnecessary network calls.
-            # Otherwise (login required or unknown), call login() so the client
-            # can establish a valid session before fetching /get/all.
-            if self._login_required is False:
-                _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
-            else:
-                _LOGGER.debug(
-                    "JSON API: ADM login required or unknown; calling login for %s",
-                    self._build_base_url(),
-                )
-                await self.login()
+        await self._ensure_session()
 
         # Fetch device status from /get/all endpoint
         status = await self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
@@ -533,17 +541,7 @@ class SyrConnectJsonAPI:
                 _LOGGER.debug("JSON API: No cached response, fetching /get/all for device_id=%s", device_id)
 
                 # Ensure we have a valid session before fetching
-                if not self._base_url and not self.is_session_valid():
-                    # Respect the cached determination that login is not required
-                    if self._login_required is False:
-                        _LOGGER.debug(
-                            "JSON API: ADM login not required; skipping login for device_id=%s, base=%s",
-                            device_id,
-                            self._build_base_url(),
-                        )
-                    else:
-                        _LOGGER.debug("JSON API: Session invalid, calling login for device_id=%s", device_id)
-                        await self.login()
+                await self._ensure_session()
 
                 # Fetch fresh data
                 status = await self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
@@ -599,12 +597,7 @@ class SyrConnectJsonAPI:
         cmd = "ADM" if str(cmd).upper() == "ADM" else str(cmd).lower()
 
         # --- Ensure Valid Session ---
-        # Skip login if base_url is set (test mode) or session is still valid
-        if not self._base_url and not self.is_session_valid():
-            if self._login_required is False:
-                _LOGGER.debug("JSON API: ADM login not required; skipping login for get_value(%s)", command)
-            else:
-                await self.login()
+        await self._ensure_session()
 
         # --- Build URL and Fetch ---
         # Format: /get/{cmd} (e.g., /get/FLO)
