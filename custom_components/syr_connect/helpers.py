@@ -84,7 +84,7 @@ def get_default_scan_interval_for_entry(entry) -> int:
     try:
         options = getattr(entry, "options", None) or {}
         data = getattr(entry, "data", None) or {}
-    except Exception:
+    except (AttributeError, TypeError):
         # Fallback: treat entry as mapping
         options = entry.get("options", {}) if isinstance(entry, dict) else {}
         data = entry.get("data", {}) if isinstance(entry, dict) else {}
