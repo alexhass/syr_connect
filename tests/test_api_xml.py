@@ -389,3 +389,18 @@ async def test_get_devices_with_device_already_has_id(api_client):
         # Should keep existing id, not overwrite with serial_number
         assert devices[0]['id'] == "EXISTING_ID"
 
+
+async def test_get_statistics_with_expired_session(api_client):
+    """Test get_statistics re-authenticates on expired session."""
+    api_client.session_data = "old_session"
+    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
+
+    with patch.object(api_client, 'login', return_value=True) as mock_login, \
+         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
+         patch.object(api_client.response_parser, 'parse_statistics_response', return_value={}):
+
+        await api_client.get_statistics("device1", "water")
+
+        # Should have called login due to expired session
+        mock_login.assert_called_once()
+
