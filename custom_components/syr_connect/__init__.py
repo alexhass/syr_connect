@@ -130,15 +130,6 @@ async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry)
         _LOGGER.debug("Options updated but scan interval unchanged")
 
 
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload integration when critical settings change (credentials via reauth).
-
-    This is called when the user reconfigures or reauthenticates the integration.
-    """
-    _LOGGER.info("Reloading SYR Connect integration due to configuration change")
-    await hass.config_entries.async_reload(entry.entry_id)
-
-
 async def _async_migrate_legacy_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Migrate a legacy config entry to the new format.
 
