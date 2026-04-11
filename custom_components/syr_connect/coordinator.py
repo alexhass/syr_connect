@@ -11,7 +11,7 @@ from typing import Any
 
 import aiohttp
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -308,13 +308,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             value: The value to set
 
         Raises:
-            ValueError: If coordinator data is not available or device not found
-            HomeAssistantError: If setting the value fails
+            HomeAssistantError: If coordinator data is not available, device not found, or setting the value fails
         """
         _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
 
         if not self.data:
-            raise ValueError("Coordinator data not available")
+            raise HomeAssistantError("Coordinator data not available")
 
         # Find the DCLG for this device_id (which is now SN)
         dclg = None
@@ -324,7 +323,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 break
 
         if not dclg:
-            raise ValueError(f"Device {device_id} not found")
+            raise HomeAssistantError(f"Device {device_id} not found")
 
         # Optimistically update the in-memory coordinator data so entities show
         # the new value immediately, then attempt to set it via the API and

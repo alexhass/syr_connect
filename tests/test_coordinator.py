@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.syr_connect.const import (
@@ -179,7 +179,7 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
 
 
 async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
-    """Test coordinator raises ValueError when device not found."""
+    """Test coordinator raises HomeAssistantError when device not found."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -205,12 +205,12 @@ async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_
         # Try to set value for non-existent device
         with patch.object(coordinator, "async_set_updated_data"):
             with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
-                with pytest.raises(ValueError, match="Device unknown_device not found"):
+                with pytest.raises(HomeAssistantError, match="Device unknown_device not found"):
                     await coordinator.async_set_device_value("unknown_device", "setSIR", 0)
 
 
 async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
-    """Test coordinator raises ValueError when no data available."""
+    """Test coordinator raises HomeAssistantError when no data available."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api_class.return_value = mock_api
@@ -229,7 +229,7 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
         # Try to set value when coordinator has no data
         with patch.object(coordinator, "async_set_updated_data"):
             with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
-                with pytest.raises(ValueError, match="Coordinator data not available"):
+                with pytest.raises(HomeAssistantError, match="Coordinator data not available"):
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
 
 
