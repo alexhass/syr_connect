@@ -4682,7 +4682,7 @@ async def test_async_setup_entry_getpa_group_creation(hass: HomeAssistant) -> No
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getPA1": "on", "getPN1": "Profile X"},
+                "status": {"getPA1": "true", "getPN1": "Profile X"},
             }
         ]
     }

@@ -1075,7 +1075,7 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
 
 async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
     """Test coordinator initialization with JSON API."""
-    with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI") as mock_json_api_class:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
         mock_api = MagicMock()
         mock_json_api_class.return_value = mock_api
 

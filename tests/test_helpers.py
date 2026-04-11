@@ -784,11 +784,11 @@ def test_get_default_scan_interval_entry_getattr_raises() -> None:
     class BadEntry:
         @property
         def options(self):
-            raise RuntimeError("boom")
+            raise AttributeError("no options")
 
         @property
         def data(self):
-            raise RuntimeError("boom")
+            raise AttributeError("no data")
 
     be = BadEntry()
     assert helpers.get_default_scan_interval_for_entry(be) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT

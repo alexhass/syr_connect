@@ -138,7 +138,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     # Validate host is a non-empty string
     if not isinstance(host, str) or not host.strip():
         _LOGGER.error("Host field is empty or not a string. Received: %r", host)
-        raise HomeAssistantError("Host must be a non-empty IP address or hostname.")
+        raise HostInvalidError("Host must be a non-empty IP address or hostname.")
 
     # Validate host does not contain a port
     if ":" in host:
@@ -148,14 +148,14 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     # Validate host does not contain whitespace
     if re.search(r"\s", host):
         _LOGGER.error("Host field contains whitespace. Received: %s", host)
-        raise HomeAssistantError("Host must not contain spaces or tabs.")
+        raise HostInvalidError("Host must not contain spaces or tabs.")
 
     # Validate host matches IP or hostname pattern
     ip_pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
     hostname_pattern = r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"
     if not re.match(ip_pattern, host) and not re.match(hostname_pattern, host):
         _LOGGER.error("Host field is not a valid IP address or hostname. Received: %s", host)
-        raise HomeAssistantError("Host must be a valid IP address or hostname.")
+        raise HostInvalidError("Host must be a valid IP address or hostname.")
 
     model = data[CONF_MODEL]
 
@@ -237,6 +237,10 @@ class CannotConnectError(HomeAssistantError):
 
 class InvalidAuthError(HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+
+class HostInvalidError(HomeAssistantError):
+    """Error to indicate the host field value is invalid."""
 
 
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
@@ -564,11 +568,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except CannotConnectError:
                 errors["base"] = "cannot_connect_local"
+            except HostInvalidError:
+                errors[CONF_HOST] = "host_invalid"
             except HomeAssistantError as err:
                 if "port" in str(err).lower():
                     errors[CONF_HOST] = "host_no_port"
                 else:
-                    errors[CONF_HOST] = "host_invalid"
+                    errors["base"] = "unknown"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
                 errors["base"] = "unknown"
