@@ -1290,6 +1290,29 @@ async def test_configflow_async_step_api_json_homeassistant_error_direct(hass: H
     assert result["errors"] == {"base": "unknown"}
 
 
+async def test_form_api_json_host_invalid_exception_flow(hass: HomeAssistant) -> None:
+    """Test local/JSON API flow sets host_invalid when HostInvalidError is raised."""
+    from custom_components.syr_connect.config_flow import HostInvalidError
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HostInvalidError("invalid host"),
+    ):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"], {CONF_HOST: "bad_host", CONF_MODEL: "neosoft5000"}
+        )
+
+    assert result3["type"] == FlowResultType.FORM
+    assert result3["errors"] == {CONF_HOST: "host_invalid"}
+
+
 async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
