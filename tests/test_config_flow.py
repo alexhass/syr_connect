@@ -1110,6 +1110,67 @@ async def test_reconfigure_flow_update_entry_exception(hass: HomeAssistant) -> N
     assert result2["errors"] == {"base": "unknown"}
 
 
+async def test_form_api_json_host_with_port_flow(hass: HomeAssistant) -> None:
+    """Test local/JSON API flow returns host_no_port when host includes a port."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    # Submit a host that includes a port — validate_input_json should raise
+    result3 = await hass.config_entries.flow.async_configure(
+        result2["flow_id"],
+        {CONF_HOST: "192.168.1.100:8080", CONF_MODEL: "neosoft5000"},
+    )
+
+    assert result3["type"] == FlowResultType.FORM
+    assert result3["errors"] == {CONF_HOST: "host_no_port"}
+
+
+async def test_reconfigure_flow_reload_exception(hass: HomeAssistant) -> None:
+    """Test reconfigure flow catches unexpected exceptions during reload."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_test@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_xml",
+        new_callable=AsyncMock,
+    ) as mock_validate:
+        mock_validate.return_value = {"title": "SYR Connect (test@example.com)"}
+        with patch.object(hass.config_entries, "async_reload", side_effect=RuntimeError("boom")):
+            result2 = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_USERNAME: "new_user@example.com",
+                    CONF_PASSWORD: "new_password",
+                },
+            )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
+
+
 async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
