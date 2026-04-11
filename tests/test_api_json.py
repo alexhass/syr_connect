@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -118,7 +118,7 @@ def test_is_session_valid_expired() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/")
     # Set last login to 31 minutes ago (expired, timeout is 30 min)
-    client._last_login = datetime.now() - timedelta(minutes=31)
+    client._last_login = datetime.now(UTC) - timedelta(minutes=31)
     assert client.is_session_valid() is False
 
 
@@ -127,7 +127,7 @@ def test_is_session_valid_active() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/")
     # Set last login to 10 minutes ago (still valid)
-    client._last_login = datetime.now() - timedelta(minutes=10)
+    client._last_login = datetime.now(UTC) - timedelta(minutes=10)
     assert client.is_session_valid() is True
 
 
@@ -499,7 +499,7 @@ async def test_get_device_status_skips_login_with_base_url() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Mark session as valid to verify login still not called
-    client._last_login = datetime.now()
+    client._last_login = datetime.now(UTC)
     client.login = AsyncMock()
 
     data = {"getAB": "value"}
@@ -1188,7 +1188,7 @@ async def test_get_devices_skips_login_when_session_valid() -> None:
     client = SyrConnectJsonAPI(sess, host="192.168.1.100", base_path="/api/")
 
     # Set valid session
-    client._last_login = datetime.now()
+    client._last_login = datetime.now(UTC)
 
     # Mock _request_json_data
     data = {"getSRN": "12345"}
@@ -1215,7 +1215,7 @@ async def test_get_value_success() -> None:
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-    client._last_login = datetime.now()  # Valid session
+    client._last_login = datetime.now(UTC)  # Valid session
 
     result = await client.get_value("flo")
 
@@ -1239,7 +1239,7 @@ async def test_get_value_strips_get_prefix() -> None:
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-    client._last_login = datetime.now()  # Valid session
+    client._last_login = datetime.now(UTC)  # Valid session
 
     # Pass key with 'get' prefix
     result = await client.get_value("getTMP")
@@ -1285,7 +1285,7 @@ async def test_get_value_missing_key_raises() -> None:
     sess.get = MagicMock(return_value=mock_response)
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
-    client._last_login = datetime.now()  # Valid session
+    client._last_login = datetime.now(UTC)  # Valid session
 
     # Should raise SyrConnectInvalidResponseError
     with pytest.raises(SyrConnectInvalidResponseError) as exc_info:

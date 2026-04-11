@@ -1,5 +1,5 @@
 """Test the SYR Connect API client."""
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import aiohttp
@@ -34,11 +34,11 @@ async def test_session_valid_check(api_client):
     assert not api_client.is_session_valid()
 
     # Has session with future expiry
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
     assert api_client.is_session_valid()
 
     # Has session with past expiry
-    api_client.session_expires_at = datetime.now() - timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=10)
     assert not api_client.is_session_valid()
 
 
@@ -76,7 +76,7 @@ async def test_login_connection_error(api_client):
 async def test_get_devices_with_expired_session(api_client):
     """Test get_devices re-authenticates on expired session."""
     api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now() - timedelta(minutes=1)
+    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
 
     with patch.object(api_client, 'login', return_value=True) as mock_login, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
@@ -91,7 +91,7 @@ async def test_get_devices_with_expired_session(api_client):
 async def test_get_device_status_with_valid_session(api_client):
     """Test get_device_status uses existing valid session."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client, 'login', return_value=True) as mock_login, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
@@ -106,7 +106,7 @@ async def test_get_device_status_with_valid_session(api_client):
 async def test_set_device_status_value_conversion(api_client):
     """Test set_device_status converts boolean to int."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>') as mock_post:
         await api_client.set_device_status("device1", "setSIR", 0)
@@ -133,7 +133,7 @@ async def test_login_generic_exception(api_client):
 async def test_get_devices_exception_handling(api_client):
     """Test get_devices exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("API error")):
         with pytest.raises(RuntimeError, match="API error"):
@@ -143,7 +143,7 @@ async def test_get_devices_exception_handling(api_client):
 async def test_get_devices_id_fallback(api_client):
     """Test get_devices falls back to serial_number for id."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     device_without_id = {
         "name": "Test Device",
@@ -163,7 +163,7 @@ async def test_get_devices_id_fallback(api_client):
 async def test_get_device_status_returns_none(api_client):
     """Test get_device_status returns None when parser returns None."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
          patch.object(api_client.response_parser, 'parse_device_status_response', return_value=None):
@@ -176,7 +176,7 @@ async def test_get_device_status_returns_none(api_client):
 async def test_get_device_status_exception_handling(api_client):
     """Test get_device_status exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Status error")):
         with pytest.raises(RuntimeError, match="Status error"):
@@ -186,7 +186,7 @@ async def test_get_device_status_exception_handling(api_client):
 async def test_set_device_status_with_expired_session(api_client):
     """Test set_device_status re-authenticates on expired session."""
     api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now() - timedelta(minutes=1)
+    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
 
     with patch.object(api_client, 'login', return_value=True) as mock_login, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
@@ -200,7 +200,7 @@ async def test_set_device_status_with_expired_session(api_client):
 async def test_set_device_status_boolean_false(api_client):
     """Test set_device_status converts False to 0."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
@@ -215,7 +215,7 @@ async def test_set_device_status_boolean_false(api_client):
 async def test_set_device_status_boolean_true(api_client):
     """Test set_device_status converts True to 1."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
@@ -230,7 +230,7 @@ async def test_set_device_status_boolean_true(api_client):
 async def test_set_device_status_exception_handling(api_client):
     """Test set_device_status exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Set error")):
         with pytest.raises(RuntimeError, match="Set error"):
@@ -240,7 +240,7 @@ async def test_set_device_status_exception_handling(api_client):
 async def test_get_statistics_water(api_client):
     """Test get_statistics for water statistics."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     mock_stats = {"daily": "100", "weekly": "700", "monthly": "3000"}
 
@@ -255,7 +255,7 @@ async def test_get_statistics_water(api_client):
 async def test_get_statistics_salt(api_client):
     """Test get_statistics for salt statistics."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     mock_stats = {"consumed": "50", "remaining": "150"}
 
@@ -270,7 +270,7 @@ async def test_get_statistics_salt(api_client):
 async def test_get_statistics_exception_handling(api_client):
     """Test get_statistics exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Stats error")):
         with pytest.raises(RuntimeError, match="Stats error"):
@@ -304,7 +304,7 @@ async def test_login_with_decryption_parser_error(api_client):
 async def test_get_devices_adds_project_id(api_client):
     """Test get_devices adds project_id to each device."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     device_data = {
         "id": "device1",
@@ -325,7 +325,7 @@ async def test_get_devices_adds_project_id(api_client):
 async def test_get_device_status_with_expired_session(api_client):
     """Test get_device_status re-authenticates on expired session."""
     api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now() - timedelta(minutes=1)
+    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
 
     with patch.object(api_client, 'login', return_value=True) as mock_login, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
@@ -340,7 +340,7 @@ async def test_get_device_status_with_expired_session(api_client):
 async def test_get_statistics_default_type(api_client):
     """Test get_statistics with default statistic_type parameter."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     mock_stats = {"daily": "100"}
 
@@ -356,7 +356,7 @@ async def test_get_statistics_default_type(api_client):
 async def test_set_device_status_non_boolean_value(api_client):
     """Test set_device_status with non-boolean value (no conversion)."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
@@ -371,7 +371,7 @@ async def test_set_device_status_non_boolean_value(api_client):
 async def test_get_devices_with_device_already_has_id(api_client):
     """Test get_devices when device already has 'id' field."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now() + timedelta(minutes=10)
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     device_with_id = {
         "id": "EXISTING_ID",
