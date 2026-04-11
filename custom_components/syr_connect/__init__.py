@@ -21,7 +21,7 @@ from .helpers import get_default_scan_interval_for_entry
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[str | Platform] = [
+PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.SENSOR,
     Platform.BUTTON,
