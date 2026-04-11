@@ -146,9 +146,6 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         # Enable valve entities by default
         self._attr_entity_registry_enabled_default = True
 
-        # Keep last seen low-level values for change detection/logging
-        self._last_values: dict | None = None
-
         # Cache recent `setAB` requests because devices may take time
         # (approx. 60s) to reflect the change in the `getAB` field.
         # We use this cached value to update the GUI immediately when
