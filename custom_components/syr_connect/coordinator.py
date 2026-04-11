@@ -283,8 +283,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         except Exception as err:
             _LOGGER.warning("Failed to get status for device %s: %s", device["id"], err)
-            # Add project_id even on error
-            device["project_id"] = project_id
             # Mark device as unavailable but still add it
             device["status"] = {}
             device["available"] = False
