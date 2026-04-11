@@ -10,6 +10,8 @@
     "error": {
       "cannot_connect": "No se puede conectar a SYR Connect. Verifique su conexión a Internet e inténtelo de nuevo.",
       "cannot_connect_local": "No se puede conectar al dispositivo local. Verifique que la dirección IP sea correcta y que el dispositivo esté encendido y conectado a su red local.",
+      "host_invalid": "Host no válido. Introduzca una dirección IP o nombre de host válido (sin espacios ni número de puerto).",
+      "host_no_port": "El host no debe incluir un número de puerto. Introduzca solo la dirección IP o el nombre de host.",
       "invalid_auth": "Nombre de usuario o contraseña inválidos. Verifique sus credenciales.",
       "unknown": "Se ha producido un error inesperado. Inténtelo de nuevo más tarde."
     },

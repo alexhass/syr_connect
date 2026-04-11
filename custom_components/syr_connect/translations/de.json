@@ -10,6 +10,8 @@
     "error": {
       "cannot_connect": "Verbindung zu SYR Connect nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
       "cannot_connect_local": "Verbindung zum lokalen Gerät nicht möglich. Bitte überprüfen Sie, ob die IP-Adresse korrekt ist und das Gerät eingeschaltet und mit Ihrem lokalen Netzwerk verbunden ist.",
+      "host_invalid": "Ungültiger Host. Geben Sie eine gültige IP-Adresse oder einen Hostnamen ein (keine Leerzeichen, keine Portnummer).",
+      "host_no_port": "Der Host darf keine Portnummer enthalten. Geben Sie nur die IP-Adresse oder den Hostnamen ein.",
       "invalid_auth": "Ungültiger Benutzername oder Passwort. Bitte überprüfen Sie Ihre Anmeldedaten.",
       "unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
     },

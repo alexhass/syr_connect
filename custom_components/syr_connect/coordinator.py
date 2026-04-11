@@ -214,8 +214,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # DCLG remains the device identifier for XML API calls
             dclg = device.get("dclg", device["id"])
 
-            # Always use XML API
-            _LOGGER.debug("Device %s: Using XML API", device.get("id"))
+            _LOGGER.debug("Device %s: Fetching status via %s API", device.get("id"), self._api_type.upper())
             status = await self.api.get_device_status(dclg)
 
             # If parser signalled that the response did not contain the

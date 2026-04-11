@@ -427,6 +427,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
+            except HomeAssistantError as err:
+                if "port" in str(err).lower():
+                    errors[CONF_HOST] = "host_no_port"
+                else:
+                    errors[CONF_HOST] = "host_invalid"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
                 errors["base"] = "unknown"
@@ -563,7 +568,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if "port" in str(err).lower():
                     errors[CONF_HOST] = "host_no_port"
                 else:
-                    errors["base"] = "unknown"
+                    errors[CONF_HOST] = "host_invalid"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
                 errors["base"] = "unknown"
