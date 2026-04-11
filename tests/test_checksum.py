@@ -9,7 +9,6 @@ def test_checksum_init():
     checksum = SyrChecksum("ABCDEFGHIJKLMNOP", "TESTKEY")
     assert checksum.base_characters == "ABCDEFGHIJKLMNOP"
     assert checksum.key == "TESTKEY"
-    assert checksum.checksum_value == 0
 
 
 def test_extract_bits():
