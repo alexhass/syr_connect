@@ -143,6 +143,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         device_name: str,
         project_id: str,
         command: str,
+        button_name: str,
     ) -> None:
         """Initialize the button.
 
@@ -152,6 +153,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
             device_name: Device display name
             project_id: Project ID
             command: Command to execute (e.g., 'setSIR')
+            button_name: Display name for the button
         """
         super().__init__(coordinator)
 
