@@ -1171,6 +1171,84 @@ async def test_reconfigure_flow_reload_exception(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "unknown"}
 
 
+async def test_reconfigure_flow_homeassistant_error_port_json(hass: HomeAssistant) -> None:
+    """Test reconfigure flow sets host_no_port when HomeAssistantError mentions port."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_test@example.com",
+        data={
+            CONF_HOST: "192.168.1.100",
+            CONF_MODEL: "neosoft5000",
+            CONF_API_TYPE: API_TYPE_JSON,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("Host must not include a port"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "192.168.1.100:8080", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {CONF_HOST: "host_no_port"}
+
+
+async def test_reconfigure_flow_homeassistant_error_host_invalid_json(hass: HomeAssistant) -> None:
+    """Test reconfigure flow sets host_invalid when HomeAssistantError doesn't mention port."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_test2@example.com",
+        data={
+            CONF_HOST: "192.168.1.101",
+            CONF_MODEL: "neosoft5000",
+            CONF_API_TYPE: API_TYPE_JSON,
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("Some other host error"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "192.168.1.101", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {CONF_HOST: "host_invalid"}
+
+
 async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(
