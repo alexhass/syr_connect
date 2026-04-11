@@ -6,7 +6,6 @@ the flattened attribute dictionary produced by `ResponseParser._flatten_attribut
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
 from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ UNKNOWN_MODEL: dict[str, Any] = {"name": "unknown", "display_name": "Unknown mod
 #   `v_keys` are defined, the code also enforces any `ver_*` or
 #   `attrs_equals` constraints before returning a match.
 #
-MODEL_SIGNATURES: Iterable[dict] = [
+MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": "/pontos-base",
         "display_name": "Pontos Base",
