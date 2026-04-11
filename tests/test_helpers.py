@@ -37,6 +37,21 @@ def test_get_default_scan_interval_for_entry_options_and_data():
     assert helpers.get_default_scan_interval_for_entry(entry) == helpers._SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
 
 
+def test_get_default_scan_interval_for_entry_attribute_access_error_fallback():
+    """When attribute access raises, fallback to mapping access must be used."""
+    class BrokenDict(dict):
+        def __getattribute__(self, name):
+            if name in ("options", "data"):
+                raise AttributeError("boom")
+            return super().__getattribute__(name)
+
+    entry = BrokenDict({
+        "options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "45"},
+        "data": {helpers.CONF_API_TYPE: API_TYPE_JSON},
+    })
+
+    assert helpers.get_default_scan_interval_for_entry(entry) == 45
+
 def test_build_device_info_fallback_and_entity_id_additional():
     # No device info in coordinator -> fallback model
     coord = {"devices": []}
