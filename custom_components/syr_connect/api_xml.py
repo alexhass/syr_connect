@@ -273,6 +273,10 @@ class SyrConnectXmlAPI:
                 # Ensure 'id' field exists (parser may use 'serial_number')
                 # This normalizes the interface for the coordinator
                 if 'id' not in device and 'serial_number' in device:
+                    _LOGGER.debug(
+                        "Device missing 'id' field; falling back to 'serial_number' for id: %s",
+                        device['serial_number'],
+                    )
                     device['id'] = device['serial_number']
 
                 _LOGGER.debug(
