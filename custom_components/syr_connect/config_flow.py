@@ -175,15 +175,30 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     session = async_get_clientsession(hass)
     api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
 
-    # Test connection by attempting login and fetching device data
+    # Test connection by attempting login and fetching device data via public API
     _LOGGER.debug("Testing JSON API connection...")
     try:
         await api.login()
 
-        # Fetch device data directly to validate connection and check for SYR device
-        data_result = await api._request_json_data("get/all")
+        # Use the public API methods to retrieve devices and status. This
+        # avoids calling private methods and keeps encapsulation intact.
+        devices = await api.get_devices("local")
+        if not devices:
+            _LOGGER.error("JSON API: no devices returned from get_devices()")
+            raise CannotConnectError
+
+        # get_devices() returns a list of device dicts; take the first device
+        device = devices[0]
+        device_id = device.get("id")
+        if not device_id:
+            _LOGGER.error("JSON API: device entry missing id")
+            raise CannotConnectError
+
+        # Fetch full status for the device. get_device_status() will reuse the
+        # cached /get/all response set by get_devices(), avoiding an extra API call.
+        data_result = await api.get_device_status(device_id)
         if not data_result:
-            _LOGGER.error("JSON API: returned empty result")
+            _LOGGER.error("JSON API: returned empty status from get_device_status()")
             raise CannotConnectError
 
         # Verify this is a SYR device by checking for serial number fields and extract serial

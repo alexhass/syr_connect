@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .api_json import _SYR_CONNECT_DEFAULT_API_TIMEOUT, SyrConnectJsonAPI
+from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
@@ -358,7 +358,13 @@ async def async_get_config_entry_diagnostics(
                     pass
 
                 try:
-                    data = await api._request_json_data("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
+                    # Use public API methods to fetch device data so we don't
+                    # depend on a private implementation that may change.
+                    devices = await api.get_devices("local")
+                    if not devices:
+                        raise Exception("no devices returned")
+                    did = devices[0].get("id")
+                    data = await api.get_device_status(did)
                     # Redact sensitive keys from the parsed JSON payload
                     redacted = async_redact_data(data, _TO_REDACT)
                     # Ensure SRN is fully redacted for raw_json payloads
@@ -425,7 +431,10 @@ async def async_get_config_entry_diagnostics(
                             return dev_id, None
 
                         try:
-                            data = await json_api._request_json_data("get/all", timeout=_SYR_CONNECT_DEFAULT_API_TIMEOUT)
+                            # Prefer public API to fetch device data for the same
+                            # reasons as above. get_device_status() will fetch
+                            # /get/all internally and return the parsed dict.
+                            data = await json_api.get_device_status(dev_id)
                         except Exception:  # pragma: no cover - diagnostics should never fail
                             return dev_id, None
 

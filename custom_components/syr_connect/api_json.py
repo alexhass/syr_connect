@@ -428,24 +428,11 @@ class SyrConnectJsonAPI:
         _LOGGER.info("JSON API: Logged in at %s", self._build_base_url())
         return True
 
-    async def _request_json_data(self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT) -> dict[str, Any]:
+    async def request_json_data(self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT) -> dict[str, Any]:
         """Fetch JSON data from a relative path.
 
-        This is a convenience wrapper around _execute_http_get() for GET requests
-        that return JSON data. Used primarily for the /get/all endpoint.
-
-        Args:
-            path: Relative path (e.g., "/get/all" or "get/all")
-                 Leading slash is optional and will be stripped
-            timeout: Request timeout in seconds (default: 10)
-
-        Returns:
-            Parsed JSON response as dictionary
-
-        Raises:
-            SyrConnectAuthError: On authentication errors (401/403)
-            SyrConnectConnectionError: On connection/HTTP errors
-            SyrConnectInvalidResponseError: If response is not valid JSON dict
+        Convenience wrapper around _execute_http_get() for GET requests that
+        return JSON data. Leading slash in `path` is optional and will be stripped.
         """
         # Build URL without encoding (paths like "get/all" are already clean)
         url = self._construct_encoded_url(path.lstrip("/"), encode=False)
@@ -483,7 +470,7 @@ class SyrConnectJsonAPI:
         await self._ensure_session()
 
         # Fetch device status from /get/all endpoint
-        status = await self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
+        status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
 
         # Cache the response so get_device_status() can reuse it without another API call
         # This is an optimization: coordinator calls get_devices() then get_device_status()
@@ -544,7 +531,7 @@ class SyrConnectJsonAPI:
                 await self._ensure_session()
 
                 # Fetch fresh data
-                status = await self._request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
+                status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
 
             # --- Return Status Dictionary ---
             # The JSON API returns a flat dict with getXXX keys (getSRN, getAB, etc.)
@@ -605,7 +592,7 @@ class SyrConnectJsonAPI:
         _LOGGER.debug("JSON API: Fetching single value for cmd=%s (path=%s)", command, path)
 
         # Fetch data using existing request infrastructure
-        data = await self._request_json_data(path)
+        data = await self.request_json_data(path)
 
         # --- Validate Response ---
         # Expected format: {"get{cmd}": value}

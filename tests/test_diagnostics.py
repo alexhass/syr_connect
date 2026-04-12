@@ -395,7 +395,7 @@ async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
         def is_session_valid(self):
             return True
 
-        async def _request_json_data(self, *args, **kwargs):
+        async def request_json_data(self, *args, **kwargs):
             return {"getSRN": "206AAA67890", "value": 1}
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -1845,7 +1845,7 @@ async def test_json_redact_assignment_exception(monkeypatch, hass: HomeAssistant
     async def fake_request(*args, **kwargs):
         return {"getSRN": "206AAA67890"}
 
-    mock_json_api._request_json_data = AsyncMock(side_effect=fake_request)
+    mock_json_api.request_json_data = AsyncMock(side_effect=fake_request)
 
     # Make async_redact_data return our BadDict so assignment to getSRN raises
     monkeypatch.setattr(diag, "async_redact_data", lambda data, keys: BadDict(data))
@@ -1951,7 +1951,7 @@ async def test_diagnostics_raw_json_with_base_path(hass: HomeAssistant) -> None:
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._request_json_data = AsyncMock(return_value={"status": "ok", "data": {"test": "value"}})
+        mock_json_api.request_json_data = AsyncMock(return_value={"status": "ok", "data": {"test": "value"}})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2052,7 +2052,7 @@ async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
         mock_json_api.is_session_valid = MagicMock(return_value=False)
         mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
+        mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2103,7 +2103,7 @@ async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
+        mock_json_api.request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2248,7 +2248,7 @@ async def test_diagnostics_raw_json_device_ip_from_status(hass: HomeAssistant) -
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._request_json_data = AsyncMock(return_value={"status": "ok"})
+        mock_json_api.request_json_data = AsyncMock(return_value={"status": "ok"})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2407,7 +2407,7 @@ async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> Non
         mock_json_api = MagicMock()
         mock_json_api.is_session_valid = MagicMock(return_value=True)
         mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
+        mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
         mock_json_api_class.return_value = mock_json_api
 
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -2458,7 +2458,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
     # Mock the JSON API
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._request_json_data = AsyncMock(return_value={"getSRN": "12345", "getFLO": "10"})
+    mock_json_api.request_json_data = AsyncMock(return_value={"getSRN": "12345", "getFLO": "10"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
     # Ensure diagnostics module recognizes our MagicMock as the JSON API class
@@ -2513,7 +2513,7 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=False)
     mock_json_api.login = AsyncMock()
-    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
+    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
     # Make diagnostics.isinstance check succeed for our mock
@@ -2563,7 +2563,7 @@ async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=False)
     mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
-    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
+    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2607,7 +2607,7 @@ async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
     # Mock JSON API where fetch fails with proper spec
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
+    mock_json_api.request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
     # Make diagnostics recognize our mock as the JSON API class
@@ -2701,7 +2701,7 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
     # Mock JSON API with proper spec
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
+    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
     # Patch diagnostics module to accept our MagicMock class for isinstance checks
@@ -2837,7 +2837,7 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
 
     mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
     mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api._request_json_data = AsyncMock(return_value={"data": "value"})
+    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
     mock_coordinator.api = mock_json_api
     mock_coordinator._session = MagicMock()
 
@@ -2989,7 +2989,7 @@ async def test_diagnostics_json_redacts_data(hass) -> None:
         async def login(self):
             return None
 
-        async def _request_json_data(self, path, timeout=None):
+        async def request_json_data(self, path, timeout=None):
             return {"getMAC": "AA:BB:CC:DD:EE:FF", "session_data": "secret", "user": "bob"}
 
     # Monkeypatch the SyrConnectJsonAPI type used in diagnostics
@@ -3378,7 +3378,7 @@ async def test_json_api_getsrn_except_block(monkeypatch, hass: HomeAssistant) ->
         def is_session_valid(self):
             return True
 
-        async def _request_json_data(self, *a, **kw):
+        async def request_json_data(self, *a, **kw):
             return {"getSRN": "206AAA67890", "getFLO": "10"}
 
     monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
@@ -3446,7 +3446,7 @@ async def test_xml_device_json_getsrn_except_block(monkeypatch, hass: HomeAssist
         def _build_base_url(self):
             return "http://192.168.1.1"
 
-        async def _request_json_data(self, *a, **kw):
+        async def request_json_data(self, *a, **kw):
             return {"getSRN": "206AAA67890", "getFLO": "5"}
 
     monkeypatch.setattr(diag, "SyrConnectJsonAPI", lambda *a, **kw: FakeJsonApi())
@@ -3500,7 +3500,7 @@ async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -
         def is_session_valid(self):
             return True
 
-        async def _request_json_data(self, *a, **kw):
+        async def request_json_data(self, *a, **kw):
             # Return a dict with getMAC2 so _mask_sensitive hits that branch
             return {"getMAC2": "AA:BB:CC:DD:EE:FF", "getFLO": "8"}
 
