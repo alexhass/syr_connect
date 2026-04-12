@@ -91,6 +91,31 @@ def test_build_statistics_payload_salt_and_water_use_checksum_and_lang(caplog) -
     assert 'rg="IT"' in water_payload
 
 
+def test_compute_local_tzo_normal_format() -> None:
+    """_compute_local_tzo returns a string in ±HH:MM:SS format."""
+    tzo = PayloadBuilder._compute_local_tzo()
+    # Basic sanity: should be 9 chars like '+01:00:00' or '-05:30:00'
+    assert isinstance(tzo, str)
+    assert len(tzo) == 9
+    assert (tzo[0] == '+' or tzo[0] == '-')
+    assert tzo[3] == ':' and tzo[6] == ':'
+
+
+def test_compute_locale_lang_reg_dash_and_single() -> None:
+    """Locale parsing handles dash-separated and single-part locales."""
+    # dash-separated
+    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=("en-US", None)):
+        lang, reg = PayloadBuilder._compute_locale_lang_reg()
+    assert lang == "en"
+    assert reg == "US"
+
+    # single-part (no region) should default to US
+    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=("es", None)):
+        lang2, reg2 = PayloadBuilder._compute_locale_lang_reg()
+    assert lang2 == "es"
+    assert reg2 == "US"
+
+
 @pytest.fixture
 def payload_builder():
     """Create a payload builder instance."""
