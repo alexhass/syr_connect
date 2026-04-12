@@ -249,6 +249,9 @@
       "getcyt": {
         "name": "Regenerationszyklen Zeit"
       },
+      "getdbd": {
+        "name": "Druckabfall beim Lecktest"
+      },
       "getden": {
         "name": "Gerät aktiviert"
       },

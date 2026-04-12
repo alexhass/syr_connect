@@ -604,6 +604,23 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     parsed = get_sensor_bat_value(value)
                     return parsed
 
+                # Special handling for microleakage pressure drop (getDBD)
+                # API reports this as tenths of a bar (e.g. "10" -> 1.0 bar)
+                if self._sensor_key == 'getDBD':
+                    if value is None or value == "":
+                        return None
+                    try:
+                        # Accept numeric or string values
+                        match = re.search(r"-?\d+", str(value))
+                        if not match:
+                            return None
+                        raw_tenths = float(match.group())
+                        pressure_bar = raw_tenths / 10.0
+                        precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 1)
+                        return round(pressure_bar, precision)
+                    except (ValueError, TypeError):
+                        return None
+
                 # Special handling for incoming water hardness (getIWH):
                 # Prefer explicit getIWH when present, otherwise derive from getCND.
                 if self._sensor_key == 'getIWH':

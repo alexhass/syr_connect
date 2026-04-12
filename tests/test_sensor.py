@@ -73,6 +73,7 @@ async def test_sensor_setup(hass: HomeAssistant) -> None:
     ("sensor_key", "raw_value", "expected_value", "description"),
     [
         ("getPRS", "50", 5.0, "Pressure is divided by 10"),
+        ("getDBD", "10", 1.0, "DBD is divided by 10"),
         ("getCEL", "220", 22.0, "Temperature is divided by 10"),
         ("getFLO", "100", 100, "Flow rate is not divided"),
     ],

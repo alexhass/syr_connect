@@ -249,6 +249,9 @@
       "getcyt": {
         "name": "Duração do ciclo de regeneração"
       },
+      "getdbd": {
+        "name": "Queda de pressão no teste de fuga"
+      },
       "getden": {
         "name": "Dispositivo ativado"
       },

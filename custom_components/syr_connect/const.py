@@ -225,6 +225,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getSLT",   # Elapsed time in self-learning phase (s)
     "getSLV",   # Volume accumulated in self-learning phase (l)
     # --- Microleakage Test (Trio DFR/LS) ---
+    "getDBD",   # Microleakage test pressure drop
     "getDRP",   # Microleakage test interval (daily / weekly / monthly)
     "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
     "getDTT",   # Microleakage test duration / time
@@ -437,6 +438,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # Sensors exits in devices:
     # - SafeTech+
     # - Sanibel Leak Protection Module A25
+    "getDBD",   # Microleakage test pressure drop (tenths of bar)
     "getSRO",   # Display rotation (in degrees, e.g 270=270°) - only relevant for devices with display
 }
 
@@ -594,6 +596,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # Safe-T+ specific
     "getBAR": "mdi:gauge",
     "getBAT": "mdi:battery",
+    "getDBD": "mdi:gauge",
     "getNET": "mdi:sine-wave",              # Mains voltage
     "getVLV": "mdi:valve",
 
@@ -1006,6 +1009,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
 
     "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
+    "getDBD": UnitOfPressure.BAR,                       # Leak test pressure drop
     "getNET": UnitOfElectricPotential.VOLT,             # Mains voltage
     "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
     "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
@@ -1044,6 +1048,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
 _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getAVO": 1,    # Current flow: show with 2 decimal places
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
+    "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default

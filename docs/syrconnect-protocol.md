@@ -492,7 +492,7 @@ These properties are only available on devices that contain leakage protection, 
 | getDMA          | "1"          |        | *unknown*
 | getAVO          | "0mL"        | mL     | Current water flow in "mL". Syr Apps shows value in "L"
 | getBSA          | "0"          |        | *unknown*
-| getDBD          | "10"         |        | *unknown*
+| getDBD          | "10"         | 1/10 bar | Pressure drop leak test in dbar
 | getDBT          | "15"         |        | *unknown*
 | getDST          | "180"        |        | *unknown*
 | getDCM          | "3"          |        | *unknown*

@@ -249,6 +249,9 @@
       "getcyt": {
         "name": "Regeneration cycle time"
       },
+      "getdbd": {
+        "name": "Leak test pressure drop"
+      },
       "getden": {
         "name": "Device enabled"
       },

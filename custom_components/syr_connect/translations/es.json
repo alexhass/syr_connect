@@ -249,6 +249,9 @@
       "getcyt": {
         "name": "Tiempo de ciclo"
       },
+      "getdbd": {
+        "name": "Caída de presión en prueba de fugas"
+      },
       "getden": {
         "name": "Dispositivo activado"
       },

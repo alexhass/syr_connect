@@ -249,6 +249,9 @@
       "getcyt": {
         "name": "Durata ciclo di rigenerazione"
       },
+      "getdbd": {
+        "name": "Caduta di pressione durante il test di perdita"
+      },
       "getden": {
         "name": "Dispositivo abilitato"
       },

@@ -249,6 +249,9 @@
       "getcyt": {
         "name": "Durée du cycle"
       },
+      "getdbd": {
+        "name": "Baisse de pression lors du test d'étanchéité"
+      },
       "getden": {
         "name": "Appareil activé"
       },
