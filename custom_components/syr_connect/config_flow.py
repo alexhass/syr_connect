@@ -15,6 +15,9 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
+    _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
+    _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
+    _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -28,12 +31,6 @@ from .helpers import get_default_scan_interval_for_entry
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
-
-# Minimum allowed scan interval for config flow (seconds)
-_SYR_CONNECT_MIN_SCAN_INTERVAL_SECONDS = 60
-
-# Maximum allowed scan interval for config flow (seconds)
-_SYR_CONNECT_MAX_SCAN_INTERVAL_SECONDS = 600
 
 # Schema for Cloud/XML API configuration (username + password)
 STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
@@ -298,8 +295,12 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     # Minimum depends on API type: JSON devices can poll faster
-                    min=(10 if (self._config_entry and self._config_entry.data.get(CONF_API_TYPE) == API_TYPE_JSON) else _SYR_CONNECT_MIN_SCAN_INTERVAL_SECONDS),
-                    max=_SYR_CONNECT_MAX_SCAN_INTERVAL_SECONDS,
+                    min=(
+                        _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM
+                        if (self._config_entry and self._config_entry.data.get(CONF_API_TYPE) == API_TYPE_JSON)
+                        else _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM
+                    ),
+                    max=_SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
                     unit_of_measurement=UnitOfTime.SECONDS,
                     mode=selector.NumberSelectorMode.BOX,
                 ),

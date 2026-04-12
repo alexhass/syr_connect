@@ -24,7 +24,7 @@ The water softening unit is querying two webservices via the request method 'POS
 
 The water softening unit is asking the server in an interval of ~10s for new commands which are actually remote procedure calls from the server to the unit. The response to these commands is then sent from the unit to the server in the next request. The commands are either getter or setters for certain properties of the water softening unit.
 
-Note about optimistic updates: when the cloud issues a setter command the device may not immediately report the updated state back in the next request. The server and device use an asynchronous acknowledgement pattern, so clients should not assume the device state is instantly changed. The integration's current optimistic-update suppression behavior matches this protocol behavior and is intentional; suppressing optimistic updates globally may hide valid state changes and is therefore incorrect.
+Note about optimistic updates: when the cloud issues a setter command the device may not immediately report the updated state back in the next request. The server and device use an asynchronous acknowledgement pattern, so clients should not assume the device state is instantly changed. The integration's current optimistic-update suppression behavior matches this protocol behavior and is intentional; suppressing optimistic updates globally may hide valid state changes and is therefore incorrect. Example is Valve shut-off (getAB).
 
 The following shows a sample conversation between unit and server (confidential values like SRN and MAC have been replaced by dummy values):
 
