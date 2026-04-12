@@ -430,29 +430,29 @@ async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
     mock_update.assert_not_called()
 
 
-    async def test_async_options_update_listener_logs_unchanged(hass: HomeAssistant, caplog) -> None:
-        """Ensure options update listener logs when scan interval is unchanged."""
-        config_entry = MockConfigEntry(
-            version=1,
-            minor_version=0,
-            domain=DOMAIN,
-            title="Test",
-            data={"username": "test@example.com", "password": "password"},
-            source="user",
-            entry_id="test_entry_id",
-            unique_id="test_unique_id",
-            options={"scan_interval": 60},  # Same as current
-        )
+async def test_async_options_update_listener_logs_unchanged(hass: HomeAssistant, caplog) -> None:
+    """Ensure options update listener logs when scan interval is unchanged."""
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={"username": "test@example.com", "password": "password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        options={"scan_interval": 60},  # Same as current
+    )
 
-        mock_coordinator = MagicMock()
-        mock_coordinator.update_interval = timedelta(seconds=60)  # Same interval
-        mock_coordinator.async_request_refresh = AsyncMock()
-        config_entry.runtime_data = mock_coordinator
+    mock_coordinator = MagicMock()
+    mock_coordinator.update_interval = timedelta(seconds=60)  # Same interval
+    mock_coordinator.async_request_refresh = AsyncMock()
+    config_entry.runtime_data = mock_coordinator
 
-        caplog.set_level(logging.DEBUG)
-        await async_options_update_listener(hass, config_entry)
+    caplog.set_level(logging.DEBUG)
+    await async_options_update_listener(hass, config_entry)
 
-        assert "Options updated but scan interval unchanged" in caplog.text
+    assert "Options updated but scan interval unchanged" in caplog.text
 
 
 async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:

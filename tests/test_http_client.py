@@ -1,4 +1,4 @@
-"""Tests for HTTP client."""
+"""Tests for the HTTP client helper."""
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -7,6 +7,44 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.http_client import HTTPClient
+
+
+def test_get_headers_locale_failure(caplog) -> None:
+    """If locale determination fails, Accept-Language falls back to en-US."""
+    # Force locale.getlocale to raise
+    with patch("custom_components.syr_connect.http_client.locale.getlocale", side_effect=ValueError("boom")):
+        client = HTTPClient(session=MagicMock(), user_agent="test-agent")
+        caplog.set_level("ERROR")
+        headers = client._get_headers()
+
+    assert headers["Accept-Language"] == "en-US,en;q=0.9"
+    # Should have logged the exception
+    assert "Failed to determine system locale for Accept-Language header" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_post_raises_on_auth_error_immediately() -> None:
+    """If response raises ClientResponseError 401/403, it should not retry and re-raise immediately."""
+    # Create a ClientResponseError to be raised from the context manager
+    exc = aiohttp.ClientResponseError(request_info=MagicMock(), history=(), status=401, message="Unauthorized")
+
+    # Create a fake session whose post returns an async context manager that raises on __aenter__
+    fake_cm = AsyncMock()
+    async def enter():
+        raise exc
+    fake_cm.__aenter__.side_effect = enter
+    fake_cm.__aexit__.return_value = AsyncMock()
+
+    fake_session = MagicMock()
+    fake_session.post.return_value = fake_cm
+
+    client = HTTPClient(session=fake_session, user_agent="test-agent", max_retries=3, timeout=1)
+
+    with pytest.raises(aiohttp.ClientResponseError):
+        await client.post("http://example", data={})
+
+    # Ensure we only attempted once (no retries)
+    assert fake_session.post.call_count == 1
 
 
 async def test_http_client_initialization() -> None:
