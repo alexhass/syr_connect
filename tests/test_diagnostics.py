@@ -3570,3 +3570,43 @@ async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -
         mac2 = raw_json["dev1"].get("getMAC2")
         assert mac2 is not None
         assert "XX" in mac2
+
+
+# ---------------------------------------------------------------------------
+# Integrated from tests/test_diagnostics_helpers.py
+# ---------------------------------------------------------------------------
+
+
+def test_mask_srn_handles_re_error(monkeypatch):
+    """If re.match raises re.error, mask_srn_value should return original value."""
+    def _raise(*args, **kwargs):
+        raise diag.re.error("forced")
+
+    monkeypatch.setattr(diag.re, "match", _raise)
+
+    val = "206AAA67890"
+    assert diag.mask_srn_value(val) == val
+
+
+def test_mask_mac_non_string_and_bad_format():
+    """mask_mac_value should return non-strings unchanged and handle bad formats."""
+    assert diag.mask_mac_value(None) is None
+    assert diag.mask_mac_value(123) == 123
+
+    # Invalid hex pairs -> returns original string
+    bad = "ZZ:ZZ:ZZ:ZZ:ZZ:ZZ"
+    assert diag.mask_mac_value(bad) == bad
+
+
+def test_mask_mac_last_char_replace_re_error(monkeypatch):
+    """If re.sub raises during final-char replace, function still returns masked value."""
+    mac = "AA:BB:CC:DD:EE:FF"
+
+    def fake_sub(*args, **kwargs):
+        raise diag.re.error("boom")
+
+    monkeypatch.setattr(diag.re, "sub", fake_sub)
+
+    res = diag.mask_mac_value(mac, last_char_replace="Y")
+    assert isinstance(res, str)
+    assert "XX" in res
