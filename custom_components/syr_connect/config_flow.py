@@ -355,26 +355,40 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         errors: dict[str, str] = {}
 
+        # Get the existing config entry for API type determination
+        entry = self.hass.config_entries.async_get_entry(self.context.get("entry_id"))
+        if entry is None and user_input is not None:
+            return self.async_abort(reason="reauth_failed")
+
+        # Determine API type for this entry (default to XML for backward compatibility)
+        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
+
         if user_input is not None:
-            # Get the existing config entry
-            entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
-
-            if entry is None:
-                return self.async_abort(reason="reauth_failed")
-
             try:
-                # Validate new credentials
-                await validate_input(self.hass, user_input)
+                # Validate and update based on API type
+                if api_type == API_TYPE_JSON:
+                    await validate_input_json(self.hass, user_input)
 
-                # Update the config entry with new credentials
-                self.hass.config_entries.async_update_entry(
-                    entry,
-                    data={
+                    # Build new data preserving API type and login_required if present
+                    new_data = {
                         **entry.data,
+                        CONF_API_TYPE: API_TYPE_JSON,
+                        CONF_HOST: user_input[CONF_HOST],
+                        CONF_MODEL: user_input[CONF_MODEL],
+                    }
+                    # Update entry
+                    self.hass.config_entries.async_update_entry(entry, data=new_data)
+
+                else:
+                    # Default/XML flow
+                    await validate_input_xml(self.hass, user_input)
+                    new_data = {
+                        **entry.data,
+                        CONF_API_TYPE: API_TYPE_XML,
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
-                    },
-                )
+                    }
+                    self.hass.config_entries.async_update_entry(entry, data=new_data)
 
                 # Reload the config entry
                 await self.hass.config_entries.async_reload(entry.entry_id)
@@ -382,12 +396,30 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason="reauth_successful")
 
             except CannotConnectError:
-                errors["base"] = "cannot_connect"
+                errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
+            except HomeAssistantError as err:
+                # Host validation errors for JSON
+                if api_type == API_TYPE_JSON:
+                    if "port" in str(err).lower():
+                        errors[CONF_HOST] = "host_no_port"
+                    else:
+                        errors[CONF_HOST] = "host_invalid"
+                else:
+                    errors["base"] = "unknown"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reauth: %s", err)
                 errors["base"] = "unknown"
+
+        # Show appropriate form based on API type
+        if api_type == API_TYPE_JSON:
+            return self.async_show_form(
+                step_id="reauth_confirm",
+                data_schema=STEP_LOCAL_JSON_DATA_SCHEMA,
+                errors=errors,
+                description_placeholders={"host": str(entry.data.get(CONF_HOST, "")) if entry else ""},
+            )
 
         return self.async_show_form(
             step_id="reauth_confirm",
