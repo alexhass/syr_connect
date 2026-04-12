@@ -200,7 +200,9 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
             value = "True" if state else "False"
         try:
             # Use coordinator.async_set_device_value so the DCLG is resolved correctly
-            await self.coordinator.async_set_device_value(self._device_id, "setBUZ", value)
+            # `CoordinatorEntity.coordinator` is typed as DataUpdateCoordinator in the base
+            # class; cast to our concrete coordinator type so mypy recognizes the method.
+            await cast(SyrConnectDataUpdateCoordinator, self.coordinator).async_set_device_value(self._device_id, "setBUZ", value)
         except Exception as err:
             _LOGGER.error("Failed to set getBUZ for device %s: %s", self._device_id, err)
         await self.coordinator.async_request_refresh()
