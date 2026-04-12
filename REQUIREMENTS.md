@@ -117,11 +117,11 @@ If automatic installation fails, you can manually install the dependencies:
 
 ```bash
 # For Home Assistant Container/OS
-docker exec -it homeassistant pip install "pycryptodomex>=3.19.0,<4.0" defusedxml==0.7.1
+docker exec -it homeassistant pip install "pycryptodomex>=3.19.0,<4.0" "defusedxml>=0.7.1,<1.0"
 
 # For Home Assistant Core
 source /srv/homeassistant/bin/activate
-pip install "pycryptodomex>=3.19.0,<4.0" defusedxml==0.7.1
+pip install "pycryptodomex>=3.19.0,<4.0" "defusedxml>=0.7.1,<1.0"
 ```
 
 ## File Structure Requirements

@@ -4,7 +4,7 @@ pytest-picked==0.5.1
 pytest-homeassistant-custom-component==0.13.305
 aiohttp==3.13.3
 pycryptodomex>=3.19.0,<4.0
-defusedxml==0.7.1
+defusedxml>=0.7.1,<1.0
 homeassistant==2026.1.0
 ruff==0.6.2
 mypy==1.7.1
