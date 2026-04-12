@@ -13,6 +13,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .config_flow import ConfigFlow
 from .const import (
+    _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
+    _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -95,8 +97,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # `_SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT`.
     scan_interval = get_default_scan_interval_for_entry(entry)
 
-    # Enforce minimum scan interval depending on API type
-    min_allowed = 10 if api_type == API_TYPE_JSON else 60
+    # Enforce minimum scan interval depending on API type using named constants
+    min_allowed = (
+        _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM
+        if api_type == API_TYPE_JSON
+        else _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM
+    )
     if scan_interval < min_allowed:
         _LOGGER.warning(
             "Configured scan interval %s is below minimum for %s API; clamping to %s seconds",
