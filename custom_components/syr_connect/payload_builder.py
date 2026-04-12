@@ -49,7 +49,8 @@ class PayloadBuilder:
             hours, rem = divmod(total_seconds, 3600)
             minutes, seconds = divmod(rem, 60)
             return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
-        except Exception:
+        except Exception as err:
+            _LOGGER.exception("Failed to compute local timezone offset (tzo); falling back to UTC: %s", err)
             # Fallback to UTC
             return "+00:00:00"
 
@@ -65,7 +66,8 @@ class PayloadBuilder:
             lang = parts[0].lower() if parts else "en"
             reg = parts[1].upper() if len(parts) > 1 else "US"
             return (lang, reg)
-        except Exception:
+        except Exception as err:
+            _LOGGER.exception("Failed to determine locale language/region; falling back to en/US: %s", err)
             return ("en", "US")
 
     def build_login_payload(self, username: str, password: str) -> str:
