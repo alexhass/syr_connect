@@ -457,6 +457,43 @@ def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive():
     assert get_sensor_iwh_value(status) == 30 / 33
 
 
+def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists():
+    """Invalid getWHU string should default to 0 and be persisted."""
+    status = {"getCND": 300, "getWHU": "invalid"}
+    result = get_sensor_iwh_value(status)
+    assert result == 300 / 33
+    # getWHU should have been normalized to 0
+    assert status.get("getWHU") == 0
+
+
+def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash():
+    """If assigning to status['getWHU'] raises, function still returns value."""
+
+    class BadStatus(dict):
+        def __setitem__(self, key, value):
+            if key == "getWHU":
+                raise RuntimeError("boom")
+            return super().__setitem__(key, value)
+
+    status = BadStatus({"getCND": 330})
+    # Should compute 330/33 == 10 and not raise despite assignment error
+    assert get_sensor_iwh_value(status) == 330 / 33
+
+
+def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash():
+    """If persisting explicit getIWH raises, function still returns parsed value."""
+
+    class BadStatus(dict):
+        def __setitem__(self, key, value):
+            if key == "getIWH":
+                raise RuntimeError("boom")
+            return super().__setitem__(key, value)
+
+    status = BadStatus({"getIWH": "12.0", "getWHU": 0})
+    # Should parse explicit getIWH and return 12 (int)
+    assert get_sensor_iwh_value(status) == 12
+
+
 def test_get_sensor_net_value_numeric_float() -> None:
     """Float input assumed in 1/100 V -> divide by 100."""
     assert get_sensor_net_value(363.0) == 3.63
