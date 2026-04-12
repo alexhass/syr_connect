@@ -1753,15 +1753,29 @@ async def test_reauth_confirm_homeassistant_error_json_host_invalid(hass: HomeAs
 
 async def test_reauth_confirm_entry_missing_aborts(hass: HomeAssistant) -> None:
     """Test reauth confirm aborts when entry is missing during submission."""
-    # Start a reauth flow with a nonexistent entry id
+    # Create and add an entry, then start a reauth flow and remove the entry
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_reauth_missing@example.com",
+        data={
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "old_password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+    )
+    entry.add_to_hass(hass)
+
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={
             "source": config_entries.SOURCE_REAUTH,
-            "entry_id": "nonexistent",
+            "entry_id": entry.entry_id,
         },
-        data={CONF_USERNAME: "x", CONF_PASSWORD: "y"},
+        data=entry.data,
     )
+
+    # Remove the entry to simulate it being deleted between flow start and submission
+    await hass.config_entries.async_remove(entry.entry_id)
 
     # Submitting credentials when entry does not exist should abort
     result2 = await hass.config_entries.flow.async_configure(

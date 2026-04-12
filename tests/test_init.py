@@ -399,12 +399,12 @@ async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> 
                 hass.config_entries,
                 "async_update_entry",
                 new_callable=MagicMock,
-            ):
+            ) as mock_update:
                 result = await async_setup_entry(hass, config_entry)
 
     assert result is True
-    # async_migrate_entry logs a migration debug message; ensure migration code path exercised
-    assert "Migrating config entry" in caplog.text or "Applying v1->v2 migration" in caplog.text
+    # async_setup_entry must not perform migration itself (async_migrate_entry is invoked by HA)
+    mock_update.assert_not_called()
 
 
 async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
