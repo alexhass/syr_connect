@@ -91,7 +91,7 @@ class HTTPClient:
             except (TimeoutError, aiohttp.ClientError) as err:
                 # If this is an HTTP auth failure (401/403), do not retry — re-raise immediately
                 if isinstance(err, aiohttp.ClientResponseError) and err.status in (401, 403):
-                    _LOGGER.error("Authentication error %s for %s; not retrying", err.status, url)                  )
+                    _LOGGER.error("Authentication error %s for %s; not retrying", err.status, url)
                     raise
 
                 is_last_attempt = attempt == self.max_retries - 1
