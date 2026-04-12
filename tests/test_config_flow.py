@@ -209,6 +209,98 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
     assert result3["data"][CONF_MODEL] == "neosoft5000"
     assert result3["data"][CONF_API_TYPE] == API_TYPE_JSON
 
+async def test_validate_input_json_device_missing_id_raises(hass: HomeAssistant) -> None:
+    """If get_devices returns a device without an 'id', validation must fail."""
+    from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_json
+
+    class FakeApi:
+        async def login(self):
+            return None
+
+        async def get_devices(self, scope):
+            return [{"name": "nodata"}]
+
+    with patch("custom_components.syr_connect.config_flow.SyrConnectJsonAPI", return_value=FakeApi()):
+        with pytest.raises(CannotConnectError):
+            await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
+
+async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> None:
+    """If get_device_status returns empty, validation must fail."""
+    from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_json
+
+    class FakeApi:
+        async def login(self):
+            return None
+
+        async def get_devices(self, scope):
+            return [{"id": "dev1"}]
+
+        async def get_device_status(self, did):
+            return {}
+
+    with patch("custom_components.syr_connect.config_flow.SyrConnectJsonAPI", return_value=FakeApi()):
+        with pytest.raises(CannotConnectError):
+            await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
+
+async def test_reauth_confirm_json_homeassistant_error_port_sets_host_no_port(hass: HomeAssistant) -> None:
+    """HomeAssistantError mentioning 'port' during reauth JSON should map to host_no_port error."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_reauth@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "192.0.2.1",
+            CONF_MODEL: "neosoft5000",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_REAUTH, "entry_id": entry.entry_id},
+        data=entry.data,
+    )
+
+    # Patch validate_input_json to raise HomeAssistantError mentioning 'port'
+    from homeassistant.exceptions import HomeAssistantError
+
+    with patch("custom_components.syr_connect.config_flow.validate_input_json", side_effect=HomeAssistantError("includes port")):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "192.0.2.1", CONF_MODEL: "neosoft5000"}
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {CONF_HOST: "host_no_port"}
+
+async def test_reauth_confirm_xml_homeassistant_error_sets_unknown(hass: HomeAssistant) -> None:
+    """HomeAssistantError during XML reauth should map to base 'unknown'."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_reauth@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "user@example.com",
+            CONF_PASSWORD: "old",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_REAUTH, "entry_id": entry.entry_id},
+        data=entry.data,
+    )
+
+    from homeassistant.exceptions import HomeAssistantError
+
+    with patch("custom_components.syr_connect.config_flow.validate_input_xml", side_effect=HomeAssistantError("bad")):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_USERNAME: "x", CONF_PASSWORD: "y"}
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"]["base"] == "unknown"
+
 
 async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
     """Test local/JSON API cannot connect error."""

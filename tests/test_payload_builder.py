@@ -106,8 +106,8 @@ def test_compute_local_tzo_normal_format() -> None:
 
 def test_compute_local_tzo_negative_offset() -> None:
     """Force a negative offset from astimezone() and ensure '-' sign used."""
-    from unittest.mock import MagicMock
     from datetime import timedelta
+    from unittest.mock import MagicMock
 
     with patch("custom_components.syr_connect.payload_builder.datetime") as fake_dt:
         fake_now = MagicMock()

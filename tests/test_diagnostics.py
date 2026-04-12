@@ -3574,7 +3574,7 @@ async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -
 
 async def test_json_api_no_devices_sets_error(hass: HomeAssistant) -> None:
     """When JSON API returns no devices, diagnostics should set an error."""
-    from unittest.mock import AsyncMock, MagicMock, patch
+    from unittest.mock import AsyncMock, MagicMock
 
     config_entry = ConfigEntry(
         version=1,
@@ -3657,6 +3657,7 @@ async def test_mask_sensitive_id_srn_is_masked(hass: HomeAssistant) -> None:
 async def test_mask_sensitive_getmac_and_getsrn_json_api(hass: HomeAssistant) -> None:
     """Ensure JSON API path masks getMAC/getMAC1 and getSRN in returned payloads."""
     from unittest.mock import AsyncMock, MagicMock
+
     from custom_components.syr_connect import diagnostics as diag_mod
 
     config_entry = ConfigEntry(
@@ -3709,7 +3710,6 @@ async def test_mask_sensitive_getmac_and_getsrn_json_api(hass: HomeAssistant) ->
 
 async def test_diagnostics_fetch_device_json_ip_zero_normalized(hass: HomeAssistant) -> None:
     """Line handling when IP is the placeholder 0.0.0.0 should be skipped."""
-    from unittest.mock import MagicMock
 
     device = {
         "id": "dev1",
@@ -3731,7 +3731,7 @@ async def test_diagnostics_fetch_device_json_ip_zero_normalized(hass: HomeAssist
 
 async def test_diagnostics_fetch_device_json_get_device_status_raises(hass: HomeAssistant) -> None:
     """When JSON API get_device_status raises, diagnostics should skip that device."""
-    from unittest.mock import AsyncMock, MagicMock, patch
+    from unittest.mock import patch
 
     device = {"id": "dev1", "name": "Dev1", "base_path": "/api", "status": {"getIPA": "192.0.2.5"}}
     coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
