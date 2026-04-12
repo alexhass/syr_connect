@@ -362,11 +362,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # properly by the calling entity (select, button, etc.)
             _LOGGER.debug("Failed to set device %s via API, re-raising to caller", device_id)
             raise
-        finally:
-            # Schedule a delayed refresh in the background to give the API
-            # time to apply changes server-side before we request authoritative
-            # status. Some SYR devices take up to ~60 seconds to reflect
-            # configuration changes.
+        else:
+            # Only schedule a delayed refresh if the API call succeeded.
+            # This avoids a phantom refresh log/error when the set operation
+            # raised an exception and was handled by the caller.
             try:
                 self.hass.async_create_task(self._delayed_refresh())
             except Exception:  # pragma: no cover - defensive
