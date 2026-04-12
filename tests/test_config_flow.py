@@ -220,7 +220,7 @@ async def test_validate_input_json_device_missing_id_raises(hass: HomeAssistant)
         async def get_devices(self, scope):
             return [{"name": "nodata"}]
 
-    with patch("custom_components.syr_connect.config_flow.SyrConnectJsonAPI", return_value=FakeApi()):
+    with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI", return_value=FakeApi()):
         with pytest.raises(CannotConnectError):
             await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
 
@@ -238,7 +238,7 @@ async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> N
         async def get_device_status(self, did):
             return {}
 
-    with patch("custom_components.syr_connect.config_flow.SyrConnectJsonAPI", return_value=FakeApi()):
+    with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI", return_value=FakeApi()):
         with pytest.raises(CannotConnectError):
             await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
 
