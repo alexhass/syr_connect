@@ -1216,6 +1216,27 @@ async def test_sensor_water_hardness_init_no_whu(hass: HomeAssistant) -> None:
     assert sensor.native_unit_of_measurement is None
 
 
+async def test_sensor_getiwh_derived_from_getcnd(hass: HomeAssistant) -> None:
+    """Test that `getIWH` is derived from `getCND` when explicit getIWH is missing."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getCND": "330",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+
+    # getIWH should be derived as getCND / 33.0 -> 10 (int)
+    assert sensor.native_value == 10
+
+
 async def test_sensor_numeric_int_value(hass: HomeAssistant) -> None:
     """Test sensor with integer value is converted correctly."""
     data = {
