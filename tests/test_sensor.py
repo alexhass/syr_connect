@@ -580,10 +580,16 @@ async def test_async_setup_entry_preprocessing_device_get_raises(hass: HomeAssis
     """Ensure outer preprocessing exception is handled when device.get raises."""
 
     class BadDevice:
+        def __init__(self):
+            self._raised = False
+
         def get(self, key, default=None):
-            # Simulate failure when accessing status, allow other keys
+            # Simulate failure on the first access to 'status', allow subsequent accesses
             if key == "status":
-                raise RuntimeError("boom")
+                if not self._raised:
+                    self._raised = True
+                    raise RuntimeError("boom")
+                return {}
             return None
         def __getitem__(self, key):
             # Provide mapping for subscriptions used by the platform
@@ -594,7 +600,7 @@ async def test_async_setup_entry_preprocessing_device_get_raises(hass: HomeAssis
             if key == "project_id":
                 return "proj"
             if key == "status":
-                # Ensure accessing status via subscripting triggers the same error
+                # Delegate to get() so we simulate the same first-call failure
                 return self.get("status")
             raise KeyError(key)
 
