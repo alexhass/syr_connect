@@ -8,7 +8,7 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .config_flow import ConfigFlow
@@ -118,6 +118,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         await coordinator.async_config_entry_first_refresh()
+    except ConfigEntryAuthFailed:
+        # Propagate authentication failures so Home Assistant triggers re-auth flows
+        raise
     except Exception as err:
         _LOGGER.error("Failed to connect to SYR Connect API: %s", err)
         raise ConfigEntryNotReady(f"Unable to connect to SYR Connect: {err}") from err
