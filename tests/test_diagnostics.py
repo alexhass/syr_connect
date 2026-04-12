@@ -416,7 +416,11 @@ async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
     # device id should be used as key when available; otherwise accept empty/error
     raw_json = diagnostics["raw_json"]
     if "dev1" in raw_json:
+        import inspect
+
         val = raw_json["dev1"].get("getSRN")
+        if inspect.isawaitable(val):
+            val = await val
         assert (isinstance(val, str) and val == "**REDACTED**") or ("**REDACTED**" in str(val))
     else:
         assert raw_json == {} or "error" in raw_json
@@ -2478,7 +2482,11 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
     assert "raw_json" in diagnostics
     raw_json = diagnostics["raw_json"]
     if "12345" in raw_json:
+        import inspect
+
         val = raw_json["12345"].get("getSRN")
+        if inspect.isawaitable(val):
+            val = await val
         assert (isinstance(val, str) and val == "**REDACTED**") or ("**REDACTED**" in str(val))
     else:
         assert raw_json == {} or "error" in raw_json
