@@ -585,6 +585,18 @@ async def test_async_setup_entry_preprocessing_device_get_raises(hass: HomeAssis
             if key == "status":
                 raise RuntimeError("boom")
             return None
+        def __getitem__(self, key):
+            # Provide mapping for subscriptions used by the platform
+            if key == "id":
+                return "baddev"
+            if key == "name":
+                return "Bad Device"
+            if key == "project_id":
+                return "proj"
+            if key == "status":
+                # Ensure accessing status via subscripting triggers the same error
+                return self.get("status")
+            raise KeyError(key)
 
     data = {"devices": [BadDevice()]}
     coordinator = _build_coordinator(hass, data)
