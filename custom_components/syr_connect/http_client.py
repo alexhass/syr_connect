@@ -77,10 +77,7 @@ class HTTPClient:
 
         for attempt in range(self.max_retries):
             try:
-                _LOGGER.debug(
-                    "Making POST request to %s (attempt %d/%d)",
-                    url, attempt + 1, self.max_retries
-                )
+                _LOGGER.debug("Making POST request to %s (attempt %d/%d)", url, attempt + 1, self.max_retries)
 
                 async with self.session.post(
                     url, data=data, headers=headers, timeout=timeout
@@ -92,6 +89,11 @@ class HTTPClient:
                     return text
 
             except (TimeoutError, aiohttp.ClientError) as err:
+                # If this is an HTTP auth failure (401/403), do not retry — re-raise immediately
+                if isinstance(err, aiohttp.ClientResponseError) and err.status in (401, 403):
+                    _LOGGER.error("Authentication error %s for %s; not retrying", err.status, url)                  )
+                    raise
+
                 is_last_attempt = attempt == self.max_retries - 1
 
                 # Build a detailed message including URL and exception repr
