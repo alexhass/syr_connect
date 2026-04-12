@@ -7,14 +7,12 @@ or `None` if no update is required.
 """
 from __future__ import annotations
 
-from typing import Optional
-
 from homeassistant.config_entries import ConfigEntry
 
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_HOST, CONF_MODEL
 
 
-def v1_to_v2_update_kwargs(entry: ConfigEntry) -> Optional[dict]:
+def v1_to_v2_update_kwargs(entry: ConfigEntry) -> dict | None:
     """Compute update kwargs for migrating v1 -> v2.
 
     Ensure `CONF_API_TYPE` is set correctly ("json" if `host`/`model`

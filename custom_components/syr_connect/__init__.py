@@ -1,8 +1,8 @@
 """The SYR Connect integration."""
 from __future__ import annotations
 
-import logging
 import copy
+import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -16,7 +16,6 @@ from .const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
-    CONF_MODEL,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import get_default_scan_interval_for_entry
