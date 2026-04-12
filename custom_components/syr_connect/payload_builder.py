@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from xml.sax.saxutils import escape
 
 from .checksum import SyrChecksum
@@ -30,7 +30,7 @@ class PayloadBuilder:
         Returns:
             Formatted timestamp string
         """
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
     def build_login_payload(self, username: str, password: str) -> str:
         """Build login XML payload.
