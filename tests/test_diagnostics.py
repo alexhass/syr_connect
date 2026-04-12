@@ -3572,11 +3572,6 @@ async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -
         assert "XX" in mac2
 
 
-# ---------------------------------------------------------------------------
-# Integrated from tests/test_diagnostics_helpers.py
-# ---------------------------------------------------------------------------
-
-
 def test_mask_srn_handles_re_error(monkeypatch):
     """If re.match raises re.error, mask_srn_value should return original value."""
     def _raise(*args, **kwargs):

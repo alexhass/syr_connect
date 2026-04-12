@@ -12,7 +12,10 @@ from custom_components.syr_connect.payload_builder import PayloadBuilder
 
 def test_compute_local_tzo_exception_fallback(caplog) -> None:
     """When datetime.now raises, _compute_local_tzo falls back to +00:00:00."""
-    with patch("custom_components.syr_connect.payload_builder.datetime.now", side_effect=Exception("boom")):
+    # Patch the module-level `datetime` name to a mock so we don't try to set
+    # attributes on the real immutable `datetime.datetime` type.
+    with patch("custom_components.syr_connect.payload_builder.datetime") as fake_dt:
+        fake_dt.now.side_effect = Exception("boom")
         caplog.set_level("ERROR")
         tzo = PayloadBuilder._compute_local_tzo()
 
