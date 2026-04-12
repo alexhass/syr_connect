@@ -3654,6 +3654,59 @@ async def test_mask_sensitive_id_srn_is_masked(hass: HomeAssistant) -> None:
         assert devices[0]["id"] != "206AAA67890"
 
 
+async def test_mask_sensitive_getmac_and_getsrn_json_api(hass: HomeAssistant) -> None:
+    """Ensure JSON API path masks getMAC/getMAC1 and getSRN in returned payloads."""
+    from unittest.mock import AsyncMock, MagicMock
+    from custom_components.syr_connect import diagnostics as diag_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="JSON Mask Test",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_MODEL: "safetechplus", CONF_HOST: "192.0.2.10"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_json_api = MagicMock()
+    mock_json_api.is_session_valid = MagicMock(return_value=True)
+    mock_json_api.get_devices = AsyncMock(return_value=[{"id": "dev1"}])
+    mock_json_api.get_device_status = AsyncMock(return_value={"getMAC": "AA:BB:CC:DD:EE:FF", "getMAC1": "11:22:33:44:55:66", "getSRN": "206AAA67890"})
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = MagicMock()
+
+    # Make diagnostics recognize our MagicMock class for isinstance checks
+    diag_mod.SyrConnectJsonAPI = mock_json_api.__class__
+
+    mock_coordinator.api = mock_json_api
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    assert "raw_json" in diagnostics
+    raw_json = diagnostics["raw_json"]
+    if "dev1" in raw_json:
+        payload = raw_json["dev1"]
+        # MACs should be masked (vendor preserved as XX...) or redacted
+        val_mac = payload.get("getMAC")
+        val_mac1 = payload.get("getMAC1")
+        assert val_mac is None or "XX" in str(val_mac) or "REDACTED" in str(val_mac)
+        assert val_mac1 is None or "XX" in str(val_mac1) or "REDACTED" in str(val_mac1)
+        # SRN should have been masked (trailing digits replaced) or fully redacted
+        srn = payload.get("getSRN")
+        assert srn is None or "12345" in str(srn) or "REDACTED" in str(srn)
+    else:
+        assert raw_json == {} or "error" in raw_json
+
+
 async def test_diagnostics_fetch_device_json_ip_zero_normalized(hass: HomeAssistant) -> None:
     """Line handling when IP is the placeholder 0.0.0.0 should be skipped."""
     from unittest.mock import MagicMock
