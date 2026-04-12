@@ -57,7 +57,7 @@ The following packages will be automatically installed by Home Assistant:
 
 ### Required Packages
 
-1. **pycryptodomex** (==3.19.0)
+1. **pycryptodomex** (>=3.19.0,<4.0)
    - Purpose: AES encryption/decryption for API communication
    - License: BSD, Public Domain
    - Note: Uses `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's crypto libraries
@@ -117,11 +117,11 @@ If automatic installation fails, you can manually install the dependencies:
 
 ```bash
 # For Home Assistant Container/OS
-docker exec -it homeassistant pip install pycryptodomex==3.19.0 defusedxml==0.7.1
+docker exec -it homeassistant pip install "pycryptodomex>=3.19.0,<4.0" defusedxml==0.7.1
 
 # For Home Assistant Core
 source /srv/homeassistant/bin/activate
-pip install pycryptodomex==3.19.0 defusedxml==0.7.1
+pip install "pycryptodomex>=3.19.0,<4.0" defusedxml==0.7.1
 ```
 
 ## File Structure Requirements

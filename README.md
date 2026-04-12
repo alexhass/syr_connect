@@ -477,7 +477,7 @@ If you see "Authentication failed" errors:
 
 The integration requires the following Python packages:
 
-- `pycryptodomex==3.19.0`: For AES encryption/decryption
+- `pycryptodomex>=3.19.0,<4.0`: For AES encryption/decryption
 - `defusedxml==0.7.1`: For secure XML parsing (prevents XXE attacks)
 
 **Note**: The integration uses `defusedxml` for secure XML parsing and `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's built-in crypto libraries.
