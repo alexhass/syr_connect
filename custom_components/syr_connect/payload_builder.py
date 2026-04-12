@@ -1,8 +1,9 @@
 """XML payload builder for SYR Connect API."""
 from __future__ import annotations
 
+import locale
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from xml.sax.saxutils import escape
 
 from .checksum import SyrChecksum
@@ -32,6 +33,41 @@ class PayloadBuilder:
         """
         return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
+    @staticmethod
+    def _compute_local_tzo() -> str:
+        """Compute local timezone offset string in format ±HH:MM:SS.
+
+        Uses the system local timezone at the current time to derive the
+        offset. Returns a string like '01:00:00' or '-05:00:00'.
+        """
+        # Use the system local timezone offset at current time
+        try:
+            offset = datetime.now().astimezone().utcoffset() or timedelta(0)
+            total_seconds = int(offset.total_seconds())
+            sign = "+" if total_seconds >= 0 else "-"
+            total_seconds = abs(total_seconds)
+            hours, rem = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(rem, 60)
+            return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
+        except Exception:
+            # Fallback to UTC
+            return "+00:00:00"
+
+    @staticmethod
+    def _compute_locale_lang_reg() -> tuple[str, str]:
+        """Return (lang, reg) based on system locale, defaults to en/US."""
+        try:
+            loc = locale.getdefaultlocale()[0]
+            if not loc:
+                return ("en", "US")
+            # loc typically like 'en_US' or 'de_DE'
+            parts = loc.replace('-', '_').split('_')
+            lang = parts[0].lower() if parts else "en"
+            reg = parts[1].upper() if len(parts) > 1 else "US"
+            return (lang, reg)
+        except Exception:
+            return ("en", "US")
+
     def build_login_payload(self, username: str, password: str) -> str:
         """Build login XML payload.
 
@@ -46,10 +82,12 @@ class PayloadBuilder:
         # Escape username and password to prevent XML injection
         safe_username = escape(username)
         safe_password = escape(password)
+        tzo = self._compute_local_tzo()
+        lang, reg = self._compute_locale_lang_reg()
         payload = (
             f'<nfo v="SYR Connect" version="3.7.10" osv="15.8.3" '
-            f'os="iOS" dn="iPhone" ts="{timestamp}" tzo="01:00:00" '
-            f'lng="de" reg="DE" />'
+            f'os="iOS" dn="iPhone" ts="{timestamp}" tzo="{tzo}" '
+            f'lng="{lang}" reg="{reg}" />'
             f'<usr n="{safe_username}" v="{safe_password}" />'
         )
         return f'<?xml version="1.0" encoding="utf-8"?><sc><api version="1.0">{payload}</api></sc>'
@@ -149,10 +187,11 @@ class PayloadBuilder:
         )
 
         # Add statistic-specific payload
+        lang, reg = self._compute_locale_lang_reg()
         if statistic_type == "salt":
-            stat_payload = '<sh t="2" rtyp="1" lg="de" rg="DE" unit="kg"/>'
+            stat_payload = f'<sh t="2" rtyp="1" lg="{lang}" rg="{reg}" unit="kg"/>'
         else:
-            stat_payload = '<sh t="1" rtyp="1" lg="de" rg="DE" unit="l"/>'
+            stat_payload = f'<sh t="1" rtyp="1" lg="{lang}" rg="{reg}" unit="l"/>'
 
         payload = base_payload.replace('></dcl>', f'>{stat_payload}</dcl>')
         return self._add_checksum(payload)

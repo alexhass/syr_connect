@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import locale
 import logging
 from typing import Any
 
@@ -45,13 +46,26 @@ class HTTPClient:
         Returns:
             Dictionary of headers
         """
+        # Determine Accept-Language based on system locale (fallback to en-US)
+        try:
+            loc = locale.getdefaultlocale()[0] or "en_US"
+            # Convert 'en_US' -> 'en-US'
+            lang_tag = loc.replace('_', '-')
+            primary = lang_tag.split('-')[0]
+            accept_language = f"{lang_tag},{primary};q=0.9"
+        except Exception as err:
+            # Log the failure to determine locale and fall back to a safe default
+            _LOGGER.exception("Failed to determine system locale for Accept-Language header: %s", err)
+            accept_language = "en-US,en;q=0.9"
+
         return {
             'Content-Type': content_type,
             'Connection': 'keep-alive',
             'Accept': '*/*',
             'User-Agent': self.user_agent,
-            'Accept-Language': 'de-DE,de;q=0.9',
+            'Accept-Language': accept_language,
         }
+
 
     async def post(
         self,
