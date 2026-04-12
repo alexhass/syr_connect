@@ -3572,6 +3572,88 @@ async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -
         assert "XX" in mac2
 
 
+async def test_json_api_no_devices_sets_error(hass: HomeAssistant) -> None:
+    """When JSON API returns no devices, diagnostics should set an error."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Safe-Tech JSON",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetechplus",
+            CONF_HOST: "192.168.1.100",
+        },
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_json_api = MagicMock()
+    mock_json_api.is_session_valid = MagicMock(return_value=True)
+    mock_json_api.get_devices = AsyncMock(return_value=[])
+    mock_json_api.get_device_status = AsyncMock()
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "local", "base_path": "/"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_json_api
+    mock_coordinator._session = MagicMock()
+
+    # Make diagnostics recognize our MagicMock class as the JSON API type
+    import custom_components.syr_connect.diagnostics as diag_mod
+    diag_mod.SyrConnectJsonAPI = mock_json_api.__class__
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    raw_json = diagnostics["raw_json"]
+    # Should set an error when no devices were returned
+    assert "error" in raw_json
+
+
+async def test_mask_sensitive_id_srn_is_masked(hass: HomeAssistant) -> None:
+    """Ensure SRN-like strings found in arbitrary keys (e.g., id) are masked."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Put SRN-like string in an arbitrary key to trigger masking
+    mock_coordinator.data = {"devices": [{"id": "206AAA67890", "status": {}}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = None
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # devices_info should have been masked: id string changed to preserve prefix and '12345' suffix
+    devices = diagnostics.get("devices", [])
+    assert isinstance(devices, list)
+    if devices:
+        assert devices[0]["id"] != "206AAA67890"
+
+
 def test_mask_srn_handles_re_error(monkeypatch):
     """If re.match raises re.error, mask_srn_value should return original value."""
     def _raise(*args, **kwargs):
