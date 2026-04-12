@@ -413,14 +413,14 @@ def test_get_sensor_iwh_returns_float_when_getiwh_string_float():
 
 def test_get_sensor_iwh_derived_from_getcnd_integer_result():
     status = {"getCND": 540}
-    # 540 / 30 == 18 -> int
-    assert get_sensor_iwh_value(status) == 18
+    # 540 / 33 == 16.363636... -> float
+    assert get_sensor_iwh_value(status) == 540 / 33
 
 
 def test_get_sensor_iwh_derived_from_getcnd_float_result():
     status = {"getCND": "378"}
-    # 378 / 30 == 12.6 -> float
-    assert get_sensor_iwh_value(status) == 12.6
+    # 378 / 33 == 11.454545... -> float
+    assert get_sensor_iwh_value(status) == 378 / 33
 
 
 def test_get_sensor_iwh_returns_none_on_invalid_getcnd():
@@ -435,8 +435,8 @@ def test_get_sensor_iwh_missing_both_returns_none():
 
 def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive():
     status = {"getCND": 300, "getWHU": ""}
-    # 300 / 30 == 10 -> int
-    assert get_sensor_iwh_value(status) == 10
+    # 300 / 33 == 9.090909... -> float
+    assert get_sensor_iwh_value(status) == 300 / 33
 
 
 def test_get_sensor_iwh_derived_from_getcnd_zero():
@@ -453,8 +453,8 @@ def test_get_sensor_iwh_derived_from_getcnd_empty_string():
 
 def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive():
     status = {"getCND": 30}
-    # getWHU missing -> default 0; 30 / 30 == 1 -> int
-    assert get_sensor_iwh_value(status) == 1
+    # getWHU missing -> default 0; 30 / 33 == 0.909090... -> float
+    assert get_sensor_iwh_value(status) == 30 / 33
 
 
 def test_get_sensor_net_value_numeric_float() -> None:
