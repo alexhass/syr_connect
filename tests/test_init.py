@@ -373,37 +373,61 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         mock_reload.assert_called_once_with("test_entry_id")
 
 
-    async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> None:
-        """Ensure legacy migration branch logs a migration message."""
+async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> None:
+    """Ensure legacy migration branch logs a migration message."""
 
-        config_entry = MockConfigEntry(
-            version=1,
-            minor_version=0,
-            domain=DOMAIN,
-            title="Test Legacy Log",
-            data={"username": "legacylog@example.com", "password": "password"},
-            source="user",
-            entry_id="legacy_log_entry",
-            unique_id="legacylog@example.com",
-        )
-        config_entry.add_to_hass(hass)
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test Legacy Log",
+        data={"username": "legacylog@example.com", "password": "password"},
+        source="user",
+        entry_id="legacy_log_entry",
+        unique_id="legacylog@example.com",
+    )
+    config_entry.add_to_hass(hass)
 
-        with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
-            mock_coordinator = MagicMock()
-            mock_coordinator.async_config_entry_first_refresh = AsyncMock()
-            mock_coordinator_class.return_value = mock_coordinator
+    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_coordinator_class.return_value = mock_coordinator
 
-            caplog.set_level(logging.INFO)
-            with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
-                with patch.object(
-                    hass.config_entries,
-                    "async_update_entry",
-                    new_callable=MagicMock
-                ):
-                    result = await async_setup_entry(hass, config_entry)
+        caplog.set_level(logging.INFO)
+        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
+            with patch.object(
+                hass.config_entries,
+                "async_update_entry",
+                new_callable=MagicMock,
+            ):
+                result = await async_setup_entry(hass, config_entry)
 
-        assert result is True
-        assert "Migrating legacy config entry" in caplog.text
+    assert result is True
+    # async_migrate_entry logs a migration debug message; ensure migration code path exercised
+    assert "Migrating config entry" in caplog.text or "Applying v1->v2 migration" in caplog.text
+
+
+async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
+    """Ensure migration returns False for future-version entries."""
+    from custom_components.syr_connect.config_flow import ConfigFlow
+
+    config_entry = MockConfigEntry(
+        version=ConfigFlow.VERSION + 1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Future Entry",
+        data={"username": "future@example.com", "password": "password"},
+        source="user",
+        entry_id="future_entry",
+        unique_id="future@example.com",
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch.object(hass.config_entries, "async_update_entry") as mock_update:
+        result = await async_migrate_entry(hass, config_entry)
+
+    assert result is False
+    mock_update.assert_not_called()
 
 
     async def test_async_options_update_listener_logs_unchanged(hass: HomeAssistant, caplog) -> None:
