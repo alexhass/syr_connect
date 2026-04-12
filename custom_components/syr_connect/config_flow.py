@@ -14,6 +14,8 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api_json import SyrConnectJsonAPI
+from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
@@ -27,7 +29,8 @@ from .const import (
     CONF_MODEL,
     DOMAIN,
 )
-from .helpers import get_default_scan_interval_for_entry
+from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+from .helpers import get_default_scan_interval_for_entry, is_valid_host
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
@@ -85,9 +88,6 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
         CannotConnectError: If connection to API fails
         InvalidAuthError: If authentication fails
     """
-    # Import here to avoid blocking import at module level
-    from .api_xml import SyrConnectXmlAPI
-    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
     _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
@@ -125,32 +125,10 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     Raises:
         CannotConnectError: If connection to API fails
     """
-    # Import here to avoid blocking import at module level
-    import re
-
-    from .api_json import SyrConnectJsonAPI
-    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
     host = data[CONF_HOST]
 
-    # Validate host is a non-empty string
-    if not isinstance(host, str) or not host.strip():
-        _LOGGER.error("Host field is empty or not a string. Received: %r", host)
-        raise HostInvalidError("Host must be a non-empty IP address or hostname.")
-
-    # Validate host does not contain a port
-    if ":" in host:
-        _LOGGER.error("Host field should not include a port. Received: %s", host)
-        raise HomeAssistantError("Host must not include a port. Please enter only the IP address or hostname.")
-
-    # Validate host does not contain whitespace
-    if re.search(r"\s", host):
-        _LOGGER.error("Host field contains whitespace. Received: %s", host)
-        raise HostInvalidError("Host must not contain spaces or tabs.")
-
-    # Validate host matches IP or hostname pattern
-    ip_pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
-    hostname_pattern = r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"
-    if not re.match(ip_pattern, host) and not re.match(hostname_pattern, host):
+    # Use central helper for IP/hostname validation
+    if not is_valid_host(host):
         _LOGGER.error("Host field is not a valid IP address or hostname. Received: %s", host)
         raise HostInvalidError("Host must be a valid IP address or hostname.")
 

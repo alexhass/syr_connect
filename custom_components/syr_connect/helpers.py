@@ -1,6 +1,7 @@
 """Helper functions for SYR Connect integration."""
 from __future__ import annotations
 
+import ipaddress
 import logging
 import re
 from typing import Any
@@ -518,6 +519,39 @@ def get_sensor_net_value(value: str | int | float) -> float | None:
             return None
 
     return None
+
+
+def is_valid_host(host: str) -> bool:
+    """Return True if *host* is a valid IPv4, IPv6 or hostname (no port).
+
+    - Accepts IPv4 and IPv6 addresses using the stdlib ``ipaddress`` module
+    - Rejects explicit ``host:port`` strings
+    - Allows DNS hostnames that meet length and label rules
+
+    This function intentionally returns a boolean so callers can handle
+    error reporting / translation to Home Assistant errors as appropriate.
+    """
+    if not isinstance(host, str) or not host.strip():
+        return False
+
+    # Reject surrounding whitespace
+    if re.search(r"\s", host):
+        return False
+
+    # Reject explicit host:port
+    if re.match(r"^.+:\d+$", host):
+        return False
+
+    # Try IP address (IPv4/IPv6)
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except Exception:
+        pass
+
+    # Hostname validation: length and label rules
+    hostname_pattern = r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"
+    return bool(re.match(hostname_pattern, host))
 
 
 def get_sensor_bat_value(value: str | int | float) -> float | None:
