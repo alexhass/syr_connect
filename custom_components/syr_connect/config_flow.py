@@ -339,7 +339,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         # Get the existing config entry for API type determination
-        entry = self.hass.config_entries.async_get_entry(self.context.get("entry_id"))
+        entry_id = self.context.get("entry_id")
+        entry = self.hass.config_entries.async_get_entry(entry_id) if entry_id is not None else None
         if entry is None and user_input is not None:
             return self.async_abort(reason="reauth_failed")
 
@@ -347,6 +348,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
 
         if user_input is not None:
+            # At this point, if we reached here after the check above, `entry` must not be None
+            assert entry is not None
             try:
                 # Validate and update based on API type
                 if api_type == API_TYPE_JSON:
@@ -421,13 +424,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             FlowResult with updated config entry or form with errors
         """
         errors: dict[str, str] = {}
-        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        entry_id = self.context.get("entry_id")
+        entry = self.hass.config_entries.async_get_entry(entry_id) if entry_id is not None else None
 
         if user_input is not None:
             # Check if entry still exists during submission
             if entry is None:
                 return self.async_abort(reason="reconfigure_failed")
 
+            # `entry` is guaranteed to be non-None beyond this point
+            assert entry is not None
             try:
                 # Determine API type from current entry
                 api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
