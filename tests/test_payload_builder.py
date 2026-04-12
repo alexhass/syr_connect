@@ -1,8 +1,94 @@
 """Test the SYR Connect payload builder."""
+from __future__ import annotations
+
+import os
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from custom_components.syr_connect.checksum import SyrChecksum
 from custom_components.syr_connect.payload_builder import PayloadBuilder
+
+
+def test_compute_local_tzo_exception_fallback(caplog) -> None:
+    """When datetime.now raises, _compute_local_tzo falls back to +00:00:00."""
+    with patch("custom_components.syr_connect.payload_builder.datetime.now", side_effect=Exception("boom")):
+        caplog.set_level("ERROR")
+        tzo = PayloadBuilder._compute_local_tzo()
+
+    assert tzo == "+00:00:00"
+    assert "Failed to compute local timezone offset (tzo)" in caplog.text
+
+
+def test_compute_locale_lang_reg_from_getlocale() -> None:
+    """Locale parsing returns language and region from locale.getlocale()."""
+    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=("de_DE", "UTF-8")):
+        lang, reg = PayloadBuilder._compute_locale_lang_reg()
+
+    assert lang == "de"
+    assert reg == "DE"
+
+
+def test_compute_locale_lang_reg_from_env() -> None:
+    """When getlocale returns None, fallback to LANG env var."""
+    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=(None, None)):
+        with patch.dict(os.environ, {"LANG": "fr_FR"}):
+            lang, reg = PayloadBuilder._compute_locale_lang_reg()
+
+    assert lang == "fr"
+    assert reg == "FR"
+
+
+def test_compute_locale_lang_reg_exception_fallback(caplog) -> None:
+    """If locale.getlocale raises, fallback to en/US and log."""
+    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", side_effect=Exception("boom")):
+        caplog.set_level("ERROR")
+        lang, reg = PayloadBuilder._compute_locale_lang_reg()
+
+    assert (lang, reg) == ("en", "US")
+    assert "Failed to determine locale language/region" in caplog.text
+
+
+def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
+    """Login payload should include escaped credentials and computed tzo/lang/reg."""
+    fake_checksum = MagicMock()
+    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    pb = PayloadBuilder("1.2.3", fake_checksum)
+
+    with patch.object(PayloadBuilder, "_compute_local_tzo", return_value="+01:00:00"), patch.object(
+        PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")
+    ):
+        payload = pb.build_login_payload("user<&>", "pwd<&>")
+
+    # escaped characters should be present (XML escaped)
+    assert "user&lt;&amp;&gt;" in payload
+    assert "pwd&lt;&amp;&gt;" in payload
+    # tzo and locale tags should be present
+    assert 'tzo="+01:00:00"' in payload
+    assert 'lng="de"' in payload and 'reg="DE"' in payload
+
+
+def test_build_statistics_payload_salt_and_water_use_checksum_and_lang(caplog) -> None:
+    """Statistics payload branches for salt and water include correct units and checksum."""
+    fake_checksum = MagicMock()
+    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    pb = PayloadBuilder("1.2.3", fake_checksum)
+
+    with patch.object(PayloadBuilder, "_compute_locale_lang_reg", return_value=("it", "IT")):
+        salt_payload = pb.build_statistics_payload("sess", "dev", statistic_type="salt")
+        water_payload = pb.build_statistics_payload("sess", "dev", statistic_type="water")
+
+    # Checksum added
+    assert '<cs v="CHK"/>' in salt_payload
+    assert '<cs v="CHK"/>' in water_payload
+
+    # salt uses kg, water uses l
+    assert 'unit="kg"' in salt_payload
+    assert 'unit="l"' in water_payload
+
+    # lang/region are injected
+    assert 'lg="it"' in salt_payload
+    assert 'rg="IT"' in water_payload
 
 
 @pytest.fixture
