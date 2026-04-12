@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import locale
 import logging
+import os
 from datetime import UTC, datetime, timedelta
 from xml.sax.saxutils import escape
 
@@ -58,7 +59,8 @@ class PayloadBuilder:
     def _compute_locale_lang_reg() -> tuple[str, str]:
         """Return (lang, reg) based on system locale, defaults to en/US."""
         try:
-            loc = locale.getdefaultlocale()[0]
+            # Use locale.getlocale() (not deprecated) and fall back to LANG env var
+            loc = locale.getlocale()[0] or os.environ.get("LANG")
             if not loc:
                 return ("en", "US")
             # loc typically like 'en_US' or 'de_DE'

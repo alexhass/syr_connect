@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import locale
 import logging
+import os
 from typing import Any
 
 import aiohttp
@@ -48,7 +49,8 @@ class HTTPClient:
         """
         # Determine Accept-Language based on system locale (fallback to en-US)
         try:
-            loc = locale.getdefaultlocale()[0] or "en_US"
+            # Prefer locale.getlocale() (non-deprecated) and fall back to LANG env var
+            loc = locale.getlocale()[0] or os.environ.get("LANG") or "en_US"
             # Convert 'en_US' -> 'en-US'
             lang_tag = loc.replace('_', '-')
             primary = lang_tag.split('-')[0]
