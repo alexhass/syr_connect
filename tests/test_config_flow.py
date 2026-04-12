@@ -1275,6 +1275,7 @@ async def test_form_api_json_homeassistant_error_unknown(hass: HomeAssistant) ->
 async def test_configflow_async_step_api_json_homeassistant_error_direct(hass: HomeAssistant) -> None:
     """Directly call ConfigFlow.async_step_api_json to hit HomeAssistantError branch."""
     from homeassistant.exceptions import HomeAssistantError
+
     from custom_components.syr_connect.config_flow import ConfigFlow
 
     flow = ConfigFlow()
@@ -1527,7 +1528,7 @@ async def test_form_api_json_host_port_error(hass: HomeAssistant) -> None:
     assert result2["errors"] == {CONF_HOST: "host_no_port"}
 
 
-async def test_form_api_json_persists_login_required(hass: HomeAssistant) -> None:
+async def test_form_api_json_persists_login_required_from_validation(hass: HomeAssistant) -> None:
     """Test that login_required returned by validation is persisted in entry data."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}

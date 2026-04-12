@@ -3,14 +3,13 @@ from __future__ import annotations
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
-    CONF_MODEL,
 )
+from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs
 
 
 def test_v1_to_v2_with_host_sets_json_and_unique_id() -> None:

@@ -683,7 +683,7 @@ def test_manufacturer_field_present_in_all_return_paths():
 
 def test_manufacturer_via_xml_fixtures():
     """Verify manufacturer is correctly set when detecting from real XML fixtures."""
-    FIXTURE_DIR_XML = Path(__file__).parent / "fixtures/xml"
+    fixture_dir_xml = Path(__file__).parent / "fixtures/xml"
     parser = ResponseParser()
 
     expected = [
@@ -692,7 +692,7 @@ def test_manufacturer_via_xml_fixtures():
         ("SafeTechPlus_GetDeviceCollectionStatus.xml", "safetechplus", "SYR"),
     ]
     for filename, expected_name, expected_manufacturer in expected:
-        xml = (FIXTURE_DIR_XML / filename).read_text(encoding="utf-8")
+        xml = (fixture_dir_xml / filename).read_text(encoding="utf-8")
         flat = parser.parse_device_status_response(xml)
         assert flat is not None
         result = detect_model(flat)
