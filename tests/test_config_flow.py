@@ -1677,6 +1677,110 @@ async def test_reauth_confirm_unexpected_exception(hass: HomeAssistant) -> None:
     assert result2["errors"].get("base") in ("unknown", "cannot_connect")
 
 
+async def test_reauth_confirm_homeassistant_error_json_port(hass: HomeAssistant) -> None:
+    """Test reauth confirm handles HomeAssistantError with port for JSON API."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_reauth_port@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "neosoft5000",
+            CONF_HOST: "192.168.1.100",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": entry.entry_id,
+        },
+        data=entry.data,
+    )
+
+    from homeassistant.exceptions import HomeAssistantError
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("Host must not include port :8080"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "192.168.1.100:8080", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {CONF_HOST: "host_no_port"}
+
+
+async def test_reauth_confirm_homeassistant_error_json_host_invalid(hass: HomeAssistant) -> None:
+    """Test reauth confirm handles HomeAssistantError without port for JSON API."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_reauth_invalid@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "neosoft5000",
+            CONF_HOST: "192.168.1.100",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": entry.entry_id,
+        },
+        data=entry.data,
+    )
+
+    from homeassistant.exceptions import HomeAssistantError
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        side_effect=HomeAssistantError("Invalid host"),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_HOST: "invalid-host", CONF_MODEL: "neosoft5000"},
+        )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {CONF_HOST: "host_invalid"}
+
+
+async def test_reauth_confirm_entry_missing_aborts(hass: HomeAssistant) -> None:
+    """Test reauth confirm aborts when entry is missing during submission."""
+    # Start a reauth flow with a nonexistent entry id
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": "nonexistent",
+        },
+        data={CONF_USERNAME: "x", CONF_PASSWORD: "y"},
+    )
+
+    # Submitting credentials when entry does not exist should abort
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_USERNAME: "x", CONF_PASSWORD: "y"}
+    )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "reauth_failed"
+
+
+async def test_validate_input_json_model_without_base_path_raises(hass: HomeAssistant) -> None:
+    """Test validate_input_json raises CannotConnectError when model has no base_path."""
+    from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_json
+
+    # Use a model known to have base_path=None (lexplus10)
+    with pytest.raises(CannotConnectError):
+        await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "lexplus10"})
+
+
 async def test_reconfigure_unexpected_exception(hass: HomeAssistant) -> None:
     """Test reconfigure sets unknown error on unexpected exception (lines 427-429)."""
     entry = MockConfigEntry(
