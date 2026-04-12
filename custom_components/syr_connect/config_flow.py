@@ -14,8 +14,6 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api_json import SyrConnectJsonAPI
-from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
@@ -29,7 +27,6 @@ from .const import (
     CONF_MODEL,
     DOMAIN,
 )
-from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import get_default_scan_interval_for_entry, is_valid_host
 from .models import MODEL_SIGNATURES
 
@@ -89,6 +86,10 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
         InvalidAuthError: If authentication fails
     """
 
+    # Import here so tests can patch the API class via its module
+    from .api_xml import SyrConnectXmlAPI
+    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+
     _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
     api = SyrConnectXmlAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
@@ -126,6 +127,10 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         CannotConnectError: If connection to API fails
     """
     host = data[CONF_HOST]
+
+    # Import here so tests can patch the API class via its module
+    from .api_json import SyrConnectJsonAPI
+    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
     # Use central helper for IP/hostname validation
     if not is_valid_host(host):
