@@ -581,7 +581,10 @@ async def test_async_setup_entry_preprocessing_device_get_raises(hass: HomeAssis
 
     class BadDevice:
         def get(self, key, default=None):
-            raise RuntimeError("boom")
+            # Simulate failure when accessing status, allow other keys
+            if key == "status":
+                raise RuntimeError("boom")
+            return None
 
     data = {"devices": [BadDevice()]}
     coordinator = _build_coordinator(hass, data)
