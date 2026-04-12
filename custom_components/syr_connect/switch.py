@@ -38,15 +38,15 @@ async def async_setup_entry(
 
     entities = []
     devices = coordinator.data.get("devices", [])
-    _LOGGER.debug(f"Found {len(devices)} devices in coordinator data.")
+    _LOGGER.debug("Found %d devices in coordinator data.", len(devices))
     for device in devices:
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         project_id = device.get("project_id", "")
         status = device.get("status", {})
-        _LOGGER.debug(f"Checking device: id={device_id}, name={device_name}, status_keys={list(status.keys())}")
+        _LOGGER.debug("Checking device: id=%s, name=%s, status_keys=%s", device_id, device_name, list(status.keys()))
         if "getBUZ" in status:
-            _LOGGER.debug(f"getBUZ found in status for device {device_id}. Creating SyrConnectBuzSwitch.")
+            _LOGGER.debug("getBUZ found in status for device %s. Creating SyrConnectBuzSwitch.", device_id)
             _LOGGER.debug(
                 "getBUZ raw value for device %s: %r (type=%s)",
                 device_id,
@@ -87,9 +87,9 @@ async def async_setup_entry(
                     getattr(entity, "_attr_unique_id", None),
                 )
             except Exception as e:
-                _LOGGER.error(f"Failed to instantiate SyrConnectBuzSwitch for device {device_id}: {e}")
+                _LOGGER.error("Failed to instantiate SyrConnectBuzSwitch for device %s: %s", device_id, e)
         else:
-            _LOGGER.debug(f"getBUZ not found in status for device {device_id}.")
+            _LOGGER.debug("getBUZ not found in status for device %s.", device_id)
     if entities:
         async_add_entities(entities)
         try:
@@ -130,7 +130,7 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         sensor_key: str,
     ) -> None:
         """Initialize the switch."""
-        _LOGGER.debug(f"Initializing SyrConnectBuzSwitch: device_id={device_id}, name={device_name}, sensor_key={sensor_key}")
+        _LOGGER.debug("Initializing SyrConnectBuzSwitch: device_id=%s, name=%s, sensor_key=%s", device_id, device_name, sensor_key)
         super().__init__(coordinator)
 
         self._device_id = device_id
