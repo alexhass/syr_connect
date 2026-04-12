@@ -1638,6 +1638,10 @@ async def test_diagnostics_json_api_redacts_srn_additional(hass) -> None:
 
     entry.runtime_data = fake_coord
 
+    # Ensure the diagnostics module recognizes our fake API type
+    import custom_components.syr_connect.diagnostics as diag_mod
+    diag_mod.SyrConnectJsonAPI = type(fake_api)
+
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
 
     raw_json = diagnostics.get("raw_json", {})
