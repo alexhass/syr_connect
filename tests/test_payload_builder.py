@@ -104,6 +104,25 @@ def test_compute_local_tzo_normal_format() -> None:
     assert tzo[3] == ':' and tzo[6] == ':'
 
 
+def test_compute_local_tzo_negative_offset() -> None:
+    """Force a negative offset from astimezone() and ensure '-' sign used."""
+    from unittest.mock import MagicMock
+    from datetime import timedelta
+
+    with patch("custom_components.syr_connect.payload_builder.datetime") as fake_dt:
+        fake_now = MagicMock()
+        tz_obj = MagicMock()
+        tz_obj.utcoffset.return_value = timedelta(hours=-5, minutes=-30)
+        fake_now.astimezone.return_value = tz_obj
+        fake_dt.now.return_value = fake_now
+
+        tzo = PayloadBuilder._compute_local_tzo()
+
+    assert isinstance(tzo, str)
+    assert tzo.startswith("-")
+    assert tzo == "-05:30:00"
+
+
 def test_compute_locale_lang_reg_dash_and_single() -> None:
     """Locale parsing handles dash-separated and single-part locales."""
     # dash-separated

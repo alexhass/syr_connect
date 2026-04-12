@@ -3654,6 +3654,59 @@ async def test_mask_sensitive_id_srn_is_masked(hass: HomeAssistant) -> None:
         assert devices[0]["id"] != "206AAA67890"
 
 
+async def test_diagnostics_fetch_device_json_ip_zero_normalized(hass: HomeAssistant) -> None:
+    """Line handling when IP is the placeholder 0.0.0.0 should be skipped."""
+    from unittest.mock import MagicMock
+
+    device = {
+        "id": "dev1",
+        "name": "Dev1",
+        "base_path": "/api",
+        "status": {"getIPA": "0.0.0.0"},
+    }
+    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_json" in result
+    # IP '0.0.0.0' should be treated as absent and thus no raw_json payload
+    assert result["raw_json"] == {}
+
+
+async def test_diagnostics_fetch_device_json_get_device_status_raises(hass: HomeAssistant) -> None:
+    """When JSON API get_device_status raises, diagnostics should skip that device."""
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    device = {"id": "dev1", "name": "Dev1", "base_path": "/api", "status": {"getIPA": "192.0.2.5"}}
+    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
+
+    entry = _cov_entry()
+    entry.runtime_data = coordinator
+
+    class FakeJsonApi:
+        def __init__(self, *a, **kw):
+            pass
+
+        def is_session_valid(self):
+            return True
+
+        def _build_base_url(self):
+            return "http://192.0.2.5"
+
+        async def get_device_status(self, *a, **kw):
+            raise RuntimeError("fetch fail")
+
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI", side_effect=lambda *a, **kw: FakeJsonApi()):
+        result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert "raw_json" in result
+    # Device fetch failed so no payloads collected
+    assert result["raw_json"] == {}
+
+
 def test_mask_srn_handles_re_error(monkeypatch):
     """If re.match raises re.error, mask_srn_value should return original value."""
     def _raise(*args, **kwargs):
