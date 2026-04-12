@@ -554,6 +554,54 @@ async def test_sensor_setup_no_data(hass: HomeAssistant) -> None:
     add_entities.assert_not_called()
 
 
+async def test_async_setup_entry_preprocessing_handles_helper_exception(hass: HomeAssistant) -> None:
+    """Ensure preprocessing exceptions from get_sensor_iwh_value are handled."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getPRS": "50"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    with patch("custom_components.syr_connect.sensor.get_sensor_iwh_value", side_effect=RuntimeError("boom")):
+        # Should not raise even if preprocessing helper fails
+        await async_setup_entry(hass, entry, add_entities)
+
+
+@pytest.mark.parametrize(
+    ("raw_value", "expected"),
+    [
+        (None, None),
+        ("", None),
+        ("abc", None),
+        ("-5", -0.5),
+    ],
+)
+async def test_getdbd_various_values(hass: HomeAssistant, raw_value, expected) -> None:
+    """Test `getDBD` handling for empty, invalid and negative values."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_dbd",
+                "name": "Device DBD",
+                "project_id": "p1",
+                "status": {"getDBD": raw_value},
+            }
+        ]
+    }
+    coord = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coord, "dev_dbd", "Device DBD", "p1", "getDBD")
+    assert sensor.native_value == expected
+
+
 # Additional tests merged from test_sensor_extra.py
 def test_extra_getavo_and_getbar_and_getbat_and_getul(create_mock_coordinator):
     data = {
