@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import copy
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -15,9 +16,11 @@ from .const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_MODEL,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import get_default_scan_interval_for_entry
+from .migrations import v1_to_v2_update_kwargs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +34,19 @@ PLATFORMS: list[Platform] = [
 ]
 
 
+def _mask_sensitive_data(update_kwargs: dict) -> dict:
+    """Return a deep-copied update_kwargs with sensitive fields masked.
+
+    Currently masks `password` in the `data` section. Used to produce a
+    safe-to-log representation without modifying the original dict.
+    """
+    safe_update = copy.deepcopy(update_kwargs)
+    data_section = safe_update.get("data")
+    if isinstance(data_section, dict) and "password" in data_section:
+        data_section["password"] = "***"
+    return safe_update
+
+
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Migrate config entry to the current version.
 
@@ -42,27 +58,15 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "Migrating config entry '%s' from version %d", entry.title, entry.version
     )
 
+    # Delegate migration steps to helpers in migrations.py
+    # Migrate v1 -> v2
     if entry.version == 1:
-        username = entry.data.get(CONF_USERNAME)
-        new_data = {**entry.data, CONF_API_TYPE: API_TYPE_XML}
-        update_kwargs: dict = {"data": new_data, "version": 2}
-
-        if username:
-            new_unique_id = f"{API_TYPE_XML}_{username}"
-            _LOGGER.info(
-                "Migrating entry '%s': adding API type '%s', new unique_id '%s'",
-                entry.title,
-                API_TYPE_XML,
-                new_unique_id,
-            )
-            update_kwargs["unique_id"] = new_unique_id
-        else:
-            _LOGGER.warning(
-                "Migrating entry '%s' to version 2: username missing, unique_id not updated",
-                entry.title,
-            )
-
-        hass.config_entries.async_update_entry(entry, **update_kwargs)
+        update_kwargs = v1_to_v2_update_kwargs(entry)
+        if update_kwargs:
+            # Mask sensitive fields for logging only;
+            safe_update = _mask_sensitive_data(update_kwargs)
+            _LOGGER.debug("Applying v1->v2 migration for entry %s: %s", entry.entry_id, safe_update)
+            hass.config_entries.async_update_entry(entry, **update_kwargs)
 
     return True
 
