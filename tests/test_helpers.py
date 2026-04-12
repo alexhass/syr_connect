@@ -14,6 +14,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_iwh_value,
     get_sensor_lng_value,
     get_sensor_net_value,
     get_sensor_not_map,
@@ -398,6 +399,62 @@ def test_get_sensor_net_value_trio_format() -> None:
 def test_get_sensor_net_value_numeric_int() -> None:
     """Integer input assumed in 1/100 V -> divide by 100."""
     assert get_sensor_net_value(363) == 3.63
+
+
+def test_get_sensor_iwh_returns_int_when_getiwh_int():
+    status = {"getIWH": 10, "getWHU": 0}
+    assert get_sensor_iwh_value(status) == 10
+
+
+def test_get_sensor_iwh_returns_float_when_getiwh_string_float():
+    status = {"getIWH": "12.5", "getWHU": 0}
+    assert get_sensor_iwh_value(status) == 12.5
+
+
+def test_get_sensor_iwh_derived_from_getcnd_integer_result():
+    status = {"getCND": 540}
+    # 540 / 30 == 18 -> int
+    assert get_sensor_iwh_value(status) == 18
+
+
+def test_get_sensor_iwh_derived_from_getcnd_float_result():
+    status = {"getCND": "378"}
+    # 378 / 30 == 12.6 -> float
+    assert get_sensor_iwh_value(status) == 12.6
+
+
+def test_get_sensor_iwh_returns_none_on_invalid_getcnd():
+    status = {"getCND": "not-a-number"}
+    assert get_sensor_iwh_value(status) is None
+
+
+def test_get_sensor_iwh_missing_both_returns_none():
+    status = {}
+    assert get_sensor_iwh_value(status) is None
+
+
+def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive():
+    status = {"getCND": 300, "getWHU": ""}
+    # 300 / 30 == 10 -> int
+    assert get_sensor_iwh_value(status) == 10
+
+
+def test_get_sensor_iwh_derived_from_getcnd_zero():
+    status = {"getCND": 0}
+    # 0 / 30 == 0 -> int
+    assert get_sensor_iwh_value(status) == 0
+
+
+def test_get_sensor_iwh_derived_from_getcnd_empty_string():
+    status = {"getCND": ""}
+    # empty string treated as missing -> None
+    assert get_sensor_iwh_value(status) is None
+
+
+def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive():
+    status = {"getCND": 30}
+    # getWHU missing -> default 0; 30 / 30 == 1 -> int
+    assert get_sensor_iwh_value(status) == 1
 
 
 def test_get_sensor_net_value_numeric_float() -> None:

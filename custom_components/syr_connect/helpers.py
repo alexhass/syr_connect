@@ -622,6 +622,68 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
     return None
 
 
+def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
+    """Compute or return incoming water hardness (getIWH).
+
+    Rules:
+    1. If `getIWH` exists and is numeric, return it (int if whole).
+    2. If `getIWH` missing/empty but `getCND` exists and is numeric,
+       default `getWHU` to 0 when missing and compute `getIWH = getCND / 33`.
+    3. Return ``None`` when values are missing or unparseable.
+    """
+    if not status:
+        return None
+
+    raw_iwh = status.get("getIWH")
+    raw_whu = status.get("getWHU")
+    # Only accept an explicit getIWH when WHU is also present (unit known)
+    if raw_iwh is not None and raw_iwh != "" and raw_whu is not None and raw_whu != "":
+        try:
+            val = float(raw_iwh)
+            # Persist normalized numeric getiwh back into status
+            try:
+                status["getIWH"] = int(val) if val.is_integer() else val
+            except Exception:
+                pass
+            # Return int when it's an exact whole number
+            return int(val) if val.is_integer() else val
+        except (ValueError, TypeError):
+            # Fall through to fallback derivation
+            pass
+
+    # Fallback: derive from getCND when available
+    raw_cnd = status.get("getCND")
+    if raw_cnd is None or raw_cnd == "":
+        return None
+    try:
+        cnd = float(raw_cnd)
+    except (ValueError, TypeError):
+        return None
+
+    # Normalize/ensure getWHU exists; default to 0 when missing or invalid
+    raw_whu = status.get("getWHU")
+    try:
+        whu = int(float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
+    except (ValueError, TypeError):
+        whu = 0
+    try:
+        status["getWHU"] = whu
+    except Exception:
+        pass
+
+    # Compute and persist getIWH
+    # Calculation notes:
+    # - 1 °dH is equivalent to approximately 30-35 µS/cm per scientific articles.
+    # - However, the more precise standard value for clean, unpolluted fresh water appears to be 1 °dH = 33 µS/cm.
+    iwh = cnd / 33.0
+    iwh_out = int(iwh) if iwh.is_integer() else iwh
+    try:
+        status["getIWH"] = iwh_out
+    except Exception:
+        pass
+    return iwh_out
+
+
 def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str, Any]]:
     """Build set commands for regeneration time selection.
 

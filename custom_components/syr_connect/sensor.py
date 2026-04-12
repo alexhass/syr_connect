@@ -41,6 +41,7 @@ from .helpers import (
     get_sensor_ala_map,
     get_sensor_avo_value,
     get_sensor_bat_value,
+    get_sensor_iwh_value,
     get_sensor_lng_value,
     get_sensor_net_value,
     get_sensor_not_map,
@@ -76,6 +77,20 @@ async def async_setup_entry(
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for sensors")
         return
+
+    # Precompute derived sensor values (e.g. getIWH/getWHU) once per device
+    # so we do not mutate device status while iterating over it during entity creation.
+    # This ensures virtual values are available to entities at setup time.
+    for device in coordinator.data.get('devices', []):
+        try:
+            status = device.get('status', {})
+            # Helper will persist getWHU/getIWH when derivation is possible.
+            try:
+                get_sensor_iwh_value(status or {})
+            except Exception:
+                _LOGGER.debug("Preprocessing getIWH failed for device %s", device.get('id'))
+        except Exception:
+            _LOGGER.exception("Failed preprocessing derived sensors for device %s", device.get('id'))
 
     # Remove previously-registered entities that are no longer valid.
     # registry_cleanup also handles conditionally hidden sensors internally.
@@ -588,6 +603,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return None
                     parsed = get_sensor_bat_value(value)
                     return parsed
+
+                # Special handling for incoming water hardness (getIWH):
+                # Prefer explicit getIWH when present, otherwise derive from getCND.
+                if self._sensor_key == 'getIWH':
+                    return get_sensor_iwh_value(status or {})
 
                 # Special handling for mains voltage (getNET)
                 if self._sensor_key == 'getNET':
