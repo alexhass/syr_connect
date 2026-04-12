@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .config_flow import ConfigFlow
 from .const import (
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -53,9 +54,18 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
       1 → 2: Added CONF_API_TYPE field and updated unique_id to include
              API type prefix (legacy entries always used the XML API).
     """
-    _LOGGER.debug(
-        "Migrating config entry '%s' from version %d", entry.title, entry.version
-    )
+    # If the config entry version is from the future, we must not attempt
+    # to migrate it — Home Assistant expects us to return False so the
+    # entry isn't loaded with potentially incompatible data.
+    if entry.version > ConfigFlow.VERSION:
+        _LOGGER.warning(
+            "Config entry '%s' has future version %d; refusing to migrate",
+            entry.entry_id,
+            entry.version,
+        )
+        return False
+
+    _LOGGER.debug("Migrating config entry '%s' from version %d", entry.title, entry.version)
 
     # Delegate migration steps to helpers in migrations.py
     # Migrate v1 -> v2
