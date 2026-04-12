@@ -370,3 +370,21 @@ def test_get_timestamp_format(payload_builder):
     assert hour.isdigit() and len(hour) == 2
     assert minute.isdigit() and len(minute) == 2
     assert second.isdigit() and len(second) == 2
+
+
+def test_compute_local_tzo_fallback_extra(monkeypatch) -> None:
+    """Force an exception in module datetime to hit the fallback branch."""
+    import importlib
+
+    pb_mod = importlib.import_module("custom_components.syr_connect.payload_builder")
+
+    class BadDateTime:
+        def now(self, *args, **kwargs):
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr(pb_mod, "datetime", BadDateTime())
+
+    checksum = SyrChecksum("0123456789ABCDEF", "key")
+    pb = PayloadBuilder("1.0.0", checksum)
+
+    assert pb._compute_local_tzo() == "+00:00:00"

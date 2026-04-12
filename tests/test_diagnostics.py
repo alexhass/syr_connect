@@ -1535,6 +1535,116 @@ async def test_diagnostics_outer_exception_handler(hass: HomeAssistant) -> None:
     assert "raw_xml" in diagnostics
 
 
+async def test_diagnostics_xml_raw_collection_and_masking_additional(hass) -> None:
+    """Exercise XML raw collection and masking logic (additional)."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="syr_connect", title="Test XML", data={}, entry_id="e_xml")
+
+    class FakeResponseParser:
+        def parse_device_list_response(self, xml):
+            return [{"id": "dev1"}]
+
+    class FakePayloadBuilder:
+        def build_device_list_payload(self, session, pid):
+            return "<req/>"
+
+        def build_device_status_payload(self, session, did):
+            return "<req/>"
+
+    class FakeHttpClient:
+        async def post(self, url, payload):
+            # Return XML containing SRN and MAC values to ensure redaction/masking
+            return '<sc><c n="getSRN" v="206AAA12345"/><c n="getMAC" v="AA:BB:CC:DD:EE:FF"/></sc>'
+
+    class FakeXmlApi:
+        def __init__(self):
+            self.projects = [{"id": "p1", "name": "Proj"}]
+            self.session_data = "sess"
+            self.payload_builder = FakePayloadBuilder()
+            self.http_client = FakeHttpClient()
+            self.response_parser = FakeResponseParser()
+
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return None
+
+    fake_coord = type("C", (), {})()
+    fake_coord.api = FakeXmlApi()
+    fake_coord.data = {"devices": [{"id": "dev1", "status": {}}], "projects": [{"id": "p1", "name": "Proj"}]}
+    from datetime import datetime
+    fake_coord.last_update_success = True
+    fake_coord.last_update_success_time = datetime.now()
+
+    entry.runtime_data = fake_coord
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert isinstance(diagnostics.get("raw_xml"), dict)
+    assert "p1" in diagnostics["raw_xml"]
+
+
+async def test_diagnostics_xml_json_session_none_returns_error_additional(hass) -> None:
+    """When coordinator has no http session, JSON collection should return an error dict (additional)."""
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="syr_connect", title="Test", data={}, entry_id="e2")
+
+    fake_coord = type("C", (), {})()
+    fake_coord._session = None
+    fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api"}]}
+    from datetime import datetime
+    fake_coord.last_update_success = True
+    fake_coord.last_update_success_time = datetime.now()
+
+    entry.runtime_data = fake_coord
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert diagnostics.get("raw_json") == {"error": "no http session available on coordinator"}
+
+
+async def test_diagnostics_json_api_redacts_srn_additional(hass) -> None:
+    """When coordinator.api is a JSON API, ensure SRN is replaced with **REDACTED** (additional)."""
+    from types import SimpleNamespace
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    entry = MockConfigEntry(domain="syr_connect", title="TestJSON", data={"api_type": API_TYPE_JSON}, entry_id="e3")
+
+    async def _login():
+        return None
+
+    async def _get_devices(scope):
+        return [{"id": "dev1"}]
+
+    async def _get_device_status(did):
+        return {"getSRN": "206AAA12345", "getMAC": "AA:BB:CC:DD:EE:FF"}
+
+    fake_api = SimpleNamespace()
+    fake_api.is_session_valid = lambda: True
+    fake_api.login = _login
+    fake_api.get_devices = _get_devices
+    fake_api.get_device_status = _get_device_status
+
+    fake_coord = SimpleNamespace()
+    fake_coord.api = fake_api
+    fake_coord.data = {"devices": [{"id": "dev1"}]}
+    from datetime import datetime
+    fake_coord.last_update_success = True
+    fake_coord.last_update_success_time = datetime.now()
+
+    entry.runtime_data = fake_coord
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+
+    raw_json = diagnostics.get("raw_json", {})
+    assert "dev1" in raw_json
+    assert raw_json["dev1"].get("getSRN") == "**REDACTED**"
+
+
 async def test_diagnostics_generic_ip_mac_email_redaction(hass: HomeAssistant) -> None:
     """Test diagnostics redacts IP, MAC, and email addresses."""
     from unittest.mock import AsyncMock
