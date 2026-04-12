@@ -576,6 +576,45 @@ async def test_async_setup_entry_preprocessing_handles_helper_exception(hass: Ho
         await async_setup_entry(hass, entry, add_entities)
 
 
+async def test_async_setup_entry_preprocessing_device_get_raises(hass: HomeAssistant) -> None:
+    """Ensure outer preprocessing exception is handled when device.get raises."""
+
+    class BadDevice:
+        def get(self, key, default=None):
+            raise RuntimeError("boom")
+
+    data = {"devices": [BadDevice()]}
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    # Should not raise despite device.get raising during preprocessing
+    await async_setup_entry(hass, entry, add_entities)
+
+
+def test_getdbd_rounding_precision_typeerror(monkeypatch):
+    """If precision is invalid and round() raises, getDBD returns None."""
+    from custom_components.syr_connect import sensor as sensor_mod
+
+    monkeypatch.setitem(sensor_mod._SYR_CONNECT_SENSOR_UNIT_PRECISION, "getDBD", "bad")
+
+    # Create a coordinator-like object for the sensor
+    data = {"devices": [{"id": "dev_x", "name": "X", "project_id": "p1", "status": {"getDBD": "10"}}]}
+    coord = _build_coordinator(monkeypatch.context.__self__ if hasattr(monkeypatch.context, '__self__') else None, data) if False else None
+    # Instead of building a full coordinator, instantiate SyrConnectSensor directly with a mock coordinator
+    class DummyCoord:
+        def __init__(self, data):
+            self.data = data
+
+    coord = DummyCoord(data)
+    from custom_components.syr_connect.sensor import SyrConnectSensor
+
+    sensor = SyrConnectSensor(coord, "dev_x", "X", "p1", "getDBD")
+    # When precision is invalid, rounding should raise and the function returns None
+    assert sensor.native_value is None
+
+
 @pytest.mark.parametrize(
     ("raw_value", "expected"),
     [
