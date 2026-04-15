@@ -191,4 +191,4 @@ async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry)
         entry.runtime_data.update_interval = timedelta(seconds=new_scan_interval)
         await entry.runtime_data.async_request_refresh()
     else:
-        _LOGGER.debug("Options updated, but scan interval unchanged")
+        _LOGGER.debug("Options updated but scan interval unchanged")
