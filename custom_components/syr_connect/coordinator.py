@@ -262,7 +262,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 now = time.time()
                 for key in list(status.keys()):
                     dev_id_str = str(device.get("id") or "")
-                    ignore_key = (dev_id_str, key)
+                    # Use lowercase key to match the normalized store side.
+                    ignore_key = (dev_id_str, key.lower())
                     expire = self._ignore_until.get(ignore_key)
                     if expire is None:
                         continue
