@@ -1,0 +1,5 @@
+# .gitattributes (im Projektroot anlegen oder ergänzen)
+*.py    text eol=lf
+*.json  text eol=lf
+*.yaml  text eol=lf
+*.md    text eol=lf
