@@ -19,16 +19,21 @@ UNKNOWN_MODEL: dict[str, Any] = {"name": "unknown", "display_name": "Unknown mod
 # fingerprint keys where a threshold of matches is required.
 #
 # Signature fields summary:
-# - `attrs_equals`: dict of `getX` -> value pairs that must all match
-# - `base_path`: json api local access base path for the model or None if not applicable
-# - `cna_equals`: exact match against `getCNA` value (if present)
-# - `manufacturer`: name of the device manufacturer
-# - `ver_prefix` / `ver_contains`: require `getVER` to match the prefix or contain
-# - `v_keys`: set of `getX` keys used as a fingerprint for the model
-# - `v_keys_required`: the minimum number of keys from `v_keys` that must be
-#   present in the flattened response for the signature to match. When
-#   `v_keys` are defined, the code also enforces any `ver_*` or
-#   `attrs_equals` constraints before returning a match.
+# - `attrs_equals`:                 dict of `getX` -> value pairs that must all match
+# - `base_path`:                    json api local access base path for the model or None if not applicable
+# - `cna_equals`:                   exact match against `getCNA` value (if present)
+# - `manufacturer`:                 name of the device manufacturer
+# - `srn_prefix`:                   prefix that `getSRN` must start with
+# - `srn_infix`:                    string that must immediately follow `srn_prefix`
+#                                   (default: "AAA" – the factory batch code used by all
+#                                   current SYR/Hansgrohe/Sanibel devices; override if a
+#                                   future production run changes the pattern)
+# - `ver_prefix` / `ver_contains`:  require `getVER` to match the prefix or contain
+# - `v_keys`:                       set of `getX` keys used as a fingerprint for the model
+# - `v_keys_required`:              the minimum number of keys from `v_keys` that must be
+#                                   present in the flattened response for the signature to match. When
+#                                   `v_keys` are defined, the code also enforces any `ver_*` or
+#                                   `attrs_equals` constraints before returning a match.
 #
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
@@ -166,8 +171,13 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
 
     def srn_match(sig: dict) -> bool:
         srn_prefix = sig.get("srn_prefix")
+        # Default maintains compatibility with existing signatures that only specify srn_prefix without srn_infix.
+        # If srn_prefix is defined but srn_infix is not, it will check for srn_prefix followed by 'AAA' as the
+        # default infix. This allows existing signatures to continue working without modification while enabling
+        # more flexible matching for new signatures that specify a different infix.
+        srn_infix = sig.get("srn_infix", "AAA")
         srn_contains = sig.get("srn_contains")
-        if srn_prefix and not srn.startswith(f"{srn_prefix}AAA"):
+        if srn_prefix and not srn.startswith(f"{srn_prefix}{srn_infix}"):
             return False
         if srn_contains and srn_contains not in srn:
             return False
