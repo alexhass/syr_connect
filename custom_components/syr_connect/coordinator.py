@@ -331,16 +331,35 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
-                get_key = f"get{command[3:]}"
-                for dev in new_data.get("devices", []):
-                    if dev.get("id") == device_id:
-                        status = dev.setdefault("status", {})
-                        # Store as string to match API-parsed values
-                        status[get_key] = str(value)
-                        dev["available"] = True
-                        break
-                # async_set_updated_data is not awaitable; call directly to update data
-                self.async_set_updated_data(new_data)
+                # Derive the read key from the write command.
+                # Convention: all writable SYR commands are named "setXXX";
+                # the corresponding readable key is "getXXX".
+                # Guard explicitly so we never write a garbage key to the status dict.
+                if not command.startswith("set"):
+                    _LOGGER.warning(
+                        "Command '%s' does not follow the 'setXXX' convention; "
+                        "skipping optimistic status update for device %s",
+                        command,
+                        device_id,
+                    )
+                else:
+                    get_key = f"get{command[3:]}"
+                    for dev in new_data.get("devices", []):
+                        if dev.get("id") == device_id:
+                            status = dev.setdefault("status", {})
+                            status[get_key] = str(value)
+                            dev["available"] = True
+                            break
+                    self.async_set_updated_data(new_data)
+
+                    # For valve commands (getAB) only: suppress incoming API values …
+                    try:
+                        if get_key.lower() == "getab":
+                            self._ignore_until[(device_id, get_key)] = (
+                                time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
+                            )
+                    except (KeyError, TypeError) as err:
+                        _LOGGER.debug("Failed to set ignore_until for getab: %s", err)
 
                 # For valve commands (getAB) only: suppress incoming API values for
                 # 60 s because SYR devices take time to reflect the new state.
