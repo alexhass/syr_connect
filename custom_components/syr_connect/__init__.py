@@ -161,15 +161,26 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle options update (scan_interval changes).
-
-    This listener is triggered when the user changes integration options
-    through the Options Flow (e.g., updates the scan interval).
-    """
+    """Handle options update (scan_interval changes)."""
     old_scan_interval = entry.runtime_data.update_interval.total_seconds()
-    # When checking for option updates, fall back to the per-API default
-    # so that JSON entries without explicit options use the JSON default.
     new_scan_interval = get_default_scan_interval_for_entry(entry)
+
+    # Enforce the same minimum as async_setup_entry so no code path can
+    # bypass the per-API floor, even if the config flow schema changes.
+    api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
+    min_allowed = (
+        _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM
+        if api_type == API_TYPE_JSON
+        else _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM
+    )
+    if new_scan_interval < min_allowed:
+        _LOGGER.warning(
+            "Options scan interval %d is below minimum for %s API; clamping to %d seconds",
+            new_scan_interval,
+            api_type,
+            min_allowed,
+        )
+        new_scan_interval = min_allowed
 
     if old_scan_interval != new_scan_interval:
         _LOGGER.info(
@@ -177,12 +188,7 @@ async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry)
             int(old_scan_interval),
             new_scan_interval,
         )
-        # Update coordinator update interval
         entry.runtime_data.update_interval = timedelta(seconds=new_scan_interval)
-        # Request refresh with new interval
         await entry.runtime_data.async_request_refresh()
     else:
-        _LOGGER.debug("Options updated but scan interval unchanged")
-
-
-
+        _LOGGER.debug("Options updated, but scan interval unchanged")
