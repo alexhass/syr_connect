@@ -395,6 +395,15 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         This gives the SYR API time to process changes so the subsequent
         refresh will return the authoritative, updated device status.
+
+        This delay does not change dynamically based on the API type or command since
+        valve motors take time to close the valve. SYR does not provide any feedback
+        mechanism or status for in-progress commands, so we have no way to know when
+        the device has finished processing the command.
+
+        By waiting a full 60 seconds, we can ensure that even slow-processing
+        commands have time to complete before we refresh and fetch the new state
+        from the API.
         """
         try:
             await asyncio.sleep(delay)
