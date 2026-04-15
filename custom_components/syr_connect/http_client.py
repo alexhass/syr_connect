@@ -37,35 +37,36 @@ class HTTPClient:
         self.user_agent = user_agent
         self.max_retries = max_retries
         self.timeout = timeout
+        # Compute once at init; locale does not change during a HA session.
+        self._accept_language = self._build_accept_language()
 
-    def _get_headers(self, content_type: str = 'application/x-www-form-urlencoded') -> dict[str, str]:
-        """Get standard headers for API requests.
 
-        Args:
-            content_type: Content-Type header value
+    @staticmethod
+    def _build_accept_language() -> str:
+        """Compute the Accept-Language header value from the system locale.
 
-        Returns:
-            Dictionary of headers
+        Called once at construction time; result is cached in self._accept_language.
         """
-        # Determine Accept-Language based on system locale (fallback to en-US)
         try:
-            # Prefer locale.getlocale() (non-deprecated) and fall back to LANG env var
             loc = locale.getlocale()[0] or os.environ.get("LANG") or "en_US"
-            # Convert 'en_US' -> 'en-US'
-            lang_tag = loc.replace('_', '-')
-            primary = lang_tag.split('-')[0]
-            accept_language = f"{lang_tag},{primary};q=0.9"
+            lang_tag = loc.replace("_", "-")
+            primary = lang_tag.split("-")[0]
+            return f"{lang_tag},{primary};q=0.9"
         except Exception as err:
-            # Log the failure to determine locale and fall back to a safe default
-            _LOGGER.exception("Failed to determine system locale for Accept-Language header: %s", err)
-            accept_language = "en-US,en;q=0.9"
+            _LOGGER.exception(
+                "Failed to determine system locale for Accept-Language header: %s", err
+            )
+            return "en-US,en;q=0.9"
 
+
+    def _get_headers(self, content_type: str = "application/x-www-form-urlencoded") -> dict[str, str]:
+        """Get standard headers for API requests."""
         return {
-            'Content-Type': content_type,
-            'Connection': 'keep-alive',
-            'Accept': '*/*',
-            'User-Agent': self.user_agent,
-            'Accept-Language': accept_language,
+            "Content-Type": content_type,
+            "Connection": "keep-alive",
+            "Accept": "*/*",
+            "User-Agent": self.user_agent,
+            "Accept-Language": self._accept_language,   # cached
         }
 
 
