@@ -10,6 +10,7 @@ from datetime import timedelta
 from typing import Any
 
 import aiohttp
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import (
@@ -104,8 +105,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Coordinator initialized with JSON API (host=%s, model=%s)", host, model)
         else:
             # Cloud XML API (default)
-            from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-
             username = config_data[CONF_USERNAME]
             password = config_data[CONF_PASSWORD]
             self.api = SyrConnectXmlAPI(session, username, password)
