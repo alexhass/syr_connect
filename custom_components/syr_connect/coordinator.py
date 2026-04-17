@@ -351,7 +351,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             break
                     self.async_set_updated_data(new_data)
 
-                    # For valve commands (getAB) only: suppress incoming API values …
+                    # For valve commands (getAB) only: suppress incoming API values for
+                    # 60 s because SYR devices take time to reflect the new state.
+                    # All other keys are intentionally not protected — they will be
+                    # overwritten by the next poll, which is the desired behaviour.
                     try:
                         if get_key.lower() == "getab":
                             self._ignore_until[(device_id, get_key)] = (
@@ -360,16 +363,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     except (KeyError, TypeError) as err:
                         _LOGGER.debug("Failed to set ignore_until for getab: %s", err)
 
-                # For valve commands (getAB) only: suppress incoming API values for
-                # 60 s because SYR devices take time to reflect the new state.
-                # All other keys are intentionally not protected — they will be
-                # overwritten by the next poll, which is the desired behaviour.
-                try:
-                    if get_key.lower() == "getab":
-                        self._ignore_until[(device_id, get_key)] = time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
-                except (KeyError, TypeError) as err:
-                    _LOGGER.debug("Failed to set ignore_until for getab: %s", err)
-                    pass
         except (KeyError, AttributeError, TypeError, ValueError) as err:  # pragma: no cover - defensive
             _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
