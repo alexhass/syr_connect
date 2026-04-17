@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -38,7 +38,7 @@ class HTTPClient:
         # Accept-Language is computed lazily from `self.language` when
         # building headers so the coordinator can set `client.language`
         # after construction if Home Assistant exposes a language.
-        self._accept_language: Optional[str] = None
+        self._accept_language: str | None = None
 
 
     @staticmethod
