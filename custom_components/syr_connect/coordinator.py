@@ -327,6 +327,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # Optimistically update the in-memory coordinator data so entities show
         # the new value immediately, then attempt to set it via the API and
         # schedule a background refresh to retrieve authoritative data.
+        # Ensure get_key is always defined to avoid NameError if command
+        # does not follow the 'setXXX' convention and code later checks it.
+        get_key: str | None = None
+
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
@@ -356,7 +360,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     # All other keys are intentionally not protected — they will be
                     # overwritten by the next poll, which is the desired behaviour.
                     try:
-                        if get_key.lower() == "getab":
+                        # Only set ignore window when we have a valid get_key
+                        if get_key and get_key.lower() == "getab":
                             self._ignore_until[(device_id, get_key)] = (
                                 time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
                             )
