@@ -41,7 +41,6 @@ class HTTPClient:
         self._accept_language: str | None = None
 
 
-    @staticmethod
     def _build_accept_language(self) -> str:
         """Compute the Accept-Language header value from the instance language.
 
