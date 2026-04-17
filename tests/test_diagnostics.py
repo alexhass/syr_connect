@@ -3907,3 +3907,58 @@ def test_mask_mac_last_char_replace_re_error(monkeypatch):
     res = diag.mask_mac_value(mac, last_char_replace="Y")
     assert isinstance(res, str)
     assert "XX" in res
+
+
+async def test_diagnostics_xml_json_per_device_success(monkeypatch, hass: HomeAssistant) -> None:
+    """When running diagnostics for an XML-configured entry, per-device JSON fetch should be included."""
+    # Fake JSON API that returns a typical device payload
+    class FakeJsonApi:
+        def __init__(self, session, host=None, base_path=None):
+            self._session = session
+
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return None
+
+        def _build_base_url(self):
+            return "http://1.2.3.4"
+
+        async def get_device_status(self, *a, **kw):
+            return {"getSRN": "206AAA67890", "getMAC": "AA:BB:CC:DD:EE:FF", "getFLO": "5"}
+
+    # Make diagnostics use our FakeJsonApi
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.168.1.10", "status": {}}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = MagicMock()
+    mock_coordinator.api = None
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    raw_json = diagnostics["raw_json"]
+    assert "dev1" in raw_json
+    payload = raw_json["dev1"]
+    # getSRN should have been replaced with the redact marker
+    assert payload.get("getSRN") == "**REDACTED**" or payload.get("getSRN") is None
