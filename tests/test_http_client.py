@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
+import logging
 
 from custom_components.syr_connect.http_client import HTTPClient
 
@@ -244,3 +245,20 @@ async def test_http_client_post_zero_retries_raises() -> None:
 
     with pytest.raises(aiohttp.ClientError, match="Request failed after all retries"):
         await client.post("https://example.com/api", {"key": "value"})
+
+
+def test_build_accept_language_exception_fallback(caplog) -> None:
+    """If computing Accept-Language raises, fallback to default is used and error logged."""
+    client = HTTPClient(session=MagicMock(), user_agent="test-agent")
+
+    class BadLang:
+        def replace(self, *args, **kwargs):
+            raise RuntimeError("boom")
+
+    client.language = BadLang()
+    caplog.set_level(logging.ERROR)
+
+    result = client._build_accept_language()
+
+    assert result == "en-US,en;q=0.9"
+    assert "Failed to determine Accept-Language" in caplog.text

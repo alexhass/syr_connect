@@ -1412,6 +1412,15 @@ async def test_form_api_json_host_invalid_exception_flow(hass: HomeAssistant) ->
     assert result3["errors"] == {CONF_HOST: "host_invalid"}
 
 
+async def test_validate_input_json_is_valid_host_false_raises(hass: HomeAssistant) -> None:
+    """If `is_valid_host` returns False, validate_input_json should raise HostInvalidError."""
+    from custom_components.syr_connect.config_flow import validate_input_json, HostInvalidError
+
+    with patch("custom_components.syr_connect.config_flow.is_valid_host", return_value=False):
+        with pytest.raises(HostInvalidError):
+            await validate_input_json(hass, {CONF_HOST: "bad_host", CONF_MODEL: "neosoft5000"})
+
+
 async def test_form_api_xml_with_generic_exception(hass: HomeAssistant) -> None:
     """Test cloud/XML config flow with generic exception during API initialization."""
     result = await hass.config_entries.flow.async_init(

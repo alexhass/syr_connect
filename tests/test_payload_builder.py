@@ -52,6 +52,26 @@ def test_compute_locale_lang_reg_exception_fallback(caplog) -> None:
     assert (lang, reg) == ("en", "US")
 
 
+def test_compute_locale_lang_reg_replace_exception(caplog) -> None:
+    """If `language.replace` raises, fallback to en/US is used and logged."""
+    from unittest.mock import MagicMock
+
+    from custom_components.syr_connect.payload_builder import PayloadBuilder
+
+    class BadLang:
+        def replace(self, *args, **kwargs):
+            raise RuntimeError("boom")
+
+    pb = PayloadBuilder("1.0", MagicMock())
+    pb.language = BadLang()
+    caplog.set_level("ERROR")
+
+    lang, reg = pb._compute_locale_lang_reg()
+
+    assert (lang, reg) == ("en", "US")
+    assert "Failed to determine locale language/region" in caplog.text
+
+
 def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     """Login payload should include escaped credentials and computed tzo/lang/reg."""
     fake_checksum = MagicMock()

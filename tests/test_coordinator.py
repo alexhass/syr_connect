@@ -133,6 +133,58 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
         mock_api.set_device_status.assert_called_once_with("dclg1", "setSIR", 0)
 
 
+async def test_set_device_status_api_raises_propagates(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """If API.set_device_status raises, the exception should propagate to caller."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_device_status = AsyncMock(return_value={})
+        mock_api.set_device_status = AsyncMock(side_effect=Exception("set failed"))
+        mock_api_class.return_value = mock_api
+
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Populate initial data
+        await coordinator.async_config_entry_first_refresh()
+
+        # Ensure exception from API call is propagated
+        with patch.object(coordinator, "async_set_updated_data"):
+            with pytest.raises(Exception, match="set failed"):
+                await coordinator.async_set_device_value("device1", "setSIR", 10)
+
+
+async def test_invalid_command_no_optimistic_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Commands not starting with 'set' should not perform optimistic updates."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1", "status": {}}])
+        mock_api.get_device_status = AsyncMock(return_value={})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        # Use a non-conforming command
+        with patch.object(coordinator, "async_set_updated_data") as mock_async_set_updated_data:
+            await coordinator.async_set_device_value("device1", "badCommand", 1)
+
+        # optimistic update should NOT have occurred
+        mock_async_set_updated_data.assert_not_called()
+        # API call should still be attempted
+        mock_api.set_device_status.assert_called_once()
+
+
 async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator optimistic update of in-memory data."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:

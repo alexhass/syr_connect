@@ -288,6 +288,40 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
     mock_coordinator.async_request_refresh.assert_not_called()
 
 
+async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssistant, caplog) -> None:
+    """Test options update listener clamps scan interval below minimum for JSON API."""
+    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
+
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test JSON Options Clamp",
+        data={
+            "username": "json@example.com",
+            "password": "password",
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "192.0.2.1",
+        },
+        source="user",
+        entry_id="json_options_entry_id",
+        unique_id=f"{API_TYPE_JSON}_json@example.com",
+        options={"scan_interval": 1},
+    )
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.update_interval = timedelta(seconds=60)  # Old interval
+    mock_coordinator.async_request_refresh = AsyncMock()
+    config_entry.runtime_data = mock_coordinator
+
+    caplog.set_level("WARNING")
+    await async_options_update_listener(hass, config_entry)
+
+    # Minimum for JSON API is 10 seconds, so interval should be clamped
+    assert config_entry.runtime_data.update_interval == timedelta(seconds=10)
+    assert "clamping to" in caplog.text or "below minimum" in caplog.text
+
+
 async def test_async_setup_entry_clamps_scan_interval_and_logs(hass: HomeAssistant, caplog) -> None:
     """Test JSON API clamps scan interval below minimum and logs a warning."""
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
