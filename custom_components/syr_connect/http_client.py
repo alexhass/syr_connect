@@ -40,7 +40,6 @@ class HTTPClient:
         # after construction if Home Assistant exposes a language.
         self._accept_language: str | None = None
 
-
     def _build_accept_language(self) -> str:
         """Compute the Accept-Language header value from the instance language.
 
@@ -60,7 +59,6 @@ class HTTPClient:
             _LOGGER.exception("Failed to determine Accept-Language: %s", err)
             return "en-US,en;q=0.9"
 
-
     def _get_headers(self, content_type: str = "application/x-www-form-urlencoded") -> dict[str, str]:
         """Get standard headers for API requests."""
         return {
@@ -70,7 +68,6 @@ class HTTPClient:
             "User-Agent": self.user_agent,
             "Accept-Language": self._build_accept_language(),
         }
-
 
     async def post(
         self,
