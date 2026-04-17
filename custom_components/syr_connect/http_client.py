@@ -2,10 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-import locale
 import logging
-import os
-from typing import Any
+from typing import Any, Optional
 
 import aiohttp
 
@@ -37,25 +35,30 @@ class HTTPClient:
         self.user_agent = user_agent
         self.max_retries = max_retries
         self.timeout = timeout
-        # Compute once at init; locale does not change during a HA session.
-        self._accept_language = self._build_accept_language()
+        # Accept-Language is computed lazily from `self.language` when
+        # building headers so the coordinator can set `client.language`
+        # after construction if Home Assistant exposes a language.
+        self._accept_language: Optional[str] = None
 
 
     @staticmethod
-    def _build_accept_language() -> str:
-        """Compute the Accept-Language header value from the system locale.
+    def _build_accept_language(self) -> str:
+        """Compute the Accept-Language header value from the instance language.
 
-        Called once at construction time; result is cached in self._accept_language.
+        If `self.language` is set (populated by the coordinator from
+        `hass.config.language`) it's used. Otherwise fall back to a
+        safe default.
         """
         try:
-            loc = locale.getlocale()[0] or os.environ.get("LANG") or "en_US"
-            lang_tag = loc.replace("_", "-")
-            primary = lang_tag.split("-")[0]
-            return f"{lang_tag},{primary};q=0.9"
+            lang_pref = getattr(self, "language", None)
+            if lang_pref:
+                loc = lang_pref.replace("-", "_")
+                lang_tag = loc.replace("_", "-")
+                primary = lang_tag.split("-")[0]
+                return f"{lang_tag},{primary};q=0.9"
+            return "en-US,en;q=0.9"
         except Exception as err:
-            _LOGGER.exception(
-                "Failed to determine system locale for Accept-Language header: %s", err
-            )
+            _LOGGER.exception("Failed to determine Accept-Language: %s", err)
             return "en-US,en;q=0.9"
 
 
@@ -66,7 +69,7 @@ class HTTPClient:
             "Connection": "keep-alive",
             "Accept": "*/*",
             "User-Agent": self.user_agent,
-            "Accept-Language": self._accept_language,   # cached
+            "Accept-Language": self._build_accept_language(),
         }
 
 

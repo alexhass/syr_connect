@@ -1,9 +1,7 @@
 """XML payload builder for SYR Connect API."""
 from __future__ import annotations
 
-import locale
 import logging
-import os
 from datetime import UTC, datetime, timedelta
 from xml.sax.saxutils import escape
 
@@ -55,16 +53,18 @@ class PayloadBuilder:
             # Fallback to UTC
             return "+00:00:00"
 
-    @staticmethod
-    def _compute_locale_lang_reg() -> tuple[str, str]:
-        """Return (lang, reg) based on system locale, defaults to en/US."""
+    def _compute_locale_lang_reg(self) -> tuple[str, str]:
+        """Return (lang, reg) based on instance language or defaults to en/US.
+
+        The integration (coordinator) may set `builder.language` from
+        `hass.config.language`. If not present, a safe default is used.
+        """
         try:
-            # Use locale.getlocale() (not deprecated) and fall back to LANG env var
-            loc = locale.getlocale()[0] or os.environ.get("LANG")
-            if not loc:
+            lang_pref = getattr(self, "language", None)
+            if not lang_pref:
                 return ("en", "US")
-            # loc typically like 'en_US' or 'de_DE'
-            parts = loc.replace('-', '_').split('_')
+            loc = lang_pref.replace("-", "_")
+            parts = loc.split("_")
             lang = parts[0].lower() if parts else "en"
             reg = parts[1].upper() if len(parts) > 1 else "US"
             return (lang, reg)

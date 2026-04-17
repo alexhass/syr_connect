@@ -9,17 +9,18 @@ import pytest
 from custom_components.syr_connect.http_client import HTTPClient
 
 
-def test_get_headers_locale_failure(caplog) -> None:
-    """If locale determination fails, Accept-Language falls back to en-US."""
-    # Force locale.getlocale to raise
-    with patch("custom_components.syr_connect.http_client.locale.getlocale", side_effect=ValueError("boom")):
-        client = HTTPClient(session=MagicMock(), user_agent="test-agent")
-        caplog.set_level("ERROR")
-        headers = client._get_headers()
+def test_get_headers_accept_language_default_and_custom() -> None:
+    """Default Accept-Language when no `language` set, and respects `language` when set."""
+    client = HTTPClient(session=MagicMock(), user_agent="test-agent")
 
-    assert headers["Accept-Language"] == "en-US,en;q=0.9"
-    # Should have logged the exception
-    assert "Failed to determine system locale for Accept-Language header" in caplog.text
+    # Default fallback when no language set
+    headers_default = client._get_headers()
+    assert headers_default["Accept-Language"] == "en-US,en;q=0.9"
+
+    # Setting instance language should affect header
+    client.language = "de_DE"
+    headers_de = client._get_headers()
+    assert headers_de["Accept-Language"] == "de-DE,de;q=0.9"
 
 
 @pytest.mark.asyncio

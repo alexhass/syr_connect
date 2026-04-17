@@ -24,32 +24,32 @@ def test_compute_local_tzo_exception_fallback(caplog) -> None:
 
 
 def test_compute_locale_lang_reg_from_getlocale() -> None:
-    """Locale parsing returns language and region from locale.getlocale()."""
-    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=("de_DE", "UTF-8")):
-        lang, reg = PayloadBuilder._compute_locale_lang_reg()
+    """Locale parsing returns language and region from instance `language`."""
+    pb = PayloadBuilder("1.0", MagicMock())
+    pb.language = "de_DE"
+    lang, reg = pb._compute_locale_lang_reg()
 
     assert lang == "de"
     assert reg == "DE"
 
 
 def test_compute_locale_lang_reg_from_env() -> None:
-    """When getlocale returns None, fallback to LANG env var."""
-    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=(None, None)):
-        with patch.dict(os.environ, {"LANG": "fr_FR"}):
-            lang, reg = PayloadBuilder._compute_locale_lang_reg()
+    """When instance language is set from an env-like value, return language and region."""
+    pb = PayloadBuilder("1.0", MagicMock())
+    pb.language = "fr_FR"
+    lang, reg = pb._compute_locale_lang_reg()
 
     assert lang == "fr"
     assert reg == "FR"
 
 
 def test_compute_locale_lang_reg_exception_fallback(caplog) -> None:
-    """If locale.getlocale raises, fallback to en/US and log."""
-    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", side_effect=Exception("boom")):
-        caplog.set_level("ERROR")
-        lang, reg = PayloadBuilder._compute_locale_lang_reg()
+    """If no instance language is set, fallback to en/US."""
+    pb = PayloadBuilder("1.0", MagicMock())
+    caplog.set_level("ERROR")
+    lang, reg = pb._compute_locale_lang_reg()
 
     assert (lang, reg) == ("en", "US")
-    assert "Failed to determine locale language/region" in caplog.text
 
 
 def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
@@ -125,15 +125,17 @@ def test_compute_local_tzo_negative_offset() -> None:
 
 def test_compute_locale_lang_reg_dash_and_single() -> None:
     """Locale parsing handles dash-separated and single-part locales."""
+    pb = PayloadBuilder("1.0", MagicMock())
+
     # dash-separated
-    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=("en-US", None)):
-        lang, reg = PayloadBuilder._compute_locale_lang_reg()
+    pb.language = "en-US"
+    lang, reg = pb._compute_locale_lang_reg()
     assert lang == "en"
     assert reg == "US"
 
     # single-part (no region) should default to US
-    with patch("custom_components.syr_connect.payload_builder.locale.getlocale", return_value=("es", None)):
-        lang2, reg2 = PayloadBuilder._compute_locale_lang_reg()
+    pb.language = "es"
+    lang2, reg2 = pb._compute_locale_lang_reg()
     assert lang2 == "es"
     assert reg2 == "US"
 
