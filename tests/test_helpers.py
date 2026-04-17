@@ -870,7 +870,6 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
     registry.async_remove.assert_not_called()
 
 
-
     # Wi-Fi present but WFS indicates not connected
     status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}
     assert get_current_mac(status) is None

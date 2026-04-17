@@ -1224,7 +1224,6 @@ def test_build_time_options_step_60_additional():
     assert opts[-1] == "23:00"
 
 
-
 async def test_regeneration_select_current_and_select_with_mock(create_mock_coordinator, hass):
     data = {"devices": [{"id": "mdev1", "name": "Device M", "status": {"getRTM": "07:30"}, "available": True}]}
     coord = create_mock_coordinator(data)

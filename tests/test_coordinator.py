@@ -91,7 +91,6 @@ async def test_coordinator_update_no_session(hass: HomeAssistant, setup_in_progr
         mock_api.login.assert_called_once()
 
 
-
 async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test setting device value through coordinator."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
