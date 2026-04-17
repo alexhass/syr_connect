@@ -831,6 +831,39 @@ async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_
         with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
             await coordinator.async_set_device_value("device1", "setAB", 2)
 
+
+    async def test_fetch_device_status_handles_internal_type_error_and_creates_issue(
+        hass: HomeAssistant, setup_in_progress_config_entry
+    ) -> None:
+        """If internal ignore dict.get raises TypeError, fetch should mark device unavailable and create an issue."""
+        with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
+             patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
+            mock_api = MagicMock()
+            mock_api.session_data = "sess"
+            mock_api.projects = [{"id": "p1", "name": "P1"}]
+            mock_api.is_session_valid = MagicMock(return_value=True)
+            mock_api.get_device_status = AsyncMock(return_value={"getPRS": "50"})
+            mock_api_class.return_value = mock_api
+
+            config_data = {CONF_USERNAME: "u", CONF_PASSWORD: "p"}
+            coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+            # Provide previous data so the code path attempts to consult prev_devices
+            coord.data = {"devices": [{"id": "dev1", "status": {"getPRS": "40"}}]}
+
+            # Make _ignore_until.get raise TypeError to trigger the defensive except
+            bad = MagicMock()
+            bad.get.side_effect = TypeError("boom")
+            coord._ignore_until = bad
+
+            device = {"id": "dev1", "dclg": "dclg1"}
+
+            result = await coord._fetch_device_status(device, "p1")
+
+            # Should have marked device unavailable and created an issue
+            assert isinstance(result, dict)
+            assert result.get("available") is False
+            mock_create_issue.assert_called()
+
         # Ignore window should be set
         key = ("device1", "getAB")
         assert key in coordinator._ignore_until

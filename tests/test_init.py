@@ -12,6 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import (
+    _mask_sensitive_data,
     async_migrate_entry,
     async_options_update_listener,
     async_reload_entry,
@@ -405,6 +406,41 @@ async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> 
     assert result is True
     # async_setup_entry must not perform migration itself (async_migrate_entry is invoked by HA)
     mock_update.assert_not_called()
+
+
+async def test_mask_sensitive_data_masks_password_and_does_not_mutate_original() -> None:
+    """Ensure `_mask_sensitive_data` masks passwords and deep-copies input."""
+    original = {"data": {"password": "secret", "other": "x"}}
+    out = _mask_sensitive_data(original)
+
+    assert out["data"]["password"] == "***"
+    # original must remain unchanged
+    assert original["data"]["password"] == "secret"
+
+
+async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
+    """async_setup_entry must re-raise ConfigEntryAuthFailed from coordinator."""
+    from homeassistant.exceptions import ConfigEntryAuthFailed
+
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock(side_effect=ConfigEntryAuthFailed("bad auth"))
+        mock_coordinator_class.return_value = mock_coordinator
+
+        with pytest.raises(ConfigEntryAuthFailed):
+            await async_setup_entry(hass, config_entry)
 
 
 async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
