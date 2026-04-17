@@ -997,6 +997,32 @@ async def test_ignore_rule_removes_key_when_no_previous_status(hass: HomeAssista
         assert result.get("status", {}) == {}
 
 
+async def test_fetch_device_status_preserves_prev_value_when_ignore_active(hass: HomeAssistant) -> None:
+    """When an ignore window exists and previous device status has the key, keep prev value."""
+    mock_api = MagicMock()
+    mock_api.session_data = "sess"
+    mock_api.projects = [{"id": "p1", "name": "P1"}]
+    mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
+
+    config_data = {CONF_USERNAME: "u", CONF_PASSWORD: "p"}
+    coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+    # Inject a fake api that returns the API status
+    coord.api = mock_api
+
+    # Provide previous data so the code path uses it
+    coord.data = {"devices": [{"id": "dev1", "status": {"getAB": "2"}}]}
+
+    # Set the ignore window for the device:key to be in the future
+    coord._ignore_until[("dev1", "getAB")] = time.time() + 60
+
+    device = {"id": "dev1", "dclg": "dclg1"}
+
+    result = await coord._fetch_device_status(device, "p1")
+
+    assert isinstance(result, dict)
+    assert result.get("status", {}).get("getAB") == "2"
+
+
 async def test_fetch_device_status_ignore_key_pop_when_prev_missing(hass: HomeAssistant) -> None:
     """If an ignore rule is present but the previous device has no key, it should be removed from status."""
     from unittest.mock import patch
