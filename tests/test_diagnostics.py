@@ -3962,3 +3962,37 @@ async def test_diagnostics_xml_json_per_device_success(monkeypatch, hass: HomeAs
     payload = raw_json["dev1"]
     # getSRN should have been replaced with the redact marker
     assert payload.get("getSRN") == "**REDACTED**" or payload.get("getSRN") is None
+
+
+async def test_diagnostics_xml_outer_try_except_sets_error(hass: HomeAssistant) -> None:
+    """Force an exception during XML project iteration to hit outer except branch."""
+    entry = _cov_entry()
+    coord = _cov_coordinator()
+
+    class BadApi:
+        def is_session_valid(self):
+            return True
+
+        @property
+        def projects(self):
+            raise RuntimeError("boom")
+
+    coord.api = BadApi()
+    entry.runtime_data = coord
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+    assert "raw_xml" in result
+    assert result["raw_xml"] == {"error": "failed to collect raw xml for all projects"}
+
+
+async def test_diagnostics_xml_json_no_session_sets_error(hass: HomeAssistant) -> None:
+    """When coordinator lacks an HTTP session, JSON collection should set an error."""
+    entry = _cov_entry()
+    coord = _cov_coordinator(data={"devices": [{"id": "dev1", "base_path": "/api"}], "projects": []})
+    coord._session = None
+    coord.api = None
+    entry.runtime_data = coord
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+    assert "raw_json" in result
+    assert result["raw_json"] == {"error": "no http session available on coordinator"}
