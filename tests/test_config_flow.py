@@ -224,6 +224,66 @@ async def test_validate_input_json_device_missing_id_raises(hass: HomeAssistant)
         with pytest.raises(CannotConnectError):
             await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
 
+
+async def test_reauth_confirm_json_initial_form(hass: HomeAssistant) -> None:
+    """Initial reauth form for JSON API should be shown (host placeholder)."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_reauth_init@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "192.0.2.5",
+            CONF_MODEL: "neosoft5000",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_REAUTH, "entry_id": entry.entry_id},
+        data=entry.data,
+    )
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "reauth_confirm"
+
+
+async def test_reauth_confirm_json_success(hass: HomeAssistant) -> None:
+    """Successful JSON reauth should update and abort with reauth_successful."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_reauth_success@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "192.0.2.5",
+            CONF_MODEL: "neosoft5000",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_REAUTH, "entry_id": entry.entry_id},
+        data=entry.data,
+    )
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_json",
+        new_callable=AsyncMock,
+        return_value={"title": "SYR Connect Local (192.0.2.5)", "login_required": False},
+    ), patch(
+        "custom_components.syr_connect.async_setup_entry",
+        new_callable=AsyncMock,
+    ) as mock_setup_entry:
+        mock_setup_entry.return_value = True
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "192.0.2.5", CONF_MODEL: "neosoft5000"}
+        )
+        await hass.async_block_till_done()
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "reauth_successful"
+
 async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> None:
     """If get_device_status returns empty, validation must fail."""
     from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_json

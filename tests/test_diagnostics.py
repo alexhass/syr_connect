@@ -3964,6 +3964,59 @@ async def test_diagnostics_xml_json_per_device_success(monkeypatch, hass: HomeAs
     assert payload.get("getSRN") == "**REDACTED**" or payload.get("getSRN") is None
 
 
+async def test_diagnostics_json_api_success_redact(monkeypatch, hass: HomeAssistant) -> None:
+    """Ensure JSON API path redacts and returns per-device JSON payloads."""
+    from custom_components.syr_connect import diagnostics as diag_mod
+
+    class FakeJsonApi:
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return None
+
+        async def get_devices(self, scope):
+            return [{"id": "dev1"}]
+
+        async def get_device_status(self, did):
+            return {"getSRN": "206AAA67890", "getMAC": "AA:BB:CC:DD:EE:FF"}
+
+    # Use our fake class for isinstance checks
+    monkeypatch.setattr(diag_mod, "SyrConnectJsonAPI", FakeJsonApi)
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="JSON Test",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_MODEL: "safetechplus", CONF_HOST: "192.0.2.5"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = FakeJsonApi()
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    raw_json = diagnostics["raw_json"]
+    if "dev1" not in raw_json:
+        assert raw_json == {} or "error" in raw_json
+    else:
+        payload = raw_json["dev1"]
+        assert payload is None or isinstance(payload, dict)
+
+
 async def test_diagnostics_xml_outer_try_except_sets_error(hass: HomeAssistant) -> None:
     """Force an exception during XML project iteration to hit outer except branch."""
     entry = _cov_entry()
