@@ -165,7 +165,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     continue
 
                 project = self.api.projects[project_idx]
-                project_id = project["id"]
                 devices_result = result
                 if not isinstance(devices_result, list):
                     _LOGGER.warning("Device list result is not a list: %s", devices_result)
@@ -175,7 +174,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug("Found %d device(s) in project %s", len(devices), project["name"])
 
                 # Get status for all devices in parallel
-                status_tasks = [self._fetch_device_status(device, project_id) for device in devices]
+                status_tasks = [self._fetch_device_status(device) for device in devices]
 
                 device_results = await asyncio.gather(*status_tasks, return_exceptions=True)
 
@@ -198,20 +197,16 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.error("Update failed: %s", err, exc_info=True)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-    async def _fetch_device_status(self, device: dict[str, Any], project_id: str) -> dict[str, Any] | None:
+    async def _fetch_device_status(self, device: dict[str, Any]) -> dict[str, Any] | None:
         """Fetch status for a single device.
 
         Args:
             device: Device dictionary
-            project_id: Project ID
 
         Returns:
             Device dictionary with status or None if failed
         """
         try:
-            # Add project_id to device
-            device["project_id"] = project_id
-
             # DCLG remains the device identifier for XML API calls
             dclg = device.get("dclg", device["id"])
 
