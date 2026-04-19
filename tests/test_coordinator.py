@@ -908,7 +908,7 @@ async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_
 
             device = {"id": "dev1", "dclg": "dclg1"}
 
-            result = await coord._fetch_device_status(device, "p1")
+            result = await coord._fetch_device_status(device)
 
             # Should have marked device unavailable and created an issue
             assert isinstance(result, dict)
@@ -990,7 +990,7 @@ async def test_ignore_rule_removes_key_when_no_previous_status(hass: HomeAssista
 
         # Call internal fetch to exercise ignore logic
         device = {"id": "deviceX", "dclg": "dclgX"}
-        result = await coordinator._fetch_device_status(device, "project1")
+        result = await coordinator._fetch_device_status(device)
 
         # The returned status should NOT contain getAB because no previous status existed
         assert isinstance(result, dict)
@@ -1017,7 +1017,7 @@ async def test_fetch_device_status_preserves_prev_value_when_ignore_active(hass:
 
     device = {"id": "dev1", "dclg": "dclg1"}
 
-    result = await coord._fetch_device_status(device, "p1")
+    result = await coord._fetch_device_status(device)
 
     assert isinstance(result, dict)
     assert result.get("status", {}).get("getAB") == "2"
@@ -1047,7 +1047,7 @@ async def test_fetch_device_status_ignore_key_pop_when_prev_missing(hass: HomeAs
 
         device = {"id": "dev1", "dclg": "dclg1"}
 
-        result = await coord._fetch_device_status(device, "p1")
+        result = await coord._fetch_device_status(device)
 
         # getAB should have been removed from returned status
         assert isinstance(result, dict)
@@ -1075,7 +1075,7 @@ async def test_fetch_device_status_no_ignore_key_keeps_status(hass: HomeAssistan
 
         device = {"id": "dev1", "dclg": "dclg1"}
 
-        result = await coord._fetch_device_status(device, "p1")
+        result = await coord._fetch_device_status(device)
 
         assert isinstance(result, dict)
         assert result.get("status", {}).get("getPRS") == "75"
@@ -1108,7 +1108,7 @@ async def test_ignore_rule_expires_and_is_removed(hass: HomeAssistant, setup_in_
         coordinator._ignore_until[("devY", "getAB")] = time.time() - 1
 
         device = {"id": "devY", "dclg": "dclgY"}
-        result = await coordinator._fetch_device_status(device, "project1")
+        result = await coordinator._fetch_device_status(device)
 
         # Expired entry should be removed and status preserved
         assert ("devY", "getAB") not in coordinator._ignore_until
