@@ -777,6 +777,8 @@ async def test_get_devices_fetches_and_caches() -> None:
         assert isinstance(status, dict)
         # Should still be 1 because cache was used
         assert fetch_call_count == 1
+        # Device dict must include project_id for compatibility with platforms
+        assert devices[0]["project_id"] == "local"
 
 
 async def test_get_device_status_without_cache() -> None:
@@ -805,6 +807,7 @@ async def test_get_devices_uses_frn_fallback() -> None:
     assert len(devices) == 1
     assert devices[0]["id"] == "67890"  # Uses getFRN
     assert devices[0]["name"] == "67890"  # Falls back to device_id
+    assert devices[0]["project_id"] == "local"
 
 
 async def test_get_devices_uses_local_device_fallback() -> None:
@@ -819,6 +822,7 @@ async def test_get_devices_uses_local_device_fallback() -> None:
     assert len(devices) == 1
     assert devices[0]["id"] == "local_device"
     assert devices[0]["name"] == "local_device"
+    assert devices[0]["project_id"] == "local"
 
 
 async def test_get_devices_calls_login_when_session_invalid() -> None:
@@ -837,6 +841,7 @@ async def test_get_devices_calls_login_when_session_invalid() -> None:
     client.login.assert_called_once()
     assert len(devices) == 1
     assert devices[0]["id"] == "12345"
+    assert devices[0]["project_id"] == "local"
 
 
 async def test_execute_http_get_404_error() -> None:
@@ -1152,10 +1157,11 @@ async def test_get_devices_skips_login_when_session_valid() -> None:
     # Mock login
     client.login = AsyncMock()
 
-    await client.get_devices("local")
+    devices = await client.get_devices("local")
 
     # Should NOT have called login because session is valid
     client.login.assert_not_called()
+    assert devices[0]["project_id"] == "local"
 
 
 async def test_get_value_success() -> None:
@@ -1429,3 +1435,4 @@ async def test_get_devices_skips_login_when_login_not_required() -> None:
     # login must NOT have been called
     client.login.assert_not_called()
     assert devices[0]["id"] == "ABC123"
+    assert devices[0]["project_id"] == "local"

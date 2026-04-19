@@ -494,7 +494,9 @@ class SyrConnectJsonAPI:
             device_id,
             name,
         )
-        return [{"id": str(device_id), "dclg": str(device_id), "name": str(name)}]
+        # "project_id" is not used by the JSON API but is included in the returned dict for compatibility
+        # with coordinator expectations and potential future use cases where it might be relevant.
+        return [{"id": str(device_id), "dclg": str(device_id), "name": str(name), "project_id": str(project_id)}]
 
     async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Return the device status dictionary parsed from JSON.
