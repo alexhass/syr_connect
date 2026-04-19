@@ -409,6 +409,8 @@ async def test_async_unload_entry_cancel_pending_refresh_fails(hass: HomeAssista
         # Coordinator with a pending refresh task whose cancel() raises
         mock_coordinator = MagicMock()
         mock_task = MagicMock()
+        # Ensure `done()` returns False so the code will attempt to cancel
+        mock_task.done.return_value = False
         mock_task.cancel.side_effect = Exception("boom")
         mock_coordinator._pending_refresh_task = mock_task
         config_entry.runtime_data = mock_coordinator
