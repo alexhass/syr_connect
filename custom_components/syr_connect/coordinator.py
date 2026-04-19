@@ -380,6 +380,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # This avoids a phantom refresh log/error when the set operation
             # raised an exception and was handled by the caller.
             try:
+                if self._pending_refresh_task and not self._pending_refresh_task.done():
+                    self._pending_refresh_task.cancel()
                 self._pending_refresh_task = self.hass.async_create_task(self._delayed_refresh())
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
