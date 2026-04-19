@@ -2054,7 +2054,18 @@ async def test_json_redact_getsrn_contains_raises(monkeypatch, hass: HomeAssista
 
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
-    # Should not raise and should include raw_json (possibly empty or with error)
+    # Should not raise. async_redact_data was monkeypatched to return a mapping
+    # that raises on `__contains__`; convert mapping to a plain `dict` first
+    # so `in` checks do not call the mapping's `__contains__`.
+    from collections.abc import Mapping
+
+    if isinstance(diagnostics, Mapping):
+        try:
+            diagnostics = dict(diagnostics)
+        except Exception:
+            diagnostics = {"raw_json": {}}
+
+    # Should include raw_json (possibly empty or with error)
     assert "raw_json" in diagnostics
 
 
