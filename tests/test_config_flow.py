@@ -99,6 +99,47 @@ async def test_form_api_xml_invalid_auth(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "invalid_auth"}
 
 
+async def test_reauth_confirm_update_entry_exception(hass: HomeAssistant) -> None:
+    """Test reauth confirm catches unexpected exceptions during update_entry (lines 397-399)."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_reauth_update_exception@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "old_password",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_REAUTH,
+            "entry_id": entry.entry_id,
+        },
+        data=entry.data,
+    )
+
+    # Make validation succeed but make async_update_entry raise to trigger broad except
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_xml",
+        new_callable=AsyncMock,
+    ) as mock_validate:
+        mock_validate.return_value = {"title": "SYR Connect (test@example.com)"}
+        with patch.object(hass.config_entries, "async_update_entry", side_effect=RuntimeError("boom")):
+            result2 = await hass.config_entries.flow.async_configure(
+                result["flow_id"],
+                {
+                    CONF_USERNAME: "new_user@example.com",
+                    CONF_PASSWORD: "new_password",
+                },
+            )
+
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] == {"base": "unknown"}
+
+
 async def test_form_api_xml_cannot_connect(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error for cloud/XML API."""
     result = await hass.config_entries.flow.async_init(
