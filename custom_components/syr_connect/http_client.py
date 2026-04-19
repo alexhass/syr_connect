@@ -37,6 +37,13 @@ class HTTPClient:
         self.timeout = timeout
 
     def _build_accept_language(self) -> str:
+        """Compute the Accept-Language header value from the instance language.
+
+        Reads ``self.language`` if set (e.g. populated from ``hass.config.language``
+        after construction). Normalises underscore locale codes (``de_DE``) to
+        BCP-47 hyphen form (``de-DE``). Falls back to ``en-US,en;q=0.9`` if
+        no language is configured or an error occurs.
+        """
         lang_pref = getattr(self, "language", None)
 
         try:
