@@ -287,9 +287,8 @@ class SyrConnectXmlAPI:
             _LOGGER.debug("Found %d device(s) in project %s", len(devices), project_id)
             return devices
 
-        except Exception as err:
-            _LOGGER.error("Failed to get devices: %s", err)
-            raise
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise SyrConnectConnectionError("Failed to get devices: %s", err) from err
 
     async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Fetch current status and parameters of a device.
