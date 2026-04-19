@@ -814,6 +814,50 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         mock_api.set_device_status.assert_called_once_with("device1", "setSIR", 0)
 
 
+async def test_pending_refresh_task_cancelled_on_set(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
+    """Ensure an existing pending refresh task is cancelled when scheduling a new one."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1", "status": {}}])
+        mock_api.get_device_status = AsyncMock(return_value={})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Populate coordinator data so async_set_device_value does not raise
+        coordinator.data = {"devices": [{"id": "device1", "dclg": "dclg1", "status": {}}], "projects": []}
+        coordinator.api = mock_api
+
+        # Create a fake pending task that is not done and should be cancelled
+        fake_pending = MagicMock()
+        fake_pending.done.return_value = False
+        fake_pending.cancel = MagicMock()
+        coordinator._pending_refresh_task = fake_pending
+
+        new_task = MagicMock()
+        with patch.object(hass, "async_create_task", return_value=new_task):
+            with patch.object(coordinator, "async_set_updated_data"):
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
+
+        # The previous pending task should have been cancelled and replaced
+        fake_pending.cancel.assert_called_once()
+        assert coordinator._pending_refresh_task is new_task
+
+
 async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exception from gather for device tasks."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
