@@ -13,10 +13,10 @@ _LOGGER = logging.getLogger(__name__)
 
 # Returned by detect_model when no signature matches or input is invalid.
 UNKNOWN_MODEL: dict[str, Any] = {
-    "name": "unknown",
-    "display_name": "Unknown model",
     "base_path": None,
+    "display_name": "Unknown model",
     "manufacturer": "Unknown",
+    "name": "unknown",
 }
 
 # Simple model signatures derived from fixtures. Each signature may include
