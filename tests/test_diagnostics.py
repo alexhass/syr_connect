@@ -1931,7 +1931,9 @@ async def test_json_redact_assignment_exception_handled(monkeypatch, hass: HomeA
     monkeypatch.setattr(diag_mod, "async_redact_data", lambda data, keys: BadDict(data))
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    # Keep coordinator.data empty so diagnostics skips the post-population
+    # masking step that would recurse into the BadDict and attempt writes.
+    mock_coordinator.data = {}
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = None
     mock_coordinator.api = DummyJsonAPI()
