@@ -155,8 +155,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         coordinator = getattr(entry, "runtime_data", None)
         try:
-            if coordinator and getattr(coordinator, "_pending_refresh_task", None):
-                coordinator._pending_refresh_task.cancel()
+            task = getattr(coordinator, "_pending_refresh_task", None)
+            if coordinator and task and not task.done():
+                task.cancel()
         except Exception:
             _LOGGER.debug("Failed to cancel pending coordinator refresh task during unload", exc_info=True)
 
