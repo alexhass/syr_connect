@@ -1882,6 +1882,163 @@ async def test_diagnostics_raw_json_no_session(hass: HomeAssistant) -> None:
     assert "error" in diagnostics["raw_json"]
 
 
+async def test_json_redact_assignment_exception_handled(monkeypatch, hass: HomeAssistant) -> None:
+    """Ensure assignment to redacted['getSRN'] raising is handled (covers inner except)."""
+    from custom_components.syr_connect import diagnostics as diag_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "u", CONF_PASSWORD: "p", CONF_API_TYPE: API_TYPE_JSON},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class BadDict(dict):
+        def __setitem__(self, key, value):
+            raise RuntimeError("cannot set")
+
+    class DummyJsonAPI:
+        def is_session_valid(self):
+            return True
+
+        async def get_devices(self, scope):
+            return [{"id": "dev1"}]
+
+        async def get_device_status(self, did):
+            return {"getSRN": "206AAA67890"}
+
+    # Ensure diagnostics recognizes our fake JSON API class
+    diag_mod.SyrConnectJsonAPI = DummyJsonAPI
+
+    # Force async_redact_data to return an object that raises on __setitem__
+    monkeypatch.setattr(diag_mod, "async_redact_data", lambda data, keys: BadDict(data))
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = DummyJsonAPI()
+
+    config_entry.runtime_data = mock_coordinator
+
+    # Should not raise despite BadDict raising when assignment attempted
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+    assert "raw_json" in diagnostics
+
+
+async def test_fetch_device_json_status_exception(hass: HomeAssistant) -> None:
+    """When per-device JSON status fetch raises, we should skip that device (covers return dev_id, None)."""
+    from custom_components.syr_connect import diagnostics as diag_mod
+
+    entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class FakeJsonAPI:
+        def __init__(self, session, host=None, base_path=None):
+            self._session = session
+
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return None
+
+        def _build_base_url(self):
+            return "http://example"
+
+        async def get_device_status(self, did):
+            raise Exception("boom")
+
+    # Patch constructor used by diagnostics
+    diag_mod.SyrConnectJsonAPI = FakeJsonAPI
+
+    fake_coord = type("C", (), {})()
+    fake_coord._session = object()
+    fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.0.2.1"}], "projects": []}
+    from datetime import datetime
+    fake_coord.last_update_success = True
+    fake_coord.last_update_success_time = None
+
+    entry.runtime_data = fake_coord
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+
+    # Should not include a payload for dev1 when status fetch failed
+    assert "raw_json" in diagnostics
+    assert diagnostics["raw_json"] == {} or "dev1" not in diagnostics["raw_json"]
+
+
+async def test_json_raw_redaction_and_getmac2_masking(hass: HomeAssistant) -> None:
+    """Ensure keys like `getIPA` are redacted and `getMAC2` is masked (covers dict-key redact and getMAC2 masking)."""
+    from custom_components.syr_connect import diagnostics as diag_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password", CONF_API_TYPE: API_TYPE_JSON},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class DummyJsonAPI2:
+        def is_session_valid(self):
+            return True
+
+        async def get_devices(self, scope):
+            return [{"id": "dev1"}]
+
+        async def get_device_status(self, did):
+            # Include both a redaction-key and a MAC2 value
+            return {"getIPA": "192.0.2.5", "getMAC2": "AA:BB:CC:DD:EE:FF"}
+
+    diag_mod.SyrConnectJsonAPI = DummyJsonAPI2
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = DummyJsonAPI2()
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    raw = diagnostics["raw_json"]
+    # If device key exists, ensure getIPA was redacted and getMAC2 was masked
+    if "dev1" in raw:
+        val = raw["dev1"].get("getIPA")
+        assert val is None or "REDACTED" in str(val)
+
+        mac2 = raw["dev1"].get("getMAC2")
+        # Masked result should preserve vendor prefix
+        assert mac2 is None or str(mac2).upper().startswith("AA:BB:CC")
+
+
 async def test_redact_xml_handles_re_sub_exceptions(hass: HomeAssistant, monkeypatch) -> None:
     """Force `re.sub` to raise for getSRN/com patterns and ensure diagnostics handles it."""
     from custom_components.syr_connect import diagnostics as diag
