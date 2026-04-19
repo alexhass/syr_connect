@@ -20,18 +20,19 @@ def test_get_headers_accept_language_default_and_custom() -> None:
 
     # Setting instance language should affect header
     client.language = "de_DE"
-    # Clear internal cache to force recomputation in tests (production may cache)
-    client._accept_language = None
     headers_de = client._get_headers()
     assert headers_de["Accept-Language"] == "de-DE,de;q=0.9"
 
 
-def test_build_accept_language_uses_cache() -> None:
-    """If `_accept_language` is already set, it should be returned (cache hit)."""
+def test_build_accept_language_computes_value() -> None:
+    """Accept-Language is computed from `language` or defaults."""
     client = HTTPClient(session=MagicMock(), user_agent="test-agent")
-    client._accept_language = "es-ES,es;q=0.9"
 
-    # Should return the cached value without recomputing
+    # Default value when no language set
+    assert client._build_accept_language() == "en-US,en;q=0.9"
+
+    # Custom language is respected and formatted
+    client.language = "es_ES"
     assert client._build_accept_language() == "es-ES,es;q=0.9"
 
 

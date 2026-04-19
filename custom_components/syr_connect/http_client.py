@@ -35,45 +35,19 @@ class HTTPClient:
         self.user_agent = user_agent
         self.max_retries = max_retries
         self.timeout = timeout
-        # Accept-Language is computed lazily from `self.language` when
-        # building headers so the coordinator can set `client.language`
-        # after construction if Home Assistant exposes a language.
-        self._accept_language: str | None = None
 
     def _build_accept_language(self) -> str:
-        """Compute the Accept-Language header value from the instance language.
-
-        If `self.language` is set (populated by the coordinator from
-        `hass.config.language`) it's used. Otherwise fall back to a
-        safe default.
-        """
-        # Return cached value if already computed
-        if self._accept_language is not None:
-            return self._accept_language
+        lang_pref = getattr(self, "language", None)
 
         try:
-            lang_pref = getattr(self, "language", None)
             if lang_pref:
-                # Converts "de_DE" → "de-DE"
                 lang_tag = lang_pref.replace("_", "-")
-                # Get primary language (e.g. "de" from "de-DE")
                 primary = lang_tag.split("-")[0]
-                value = f"{lang_tag},{primary};q=0.9"
-            else:
-                value = "en-US,en;q=0.9"
+                return f"{lang_tag},{primary};q=0.9"
+            return "en-US,en;q=0.9"
         except Exception as err:
             _LOGGER.exception("Failed to determine Accept-Language: %s", err)
-            value = "en-US,en;q=0.9"
-
-        # Cache computed value for subsequent calls
-        try:
-            self._accept_language = value
-        except Exception:
-            # Defensive: if attribute assignment fails for any reason,
-            # just return the computed value without caching.
-            return value
-
-        return value
+            return "en-US,en;q=0.9"
 
     def _get_headers(self, content_type: str = "application/x-www-form-urlencoded") -> dict[str, str]:
         """Get standard headers for API requests."""
