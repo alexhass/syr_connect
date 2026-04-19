@@ -179,6 +179,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 device_results = await asyncio.gather(*status_tasks, return_exceptions=True)
 
                 for device_result in device_results:
+                    if isinstance(device_result, SyrConnectAuthError):
+                        raise ConfigEntryAuthFailed("Authentication failed during device status poll.") from device_result
                     if isinstance(device_result, Exception):
                         _LOGGER.warning("Device status fetch failed: %s", device_result)
                         continue
