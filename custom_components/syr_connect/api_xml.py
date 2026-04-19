@@ -131,7 +131,6 @@ class SyrConnectXmlAPI:
         # Check if session hasn't timed out yet
         return datetime.now(UTC) < self.session_expires_at
 
-
     def _update_session_expiry(self) -> None:
         """Update session expiration time.
 
