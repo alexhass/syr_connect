@@ -36,10 +36,13 @@ from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 
-# Optimistic update: ignore API responses for this duration after setting a value (seconds)
+# How long to suppress incoming API values for getAB after a set command.
+# Must be long enough for the valve motor to physically move (~30-60 s).
 _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS = 60
 
-# Delay before refreshing coordinator data after setting device values (seconds)
+# How long to wait before re-polling after a set command.
+# Should be >= OPTIMISTIC_UPDATE_IGNORE_SECONDS so the ignore window
+# has expired before the authoritative data arrives.
 _SYR_CONNECT_DELAYED_REFRESH_SECONDS = 60
 
 
