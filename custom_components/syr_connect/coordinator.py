@@ -402,5 +402,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             await asyncio.sleep(delay)
             await self.async_refresh()
-        except Exception:  # pragma: no cover - defensive
+        except asyncio.CancelledError:
+            raise  # propagate cleanly; this is an intentional cancellation
+        except Exception:
             _LOGGER.exception("Delayed refresh failed")
