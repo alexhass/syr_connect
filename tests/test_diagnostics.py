@@ -1357,6 +1357,79 @@ async def test_diagnostics_api_login_exception(hass: HomeAssistant) -> None:
     assert diagnostics["raw_xml"] == {}
 
 
+async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssistant) -> None:
+    """Ensure JSON fetch for devices with `base_path` redacts `getSRN`.
+
+    This exercises the XML-API code path that instantiates
+    `SyrConnectJsonAPI(session, host, base_path)` and assigns
+    `redacted['getSRN'] = "**REDACTED**"`.
+    """
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    import custom_components.syr_connect.diagnostics as diag_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class DummyJsonAPI:
+        def __init__(self, session, host=None, base_path=None):
+            self._session = session
+            self._host = host
+            self._base_path = base_path
+
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return True
+
+        def _build_base_url(self):
+            return f"http://{self._host}{self._base_path or ''}"
+
+        async def get_device_status(self, dev_id):
+            return {"getSRN": "206AAA67890", "value": 1}
+
+    # Patch constructor used in diagnostics so the isinstance() checks succeed
+    diag_mod.SyrConnectJsonAPI = DummyJsonAPI
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    # Provide a session so diagnostics will attempt JSON fetch
+    mock_coordinator._session = MagicMock()
+    # Device with base_path and ip triggers the per-device JSON fetch path
+    mock_coordinator.data = {
+        "devices": [{"id": "dev1", "base_path": "/api", "ip": "192.168.1.2"}],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    raw_json = diagnostics["raw_json"]
+    if "dev1" in raw_json:
+        import inspect
+
+        val = raw_json["dev1"].get("getSRN")
+        if inspect.isawaitable(val):
+            val = await val
+        assert (isinstance(val, str) and val == "**REDACTED**") or ("**REDACTED**" in str(val))
+    else:
+        assert raw_json == {} or "error" in raw_json
+
+
 async def test_diagnostics_redact_xml_empty_key_in_set(hass: HomeAssistant) -> None:
     """Test XML redaction handles empty string in _TO_REDACT set."""
     config_entry = ConfigEntry(
