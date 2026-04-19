@@ -1901,6 +1901,14 @@ async def test_json_redact_assignment_exception_handled(monkeypatch, hass: HomeA
     )
 
     class BadDict(dict):
+        def __init__(self, data=None):
+            # Populate underlying dict without invoking our overridden
+            # __setitem__ so construction does not raise.
+            dict.__init__(self)
+            if data:
+                for k, v in (data.items() if isinstance(data, dict) else list(data)):
+                    dict.__setitem__(self, k, v)
+
         def __setitem__(self, key, value):
             raise RuntimeError("cannot set")
 
