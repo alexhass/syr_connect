@@ -277,6 +277,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             return device
 
+        except SyrConnectAuthError:
+            # Propagate — caught by _async_update_data's outer handler
+            raise
         except Exception as err:
             _LOGGER.warning("Failed to get status for device %s: %s", device["id"], err)
             # Mark device as unavailable but still add it
