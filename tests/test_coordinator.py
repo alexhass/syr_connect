@@ -1,5 +1,6 @@
 """Test the SYR Connect coordinator."""
 import time
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -1135,6 +1136,31 @@ async def test_delayed_refresh_calls_async_refresh(hass: HomeAssistant) -> None:
     # Call with zero delay to avoid waiting
     await coordinator._delayed_refresh(delay=0)
     coordinator.async_refresh.assert_awaited()
+
+
+async def test_delayed_refresh_cancel_propagates(hass: HomeAssistant) -> None:
+    """Ensure cancelling the delayed refresh raises CancelledError and propagates."""
+    config_data = {
+        CONF_USERNAME: "test@example.com",
+        CONF_PASSWORD: "password",
+    }
+    coordinator = SyrConnectDataUpdateCoordinator(
+        hass,
+        MagicMock(),
+        config_data,
+        60,
+    )
+
+    # Start the delayed refresh with a long delay and then cancel it
+    task = asyncio.create_task(coordinator._delayed_refresh(delay=60))
+    # Give the task a chance to start and enter sleep
+    await asyncio.sleep(0)
+    task.cancel()
+
+    import pytest
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
 
 
 async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:

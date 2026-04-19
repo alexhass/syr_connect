@@ -1998,6 +1998,66 @@ async def test_fetch_device_json_status_exception(hass: HomeAssistant) -> None:
     assert diagnostics["raw_json"] == {} or "dev1" not in diagnostics["raw_json"]
 
 
+async def test_json_redact_getsrn_contains_raises(monkeypatch, hass: HomeAssistant) -> None:
+    """Ensure exceptions during '"getSRN" in redacted' are caught (covers except/pass branch)."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
+    from custom_components.syr_connect import diagnostics as diag_mod
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password", CONF_API_TYPE: API_TYPE_JSON},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class BadContains(dict):
+        def __init__(self, data=None):
+            dict.__init__(self)
+            if data:
+                for k, v in (data.items() if isinstance(data, dict) else list(data)):
+                    dict.__setitem__(self, k, v)
+
+        def __contains__(self, key):
+            raise RuntimeError("boom contains")
+
+    class DummyJsonAPI:
+        def is_session_valid(self):
+            return True
+
+        async def get_devices(self, scope):
+            return [{"id": "dev1"}]
+
+        async def get_device_status(self, did):
+            return {"getSRN": "206AAA67890"}
+
+    # Ensure diagnostics recognizes our fake JSON API class
+    monkeypatch.setattr(diag_mod, "SyrConnectJsonAPI", DummyJsonAPI)
+
+    # Force async_redact_data to return an object whose __contains__ raises
+    monkeypatch.setattr(diag_mod, "async_redact_data", lambda data, keys: BadContains(data))
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {}
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = DummyJsonAPI()
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # Should not raise and should include raw_json (possibly empty or with error)
+    assert "raw_json" in diagnostics
+
+
 async def test_json_raw_redaction_and_getmac2_masking(hass: HomeAssistant) -> None:
     """Ensure keys like `getIPA` are redacted and `getMAC2` is masked (covers dict-key redact and getMAC2 masking)."""
     from custom_components.syr_connect import diagnostics as diag_mod
