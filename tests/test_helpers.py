@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+import re
 
 from custom_components.syr_connect import helpers
 from custom_components.syr_connect.const import API_TYPE_JSON
@@ -1256,3 +1257,21 @@ def test_mask_ug_value_handles_empty_value():
     masked = mask_ug_value(payload)
 
     assert masked.count('ug="***"') == 2
+
+
+def test_mask_ug_value_empty_string_returns_empty():
+    """When payload is an empty string, return it unchanged."""
+    assert mask_ug_value("") == ""
+
+
+def test_mask_ug_value_non_string_returns_input():
+    """Non-string payloads should be returned unchanged."""
+    assert mask_ug_value(None) is None
+    assert mask_ug_value(123) == 123
+
+
+def test_mask_ug_value_re_error_returns_original():
+    """If re.sub raises re.error, the original payload must be returned."""
+    payload = '<sc ug="SECRET"></sc>'
+    with patch("custom_components.syr_connect.helpers.re.sub", side_effect=re.error("boom")):
+        assert mask_ug_value(payload) == payload

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
+import logging
 import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -41,6 +42,37 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, config_entry, mock_add_entities)
 
     mock_add_entities.assert_not_called()
+
+
+async def test_async_setup_entry_no_coordinator_data_logs_warning(hass: HomeAssistant, caplog) -> None:
+    """When `entry.runtime_data.data` is falsy, setup should warn and return."""
+    from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestNoData",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_nodata",
+        unique_id="test_unique_id_nodata",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = None
+    config_entry.runtime_data = mock_coordinator
+
+    mock_add_entities = MagicMock()
+
+    caplog.set_level(logging.WARNING)
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    mock_add_entities.assert_not_called()
+    assert "No coordinator data available for switch platform" in caplog.text
 
 
 async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:

@@ -543,6 +543,66 @@ async def test_coordinator_device_status_exception_result(hass: HomeAssistant, s
         assert len(coordinator.data["devices"]) == 2
 
 
+async def test_coordinator_project_devices_auth_error(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """If a project device list returns a SyrConnectAuthError, raise auth failure."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        # Simulate auth error raised while fetching device list
+        mock_api.get_devices = AsyncMock(side_effect=SyrConnectAuthError("auth failed"))
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Should raise ConfigEntryAuthFailed when project device fetch encounters auth error
+        with pytest.raises(ConfigEntryAuthFailed):
+            await coordinator.async_config_entry_first_refresh()
+
+
+async def test_coordinator_device_status_poll_auth_error(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """If a device status poll returns SyrConnectAuthError, raise auth failure."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Patch internal fetch to raise SyrConnectAuthError so gather returns exception result
+        with patch.object(coordinator, "_fetch_device_status", side_effect=SyrConnectAuthError("auth")):
+            with pytest.raises(ConfigEntryAuthFailed):
+                await coordinator.async_config_entry_first_refresh()
+
+
 async def test_coordinator_auth_error_during_login(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator raises ConfigEntryAuthFailed on auth error."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:

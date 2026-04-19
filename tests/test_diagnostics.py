@@ -243,6 +243,68 @@ async def test_diagnostics_masks_ug_attribute(hass: HomeAssistant) -> None:
     assert 'ug="***"' in raw_xml_str
 
 
+async def test_diagnostics_handles_resub_exceptions(hass: HomeAssistant, monkeypatch) -> None:
+    """Ensure _redact_xml swallows re.sub errors for getSRN patterns."""
+    import custom_components.syr_connect.diagnostics as diag_mod
+
+    # Preserve original re.sub
+    orig_sub = diag_mod.re.sub
+
+    def fake_sub(pattern, repl, string, count=0, flags=0):
+        # Simulate a regex engine error when handling getSRN-specific patterns
+        if "getSRN" in str(pattern):
+            raise diag_mod.re.error("boom")
+        return orig_sub(pattern, repl, string, count=count, flags=flags)
+
+    monkeypatch.setattr(diag_mod.re, "sub", fake_sub)
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    # Mock API returning device list and status containing getSRN attributes
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
+
+    device_list_xml = '<devices><device pn="My+House" com="John+Smith" id="dev1"/></devices>'
+    status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
+
+    mock_api.http_client = MagicMock()
+    mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_status_payload = MagicMock(return_value="payload2")
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [{"id": "dev1", "name": "Device 1", "available": True, "project_id": "proj1", "status": {}}],
+        "projects": [{"id": "proj1", "name": "Project 1"}],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    # Should still produce raw_xml and not raise despite our fake re.error
+    assert "raw_xml" in diagnostics
+
+
 async def test_diagnostics_with_api_and_projects(hass: HomeAssistant) -> None:
     """Test diagnostics with API that has projects."""
     from unittest.mock import AsyncMock
