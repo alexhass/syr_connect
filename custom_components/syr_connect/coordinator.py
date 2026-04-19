@@ -158,9 +158,14 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             # Process each project's devices
             for project_idx, result in enumerate(projects_devices):
+                if isinstance(result, SyrConnectAuthError):
+                    raise ConfigEntryAuthFailed(
+                        f"Authentication failed during device list poll: {result}"
+                    ) from result
                 if isinstance(result, Exception):
                     _LOGGER.warning(
-                        "Failed to get devices for project %s: %s", self.api.projects[project_idx]["name"], result
+                        "Failed to get devices for project %s: %s",
+                        self.api.projects[project_idx]["name"], result
                     )
                     continue
 
