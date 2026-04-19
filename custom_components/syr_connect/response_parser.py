@@ -344,13 +344,14 @@ class ResponseParser:
         """
         parsed = self.parse_xml(xml_response)
 
-        # Check for error messages
-        if self.validate_structure(parsed, ['sc', 'msg']):
-            _LOGGER.warning("Statistics API returned message: %s", parsed['sc']['msg'])
-            return {}
-
+        # Guard: require top-level 'sc' element before any further access
         if 'sc' not in parsed:
             _LOGGER.warning("No 'sc' element in statistics response")
+            return {}
+
+        # Check for API-level error message returned inside <sc>
+        if self.validate_structure(parsed, ['sc', 'msg']):
+            _LOGGER.warning("Statistics API returned message: %s", parsed['sc']['msg'])
             return {}
 
         return self._flatten_attributes(parsed['sc'])
