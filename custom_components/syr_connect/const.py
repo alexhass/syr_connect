@@ -34,6 +34,9 @@ _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM = 60  # seconds
 _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM = 10  # seconds
 _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 
+# Session timeout used by both XML and JSON API clients (minutes)
+_SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
+
 # API URLs (internal)
 _SYR_CONNECT_CONFIGURATION_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de/WebServices"

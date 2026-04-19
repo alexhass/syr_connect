@@ -42,6 +42,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
     _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
     _SYR_CONNECT_CLIENT_USER_AGENT,
+    _SYR_CONNECT_SESSION_TIMEOUT_MINUTES,
 )
 from .encryption import SyrEncryption
 from .exceptions import (
@@ -54,9 +55,6 @@ from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
 
 _LOGGER = logging.getLogger(__name__)
-
-# Session timeout in minutes
-_SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 
 class SyrConnectXmlAPI:

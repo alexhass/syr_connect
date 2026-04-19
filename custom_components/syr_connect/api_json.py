@@ -28,6 +28,7 @@ from urllib.parse import quote
 import aiohttp
 from yarl import URL
 
+from .const import _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -40,9 +41,6 @@ _LOGGER = logging.getLogger(__name__)
 # Local JSON API defaults
 _SYR_CONNECT_JSON_API_SCHEME = "http"
 _SYR_CONNECT_JSON_API_PORT = 5333
-
-# Session timeout (minutes) - mirror XML client behaviour
-_SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # Default timeout for local JSON API requests (seconds)
 _SYR_CONNECT_DEFAULT_API_TIMEOUT = 10
