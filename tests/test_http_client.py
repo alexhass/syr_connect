@@ -26,6 +26,15 @@ def test_get_headers_accept_language_default_and_custom() -> None:
     assert headers_de["Accept-Language"] == "de-DE,de;q=0.9"
 
 
+def test_build_accept_language_uses_cache() -> None:
+    """If `_accept_language` is already set, it should be returned (cache hit)."""
+    client = HTTPClient(session=MagicMock(), user_agent="test-agent")
+    client._accept_language = "es-ES,es;q=0.9"
+
+    # Should return the cached value without recomputing
+    assert client._build_accept_language() == "es-ES,es;q=0.9"
+
+
 @pytest.mark.asyncio
 async def test_post_raises_on_auth_error_immediately() -> None:
     """If response raises ClientResponseError 401/403, it should not retry and re-raise immediately."""
