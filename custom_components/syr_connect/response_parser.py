@@ -353,10 +353,6 @@ class ResponseParser:
             _LOGGER.warning("No 'sc' element in statistics response")
             return {}
 
-        # Remove checksum before flattening
-        if 'cs' in parsed['sc']:
-            del parsed['sc']['cs']
-
         return self._flatten_attributes(parsed['sc'])
 
     @staticmethod
