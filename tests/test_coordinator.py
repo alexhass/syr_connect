@@ -876,7 +876,13 @@ async def test_pending_refresh_task_cancelled_on_set(hass: HomeAssistant, setup_
         coordinator._pending_refresh_task = fake_pending
 
         new_task = MagicMock()
-        with patch.object(hass, "async_create_task", return_value=new_task):
+
+        def _close_and_return(coro):
+            # Ensure the coroutine is closed to avoid "coroutine was never awaited" warnings
+            _consume_coro_return_task(coro)
+            return new_task
+
+        with patch.object(hass, "async_create_task", side_effect=_close_and_return):
             with patch.object(coordinator, "async_set_updated_data"):
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
 
