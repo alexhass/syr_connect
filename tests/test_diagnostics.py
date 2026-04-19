@@ -3041,18 +3041,29 @@ async def test_fetch_device_json_assignment_exception_handled(monkeypatch, hass:
     # Inject DummyJsonAPI into diagnostics module
     monkeypatch.setattr(diag_mod, "SyrConnectJsonAPI", DummyJsonAPI)
 
-    class BadDict(dict):
+    class FlakyDict(dict):
+        """Dict that raises on the first attempt to set 'getSRN', then allows sets.
+
+        This simulates a transient assignment failure that should be caught
+        by the per-device assignment try/except, while still allowing later
+        masking to succeed during the global `_mask_sensitive` pass.
+        """
         def __init__(self, data=None):
             dict.__init__(self)
             if data:
                 for k, v in (data.items() if isinstance(data, dict) else list(data)):
                     dict.__setitem__(self, k, v)
+            self._raised_getsrn = False
 
         def __setitem__(self, key, value):
-            raise RuntimeError("cannot set")
+            if str(key) == "getSRN" and not self._raised_getsrn:
+                # Simulate a failure the first time 'getSRN' is set
+                self._raised_getsrn = True
+                raise RuntimeError("cannot set")
+            return dict.__setitem__(self, key, value)
 
-    # Force async_redact_data to return BadDict so assignment raises
-    monkeypatch.setattr(diag_mod, "async_redact_data", lambda data, keys: BadDict(data))
+    # Force async_redact_data to return FlakyDict so the first assignment fails
+    monkeypatch.setattr(diag_mod, "async_redact_data", lambda data, keys: FlakyDict(data))
 
     fake_coord = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     fake_coord._session = object()
