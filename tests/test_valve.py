@@ -14,6 +14,33 @@ from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordi
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 
 
+def _consume_coro_return_task(coro):
+    """Safely consume a coroutine passed to `async_create_task` in tests.
+
+    This closes the coroutine (if possible) to avoid "was never awaited"
+    warnings and returns a dummy task-like object with a `cancel` and
+    `done` method so callers that inspect the returned value behave.
+    """
+    try:
+        close = getattr(coro, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    class _DummyTask:
+        def cancel(self):
+            return None
+
+        def done(self):
+            return True
+
+    return _DummyTask()
+
+
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
     config_data = {
         CONF_USERNAME: "test@example.com",
