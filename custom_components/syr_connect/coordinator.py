@@ -148,11 +148,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Get devices from all projects in parallel
             device_tasks = [self.api.get_devices(project["id"]) for project in self.api.projects]
 
-            try:
-                projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
-            except Exception as err:
-                _LOGGER.error("Failed to fetch devices: %s", err)
-                raise UpdateFailed(f"Error fetching devices: {err}") from err
+            # Gather device lists for all projects. We use `return_exceptions=True`
+            # so asyncio.gather will never raise; any per-project failures are
+            # returned as Exception instances and handled below.
+            projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
 
             # Process each project's devices
             for project_idx, result in enumerate(projects_devices):
