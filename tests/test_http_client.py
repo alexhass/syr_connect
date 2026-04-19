@@ -264,3 +264,26 @@ def test_build_accept_language_exception_fallback(caplog) -> None:
 
     assert result == "en-US,en;q=0.9"
     assert "Failed to determine Accept-Language" in caplog.text
+
+
+def test_build_accept_language_assignment_failure(monkeypatch) -> None:
+    """If assigning the cached attribute fails, the computed value is returned."""
+    mock_session = MagicMock()
+    client = HTTPClient(session=mock_session, user_agent="test-agent")
+
+    # Capture original __setattr__ so our broken setter can delegate for other attributes
+    orig_setattr = HTTPClient.__setattr__
+
+    def broken_setattr(self, name, value):
+        if name == "_accept_language":
+            raise RuntimeError("cannot assign")
+        return orig_setattr(self, name, value)
+
+    # Patch class __setattr__ to simulate assignment failure for the cache
+    monkeypatch.setattr(HTTPClient, "__setattr__", broken_setattr)
+
+    # Setting language should still work (broken_setattr delegates for non-_accept_language)
+    client.language = "de_DE"
+
+    # Should compute and return the header even though caching assignment fails
+    assert client._build_accept_language() == "de-DE,de;q=0.9"
