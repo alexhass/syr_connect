@@ -50,8 +50,9 @@ class HTTPClient:
         try:
             lang_pref = getattr(self, "language", None)
             if lang_pref:
-                loc = lang_pref.replace("-", "_")
-                lang_tag = loc.replace("_", "-")
+                # Converts "de_DE" → "de-DE"
+                lang_tag = lang_pref.replace("_", "-")
+                # Get primary language (e.g. "de" from "de-DE")
                 primary = lang_tag.split("-")[0]
                 return f"{lang_tag},{primary};q=0.9"
             return "en-US,en;q=0.9"
