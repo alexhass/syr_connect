@@ -180,7 +180,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
                 for device_result in device_results:
                     if isinstance(device_result, SyrConnectAuthError):
-                        raise ConfigEntryAuthFailed("Authentication failed during device status poll.") from device_result
+                        raise ConfigEntryAuthFailed(
+                            f"Authentication failed during device status poll: {device_result}"
+                        ) from device_result
                     if isinstance(device_result, Exception):
                         _LOGGER.warning("Device status fetch failed: %s", device_result)
                         continue
