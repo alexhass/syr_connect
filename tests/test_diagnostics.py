@@ -1402,6 +1402,10 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssista
     # Patch constructor used in diagnostics so the isinstance() checks succeed
     diag_mod.SyrConnectJsonAPI = DummyJsonAPI
 
+    # Ensure redaction helper returns the original dict so the getSRN
+    # assignment branch is executed (we want to explicitly cover that line).
+    diag_mod.async_redact_data = lambda data, redact: data
+
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     # Provide a session so diagnostics will attempt JSON fetch
     mock_coordinator._session = MagicMock()
