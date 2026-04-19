@@ -131,6 +131,17 @@ class SyrConnectXmlAPI:
         # Check if session hasn't timed out yet
         return datetime.now(UTC) < self.session_expires_at
 
+    async def _ensure_session(self) -> None:
+        """Ensure a valid session exists before making an API request.
+
+        If the current session is not valid, attempt to re-authenticate by
+        calling ``login()``. This centralises the repeated guard used across
+        the XML API methods.
+        """
+        if not self.is_session_valid():
+            _LOGGER.warning("Session expired, re-authenticating...")
+            await self.login()
+
     def _update_session_expiry(self) -> None:
         """Update session expiration time.
 
@@ -240,10 +251,7 @@ class SyrConnectXmlAPI:
             SyrConnectConnectionError: If network/HTTP errors occur
         """
         # --- Ensure Valid Session ---
-        # Check if session is still valid, re-authenticate if needed
-        if not self.is_session_valid():
-            _LOGGER.warning("Session expired, re-authenticating...")
-            await self.login()
+        await self._ensure_session()
 
         _LOGGER.debug("Getting devices for project: %s", project_id)
 
@@ -317,9 +325,7 @@ class SyrConnectXmlAPI:
             SyrConnectConnectionError: If network/HTTP errors occur
         """
         # --- Ensure Valid Session ---
-        if not self.is_session_valid():
-            _LOGGER.warning("Session expired, re-authenticating...")
-            await self.login()
+        await self._ensure_session()
 
         _LOGGER.debug("Getting status for device: %s", device_id)
 
@@ -378,9 +384,7 @@ class SyrConnectXmlAPI:
             SyrConnectConnectionError: If network/HTTP errors occur
         """
         # --- Ensure Valid Session ---
-        if not self.is_session_valid():
-            _LOGGER.warning("Session expired, re-authenticating...")
-            await self.login()
+        await self._ensure_session()
 
         _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
 
@@ -441,9 +445,7 @@ class SyrConnectXmlAPI:
             SyrConnectConnectionError: If network/HTTP errors occur
         """
         # --- Ensure Valid Session ---
-        if not self.is_session_valid():
-            _LOGGER.warning("Session expired, re-authenticating...")
-            await self.login()
+        await self._ensure_session()
 
         _LOGGER.debug("Getting %s statistics for device: %s", statistic_type, device_id)
 
