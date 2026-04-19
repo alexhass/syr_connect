@@ -389,6 +389,36 @@ async def test_async_unload_entry_logs(hass: HomeAssistant, caplog) -> None:
     assert "Failed to unload" in caplog.text
 
 
+async def test_async_unload_entry_cancel_pending_refresh_fails(hass: HomeAssistant, caplog) -> None:
+    """If cancelling the pending coordinator refresh raises, we handle it."""
+    config_entry = MockConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+
+    caplog.set_level(logging.DEBUG)
+    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+        mock_unload.return_value = True
+
+        # Coordinator with a pending refresh task whose cancel() raises
+        mock_coordinator = MagicMock()
+        mock_task = MagicMock()
+        mock_task.cancel.side_effect = Exception("boom")
+        mock_coordinator._pending_refresh_task = mock_task
+        config_entry.runtime_data = mock_coordinator
+
+        result = await async_unload_entry(hass, config_entry)
+
+    assert result is True
+    assert "Failed to cancel pending coordinator refresh task during unload" in caplog.text
+
+
 async def test_async_reload_entry(hass: HomeAssistant) -> None:
     """Test reload entry."""
     config_entry = MockConfigEntry(

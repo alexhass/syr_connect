@@ -140,6 +140,26 @@ async def test_get_devices_exception_handling(api_client):
             await api_client.get_devices("project1")
 
 
+async def test_get_devices_connection_client_error(api_client):
+    """Network client errors during get_devices should raise SyrConnectConnectionError."""
+    api_client.session_data = "valid_session"
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
+
+    with patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")):
+        with pytest.raises(SyrConnectConnectionError):
+            await api_client.get_devices("project1")
+
+
+async def test_get_devices_connection_timeout_error(api_client):
+    """Timeout errors during get_devices should raise SyrConnectConnectionError."""
+    api_client.session_data = "valid_session"
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
+
+    with patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")):
+        with pytest.raises(SyrConnectConnectionError):
+            await api_client.get_devices("project1")
+
+
 async def test_get_devices_id_fallback(api_client):
     """Test get_devices falls back to serial_number for id."""
     api_client.session_data = "valid_session"
