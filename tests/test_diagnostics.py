@@ -2995,6 +2995,75 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
 
     # Should NOT have raw_xml (only for XML API)
     assert "raw_xml" in diagnostics
+
+
+async def test_fetch_device_json_assignment_exception_handled(monkeypatch, hass: HomeAssistant) -> None:
+    """Ensure assignment to redacted['getSRN'] in per-device JSON fetch raising is handled.
+
+    This forces the per-device path to return an object that raises on
+    `__setitem__`, exercising the inner except/pass branch in diagnostics.
+    """
+    from custom_components.syr_connect import diagnostics as diag_mod
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+
+    entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    class DummyJsonAPI:
+        def __init__(self, session, host=None, base_path=None):
+            self._session = session
+            self._host = host
+            self._base_path = base_path
+
+        def is_session_valid(self):
+            return True
+
+        async def login(self):
+            return True
+
+        def _build_base_url(self):
+            return f"http://{self._host}{self._base_path or ''}"
+
+        async def get_device_status(self, dev_id):
+            return {"getSRN": "206AAA67890", "value": 1}
+
+    # Inject DummyJsonAPI into diagnostics module
+    monkeypatch.setattr(diag_mod, "SyrConnectJsonAPI", DummyJsonAPI)
+
+    class BadDict(dict):
+        def __init__(self, data=None):
+            dict.__init__(self)
+            if data:
+                for k, v in (data.items() if isinstance(data, dict) else list(data)):
+                    dict.__setitem__(self, k, v)
+
+        def __setitem__(self, key, value):
+            raise RuntimeError("cannot set")
+
+    # Force async_redact_data to return BadDict so assignment raises
+    monkeypatch.setattr(diag_mod, "async_redact_data", lambda data, keys: BadDict(data))
+
+    fake_coord = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    fake_coord._session = object()
+    fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.0.2.1"}], "projects": []}
+    fake_coord.last_update_success = True
+    fake_coord.last_update_success_time = None
+    entry.runtime_data = fake_coord
+
+    # Should not raise despite BadDict raising when assignment attempted
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+    assert "raw_json" in diagnostics
     assert diagnostics["raw_xml"] == {}
 
 
