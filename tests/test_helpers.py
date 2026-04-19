@@ -21,6 +21,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_vol_value,
     get_sensor_wrn_map,
     is_sensor_visible,
+    mask_ug_value,
 )
 
 
@@ -1229,3 +1230,29 @@ def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
     # hits the except → returns False → getPN1 is hidden
     assert is_sensor_visible(status, "getPN1", "value") is False
 
+
+def test_mask_ug_value_basic():
+    payload = '<sc ug="SECRET_TOKEN"><payload>data</payload></sc>'
+
+    masked = mask_ug_value(payload)
+
+    assert 'ug="***"' in masked
+    assert 'SECRET_TOKEN' not in masked
+    assert masked.count('ug="***"') == 1
+
+
+def test_mask_ug_value_multiple_occurrences():
+    payload = '<r ug="T1"><a ug="T2"/></r>'
+
+    masked = mask_ug_value(payload)
+
+    assert masked.count('ug="***"') == 2
+    assert 'T1' not in masked and 'T2' not in masked
+
+
+def test_mask_ug_value_handles_empty_value():
+    payload = '<r ug=""><child ug=""/></r>'
+
+    masked = mask_ug_value(payload)
+
+    assert masked.count('ug="***"') == 2

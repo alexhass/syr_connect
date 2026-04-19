@@ -1057,3 +1057,18 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
             return False
 
     return True
+
+
+def mask_ug_value(payload: str) -> str:
+    """Redact `ug` attribute values in an XML payload.
+
+    Replaces values like `ug="..."` with `ug="***"` (case-insensitive)
+    so session tokens are not leaked in logs or diagnostics.
+    """
+    if not isinstance(payload, str) or payload == "":
+        return payload
+    try:
+        # Use case-insensitive lookbehind to replace the attribute value only
+        return re.sub(r'(?i)(?<=ug=")[^"]*', "***", payload)
+    except re.error:
+        return payload

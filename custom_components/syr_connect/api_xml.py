@@ -48,6 +48,7 @@ from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
 )
+from .helpers import mask_ug_value
 from .http_client import HTTPClient
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
@@ -129,6 +130,16 @@ class SyrConnectXmlAPI:
 
         # Check if session hasn't timed out yet
         return datetime.now(UTC) < self.session_expires_at
+
+    @staticmethod
+    def _mask_payload_for_log(payload: str) -> str:
+        """Return a copy of an XML payload with the session token masked.
+
+        Replaces the value of the ``ug`` attribute (the session token) with
+        ``***`` so payloads can be logged at DEBUG level without leaking a
+        live bearer credential into log files.
+        """
+        return mask_ug_value(payload)
 
     def _update_session_expiry(self) -> None:
         """Update session expiration time.
@@ -249,7 +260,7 @@ class SyrConnectXmlAPI:
         # --- Build Request Payload ---
         # Payload includes session token and project ID
         payload = self.payload_builder.build_device_list_payload(self.session_data, project_id)
-        _LOGGER.debug("Payload prepared: %s", payload)
+        _LOGGER.debug("Payload prepared: %s", self._mask_payload_for_log(payload))
 
         try:
             # --- Make HTTP Request ---
@@ -325,7 +336,7 @@ class SyrConnectXmlAPI:
         # --- Build Request Payload ---
         # Payload includes session token and device DCLG ID
         payload = self.payload_builder.build_device_status_payload(self.session_data, device_id)
-        _LOGGER.debug("Status request payload: %s", payload)
+        _LOGGER.debug("Status request payload: %s", self._mask_payload_for_log(payload))
 
         try:
             # --- Make HTTP Request ---
@@ -394,7 +405,7 @@ class SyrConnectXmlAPI:
         payload = self.payload_builder.build_set_status_payload(
             self.session_data, device_id, command, value
         )
-        _LOGGER.debug("Set status payload: %s", payload)
+        _LOGGER.debug("Set status payload: %s", self._mask_payload_for_log(payload))
 
         try:
             # --- Make HTTP Request ---
@@ -450,7 +461,7 @@ class SyrConnectXmlAPI:
         payload = self.payload_builder.build_statistics_payload(
             self.session_data, device_id, statistic_type
         )
-        _LOGGER.debug("Statistics payload: %s", payload)
+        _LOGGER.debug("Statistics payload: %s", self._mask_payload_for_log(payload))
 
         try:
             # --- Make HTTP Request ---

@@ -192,6 +192,57 @@ async def test_diagnostics_redact_xml_basic(hass: HomeAssistant) -> None:
     assert CONF_PASSWORD not in str(diagnostics.get("entry", {}))
 
 
+async def test_diagnostics_masks_ug_attribute(hass: HomeAssistant) -> None:
+    """Ensure `ug` attribute values are redacted in raw XML diagnostics."""
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "secret123"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    # Mock API that returns XML containing ug attribute
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
+    mock_api.session_data = "test_session"
+
+    secret_xml = '<sc ug="SECRET_TOKEN"><device id="dev1"/></sc>'
+
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value=secret_xml)
+    mock_api.http_client = mock_http_client
+
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    raw_xml_str = str(diagnostics.get("raw_xml", ""))
+    # secret must not be present; ug should be redacted
+    assert 'ug="SECRET_TOKEN"' not in raw_xml_str
+    assert 'ug="***"' in raw_xml_str
+
+
 async def test_diagnostics_with_api_and_projects(hass: HomeAssistant) -> None:
     """Test diagnostics with API that has projects."""
     from unittest.mock import AsyncMock

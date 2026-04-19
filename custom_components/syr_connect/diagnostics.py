@@ -22,7 +22,7 @@ from .const import (
     CONF_API_TYPE,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import is_sensor_visible
+from .helpers import is_sensor_visible, mask_ug_value
 from .models import detect_model
 
 # Maximum concurrent API calls for diagnostics data collection
@@ -147,6 +147,11 @@ async def async_get_config_entry_diagnostics(
             return ""
 
         cleaned = xml
+        # Mask session token `ug` attributes early to avoid leaking tokens
+        try:
+            cleaned = mask_ug_value(cleaned)
+        except Exception:
+            pass
 
         # Replace standalone MAC addresses in text using the shared helper
         cleaned = re.sub(
