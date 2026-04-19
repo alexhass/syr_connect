@@ -119,6 +119,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # optimistic UI state. All other keys are intentionally NOT protected and will be
         # overwritten by the next regular poll cycle.
         self._ignore_until: dict[tuple[str, str], float] = {}
+        # Task reference for the scheduled delayed refresh, so it can be
+        # cancelled when the entry is unloaded before the delay expires.
+        self._pending_refresh_task: asyncio.Task | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
@@ -382,8 +385,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # This avoids a phantom refresh log/error when the set operation
             # raised an exception and was handled by the caller.
             try:
-                task = self.hass.async_create_task(self._delayed_refresh())
-                self._pending_refresh_task = task
+                self._pending_refresh_task = self.hass.async_create_task(self._delayed_refresh())
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
 
