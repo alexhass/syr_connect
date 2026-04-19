@@ -22,6 +22,33 @@ from custom_components.syr_connect.exceptions import (
 )
 
 
+def _consume_coro_return_task(coro):
+    """Safely consume a coroutine passed to `async_create_task` in tests.
+
+    This closes the coroutine (if possible) to avoid "was never awaited"
+    warnings and returns a dummy task-like object with a `cancel` and
+    `done` method so callers that inspect the returned value behave.
+    """
+    try:
+        close = getattr(coro, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    class _DummyTask:
+        def cancel(self):
+            return None
+
+        def done(self):
+            return True
+
+    return _DummyTask()
+
+
 async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test successful coordinator update."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
@@ -126,7 +153,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
 
         # Set device value
         with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
@@ -218,7 +245,7 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()) as mock_task:
+        with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task:
             mock_task.return_value = None
             await coordinator.async_set_device_value("device1", "setSIR", 0)
             # Verify refresh was scheduled
@@ -256,7 +283,7 @@ async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_
 
         # Try to set value for non-existent device
         with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
                 with pytest.raises(HomeAssistantError, match="Device unknown_device not found"):
                     await coordinator.async_set_device_value("unknown_device", "setSIR", 0)
 
@@ -280,7 +307,7 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
 
         # Try to set value when coordinator has no data
         with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
                 with pytest.raises(HomeAssistantError, match="Coordinator data not available"):
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
 
@@ -694,7 +721,7 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
 
         # Mock async_set_updated_data to raise exception
         with patch.object(coordinator, "async_set_updated_data", side_effect=ValueError("Update failed")):
-            with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()) as mock_task:
+            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task:
                 mock_task.return_value = None
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
                     # Should not raise, exception is caught and logged
@@ -805,7 +832,7 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         await coordinator.async_config_entry_first_refresh()
 
         with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()) as mock_task:
+            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task:
                 mock_task.return_value = None
                 with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
@@ -924,7 +951,7 @@ async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_
         assert coordinator.data["devices"][0]["status"]["getAB"] == "1"
 
         # Set AB to 2 (closed) optimistically
-        with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+        with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
             await coordinator.async_set_device_value("device1", "setAB", 2)
 
 
@@ -1491,5 +1518,5 @@ async def test_coordinator_set_value_getab_ignore_until_type_error(
         coordinator._ignore_until = broken_dict
 
         # Setting getAB triggers the ignore_until assignment; TypeError must be swallowed
-        with patch.object(hass, "async_create_task", side_effect=lambda coro: coro.close()):
+        with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
             await coordinator.async_set_device_value("device1", "setAB", 2)
