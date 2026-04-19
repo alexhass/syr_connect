@@ -1514,6 +1514,21 @@ async def test_coordinator_init_default_scan_interval(hass: HomeAssistant) -> No
         assert coordinator.update_interval is not None
 
 
+async def test_fetch_device_status_propagates_auth_error(hass: HomeAssistant) -> None:
+    """If API raises `SyrConnectAuthError`, `_fetch_device_status` should re-raise it (covers line ~291)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        # make the underlying API raise an auth error when fetching status
+        mock_api.get_device_status = AsyncMock(side_effect=SyrConnectAuthError("auth failed"))
+        mock_api_class.return_value = mock_api
+
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+
+        with pytest.raises(SyrConnectAuthError):
+            await coord._fetch_device_status({"id": "deviceX", "dclg": "dclgX"})
+
+
 async def test_coordinator_device_status_result_is_exception(
     hass: HomeAssistant, setup_in_progress_config_entry
 ) -> None:
