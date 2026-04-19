@@ -243,6 +243,58 @@ async def test_diagnostics_masks_ug_attribute(hass: HomeAssistant) -> None:
     assert 'ug="***"' in raw_xml_str
 
 
+async def test_diagnostics_mask_ug_value_exception_swallowed(hass: HomeAssistant, monkeypatch) -> None:
+    """If `mask_ug_value` raises, _redact_xml should swallow the exception."""
+    import custom_components.syr_connect.diagnostics as diag_mod
+
+    # Force mask_ug_value to raise to exercise the except block
+    monkeypatch.setattr(diag_mod, "mask_ug_value", MagicMock(side_effect=Exception("boom")))
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "secret123"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    # Mock API that returns XML containing ug attribute
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
+    mock_api.session_data = "test_session"
+
+    secret_xml = '<sc ug="SECRET_TOKEN"><device id="dev1"/></sc>'
+
+    mock_http_client = MagicMock()
+    mock_http_client.post = AsyncMock(return_value=secret_xml)
+    mock_api.http_client = mock_http_client
+
+    mock_api.payload_builder = MagicMock()
+    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.response_parser = MagicMock()
+    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = None
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    # Should not raise despite mask_ug_value raising
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_xml" in diagnostics
+
+
 async def test_diagnostics_handles_resub_exceptions(hass: HomeAssistant, monkeypatch) -> None:
     """Ensure _redact_xml swallows re.sub errors for getSRN patterns."""
     import custom_components.syr_connect.diagnostics as diag_mod
