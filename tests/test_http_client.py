@@ -20,6 +20,8 @@ def test_get_headers_accept_language_default_and_custom() -> None:
 
     # Setting instance language should affect header
     client.language = "de_DE"
+    # Clear internal cache to force recomputation in tests (production may cache)
+    client._accept_language = None
     headers_de = client._get_headers()
     assert headers_de["Accept-Language"] == "de-DE,de;q=0.9"
 
