@@ -399,7 +399,9 @@ async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
             return {"getSRN": "206AAA67890", "value": 1}
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
+    # Keep coordinator.data empty so global masking (_mask_sensitive) does
+    # not recurse into the redacted object (which raises on assignment).
+    mock_coordinator.data = {}
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = None
     # Patch the SyrConnectJsonAPI class used by diagnostics so the isinstance check succeeds
