@@ -255,9 +255,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 else:
                     prev_devices = {}
 
+                dev_id_str = str(device.get("id") or "")
                 now = time.time()
                 for key in list(status.keys()):
-                    dev_id_str = str(device.get("id") or "")
                     ignore_key = (dev_id_str, key)
                     expire = self._ignore_until.get(ignore_key)
                     if expire is None:
