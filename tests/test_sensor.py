@@ -8293,6 +8293,58 @@ async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
     assert "getPV7" not in sensor_keys
 
 
+async def test_getpa_is_true_string_one(hass: HomeAssistant) -> None:
+    """Test _is_true helper with numeric string '1'."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA8": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
+
+    # getPA group sensors should be created
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA8" in sensor_keys
+
+
+async def test_getpa_is_true_int_one(hass: HomeAssistant) -> None:
+    """Test _is_true helper with integer 1."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA8": 1,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
+
+    # getPA group sensors should be created
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA8" in sensor_keys
+
+
 def test_getbar_no_digits(create_mock_coordinator):
     """getBAR with no digits should return None."""
     data = {

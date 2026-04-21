@@ -26,6 +26,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     get_sensor_rtm_value,
+    is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
 )
@@ -80,13 +81,11 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        # if any getPAx is true, create profile select
+        # if any getPAx is truthy (e.g. "true" or "1"), create profile select
         has_profile = False
         for i in range(1, 9):
             pa = status.get(f"getPA{i}")
-            if pa is None:
-                continue
-            if str(pa).lower() == "true":
+            if is_value_true(pa):
                 has_profile = True
                 break
         if has_profile:
@@ -598,8 +597,9 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
 class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
     """Select entity exposing active leak-protection profile (`getPRF`).
 
-    Options are derived from `getPN1..getPN8` for each `getPAx==true`.
-    Selecting an option sends `setPRF` with the corresponding profile index `x`.
+    Options are derived from `getPN1..getPN8` for each `getPAx` that is
+    truthy (e.g., "1" or "true"). Selecting an option sends `setPRF` with
+    the corresponding profile index `x`.
     """
 
     def __init__(
@@ -632,9 +632,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
             status = dev.get("status", {})
             for i in range(1, 9):
                 pa = status.get(f"getPA{i}")
-                if pa is None:
-                    continue
-                if str(pa).lower() != "true":
+                if not is_value_true(pa):
                     continue
                 name = status.get(f"getPN{i}") or str(i)
                 opts.append(str(name))
@@ -668,7 +666,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
             status = dev.get("status", {})
             for i in range(1, 9):
                 pa = status.get(f"getPA{i}")
-                if pa is None or str(pa).lower() != "true":
+                if not is_value_true(pa):
                     continue
                 name = status.get(f"getPN{i}") or str(i)
                 if str(name) == option:

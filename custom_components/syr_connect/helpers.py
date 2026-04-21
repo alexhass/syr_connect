@@ -39,7 +39,7 @@ def is_value_true(val: object) -> bool:
 
     SYR devices report binary activation flags (e.g. ``getPAx``) in varying
     formats depending on firmware version: native ``bool``, ``int``/``float``,
-    or strings such as ``"1"`` or ``"true"``.  This function provides a single,
+    or strings such as ``"1"`` or ``"true"``. This function provides a single,
     consistent conversion so callers do not need to handle each format separately.
 
     Args:

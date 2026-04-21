@@ -461,6 +461,52 @@ async def test_prf_select_options_and_current(hass: HomeAssistant) -> None:
     assert select.current_option == "Profile A"
 
 
+async def test_prf_select_options_with_getpa_string_one(hass: HomeAssistant) -> None:
+    """Test PRF select when getPA1 is the string '1'."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": "1",
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.options == ["Profile A"]
+    assert select.current_option == "Profile A"
+
+
+async def test_prf_select_options_with_getpa_int_one(hass: HomeAssistant) -> None:
+    """Test PRF select when getPA1 is the integer 1."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA1": 1,
+                    "getPN1": "Profile A",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.options == ["Profile A"]
+    assert select.current_option == "Profile A"
+
+
 async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Ensure async_setup_entry handles exceptions from entity registry cleanup."""
     data = {
