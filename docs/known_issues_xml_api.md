@@ -13,7 +13,7 @@ Purpose
 
 Detailed deviations, impacts and references
 
-**1. Minimal/broken responses are intentionally ignored**
+## 1. Minimal/broken responses are intentionally ignored
 
 - Description: Some devices (notably Trio DFR/LS series) occasionally
   return responses containing only a tiny set of `c` names

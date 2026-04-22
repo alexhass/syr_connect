@@ -71,7 +71,7 @@ curl -i "http://localhost:5333/neosoft/set/RTM/02%3A30"
 - Evidence / references:
   - Fixtures: [tests/fixtures/json/SafeTech_get_all.json](tests/fixtures/json/SafeTech_get_all.json), [tests/fixtures/json/NeoSoft2500_get_all.json](tests/fixtures/json/NeoSoft2500_get_all.json)
 
-## 6. API error code inconsistencies
+## 6. API error code inconsistencies (HTTP 404)
 
 - Device-specific (Trio): Trio models do not return an `"NSC"` value for unknown commands; instead the endpoint responds with HTTP 404 (Not Found). Impact: HTTP 404 causes the HTTP layer (`_execute_http_get`) to raise an HTTP/connection error instead of returning a JSON error code. Mitigation: callers should treat HTTP 404 from command endpoints as "no such command" where appropriate and handle it the same way as an `NSC` response.
 - Evidence / references:
@@ -106,6 +106,7 @@ curl -i "http://localhost:5333/trio/get/FOO"
 ```
 
 References
+
 - Official API documentation: https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung
 - Client code: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 - Tests: [tests/test_api_json.py](tests/test_api_json.py)
