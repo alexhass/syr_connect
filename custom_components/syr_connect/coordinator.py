@@ -124,7 +124,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         self._ignore_until: dict[tuple[str, str], float] = {}
         # Task reference for the scheduled delayed refresh, so it can be
         # cancelled when the entry is unloaded before the delay expires.
-        self._pending_refresh_task: asyncio.Task | None = None
+        self._pending_refresh_task: asyncio.Task[None] | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
