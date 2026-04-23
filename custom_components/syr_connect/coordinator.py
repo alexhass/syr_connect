@@ -420,6 +420,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             await asyncio.sleep(delay)
             await self.async_refresh()
         except asyncio.CancelledError:
+            _LOGGER.debug("Delayed refresh cancelled (entry unloaded)")
             raise  # propagate cleanly; this is an intentional cancellation
         except Exception:
             _LOGGER.exception("Delayed refresh failed")
