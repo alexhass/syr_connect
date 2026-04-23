@@ -316,7 +316,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         return SyrConnectOptionsFlow(config_entry)
 
-    async def async_step_reauth(self, entry_data: dict[str, Any]) -> ConfigFlowResult:
+    async def async_step_reauth(self, _entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle reauth flow when credentials are invalid.
 
         Args:
