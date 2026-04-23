@@ -333,7 +333,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 dclg = device.get("dclg", device_id)
                 break
 
-        if not dclg:
+        if dclg is None:
             raise HomeAssistantError(f"Device {device_id} not found")
 
         # Optimistically update the in-memory coordinator data so entities show
