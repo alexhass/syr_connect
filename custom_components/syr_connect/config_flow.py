@@ -353,7 +353,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 # Validate and update based on API type
                 if api_type == API_TYPE_JSON:
-                    await validate_input_json(self.hass, user_input)
+                    info = await validate_input_json(self.hass, user_input)
 
                     # Build new data preserving API type and login_required if present
                     new_data = {
@@ -362,6 +362,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_HOST: user_input[CONF_HOST],
                         CONF_MODEL: user_input[CONF_MODEL],
                     }
+                    if "login_required" in info and info["login_required"] is not None:
+                        new_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
+
                     # Update entry
                     self.hass.config_entries.async_update_entry(entry, data=new_data)
 
