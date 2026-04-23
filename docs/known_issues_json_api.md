@@ -30,7 +30,8 @@ Purpose
 - Description: All SYR devices return JSON without the `Content-Type: application/json` header. Devices use non-standard header casing (for example `content-length` in lowercase).
 - Rationale (IANA / RFC): Per the IANA media types registry, `application/json` is the registered media type for JSON; HTTP semantics (RFC 7231) require senders to advertise the media type via `Content-Type`, and the JSON specification (RFC 8259) associates JSON with `application/json`. Devices SHOULD send `Content-Type: application/json; charset=utf-8` to ensure correct parsing, caching, and security behavior.
 - Impact: HTTP clients that enforce a `Content-Type` check can fail to parse valid JSON responses.
-- Mitigation in this project: The client uses `resp.json(content_type=None)` to tolerate missing or incorrect headers.
+- Mitigation in this project:
+  - The client uses `resp.json(content_type=None)` to tolerate missing or incorrect headers.
 - Evidence / references:
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 
@@ -39,7 +40,8 @@ Purpose
 - To be considered as a good design change in newer devices.
 - Description: The legacy ADM login (`/set/ADM/(2)f`) is required by some older firmwares (SafeTech v4 / Pontos) but absent on all newer devices. Devices without this endpoint typically return HTTP 404.
 - Impact: Integrations must treat a 404 from the login endpoint as "login not required" instead of failing initialization.
-- Mitigation in this project: `SyrConnectJsonAPI.login()` treats 404 as "login not required" and continues.
+- Mitigation in this project: 
+  - `SyrConnectJsonAPI.login()` treats 404 as "login not required" and continues.
 - Evidence / references:
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (login handles 404)
   - Tests: [tests/test_api_json.py](tests/test_api_json.py) (test_login_404_treated_as_not_required)
@@ -49,7 +51,8 @@ Purpose
 - Tentavly be considered a bug in current firmware. Every webserver on this planet works this way except SYR devices.
 - Description: Firmwares do not decode percent-encoded path components correctly. For example, `02:30` encoded as `02%3A30` may be rejected; the device expects the literal `:`.
 - Impact: `set` requests must be sent with literal characters (no percent-encoding) to be accepted.
-- Mitigation in this project: The client provides selective encoding (see `_construct_encoded_url` and `_build_set_url`).
+- Mitigation in this project:
+  - The client provides selective encoding (see `_construct_encoded_url` and `_build_set_url`).
 - Quick reproduction (against a device):
 
 ```bash
@@ -68,8 +71,8 @@ curl -i "http://localhost:5333/neosoft/set/RTM/02%3A30"
   - **URL path casing:** Neosoft firmwares accept mixed-case path segments (e.g., `/set/SV/15`) while all other devices require lowercase paths (e.g., `/set/sv/15`).
 - Impact: Sending the same logical command with different path casing can produce different response keys or cause the command to fail on devices that require lowercase. This breaks strict key matching and can cause higher-level logic to misinterpret results.
 - Mitigation in this project: The client tolerates these inconsistencies by:
-  - Performing case-insensitive matching for `set` response keys (`_validate_set_response`).
   - Normalizing `/set` path segments to lowercase when issuing commands to maximize compatibility.
+  - Performing case-insensitive matching for `set` response keys (`_validate_set_response`).
 - Examples:
 
 ```bash
@@ -91,13 +94,19 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
 
 - Description: The same parameter can be delivered as different JSON types (number vs string) across devices and firmware versions. Examples include boolean-like values represented as the string `"true"`, and timestamps or counters delivered either as numbers or strings.
 - Impact: Type-sensitive parsing or strict schemas can break; integrations should coerce and normalize types.
+- Mitigation in this project: lookup what the device returns before setting.
+  - Normalize to true/false internally.
+  - Use "1/0" for older devices when sending set commands
+  - Use "true/false" for newer devices when sending set commands
 - Evidence / references:
   - Fixtures: [tests/fixtures/json/SafeTech_get_all.json](tests/fixtures/json/SafeTech_get_all.json), [tests/fixtures/json/NeoSoft2500_get_all.json](tests/fixtures/json/NeoSoft2500_get_all.json)
 
 ### 6. API error code inconsistencies (HTTP 404)
 
 - Tentavly be considered a bug in current firmware.
-- Trio DFRLS devices models only do not return an `"NSC"` value for unknown commands; instead the endpoint responds with HTTP 404 (Not Found). Impact: HTTP 404 causes the HTTP layer (`_execute_http_get`) to raise an HTTP/connection error instead of returning a JSON error code. Mitigation: callers should treat HTTP 404 from command endpoints as "no such command" where appropriate and handle it the same way as an `NSC` response.
+- Trio DFRLS devices models do not return an `"NSC"` value for unknown commands; instead the endpoint responds with HTTP 404 (Not Found). Impact: HTTP 404 causes the HTTP layer (`_execute_http_get`) to raise an HTTP/connection error instead of returning a JSON error code. Mitigation: callers should treat HTTP 404 from command endpoints as "no such command" where appropriate and handle it the same way as an `NSC` response.
+- Mitigation in this project:
+  - Catch and normalize to "no such command" if 404 is returned
 - Evidence / references:
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (`_execute_http_get()` HTTP 404 handling)
   - Tests: [tests/test_api_json.py](tests/test_api_json.py) (test_execute_http_get_404_error)
@@ -144,7 +153,7 @@ Actual (expected) device response:
 ```
 
 - Impact: Relying on the documented shapes leads to parsing errors and incorrect client assumptions; the documentation is unreliable in multiple places.
-- Mitigation in this project: The integration requires and expects the actual device response format — the compact status-key representation (e.g. {"setABtrue":"OK"}) — as the canonical representation. The documented typed JSON examples are not relied upon.
+- Mitigation in this project: The integration requires and expects the actual device response format — the compact status-key representation (e.g. {"setABtrue":"OK"}). The API documentation should be regarded as incorrect.
 - Official incorrect documentation: [SYR JSON API documentation](https://iotsyrpublicapi.z1.web.core.windows.net/)
 
 ## Recommendations
