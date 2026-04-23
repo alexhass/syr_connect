@@ -22,7 +22,7 @@ Purpose
 - **API error-code case-sensitivity:** Error codes `NSC` and `MIMA` are expected uppercase; lowercased variants are treated as invalid.
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 
-Detailed deviations, impacts, and references
+## Detailed deviations, impacts, and references
 
 ### 1. Missing `Content-Type` header
 
