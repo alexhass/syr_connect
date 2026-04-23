@@ -3,7 +3,7 @@
 This document lists known deviations between the official SYR JSON API
 documentation (https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung)
 and the behavior observed in real devices, the test fixtures in this
-repository, and the local device emulator (see https://github.com/alexhass/syr_connect_emulator).
+repository.
 
 Purpose
 
