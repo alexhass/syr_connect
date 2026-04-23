@@ -176,12 +176,11 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
 
     def srn_match(sig: dict) -> bool:
         srn_prefix = sig.get("srn_prefix")
-        # Default maintains compatibility with existing signatures that only specify srn_prefix without srn_infix.
-        # If srn_prefix is defined but srn_infix is not, it will check for srn_prefix followed by 'AAA' as the
-        # default infix. This allows existing signatures to continue working without modification while enabling
-        # more flexible matching for new signatures that specify a different infix.
         srn_infix = sig.get("srn_infix", "AAA")
         srn_contains = sig.get("srn_contains")
+        if not srn_prefix and not srn_contains:
+            # Nothing to match against
+            return False
         if srn_prefix and not srn.startswith(f"{srn_prefix}{srn_infix}"):
             return False
         if srn_contains and srn_contains not in srn:
