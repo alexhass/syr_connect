@@ -12,7 +12,7 @@ Purpose
 - Point maintainers and integrators to the code and tests that implement
   the necessary workarounds.
 
-Summary of major deviations
+## Summary of major deviations
 
 - **Missing `Content-Type: application/json` header:** Devices omit the `Content-Type` header and the `application/json` media type entirely; this is present across all devices and firmwares.
 - **ADM login optional / 404:** The `/set/ADM/(2)f` login endpoint is not implemented on all firmwares and may return HTTP 404.
@@ -20,12 +20,13 @@ Summary of major deviations
 - **Response key and URL path casing inconsistencies:** `set` response keys and `/set` path segment casing vary between devices and firmwares.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
 - **API error-code case-sensitivity:** Error codes `NSC` and `MIMA` are expected uppercase; lowercased variants are treated as invalid.
+- **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 
 Detailed deviations, impacts, and references
 
-## 1. Missing `Content-Type` header
+### 1. Missing `Content-Type` header
 
-- Tentatively be considered a bug in current firmware.
+- Tentatively be considered a bug in current device firmware.
 - Description: All SYR devices return JSON without the `Content-Type: application/json` header. Devices use non-standard header casing (for example `content-length` in lowercase).
 - Rationale (IANA / RFC): Per the IANA media types registry, `application/json` is the registered media type for JSON; HTTP semantics (RFC 7231) require senders to advertise the media type via `Content-Type`, and the JSON specification (RFC 8259) associates JSON with `application/json`. Devices SHOULD send `Content-Type: application/json; charset=utf-8` to ensure correct parsing, caching, and security behavior.
 - Impact: HTTP clients that enforce a `Content-Type` check can fail to parse valid JSON responses.
@@ -33,7 +34,7 @@ Detailed deviations, impacts, and references
 - Evidence / references:
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 
-## 2. ADM login endpoint is optional (HTTP 404)
+### 2. ADM login endpoint is optional (HTTP 404)
 
 - To be considered as a good design change in newer devices.
 - Description: The legacy ADM login (`/set/ADM/(2)f`) is required by some older firmwares (SafeTech v4 / Pontos) but absent on all newer devices. Devices without this endpoint typically return HTTP 404.
@@ -43,7 +44,7 @@ Detailed deviations, impacts, and references
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (login handles 404)
   - Tests: [tests/test_api_json.py](tests/test_api_json.py) (test_login_404_treated_as_not_required)
 
-## 3. Percent-encoding and literal special characters
+### 3. Percent-encoding and literal special characters
 
 - Tentavly be considered a bug in current firmware. Every webserver on this planet works this way except SYR devices.
 - Description: Firmwares do not decode percent-encoded path components correctly. For example, `02:30` encoded as `02%3A30` may be rejected; the device expects the literal `:`.
@@ -59,7 +60,7 @@ curl -i "http://localhost:5333/neosoft/set/RTM/02:30"
 curl -i "http://localhost:5333/neosoft/set/RTM/02%3A30"
 ```
 
-## 4. `set` response key and URL path casing inconsistencies
+### 4. `set` response key and URL path casing inconsistencies
 
 - Tentatively be considered a bug in current firmware.
 - Description: Devices are inconsistent in how they treat `set` commands and their responses:
@@ -86,14 +87,14 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
   - Tests: [tests/test_api_json.py](tests/test_api_json.py)
 
-## 5. Data-type inconsistencies
+### 5. Data-type inconsistencies
 
 - Description: The same parameter can be delivered as different JSON types (number vs string) across devices and firmware versions. Examples include boolean-like values represented as the string `"true"`, and timestamps or counters delivered either as numbers or strings.
 - Impact: Type-sensitive parsing or strict schemas can break; integrations should coerce and normalize types.
 - Evidence / references:
   - Fixtures: [tests/fixtures/json/SafeTech_get_all.json](tests/fixtures/json/SafeTech_get_all.json), [tests/fixtures/json/NeoSoft2500_get_all.json](tests/fixtures/json/NeoSoft2500_get_all.json)
 
-## 6. API error code inconsistencies (HTTP 404)
+### 6. API error code inconsistencies (HTTP 404)
 
 - Tentavly be considered a bug in current firmware.
 - Trio DFRLS devices models only do not return an `"NSC"` value for unknown commands; instead the endpoint responds with HTTP 404 (Not Found). Impact: HTTP 404 causes the HTTP layer (`_execute_http_get`) to raise an HTTP/connection error instead of returning a JSON error code. Mitigation: callers should treat HTTP 404 from command endpoints as "no such command" where appropriate and handle it the same way as an `NSC` response.
@@ -101,7 +102,7 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (`_execute_http_get()` HTTP 404 handling)
   - Tests: [tests/test_api_json.py](tests/test_api_json.py) (test_execute_http_get_404_error)
 
-## 7. Documentation accuracy and misleading examples
+### 7. Documentation accuracy and misleading examples
 
 - Tentatively be considered documentation defects.
 - Description: The official SYR JSON API documentation contains incorrect or misleading examples. Implementers following the documented examples may expect typed JSON responses, but devices often reply with compact status keys. Example:
@@ -146,7 +147,7 @@ Actual (expected) device response:
 - Mitigation in this project: The integration requires and expects the actual device response format — the compact status-key representation (e.g. {"setABtrue":"OK"}) — as the canonical representation. The documented typed JSON examples are not relied upon.
 - Official incorrect documentation: [SYR JSON API documentation](https://iotsyrpublicapi.z1.web.core.windows.net/)
 
-Recommendations
+## Recommendations
 
 - Treat device responses as potentially non-conformant and normalize as needed (coerce numeric/boolean/string differences).
 - Accept missing or incorrect `Content-Type` headers when parsing JSON.
@@ -154,7 +155,7 @@ Recommendations
 - Use case-insensitive matching for `set` response keys.
 - Treat 404 from other endpoints as "no such command". (Trio defect)
 
-Quick reproduction checklist
+## Quick reproduction checklist
 
 ```bash
 # 1) ADM login (may return 200 or 404 depending on firmware)
@@ -173,7 +174,7 @@ curl -i "http://localhost:5333/neosoft/set/RTM/02:30"
 curl -i "http://localhost:5333/trio/get/XYZ"
 ```
 
-References
+## References
 
 - Official API documentation: https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung
 - Client code: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
