@@ -1471,20 +1471,6 @@ async def test_form_api_json_homeassistant_error_unknown(hass: HomeAssistant) ->
     assert result3["errors"] == {"base": "unknown"}
 
 
-async def test_validate_input_deprecated_calls_xml(hass: HomeAssistant) -> None:
-    """Test that deprecated `validate_input` delegates to `validate_input_xml`."""
-    from custom_components.syr_connect.config_flow import validate_input
-
-    with patch(
-        "custom_components.syr_connect.config_flow.validate_input_xml",
-        new_callable=AsyncMock,
-        return_value={"title": "SYR Connect (test@example.com)"},
-    ) as mock_xml:
-        result = await validate_input(hass, {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "pw"})
-        mock_xml.assert_awaited()
-        assert result["title"] == "SYR Connect (test@example.com)"
-
-
 async def test_validate_input_json_no_devices_raises(hass: HomeAssistant) -> None:
     """If `get_devices` returns empty list, validation must fail."""
     from custom_components.syr_connect.config_flow import CannotConnectError, validate_input_json

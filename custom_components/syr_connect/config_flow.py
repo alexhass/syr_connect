@@ -205,27 +205,6 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     return {"title": f"SYR Connect Local ({host})", "login_required": api.login_required}
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect.
-
-    DEPRECATED: This function is kept for backward compatibility with reauth/reconfigure flows.
-    New configurations should use validate_input_xml or validate_input_json.
-
-    Args:
-        hass: Home Assistant instance
-        data: User input data with username and password
-
-    Returns:
-        Dictionary with title for the config entry
-
-    Raises:
-        CannotConnectError: If connection to API fails
-        InvalidAuthError: If authentication fails
-    """
-    # Assume XML API for backward compatibility
-    return await validate_input_xml(hass, data)
-
-
 class CannotConnectError(HomeAssistantError):
     """Error to indicate we cannot connect."""
 
