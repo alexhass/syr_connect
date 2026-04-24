@@ -5,7 +5,7 @@ documentation (https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung)
 and the behavior observed in real devices, the test fixtures in this
 repository.
 
-Purpose
+## Purpose
 
 - Provide a concise, actionable reference of non-conformant device
   behavior that the integration must tolerate.
