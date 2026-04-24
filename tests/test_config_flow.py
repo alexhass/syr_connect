@@ -1939,7 +1939,7 @@ async def test_reauth_confirm_unexpected_exception(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.config_flow.validate_input",
+        "custom_components.syr_connect.config_flow.validate_input_xml",
         side_effect=Exception("unexpected boom"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
