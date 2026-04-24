@@ -23,7 +23,7 @@ test fixtures, and in the parsing/encryption layers implemented here.
   be skipped as a conservative choice to prevent state flapping.
 - Project mitigation: `_ignore_broken_response()` in
   `custom_components/syr_connect/response_parser.py` implements this
-  heuristic.
+  heuristic and ignores such broken responses.
 
 ## References
 
