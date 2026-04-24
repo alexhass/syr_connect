@@ -4,16 +4,16 @@ This document lists known deviations between the official SYR Connect XML
 API behaviour and what this integration observes in the wild, in the
 test fixtures, and in the parsing/encryption layers implemented here.
 
-Purpose
+## Purpose
 
 - Provide a concise, actionable reference of non-conformant XML API
   behaviour the integration must tolerate.
 - Point maintainers to the code and tests that implement the necessary
   workarounds.
 
-Detailed deviations, impacts and references
+## Detailed deviations, impacts and references
 
-## 1. Minimal/broken responses are intentionally ignored
+### 1. Minimal/broken responses are intentionally ignored
 
 - Description: Some devices (notably Trio DFR/LS series) occasionally
   return responses containing only a tiny set of `c` names
@@ -25,6 +25,6 @@ Detailed deviations, impacts and references
   `custom_components/syr_connect/response_parser.py` implements this
   heuristic.
 
-References
+## References
 
 - Parser: [custom_components/syr_connect/response_parser.py](custom_components/syr_connect/response_parser.py)
