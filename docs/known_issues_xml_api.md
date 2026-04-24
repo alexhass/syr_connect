@@ -15,15 +15,14 @@ test fixtures, and in the parsing/encryption layers implemented here.
 
 ### 1. Minimal/broken responses are intentionally ignored
 
+- Tentatively be considered a bug on SYR server.
 - Description: Some devices (notably Trio DFR/LS series) occasionally
   return responses containing only a tiny set of `c` names
   (`getSRN`, `getALA`, `getNOT`, `getWRN`). These fragments are treated
   as broken and ignored to avoid spurious sensor updates.
-- Impact: Partial but valid responses containing only those names will
-  be skipped as a conservative choice to prevent state flapping.
-- Project mitigation: `_ignore_broken_response()` in
-  `custom_components/syr_connect/response_parser.py` implements this
-  heuristic and ignores such broken responses.
+- Impact: Partial but valid responses containing only those names will be skipped as a conservative choice to prevent state flapping.
+- Mitigation in this project:
+  - Ignores broken responses: `_ignore_broken_response()` in `custom_components/syr_connect/response_parser.py` implements this heuristic.
 
 ## References
 
