@@ -182,9 +182,6 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
         # more flexible matching for new signatures that specify a different infix.
         srn_infix = sig.get("srn_infix", "AAA")
         srn_contains = sig.get("srn_contains")
-        if not srn_prefix and not srn_contains:
-            # Nothing to match against
-            return False
         if srn_prefix and not srn.startswith(f"{srn_prefix}{srn_infix}"):
             return False
         if srn_contains and srn_contains not in srn:
