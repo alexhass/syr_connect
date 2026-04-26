@@ -720,4 +720,4 @@ def test_unknown_model_emits_debug_log(caplog):
     flat = {"getXYZ": "1", "getABC": "2"}
     result = detect_model(flat)
     assert result["name"] == "unknown"
-    assert "unknown model; keys found" in caplog.text
+    assert "detect_model: unknown model; keys found" in caplog.text
