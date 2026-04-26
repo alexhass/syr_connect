@@ -712,3 +712,12 @@ def test_manufacturer_via_json_fixture_pontosbase():
     result = detect_model(flat)
     assert result["name"] == "pontosbase"
     assert result["manufacturer"] == "Hansgrohe"
+
+
+def test_unknown_model_emits_debug_log(caplog):
+    """When no signature matches, a debug log listing keys should be emitted."""
+    caplog.set_level(logging.DEBUG)
+    flat = {"getXYZ": "1", "getABC": "2"}
+    result = detect_model(flat)
+    assert result["name"] == "unknown"
+    assert "unknown model; keys found" in caplog.text
