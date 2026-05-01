@@ -320,6 +320,15 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getFCD",   # Filter flush interval
     "getFCO",   # Iron content (ppm)
     "getFFM",   # Filter type (backwash / replaceable / none)
+    # --- Alarm / Thresholds (SafeFloor) ---
+    "getALD",   # Duration of alarm (s)
+    "getMIH",   # Minimum humidity threshold (%)
+    "getMXH",   # Maximum humidity threshold (%)
+    "getMIT",   # Minimum temperature threshold (1/10 °C)
+    "getMXT",   # Maximum temperature threshold (1/10 °C)
+    # --- Intervals ---
+    "getRCP",   # Synchronisation interval (s)
+    "getWMP",   # Measurement interval (s)
     # --- Maintenance ---
     "getDWF",   # Expected daily water consumption (l)
     "getSRH",   # Next semi-annual maintenance (timestamp)
@@ -372,6 +381,7 @@ _SYR_CONNECT_SENSOR_CONFIG = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
+    "getALD",   # Alarm duration (s)
     "getCNA",   # Device name
     "getDGW",   # Gateway
     "getEGW",   # Ethernet gateway
@@ -384,6 +394,11 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
     "getMAN",   # Manufacturer
+    "getMIH",   # Minimum humidity threshold
+    "getMIT",   # Minimum temperature threshold
+    "getMXH",   # Maximum humidity threshold
+    "getMXT",   # Maximum temperature threshold
+    "getRCP",   # Synchronisation interval
     "getSRN",   # Serial number
     "getTYP",   # Device type code
     "getVER",   # Firmware version
@@ -392,6 +407,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getWFS",   # Wi-Fi connection status (connected / not connected)
     "getWGW",   # Wi-Fi gateway
     "getWIP",   # Wi-Fi IP address
+    "getWMP",   # Measurement interval
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
@@ -453,6 +469,10 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
     "getHMD": SensorDeviceClass.HUMIDITY,
+    "getMIH": SensorDeviceClass.HUMIDITY,
+    "getMIT": SensorDeviceClass.TEMPERATURE,
+    "getMXH": SensorDeviceClass.HUMIDITY,
+    "getMXT": SensorDeviceClass.TEMPERATURE,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getNET": SensorDeviceClass.VOLTAGE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
@@ -692,7 +712,14 @@ _SYR_CONNECT_SENSOR_ICON = {
     # - LEXplus10SL
 
     # Leak protection profile sensors
+    "getALD": "mdi:alarm-light-outline",
     "getCEL": "mdi:thermometer",
+    "getMIH": "mdi:water-percent",
+    "getMIT": "mdi:thermometer-low",
+    "getMXH": "mdi:water-percent",
+    "getMXT": "mdi:thermometer-high",
+    "getRCP": "mdi:sync-circle",
+    "getWMP": "mdi:timer-sync-outline",
     "getLE": "mdi:water-alert",
     "getNPS": "mdi:pipe-leak",
     "getT1": "mdi:timer-outline",
@@ -899,6 +926,7 @@ _SYR_CONNECT_SENSOR_WHU_VALUE_MAP = {
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
+    "getALD": SensorStateClass.MEASUREMENT,        # Alarm duration
     "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
     "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
@@ -909,10 +937,15 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getHMD": SensorStateClass.MEASUREMENT,        # Ambient humidity
     "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
+    "getMIH": SensorStateClass.MEASUREMENT,        # Minimum humidity threshold
+    "getMIT": SensorStateClass.MEASUREMENT,        # Minimum temperature threshold
+    "getMXH": SensorStateClass.MEASUREMENT,        # Maximum humidity threshold
+    "getMXT": SensorStateClass.MEASUREMENT,        # Maximum temperature threshold
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
     "getNPS": SensorStateClass.MEASUREMENT,        # Microleakage count
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
     "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
+    "getRCP": SensorStateClass.MEASUREMENT,        # Synchronisation interval
     "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
     "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity
     "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
@@ -927,6 +960,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
     "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
+    "getWMP": SensorStateClass.MEASUREMENT,        # Measurement interval
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
@@ -974,7 +1008,14 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - SafeFloor
 
+    "getALD": UnitOfTime.SECONDS,                           # Alarm duration (s)
     "getHMD": PERCENTAGE,                                   # Ambient humidity (%)
+    "getMIH": PERCENTAGE,                                   # Minimum humidity threshold (%)
+    "getMIT": UnitOfTemperature.CELSIUS,                    # Minimum temperature threshold (1/10°C raw)
+    "getMXH": PERCENTAGE,                                   # Maximum humidity threshold (%)
+    "getMXT": UnitOfTemperature.CELSIUS,                    # Maximum temperature threshold (1/10°C raw)
+    "getRCP": UnitOfTime.SECONDS,                           # Synchronisation interval (s)
+    "getWMP": UnitOfTime.SECONDS,                           # Measurement interval (s)
 
     # Configuration/resin capacity sensors are percentage values
     "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)
@@ -1062,6 +1103,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
+    "getALD": 0,    # Alarm duration: show as whole number of seconds
     "getAVO": 1,    # Current flow: show with 2 decimal places
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
@@ -1088,6 +1130,10 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getLE": 0,     # Leakage protection - Present level: show as whole number by default
     "getLNG": 0,    # Device language: show as whole number by default (0=Deutsch, 1=English)
     "getLTV": 0,    # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
+    "getMIH": 0,    # Minimum humidity threshold: show as whole number
+    "getMIT": 0,    # Minimum temperature threshold: e.g. -40 -> -4 °C
+    "getMXH": 0,    # Maximum humidity threshold: show as whole number
+    "getMXT": 0,    # Maximum temperature threshold: e.g. 490 -> 49 °C
     "getNET": 2,    # Mains voltage: show with 2 decimal places
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
     "getNPS": 0,    # Microleakage count: show as whole number by default
@@ -1103,6 +1149,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getPR8": 0,    # Return time to profile 8
     "getPRS": 1,    # Pressure: show with 1 decimal place by default
     "getPST": 0,    # Pressure sensor installed: show as whole number by default
+    "getRCP": 0,    # Synchronisation interval: show as whole number of seconds
     "getRDO": 0,    # Salt dosing: show as whole number by default
     "getRMO": 0,    # Regeneration mode (1=Standard, 2=ECO, 3=Power, 4=Automatik)
     "getRPD": 0,    # Regeneration interval: show as whole days by default
@@ -1135,6 +1182,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getVOL": 3,    # Total water volume: show in cubic meters (m³) with 3 decimals by default
     "getWFR": 0,    # Wi-Fi signal strength: show as whole number by default
     "getWFS": 0,    # Wi-Fi connection status
+    "getWMP": 0,    # Measurement interval: show as whole number of seconds
 
     # Leak protection numeric precisions (integers)
     "getPF1": 0, "getPF2": 0, "getPF3": 0, "getPF4": 0, "getPF5": 0, "getPF6": 0, "getPF7": 0, "getPF8": 0,

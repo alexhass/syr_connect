@@ -191,6 +191,9 @@
           "no_alarm": "Kein Alarm"
         }
       },
+      "getald": {
+        "name": "Alarmdauer"
+      },
       "getalm": {
         "name": "Letzte Alarme",
         "state": {
@@ -369,6 +372,18 @@
       },
       "getman": {
         "name": "Hersteller"
+      },
+      "getmih": {
+        "name": "Minimale Luftfeuchtigkeit"
+      },
+      "getmit": {
+        "name": "Minimale Temperatur"
+      },
+      "getmxh": {
+        "name": "Maximale Luftfeuchtigkeit"
+      },
+      "getmxt": {
+        "name": "Maximale Temperatur"
       },
       "getnet": {
         "name": "Netzspannung"
@@ -759,6 +774,9 @@
           "true": "Aktiviert"
         }
       },
+      "getrcp": {
+        "name": "Synchronisationsintervall"
+      },
       "getrdo": {
         "name": "Salzdosierung"
       },
@@ -966,6 +984,9 @@
       },
       "getwip": {
         "name": "IP-Adresse (WLAN)"
+      },
+      "getwmp": {
+        "name": "Messintervall"
       },
       "getwrn": {
         "name": "Warnung",

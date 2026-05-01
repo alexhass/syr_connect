@@ -191,6 +191,9 @@
           "no_alarm": "Aucune alarme"
         }
       },
+      "getald": {
+        "name": "Durée de l'alarme"
+      },
       "getalm": {
         "name": "Dernières alarmes",
         "state": {
@@ -369,6 +372,18 @@
       },
       "getman": {
         "name": "Fabricant"
+      },
+      "getmih": {
+        "name": "Humidité minimale"
+      },
+      "getmit": {
+        "name": "Température minimale"
+      },
+      "getmxh": {
+        "name": "Humidité maximale"
+      },
+      "getmxt": {
+        "name": "Température maximale"
       },
       "getnet": {
         "name": "Tension secteur"
@@ -759,6 +774,9 @@
           "true": "Activé"
         }
       },
+      "getrcp": {
+        "name": "Intervalle de synchronisation"
+      },
       "getrdo": {
         "name": "Dosage du sel"
       },
@@ -966,6 +984,9 @@
       },
       "getwip": {
         "name": "Adresse IP (WLAN)"
+      },
+      "getwmp": {
+        "name": "Intervalle de mesure"
       },
       "getwrn": {
         "name": "Avertissements",

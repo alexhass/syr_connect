@@ -191,6 +191,9 @@
           "no_alarm": "No alarm"
         }
       },
+      "getald": {
+        "name": "Alarm duration"
+      },
       "getalm": {
         "name": "Last alarms",
         "state": {
@@ -369,6 +372,18 @@
       },
       "getman": {
         "name": "Manufacturer"
+      },
+      "getmih": {
+        "name": "Minimum humidity"
+      },
+      "getmit": {
+        "name": "Minimum temperature"
+      },
+      "getmxh": {
+        "name": "Maximum humidity"
+      },
+      "getmxt": {
+        "name": "Maximum temperature"
       },
       "getnet": {
         "name": "Mains voltage"
@@ -759,6 +774,9 @@
           "true": "Enabled"
         }
       },
+      "getrcp": {
+        "name": "Synchronisation interval"
+      },
       "getrdo": {
         "name": "Salt dosing"
       },
@@ -966,6 +984,9 @@
       },
       "getwip": {
         "name": "IP address (Wi‑Fi)"
+      },
+      "getwmp": {
+        "name": "Measurement interval"
       },
       "getwrn": {
         "name": "Warning",

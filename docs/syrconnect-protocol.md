@@ -370,8 +370,8 @@ These settings can be set by the user.
 | getLNG          | "0"          |           | Language setting (0=German, 1=English).
 | getDTR          | "[0,0,0,0,0,0,0,0]" |           | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel)
 | getLOCK         | "False"      |           | Device keypad/remote lock flag (Trio DFR/LS, SafeTech)
-| getMIH / setMIH | "5"          | %         | Minimum huminity; Values: 0=Off, 5-95% (5% steps)
-| getMXH / setMXH | "95"         | %         | Maximum huminity, Values: 0=Off, 5-95% (5% steps)
+| getMIH / setMIH | "5"          | %         | Minimum huminity; Values: 0=Off, 0-95% (5% steps)
+| getMXH / setMXH | "95"         | %         | Maximum huminity, Values: 100=Off, 5-100% (5% steps)
 | getMIT / setMIT | "-40"        | 1/10      | Minium temperature, Value "-40" = "-4 degree"; Values: Off, -30 to 49 degree (1 degree steps)
 | getMXT / setMXT | "490"        | 1/10      | Maximum temperature, Value "490" = "49 degree"; Values: Off, 1 to 50 degree (1 degree steps)
 | getRCP / setRCP | "43200"      | s         | Synchronisation interval, shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w

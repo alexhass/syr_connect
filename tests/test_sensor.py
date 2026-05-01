@@ -75,6 +75,10 @@ async def test_sensor_setup(hass: HomeAssistant) -> None:
         ("getPRS", "50", 5.0),
         ("getDBD", "10", 1.0),
         ("getCEL", "220", 22.0),
+        ("getMIT", "-40", -4.0),
+        ("getMIT", "490", 49.0),
+        ("getMXT", "490", 49.0),
+        ("getMXT", "-30", -3.0),
         ("getFLO", "100", 100),
     ],
 )
@@ -1506,6 +1510,69 @@ async def test_sensor_sta_unknown_status(hass: HomeAssistant) -> None:
 
     # Unknown status should be returned as-is (or mapped to itself)
     assert sensor.native_value == "Unknown Status XYZ"
+
+
+async def test_sensor_mit_temperature_conversion(hass: HomeAssistant) -> None:
+    """Test getMIT minimum temperature threshold conversion (divides by 10)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getMIT": "-40"},  # -40 raw -> -4.0 °C
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getMIT")
+    assert sensor.native_value == -4.0
+
+
+async def test_sensor_mxt_temperature_conversion(hass: HomeAssistant) -> None:
+    """Test getMXT maximum temperature threshold conversion (divides by 10)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getMXT": "490"},  # 490 raw -> 49.0 °C
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getMXT")
+    assert sensor.native_value == 49.0
+
+
+@pytest.mark.parametrize(
+    ("sensor_key", "raw_value", "expected_value"),
+    [
+        ("getALD", "20", 20),           # Alarm duration (s) — whole number
+        ("getMIH", "5", 5),             # Minimum humidity (%) — whole number
+        ("getMXH", "95", 95),           # Maximum humidity (%) — whole number
+        ("getRCP", "43200", 43200),     # Synchronisation interval (s) — whole number
+        ("getWMP", "3600", 3600),       # Measurement interval (s) — whole number
+    ],
+)
+async def test_sensor_safefloor_config_sensors(
+    hass: HomeAssistant, sensor_key: str, raw_value: str, expected_value: int
+) -> None:
+    """Test SafeFloor config/threshold sensors return correct integer values."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {sensor_key: raw_value},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", sensor_key)
+    assert sensor.native_value == expected_value
 
 
 async def test_sensor_available_device_not_found(hass: HomeAssistant) -> None:

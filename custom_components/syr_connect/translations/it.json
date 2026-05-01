@@ -191,6 +191,9 @@
           "no_alarm": "Nessun allarme"
         }
       },
+      "getald": {
+        "name": "Durata allarme"
+      },
       "getalm": {
         "name": "Ultimi allarmi",
         "state": {
@@ -369,6 +372,18 @@
       },
       "getman": {
         "name": "Produttore"
+      },
+      "getmih": {
+        "name": "Umidità minima"
+      },
+      "getmit": {
+        "name": "Temperatura minima"
+      },
+      "getmxh": {
+        "name": "Umidità massima"
+      },
+      "getmxt": {
+        "name": "Temperatura massima"
       },
       "getnet": {
         "name": "Tensione di rete"
@@ -759,6 +774,9 @@
           "true": "Attivato"
         }
       },
+      "getrcp": {
+        "name": "Intervallo di sincronizzazione"
+      },
       "getrdo": {
         "name": "Dosaggio sale"
       },
@@ -966,6 +984,9 @@
       },
       "getwip": {
         "name": "Indirizzo IP (WLAN)"
+      },
+      "getwmp": {
+        "name": "Intervallo di misurazione"
       },
       "getwrn": {
         "name": "Avvisi",
