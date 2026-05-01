@@ -579,7 +579,7 @@ These properties are only available on devices that contain leakage protection, 
 | getEVL          | "0"          |        | *unknown* — possibly event level
 | getPSD          | ""           |        | *unknown*
 | getTURL         | ""           |        | *unknown* — possibly test URL
-| getALD          | "600"        | s?     | *unknown* — possibly alarm delay
+| getALD          | "600"        | s      | Duration of alarm in seconds (Neosoft, SafeFloor)
 | getCNL          | "10"         |        | *unknown*
 | getTSD          | ""           |        | *unknown*
 | getCLC          | "500"        |        | *unknown*

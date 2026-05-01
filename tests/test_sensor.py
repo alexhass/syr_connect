@@ -1093,8 +1093,8 @@ async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getCS1": "0",
-                    "getSV1": "0",
+                    "getCS2": "0",
+                    "getSV2": "0",
                 },
             }
         ]
@@ -1120,8 +1120,8 @@ async def test_sensor_cs_int_zero_with_sv_zero(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getCS1": 0,  # Int instead of string
-                    "getSV1": 0.0,  # Float zero
+                    "getCS2": 0,  # Int instead of string
+                    "getSV2": 0.0,  # Float zero
                 },
             }
         ]
@@ -1742,7 +1742,7 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSV1": 0,  # Integer zero, in EXCLUDE_WHEN_ZERO
+                    "getSV2": 0,  # Integer zero, in EXCLUDE_WHEN_ZERO
                 },
             }
         ]
@@ -1755,9 +1755,9 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, add_entities)
 
     entities = add_entities.call_args.args[0]
-    # getSV1 with value 0 should be excluded
-    sv1_sensors = [e for e in entities if e._sensor_key == "getSV1"]
-    assert len(sv1_sensors) == 0
+    # getSV2 with value 0 should be excluded
+    sv2_sensors = [e for e in entities if e._sensor_key == "getSV2"]
+    assert len(sv2_sensors) == 0
 
 
 async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None:
@@ -3493,7 +3493,7 @@ async def test_sensor_exclude_when_zero_other_sensor_int(hass: HomeAssistant) ->
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSV1": 0,  # Int zero in exclude list
+                    "getSV2": 0,  # Int zero in exclude list
                 },
             }
         ]
