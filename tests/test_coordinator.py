@@ -1601,3 +1601,34 @@ async def test_coordinator_set_value_getab_ignore_until_type_error(
         # Setting getAB triggers the ignore_until assignment; TypeError must be swallowed
         with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
             await coordinator.async_set_device_value("device1", "setAB", 2)
+
+
+async def test_fetch_device_status_iwh_compute_error_is_logged(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """get_sensor_iwh_value raising ValueError/TypeError is caught and logged (lines 263-264)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
+         patch(
+             "custom_components.syr_connect.coordinator.get_sensor_iwh_value",
+             side_effect=ValueError("bad conductivity"),
+         ):
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(
+            return_value=[{"id": "device1", "dclg": "dclg1", "project_id": "project1"}]
+        )
+        mock_api.get_device_status = AsyncMock(return_value={"getCND": "bad"})
+        mock_api_class.return_value = mock_api
+
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.config_entry = setup_in_progress_config_entry
+
+        # Should complete without raising — the ValueError is caught and only logged
+        await coordinator.async_config_entry_first_refresh()
+
+        assert coordinator.data is not None
+        assert len(coordinator.data["devices"]) == 1
+        assert coordinator.data["devices"][0]["id"] == "device1"
