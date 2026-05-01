@@ -223,7 +223,7 @@ def test_multiple_keys_with_no_signature_match():
     flat = {
         "getXYZ": "1",
         "getABC": "2",
-        "getDEF": "3",
+        "getDEF": "BUTT",
         "getVER": "unknown-version",
     }
     result = detect_model(flat)
