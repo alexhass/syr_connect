@@ -90,8 +90,8 @@ async def async_setup_entry(
                     getattr(entity, "entity_id", None),
                     getattr(entity, "_attr_unique_id", None),
                 )
-            except Exception as e:
-                _LOGGER.error("Failed to instantiate SyrConnectBuzSwitch for device %s: %s", device_id, e)
+            except Exception as err:
+                _LOGGER.error("Failed to instantiate SyrConnectBuzSwitch for device %s: %s", device_id, err)
         else:
             _LOGGER.debug("getBUZ not found in status for device %s.", device_id)
     if entities:
