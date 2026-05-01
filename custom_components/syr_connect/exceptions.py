@@ -31,3 +31,15 @@ class SyrConnectHTTPError(SyrConnectConnectionError):
 
 class SyrConnectInvalidResponseError(SyrConnectError):
     """Invalid response error."""
+
+
+class CannotConnectError(HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+
+class InvalidAuthError(HomeAssistantError):
+    """Error to indicate there is invalid auth."""
+
+
+class HostInvalidError(HomeAssistantError):
+    """Error to indicate the host field value is invalid."""

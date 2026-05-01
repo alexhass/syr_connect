@@ -27,6 +27,7 @@ from .const import (
     CONF_MODEL,
     DOMAIN,
 )
+from .exceptions import CannotConnectError, HostInvalidError, InvalidAuthError
 from .helpers import get_default_scan_interval_for_entry, is_valid_host
 from .models import MODEL_SIGNATURES
 
@@ -203,18 +204,6 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     # Return whether the device required login so the config flow can persist it
     return {"title": f"SYR Connect Local ({host})", "login_required": api.login_required}
-
-
-class CannotConnectError(HomeAssistantError):
-    """Error to indicate we cannot connect."""
-
-
-class InvalidAuthError(HomeAssistantError):
-    """Error to indicate there is invalid auth."""
-
-
-class HostInvalidError(HomeAssistantError):
-    """Error to indicate the host field value is invalid."""
 
 
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
