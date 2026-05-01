@@ -582,6 +582,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # Sensors exits in devices:
     # - Safe-T+, Safe-Tech+, Trio DFR/LS
     "getNET",  # Mains voltage - value "" means no mains voltage sensor present.
+    "getFLO",  # Water flow rate - value "" means flow sensor not present; "0" = valid measurement (no flow)
 }
 
 # Sensors to exclude only when value is empty ip ("" or "0.0.0.0") - internal

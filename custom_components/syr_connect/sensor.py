@@ -824,6 +824,8 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
                 # Try to convert to number if possible for other sensors
                 if isinstance(value, str):
+                    if value.strip() == "":
+                        return None
                     try:
                         numeric_value = float(value)
                         return self._apply_numeric_conversion(numeric_value)
