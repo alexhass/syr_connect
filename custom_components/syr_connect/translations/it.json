@@ -322,6 +322,9 @@
       "getflo": {
         "name": "Flusso d'acqua"
       },
+      "gethmd": {
+        "name": "Umidità"
+      },
       "getinr": {
         "name": "Rigenerazioni incomplete"
       },

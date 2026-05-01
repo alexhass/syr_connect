@@ -322,6 +322,9 @@
       "getflo": {
         "name": "Wasserdurchfluss"
       },
+      "gethmd": {
+        "name": "Luftfeuchtigkeit"
+      },
       "getinr": {
         "name": "Unvollständige Regenerationen"
       },

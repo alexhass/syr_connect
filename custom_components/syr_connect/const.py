@@ -180,6 +180,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Water Quality ---
     "getCEL",   # Water temperature (°C)
     "getCND",   # Water conductivity (µS/cm)
+    "getHMD",   # Ambient humidity (%)
     "getIWH",   # Incoming (raw) water hardness
     "getOWH",   # Outgoing (softened) water hardness
     "getWHU",   # Water hardness unit (°dH / °fH / ppm / mmol/l)
@@ -451,6 +452,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAR": SensorDeviceClass.PRESSURE,
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
+    "getHMD": SensorDeviceClass.HUMIDITY,
     "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
     "getNET": SensorDeviceClass.VOLTAGE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
@@ -613,6 +615,7 @@ _SYR_CONNECT_SENSOR_ICON = {
 
     # Water & Hardness
     "getCND": "mdi:flash",
+    "getHMD": "mdi:water-percent",
     "getIWH": "mdi:water-percent",
     "getOWH": "mdi:water-percent",
     "getWHU": "mdi:water-opacity",
@@ -902,6 +905,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
     "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
     "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
+    "getHMD": SensorStateClass.MEASUREMENT,        # Ambient humidity
     "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
     "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
@@ -965,6 +969,11 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getSS2": UnitOfTime.WEEKS,                             # Salt container supply 2
     "getSS3": UnitOfTime.WEEKS,                             # Salt container supply 3
     "getVOL": UnitOfVolume.CUBIC_METERS,                    # Total capacity (m³)
+
+    # Sensors exits in devices:
+    # - SafeFloor
+
+    "getHMD": PERCENTAGE,                                   # Ambient humidity (%)
 
     # Configuration/resin capacity sensors are percentage values
     "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)
@@ -1071,6 +1080,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getFFM": 0,    # Filter fouling level: show as whole number by default
     "getFCO": 0,    # Iron content: show as whole number by default
     "getFLO": 0,    # Flow rate: show as whole number by default
+    "getHMD": 0,    # Ambient humidity: show as whole number by default
     "getINR": 0,    # Incomplete regenerations: show as whole number by default
     "getIWH": 0,    # Incoming water hardness: show as whole number by default
     "getLAN": 0,    # Device language: show as whole number by default (0=English, 1=German, 3=Spanish)
