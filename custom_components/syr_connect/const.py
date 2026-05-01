@@ -67,21 +67,19 @@ _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 # Unknown models with similar names can have up to 300 kg per container.
 # Fallback to 25 kg when unknown.
 _SYR_CONNECT_MODEL_SALT_CAPACITY = {
+    "lex10": 25,
+    "lex20": 70,
+    "lex30": 70,
+    "lex40": 75,
+    "lex60": 110,
+    "lex80": 200,
+    "lex100": 300,
     "lexplus10": 25,
     "lexplus10s": 25,
     "lexplus10sl": 25,
     "neosoft2500": 40,
     "neosoft5000": 35,
     "sanibelsoftwateruno": 35,
-    # TODO: Below names are not confirmed models.
-    # Names are guessed from data sheets with similar pattern, values are documented in data sheets.
-    "unknown_lex10": 25,
-    "unknown_lex20": 70,
-    "unknown_lex30": 70,
-    "unknown_lex40": 75,
-    "unknown_lex60": 110,
-    "unknown_lex80": 200,
-    "unknown_lex100": 300,
 }
 
 # Alarm code mappings per device model (raw API getALA -> internal translation key)
