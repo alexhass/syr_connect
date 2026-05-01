@@ -70,16 +70,16 @@ async def test_sensor_setup(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.parametrize(
-    ("sensor_key", "raw_value", "expected_value", "description"),
+    ("sensor_key", "raw_value", "expected_value"),
     [
-        ("getPRS", "50", 5.0, "Pressure is divided by 10"),
-        ("getDBD", "10", 1.0, "DBD is divided by 10"),
-        ("getCEL", "220", 22.0, "Temperature is divided by 10"),
-        ("getFLO", "100", 100, "Flow rate is not divided"),
+        ("getPRS", "50", 5.0),
+        ("getDBD", "10", 1.0),
+        ("getCEL", "220", 22.0),
+        ("getFLO", "100", 100),
     ],
 )
 async def test_sensor_native_value_numeric(
-    hass: HomeAssistant, sensor_key: str, raw_value: str, expected_value: float | int, description: str
+    hass: HomeAssistant, sensor_key: str, raw_value: str, expected_value: float | int
 ) -> None:
     """Test sensor native value for numeric sensors."""
     data = {
@@ -624,7 +624,6 @@ def test_getdbd_rounding_precision_typeerror(monkeypatch):
 
     # Create a coordinator-like object for the sensor
     data = {"devices": [{"id": "dev_x", "name": "X", "project_id": "p1", "status": {"getDBD": "10"}}]}
-    coord = _build_coordinator(monkeypatch.context.__self__ if hasattr(monkeypatch.context, '__self__') else None, data) if False else None
     # Instead of building a full coordinator, instantiate SyrConnectSensor directly with a mock coordinator
     class DummyCoord:
         def __init__(self, data):
@@ -7179,7 +7178,7 @@ async def test_sensor_native_value_vol_exception(hass: HomeAssistant) -> None:
 
     # Patch get_sensor_vol_value to return a value that causes exception during division
     class BadValue:
-        def __truediv__(self, other):
+        def __truediv__(self, _other):
             raise Exception("Division error")
 
         def __float__(self):
@@ -8813,9 +8812,9 @@ def test_apply_numeric_conversion_vol_type_error(create_mock_coordinator):
     sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getVOL")
 
     class _BadDiv:
-        def __truediv__(self, other):
+        def __truediv__(self, _other):
             raise TypeError("nope")
-        def __rtruediv__(self, other):
+        def __rtruediv__(self, _other):
             raise TypeError("nope")
 
     # Should not raise; TypeError caught silently, then round() may also fail
@@ -8939,7 +8938,7 @@ def test_sensor_getbar_str_raises_type_error(create_mock_coordinator):
     class _BadStr:
         def __str__(self):
             raise TypeError("no str")
-        def __eq__(self, other):
+        def __eq__(self, _other):
             return False
 
     data = {"devices": [{"id": "d1", "status": {"getBAR": _BadStr()}}]}

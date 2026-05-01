@@ -79,7 +79,7 @@ async def async_setup_entry(
 
         created_commands: set[str] = set()
 
-        for command, name in action_buttons:
+        for command, _name in action_buttons:
             # Derive the corresponding "getXXX" key from the command name
             # (e.g. 'setALA' -> 'getALA') and skip if it's not present
             # in the device status.
@@ -94,7 +94,6 @@ async def async_setup_entry(
                     device_name,
                     project_id,
                     command,
-                    name,
                 )
             )
             created_commands.add(command)
@@ -143,7 +142,6 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         device_name: str,
         project_id: str,
         command: str,
-        button_name: str,
     ) -> None:
         """Initialize the button.
 
@@ -153,7 +151,6 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
             device_name: Device display name
             project_id: Project ID
             command: Command to execute (e.g., 'setSIR')
-            button_name: Display name for the button
         """
         super().__init__(coordinator)
 

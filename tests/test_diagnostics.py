@@ -635,7 +635,7 @@ async def test_raw_json_api_getsrn_redacted_for_json_api_branch(hass: HomeAssist
 
     # Patch diagnostics module to use our dummy API and force async_redact_data identity
     diag_mod.SyrConnectJsonAPI = DummyJsonAPI
-    diag_mod.async_redact_data = lambda data, redact: data
+    diag_mod.async_redact_data = lambda data, _redact: data
     mock_coordinator.api = DummyJsonAPI()
 
     config_entry.runtime_data = mock_coordinator
@@ -1636,7 +1636,7 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssista
 
     # Ensure redaction helper returns the original dict so the getSRN
     # assignment branch is executed (we want to explicitly cover that line).
-    diag_mod.async_redact_data = lambda data, redact: data
+    diag_mod.async_redact_data = lambda data, _redact: data
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     # Provide a session so diagnostics will attempt JSON fetch
@@ -1928,7 +1928,7 @@ async def test_diagnostics_json_api_redacts_srn_additional(hass) -> None:
     async def _login():
         return None
 
-    async def _get_devices(scope):
+    async def _get_devices(_scope):
         return [{"id": "dev1"}]
 
     async def _get_device_status(did):
@@ -2227,7 +2227,7 @@ async def test_json_redact_assignment_exception_handled(monkeypatch, hass: HomeA
         def is_session_valid(self):
             return True
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return [{"id": "dev1"}]
 
         async def get_device_status(self, did):
@@ -2341,7 +2341,7 @@ async def test_json_redact_getsrn_contains_raises(monkeypatch, hass: HomeAssista
         def is_session_valid(self):
             return True
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return [{"id": "dev1"}]
 
         async def get_device_status(self, did):
@@ -2400,7 +2400,7 @@ async def test_json_raw_redaction_and_getmac2_masking(hass: HomeAssistant) -> No
         def is_session_valid(self):
             return True
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return [{"id": "dev1"}]
 
         async def get_device_status(self, did):
@@ -4147,7 +4147,7 @@ async def test_json_api_getsrn_except_block(monkeypatch, hass: HomeAssistant) ->
         def is_session_valid(self):
             return True
 
-        async def request_json_data(self, *a, **kw):
+        async def request_json_data(self, *_a, **_kw):
             return {"getSRN": "206AAA67890", "getFLO": "10"}
 
     monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
@@ -4219,10 +4219,10 @@ async def test_xml_device_json_getsrn_except_block(monkeypatch, hass: HomeAssist
         def _build_base_url(self):
             return "http://192.168.1.1"
 
-        async def request_json_data(self, *a, **kw):
+        async def request_json_data(self, *_a, **_kw):
             return {"getSRN": "206AAA67890", "getFLO": "5"}
 
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", lambda *a, **kw: FakeJsonApi())
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", lambda *_a, **_kw: FakeJsonApi())
     monkeypatch.setattr(
         diag,
         "async_redact_data",
@@ -4275,7 +4275,7 @@ async def test_mask_sensitive_getmac2_branch(monkeypatch, hass: HomeAssistant) -
         def is_session_valid(self):
             return True
 
-        async def request_json_data(self, *a, **kw):
+        async def request_json_data(self, *_a, **_kw):
             # Return a dict with getMAC2 so _mask_sensitive hits that branch
             return {"getMAC2": "AA:BB:CC:DD:EE:FF", "getFLO": "8"}
 
@@ -4483,7 +4483,7 @@ async def test_diagnostics_fetch_device_json_get_device_status_raises(hass: Home
     entry.runtime_data = coordinator
 
     class FakeJsonApi:
-        def __init__(self, *a, **kw):
+        def __init__(self, *_a, **_kw):
             pass
 
         def is_session_valid(self):
@@ -4492,10 +4492,10 @@ async def test_diagnostics_fetch_device_json_get_device_status_raises(hass: Home
         def _build_base_url(self):
             return "http://192.0.2.5"
 
-        async def get_device_status(self, *a, **kw):
+        async def get_device_status(self, *_a, **_kw):
             raise RuntimeError("fetch fail")
 
-    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI", side_effect=lambda *a, **kw: FakeJsonApi()):
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI", side_effect=lambda *_a, **_kw: FakeJsonApi()):
         result = await async_get_config_entry_diagnostics(hass, entry)
 
     assert "raw_json" in result
@@ -4554,7 +4554,7 @@ async def test_diagnostics_xml_json_per_device_success(monkeypatch, hass: HomeAs
         def _build_base_url(self):
             return "http://1.2.3.4"
 
-        async def get_device_status(self, *a, **kw):
+        async def get_device_status(self, *_a, **_kw):
             return {"getSRN": "206AAA67890", "getMAC": "AA:BB:CC:DD:EE:FF", "getFLO": "5"}
 
     # Make diagnostics use our FakeJsonApi
@@ -4604,7 +4604,7 @@ async def test_diagnostics_json_api_success_redact(monkeypatch, hass: HomeAssist
         async def login(self):
             return None
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return [{"id": "dev1"}]
 
         async def get_device_status(self, did):

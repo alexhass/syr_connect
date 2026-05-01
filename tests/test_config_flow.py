@@ -36,7 +36,8 @@ async def test_form_menu(hass: HomeAssistant) -> None:
     assert "api_json" in result["menu_options"]
 
 
-async def test_form_api_xml(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_form_api_xml(hass: HomeAssistant) -> None:
     """Test cloud/XML API configuration flow."""
     # Start flow and select api_xml from menu
     result = await hass.config_entries.flow.async_init(
@@ -165,7 +166,8 @@ async def test_form_api_xml_cannot_connect(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_form_api_xml_already_configured(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_form_api_xml_already_configured(hass: HomeAssistant) -> None:
     """Test we handle already configured for cloud/XML API."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -257,7 +259,7 @@ async def test_validate_input_json_device_missing_id_raises(hass: HomeAssistant)
         async def login(self):
             return None
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return [{"name": "nodata"}]
 
     with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI", return_value=FakeApi()):
@@ -333,7 +335,7 @@ async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> N
         async def login(self):
             return None
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return [{"id": "dev1"}]
 
         async def get_device_status(self, did):
@@ -523,7 +525,8 @@ async def test_form_api_json_same_ip_different_serial(hass: HomeAssistant) -> No
     assert result2["title"] == "SYR Connect Local (192.168.1.100)"
 
 
-async def test_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_options_flow(hass: HomeAssistant) -> None:
     """Test options flow."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -579,7 +582,8 @@ async def test_options_flow_no_entry(hass: HomeAssistant) -> None:
     assert result["step_id"] == "init"
 
 
-async def test_reauth_flow(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_reauth_flow(hass: HomeAssistant) -> None:
     """Test reauth flow."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -740,7 +744,8 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_reconfigure_flow(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_reconfigure_flow(hass: HomeAssistant) -> None:
     """Test reconfigure flow."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -1111,7 +1116,8 @@ async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
     assert result2["reason"] == "reconfigure_failed"
 
 
-async def test_options_flow_with_existing_interval(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_options_flow_with_existing_interval(hass: HomeAssistant) -> None:
     """Test options flow shows existing scan interval as default."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -1482,7 +1488,7 @@ async def test_validate_input_json_no_devices_raises(hass: HomeAssistant) -> Non
         async def login(self):
             return None
 
-        async def get_devices(self, scope):
+        async def get_devices(self, _scope):
             return []
 
     with patch("custom_components.syr_connect.api_json.SyrConnectJsonAPI", return_value=FakeApi()):
@@ -1683,7 +1689,8 @@ async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) ->
         )
 
 
-async def test_async_get_options_flow(hass: HomeAssistant, mock_syr_api) -> None:
+@pytest.mark.usefixtures("mock_syr_api")
+async def test_async_get_options_flow(hass: HomeAssistant) -> None:
     """Test the async_get_options_flow method."""
     # Create a config entry
     entry = MockConfigEntry(
