@@ -30,7 +30,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-from .helpers import get_default_scan_interval_for_entry
+from .helpers import get_default_scan_interval_for_entry, get_sensor_iwh_value
 from .models import MODEL_SIGNATURES
 from .repairs import create_issue, delete_issue
 
@@ -253,6 +253,14 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             device["status"] = status
             device["available"] = True
+
+            # Compute derived sensor values (e.g. getIWH from getCND) so they
+            # are available to all platforms without mutating coordinator data
+            # from within platform setup code.
+            try:
+                get_sensor_iwh_value(status)
+            except Exception:  # pragma: no cover - defensive
+                _LOGGER.debug("Failed to compute derived sensor values for device %s", device.get("id"))
 
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
