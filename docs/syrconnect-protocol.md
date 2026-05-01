@@ -351,6 +351,7 @@ These settings can be set by the user.
 
 | Property        | Example      | Unit      | Description
 |-----------------|--------------|-----------|-------------------------------------------------------
+| getALD / setALD | "20"         | s         | Duration of alarm in seconds (Neosoft, SafeFloor)
 | getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water), can be set from 1-100 °dH
 | getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have), can be set from 0-100 °dH
 | getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH
@@ -369,6 +370,12 @@ These settings can be set by the user.
 | getLNG          | "0"          |           | Language setting (0=German, 1=English).
 | getDTR          | "[0,0,0,0,0,0,0,0]" |           | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel)
 | getLOCK         | "False"      |           | Device keypad/remote lock flag (Trio DFR/LS, SafeTech)
+| getMIH / setMIH | "5"          | %         | Minimum huminity; Values: 0=Off, 5-95% (5% steps)
+| getMXH / setMXH | "95"         | %         | Maximum huminity, Values: 0=Off, 5-95% (5% steps)
+| getMIT / setMIT | "-40"        | 1/10      | Minium temperature, Value "-40" = "-4 degree"; Values: Off, -30 to 49 degree (1 degree steps)
+| getMXT / setMXT | "490"        | 1/10      | Maximum temperature, Value "490" = "49 degree"; Values: Off, 1 to 50 degree (1 degree steps)
+| getRCP / setRCP | "43200"      | s         | Synchronisation interval, shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w
+| getWMP / setWMP | "3600"       | s         | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h
 
 ### Measurements
 
@@ -579,7 +586,6 @@ These properties are only available on devices that contain leakage protection, 
 | getEVL          | "0"          |        | *unknown* — possibly event level
 | getPSD          | ""           |        | *unknown*
 | getTURL         | ""           |        | *unknown* — possibly test URL
-| getALD          | "600"        | s      | Duration of alarm in seconds (Neosoft, SafeFloor)
 | getCNL          | "10"         |        | *unknown*
 | getTSD          | ""           |        | *unknown*
 | getCLC          | "500"        |        | *unknown*
@@ -715,11 +721,7 @@ These properties appear only on the **Sanibel Leak Protection Module A25** (comf
 | getLPD          | ""      | *unknown*
 | getLRC          | ""      | *unknown*
 | getMFL          | ""      | *unknown*
-| getMIH          | ""      | *unknown*
-| getMIT          | ""      | *unknown*
 | getMPR          | ""      | *unknown* — possibly set water pressure (excluded when empty)
-| getMXH          | ""      | *unknown*
-| getMXT          | ""      | *unknown*
 | getNMS          | ""      | *unknown*
 | getNMT          | ""      | *unknown*
 | getNPL          | ""      | *unknown*
@@ -736,7 +738,6 @@ These properties appear only on the **Sanibel Leak Protection Module A25** (comf
 | getRCC          | ""      | *unknown*
 | getRCD          | ""      | *unknown*
 | getRCN          | ""      | *unknown*
-| getRCP          | ""      | *unknown*
 | getRMN          | ""      | *unknown*
 | getRMP          | ""      | *unknown*
 | getRMT          | ""      | *unknown*
