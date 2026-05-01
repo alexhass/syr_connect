@@ -324,11 +324,13 @@ Some further data about the device
 | getDNS          | "123.123.123.254"     |        | DNS server
 | getDGW          | "123.123.123.254"     |        | Default gateway
 | getCURL         | "iot-syrconnect.azure-devices.net" |  | Azure IoT Hub connection URL (Trio DFR/LS, SafeTech, NeoSoft, Sanibel)
+| getMQT          | "1"                   |        | Network protocol: 1 = MQTT (Safe-Tech V4)
 | getWFL          | ["SSID1:Strength", ...] |      | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel)
 | getWAD          | "False"               |        | Wi-Fi auto-discovery flag (NeoSoft, Sanibel)
 | getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel)
 | getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)
 | getWNS          | "False"               |        | Wi-Fi network scan flag (Trio DFR/LS)
+
 
 ### Holiday
 
