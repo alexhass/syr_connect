@@ -6,6 +6,7 @@ import logging
 import re
 from typing import Any
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -69,7 +70,7 @@ def is_value_true(val: object) -> bool:
     return False
 
 
-def get_default_scan_interval_for_entry(entry) -> int:
+def get_default_scan_interval_for_entry(entry: ConfigEntry | dict | None) -> int:
     """Return the default scan interval for a config entry.
 
     Logic:
@@ -81,14 +82,13 @@ def get_default_scan_interval_for_entry(entry) -> int:
     if entry is None:
         return _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
 
-    # Accept either a ConfigEntry or a mapping-like object
-    try:
+    # Accept either a ConfigEntry or a plain dict (used internally by the coordinator)
+    if isinstance(entry, dict):
+        options = entry.get("options") or {}
+        data = entry.get("data") or {}
+    else:
         options = getattr(entry, "options", None) or {}
         data = getattr(entry, "data", None) or {}
-    except (AttributeError, TypeError):
-        # Fallback: treat entry as mapping
-        options = entry.get("options", {}) if isinstance(entry, dict) else {}
-        data = entry.get("data", {}) if isinstance(entry, dict) else {}
 
     # If user explicitly set a scan interval option, use it
     if _SYR_CONNECT_SCAN_INTERVAL_CONF in options:
