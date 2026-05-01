@@ -743,9 +743,8 @@ def test_mapping_none_inputs() -> None:
 def test_get_default_scan_interval_for_entry_with_dict() -> None:
     """Entry provided as plain dict should be handled like a mapping."""
     entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
-    # Current implementation treats plain dicts as objects and falls back
-    # to the legacy XML default when attributes are not present.
-    assert helpers.get_default_scan_interval_for_entry(entry) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+    # Implementation handles plain dicts: reads scan_interval from options directly.
+    assert helpers.get_default_scan_interval_for_entry(entry) == 30
 
 
 def test_registry_cleanup_remove_called() -> None:
