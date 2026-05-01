@@ -527,7 +527,8 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
     "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
-    "getSV1", "getSV2", "getSV3",  # Salt amount (kg)
+    #"getSV1",  # The first salt container is always present, so 0 kg remaining means empty, which is useful to show.
+    "getSV2", "getSV3",  # Salt amount (kg)
     "getVS1", "getVS2", "getVS3",  # Volume thresholds
     "getTYP",  # Device type code - value "" means sensor does not exists, type "0" may not exists.
 
