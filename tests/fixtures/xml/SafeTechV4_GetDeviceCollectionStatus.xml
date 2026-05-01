@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="01.05.2026 18:11:00" nrs="0" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="09ffcab9-bb6a-ee11-8007-be3af2b6059f" sbt="" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
+      <ci f="4.08" b="1.00" m="0C:73:EB:XX:XX:XX" />
+      <c n="getSRN" v="123456789" dt="01.05.2026 18:11:00" />
+      <c n="getVER" v="Safe-Tech V4.08" />
+      <c n="get71" v="0" />
+      <c n="getAB" v="1" />
+      <c n="getALA" v="FF" dt="01.05.2026 11:53:09" />
+      <c n="getALD" v="0" />
+      <c n="getALM" v="Alarms:-&gt;A4 A4 AF AF A3 AF A3 AF" dt="03.04.2026 11:55:36" />
+      <c n="getAPT" v="3600" />
+      <c n="getAVO" v="0mL" />
+      <c n="getBAR" v="3700 mbar" />
+      <c n="getBAT" v="8,62" />
+      <c n="getBFT" v="300" />
+      <c n="getBPB" v="0" />
+      <c n="getBPT" v="60" />
+      <c n="getBSA" v="1" />
+      <c n="getBUP" v="BUZ: Puls[100ms]:4 Periode[100ms]:60" />
+      <c n="getBUZ" v="1" />
+      <c n="getCEL" v="152" />
+      <c n="getCLP" v="0" />
+      <c n="getCND" v="608" />
+      <c n="getCNF" v="20" />
+      <c n="getCNL" v="0" />
+      <c n="getCNO" v="BDF16375909Y50Z" />
+      <c n="getCSD" v="0" />
+      <c n="getDBD" v="10" />
+      <c n="getDBT" v="15" />
+      <c n="getDCM" v="3" />
+      <c n="getDEF" v="" />
+      <c n="getDKI" v="36" />
+      <c n="getDMA" v="1" />
+      <c n="getDOM" v="60" />
+      <c n="getDPL" v="10" />
+      <c n="getDRP" v="1" />
+      <c n="getDST" v="60" />
+      <c n="getDSV" v="0" />
+      <c n="getDTC" v="3" />
+      <c n="getDTT" v="04:00" />
+      <c n="getFLO" v="0" />
+      <c n="getFSL" v="[{&quot;SN&quot;:&quot;987654321&quot;},{&quot;SN&quot;:&quot;876543210&quot;}]" />
+      <c n="getHTD" v="0" />
+      <c n="getIDS" v="1" />
+      <c n="getLNG" v="0 (0=Deutsch 1=English)" />
+      <c n="getLTV" v="1" />
+      <c n="getLWT" v="90" />
+      <c n="getMAC" v="0c:73:eb:XX:XX:XX" />
+      <c n="getMQT" v="1" />
+      <c n="getMRT" v="5" />
+      <c n="getMSC" v="0" />
+      <c n="getNPS" v="3" />
+      <c n="getPA1" v="1" />
+      <c n="getPA2" v="1" />
+      <c n="getPA3" v="1" />
+      <c n="getPA4" v="1" />
+      <c n="getPA5" v="0" />
+      <c n="getPA6" v="0" />
+      <c n="getPA7" v="0" />
+      <c n="getPA8" v="0" />
+      <c n="getPB1" v="0" />
+      <c n="getPB2" v="1" />
+      <c n="getPB3" v="1" />
+      <c n="getPB4" v="1" />
+      <c n="getPB5" v="1" />
+      <c n="getPB6" v="1" />
+      <c n="getPB7" v="1" />
+      <c n="getPB8" v="1" />
+      <c n="getPF1" v="3500" />
+      <c n="getPF2" v="3500" />
+      <c n="getPF3" v="5000" />
+      <c n="getPF4" v="3500" />
+      <c n="getPF5" v="3500" />
+      <c n="getPF6" v="3500" />
+      <c n="getPF7" v="3500" />
+      <c n="getPF8" v="3500" />
+      <c n="getPM1" v="1" />
+      <c n="getPM2" v="1" />
+      <c n="getPM3" v="1" />
+      <c n="getPM4" v="1" />
+      <c n="getPM5" v="1" />
+      <c n="getPM6" v="1" />
+      <c n="getPM7" v="1" />
+      <c n="getPM8" v="1" />
+      <c n="getPN1" v="Anwesend" />
+      <c n="getPN2" v="Abwesend" />
+      <c n="getPN3" v="Duschen" />
+      <c n="getPN4" v="Neues Profil" />
+      <c n="getPN5" v="Neues Profil" />
+      <c n="getPN6" v="Profile 6" />
+      <c n="getPN7" v="Profile 7" />
+      <c n="getPN8" v="Profile 8" />
+      <c n="getPR1" v="0" />
+      <c n="getPR2" v="0" />
+      <c n="getPR3" v="24" />
+      <c n="getPR4" v="0" />
+      <c n="getPR5" v="0" />
+      <c n="getPR6" v="0" />
+      <c n="getPR7" v="0" />
+      <c n="getPR8" v="0" />
+      <c n="getPRF" v="1" />
+      <c n="getPRN" v="4" />
+      <c n="getPSD" v="0" />
+      <c n="getPT1" v="60" />
+      <c n="getPT2" v="30" />
+      <c n="getPT3" v="1500" />
+      <c n="getPT4" v="60" />
+      <c n="getPT5" v="60" />
+      <c n="getPT6" v="60" />
+      <c n="getPT7" v="60" />
+      <c n="getPT8" v="60" />
+      <c n="getPV1" v="200" />
+      <c n="getPV2" v="20" iir="" />
+      <c n="getPV3" v="4300" />
+      <c n="getPV4" v="300" />
+      <c n="getPV5" v="300" />
+      <c n="getPV6" v="300" />
+      <c n="getPV7" v="300" />
+      <c n="getPV8" v="300" />
+      <c n="getPW1" v="0" />
+      <c n="getPW2" v="0" />
+      <c n="getPW3" v="1" />
+      <c n="getPW4" v="0" />
+      <c n="getPW5" v="0" />
+      <c n="getPW6" v="0" />
+      <c n="getPW7" v="0" />
+      <c n="getPW8" v="0" />
+      <c n="getSFV" v="0" />
+      <c n="getSLE" v="0" />
+      <c n="getSLF" v="0" />
+      <c n="getSLO" v="10" />
+      <c n="getSLP" v="0" />
+      <c n="getSLT" v="0" />
+      <c n="getSLV" v="0" />
+      <c n="getSMF" v="3500" />
+      <c n="getSOF" v="20" />
+      <c n="getSRO" v="180" />
+      <c n="getSRV" v="13.04.2024" />
+      <c n="getT2" v="1" />
+      <c n="getTMP" v="0" />
+      <c n="getTMZ" v="4" />
+      <c n="getTN" v="10" />
+      <c n="getTSD" v="0" />
+      <c n="getTTM" v="30" />
+      <c n="getTYP" v="140" />
+      <c n="getUNI" v="0" />
+      <c n="getVLV" v="20" />
+      <c n="getVOL" v="Vol[L]42929" />
+      <c n="getVTO" v="0" />
+      <c n="getWAD" v="1" />
+      <c n="getWAH" v="0" />
+      <c n="getWFC" v="wifi-1" />
+      <c n="getWFR" v="96" />
+      <c n="getWGW" v="192.168.178.1" />
+      <c n="getWIP" v="192.168.178.20" />
+      <c n="getWNS" v="0" />
+    </d>
+  </dvs>
+  <cs v="15F6B" />
+</sc>

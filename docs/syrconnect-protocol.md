@@ -517,7 +517,7 @@ These properties are only available on devices that contain leakage protection, 
 | getCNS          | "1"          |        | *unknown* (LEXplus10SL)
 | getEXI          | "0"          |        | *unknown* — possibly external input status (Safe-T+)
 | getEXT          | "1"          |        | *unknown* — possibly external sensor connected (Safe-T+)
-| getFSL          | "[]"         |        | *unknown* — array value (LEXplus10SL, Trio DFR/LS, SafeTech)
+| getFSL          | "[]"<br>[{&quot;SN&quot;:&quot;987654321&quot;},{&quot;SN&quot;:&quot;876543210&quot;}]         |        | Array with serial numbers of connected SafeFloor devices (Available on LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech V4)
 | getGLE          | ""           |        | *unknown* (Safe-T+)
 | getGUL          | ""           |        | *unknown* (Safe-T+)
 | getIDS          | "False"      |        | *unknown* (LEXplus10SL, Sanibel)
