@@ -374,6 +374,7 @@ These settings can be set by the user.
 
 | Property                                              | Example            | Unit     | Description
 |-------------------------------------------------------|--------------------|----------|-------------------------------------------------------
+| getHMD                                                | "43"               | %        | Humidity in % (SafeFloor)
 | getPRS                                                | "40"               | 1/10 bar | Measured water pressure if sensor is available (getPST() = 2), otherwise same as getMPR()<br>255 indicates an invalid values, e.g. when no pressure sensor is available but getPST() = 2
 | getMXP                                                | "40"               | 1/10 bar | The maximum measured water pressure (reset at midnight)
 | getMNP                                                | "40"               | 1/10 bar | The minimum measured water pressure (reset at midnight)
