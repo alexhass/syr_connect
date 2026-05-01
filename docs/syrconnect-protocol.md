@@ -349,8 +349,8 @@ These settings can be set by the user.
 
 | Property        | Example      | Unit      | Description
 |-----------------|--------------|-----------|-------------------------------------------------------
-| getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water)
-| getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have)
+| getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water), can be set from 1-100 °dH
+| getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have), can be set from 0-100 °dH
 | getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH
 | getRDO / setRDO | "90"         | g/L       | Salt dosage
 | getRTH / setRTH | "16"         | hour      | Regeneration time (hour)
