@@ -149,8 +149,9 @@ async def async_setup_entry(
             if sv_value is None or sv_value == "":
                 continue
             try:
-                if float(sv_value) == 0:
-                    # Skip creating when zero reported (keeps parity with previous logic)
+                if float(sv_value) == 0 and sv_key != "getSV1":
+                    # getSV2/getSV3 with value 0 mean the container doesn't exist.
+                    # getSV1 is always present so 0 kg (empty) is a valid, useful state.
                     continue
             except (ValueError, TypeError):
                 continue
