@@ -24,7 +24,7 @@ async def test_create_issue(hass: HomeAssistant) -> None:
             hass,
             DOMAIN,
             "test_issue",
-            is_fixable=True,
+            is_fixable=False,
             severity=ir.IssueSeverity.WARNING,
             translation_key="test_translation_key",
         )
@@ -46,7 +46,7 @@ async def test_create_issue_with_kwargs(hass: HomeAssistant) -> None:
             hass,
             DOMAIN,
             "test_issue_2",
-            is_fixable=True,
+            is_fixable=False,
             severity=ir.IssueSeverity.ERROR,
             translation_key="test_key",
             data={"some": "data"},

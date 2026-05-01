@@ -32,7 +32,7 @@ def create_issue(
         hass,
         DOMAIN,
         issue_id,
-        is_fixable=True,
+        is_fixable=False,
         severity=severity,
         translation_key=translation_key,
         **kwargs,
