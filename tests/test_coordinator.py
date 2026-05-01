@@ -1,6 +1,6 @@
 """Test the SYR Connect coordinator."""
-import time
 import asyncio
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
