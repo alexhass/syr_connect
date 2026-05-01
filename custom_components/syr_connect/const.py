@@ -174,8 +174,8 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Pressure ---
     "getBAR",   # Inlet pressure – mbar sensor (Safe-T+)
     "getPRS",   # Inlet pressure – bar sensor (LEXplus10SL)
-    # --- Voltage ---
-    "getBAT",   # Battery voltage (V)
+    # --- Voltage / Battery ---
+    "getBAT",   # Battery voltage (V) or battery level (%) – unit depends on device type
     "getNET",   # Mains (AC) voltage (V)
     # --- Water Quality ---
     "getCEL",   # Temperature (°C)
@@ -848,6 +848,12 @@ _SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
     "NoSalt": "no_salt",
     "LowSalt": "low_salt",
     "": "no_alarm",
+}
+
+# Device type codes (getTYP) that report getBAT as battery percentage (%) rather than voltage (V).
+# To add support for a new device, append its getTYP value as a string.
+_SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE = {
+    "120",  # SafeFloor – reports e.g. "40" = 40%
 }
 
 # Mapping for getLE sensor values (Leakage protection - Present level)

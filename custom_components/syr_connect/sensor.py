@@ -6,8 +6,9 @@ import re
 from datetime import UTC, datetime, timedelta
 
 from babel.dates import format_datetime
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
@@ -16,6 +17,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE,
     _SYR_CONNECT_SENSOR_BINARY,
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
@@ -303,6 +305,18 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
+        # Override getBAT attributes for devices that report battery as percentage (e.g. SafeFloor TYP=120)
+        if sensor_key == "getBAT":
+            typ = ""
+            for device in coordinator.data.get("devices", []):
+                if device["id"] == device_id:
+                    typ = str(device.get("status", {}).get("getTYP", "") or "").strip()
+                    break
+            if typ in _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE:
+                self._attr_native_unit_of_measurement = PERCENTAGE
+                self._attr_device_class = SensorDeviceClass.BATTERY
+                self._attr_suggested_display_precision = 0
+
         # Cache last non-None native value to avoid writing None when API omits values
         self._last_native_value: str | int | float | datetime | None = None
 
@@ -385,15 +399,27 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return "mdi:bell-outline"
             return "mdi:bell-alert-outline"
 
-        # Dynamic icon for battery voltage (getBAT)
+        # Dynamic icon for battery voltage/level (getBAT)
         if self._sensor_key == "getBAT":
             val = self.native_value
             if val is None:
                 return self._base_icon
-            # Normalize to string and try converting to float once.
-            sval = str(val).strip()
             try:
-                if float(sval) == 0:
+                f = float(str(val).strip())
+                if f == 0:
+                    return "mdi:battery-alert-variant-outline"
+                # For percentage mode show level-appropriate icon
+                if self._attr_native_unit_of_measurement == PERCENTAGE:
+                    if f >= 90:
+                        return "mdi:battery"
+                    if f >= 70:
+                        return "mdi:battery-80"
+                    if f >= 50:
+                        return "mdi:battery-60"
+                    if f >= 30:
+                        return "mdi:battery-40"
+                    if f >= 10:
+                        return "mdi:battery-20"
                     return "mdi:battery-alert-variant-outline"
             except (TypeError, ValueError):
                 pass
@@ -578,15 +604,22 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, TypeError):
                         return None
 
-                # Special handling for battery voltage (getBAT)
+                # Special handling for battery voltage/level (getBAT)
                 if self._sensor_key == 'getBAT':
-                    # Support both formats:
+                    # Support formats:
                     # - Safe-T+ format ("6,11 4,38 3,90" -> "6.11 V")
                     # - Trio DFR/LS format ("363" -> "3.63 V").
+                    # - SafeFloor TYP=120 format ("85" -> 85%)
                     if value is None:
                         return None
                     if not isinstance(value, (str | int | float)):
                         return None
+                    # SafeFloor (and similar) report battery as an integer percentage.
+                    if self._attr_native_unit_of_measurement == PERCENTAGE:
+                        try:
+                            return int(float(str(value).strip()))
+                        except (ValueError, TypeError):
+                            return None
                     parsed = get_sensor_bat_value(value)
                     return parsed
 

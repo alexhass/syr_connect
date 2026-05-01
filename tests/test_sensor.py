@@ -4443,6 +4443,82 @@ async def test_sensor_getbat_invalid_value(hass: HomeAssistant) -> None:
     assert bat_sensor.native_value is None
 
 
+async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
+    """SafeFloor (TYP=120) reports getBAT as integer percentage."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "40",
+                    "getTYP": "120",  # SafeFloor
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    from homeassistant.components.sensor import SensorDeviceClass
+    from homeassistant.const import PERCENTAGE
+
+    assert bat.native_value == 40
+    assert bat.native_unit_of_measurement == PERCENTAGE
+    assert bat.device_class == SensorDeviceClass.BATTERY
+    assert bat.suggested_display_precision == 0
+
+
+async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
+    """Battery level icons reflect percentage for SafeFloor."""
+    base_data = {
+        "id": "device1",
+        "name": "Device 1",
+        "project_id": "project1",
+        "status": {"getTYP": "120"},
+    }
+    for bat_pct, expected_icon in [
+        ("95", "mdi:battery"),
+        ("75", "mdi:battery-80"),
+        ("55", "mdi:battery-60"),
+        ("35", "mdi:battery-40"),
+        ("15", "mdi:battery-20"),
+        ("5", "mdi:battery-alert-variant-outline"),
+        ("0", "mdi:battery-alert-variant-outline"),
+    ]:
+        data = {"devices": [{**base_data, "status": {**base_data["status"], "getBAT": bat_pct}}]}
+        coordinator = _build_coordinator(hass, data)
+        bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+        assert bat.icon == expected_icon, f"Expected {expected_icon} for {bat_pct}%"
+
+
+async def test_sensor_getbat_voltage_device_unaffected(hass: HomeAssistant) -> None:
+    """Non-SafeFloor devices still parse getBAT as voltage (Trio DFR/LS format)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "363",
+                    "getTYP": "80",  # LEXplus
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    from homeassistant.components.sensor import SensorDeviceClass
+    from homeassistant.const import UnitOfElectricPotential
+
+    assert bat.native_value == 3.63
+    assert bat.native_unit_of_measurement == UnitOfElectricPotential.VOLT
+    assert bat.device_class == SensorDeviceClass.VOLTAGE
+
+
 async def test_sensor_getbar_with_unit(hass: HomeAssistant) -> None:
     """Test getBAR sensor with 'mbar' unit suffix."""
     data = {
