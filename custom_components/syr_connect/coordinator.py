@@ -260,8 +260,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # from within platform setup code.
             try:
                 get_sensor_iwh_value(status)
-            except Exception:  # pragma: no cover - defensive
-                _LOGGER.debug("Failed to compute derived sensor values for device %s", device.get("id"))
+            except (ValueError, TypeError) as err:
+                _LOGGER.warning("Failed to compute derived sensor values for device %s: %s", device.get("id"), err)
 
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
