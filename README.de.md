@@ -91,11 +91,14 @@ Getestet und gemeldet als funktionierend:
 
 - Sanibel Leckageschutzmodul A25
 - Sanibel Softwater UNO A25
+- SYR LEX 1500 Connect Einzel (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 - SYR NeoSoft 2500 Connect
+- SYR SafeFloor Connect
 - SYR Safe-T+ Connect
+- SYR SafeTech Connect
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
 
@@ -105,14 +108,11 @@ Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
 - SYR IT 3000 Pendelanlage
-- SYR LEX 1500 Connect Einzel
 - SYR LEX 1500 Connect Doppel
 - SYR LEX 1500 Connect Pendel
 - SYR LEX 1500 Connect Dreifach
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
-- SYR SafeFloor Connect
-- SYR SafeTech Connect
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
 **Hinweis**: Wenn ein Gerät in deinem SYR Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
