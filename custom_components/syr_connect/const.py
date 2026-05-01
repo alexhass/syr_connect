@@ -178,7 +178,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getBAT",   # Battery voltage (V)
     "getNET",   # Mains (AC) voltage (V)
     # --- Water Quality ---
-    "getCEL",   # Water temperature (°C)
+    "getCEL",   # Temperature (°C)
     "getCND",   # Water conductivity (µS/cm)
     "getHMD",   # Ambient humidity (%)
     "getIWH",   # Incoming (raw) water hardness
@@ -560,10 +560,11 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - LEXplus10SL
     # - Safe-T+
     # - NeoSoft 2500 / 5000
-    "getCEL",  # Water temperature - value "" means sensor does not exists or not measured.
+    # - SafeFloor
+    "getCEL",   # Temperature - value "" means sensor does not exists or not measured.
     "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
     "getLNG",   # Device language (0=Deutsch, 1=English)
-    "getNPS",  # Microleakage count - value "" means sensor does not exists.
+    "getNPS",   # Microleakage count - value "" means sensor does not exists.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
@@ -901,7 +902,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
     "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
-    "getCEL": SensorStateClass.MEASUREMENT,        # Water temperature
+    "getCEL": SensorStateClass.MEASUREMENT,        # Temperature
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
     "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
     "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
@@ -984,7 +985,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # - LEXplus10SL
 
     # Leak protection profile sensors
-    "getCEL": UnitOfTemperature.CELSIUS,                # Water temperature
+    "getCEL": UnitOfTemperature.CELSIUS,                # Temperature
     "getCOF": UnitOfVolume.LITERS,                      # Total water consumption counter
     "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 1
     "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 2
@@ -1065,7 +1066,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
-    "getCEL": 1,    # Water temperature, e.g. 110 = 11.0°C
+    "getCEL": 1,    # Temperature, e.g. 110 = 11.0°C
     "getCFO": 0,    # Cycle flow offset: show as whole number by default
     "getCND": 0,    # Conductivity in µS/cm: show as whole number by default
     "getCOF": 0,    # Total water consumption counter: show as whole number by default

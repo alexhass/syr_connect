@@ -452,7 +452,7 @@ These properties are only available on devices that contain leakage protection, 
 | getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h
 | getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds
 | getUL / setUL   | "0"          |         | User profile Leakage protection mode: 0 = present, 1 = absent
-| getCEL          | "203"        | 1/10 °C | Water temperature, e.g. 203 = 20.3°C
+| getCEL          | "203"        | 1/10 °C | Temperature / Water temperature, e.g. 203 = 20.3°C
 | getNPS          | "22"         |         | Microleakage count
 | getPF1<br>getPF2<br>getPF3<br>getPF4<br>getPF5<br>getPF6<br>getPF7<br>getPF8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L/h | Leak protection flow rate 1-8
 | getPT1<br>getPT2<br>getPT3<br>getPT4<br>getPT5<br>getPT6<br>getPT7<br>getPT8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | minutes | Leak protection time 1-8
