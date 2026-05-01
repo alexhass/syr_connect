@@ -137,17 +137,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             UpdateFailed: If API communication fails
         """
         try:
-            # Login if not already logged in or session expired
+            # Login if not already logged in or session expired.
+            # For the XML API this also (re-)populates api.projects, which is
+            # required before device tasks can be dispatched.
             if not self.api.is_session_valid():
                 _LOGGER.debug("No valid session, logging in...")
-                try:
-                    await self.api.login()
-                except SyrConnectAuthError as err:
-                    _LOGGER.error("Authentication failed: %s", err)
-                    raise ConfigEntryAuthFailed("Authentication failed. Please reconfigure the integration.") from err
-                except SyrConnectConnectionError as err:
-                    _LOGGER.error("Connection failed: %s", err)
-                    raise UpdateFailed(f"Connection error: {err}") from err
+                await self.api.login()
 
             all_devices = []
 
@@ -205,6 +200,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         except ConfigEntryAuthFailed:
             raise
+        except SyrConnectAuthError as err:
+            _LOGGER.error("Authentication failed: %s", err)
+            raise ConfigEntryAuthFailed("Authentication failed. Please reconfigure the integration.") from err
+        except SyrConnectConnectionError as err:
+            _LOGGER.error("Connection failed: %s", err)
+            raise UpdateFailed(f"Connection error: {err}") from err
         except Exception as err:
             _LOGGER.error("Update failed: %s", err, exc_info=True)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
