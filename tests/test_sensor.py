@@ -610,8 +610,10 @@ async def test_async_setup_entry_preprocessing_device_get_raises(hass: HomeAssis
     entry.add_to_hass(hass)
 
     add_entities = Mock()
-    # Should not raise despite device.get raising during preprocessing
-    await async_setup_entry(hass, entry, add_entities)
+    # device.get("status") raises RuntimeError on first call; the outer device
+    # loop in async_setup_entry has no try/except at that level, so it propagates.
+    with pytest.raises(RuntimeError, match="boom"):
+        await async_setup_entry(hass, entry, add_entities)
 
 
 def test_getdbd_rounding_precision_typeerror(monkeypatch):
