@@ -2045,7 +2045,7 @@ def test_icon_battery_zero(create_mock_coordinator):
 
 
 async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "devp", "name": "DevP", "project_id": "p1", "status": {"getPA1": "1"}}]}
+    data = {"devices": [{"id": "devp", "name": "DevP", "project_id": "p1", "status": {"getPA1": "1", "getPV1": "10", "getPT1": "60", "getPF1": "5", "getPN1": "Zone1", "getPM1": "true", "getPW1": "true", "getPB1": "false", "getPR1": "0"}}]}
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
@@ -2096,6 +2096,15 @@ async def test_getpa_group_true_creates_group_entities(hass: HomeAssistant) -> N
                 "status": {
                     # Use a truthy string that is_value_true should accept
                     "getPA1": "true",
+                    # Include all group keys so the 'skip if not in status' guard passes
+                    "getPV1": "200",
+                    "getPT1": "60",
+                    "getPF1": "5",
+                    "getPN1": "Zone1",
+                    "getPM1": "true",
+                    "getPW1": "true",
+                    "getPB1": "false",
+                    "getPR1": "0",
                     # Also include an unrelated sensor to ensure normal sensors are added
                     "getFLO": "10",
                 },
