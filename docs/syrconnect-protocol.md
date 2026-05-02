@@ -318,6 +318,7 @@ Some further data about the device
 
 | Property        | Example               | Unit   | Description
 |-----------------|-----------------------|--------|-------------------------------------------------------
+| getAPT          | "300"                 | s      | Access Point Timeout
 | getMAC          | "01:23:45:67:89:AB"   |        | MAC address of the network port
 | getIPA          | "123.123.123.1"       |        | IP-Adress
 | getSNM          | "255.255.255.0"       |        | Subnet mask
@@ -330,7 +331,6 @@ Some further data about the device
 | getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel)
 | getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)
 | getWNS          | "False"               |        | Wi-Fi network scan flag (Trio DFR/LS)
-
 
 ### Holiday
 
@@ -579,7 +579,6 @@ These properties are only available on devices that contain leakage protection, 
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
-| getAPT          | "600"        | s?     | *unknown* — possibly auto-power timeout
 | getBMX          | ""           |        | *unknown*
 | getCNF          | "10"         |        | *unknown*
 | getCSD          | ""           |        | *unknown*

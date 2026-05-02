@@ -208,6 +208,9 @@
       "getalw": {
         "name": "Derniers avertissements"
       },
+      "getapt": {
+        "name": "Délai d'expiration du point d'accès"
+      },
       "getavo": {
         "name": "Débit actuel"
       },
@@ -233,6 +236,9 @@
       },
       "getcnd": {
         "name": "Conductivité"
+      },
+      "getcno": {
+        "name": "Numéro de code"
       },
       "getcof": {
         "name": "Consommation d'eau totale"

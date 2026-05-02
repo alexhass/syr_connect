@@ -208,6 +208,9 @@
       "getalw": {
         "name": "Ultimi avvisi"
       },
+      "getapt": {
+        "name": "Timeout punto di accesso"
+      },
       "getavo": {
         "name": "Flusso attuale"
       },
@@ -233,6 +236,9 @@
       },
       "getcnd": {
         "name": "Conduttività"
+      },
+      "getcno": {
+        "name": "Numero di codice"
       },
       "getcof": {
         "name": "Consumo totale d'acqua"

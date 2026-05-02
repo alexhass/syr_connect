@@ -341,6 +341,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Device Info & Diagnostics ---
     "getCDE",   # Configuration code
     "getCNA",   # Device name
+    "getCNO",   # Code number / device sub-identifier
     "getDGW",   # Cloud gateway address
     "getEGW",   # Ethernet (LAN) gateway
     "getEIP",   # Ethernet (LAN) IP address
@@ -359,6 +360,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getVPS1",  # No turbine pulses on control head 1 since (s)
     "getVPS2",  # No turbine pulses on control head 2 since (s)
     # --- Wi-Fi ---
+    "getAPT",   # Access point timeout (s)
     "getWFC",   # Wi-Fi SSID
     "getWFL",   # Nearby Wi-Fi networks with signal strength
     "getWFR",   # Wi-Fi signal strength (%)
@@ -382,7 +384,9 @@ _SYR_CONNECT_SENSOR_CONFIG = {
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getALD",   # Alarm duration (s)
+    "getAPT",   # Access point timeout (s)
     "getCNA",   # Device name
+    "getCNO",   # Code number / device sub-identifier
     "getDGW",   # Gateway
     "getEGW",   # Ethernet gateway
     "getEIP",   # Ethernet IP address
@@ -681,6 +685,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getRDO": "mdi:shaker",
     # Device Info
     "getCNA": "mdi:tag",
+    "getCNO": "mdi:identifier",
     "getDGW": "mdi:router-network",
     "getFIR": "mdi:chip",
     "getIPA": "mdi:ip-network",
@@ -713,6 +718,7 @@ _SYR_CONNECT_SENSOR_ICON = {
 
     # Leak protection profile sensors
     "getALD": "mdi:alarm-light-outline",
+    "getAPT": "mdi:timer-outline",          # Access point timeout
     "getCEL": "mdi:thermometer",
     "getMIH": "mdi:water-percent",
     "getMIT": "mdi:thermometer-low",
@@ -933,6 +939,7 @@ _SYR_CONNECT_SENSOR_WHU_VALUE_MAP = {
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getALD": SensorStateClass.MEASUREMENT,        # Alarm duration
+    "getAPT": SensorStateClass.MEASUREMENT,        # Access point timeout
     "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
     "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
@@ -973,6 +980,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
 _SYR_CONNECT_SENSOR_STRING = {
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
     "getCNA",  # Device name
+    "getCNO",  # Code number / device sub-identifier
     "getDGW",  # Gateway
     "getDTT",  # Microleakage test time
     "getFIR",  # Firmware
@@ -1015,6 +1023,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # - SafeFloor
 
     "getALD": UnitOfTime.SECONDS,                           # Alarm duration (s)
+    "getAPT": UnitOfTime.SECONDS,                           # Access point timeout (s)
     "getHMD": PERCENTAGE,                                   # Ambient humidity (%)
     "getMIH": PERCENTAGE,                                   # Minimum humidity threshold (%)
     "getMIT": UnitOfTemperature.CELSIUS,                    # Minimum temperature threshold (1/10°C raw)
@@ -1110,6 +1119,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getALD": 0,    # Alarm duration: show as whole number of seconds
+    "getAPT": 0,    # Access point timeout: show as whole number of seconds
     "getAVO": 1,    # Current flow: show with 2 decimal places
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)

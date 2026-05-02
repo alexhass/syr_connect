@@ -208,6 +208,9 @@
       "getalw": {
         "name": "Letzte Warnungen"
       },
+      "getapt": {
+        "name": "Access-Point-Timeout"
+      },
       "getavo": {
         "name": "Aktueller Durchfluss"
       },
@@ -233,6 +236,9 @@
       },
       "getcnd": {
         "name": "Wasserleitfähigkeit"
+      },
+      "getcno": {
+        "name": "Codenummer"
       },
       "getcof": {
         "name": "Wasserverbrauch Gesamt"

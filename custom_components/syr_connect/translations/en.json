@@ -208,6 +208,9 @@
       "getalw": {
         "name": "Last warnings"
       },
+      "getapt": {
+        "name": "Access point timeout"
+      },
       "getavo": {
         "name": "Current flow"
       },
@@ -233,6 +236,9 @@
       },
       "getcnd": {
         "name": "Conductivity"
+      },
+      "getcno": {
+        "name": "Code number"
       },
       "getcof": {
         "name": "Total water consumption"
