@@ -27,7 +27,7 @@
     "getIDS": "1",
     "getLTV": "1",
     "getLWT": "90",
-    "getMAC": "ff:ff:eb:52:ee:12",
+    "getMAC": "ff:ff:eb:XX:XX:XX",
     "getNET": "11,77",
     "getNPS": "308",
     "getPA1": "1",

@@ -34,7 +34,7 @@
     "getIDS": "1",
     "getLTV": "12",
     "getLWT": "90",
-    "getMAC": "BA:DF:00:D0:12:34",
+    "getMAC": "BA:DF:00:XX:XX:XX",
     "getNET": "11,86",
     "getNPS": "660 ",
     "getPA1": "1",

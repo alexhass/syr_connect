@@ -18,7 +18,7 @@
     "getDST": "180",
     "getDTC": "3",
     "getIDS": "1",
-    "getMAC": "01:23:45:67:89:AB",
+    "getMAC": "01:23:45:XX:XX:XX",
     "getNET": "12,39",
     "getNPS": "1742",
     "getPB1": "1",
