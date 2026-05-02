@@ -227,12 +227,7 @@
         "name": "Temperatur"
       },
       "getcna": {
-        "name": "Gerätename",
-        "state": {
-          "lexplus10": "LEX Plus 10 Connect",
-          "lexplus10s": "LEX Plus 10 S Connect",
-          "lexplus10sl": "LEX Plus 10 SL Connect"
-        }
+        "name": "Gerätename"
       },
       "getcnd": {
         "name": "Wasserleitfähigkeit"

@@ -227,12 +227,7 @@
         "name": "Temperatura"
       },
       "getcna": {
-        "name": "Nombre del dispositivo",
-        "state": {
-          "lexplus10": "LEX Plus 10 Connect",
-          "lexplus10s": "LEX Plus 10 S Connect",
-          "lexplus10sl": "LEX Plus 10 SL Connect"
-        }
+        "name": "Nombre del dispositivo"
       },
       "getcnd": {
         "name": "Conductividad"
