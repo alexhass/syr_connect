@@ -958,10 +958,14 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
     assert not is_sensor_visible({}, key_es, None)
     assert not is_sensor_visible({}, key_es, "   ")
 
-    # Use a key from the empty-value exclusion set
-    key_ev = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE))
+    # Use a key from the empty-value exclusion set that is NOT a CS key,
+    # so the generic EXCLUDED_WHEN_EMPTY_VALUE branch (including int/float zero)
+    # is exercised rather than the CS special-case block.
+    non_cs_ev_keys = helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE - {"getCS1", "getCS2", "getCS3"}
+    key_ev = next(iter(non_cs_ev_keys))
     assert not is_sensor_visible({}, key_ev, None)
-    assert not is_sensor_visible({}, key_ev, 0)
+    assert not is_sensor_visible({}, key_ev, 0)      # hits int/float zero branch (line 1055)
+    assert not is_sensor_visible({}, key_ev, 0.0)    # hits float zero branch
     assert not is_sensor_visible({}, key_ev, "0")
 
     # Empty IP exclusion set
