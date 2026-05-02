@@ -254,7 +254,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             device["status"] = status
 
-            # Emergency stop action.
+            # Emergency action.
             #
             # SYR returns broken data values; if a device is offline. Setting values are still returned properly,
             # others real data values may change its data type and return empty strings.
