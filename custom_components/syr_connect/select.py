@@ -243,6 +243,9 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         if "getRTM" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
+        if "getRTM" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+            self._attr_entity_registry_enabled_default = False
+
         _LOGGER.debug(
             "Created SyrConnectRegenerationSelect object: device=%s name=%s unique_id=%s",
             self._device_id,
@@ -451,6 +454,9 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         if "getSRO" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
+        if "getSRO" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+            self._attr_entity_registry_enabled_default = False
+
         _LOGGER.debug(
             "Created SyrConnectRotationSelect object: device=%s name=%s unique_id=%s",
             self._device_id,
@@ -542,6 +548,9 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         if self._sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
+        if self._sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+            self._attr_entity_registry_enabled_default = False
+
         _LOGGER.debug(
             "Created SyrConnectDiscreteSelect object: device=%s key=%s unique_id=%s",
             self._device_id,
@@ -625,6 +634,9 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         # Set entity category according to central sensor mappings
         if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
+
+        if "getPRF" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+            self._attr_entity_registry_enabled_default = False
 
     @property
     def options(self) -> list[str]:
