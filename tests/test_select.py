@@ -2624,9 +2624,11 @@ def test_discrete_select_disabled_by_default_when_in_set(hass):
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
     rmo_map = {"1": 1, "2": 2}
-    # getRMO is already in DISABLED_BY_DEFAULT
-    assert "getRMO" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
-    select = SyrConnectDiscreteSelect(coordinator, "dev1", "D1", "getRMO", rmo_map)
+    with patch(
+        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT",
+        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT | {"getRMO"},
+    ):
+        select = SyrConnectDiscreteSelect(coordinator, "dev1", "D1", "getRMO", rmo_map)
 
     assert select._attr_entity_registry_enabled_default is False
 
