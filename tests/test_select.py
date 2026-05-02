@@ -2600,3 +2600,47 @@ async def test_rmo_select_entity_category_is_config(hass: HomeAssistant) -> None
     select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRMO", rmo_map)
 
     assert select._attr_entity_category == EntityCategory.CONFIG
+
+
+def test_regeneration_select_disabled_by_default_when_in_set(hass):
+    """Test SyrConnectRegenerationSelect sets entity_registry_enabled_default=False when getRTM is in DISABLED_BY_DEFAULT."""
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+
+    data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    with patch(
+        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT",
+        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT | {"getRTM"},
+    ):
+        select = SyrConnectRegenerationSelect(coordinator, "dev1", "D1")
+
+    assert select._attr_entity_registry_enabled_default is False
+
+
+def test_discrete_select_disabled_by_default_when_in_set(hass):
+    """Test SyrConnectDiscreteSelect sets entity_registry_enabled_default=False when key is in DISABLED_BY_DEFAULT."""
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+
+    data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    rmo_map = {"1": 1, "2": 2}
+    # getRMO is already in DISABLED_BY_DEFAULT
+    assert "getRMO" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+    select = SyrConnectDiscreteSelect(coordinator, "dev1", "D1", "getRMO", rmo_map)
+
+    assert select._attr_entity_registry_enabled_default is False
+
+
+def test_prf_select_disabled_by_default_when_in_set(hass):
+    """Test SyrConnectPrfSelect sets entity_registry_enabled_default=False when getPRF is in DISABLED_BY_DEFAULT."""
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+
+    data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    with patch(
+        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT",
+        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT | {"getPRF"},
+    ):
+        select = SyrConnectPrfSelect(coordinator, "dev1", "D1")
+
+    assert select._attr_entity_registry_enabled_default is False
