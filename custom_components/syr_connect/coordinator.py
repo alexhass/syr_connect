@@ -253,7 +253,19 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 return device
 
             device["status"] = status
-            device["available"] = True
+
+            # Emergency stop action.
+            #
+            # SYR returns broken data values; if a device is offline. Setting values are still returned properly,
+            # others real data values may change its data type and return empty strings.
+            #
+            # sta=3 (offline) means the device is not reachable via the cloud.
+            # Mark it unavailable so all entities show as unavailable in HA.
+            if str(status.get("sta", "")).strip() == "3":
+                _LOGGER.debug("Device %s is offline (sta=%s); marking unavailable", device.get("id"), status.get("sta"))
+                device["available"] = False
+            else:
+                device["available"] = True
 
             # Compute derived sensor values (e.g. getIWH from getCND) so they
             # are available to all platforms without mutating coordinator data
