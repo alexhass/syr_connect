@@ -4472,6 +4472,30 @@ async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
     assert bat.suggested_display_precision == 0
 
 
+async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -> None:
+    """SafeFloor getBAT with an unparseable value returns None (covers except branch)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getBAT": "not_a_number",
+                    "getTYP": "120",  # SafeFloor -> PERCENTAGE unit
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+
+    from homeassistant.const import PERCENTAGE
+
+    assert bat.native_unit_of_measurement == PERCENTAGE
+    assert bat.native_value is None
+
+
 async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
     """Battery level icons reflect percentage for SafeFloor."""
     base_data = {
