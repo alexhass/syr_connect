@@ -9,12 +9,14 @@ from homeassistant.components.binary_sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_BINARY,
+    _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
 )
@@ -114,6 +116,10 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
         # Override the entity_id to use technical name (serial number) with domain prefix
         self.entity_id = build_entity_id("binary_sensor", device_id, sensor_key)
+
+        # Set entity category for diagnostic sensors
+        if sensor_key in _SYR_CONNECT_SENSOR_DIAGNOSTIC:
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         # Set icon if available
         if sensor_key in _SYR_CONNECT_SENSOR_ICON:

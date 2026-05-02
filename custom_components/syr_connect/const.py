@@ -383,35 +383,115 @@ _SYR_CONNECT_SENSOR_CONFIG = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
-    "getALD",   # Alarm duration (s)
-    "getAPT",   # Access point timeout (s)
+    # --- Device Info ---
     "getCNA",   # Device name
     "getCNO",   # Code number / device sub-identifier
-    "getDGW",   # Gateway
-    "getEGW",   # Ethernet gateway
-    "getEIP",   # Ethernet IP address
-    "getFIR",   # Firmware model
-    "getIPA",   # IP address
+    "getFIR",   # Firmware model identifier
     "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
     "getLNG",   # Device language (0=Deutsch, 1=English) - other models
     "getMAC",   # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
-    "getMAN",   # Manufacturer
-    "getMIH",   # Minimum humidity threshold
-    "getMIT",   # Minimum temperature threshold
-    "getMXH",   # Maximum humidity threshold
-    "getMXT",   # Maximum temperature threshold
-    "getRCP",   # Synchronisation interval
-    "getSRN",   # Serial number
+    "getMAN",   # Manufacturer name
+    "getSRN",   # Device serial number
     "getTYP",   # Device type code
-    "getVER",   # Firmware version
+    "getVER",   # Firmware version string
+    # --- Network ---
+    "getAPT",   # Access point timeout (s)
+    "getDGW",   # Cloud gateway address
+    "getEGW",   # Ethernet (LAN) gateway
+    "getEIP",   # Ethernet (LAN) IP address
+    "getIPA",   # IP address
+    "getVPS1",  # No turbine pulses on control head 1 since (s)
+    "getVPS2",  # No turbine pulses on control head 2 since (s)
     "getWFC",   # Wi-Fi SSID
-    "getWFR",   # Wifi signal strength (%)
-    "getWFS",   # Wi-Fi connection status (connected / not connected)
+    "getWFL",   # Nearby Wi-Fi networks with signal strength
+    "getWFR",   # Wi-Fi signal strength (%)
+    "getWFS",   # Wi-Fi connection status (not connected / connecting / connected)
     "getWGW",   # Wi-Fi gateway
     "getWIP",   # Wi-Fi IP address
-    "getWMP",   # Measurement interval
+    # --- Alarm / Notification / Warning ---
+    "getALM",   # List of last alarms
+    "getALN",   # List of last 8 notifications
+    "getALW",   # List of last 8 warnings
+    # --- Water Quality ---
+    "getCND",   # Water conductivity (µS/cm)
+    "getIWH",   # Incoming (raw) water hardness
+    "getOWH",   # Outgoing (softened) water hardness
+    "getWHU",   # Water hardness unit (°dH / °fH / ppm / mmol/l)
+    # --- Device Status ---
+    "getBUZ",   # Buzzer on/off
+    "getDEN",   # Device enabled flag
+    # --- Salt ---
+    "getRDO",   # Salt dosing (g/l)
+    # --- Regeneration Settings ---
+    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
+    "getRPD",   # Regeneration interval (days)
+    "getRPW",   # Regeneration permitted weekdays (bitmask)
+    "getRTM",   # Regeneration time (combined HH:MM string)
+    "getSRE",   # Regeneration active flag
+    # --- Regeneration Counters / Technical ---
+    "getCYN",   # Regeneration cycle counter
+    "getCYT",   # Regeneration cycle time (remaining)
+    "getINR",   # Incomplete regeneration count
+    "getLAR",   # Timestamp of last regeneration
+    "getNOR",   # Regeneration count (normal operation)
+    "getRG1",   # Regeneration status (which tank is regenerating)
+    "getRG2",   # Regeneration running – tank 2 flag
+    "getRG3",   # Regeneration running – tank 3 flag
+    "getRTH",   # Regeneration scheduled hour
+    "getRTI",   # Total regeneration cycle duration
+    "getSCR",   # Service regeneration cycle count
+    "getSRH",   # Next semi-annual maintenance (timestamp)
+    "getSRV",   # Next annual maintenance (timestamp)
+    "getTOR",   # Total regeneration count (all time)
+    # --- Self-Learning Phase (Trio DFR/LS) ---
+    "getSLE",   # Remaining time in active self-learning phase (s)
+    "getSLF",   # Flow rate during self-learning phase (l/h)
+    "getSLP",   # Duration of self-learning phase
+    "getSLT",   # Elapsed time in self-learning phase (s)
+    "getSLV",   # Volume accumulated in self-learning phase (l)
+    # --- Microleakage Technical ---
+    "getDBD",   # Microleakage test pressure drop
+    "getDRP",   # Microleakage test interval (daily / weekly / monthly)
+    "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
+    "getDTT",   # Microleakage test duration / time
+    # --- Leak Protection Settings ---
+    "getLE",    # Leak protection volume limit – present profile (l)
+    "getPRF",   # Currently active leak protection profile index
+    "getPST",   # Pressure sensor installed (1=not available, 2=available)
+    "getT1",    # Max. flow duration – present profile (h)
+    "getT2",    # Max. flow duration – absent profile (h)
+    "getTMP",   # Leak protection temporarily deactivated – remaining time (s)
+    "getUL",    # Leak protection volume limit – absent profile (l)
+    # --- Leak Protection Profiles 1–8 (LEXplus10SL) ---
+    "getPA1", "getPA2", "getPA3", "getPA4", "getPA5", "getPA6", "getPA7", "getPA8",
+    "getPB1", "getPB2", "getPB3", "getPB4", "getPB5", "getPB6", "getPB7", "getPB8",
+    "getPF1", "getPF2", "getPF3", "getPF4", "getPF5", "getPF6", "getPF7", "getPF8",
+    "getPM1", "getPM2", "getPM3", "getPM4", "getPM5", "getPM6", "getPM7", "getPM8",
+    "getPN1", "getPN2", "getPN3", "getPN4", "getPN5", "getPN6", "getPN7", "getPN8",
+    "getPR1", "getPR2", "getPR3", "getPR4", "getPR5", "getPR6", "getPR7", "getPR8",
+    "getPT1", "getPT2", "getPT3", "getPT4", "getPT5", "getPT6", "getPT7", "getPT8",
+    "getPV1", "getPV2", "getPV3", "getPV4", "getPV5", "getPV6", "getPV7", "getPV8",
+    "getPW1", "getPW2", "getPW3", "getPW4", "getPW5", "getPW6", "getPW7", "getPW8",
+    # --- Filter (NeoSoft) ---
+    "getFCD",   # Filter flush interval
+    "getFCO",   # Iron content (ppm)
+    "getFFM",   # Filter type (backwash / replaceable / none)
+    # --- SafeFloor Thresholds ---
+    "getALD",   # Duration of alarm (s)
+    "getMIH",   # Minimum humidity threshold (%)
+    "getMIT",   # Minimum temperature threshold (1/10 °C)
+    "getMXH",   # Maximum humidity threshold (%)
+    "getMXT",   # Maximum temperature threshold (1/10 °C)
+    # --- System Settings ---
+    "getDWF",   # Expected daily water consumption (l)
+    "getRCP",   # Synchronisation interval (s)
+    "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+    "getVS1",   # Volume threshold 1 (l)
+    "getVS2",   # Volume threshold 2 (l)
+    "getVS3",   # Volume threshold 3 (l)
+    "getWMP",   # Measurement interval (s)
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
