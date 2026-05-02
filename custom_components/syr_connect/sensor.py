@@ -129,10 +129,14 @@ async def async_setup_entry(
 
             try:
                 if is_value_true(pa_val):
-                    # Create entities for group keys (instantiate sensor objects so they appear as entities).
+                    # Create entities for group keys — only if the key is actually present in status.
                     for gk in group_keys:
                         # Avoid duplicates when iterating over status later
                         handled_keys.add(gk)
+                        if gk not in status:
+                            _LOGGER.debug("Skipping PA group sensor (not in status): device=%s key=%s", device_id, gk)
+                            continue
+                        _LOGGER.debug("Creating sensor (PA group): device=%s key=%s", device_id, gk)
                         entities.append(
                             SyrConnectSensor(
                                 coordinator,
@@ -209,6 +213,7 @@ async def async_setup_entry(
                     continue
 
             if isinstance(value, int | float | str):
+                _LOGGER.debug("Creating sensor: device=%s key=%s value=%r", device_id, key, value)
                 entities.append(
                     SyrConnectSensor(
                         coordinator,
