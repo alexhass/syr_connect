@@ -16,6 +16,7 @@ from .const import (
     _SYR_CONNECT_MODEL_SALT_CAPACITY,
     _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_CONFIG,
+    _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
@@ -326,6 +327,10 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         # Icon mapping if present
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
+
+        # Disable by default if key is in the disabled-by-default set
+        if sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+            self._attr_entity_registry_enabled_default = False
 
         # Determine unit label (if available) and build options (append unit for readability)
         unit_label = None
