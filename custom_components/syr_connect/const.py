@@ -458,7 +458,6 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getDTT",   # Microleakage test duration / time
     # --- Leak Protection Settings ---
     "getLE",    # Leak protection volume limit – present profile (l)
-    "getPRF",   # Currently active leak protection profile index
     "getPST",   # Pressure sensor installed (1=not available, 2=available)
     "getT1",    # Max. flow duration – present profile (h)
     "getT2",    # Max. flow duration – absent profile (h)
