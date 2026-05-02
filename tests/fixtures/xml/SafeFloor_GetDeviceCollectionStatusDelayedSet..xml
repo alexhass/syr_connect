@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="7605aa61-73b8-ef11-800c-be3af2b6059f" sta="6" dst="3" ast="1" clb="1" nrdt="01.05.2026 13:55:02" nrs="0" />
+  </col>
+  <pdvs>
+    <pdvi dg="7805aa61-73b8-ef11-800c-be3af2b6059f" sdclg="7605aa61-73b8-ef11-800c-be3af2b6059f" sdsn="123456789" pdclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" pdsn="987654321" />
+    <pdvi dg="09ffcab9-bb6a-ee11-8007-be3af2b6059f" sdclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" sdsn="987654321" pdclg="7605aa61-73b8-ef11-800c-be3af2b6059f" pdsn="123456789" />
+  </pdvs>
+  <dvs>
+    <d dg="7805aa61-73b8-ef11-800c-be3af2b6059f" sbt="" sta="6" dst="3" ast="1" so="1">
+      <ci f="2.23" b="-" m="0c:73:eb:XX:XX:XX" />
+      <c n="getSRN" v="123456789" dt="01.05.2026 13:54:50" />
+      <c n="getVER" v="Syr Floorsensor 2.23" />
+      <c n="getALA" v="A0x0000" dt="12.12.2024 10:27:49" />
+      <c n="getALD" v="20" />
+      <c n="getALI" v="300" />
+      <c n="getAOA" v="0" />
+      <c n="getAPT" v="300" />
+      <c n="getBAT" v="40" />
+      <c n="getBDE" v="0" />
+      <c n="getBMP" v="43200" />
+      <c n="getCEL" v="205" />
+      <c n="getCNO" v="RDG4614X9Z7X30Z" />
+      <c n="getDEF" v="" />
+      <c n="getECP" v="15" />
+      <c n="getEMR" v="50" />
+      <c n="getHMD" v="40" />
+      <c n="getISN" v="0" />
+      <c n="getMAC" v="0c:73:eb:XX:XX:XX" />
+      <c n="getMIH" v="0" s="5" />
+      <c n="getMIT" v="0" s="-40" />
+      <c n="getMXH" v="100" s="95" />
+      <c n="getMXT" v="500" s="490" />
+      <c n="getRCP" v="43200" />
+      <c n="getRTC" v="1777643688" />
+      <c n="getSFV" v="0" />
+      <c n="getTYP" v="120" />
+      <c n="getWAR" v="600" />
+      <c n="getWFC" v="wifi-1" />
+      <c n="getWFR" v="0" />
+      <c n="getWFS" v="2" />
+      <c n="getWGW" v="192.168.178.1" />
+      <c n="getWIP" v="192.168.178.20" />
+      <c n="getWMP" v="3600" />
+      <c n="getWTD" v="0" />
+    </d>
+  </dvs>
+  <cs v="FB27" />
+</sc>
