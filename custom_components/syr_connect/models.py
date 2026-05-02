@@ -154,14 +154,14 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
-        "display_name": "Safe-Tech Connect",
+        "display_name": "SafeTech Connect",
         "manufacturer": "SYR",
         "name": "safetech",
-        "ver_prefix": "Safe-Tech V4",
+        "ver_prefix": "SafeTech V4",
     },
     {
         "base_path": "/trio",
-        "display_name": "Safe-Tech Plus Connect",
+        "display_name": "SafeTech Plus Connect",
         "manufacturer": "SYR",
         "name": "safetechplus",
         "srn_prefix": "112",
