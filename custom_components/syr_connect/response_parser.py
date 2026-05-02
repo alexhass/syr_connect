@@ -389,8 +389,8 @@ class ResponseParser:
                         for item in value:
                             # By design: '@v' is required by the API spec on every <c>
                             # element. Elements that lack '@v' are malformed fragments
-                            # and are silently skipped. A pending shadow value '@s' may
-                            # be present alongside '@v' but never replaces it in the XML.
+                            # and are silently skipped. When '@s' (shadow/pending value)
+                            # is also present, it takes priority over '@v' in the result.
                             if isinstance(item, dict) and '@n' in item and '@v' in item:
                                 name = item['@n']
                                 # If a shadow/pending value 's' is present, the device has
@@ -400,7 +400,8 @@ class ResponseParser:
                                 for extra in ("dt", "m", "acd", "ih"):
                                     if f"@{extra}" in item:
                                         result[f"{name}_{extra}"] = item[f"@{extra}"]
-                    # Same design contract as above
+                    # Single (non-list) <c> element: same design contract — '@v' required,
+                    # malformed elements silently skipped, '@s' takes priority when present.
                     elif isinstance(value, dict) and '@n' in value and '@v' in value:
                         name = value['@n']
                         result[name] = value['@s'] if '@s' in value else value['@v']
