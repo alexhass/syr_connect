@@ -389,13 +389,16 @@ class ResponseParser:
                         for item in value:
                             if isinstance(item, dict) and '@n' in item and '@v' in item:
                                 name = item['@n']
-                                result[name] = item['@v']
+                                # If a shadow/pending value 's' is present, the device has
+                                # received a new setting but not yet applied it. Display 's'
+                                # until it disappears (at which point 'v' holds the new value).
+                                result[name] = item['@s'] if '@s' in item else item['@v']
                                 for extra in ("dt", "m", "acd", "ih"):
                                     if f"@{extra}" in item:
                                         result[f"{name}_{extra}"] = item[f"@{extra}"]
                     elif isinstance(value, dict) and '@n' in value and '@v' in value:
                         name = value['@n']
-                        result[name] = value['@v']
+                        result[name] = value['@s'] if '@s' in value else value['@v']
                         for extra in ("dt", "m", "acd", "ih"):
                             if f"@{extra}" in value:
                                 result[f"{name}_{extra}"] = value[f"@{extra}"]

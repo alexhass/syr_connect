@@ -812,3 +812,49 @@ def test_ignore_broken_response_not_broken(parser):
     ]
 
     assert parser._ignore_broken_response(device_list) is False
+
+
+def test_flatten_attributes_shadow_value_used_when_s_present(parser):
+    """When a <c> element has an 's' attribute, 's' should be used instead of 'v'."""
+    data = {
+        "c": [
+            {"@n": "getMIH", "@v": "0", "@s": "5"},
+            {"@n": "getMIT", "@v": "0", "@s": "-40"},
+            {"@n": "getMXH", "@v": "100"},  # no 's' → use 'v'
+        ]
+    }
+    result = ResponseParser._flatten_attributes(data)
+    assert result["getMIH"] == "5"
+    assert result["getMIT"] == "-40"
+    assert result["getMXH"] == "100"
+
+
+def test_flatten_attributes_shadow_value_single_c_element(parser):
+    """Shadow 's' attribute is also honoured for a single (non-list) <c> element."""
+    data = {"c": {"@n": "getMXT", "@v": "500", "@s": "490"}}
+    result = ResponseParser._flatten_attributes(data)
+    assert result["getMXT"] == "490"
+
+
+def test_parse_device_status_shadow_values(parser):
+    """Full end-to-end: 's' attribute values appear in the parsed status dict."""
+    xml = """<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <dvs>
+    <d dg="test-dg" sta="2">
+      <c n="getMIH" v="0" s="5" />
+      <c n="getMIT" v="0" s="-40" />
+      <c n="getMXH" v="100" s="95" />
+      <c n="getMXT" v="500" s="490" />
+      <c n="getFLO" v="10" />
+    </d>
+  </dvs>
+</sc>"""
+    result = parser.parse_device_status_response(xml)
+    assert result is not None
+    assert result["getMIH"] == "5"
+    assert result["getMIT"] == "-40"
+    assert result["getMXH"] == "95"
+    assert result["getMXT"] == "490"
+    # Key without 's' uses 'v' as before
+    assert result["getFLO"] == "10"
