@@ -1089,7 +1089,7 @@ async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
-    """Test getCS1 when both getCS1 and getSV1 are zero."""
+    """Test getCS2 excluded when zero, but getSV2 shown even when zero."""
     data = {
         "devices": [
             {
@@ -1110,13 +1110,14 @@ async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # getCS1 should be excluded because both are 0
+    # getCS2 is excluded because it's 0; getSV2 is shown even when 0
     entities = add_entities.call_args.args[0]
-    assert len(entities) == 0
+    assert len(entities) == 1
+    assert entities[0]._sensor_key == "getSV2"
 
 
 async def test_sensor_cs_int_zero_with_sv_zero(hass: HomeAssistant) -> None:
-    """Test getCS1 when both are integers and zero."""
+    """Test getCS2 excluded when integer zero, but getSV2 shown even when zero."""
     data = {
         "devices": [
             {
@@ -1137,9 +1138,10 @@ async def test_sensor_cs_int_zero_with_sv_zero(hass: HomeAssistant) -> None:
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # getCS1 should be excluded
+    # getCS2 is excluded when zero; getSV2 is shown even when zero
     entities = add_entities.call_args.args[0]
-    assert len(entities) == 0
+    assert len(entities) == 1
+    assert entities[0]._sensor_key == "getSV2"
 
 
 async def test_sensor_rpw_invalid_string_mask(hass: HomeAssistant) -> None:
@@ -1801,7 +1803,7 @@ async def test_sensor_getcs3_with_nonzero_sv(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
-    """Test sensors excluded when integer value is zero."""
+    """Test getSV2 is shown even when integer value is zero."""
     data = {
         "devices": [
             {
@@ -1809,7 +1811,7 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSV2": 0,  # Integer zero, in EXCLUDE_WHEN_ZERO
+                    "getSV2": 0,  # Integer zero, no longer excluded
                 },
             }
         ]
@@ -1822,13 +1824,13 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, add_entities)
 
     entities = add_entities.call_args.args[0]
-    # getSV2 with value 0 should be excluded
+    # getSV2 with value 0 is now always shown
     sv2_sensors = [e for e in entities if e._sensor_key == "getSV2"]
-    assert len(sv2_sensors) == 0
+    assert len(sv2_sensors) == 1
 
 
 async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None:
-    """Test sensors excluded when float value is zero."""
+    """Test getSV2 is shown even when float value is zero."""
     data = {
         "devices": [
             {
@@ -1849,9 +1851,9 @@ async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None
     await async_setup_entry(hass, entry, add_entities)
 
     entities = add_entities.call_args.args[0]
-    # getSV2 with value 0.0 should be excluded
+    # getSV2 with value 0.0 is now always shown
     sv2_sensors = [e for e in entities if e._sensor_key == "getSV2"]
-    assert len(sv2_sensors) == 0
+    assert len(sv2_sensors) == 1
 
 
 async def test_sensor_getcs_int_zero(hass: HomeAssistant) -> None:
@@ -3579,7 +3581,7 @@ async def test_sensor_exclude_when_zero_other_sensor_int(hass: HomeAssistant) ->
 
 
 async def test_sensor_exclude_when_zero_other_sensor_string(hass: HomeAssistant) -> None:
-    """Test other excluded sensor with string zero."""
+    """Test getSV2 is shown even when string zero."""
     data = {
         "devices": [
             {
@@ -3587,7 +3589,7 @@ async def test_sensor_exclude_when_zero_other_sensor_string(hass: HomeAssistant)
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSV2": "0",  # String zero in exclude list
+                    "getSV2": "0",  # String zero, no longer in exclude list
                 },
             }
         ]
@@ -3599,10 +3601,10 @@ async def test_sensor_exclude_when_zero_other_sensor_string(hass: HomeAssistant)
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # Should skip getSV2 because it's zero
+    # getSV2 is now always shown regardless of value
     entities = add_entities.call_args.args[0] if add_entities.called else []
     sv2_entities = [e for e in entities if e._sensor_key == "getSV2"]
-    assert len(sv2_entities) == 0
+    assert len(sv2_entities) == 1
 
 
 async def test_sensor_invalid_value_type_skipped(hass: HomeAssistant) -> None:
