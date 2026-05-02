@@ -847,6 +847,13 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     # Select mapping based on detected model. Only attempt mapping for the
     # explicitly-detected model family; do NOT attempt cross-family fallbacks.
     if model in (
+        "lex10",
+        "lex20",
+        "lex30",
+        "lex40",
+        "lex60",
+        "lex80",
+        "lex100",
         "lexplus10",
         "lexplus10s",
         "lexplus10sl",
