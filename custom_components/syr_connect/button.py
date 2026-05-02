@@ -263,6 +263,13 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 reset_value: str
                 if isinstance(model, str) and model.lower() in (
                     "safetplus",
+                    "lex10",
+                    "lex20",
+                    "lex30",
+                    "lex40",
+                    "lex60",
+                    "lex80",
+                    "lex100",
                     "lexplus10",
                     "lexplus10s",
                     "lexplus10sl",
