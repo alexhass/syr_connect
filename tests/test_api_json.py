@@ -27,8 +27,8 @@ def load_fixture(name: str) -> dict:
     "fixture",
     [
         "SafeTech_get_all.json",
-        "SafeTech_get_all_v4.json",
-        "SafeTech_get_all_v4_copy.json",
+        "SafeTechV4_old_get_all.json",
+        "SafeTechV4_get_all.json",
         "NeoSoft2500_get_all.json",
     ],
 )
@@ -752,7 +752,7 @@ async def test_get_devices_fetches_and_caches() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    data = load_fixture("SafeTech_get_all_v4.json")
+    data = load_fixture("SafeTechV4_old_get_all.json")
 
     # Mock request_json_data to track calls
     fetch_call_count = 0
@@ -786,7 +786,7 @@ async def test_get_device_status_without_cache() -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    data = load_fixture("SafeTech_get_all_v4.json")
+    data = load_fixture("SafeTechV4_old_get_all.json")
 
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
         # Call get_device_status without calling get_devices first
