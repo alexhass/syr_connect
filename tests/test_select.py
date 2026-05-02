@@ -588,8 +588,8 @@ async def test_numeric_select_device_unavailable(hass: HomeAssistant) -> None:
     assert select.available is False
 
 
-async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
-    """Test async_setup_entry skips zero salt values."""
+async def test_async_setup_entry_zero_sv_values_always_shown(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
+    """Test async_setup_entry always creates SVx selects, even with zero values."""
     data = {
         "devices": [
             {
@@ -597,8 +597,9 @@ async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant, create_mo
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
-                    "getSV1": "0",  # Zero value should be skipped
-                    "getSV2": "5",  # Non-zero should be created
+                    "getSV1": "0",  # Zero value should still be shown
+                    "getSV2": "0",  # Zero value should also be shown
+                    "getSV3": "5",  # Non-zero should be created
                 },
             }
         ]
@@ -608,12 +609,14 @@ async def test_async_setup_entry_skip_zero_values(hass: HomeAssistant, create_mo
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # Should only create select for getSV2 (getSV1 is zero)
+    # All three SVx selects should be created regardless of zero values
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     sv2_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV2']
+    sv3_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV3']
 
-    assert len(sv1_entities) == 0  # Skipped because value is 0
-    assert len(sv2_entities) == 1  # Created
+    assert len(sv1_entities) == 1  # Created even though value is 0
+    assert len(sv2_entities) == 1  # Created even though value is 0
+    assert len(sv3_entities) == 1  # Created
 
 
 async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
