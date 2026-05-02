@@ -342,7 +342,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getCDE",   # Configuration code
     "getCNA",   # Device name
     "getCNO",   # Code number / device sub-identifier
-    "getDGW",   # Cloud gateway address
+    "getDGW",   # Gateway IP address
     "getEGW",   # Ethernet (LAN) gateway
     "getEIP",   # Ethernet (LAN) IP address
     "getFIR",   # Firmware model identifier
