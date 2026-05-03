@@ -112,7 +112,7 @@ def test_safetechplus_detection_synthetic():
     flat = {"getSRN": "112AAA00001", "getVER": "Safe-Tech-1.2.3"}
     result = detect_model(flat)
     assert result["name"] == "safetechplus"
-    assert result["display_name"] == "Safe-Tech Plus Connect"
+    assert result["display_name"] == "SafeTech Plus Connect"
     assert result["manufacturer"] == "SYR"
 
 

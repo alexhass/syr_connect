@@ -3617,9 +3617,9 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
 
     device = diagnostics["devices"][0]
     assert device["id"] == "SAFETECH01"
-    assert device["name"] == "Safe-Tech Plus Connect"
+    assert device["name"] == "SafeTech Plus Connect"
     assert device["available"] is True
-    assert device["model"] == "Safe-Tech Plus Connect"  # Mapped from getCNA
+    assert device["model"] == "SafeTech Plus Connect"  # Mapped from getCNA
     assert device["sw_version"] == "Safe-Tech-2.0.5"
     assert device["hw_version"] == "FW_ST_01"
     assert device["api_type"] == API_TYPE_JSON
