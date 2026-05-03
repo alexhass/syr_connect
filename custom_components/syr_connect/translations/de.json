@@ -175,6 +175,7 @@
           "alarm_end_switch": "Endschalter",
           "alarm_external_sensor_leakage_cable": "EXT. SENSOR LECKAGE KABEL",
           "alarm_external_sensor_leakage_radio": "EXT. SENSOR LECKAGE FUNK",
+          "alarm_floor_sensor_leakage_detected": "Eine Leckage am Bodensensor wurde erkannt",
           "alarm_increased_water_hardness": "Erhöhte Wasserhärte",
           "alarm_leakage_time_reached": "Leckzeit erreicht!",
           "alarm_leakage_volume_reached": "Leckvolumen erreicht!",

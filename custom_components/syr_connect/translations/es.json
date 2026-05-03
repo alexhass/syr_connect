@@ -175,6 +175,7 @@
           "alarm_end_switch": "Interruptor final",
           "alarm_external_sensor_leakage_cable": "Fuga sensor externo (cable)",
           "alarm_external_sensor_leakage_radio": "Fuga sensor externo (radio)",
+          "alarm_floor_sensor_leakage_detected": "Se detectó una fuga en el sensor de suelo",
           "alarm_increased_water_hardness": "Aumento de dureza del agua",
           "alarm_leakage_time_reached": "¡Tiempo de fuga alcanzado!",
           "alarm_leakage_volume_reached": "¡Volumen de fuga alcanzado!",

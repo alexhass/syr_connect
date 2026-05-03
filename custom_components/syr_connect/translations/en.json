@@ -175,6 +175,7 @@
           "alarm_end_switch": "End switch",
           "alarm_external_sensor_leakage_cable": "External sensor leakage (cable)",
           "alarm_external_sensor_leakage_radio": "External sensor leakage (radio)",
+          "alarm_floor_sensor_leakage_detected": "A leak at the floor sensor was detected",
           "alarm_increased_water_hardness": "Increased water hardness",
           "alarm_leakage_time_reached": "Leakage time reached!",
           "alarm_leakage_volume_reached": "Leakage volume reached!",

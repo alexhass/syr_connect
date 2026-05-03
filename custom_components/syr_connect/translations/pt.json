@@ -175,6 +175,7 @@
           "alarm_end_switch": "Fim de curso",
           "alarm_external_sensor_leakage_cable": "Vazamento do sensor externo (cabo)",
           "alarm_external_sensor_leakage_radio": "Vazamento do sensor externo (rádio)",
+          "alarm_floor_sensor_leakage_detected": "Foi detectado um vazamento no sensor de piso",
           "alarm_increased_water_hardness": "Aumento da dureza da água",
           "alarm_leakage_time_reached": "Tempo de vazamento atingido!",
           "alarm_leakage_volume_reached": "Volume de vazamento atingido!",

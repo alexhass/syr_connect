@@ -82,6 +82,14 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
     "sanibelsoftwateruno": 35,
 }
 
+# Alarm codes for SafeFloor devices (raw API getALA -> internal translation key)
+# Original casing in API is "A0x0000", but we normalize it for get_sensor_ala_map() lookups.
+# NOTE: If you know other codes for SafeFloor devices, please report them so they can be added here.
+_SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
+    "A0X0000": "no_alarm",
+    "A0X0004": "alarm_leakage_detected",
+}
+
 # Alarm code mappings per device model (raw API getALA -> internal translation key)
 # These are used to map device-specific alarm codes to internal translation keys.
 _SYR_CONNECT_SENSOR_ALA_CODES_LEX = {

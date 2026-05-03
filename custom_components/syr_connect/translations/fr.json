@@ -175,6 +175,7 @@
           "alarm_end_switch": "Fin de course",
           "alarm_external_sensor_leakage_cable": "Fuite du capteur externe (câble)",
           "alarm_external_sensor_leakage_radio": "Fuite du capteur externe (radio)",
+          "alarm_floor_sensor_leakage_detected": "Une fuite au capteur de sol a été détectée",
           "alarm_increased_water_hardness": "Dureté de l'eau augmentée",
           "alarm_leakage_time_reached": "Temps de fuite atteint",
           "alarm_leakage_volume_reached": "Volume de fuite atteint",

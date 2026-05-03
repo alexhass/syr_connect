@@ -175,6 +175,7 @@
           "alarm_end_switch": "Interruttore di fine corsa",
           "alarm_external_sensor_leakage_cable": "Perdita del sensore esterno (cavo)",
           "alarm_external_sensor_leakage_radio": "Perdita del sensore esterno (radio)",
+          "alarm_floor_sensor_leakage_detected": "È stata rilevata una perdita sul sensore del pavimento",
           "alarm_increased_water_hardness": "Aumento della durezza dell'acqua",
           "alarm_leakage_time_reached": "Tempo di perdita raggiunto!",
           "alarm_leakage_volume_reached": "Volume di perdita raggiunto!",

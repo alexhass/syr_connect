@@ -18,6 +18,7 @@ from .const import (
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
+    _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR,
     _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
@@ -859,6 +860,12 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         "lexplus10sl",
     ):
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_LEX.get(code_upper)
+        return (mapped, code) if mapped is not None else (None, code)
+
+    if model in (
+        "safefloor",
+    ):
+        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR.get(code_upper)
         return (mapped, code) if mapped is not None else (None, code)
 
     if model in (
