@@ -4414,9 +4414,13 @@ async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
     }
     for bat_pct, expected_icon in [
         ("95", "mdi:battery"),
+        ("85", "mdi:battery-90"),
         ("75", "mdi:battery-80"),
+        ("65", "mdi:battery-70"),
         ("55", "mdi:battery-60"),
+        ("45", "mdi:battery-50"),
         ("35", "mdi:battery-40"),
+        ("25", "mdi:battery-30"),
         ("15", "mdi:battery-20"),
         ("5", "mdi:battery-alert-variant-outline"),
         ("0", "mdi:battery-alert-variant-outline"),
