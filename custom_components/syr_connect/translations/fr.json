@@ -652,13 +652,7 @@
         "name": "Profil de protection contre les fuites actif",
         "state": {
           "1": "Présent",
-          "2": "Absent",
-          "3": "Profil 3",
-          "4": "Profil 4",
-          "5": "Profil 5",
-          "6": "Profil 6",
-          "7": "Profil 7",
-          "8": "Profil 8"
+          "2": "Absent"
         }
       },
       "getprs": {

@@ -652,13 +652,7 @@
         "name": "Perfil de proteção contra vazamento ativo",
         "state": {
           "1": "Presente",
-          "2": "Ausente",
-          "3": "Perfil 3",
-          "4": "Perfil 4",
-          "5": "Perfil 5",
-          "6": "Perfil 6",
-          "7": "Perfil 7",
-          "8": "Perfil 8"
+          "2": "Ausente"
         }
       },
       "getprs": {

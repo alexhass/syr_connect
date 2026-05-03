@@ -652,13 +652,7 @@
         "name": "Active leak protection profile",
         "state": {
           "1": "Present",
-          "2": "Absent",
-          "3": "Profile 3",
-          "4": "Profile 4",
-          "5": "Profile 5",
-          "6": "Profile 6",
-          "7": "Profile 7",
-          "8": "Profile 8"
+          "2": "Absent"
         }
       },
       "getprs": {
