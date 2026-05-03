@@ -938,6 +938,20 @@ def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
         mapped, raw = get_sensor_ala_map({"getVER": "NSS"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safefloor"}):
+        mapped, raw = get_sensor_ala_map({}, "ZZ")
+        assert mapped is None and raw == "ZZ"
+
+
+def test_get_sensor_ala_map_safefloor_known_codes() -> None:
+    """SafeFloor model maps its alarm codes correctly."""
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safefloor"}):
+        mapped, raw = get_sensor_ala_map({}, "A0X0000")
+        assert mapped == "no_alarm" and raw == "A0X0000"
+
+        mapped, raw = get_sensor_ala_map({}, "A0X0004")
+        assert mapped == "alarm_leakage_detected" and raw == "A0X0004"
+
 
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
     # unmapped code
