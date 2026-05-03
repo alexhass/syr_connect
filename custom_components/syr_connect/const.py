@@ -84,7 +84,7 @@ _SYR_CONNECT_MODEL_SALT_CAPACITY = {
 
 # Alarm code mappings per device model (raw API getALA -> internal translation key)
 # These are used to map device-specific alarm codes to internal translation keys.
-_SYR_CONNECT_SENSOR_ALA_CODES_LEX10 = {
+_SYR_CONNECT_SENSOR_ALA_CODES_LEX = {
     "0": "no_alarm",
 }
 
