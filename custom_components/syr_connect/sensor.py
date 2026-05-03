@@ -431,8 +431,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return "mdi:battery-30"
                     if f >= 10:
                         return "mdi:battery-20"
-                    if f > 0:
-                        return "mdi:battery-10"
                     return "mdi:battery-alert-variant-outline"
                 # For voltage mode: alert on zero, otherwise use base icon
                 if f == 0:
