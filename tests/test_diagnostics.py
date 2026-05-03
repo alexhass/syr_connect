@@ -3097,7 +3097,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Safe-Tech Plus Connect",
+        title="SafeTech Plus Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetechplus",
@@ -3117,7 +3117,7 @@ async def test_diagnostics_json_api_collects_raw_json(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "12345",
-                "name": "Safe-Tech Plus Connect",
+                "name": "SafeTech Plus Connect",
                 "available": True,
                 "status": {"getSRN": "12345"},
             },
@@ -3251,7 +3251,7 @@ async def test_diagnostics_json_api_login_required(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Safe-Tech Plus Connect",
+        title="SafeTech Plus Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetechplus",
@@ -3301,7 +3301,7 @@ async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Safe-Tech Plus Connect",
+        title="SafeTech Plus Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetechplus",
@@ -3346,7 +3346,7 @@ async def test_diagnostics_json_api_fetch_fails(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Safe-Tech Plus Connect",
+        title="SafeTech Plus Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetechplus",
@@ -3442,7 +3442,7 @@ async def test_diagnostics_json_api_no_devices(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Safe-Tech Plus Connect",
+        title="SafeTech Plus Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetechplus",
@@ -3563,7 +3563,7 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
         version=1,
         minor_version=0,
         domain=DOMAIN,
-        title="Safe-Tech Plus Connect",
+        title="SafeTech Plus Connect",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_MODEL: "safetechplus",
@@ -3582,7 +3582,7 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "SAFETECH01",
-                "name": "Safe-Tech Plus Connect",
+                "name": "SafeTech Plus Connect",
                 "base_path": "/trio",
                 "available": True,
                 "status": {
