@@ -50,10 +50,10 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "ver_contains": "Floorsensor",
         "display_name": "SafeFloor Connect",
         "manufacturer": "SYR",
         "name": "safefloor",
+        "ver_contains": "Floorsensor",
         "ver_prefix": None,
     },
     {
