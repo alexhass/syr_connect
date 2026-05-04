@@ -143,6 +143,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "neosoft2500",
         "srn_prefix": "206",
     },
+    # TODO: Untested model.
     {
         "base_path": "/neosoft",
         "display_name": "NeoSoft 5000 Connect",
@@ -152,6 +153,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "v_keys": {"getRE1", "getRE2"},
         "v_keys_required": 2,
     },
+    # TODO: Untested model. Prefix seems wrong.
     {
         "base_path": "/trio",
         "display_name": "SafeTech Connect",
@@ -161,18 +163,18 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "123",
     },
     {
-        "base_path": "/safe-tec",
-        "display_name": "SafeTechV4 Connect",
-        "manufacturer": "SYR",
-        "name": "safetechv4",
-        "ver_prefix": "Safe-Tech V4",
-    },
-    {
         "base_path": "/trio",
         "display_name": "SafeTech Plus Connect",
         "manufacturer": "SYR",
         "name": "safetechplus",
         "srn_prefix": "112",
+    },
+    {
+        "base_path": "/safe-tec",
+        "display_name": "SafeTechV4 Connect",
+        "manufacturer": "SYR",
+        "name": "safetechv4",
+        "ver_prefix": "Safe-Tech V4",
     },
     {
         "base_path": None,
