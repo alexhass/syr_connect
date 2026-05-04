@@ -143,22 +143,22 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "neosoft2500",
         "srn_prefix": "206",
     },
-    # TODO: Untested model.
     {
         "base_path": "/neosoft",
         "display_name": "NeoSoft 5000 Connect",
         "manufacturer": "SYR",
         "name": "neosoft5000",
+        # TODO: Untested model.
         "ver_prefix": "NSS",
         "v_keys": {"getRE1", "getRE2"},
         "v_keys_required": 2,
     },
-    # TODO: Untested model. Prefix seems wrong.
     {
         "base_path": "/trio",
         "display_name": "SafeTech Connect",
         "manufacturer": "SYR",
         "name": "safetech",
+        # TODO: Untested model. Prefix seems wrong.
         "srn_infix": "aBC",
         "srn_prefix": "123",
     },
