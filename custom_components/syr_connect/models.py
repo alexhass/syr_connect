@@ -153,6 +153,14 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "v_keys_required": 2,
     },
     {
+        "base_path": "/trio",
+        "display_name": "SafeTech Connect",
+        "manufacturer": "SYR",
+        "name": "safetech",
+        "srn_infix": "aBC",
+        "srn_prefix": "123",
+    },
+    {
         "base_path": "/safe-tec",
         "display_name": "SafeTechV4 Connect",
         "manufacturer": "SYR",

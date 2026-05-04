@@ -712,3 +712,16 @@ def test_manufacturer_via_json_fixture_pontosbase():
     result = detect_model(flat)
     assert result["name"] == "pontosbase"
     assert result["manufacturer"] == "Hansgrohe"
+
+
+def test_safetech_detection_via_json_fixture():
+    """Verify SafeTech Connect is detected from the SafeTech_get_all.json fixture."""
+    import json
+    fixture_path = Path(__file__).parent / "fixtures/json/SafeTech_get_all.json"
+    data = json.loads(fixture_path.read_text(encoding="utf-8"))
+    flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
+    result = detect_model(flat)
+    assert result["name"] == "safetech"
+    assert result["display_name"] == "SafeTech Connect"
+    assert result["manufacturer"] == "SYR"
+    assert result["base_path"] == "/trio"
