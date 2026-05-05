@@ -1,0 +1,1046 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Deze hub is al geconfigureerd",
+            "reauth_failed": "Herautenticatie mislukt. Probeer het opnieuw.",
+            "reauth_successful": "Herautenticatie geslaagd",
+            "reconfigure_failed": "Herconfiguratie mislukt. Probeer het opnieuw.",
+            "reconfigure_successful": "Herconfiguratie geslaagd"
+        },
+        "error": {
+            "cannot_connect": "Kan geen verbinding maken met SYR Connect. Controleer uw internetverbinding en probeer het opnieuw.",
+            "cannot_connect_local": "Kan geen verbinding maken met het lokale apparaat. Controleer of het IP-adres correct is en of het apparaat is ingeschakeld en verbonden met uw lokale netwerk.",
+            "host_invalid": "Ongeldige host. Voer een geldig IP-adres of hostnaam in (geen spaties, geen poortnummer).",
+            "host_no_port": "De host mag geen poortnummer bevatten. Voer alleen het IP-adres of de hostnaam in.",
+            "invalid_auth": "Ongeldige gebruikersnaam of wachtwoord. Controleer uw aanmeldingsgegevens.",
+            "unknown": "Er is een onverwachte fout opgetreden. Probeer het later opnieuw."
+        },
+        "step": {
+            "api_json": {
+                "data": {
+                    "host": "Hostnaam of IP-adres",
+                    "model": "Apparaatmodel"
+                },
+                "description": "Voer het model en de hostnaam/het IP-adres in voor lokale toegang",
+                "title": "SYR Connect (Lokaal)"
+            },
+            "api_xml": {
+                "data": {
+                    "password": "Wachtwoord",
+                    "username": "Gebruikersnaam"
+                },
+                "description": "Voer uw SYR Connect App-aanmeldingsgegevens in voor cloudtoegang",
+                "title": "SYR Connect"
+            },
+            "reauth_confirm": {
+                "data": {
+                    "password": "Wachtwoord",
+                    "username": "Gebruikersnaam"
+                },
+                "description": "De aanmeldingsgegevens voor {username} zijn niet meer geldig. Voer nieuwe aanmeldingsgegevens in.",
+                "title": "SYR Connect opnieuw verifiëren"
+            },
+            "reconfigure": {
+                "data": {
+                    "host": "Hostnaam of IP-adres",
+                    "model": "Apparaatmodel",
+                    "password": "Wachtwoord",
+                    "username": "Gebruikersnaam"
+                },
+                "description": "Werk uw SYR Connect-instellingen bij.",
+                "title": "SYR Connect opnieuw configureren"
+            },
+            "user": {
+                "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:\n\n- **Cloudtoegang**: Gebruik uw SYR Connect App-aanmeldingsgegevens om via de SYR cloudservice toegang te krijgen tot al uw apparaten. Vereist internetverbinding.\n\n- **Lokale toegang**: Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
+                "menu_options": {
+                    "api_json": "Lokale toegang",
+                    "api_xml": "Cloudtoegang"
+                },
+                "title": "SYR Connect"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "getbuz": {
+                "name": "Zoemer bij alarm",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getsre": {
+                "name": "Regeneratie actief"
+            }
+        },
+        "button": {
+            "setala": {
+                "name": "Alarm resetten"
+            },
+            "setnot": {
+                "name": "Melding resetten"
+            },
+            "setrst": {
+                "name": "Apparaat resetten"
+            },
+            "setsir": {
+                "name": "Nu regenereren"
+            },
+            "setsmr": {
+                "name": "Meervoudige regeneratie"
+            },
+            "setwrn": {
+                "name": "Waarschuwing resetten"
+            }
+        },
+        "select": {
+            "getfcd": {
+                "name": "Filterterugspoel-interval",
+                "state": {
+                    "10368000": "4 maanden",
+                    "12960000": "5 maanden",
+                    "15552000": "6 maanden",
+                    "18144000": "7 maanden",
+                    "20736000": "8 maanden",
+                    "23328000": "9 maanden",
+                    "2592000": "1 maand",
+                    "25920000": "10 maanden",
+                    "28512000": "11 maanden",
+                    "31104000": "12 maanden",
+                    "5184000": "2 maanden",
+                    "7776000": "3 maanden"
+                }
+            },
+            "getffm": {
+                "name": "Filtertype",
+                "state": {
+                    "0": "Onbekend",
+                    "1": "Terugspoelfilter",
+                    "2": "Vervangbaar filter",
+                    "3": "Geen filter"
+                }
+            },
+            "getprf": {
+                "name": "Actief lekbeschermingsprofiel",
+                "state": {
+                    "1": "Aanwezig",
+                    "2": "Afwezig"
+                }
+            },
+            "getrmo": {
+                "name": "Regeneratiemodus",
+                "state": {
+                    "1": "Standaard",
+                    "2": "ECO",
+                    "3": "Power",
+                    "4": "Automatisch"
+                }
+            },
+            "getrpd": {
+                "name": "Regeneratie-interval"
+            },
+            "getrtm": {
+                "name": "Regeneratietijd"
+            },
+            "getsro": {
+                "name": "Displayoriëntatie",
+                "state": {
+                    "0": "Standaard",
+                    "180": "180°",
+                    "270": "270°",
+                    "90": "90°"
+                }
+            },
+            "getsv1": {
+                "name": "Zoutcontainervolume 1"
+            },
+            "getsv2": {
+                "name": "Zoutcontainervolume 2"
+            },
+            "getsv3": {
+                "name": "Zoutcontainervolume 3"
+            }
+        },
+        "sensor": {
+            "getab": {
+                "name": "Klep afsluiting",
+                "state": {
+                    "false": "Geopend",
+                    "true": "Gesloten"
+                }
+            },
+            "getala": {
+                "name": "Alarm",
+                "state": {
+                    "alarm_end_switch": "Eindschakelaar",
+                    "alarm_external_sensor_leakage_cable": "Externe sensor lek (kabel)",
+                    "alarm_external_sensor_leakage_radio": "Externe sensor lek (radio)",
+                    "alarm_floor_sensor_leakage_detected": "Een lek bij de vloersensor is gedetecteerd",
+                    "alarm_increased_water_hardness": "Verhoogde waterhardheid",
+                    "alarm_leakage_time_reached": "Lektijd bereikt!",
+                    "alarm_leakage_volume_reached": "Lekvolume bereikt!",
+                    "alarm_max_flow_rate_reached": "Maximale doorstroomsnelheid bereikt!",
+                    "alarm_microleakage_detected": "Microlek gedetecteerd!",
+                    "alarm_pressure_sensor_faulty": "Druksensor defect!",
+                    "alarm_salt_supply_empty": "Zoutvoorraad leeg",
+                    "alarm_temperature_sensor_faulty": "Temperatuursensor defect!",
+                    "alarm_turbine_blocked": "Turbine geblokkeerd!",
+                    "alarm_valve_position": "Klepstand",
+                    "alarm_weak_battery": "Zwakke batterij!",
+                    "error_no_information": "Fout: geen informatie beschikbaar",
+                    "fault_conductance_sensor": "Geleidbaarheidssensor defect!",
+                    "no_alarm": "Geen alarm"
+                }
+            },
+            "getald": {
+                "name": "Alarmduur"
+            },
+            "getalm": {
+                "name": "Laatste alarmen",
+                "state": {
+                    "low_salt": "Laag zout",
+                    "no_alarm": "Geen alarm",
+                    "no_salt": "Geen zout"
+                }
+            },
+            "getaln": {
+                "name": "Laatste meldingen"
+            },
+            "getalw": {
+                "name": "Laatste waarschuwingen"
+            },
+            "getapt": {
+                "name": "Access point time-out"
+            },
+            "getavo": {
+                "name": "Huidige doorstroming"
+            },
+            "getbar": {
+                "name": "Inlaatdruk"
+            },
+            "getbat": {
+                "name": "Batterijspanning"
+            },
+            "getcde": {
+                "name": "Configuratiecode"
+            },
+            "getcel": {
+                "name": "Temperatuur"
+            },
+            "getcna": {
+                "name": "Apparaatnaam"
+            },
+            "getcnd": {
+                "name": "Geleidbaarheid"
+            },
+            "getcno": {
+                "name": "Codenummer"
+            },
+            "getcof": {
+                "name": "Totaal waterverbruik"
+            },
+            "getcs1": {
+                "name": "Resterende harscapaciteit 1"
+            },
+            "getcs2": {
+                "name": "Resterende harscapaciteit 2"
+            },
+            "getcs3": {
+                "name": "Resterende harscapaciteit 3"
+            },
+            "getcyn": {
+                "name": "Regeneratiecyclusteller"
+            },
+            "getcyt": {
+                "name": "Regeneratiecyclustijd"
+            },
+            "getdbd": {
+                "name": "Drukval bij lektest"
+            },
+            "getden": {
+                "name": "Apparaat ingeschakeld"
+            },
+            "getdgw": {
+                "name": "Gateway"
+            },
+            "getdrp": {
+                "name": "Microlek-test interval",
+                "state": {
+                    "1": "Dagelijks",
+                    "2": "Wekelijks",
+                    "3": "Maandelijks"
+                }
+            },
+            "getdsv": {
+                "name": "Microlek-test",
+                "state": {
+                    "0": "Inactief",
+                    "1": "Actief",
+                    "2": "Afgebroken - drukval",
+                    "3": "Overgeslagen"
+                }
+            },
+            "getdtt": {
+                "name": "Microlek-test tijd"
+            },
+            "getdwf": {
+                "name": "Verwacht dagelijks waterverbruik"
+            },
+            "getegw": {
+                "name": "Gateway (LAN)"
+            },
+            "geteip": {
+                "name": "IP-adres (LAN)"
+            },
+            "getfcd": {
+                "name": "Filterterugspoel-interval",
+                "state": {
+                    "10368000": "4 maanden",
+                    "12960000": "5 maanden",
+                    "15552000": "6 maanden",
+                    "18144000": "7 maanden",
+                    "20736000": "8 maanden",
+                    "23328000": "9 maanden",
+                    "2592000": "1 maand",
+                    "25920000": "10 maanden",
+                    "28512000": "11 maanden",
+                    "31104000": "12 maanden",
+                    "5184000": "2 maanden",
+                    "7776000": "3 maanden"
+                }
+            },
+            "getfco": {
+                "name": "IJzergehalte"
+            },
+            "getffm": {
+                "name": "Filtertype",
+                "state": {
+                    "0": "Onbekend",
+                    "1": "Terugspoelfilter",
+                    "2": "Vervangbaar filter",
+                    "3": "Geen filter"
+                }
+            },
+            "getfir": {
+                "name": "Firmware-model"
+            },
+            "getflo": {
+                "name": "Waterdoorstroom"
+            },
+            "gethmd": {
+                "name": "Luchtvochtigheid"
+            },
+            "getinr": {
+                "name": "Onvolledige regeneraties"
+            },
+            "getipa": {
+                "name": "IP-adres"
+            },
+            "getiwh": {
+                "name": "Inkomende waterhardheid"
+            },
+            "getlan": {
+                "name": "Apparaattaal",
+                "state": {
+                    "0": "Engels",
+                    "1": "Duits",
+                    "3": "Spaans"
+                }
+            },
+            "getlar": {
+                "name": "Laatste regeneratie"
+            },
+            "getle": {
+                "name": "Lekbescherming - Aanwezigheidsniveau"
+            },
+            "getlng": {
+                "name": "Apparaattaal",
+                "state": {
+                    "0": "Duits",
+                    "1": "Engels"
+                }
+            },
+            "getltv": {
+                "name": "Laatste gedoseerde volume"
+            },
+            "getmac": {
+                "name": "MAC-adres"
+            },
+            "getmac1": {
+                "name": "MAC-adres (Wi‑Fi)"
+            },
+            "getmac2": {
+                "name": "MAC-adres (LAN)"
+            },
+            "getman": {
+                "name": "Fabrikant"
+            },
+            "getmih": {
+                "name": "Minimale luchtvochtigheid"
+            },
+            "getmit": {
+                "name": "Minimale temperatuur"
+            },
+            "getmxh": {
+                "name": "Maximale luchtvochtigheid"
+            },
+            "getmxt": {
+                "name": "Maximale temperatuur"
+            },
+            "getnet": {
+                "name": "Netspanning"
+            },
+            "getnor": {
+                "name": "Regeneraties (normaal bedrijf)"
+            },
+            "getnot": {
+                "name": "Melding",
+                "state": {
+                    "annual_maintenance": "Jaarlijks onderhoud",
+                    "bi_annual_maintenance": "Halfjaarlijks onderhoud",
+                    "new_software_available": "Nieuwe software-update beschikbaar!",
+                    "new_software_installed": "Nieuwe software-update geïnstalleerd!",
+                    "no_notification": "Geen"
+                }
+            },
+            "getnps": {
+                "name": "Microlekaantal"
+            },
+            "getowh": {
+                "name": "Uitgaande waterhardheid"
+            },
+            "getpa1": {
+                "name": "Lekbeschermingsprofiel 1",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa2": {
+                "name": "Lekbeschermingsprofiel 2",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa3": {
+                "name": "Lekbeschermingsprofiel 3",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa4": {
+                "name": "Lekbeschermingsprofiel 4",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa5": {
+                "name": "Lekbeschermingsprofiel 5",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa6": {
+                "name": "Lekbeschermingsprofiel 6",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa7": {
+                "name": "Lekbeschermingsprofiel 7",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpa8": {
+                "name": "Lekbeschermingsprofiel 8",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb1": {
+                "name": "Zoemer profiel 1",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb2": {
+                "name": "Zoemer profiel 2",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb3": {
+                "name": "Zoemer profiel 3",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb4": {
+                "name": "Zoemer profiel 4",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb5": {
+                "name": "Zoemer profiel 5",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb6": {
+                "name": "Zoemer profiel 6",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb7": {
+                "name": "Zoemer profiel 7",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpb8": {
+                "name": "Zoemer profiel 8",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpf1": {
+                "name": "Doorstromingslekdrempel 1"
+            },
+            "getpf2": {
+                "name": "Doorstromingslekdrempel 2"
+            },
+            "getpf3": {
+                "name": "Doorstromingslekdrempel 3"
+            },
+            "getpf4": {
+                "name": "Doorstromingslekdrempel 4"
+            },
+            "getpf5": {
+                "name": "Doorstromingslekdrempel 5"
+            },
+            "getpf6": {
+                "name": "Doorstromingslekdrempel 6"
+            },
+            "getpf7": {
+                "name": "Doorstromingslekdrempel 7"
+            },
+            "getpf8": {
+                "name": "Doorstromingslekdrempel 8"
+            },
+            "getpm1": {
+                "name": "Microlek-test profiel 1",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm2": {
+                "name": "Microlek-test profiel 2",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm3": {
+                "name": "Microlek-test profiel 3",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm4": {
+                "name": "Microlek-test profiel 4",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm5": {
+                "name": "Microlek-test profiel 5",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm6": {
+                "name": "Microlek-test profiel 6",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm7": {
+                "name": "Microlek-test profiel 7",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpm8": {
+                "name": "Microlek-test profiel 8",
+                "state": {
+                    "false": "Inactief",
+                    "true": "Actief"
+                }
+            },
+            "getpn1": {
+                "name": "Lekbeschermingsprofiel naam 1"
+            },
+            "getpn2": {
+                "name": "Lekbeschermingsprofiel naam 2"
+            },
+            "getpn3": {
+                "name": "Lekbeschermingsprofiel naam 3"
+            },
+            "getpn4": {
+                "name": "Lekbeschermingsprofiel naam 4"
+            },
+            "getpn5": {
+                "name": "Lekbeschermingsprofiel naam 5"
+            },
+            "getpn6": {
+                "name": "Lekbeschermingsprofiel naam 6"
+            },
+            "getpn7": {
+                "name": "Lekbeschermingsprofiel naam 7"
+            },
+            "getpn8": {
+                "name": "Lekbeschermingsprofiel naam 8"
+            },
+            "getpr1": {
+                "name": "Terugkeertijd 1 naar aanwezigheidsprofiel"
+            },
+            "getpr2": {
+                "name": "Terugkeertijd 2 naar aanwezigheidsprofiel"
+            },
+            "getpr3": {
+                "name": "Terugkeertijd 3 naar aanwezigheidsprofiel"
+            },
+            "getpr4": {
+                "name": "Terugkeertijd 4 naar aanwezigheidsprofiel"
+            },
+            "getpr5": {
+                "name": "Terugkeertijd 5 naar aanwezigheidsprofiel"
+            },
+            "getpr6": {
+                "name": "Terugkeertijd 6 naar aanwezigheidsprofiel"
+            },
+            "getpr7": {
+                "name": "Terugkeertijd 7 naar aanwezigheidsprofiel"
+            },
+            "getpr8": {
+                "name": "Terugkeertijd 8 naar aanwezigheidsprofiel"
+            },
+            "getprf": {
+                "name": "Actief lekbeschermingsprofiel",
+                "state": {
+                    "1": "Aanwezig",
+                    "2": "Afwezig"
+                }
+            },
+            "getprs": {
+                "name": "Inlaatdruk"
+            },
+            "getpst": {
+                "name": "Druksensor",
+                "state": {
+                    "1": "Niet beschikbaar",
+                    "2": "Beschikbaar"
+                }
+            },
+            "getpt1": {
+                "name": "Lekbeschermingstijd 1"
+            },
+            "getpt2": {
+                "name": "Lekbeschermingstijd 2"
+            },
+            "getpt3": {
+                "name": "Lekbeschermingstijd 3"
+            },
+            "getpt4": {
+                "name": "Lekbeschermingstijd 4"
+            },
+            "getpt5": {
+                "name": "Lekbeschermingstijd 5"
+            },
+            "getpt6": {
+                "name": "Lekbeschermingstijd 6"
+            },
+            "getpt7": {
+                "name": "Lekbeschermingstijd 7"
+            },
+            "getpt8": {
+                "name": "Lekbeschermingstijd 8"
+            },
+            "getpv1": {
+                "name": "Volumelekdrempel 1"
+            },
+            "getpv2": {
+                "name": "Volumelekdrempel 2"
+            },
+            "getpv3": {
+                "name": "Volumelekdrempel 3"
+            },
+            "getpv4": {
+                "name": "Volumelekdrempel 4"
+            },
+            "getpv5": {
+                "name": "Volumelekdrempel 5"
+            },
+            "getpv6": {
+                "name": "Volumelekdrempel 6"
+            },
+            "getpv7": {
+                "name": "Volumelekdrempel 7"
+            },
+            "getpv8": {
+                "name": "Volumelekdrempel 8"
+            },
+            "getpw1": {
+                "name": "Lekwaarschuwingsprofiel 1",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw2": {
+                "name": "Lekwaarschuwingsprofiel 2",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw3": {
+                "name": "Lekwaarschuwingsprofiel 3",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw4": {
+                "name": "Lekwaarschuwingsprofiel 4",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw5": {
+                "name": "Lekwaarschuwingsprofiel 5",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw6": {
+                "name": "Lekwaarschuwingsprofiel 6",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw7": {
+                "name": "Lekwaarschuwingsprofiel 7",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getpw8": {
+                "name": "Lekwaarschuwingsprofiel 8",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            },
+            "getrcp": {
+                "name": "Synchronisatie-interval"
+            },
+            "getrdo": {
+                "name": "Zoutdosering"
+            },
+            "getre1": {
+                "name": "Reservecapaciteit fles 1"
+            },
+            "getre2": {
+                "name": "Reservecapaciteit fles 2"
+            },
+            "getres": {
+                "name": "Resterende capaciteit"
+            },
+            "getrg1": {
+                "name": "Regeneratiestatus",
+                "state": {
+                    "0": "Geen regeneratie",
+                    "1": "Tank 1 regenereert",
+                    "2": "Tank 2 regenereert"
+                }
+            },
+            "getrg2": {
+                "name": "Regeneratie tank 2",
+                "state": {
+                    "0": "Inactief",
+                    "1": "Bezig"
+                }
+            },
+            "getrg3": {
+                "name": "Regeneratie tank 3",
+                "state": {
+                    "0": "Inactief",
+                    "1": "Bezig"
+                }
+            },
+            "getrmo": {
+                "name": "Regeneratiemodus",
+                "state": {
+                    "1": "Standaard",
+                    "2": "ECO",
+                    "3": "Power",
+                    "4": "Automatisch"
+                }
+            },
+            "getrpd": {
+                "name": "Regeneratie-interval"
+            },
+            "getrpw": {
+                "name": "Regeneratiedagen",
+                "state": {
+                    "0": "Niet opgegeven"
+                }
+            },
+            "getrth": {
+                "name": "Regeneratietijd (uur)"
+            },
+            "getrti": {
+                "name": "Totale duur van regeneratiecyclus"
+            },
+            "getrtm": {
+                "name": "Regeneratietijd"
+            },
+            "getscr": {
+                "name": "Serviceregeneratiecycli"
+            },
+            "getsir": {
+                "name": "Onmiddellijke regeneratie",
+                "state": {
+                    "0": "Onmiddellijk starten",
+                    "1": "Niet starten"
+                }
+            },
+            "getsle": {
+                "name": "Resterende tijd in zelfleerfase"
+            },
+            "getslf": {
+                "name": "Doorstroming in zelfleerfase"
+            },
+            "getslp": {
+                "name": "Duur van zelfleerfase"
+            },
+            "getslt": {
+                "name": "Tijd in zelfleerfase"
+            },
+            "getslv": {
+                "name": "Volume in zelfleerfase"
+            },
+            "getsrh": {
+                "name": "Volgend halfjaarlijks onderhoud"
+            },
+            "getsrn": {
+                "name": "Serienummer"
+            },
+            "getsro": {
+                "name": "Displayoriëntatie",
+                "state": {
+                    "0": "Standaard",
+                    "180": "180°",
+                    "270": "270°",
+                    "90": "90°"
+                }
+            },
+            "getsrv": {
+                "name": "Volgend jaarlijks onderhoud"
+            },
+            "getss1": {
+                "name": "Zoutcontainervoorraad 1"
+            },
+            "getss2": {
+                "name": "Zoutcontainervoorraad 2"
+            },
+            "getss3": {
+                "name": "Zoutcontainervoorraad 3"
+            },
+            "getsta": {
+                "name": "Status",
+                "state": {
+                    "status_backwash": "Terugspoeling",
+                    "status_fast_rinse": "Snel spoelen",
+                    "status_filling": "Vullen",
+                    "status_inactive": "Inactief",
+                    "status_refill_salt": "Vul zout bij",
+                    "status_regenerant_rinse": "Regenerant spoelen",
+                    "status_slow_rinse": "Langzaam spoelen"
+                }
+            },
+            "getsv1": {
+                "name": "Zoutcontainervolume 1"
+            },
+            "getsv2": {
+                "name": "Zoutcontainervolume 2"
+            },
+            "getsv3": {
+                "name": "Zoutcontainervolume 3"
+            },
+            "gett1": {
+                "name": "Lektijd 1"
+            },
+            "gett2": {
+                "name": "Lektijd 2"
+            },
+            "gettmp": {
+                "name": "Lekbescherming uitgeschakeld"
+            },
+            "gettor": {
+                "name": "Totale regeneraties"
+            },
+            "gettyp": {
+                "name": "Apparaattype"
+            },
+            "getul": {
+                "name": "Lekbescherming - Afwezigheidsniveau"
+            },
+            "getver": {
+                "name": "Firmware-versie"
+            },
+            "getvlv": {
+                "name": "Klepstatus",
+                "state": {
+                    "10": "Gesloten",
+                    "11": "Sluiten",
+                    "20": "Geopend",
+                    "21": "Openen"
+                }
+            },
+            "getvol": {
+                "name": "Totaalvolume"
+            },
+            "getvps1": {
+                "name": "Geen turbine-impulsen op stuurkop 1 sinds"
+            },
+            "getvps2": {
+                "name": "Geen turbine-impulsen op stuurkop 2 sinds"
+            },
+            "getvs1": {
+                "name": "Volumedrempel 1"
+            },
+            "getvs2": {
+                "name": "Volumedrempel 2"
+            },
+            "getvs3": {
+                "name": "Volumedrempel 3"
+            },
+            "getwfc": {
+                "name": "Wi-Fi SSID"
+            },
+            "getwfl": {
+                "name": "Beschikbare netwerken"
+            },
+            "getwfr": {
+                "name": "Wi-Fi signaalsterkte"
+            },
+            "getwfs": {
+                "name": "Wi-Fi verbindingsstatus",
+                "state": {
+                    "0": "Niet verbonden",
+                    "1": "Verbinden",
+                    "2": "Verbonden"
+                }
+            },
+            "getwgw": {
+                "name": "Gateway (Wi‑Fi)"
+            },
+            "getwhu": {
+                "name": "Waterhardheidseenheid"
+            },
+            "getwip": {
+                "name": "IP-adres (Wi‑Fi)"
+            },
+            "getwmp": {
+                "name": "Meetinterval"
+            },
+            "getwrn": {
+                "name": "Waarschuwing",
+                "state": {
+                    "battery_low": "Batterij bijna leeg",
+                    "initial_filling": "Eerste vulling",
+                    "leak_warning": "Lekwaarschuwing",
+                    "leak_warning_time": "Lekwaarschuwingstijd",
+                    "leak_warning_volume": "Lekvolume",
+                    "no_warning": "Geen waarschuwing",
+                    "power_outage": "Stroomuitval",
+                    "salt_supply_low": "Zoutvoorraad laag"
+                }
+            }
+        },
+        "switch": {
+            "getbuz": {
+                "name": "Zoemer bij alarm",
+                "state": {
+                    "false": "Uitgeschakeld",
+                    "true": "Ingeschakeld"
+                }
+            }
+        },
+        "valve": {
+            "getab": {
+                "name": "Klep afsluiting",
+                "state": {
+                    "false": "Geopend",
+                    "true": "Gesloten"
+                }
+            },
+            "getvlv": {
+                "name": "Klepstatus",
+                "state": {
+                    "10": "Gesloten",
+                    "11": "Sluiten",
+                    "20": "Geopend",
+                    "21": "Openen"
+                }
+            }
+        }
+    },
+    "issues": {
+        "device_offline": {
+            "description": "Het SYR Connect apparaat \"{device_name}\" is momenteel offline en kan niet worden bereikt. Controleer:\n\n- Voeding van het apparaat\n- Netwerkverbinding\n- Status van de SYR Connect cloudservice\n\nHet apparaat maakt automatisch opnieuw verbinding zodra het weer online is.",
+            "title": "Apparaat offline: {device_name}"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "scan_interval": "Update-interval"
+                },
+                "description": "Bepaalt het tijdsinterval tussen API-aanroepen.",
+                "title": "SYR Connect opties"
+            }
+        }
+    }
+}
