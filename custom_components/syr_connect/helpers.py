@@ -875,6 +875,8 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         return (mapped, code) if mapped is not None else (None, code)
 
     if model in (
+        "conelclearprosoft",
+        "conelclearprosofttwin",
         "pontosbase",
         "neosoft2500",
         "neosoft5000",

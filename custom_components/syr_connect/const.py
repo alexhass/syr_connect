@@ -67,6 +67,8 @@ _SYR_CONNECT_CLIENT_USER_AGENT = "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 # Unknown models with similar names can have up to 300 kg per container.
 # Fallback to 25 kg when unknown.
 _SYR_CONNECT_MODEL_SALT_CAPACITY = {
+    "conelclearprosoft": 40,
+    "conelclearprosofttwin": 35,
     "lex10": 25,
     "lex20": 70,
     "lex30": 70,

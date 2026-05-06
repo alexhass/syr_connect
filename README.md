@@ -89,6 +89,7 @@ This integration works with SYR water softeners and leakage detection devices an
 
 Tested and reported as working:
 
+- CONEL CLEAR PRO SOFT
 - Sanibel Leak Protection Module A25
 - Sanibel Softwater UNO A25
 - SYR LEX 1500 Connect Single (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
@@ -104,6 +105,7 @@ Tested and reported as working:
 
 Other devices are also of interest, but still need to be integrated (please report):
 
+- CONEL CLEAR PRO SOFT TWIN
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect

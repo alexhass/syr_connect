@@ -725,3 +725,69 @@ def test_safetech_detection_via_json_fixture():
     assert result["display_name"] == "SafeTech Connect"
     assert result["manufacturer"] == "SYR"
     assert result["base_path"] == "/trio"
+
+
+# ---------------------------------------------------------------------------
+# CONEL CLEAR PRO SOFT tests
+# ---------------------------------------------------------------------------
+
+def test_conelclearprosoft_detection_synthetic():
+    """CONEL CLEAR PRO SOFT is detected by SRN prefix '215AAA'."""
+    flat = {"getSRN": "215AAA12345"}
+    result = detect_model(flat)
+    assert result["name"] == "conelclearprosoft"
+    assert result["display_name"] == "CLEAR PRO SOFT"
+    assert result["manufacturer"] == "CONEL"
+    assert result["base_path"] == "/neosoft"
+
+
+def test_conelclearprosoft_detection_from_xml_fixture():
+    """CONEL CLEAR PRO SOFT is detected from real-style XML fixture."""
+    xml = _load_xml("ConelClearProSoft_GetDeviceCollectionStatus.xml")
+    parser = ResponseParser()
+    flat = parser.parse_device_status_response(xml)
+    assert flat is not None
+    result = detect_model(flat)
+    assert result["name"] == "conelclearprosoft"
+    assert result["manufacturer"] == "CONEL"
+
+
+def test_conelclearprosoft_srn_prefix_priority_over_cna():
+    """SRN prefix '215AAA' wins over a concurrent getCNA value."""
+    flat = {"getSRN": "215AAA99999", "getCNA": "LEXplus10"}
+    result = detect_model(flat)
+    assert result["name"] == "conelclearprosoft"
+
+
+def test_conelclearprosoft_wrong_srn_infix_no_match():
+    """SRN '215' with non-standard infix must NOT match conelclearprosoft."""
+    flat = {"getSRN": "215BBB12345"}
+    result = detect_model(flat)
+    assert result["name"] != "conelclearprosoft"
+
+
+def test_conelclearprosoft_base_path_is_neosoft():
+    """CONEL CLEAR PRO SOFT must report '/neosoft' as its base path."""
+    flat = {"getSRN": "215AAA00001"}
+    result = detect_model(flat)
+    assert result["base_path"] == "/neosoft"
+
+
+def test_manufacturer_conel_via_srn_prefix():
+    """CONEL devices detected by srn_prefix should return manufacturer 'CONEL'."""
+    result = detect_model({"getSRN": "215AAA00001"})
+    assert result["manufacturer"] == "CONEL"
+    assert result["name"] == "conelclearprosoft"
+
+
+def test_conelclearprosoft_detection_via_json_fixture():
+    """Verify CONEL CLEAR PRO SOFT is detected from the JSON get_all fixture."""
+    import json
+    fixture_path = Path(__file__).parent / "fixtures/json/ConelClearProSoft_get_all.json"
+    data = json.loads(fixture_path.read_text(encoding="utf-8"))
+    flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
+    result = detect_model(flat)
+    assert result["name"] == "conelclearprosoft"
+    assert result["display_name"] == "CLEAR PRO SOFT"
+    assert result["manufacturer"] == "CONEL"
+    assert result["base_path"] == "/neosoft"

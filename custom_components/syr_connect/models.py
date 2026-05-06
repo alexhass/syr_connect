@@ -42,6 +42,21 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
+        "base_path": "/neosoft",
+        "display_name": "CLEAR PRO SOFT",
+        "manufacturer": "CONEL",
+        "name": "conelclearprosoft",
+        "srn_prefix": "215",
+    },
+# TODO: Untested model
+#    {
+#        "base_path": "/neosoft",
+#        "display_name": "CLEAR PRO SOFT TWIN",
+#        "manufacturer": "CONEL",
+#        "name": "conelclearprosofttwin",
+#        "srn_prefix": "xxx",
+#    },
+    {
         "base_path": "/pontos-base",
         "display_name": "Pontos Base",
         "manufacturer": "Hansgrohe",

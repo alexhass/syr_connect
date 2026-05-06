@@ -89,6 +89,7 @@ Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsger�
 
 Getestet und gemeldet als funktionierend:
 
+- CONEL CLEAR PRO SOFT
 - Sanibel Leckageschutzmodul A25
 - Sanibel Softwater UNO A25
 - SYR LEX 1500 Connect Einzel (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
@@ -104,6 +105,7 @@ Getestet und gemeldet als funktionierend:
 
 Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte melden):
 
+- CONEL CLEAR PRO SOFT TWIN
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
