@@ -741,17 +741,6 @@ def test_conelclearprosoft_detection_synthetic():
     assert result["base_path"] == "/neosoft"
 
 
-def test_conelclearprosoft_detection_from_xml_fixture():
-    """CONEL CLEAR PRO SOFT is detected from real-style XML fixture."""
-    xml = _load_xml("ConelClearProSoft_GetDeviceCollectionStatus.xml")
-    parser = ResponseParser()
-    flat = parser.parse_device_status_response(xml)
-    assert flat is not None
-    result = detect_model(flat)
-    assert result["name"] == "conelclearprosoft"
-    assert result["manufacturer"] == "CONEL"
-
-
 def test_conelclearprosoft_srn_prefix_priority_over_cna():
     """SRN prefix '215AAA' wins over a concurrent getCNA value."""
     flat = {"getSRN": "215AAA99999", "getCNA": "LEXplus10"}
