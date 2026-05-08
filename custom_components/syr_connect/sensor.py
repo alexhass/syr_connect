@@ -410,30 +410,17 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             if val is None:
                 return self._base_icon
             try:
-                f = float(str(val).strip())
+                battery_value = float(str(val).strip())
                 # For percentage mode show level-appropriate icon
                 if self._attr_native_unit_of_measurement == PERCENTAGE:
-                    if f >= 90:
+                    battery_level = round(battery_value / 10) * 10
+                    if battery_level == 100:
                         return "mdi:battery"
-                    if f >= 80:
-                        return "mdi:battery-90"
-                    if f >= 70:
-                        return "mdi:battery-80"
-                    if f >= 60:
-                        return "mdi:battery-70"
-                    if f >= 50:
-                        return "mdi:battery-60"
-                    if f >= 40:
-                        return "mdi:battery-50"
-                    if f >= 30:
-                        return "mdi:battery-40"
-                    if f >= 20:
-                        return "mdi:battery-30"
-                    if f >= 10:
-                        return "mdi:battery-20"
+                    if battery_level > 0:
+                        return f"mdi:battery-{battery_level}"
                     return "mdi:battery-alert-variant-outline"
                 # For voltage mode: alert on zero, otherwise use base icon
-                if f == 0:
+                if battery_value == 0:
                     return "mdi:battery-alert-variant-outline"
             except (TypeError, ValueError):
                 pass
