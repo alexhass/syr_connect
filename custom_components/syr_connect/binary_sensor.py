@@ -98,7 +98,7 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
             device_id: Device ID (serial number)
             device_name: Device display name
             project_id: Project ID
-            sensor_key: Sensor key (e.g., 'getSRE')
+            sensor_key: Sensor key (e.g., 'getBUZ')
             device_class: Binary sensor device class
         """
         super().__init__(coordinator)

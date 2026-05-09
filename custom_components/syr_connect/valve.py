@@ -116,7 +116,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             coordinator: Data update coordinator
             device_id: Device ID (serial number)
             device_name: Device display name
-            sensor_key: Sensor key (e.g., 'getSRE')
+            sensor_key: Sensor key (e.g., 'getBUZ')
         """
         super().__init__(coordinator)
 

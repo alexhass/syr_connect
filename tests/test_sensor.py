@@ -2034,7 +2034,7 @@ def test_icon_sre_true_false(create_mock_coordinator):
     data_f = {"devices": [{"id": "d6", "name": "D6", "project_id": "p1", "status": {"getSRE": "false"}}]}
     coord_f = create_mock_coordinator(data_f)
     sf = SyrConnectSensor(coord_f, "d6", "D6", "p1", "getSRE")
-    assert sf.icon == "mdi:timer-outline"
+    assert sf.icon == "mdi:autorenew"
 
 
 def test_icon_battery_zero(create_mock_coordinator):
@@ -2927,11 +2927,8 @@ async def test_sensor_icon_getsre_falsy_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
 
-    # Should return timer icon for falsy value
-    assert sensor.icon == "mdi:timer-outline"
-
-
-async def test_sensor_icon_getsre_off_value(hass: HomeAssistant) -> None:
+    # Should return autorenew icon for falsy value
+    assert sensor.icon == "mdi:autorenew"(hass: HomeAssistant) -> None:
     """Test getSRE sensor icon when value is 'off'."""
     data = {
         "devices": [
@@ -2948,8 +2945,8 @@ async def test_sensor_icon_getsre_off_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
 
-    # Should return timer icon for 'off' value
-    assert sensor.icon == "mdi:timer-outline"
+    # Should return autorenew icon for 'off' value
+    assert sensor.icon == "mdi:autorenew"
 
 
 async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
@@ -3647,9 +3644,9 @@ async def test_sensor_icon_sre_with_numeric_1(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
 
-    # Numeric conversion will make it 1.0, str(1.0) = "1.0" which doesn't match "1"
-    # So icon will be timer-outline, not autorenew
-    assert sensor.icon == "mdi:timer-outline"
+    # Numeric conversion will make it 1.0, str(1.0) = "1.0"
+    # getSRE uses static icon mdi:autorenew
+    assert sensor.icon == "mdi:autorenew"
 
 
 async def test_sensor_icon_sre_inactive(hass: HomeAssistant) -> None:
@@ -3669,11 +3666,8 @@ async def test_sensor_icon_sre_inactive(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
 
-    # Should return timer icon
-    assert sensor.icon == "mdi:timer-outline"
-
-
-async def test_sensor_icon_rg_with_datetime_value(hass: HomeAssistant) -> None:
+    # Should return autorenew icon
+    assert sensor.icon == "mdi:autorenew"(hass: HomeAssistant) -> None:
     """Test getRG icon with datetime value."""
     dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
     data = {
@@ -4940,7 +4934,7 @@ async def test_getsre_icon_true_and_false(hass: HomeAssistant) -> None:
     data_false = {"devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getSRE": "0"}}]}
     coord_f = _build_coordinator(hass, data_false)
     s_false = SyrConnectSensor(coord_f, "d2", "Device", "p", "getSRE")
-    assert s_false.icon == "mdi:timer-outline"
+    assert s_false.icon == "mdi:autorenew"
 
 
 async def test_vlv_value_mappings(hass: HomeAssistant) -> None:
