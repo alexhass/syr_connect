@@ -95,7 +95,7 @@ _SYR_CONNECT_MODEL_COMMAND_CLR_ALA = {
 # NOTE: If you know other codes for SafeFloor devices, please report them so they can be added here.
 _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
     "A0X0000": "no_alarm",
-    "A0X0004": "alarm_leakage_detected",
+    "A0X0004": "alarm_floor_sensor_leakage_detected",
 }
 
 # Alarm code mappings per device model (raw API getALA -> internal translation key)
