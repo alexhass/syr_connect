@@ -2928,7 +2928,10 @@ async def test_sensor_icon_getsre_falsy_value(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
 
     # Should return autorenew icon for falsy value
-    assert sensor.icon == "mdi:autorenew"(hass: HomeAssistant) -> None:
+    assert sensor.icon == "mdi:autorenew"
+
+
+async def test_sensor_icon_getsre_off_value(hass: HomeAssistant) -> None:
     """Test getSRE sensor icon when value is 'off'."""
     data = {
         "devices": [
