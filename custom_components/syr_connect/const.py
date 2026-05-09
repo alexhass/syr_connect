@@ -93,7 +93,6 @@ _SYR_CONNECT_MODEL_COMMAND_CLR_ALA = {
 # Alarm codes for SafeFloor devices (raw API getALA -> internal translation key)
 # Original casing in API is "A0x0000", but we normalize it for get_sensor_ala_map() lookups.
 # Codes are hexadecimal bitmask values (0x0002, 0x0004, ..., 0x0100).
-# NOTE: If you know other codes for SafeFloor devices, please report them so they can be added here.
 _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
     "A0X0000": "no_alarm",
     "A0X0002": "alarm_safefloor_communication",
