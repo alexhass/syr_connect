@@ -528,6 +528,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getRPW",   # Regeneration permitted weekdays as bit mask
     "getPST",   # Pressure sensor installed: 1 = not available, 2 = available
     "getVS1", "getVS2", "getVS3",  # Volume thresholds - advanced config
+    "getSS2", "getSS3",  # Salt storage (weeks) in containers 2/3 - not present on all devices
     "getSV2", "getSV3",  # Salt amount (kg) in containers 2/3 - not present on all devices
     "getWHU",   # Water hardness unit
 
@@ -647,7 +648,6 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 # Sensors to exclude only when value is empty (0 or "") - internal
 _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
     "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
-    "getSS1", "getSS2", "getSS3",  # Salt storage (weeks)
     "getVS1", "getVS2", "getVS3",  # Volume thresholds
     "getTYP",  # Device type code - value "" means sensor does not exists, type "0" may not exists.
 
