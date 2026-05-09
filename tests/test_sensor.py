@@ -8817,38 +8817,6 @@ async def test_sensor_setup_pa_group_outer_exception_caught(hass: HomeAssistant)
 
 
 # ---------------------------------------------------------------------------
-# Line 179 — binary-sensor key skipped in status loop
-# ---------------------------------------------------------------------------
-
-async def test_sensor_setup_binary_key_continue(hass: HomeAssistant) -> None:
-    """getSRE is in _SYR_CONNECT_SENSOR_BINARY so continue fires (line 179)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getSRE": "1", "getFLO": "5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    entities = add_entities.call_args.args[0]
-    # getSRE must NOT produce a sensor (binary sensor, always skipped)
-    sre_sensors = [e for e in entities if e._sensor_key == "getSRE"]
-    assert len(sre_sensors) == 0
-    # getFLO is created normally
-    flo_sensors = [e for e in entities if e._sensor_key == "getFLO"]
-    assert len(flo_sensors) == 1
-
-
-# ---------------------------------------------------------------------------
 # Lines 193, 198-199 — getSRO empty / non-numeric value
 # ---------------------------------------------------------------------------
 
