@@ -6,7 +6,7 @@ import re
 from datetime import UTC, datetime, timedelta
 
 from babel.dates import format_datetime
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import RestoreSensor, SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE
 from homeassistant.core import HomeAssistant
@@ -231,7 +231,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class SyrConnectSensor(CoordinatorEntity, SensorEntity):
+class SyrConnectSensor(CoordinatorEntity, RestoreSensor):
     """Representation of a SYR Connect sensor."""
 
     def __init__(
@@ -324,6 +324,28 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
         # Cache last non-None native value to avoid writing None when API omits values
         self._last_native_value: str | int | float | datetime | None = None
+        # Pre-populate from current coordinator data (already available at setup time).
+        # This ensures _last_native_value is set before the entity is added to HA so that
+        # async_added_to_hass can write the correct state before any event-loop yield.
+        _ = self.native_value
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to coordinator; write pre-cached state before any yield to eliminate flash.
+
+        Calling async_write_ha_state() here — before the first await — ensures the
+        entity state is visible in the HA state-machine as early as possible.  This
+        eliminates the brief "unknown" flash that would otherwise occur during
+        platform re-setup triggered by enabling/disabling an entity in the UI.
+        """
+        # Write immediately with the value pre-populated in __init__ (no yield yet).
+        if self._last_native_value is not None:
+            self.async_write_ha_state()
+        # Restore from HA recorder history — may provide a more precise value and
+        # also covers the rare case where coordinator.data was empty at __init__ time.
+        last_data = await self.async_get_last_sensor_data()
+        if last_data is not None and last_data.native_value is not None:
+            self._last_native_value = last_data.native_value
+        await super().async_added_to_hass()
 
     def _apply_numeric_conversion(self, value: float) -> float | int:
         """Apply sensor-specific unit conversion and precision.

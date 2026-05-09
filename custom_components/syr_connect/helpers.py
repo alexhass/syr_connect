@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -260,6 +261,15 @@ def registry_cleanup(
                     value = status.get(key)
                     if not is_sensor_visible(status, key, value):
                         entity_id = f"{prefix}{key.lower()}"
+                        # Skip entities that currently have a valid state to avoid
+                        # a brief "unknown" flash during platform re-setup (e.g. after
+                        # enabling or disabling an entity in the UI).
+                        current_state = hass.states.get(entity_id)
+                        if (
+                            current_state is not None
+                            and current_state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE)
+                        ):
+                            continue
                         if registry.async_get(entity_id) is not None:
                             _LOGGER.debug(
                                 "Removing conditionally hidden sensor from registry: %s",
