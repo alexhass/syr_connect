@@ -719,7 +719,7 @@ async def test_button_reset_wrn_send_empty_for_lex10_and_safet(hass: HomeAssista
                 "id": "device_wrn1",
                 "name": "Device WRN1",
                 "project_id": "project1",
-                "status": {"getWRN": "02", "getVER": "Safe-T v1"},
+                "status": {"getWRN": "02", "getVER": "Safe-T+ V2.00e"},
             }
         ]
     }
