@@ -44,7 +44,7 @@ async def test_json_client_parses_fixture(fixture: str) -> None:
         status = await client.get_device_status("local")
 
     assert isinstance(status, dict)
-    # Sanity check: fixture contains at least one getXXX key
+    # Sanity check: fixture contains at least one getXYZ key
     assert any(k.startswith("get") for k in status.keys())
 
 

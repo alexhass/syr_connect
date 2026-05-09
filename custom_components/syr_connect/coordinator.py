@@ -369,7 +369,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 new_data = copy.deepcopy(self.data)
                 # Derive the read key from the write command.
                 # Convention: all writable SYR commands are named "setXYZ";
-                # the corresponding readable key is "getXXX".
+                # the corresponding readable key is "getXYZ".
                 # Guard explicitly so we never write a garbage key to the status dict.
                 if not command.startswith("set"):
                     _LOGGER.warning(

@@ -497,7 +497,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         """Return the state of the sensor.
 
         Wrapper around `_compute_native_value()` that caches the last
-        non-None value. If the API omits the `getXXX` field (i.e. returns
+        non-None value. If the API omits the `getXYZ` field (i.e. returns
         `None`), the last known non-None value is returned to avoid
         storing `None` in the entity state.
         """

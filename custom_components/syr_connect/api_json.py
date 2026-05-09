@@ -7,7 +7,7 @@ local JSON API at the URL pattern:
 
 The expected endpoints used here are:
 - GET {BASE_URL}/set/ADM/(2)f    -> login (side-effect required before /get/all)
-- GET {BASE_URL}/get/all         -> returns a flat JSON object with getXXX keys
+- GET {BASE_URL}/get/all         -> returns a flat JSON object with getXYZ keys
 - GET {BASE_URL}/get/{key}       -> returns single value: {"get{key}": value}
 
 Known API error codes in responses:
@@ -534,7 +534,7 @@ class SyrConnectJsonAPI:
                 status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
 
             # --- Return Status Dictionary ---
-            # The JSON API returns a flat dict with getXXX keys (getSRN, getAB, etc.)
+            # The JSON API returns a flat dict with getXYZ keys (getSRN, getAB, etc.)
             # Return as-is so the rest of the integration can process it like XML parser output
             _LOGGER.debug("JSON API: Returning status with %d keys for device_id=%s", len(status), device_id)
             return dict(status)

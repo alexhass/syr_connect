@@ -80,7 +80,7 @@ async def async_setup_entry(
         created_commands: set[str] = set()
 
         for command, _name in action_buttons:
-            # Derive the corresponding "getXXX" key from the command name
+            # Derive the corresponding "getXYZ" key from the command name
             # (e.g. 'setALA' -> 'getALA') and skip if it's not present
             # in the device status.
             get_key = "get" + command[3:]
@@ -178,7 +178,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         Reset buttons (`setALA`, `setNOT`, `setWRN`) perform additional
         validation before triggering a reset: they check the device's
-        reported `getXXX` value and only send a model-appropriate reset
+        reported `getXYZ` value and only send a model-appropriate reset
         payload when a code is present.
 
         Raises:
@@ -212,7 +212,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 return
 
             # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
-            # corresponding getXXX value is neither "FF" nor empty.
+            # corresponding getXYZ value is neither "FF" nor empty.
             if self._command in ("setALA", "setNOT", "setWRN"):
                 # Determine corresponding get key
                 if self._command == "setALA":
