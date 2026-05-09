@@ -857,7 +857,11 @@
         "name": "Volume in zelfleerfase"
       },
       "getsre": {
-        "name": "Regeneratie actief"
+        "name": "Regeneratie actief",
+        "state": {
+          "0": "Niet actief",
+          "1": "Actief"
+        }
       },
       "getsrh": {
         "name": "Volgend halfjaarlijks onderhoud"

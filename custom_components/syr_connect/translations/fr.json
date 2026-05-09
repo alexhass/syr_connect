@@ -857,7 +857,11 @@
         "name": "Volume en phase d'apprentissage"
       },
       "getsre": {
-        "name": "Régénération active"
+        "name": "Régénération active",
+        "state": {
+          "0": "Non active",
+          "1": "Active"
+        }
       },
       "getsrh": {
         "name": "Prochaine maintenance semestrielle"

@@ -857,7 +857,11 @@
         "name": "Volumen en fase de autoaprendizaje"
       },
       "getsre": {
-        "name": "Regeneración activa"
+        "name": "Regeneración activa",
+        "state": {
+          "0": "No activa",
+          "1": "Activa"
+        }
       },
       "getsrh": {
         "name": "Próximo mantenimiento semestral"

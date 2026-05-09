@@ -857,7 +857,11 @@
         "name": "Volume in self-learning phase"
       },
       "getsre": {
-        "name": "Regeneration active"
+        "name": "Regeneration active",
+        "state": {
+          "0": "Not running",
+          "1": "Running"
+        }
       },
       "getsrh": {
         "name": "Next semi-annual maintenance"

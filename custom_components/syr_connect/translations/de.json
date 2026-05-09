@@ -857,7 +857,11 @@
         "name": "Volumen in Selbstlernphase"
       },
       "getsre": {
-        "name": "Regeneration aktiv"
+        "name": "Regeneration aktiv",
+        "state": {
+          "0": "Läuft nicht",
+          "1": "Läuft"
+        }
       },
       "getsrh": {
         "name": "Nächste halbjährliche Wartung"

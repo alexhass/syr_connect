@@ -857,7 +857,11 @@
                 "name": "Objętość w fazie samouczenia"
             },
             "getsre": {
-                "name": "Regeneracja aktywna"
+                "name": "Regeneracja aktywna",
+                "state": {
+                    "0": "Nie działa",
+                    "1": "Działa"
+                }
             },
             "getsrh": {
                 "name": "Następna półroczna konserwacja"
