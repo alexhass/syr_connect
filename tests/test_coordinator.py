@@ -1683,3 +1683,87 @@ async def test_coordinator_device_available_when_sta_is_2(
         assert coordinator.data is not None
         device = coordinator.data["devices"][0]
         assert device["available"] is True
+
+
+async def test_async_clear_device_alarm_raises_for_xml_api(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """async_clear_device_alarm must raise HomeAssistantError when not using JSON API."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_device_status = AsyncMock(return_value={})
+        mock_api_class.return_value = mock_api
+
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.config_entry = setup_in_progress_config_entry
+        coordinator.data = {"devices": [{"id": "device1", "dclg": "dclg1", "status": {}}], "projects": []}
+        coordinator.api = mock_api
+
+        with pytest.raises(HomeAssistantError, match="only supported for the local JSON API"):
+            await coordinator.async_clear_device_alarm("device1")
+
+
+async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:
+    """async_clear_device_alarm succeeds with JSON API and schedules a delayed refresh."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_api = MagicMock()
+        mock_api.request_json_data = AsyncMock(return_value=None)
+        mock_json_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "pontosbase",
+            CONF_HOST: "192.168.1.100",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.api = mock_api
+
+        new_task = MagicMock()
+
+        def _close_and_return(coro):
+            _consume_coro_return_task(coro)
+            return new_task
+
+        with patch.object(hass, "async_create_task", side_effect=_close_and_return):
+            await coordinator.async_clear_device_alarm("device1")
+
+        mock_api.request_json_data.assert_called_once_with("clr/ala")
+        assert coordinator._pending_refresh_task is new_task
+
+
+async def test_async_clear_device_alarm_cancels_pending_task(hass: HomeAssistant) -> None:
+    """async_clear_device_alarm cancels an existing pending refresh task before scheduling a new one."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
+        mock_api = MagicMock()
+        mock_api.request_json_data = AsyncMock(return_value=None)
+        mock_json_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "pontosbase",
+            CONF_HOST: "192.168.1.100",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.api = mock_api
+
+        fake_pending = MagicMock()
+        fake_pending.done.return_value = False
+        fake_pending.cancel = MagicMock()
+        coordinator._pending_refresh_task = fake_pending
+
+        new_task = MagicMock()
+
+        def _close_and_return(coro):
+            _consume_coro_return_task(coro)
+            return new_task
+
+        with patch.object(hass, "async_create_task", side_effect=_close_and_return):
+            await coordinator.async_clear_device_alarm("device1")
+
+        fake_pending.cancel.assert_called_once()
+        assert coordinator._pending_refresh_task is new_task
