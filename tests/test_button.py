@@ -627,6 +627,80 @@ async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypa
 
     coordinator.async_set_device_value.assert_called_once_with("device3", "setALA", "FF")
 
+async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> None:
+    """Pontos Base (JSON API) clears alarm via /clr/ala, not setALA."""
+    data = {
+        "devices": [
+            {
+                "id": "device_pontos",
+                "name": "Device Pontos",
+                "project_id": "project1",
+                "status": {"getALA": "A5", "getVER": "PontosBase V1.31"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "project1", "setALA")
+    await button.async_press()
+
+    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos")
+    coordinator.async_set_device_value.assert_not_called()
+
+
+async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> None:
+    """SafeTech V4 (JSON API) clears alarm via /clr/ala, not setALA."""
+    data = {
+        "devices": [
+            {
+                "id": "device_stv4",
+                "name": "Device STv4",
+                "project_id": "project1",
+                "status": {"getALA": "A5", "getVER": "Safe-Tech V4.1"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "project1", "setALA")
+    await button.async_press()
+
+    coordinator.async_clear_device_alarm.assert_called_once_with("device_stv4")
+    coordinator.async_set_device_value.assert_not_called()
+
+
+async def test_button_reset_ala_clr_endpoint_not_used_for_xml_api(hass: HomeAssistant) -> None:
+    """Pontos Base model falls back to setALA/FF when async_clear_device_alarm raises (e.g. XML API)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_pontos_xml",
+                "name": "Device Pontos XML",
+                "project_id": "project1",
+                "status": {"getALA": "A5", "getVER": "PontosBase V1.31"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    # Simulate XML API: async_clear_device_alarm raises HomeAssistantError
+    coordinator.async_clear_device_alarm = AsyncMock(
+        side_effect=HomeAssistantError("Clear alarm via /clr/ala is only supported for the local JSON API")
+    )
+
+    button = SyrConnectButton(coordinator, "device_pontos_xml", "Device Pontos XML", "project1", "setALA")
+    # HomeAssistantError from async_clear_device_alarm propagates (not caught by button logic)
+    with pytest.raises(HomeAssistantError):
+        await button.async_press()
+
+    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos_xml")
+    coordinator.async_set_device_value.assert_not_called()
+
+
 async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
     """setNOT raises when no reset required (missing/empty getNOT)."""
     data = {

@@ -25,7 +25,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_SENSOR_EXCLUDED
+from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_MODEL_COMMAND_CLR_ALA, _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import build_device_info, build_entity_id, registry_cleanup
@@ -231,6 +231,18 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     if device["id"] == self._device_id:
                         status = device.get("status", {})
                         break
+
+                # Some older JSON API models (Pontos Base, SafeTech V4) use a dedicated
+                # /clr/ala HTTP endpoint instead of the standard setALA set-command.
+                if self._command == "setALA":
+                    try:
+                        model = detect_model(status or {}).get("name", "")
+                    except (ValueError, KeyError, AttributeError, TypeError) as err:
+                        _LOGGER.debug("Failed to detect model for /clr/ala check: %s", err)
+                        model = None
+                    if isinstance(model, str) and model in _SYR_CONNECT_MODEL_COMMAND_CLR_ALA:
+                        await coordinator.async_clear_device_alarm(self._device_id)
+                        return
 
                 # Read the raw reported value for the corresponding get key
                 # (e.g. `getALA`, `getNOT`, `getWRN`). `raw` may be `None`, a

@@ -422,6 +422,32 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
 
+    async def async_clear_device_alarm(self, device_id: str) -> None:
+        """Clear active alarm via the /clr/ala endpoint (JSON API only).
+
+        Used by device models (Pontos Base, SafeTech V4) that expose a
+        dedicated clear-alarm HTTP endpoint instead of the standard setALA
+        set-command.
+
+        Args:
+            device_id: The device ID (serial number) — used for logging
+
+        Raises:
+            HomeAssistantError: If not using the JSON API or if the request fails
+        """
+        if not isinstance(self.api, SyrConnectJsonAPI):
+            raise HomeAssistantError(
+                "Clear alarm via /clr/ala is only supported for the local JSON API"
+            )
+        await self.api.request_json_data("clr/ala")
+        _LOGGER.info("Coordinator: Cleared alarm via /clr/ala for device %s", device_id)
+        try:
+            if self._pending_refresh_task and not self._pending_refresh_task.done():
+                self._pending_refresh_task.cancel()
+            self._pending_refresh_task = self.hass.async_create_task(self._delayed_refresh())
+        except Exception:  # pragma: no cover - defensive
+            _LOGGER.exception("Failed to schedule delayed refresh after clear alarm")
+
     async def _delayed_refresh(self, delay: int = _SYR_CONNECT_DELAYED_REFRESH_SECONDS) -> None:
         """Wait `delay` seconds then refresh coordinator data.
 
