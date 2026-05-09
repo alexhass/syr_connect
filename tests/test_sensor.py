@@ -4405,30 +4405,21 @@ async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -
 
 
 async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
-    """Battery level icons reflect percentage for SafeFloor."""
+    """In percentage mode device_class=BATTERY is set; icon is None so HA handles it automatically."""
+    from homeassistant.components.sensor import SensorDeviceClass
+
     base_data = {
         "id": "device1",
         "name": "Device 1",
         "project_id": "project1",
         "status": {"getTYP": "120"},
     }
-    for bat_pct, expected_icon in [
-        ("95", "mdi:battery"),
-        ("85", "mdi:battery-90"),
-        ("75", "mdi:battery-80"),
-        ("65", "mdi:battery-70"),
-        ("55", "mdi:battery-60"),
-        ("45", "mdi:battery-50"),
-        ("35", "mdi:battery-40"),
-        ("25", "mdi:battery-30"),
-        ("15", "mdi:battery-20"),
-        ("5", "mdi:battery-alert-variant-outline"),
-        ("0", "mdi:battery-alert-variant-outline"),
-    ]:
+    for bat_pct in ["95", "85", "75", "65", "55", "45", "35", "25", "15", "5", "0"]:
         data = {"devices": [{**base_data, "status": {**base_data["status"], "getBAT": bat_pct}}]}
         coordinator = _build_coordinator(hass, data)
         bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
-        assert bat.icon == expected_icon, f"Expected {expected_icon} for {bat_pct}%"
+        assert bat.device_class == SensorDeviceClass.BATTERY
+        assert bat.icon is None, f"Expected None for {bat_pct}% — HA renders icons via device_class"
 
 
 async def test_sensor_getbat_voltage_device_unaffected(hass: HomeAssistant) -> None:

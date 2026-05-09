@@ -404,26 +404,21 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 return "mdi:bell-outline"
             return "mdi:bell-alert-outline"
 
-        # Dynamic icon for battery voltage/level (getBAT)
+        # Dynamic icon for battery (getBAT)
+        # In percentage mode device_class=BATTERY is set, so HA's frontend handles icons
+        # automatically - returning None delegates icon rendering to the frontend.
+        # In voltage mode: only override when voltage is 0 (dead battery alert).
         if self._sensor_key == "getBAT":
+            if self._attr_device_class == SensorDeviceClass.BATTERY:
+                return None
             val = self.native_value
-            if val is None:
-                return self._base_icon
-            try:
-                battery_value = float(str(val).strip())
-                # For percentage mode show level-appropriate icon
-                if self._attr_native_unit_of_measurement == PERCENTAGE:
-                    battery_level = round(battery_value / 10) * 10
-                    if battery_level == 100:
-                        return "mdi:battery"
-                    if battery_level > 0:
-                        return f"mdi:battery-{battery_level}"
-                    return "mdi:battery-alert-variant-outline"
-                # For voltage mode: alert on zero, otherwise use base icon
-                if battery_value == 0:
-                    return "mdi:battery-alert-variant-outline"
-            except (TypeError, ValueError):
-                pass
+            if val is not None:
+                try:
+                    if float(str(val).strip()) == 0:
+                        # Dead battery alert
+                        return "mdi:battery-alert-variant-outline"
+                except (TypeError, ValueError):
+                    pass
 
         # Dynamic icon for pressure sensor availability (getPST)
         if self._sensor_key == "getPST":
