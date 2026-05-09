@@ -3670,7 +3670,10 @@ async def test_sensor_icon_sre_inactive(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
 
     # Should return autorenew icon
-    assert sensor.icon == "mdi:autorenew"(hass: HomeAssistant) -> None:
+    assert sensor.icon == "mdi:autorenew"
+
+
+async def test_getsre_icon_true_and_false(hass: HomeAssistant) -> None:
     """Test getRG icon with datetime value."""
     dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
     data = {
