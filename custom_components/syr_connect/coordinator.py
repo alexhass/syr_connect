@@ -361,19 +361,19 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # the new value immediately, then attempt to set it via the API and
         # schedule a background refresh to retrieve authoritative data.
         # Ensure get_key is always defined to avoid NameError if command
-        # does not follow the 'setXXX' convention and code later checks it.
+        # does not follow the 'setXYZ' convention and code later checks it.
         get_key: str | None = None
 
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
                 # Derive the read key from the write command.
-                # Convention: all writable SYR commands are named "setXXX";
+                # Convention: all writable SYR commands are named "setXYZ";
                 # the corresponding readable key is "getXXX".
                 # Guard explicitly so we never write a garbage key to the status dict.
                 if not command.startswith("set"):
                     _LOGGER.warning(
-                        "Command '%s' does not follow the 'setXXX' convention; "
+                        "Command '%s' does not follow the 'setXYZ' convention; "
                         "skipping optimistic status update for device %s",
                         command,
                         device_id,
