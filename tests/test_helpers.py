@@ -950,7 +950,7 @@ def test_get_sensor_ala_map_safefloor_known_codes() -> None:
         assert mapped == "no_alarm" and raw == "A0X0000"
 
         mapped, raw = get_sensor_ala_map({}, "A0X0004")
-        assert mapped == "alarm_leakage_detected" and raw == "A0X0004"
+        assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
 
 
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
