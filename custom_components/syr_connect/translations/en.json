@@ -68,9 +68,6 @@
           "false": "Disabled",
           "true": "Enabled"
         }
-      },
-      "getsre": {
-        "name": "Regeneration active"
       }
     },
     "button": {
@@ -858,6 +855,9 @@
       },
       "getslv": {
         "name": "Volume in self-learning phase"
+      },
+      "getsre": {
+        "name": "Regeneration active"
       },
       "getsrh": {
         "name": "Next semi-annual maintenance"

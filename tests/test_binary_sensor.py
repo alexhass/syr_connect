@@ -38,7 +38,7 @@ async def test_binary_sensor_is_on_numeric(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "1",
+                    "getBUZ": "1",
                 },
             }
         ]
@@ -46,7 +46,7 @@ async def test_binary_sensor_is_on_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getSRE", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     assert sensor.is_on is True
@@ -61,7 +61,7 @@ async def test_binary_sensor_is_off_numeric(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "0",
+                    "getBUZ": "0",
                 },
             }
         ]
@@ -69,7 +69,7 @@ async def test_binary_sensor_is_off_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getSRE", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     assert sensor.is_on is False
@@ -85,7 +85,7 @@ async def test_binary_sensor_available(hass: HomeAssistant) -> None:
                 "project_id": "project1",
                 "available": True,
                 "status": {
-                    "getSRE": "1",
+                    "getBUZ": "1",
                 },
             }
         ]
@@ -93,7 +93,7 @@ async def test_binary_sensor_available(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getSRE", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     assert sensor.available is True
@@ -108,7 +108,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "1",  # Regeneration active
+                    "getBUZ": "1",  # Buzzer on/off
                 },
             }
         ]
@@ -120,7 +120,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # getSRE is in _SYR_CONNECT_SENSOR_BINARY and is no longer excluded — one entity expected.
+    # getBUZ is in _SYR_CONNECT_SENSOR_BINARY and is not excluded — one entity expected.
     assert len(entities) == 1
 
 
@@ -455,8 +455,8 @@ async def test_async_setup_entry_registry_cleanup(hass: HomeAssistant, create_mo
     entry_to_remove = registry.async_get_or_create(
         "binary_sensor",
         "syr_connect",
-        "device1_getSRE",  # getSRE is a known binary sensor key — should NOT be cleaned up
-        suggested_object_id="device1_getsre",
+        "device1_getBUZ",  # getBUZ is a known binary sensor key — should NOT be cleaned up
+        suggested_object_id="device1_getbuz",
     )
 
     data = {
@@ -543,7 +543,7 @@ async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "1",
+                    "getBUZ": "1",
                 },
             }
         ]
@@ -551,9 +551,9 @@ async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
-    # getSRE has an icon defined in _SYR_CONNECT_SENSOR_ICON
+    # getBUZ has an icon defined in _SYR_CONNECT_SENSOR_ICON
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getSRE", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     # Should have icon set from const

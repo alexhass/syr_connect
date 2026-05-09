@@ -68,9 +68,6 @@
           "false": "Deaktiviert",
           "true": "Aktiviert"
         }
-      },
-      "getsre": {
-        "name": "Regeneration aktiv"
       }
     },
     "button": {
@@ -858,6 +855,9 @@
       },
       "getslv": {
         "name": "Volumen in Selbstlernphase"
+      },
+      "getsre": {
+        "name": "Regeneration aktiv"
       },
       "getsrh": {
         "name": "Nächste halbjährliche Wartung"

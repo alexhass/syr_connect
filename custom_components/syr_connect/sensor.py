@@ -444,13 +444,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
             except (ValueError, TypeError):
                 pass
 
-        # Dynamic icon for regeneration active sensor
-        if self._sensor_key == "getSRE":
-            value = self.native_value
-            if value and str(value).lower() in ("1", "true", "on", "active"):
-                return "mdi:autorenew"
-            return "mdi:timer-outline"
-
         # Dynamic icon for regeneration relay sensors (getRG1/getRG2/getRG3)
         if self._sensor_key in ("getRG1", "getRG2", "getRG3"):
             try:

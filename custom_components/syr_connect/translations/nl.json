@@ -68,9 +68,6 @@
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
-      },
-      "getsre": {
-        "name": "Regeneratie actief"
       }
     },
     "button": {
@@ -858,6 +855,9 @@
       },
       "getslv": {
         "name": "Volume in zelfleerfase"
+      },
+      "getsre": {
+        "name": "Regeneratie actief"
       },
       "getsrh": {
         "name": "Volgend halfjaarlijks onderhoud"

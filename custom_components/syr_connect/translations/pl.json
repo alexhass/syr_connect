@@ -68,9 +68,6 @@
                     "false": "Wyłączony",
                     "true": "Włączony"
                 }
-            },
-            "getsre": {
-                "name": "Regeneracja aktywna"
             }
         },
         "button": {
@@ -858,6 +855,9 @@
             },
             "getslv": {
                 "name": "Objętość w fazie samouczenia"
+            },
+            "getsre": {
+                "name": "Regeneracja aktywna"
             },
             "getsrh": {
                 "name": "Następna półroczna konserwacja"

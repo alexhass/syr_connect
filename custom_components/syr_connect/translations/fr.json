@@ -68,9 +68,6 @@
           "false": "Désactivé",
           "true": "Activé"
         }
-      },
-      "getsre": {
-        "name": "Régénération active"
       }
     },
     "button": {
@@ -858,6 +855,9 @@
       },
       "getslv": {
         "name": "Volume en phase d'apprentissage"
+      },
+      "getsre": {
+        "name": "Régénération active"
       },
       "getsrh": {
         "name": "Prochaine maintenance semestrielle"

@@ -167,7 +167,6 @@ _SYR_CONNECT_SENSOR_WRN_CODES = {
 
 # Binary sensors mapping with their device classes - internal
 _SYR_CONNECT_SENSOR_BINARY = {
-    "getSRE": BinarySensorDeviceClass.RUNNING,  # Regeneration active
     "getBUZ": BinarySensorDeviceClass.POWER,    # Buzzer on/off
 }
 
@@ -597,7 +596,6 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
 
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
-    "getSRE",   # Regeneration active
     "getBUZ",   # Buzzer on/off
 }
 
