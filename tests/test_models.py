@@ -173,14 +173,14 @@ def test_ver_contains_synthetic():
 def test_signature_priority_first_match_wins():
     """When multiple signatures could match, first one wins."""
     # LEXplus10S has exact getCNA match, should win even if other conditions exist
-    flat = {"getCNA": "LEXplus10S", "getVER": "NSS-1.0"}
+    flat = {"getCNA": "LEXplus10S", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
     assert result["name"] == "lexplus10s"
 
 
 def test_neosoft5000_vkeys_match_with_version():
     """NeoSoft 5000 requires 2 v_keys and NSS version prefix."""
-    flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS-2.0"}
+    flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
     assert result["name"] == "neosoft5000"
     assert result["display_name"] == "NeoSoft 5000 Connect"
@@ -188,7 +188,7 @@ def test_neosoft5000_vkeys_match_with_version():
 
 def test_version_match_prefix_only():
     """Test version matching with only ver_prefix."""
-    flat = {"getVER": "Safe-T-Plus-1.2.3"}
+    flat = {"getVER": "Safe-T+ V2.00e"}
     result = detect_model(flat)
     assert result["name"] == "safetplus"
 
@@ -239,14 +239,14 @@ def test_lexplus10sl_with_exact_cna():
 
 def test_neosoft_base_path():
     """NeoSoft models should return 'neosoft' as base_path."""
-    flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS-3.0"}
+    flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
     assert result["base_path"] == "/neosoft"
 
 
 def test_safetechplus_base_path():
     """Safe-Tech+ should return 'trio' as base_path."""
-    flat = {"getSRN": "112AAA22222", "getVER": "Safe-Tech-v2"}
+    flat = {"getSRN": "112AAA22222", "getVER": "Safe-T+ V2.00e"}
     result = detect_model(flat)
     assert result["name"] == "safetechplus"
     assert result["base_path"] == "/trio"
@@ -630,7 +630,7 @@ def test_manufacturer_syr_via_ver_prefix():
     for ver, expected_name in [
         ("Safe-Tech V4.1", "safetechv4"),
         ("Safe-T+ V2.00e", "safetplus"),
-        ("NSS-2.0", "neosoft5000"),
+        ("NSS.V.2.36", "neosoft5000"),
     ]:
         flat = {"getVER": ver}
         if expected_name == "neosoft5000":
@@ -671,8 +671,8 @@ def test_manufacturer_field_present_in_all_return_paths():
     test_cases = [
         {"getCNA": "LEXplus10"},         # cna_equals path
         {"getSRN": "113AAA00001"},        # srn_prefix path
-        {"getVER": "Safe-T-1.0"},         # ver_prefix path
-        {"getRE1": "1", "getRE2": "2", "getVER": "NSS-3.0"},  # v_keys path
+        {"getVER": "Safe-T+ V2.00e"},         # ver_prefix path
+        {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"},  # v_keys path
         {},                               # unknown fallback
     ]
     for flat in test_cases:
