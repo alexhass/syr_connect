@@ -16,6 +16,7 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -1710,17 +1711,14 @@ async def test_async_clear_device_alarm_raises_for_xml_api(
 
 async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:
     """async_clear_device_alarm succeeds with JSON API and schedules a delayed refresh."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
-        mock_api = MagicMock()
-        mock_api.request_json_data = AsyncMock(return_value=None)
-        mock_json_api_class.return_value = mock_api
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
+        mock_xml_api_class.return_value = MagicMock()
 
-        config_data = {
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "pontosbase",
-            CONF_HOST: "192.168.1.100",
-        }
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
         coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+
+        mock_api = MagicMock(spec=SyrConnectJsonAPI)
+        mock_api.request_json_data = AsyncMock(return_value=None)
         coordinator.api = mock_api
 
         new_task = MagicMock()
@@ -1738,17 +1736,14 @@ async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) ->
 
 async def test_async_clear_device_alarm_cancels_pending_task(hass: HomeAssistant) -> None:
     """async_clear_device_alarm cancels an existing pending refresh task before scheduling a new one."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
-        mock_api = MagicMock()
-        mock_api.request_json_data = AsyncMock(return_value=None)
-        mock_json_api_class.return_value = mock_api
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
+        mock_xml_api_class.return_value = MagicMock()
 
-        config_data = {
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "pontosbase",
-            CONF_HOST: "192.168.1.100",
-        }
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
         coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+
+        mock_api = MagicMock(spec=SyrConnectJsonAPI)
+        mock_api.request_json_data = AsyncMock(return_value=None)
         coordinator.api = mock_api
 
         fake_pending = MagicMock()
