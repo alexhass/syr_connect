@@ -629,7 +629,7 @@ def test_manufacturer_syr_via_ver_prefix():
     """SYR devices detected by ver_prefix should return manufacturer 'SYR'."""
     for ver, expected_name in [
         ("Safe-Tech V4.1", "safetechv4"),
-        ("Safe-T-Plus-1.0", "safetplus"),
+        ("Safe-T+ V2.00e", "safetplus"),
         ("NSS-2.0", "neosoft5000"),
     ]:
         flat = {"getVER": ver}
