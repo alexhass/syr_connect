@@ -38,7 +38,6 @@ _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # API URLs (internal)
-_SYR_CONNECT_CONFIGURATION_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de/WebServices"
 _SYR_CONNECT_API_XML_LOGIN_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/Api/SyrApiService.svc/REST/GetProjects"
 _SYR_CONNECT_API_XML_DEVICE_LIST_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"

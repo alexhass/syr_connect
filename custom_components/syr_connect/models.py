@@ -14,6 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 # Returned by detect_model when no signature matches or input is invalid.
 UNKNOWN_MODEL: dict[str, Any] = {
     "base_path": None,
+    "configuration_url": "https://syrconnect.de/",
     "display_name": "Unknown model",
     "manufacturer": "Unknown",
     "name": "unknown",
@@ -43,6 +44,7 @@ UNKNOWN_MODEL: dict[str, Any] = {
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": "/neosoft",
+        "configuration_url": "https://api.conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT",
         "manufacturer": "CONEL",
         "name": "conelclearprosoft",
@@ -51,6 +53,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 # TODO: Untested model
 #    {
 #        "base_path": "/neosoft",
+#        "configuration_url": "https://api.conelclearpro.de/",
 #        "display_name": "CLEAR PRO SOFT TWIN",
 #        "manufacturer": "CONEL",
 #        "name": "conelclearprosofttwin",
@@ -58,6 +61,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 #    },
     {
         "base_path": "/pontos-base",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Pontos Base",
         "manufacturer": "Hansgrohe",
         "name": "pontosbase",
@@ -65,6 +69,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeFloor Connect",
         "manufacturer": "SYR",
         "name": "safefloor",
@@ -74,6 +79,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEXplus10",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 Connect",
         "manufacturer": "SYR",
         "name": "lexplus10",
@@ -82,6 +88,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEXplus10S",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 S Connect",
         "manufacturer": "SYR",
         "name": "lexplus10s",
@@ -90,6 +97,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEXplus10SL",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 SL Connect",
         "manufacturer": "SYR",
         "name": "lexplus10sl",
@@ -98,6 +106,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX10",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX10 Connect",
         "manufacturer": "SYR",
         "name": "lex10",
@@ -106,6 +115,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX20",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX20 Connect",
         "manufacturer": "SYR",
         "name": "lex20",
@@ -114,6 +124,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX30",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX30 Connect",
         "manufacturer": "SYR",
         "name": "lex30",
@@ -122,6 +133,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX40",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX40 Connect",
         "manufacturer": "SYR",
         "name": "lex40",
@@ -130,6 +142,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX60",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX60 Connect",
         "manufacturer": "SYR",
         "name": "lex60",
@@ -138,6 +151,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX80",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX80 Connect",
         "manufacturer": "SYR",
         "name": "lex80",
@@ -146,6 +160,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX100",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX100 Connect",
         "manufacturer": "SYR",
         "name": "lex100",
@@ -153,6 +168,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/neosoft",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 2500 Connect",
         "manufacturer": "SYR",
         "name": "neosoft2500",
@@ -160,6 +176,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/neosoft",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 5000 Connect",
         "manufacturer": "SYR",
         "name": "neosoft5000",
@@ -170,6 +187,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/trio",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Connect",
         "manufacturer": "SYR",
         "name": "safetech",
@@ -179,6 +197,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/trio",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Plus Connect",
         "manufacturer": "SYR",
         "name": "safetechplus",
@@ -186,6 +205,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech V4 Connect",
         "manufacturer": "SYR",
         "name": "safetechv4",
@@ -193,6 +213,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Safe-T+ Connect",
         "manufacturer": "SYR",
         "name": "safetplus",
@@ -200,6 +221,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/trio",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Leak Protection Module A25",
         "manufacturer": "Sanibel",
         "name": "sanibelleakprotect",
@@ -207,6 +229,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/neosoft",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Softwater UNO A25",
         "manufacturer": "Sanibel",
         "name": "sanibelsoftwateruno",
@@ -214,6 +237,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/trio",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Trio DFR/LS Connect",
         "manufacturer": "SYR",
         "name": "trio",
@@ -226,7 +250,7 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
-        dict: {"name": ..., "display_name": ..., "base_path": ...}
+        dict: {"name": ..., "display_name": ..., "base_path": ..., "manufacturer": ..., "configuration_url": ...}
         If no signature matches, returns an 'unknown' model dict.
 
     Detection priority (highest to lowest):
@@ -295,8 +319,9 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             name = sig.get("name")
             display = sig.get("display_name", name)
             manufacturer = sig.get("manufacturer")
+            configuration_url = sig.get("configuration_url")
             _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
@@ -306,8 +331,9 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             name = sig.get("name")
             display = sig.get("display_name", name)
             manufacturer = sig.get("manufacturer")
+            configuration_url = sig.get("configuration_url")
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
@@ -333,20 +359,23 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
             manufacturer = sig.get("manufacturer")
+            configuration_url = sig.get("configuration_url")
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
 
         # If only attribute equality is required and already matched, return this model.
         if sig.get("attrs_equals"):
             manufacturer = sig.get("manufacturer")
+            configuration_url = sig.get("configuration_url")
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
 
         # If version prefix or contains is specified and matches, return this model.
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
             manufacturer = sig.get("manufacturer")
+            configuration_url = sig.get("configuration_url")
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])

@@ -14,7 +14,6 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
-    _SYR_CONNECT_CONFIGURATION_URL,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
     _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
@@ -129,6 +128,7 @@ def build_device_info(
     hw_version = None
     mac = None
     connections = set()
+    configuration_url: str | None = None
 
     # Extract device information from coordinator data
     for device in coordinator_data.get('devices', []):
@@ -141,6 +141,7 @@ def build_device_info(
             if display_name:
                 model = str(display_name)
             manufacturer = detected.get("manufacturer") or None
+            configuration_url = detected.get("configuration_url")
 
             # Get software version from getVER
             if 'getVER' in status and status['getVER']:
@@ -174,7 +175,7 @@ def build_device_info(
         hw_version=hw_version,
         serial_number=device_id,
         connections=connections if connections else set(),
-        configuration_url=_SYR_CONNECT_CONFIGURATION_URL,
+        configuration_url=configuration_url,
     )
 
 
