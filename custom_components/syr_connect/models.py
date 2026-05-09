@@ -196,7 +196,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "display_name": "Safe-T+ Connect",
         "manufacturer": "SYR",
         "name": "safetplus",
-        "ver_prefix": "Safe-T",
+        "ver_prefix": "Safe-T+",
     },
     {
         "base_path": "/trio",
