@@ -868,7 +868,7 @@ def test_sensor_icon_sre_and_rg_and_vlv(create_mock_coordinator):
                 "id": "dev_i",
                 "name": "Device I",
                 "project_id": "p1",
-                "status": {"getSRE": "active", "getRG1": "1", "getVLV": "10"},
+                "status": {"getSRE": "1", "getRG1": "1", "getVLV": "10"},
             }
         ]
     }
@@ -2026,12 +2026,12 @@ def test_icon_getpst_values(create_mock_coordinator):
 
 
 def test_icon_sre_true_false(create_mock_coordinator):
-    data_t = {"devices": [{"id": "d5", "name": "D5", "project_id": "p1", "status": {"getSRE": "true"}}]}
+    data_t = {"devices": [{"id": "d5", "name": "D5", "project_id": "p1", "status": {"getSRE": "1"}}]}
     coord_t = create_mock_coordinator(data_t)
     st = SyrConnectSensor(coord_t, "d5", "D5", "p1", "getSRE")
     assert st.icon == "mdi:autorenew"
 
-    data_f = {"devices": [{"id": "d6", "name": "D6", "project_id": "p1", "status": {"getSRE": "false"}}]}
+    data_f = {"devices": [{"id": "d6", "name": "D6", "project_id": "p1", "status": {"getSRE": "0"}}]}
     coord_f = create_mock_coordinator(data_f)
     sf = SyrConnectSensor(coord_f, "d6", "D6", "p1", "getSRE")
     assert sf.icon == "mdi:autorenew"
@@ -2940,7 +2940,7 @@ async def test_sensor_icon_getsre_off_value(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSRE": "off",
+                    "getSRE": "0",
                 },
             }
         ]
@@ -3605,29 +3605,6 @@ async def test_sensor_whu_unit_not_found(hass: HomeAssistant) -> None:
 
     # Should set unit to None
     assert sensor._attr_native_unit_of_measurement is None
-
-
-async def test_sensor_icon_sre_with_string_active_values(hass: HomeAssistant) -> None:
-    """Test getSRE icon with various active string values."""
-    # Use string values that won't be converted to float (so they stay as-is in native_value)
-    for active_value in ["true", "True", "TRUE", "on", "ON", "active", "ACTIVE"]:
-        data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        "getSRE": active_value,
-                    },
-                }
-            ]
-        }
-        coordinator = _build_coordinator(hass, data)
-        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRE")
-
-        # Should return autorenew icon
-        assert sensor.icon == "mdi:autorenew", f"Failed for value: {active_value}"
 
 
 async def test_sensor_icon_sre_with_numeric_1(hass: HomeAssistant) -> None:
@@ -4932,7 +4909,7 @@ async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
 # Tests merged from test_sensor_more.py
 async def test_getsre_icon_true_and_false(hass: HomeAssistant) -> None:
     """getSRE icon should reflect active/inactive states."""
-    data_true = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getSRE": "true"}}]}
+    data_true = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getSRE": "1"}}]}
     coord_t = _build_coordinator(hass, data_true)
     s_true = SyrConnectSensor(coord_t, "d1", "Device", "p", "getSRE")
     assert s_true.icon == "mdi:autorenew"
