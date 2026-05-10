@@ -27,6 +27,7 @@
       "api_xml": {
         "data": {
           "password": "Password",
+          "service": "Servizio cloud",
           "username": "Nome utente"
         },
         "description": "Inserisci le credenziali dell'app SYR Connect per l'accesso cloud",
@@ -45,6 +46,7 @@
           "host": "Nome host o indirizzo IP",
           "model": "Modello del dispositivo",
           "password": "Password",
+          "service": "Servizio cloud",
           "username": "Nome utente"
         },
         "description": "Aggiorna la configurazione di SYR Connect.",

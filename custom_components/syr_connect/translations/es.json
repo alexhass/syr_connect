@@ -27,6 +27,7 @@
       "api_xml": {
         "data": {
           "password": "Contraseña",
+          "service": "Servicio en la nube",
           "username": "Nombre de usuario"
         },
         "description": "Introduzca sus credenciales de la aplicación SYR Connect para acceso en la nube",
@@ -45,6 +46,7 @@
           "host": "Nombre de host o dirección IP",
           "model": "Modelo del dispositivo",
           "password": "Contraseña",
+          "service": "Servicio en la nube",
           "username": "Nombre de usuario"
         },
         "description": "Actualice su configuración de SYR Connect.",

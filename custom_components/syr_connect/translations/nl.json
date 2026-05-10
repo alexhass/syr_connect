@@ -27,6 +27,7 @@
       "api_xml": {
         "data": {
           "password": "Wachtwoord",
+          "service": "Cloudservice",
           "username": "Gebruikersnaam"
         },
         "description": "Voer uw SYR Connect App-aanmeldingsgegevens in voor cloudtoegang",
@@ -45,6 +46,7 @@
           "host": "Hostnaam of IP-adres",
           "model": "Apparaatmodel",
           "password": "Wachtwoord",
+          "service": "Cloudservice",
           "username": "Gebruikersnaam"
         },
         "description": "Werk uw SYR Connect-instellingen bij.",

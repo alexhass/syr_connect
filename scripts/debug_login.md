@@ -3,7 +3,7 @@
 ## Options
 
 | Option | Default | Description |
-|---|---|---|
+| --- | --- | --- |
 | `--username EMAIL` | *(required)* | SYR Connect account e-mail |
 | `--password PASSWORD` | *(required)* | Account password |
 | `--show-password` | — | Show password in log output (default: masked as `***`) |

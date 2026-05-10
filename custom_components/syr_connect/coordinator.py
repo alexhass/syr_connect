@@ -21,12 +21,14 @@ from homeassistant.helpers.update_coordinator import (
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
+    _SYR_CONNECT_API_SERVICES,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
     CONF_LOGIN_REQUIRED,
     CONF_MODEL,
+    CONF_SERVICE,
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
@@ -110,7 +112,28 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Cloud XML API (default)
             username = config_data[CONF_USERNAME]
             password = config_data[CONF_PASSWORD]
-            self.api = SyrConnectXmlAPI(session, username, password)
+
+            # Look up service parameters from CONF_SERVICE (cf_bundle_identifier)
+            api_app_name = None
+            api_base_url = None
+            cf_bundle_identifier = None
+            conf_service = config_data.get(CONF_SERVICE)
+            if conf_service:
+                for svc in _SYR_CONNECT_API_SERVICES:
+                    if svc["cf_bundle_identifier"] == conf_service:
+                        api_app_name = svc["api_app_name"]
+                        api_base_url = svc["api_base_url"]
+                        cf_bundle_identifier = svc["cf_bundle_identifier"]
+                        break
+
+            self.api = SyrConnectXmlAPI(
+                session,
+                username,
+                password,
+                api_app_name=api_app_name,
+                api_base_url=api_base_url,
+                cf_bundle_identifier=cf_bundle_identifier,
+            )
             self._username = username
             _LOGGER.info("Coordinator initialized with XML API (username=%s)", username)
 

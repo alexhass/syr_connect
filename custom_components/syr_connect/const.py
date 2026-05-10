@@ -22,6 +22,7 @@ CONF_API_TYPE = "api_type"
 CONF_HOST = "host"
 CONF_MODEL = "model"
 CONF_LOGIN_REQUIRED = "login_required"
+CONF_SERVICE = "service"
 
 # API type values
 API_TYPE_XML = "xml"
@@ -38,12 +39,12 @@ _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # API URLs (internal)
-_SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de"
-_SYR_CONNECT_API_XML_LOGIN_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/WebServices/Api/SyrApiService.svc/REST/GetProjects"
-_SYR_CONNECT_API_XML_DEVICE_LIST_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
-_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
-_SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
-_SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = f"{_SYR_CONNECT_API_XML_BASE_URL}/WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+_SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de/"
+_SYR_CONNECT_API_XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"
+_SYR_CONNECT_API_XML_DEVICE_LIST_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
+_SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
+_SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
 
 # Encryption keys (from original adapter) - internal
 _SYR_CONNECT_CLIENT_ENCRYPTION_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
@@ -55,19 +56,40 @@ _SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 
 # Device info - internal
 # CF = Core Foundation (iOS/macOS framework)
+# Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
 _SYR_CONNECT_CLIENT_OS_LANGUAGE = "de-DE"
 _SYR_CONNECT_CLIENT_OS_NAME = "iOS"
 _SYR_CONNECT_CLIENT_OS_VERSION = "15.8.3"
 _SYR_CONNECT_CLIENT_OS_MODEL = "iPhone"
 _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION = "3.7.10"
 _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
-_SYR_CONNECT_CLIENT_APP_VERSION = f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}-{_SYR_CONNECT_CLIENT_OS_NAME}-{_SYR_CONNECT_CLIENT_OS_MODEL}-{_SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER}"
+_SYR_CONNECT_CLIENT_APP_NAME = "SYR Connect"
+_SYR_CONNECT_CLIENT_APP_VERSION = f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}-{_SYR_CONNECT_CLIENT_OS_NAME}-{_SYR_CONNECT_CLIENT_OS_MODEL}-{_SYR_CONNECT_CLIENT_OS_VERSION}-{_SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER}"
 
+# Example: "SYR/400 CFNetwork/1335.0.3.4 Darwin/21.6.0"
 _SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME = "SYR"
 _SYR_CONNECT_CLIENT_SYR_BUNDLE_VERSION = "400"
 _SYR_CONNECT_CLIENT_OS_FRAMEWORK = "CFNetwork/1335.0.3.4"
 _SYR_CONNECT_CLIENT_OS_KERNEL = "Darwin/21.6.0"
 _SYR_CONNECT_CLIENT_USER_AGENT = f"{_SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME}/{_SYR_CONNECT_CLIENT_SYR_BUNDLE_VERSION} {_SYR_CONNECT_CLIENT_OS_FRAMEWORK} {_SYR_CONNECT_CLIENT_OS_KERNEL}"
+
+# Cloud API service registry
+# Each entry represents one distinct backend service.
+# `service` (== cf_bundle_identifier) is used as the unique key stored in config entries.
+_SYR_CONNECT_API_SERVICES: list[dict] = [
+    {
+        "api_app_name": "SYR Connect",
+        "api_base_url": "https://syrconnect.de/",
+        "cf_bundle_identifier": "de.consoft.syr.connect",
+        "display_name": "SYR Connect",
+    },
+    {
+        "api_app_name": "CLEAR PRO",
+        "api_base_url": "https://api.conelclearpro.de/",
+        "cf_bundle_identifier": "de.consoft.gc.conel.connect",
+        "display_name": "CONEL CLEAR PRO",
+    },
+]
 
 # Device model mapping for salt capacity per salt container (kg).
 # Keys are normalized to uppercase when looked up.

@@ -17,6 +17,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
+    _SYR_CONNECT_API_SERVICES,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     API_TYPE_JSON,
@@ -25,6 +26,7 @@ from .const import (
     CONF_HOST,
     CONF_LOGIN_REQUIRED,
     CONF_MODEL,
+    CONF_SERVICE,
     DOMAIN,
 )
 from .exceptions import CannotConnectError, HostInvalidError, InvalidAuthError
@@ -33,8 +35,25 @@ from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
 
-# Schema for Cloud/XML API configuration (username + password)
+# Schema for Cloud/XML API initial setup (backend selector + username + password)
 STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_SERVICE, default=_SYR_CONNECT_API_SERVICES[0]["cf_bundle_identifier"]): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[
+                    selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
+                    for svc in _SYR_CONNECT_API_SERVICES
+                ],
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        ),
+        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_PASSWORD): str,
+    }
+)
+
+# Schema for reauth (backend already set — only credentials needed)
+_STEP_REAUTH_XML_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
@@ -93,7 +112,27 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
 
     _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
-    api = SyrConnectXmlAPI(session, data[CONF_USERNAME], data[CONF_PASSWORD])
+
+    # Look up backend-specific parameters from _SYR_CONNECT_API_SERVICES
+    conf_service = data.get(CONF_SERVICE)
+    api_base_url = None
+    cf_bundle_identifier = None
+    api_app_name = None
+    for svc in _SYR_CONNECT_API_SERVICES:
+        if svc["cf_bundle_identifier"] == conf_service:
+            api_base_url = svc["api_base_url"]
+            cf_bundle_identifier = svc["cf_bundle_identifier"]
+            api_app_name = svc["api_app_name"]
+            break
+
+    api = SyrConnectXmlAPI(
+        session,
+        data[CONF_USERNAME],
+        data[CONF_PASSWORD],
+        api_app_name=api_app_name,
+        api_base_url=api_base_url,
+        cf_bundle_identifier=cf_bundle_identifier,
+    )
 
     # Test authentication
     _LOGGER.debug("Testing XML API authentication...")
@@ -111,7 +150,8 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
 
     _LOGGER.info("XML API: authentication successful for user: %s", data[CONF_USERNAME])
 
-    return {"title": f"SYR Connect ({data[CONF_USERNAME]})"}
+    title_label = api_app_name or "SYR Connect"
+    return {"title": f"{title_label} ({data[CONF_USERNAME]})"}
 
 
 async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -337,8 +377,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     self.hass.config_entries.async_update_entry(entry, data=new_data)
 
                 else:
-                    # Default/XML flow
-                    await validate_input_xml(self.hass, user_input)
+                    # Default/XML flow — pass existing conf_service so the correct endpoint is tested
+                    await validate_input_xml(self.hass, {
+                        **user_input,
+                        CONF_SERVICE: entry.data.get(CONF_SERVICE),
+                    })
                     new_data = {
                         **entry.data,
                         CONF_API_TYPE: API_TYPE_XML,
@@ -380,7 +423,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=STEP_CLOUD_XML_DATA_SCHEMA,
+            data_schema=_STEP_REAUTH_XML_DATA_SCHEMA,
             errors=errors,
             description_placeholders={"username": str(self.context.get("username", ""))},
         )
@@ -421,6 +464,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     await validate_input_xml(self.hass, user_input)
                     new_data = {
                         CONF_API_TYPE: API_TYPE_XML,
+                        CONF_SERVICE: user_input[CONF_SERVICE],
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
@@ -479,11 +523,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors=errors,
             )
         else:
-            # Pre-fill with current username for XML API (or empty if entry is None)
+            # Pre-fill with current values for XML API (or defaults if entry is None)
             return self.async_show_form(
                 step_id="reconfigure",
                 data_schema=vol.Schema(
                     {
+                        vol.Required(
+                            CONF_SERVICE,
+                            default=entry.data.get(CONF_SERVICE, _SYR_CONNECT_API_SERVICES[0]["cf_bundle_identifier"]) if entry else _SYR_CONNECT_API_SERVICES[0]["cf_bundle_identifier"],
+                        ): selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=[
+                                    selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
+                                    for svc in _SYR_CONNECT_API_SERVICES
+                                ],
+                                mode=selector.SelectSelectorMode.DROPDOWN,
+                            )
+                        ),
                         vol.Required(
                             CONF_USERNAME,
                             default=entry.data.get(CONF_USERNAME, "") if entry else ""

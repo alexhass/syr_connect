@@ -31,16 +31,22 @@ import aiohttp
 
 from .checksum import SyrChecksum
 from .const import (
+    _SYR_CONNECT_API_XML_BASE_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
     _SYR_CONNECT_API_XML_LOGIN_URL,
-    _SYR_CONNECT_CLIENT_APP_VERSION,
+    _SYR_CONNECT_CLIENT_APP_NAME,
+    _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
+    _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
     _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
     _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
+    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+    _SYR_CONNECT_CLIENT_OS_MODEL,
+    _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_USER_AGENT,
     _SYR_CONNECT_SESSION_TIMEOUT_MINUTES,
 )
@@ -66,13 +72,28 @@ class SyrConnectXmlAPI:
     encryption, checksums, and XML processing.
     """
 
-    def __init__(self, session: aiohttp.ClientSession, username: str, password: str) -> None:
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        username: str,
+        password: str,
+        *,
+        api_app_name: str | None = None,
+        api_base_url: str | None = None,
+        cf_bundle_identifier: str | None = None,
+    ) -> None:
         """Initialize the cloud API client.
 
         Args:
             session: aiohttp ClientSession provided by Home Assistant
             username: SYR Connect cloud account email address
             password: SYR Connect cloud account password
+            api_app_name: Application name sent in the login payload "<nfo v=...>" (from _SYR_CONNECT_API_SERVICES).
+                Defaults to _SYR_CONNECT_CLIENT_APP_NAME ("SYR Connect").
+            api_base_url: Cloud API base URL override (from _SYR_CONNECT_API_SERVICES), must end with "/".
+                Defaults to _SYR_CONNECT_API_XML_BASE_URL ("https://syrconnect.de/").
+            cf_bundle_identifier: iOS bundle identifier override (from _SYR_CONNECT_API_SERVICES).
+                Defaults to _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER ("de.consoft.syr.connect").
         """
         # --- Authentication credentials ---
         self.username = username
@@ -89,6 +110,24 @@ class SyrConnectXmlAPI:
         # Each login returns a list of projects the user has access to
         self.projects: list[dict[str, Any]] = []
 
+        # --- URL overrides (config entry-specific) ---
+        _app_name = api_app_name or _SYR_CONNECT_CLIENT_APP_NAME
+        _base = api_base_url or _SYR_CONNECT_API_XML_BASE_URL
+        _bundle_id = cf_bundle_identifier or _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER
+        self._login_url = _base + _SYR_CONNECT_API_XML_LOGIN_URL
+        self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_LIST_URL
+        self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
+        self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
+        self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
+
+        _app_version = (
+            f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
+            f"-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}"
+            f"-{_SYR_CONNECT_CLIENT_OS_NAME}"
+            f"-{_SYR_CONNECT_CLIENT_OS_MODEL}"
+            f"-{_bundle_id}"
+        )
+
         # --- Helper components ---
         # These handle the low-level details of the SYR protocol
 
@@ -99,7 +138,7 @@ class SyrConnectXmlAPI:
         self.checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
 
         # XML payload construction with embedded checksums
-        self.payload_builder = PayloadBuilder(_SYR_CONNECT_CLIENT_APP_VERSION, self.checksum)
+        self.payload_builder = PayloadBuilder(_app_version, self.checksum, _app_name)
 
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
@@ -181,7 +220,7 @@ class SyrConnectXmlAPI:
             # --- Make HTTP Request ---
             # Login uses direct XML POST (not form-encoded like other endpoints)
             xml_response = await self.http_client.post(
-                _SYR_CONNECT_API_XML_LOGIN_URL,
+                self._login_url,
                 xml_data,
                 content_type='text/xml'
             )
@@ -262,7 +301,7 @@ class SyrConnectXmlAPI:
             # --- Make HTTP Request ---
             # Device list endpoint uses form-encoded XML
             xml_response = await self.http_client.post(
-                _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
+                self._device_list_url,
                 {'xml': payload}
             )
             _LOGGER.debug("Device list XML response: %s", xml_response)
@@ -335,7 +374,7 @@ class SyrConnectXmlAPI:
         try:
             # --- Make HTTP Request ---
             xml_response = await self.http_client.post(
-                _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
+                self._device_get_status_url,
                 {'xml': payload}
             )
             _LOGGER.debug("Status XML response: %s", xml_response)
@@ -402,7 +441,7 @@ class SyrConnectXmlAPI:
         try:
             # --- Make HTTP Request ---
             xml_response = await self.http_client.post(
-                _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
+                self._device_set_status_url,
                 {'xml': payload}
             )
             _LOGGER.debug("Set status XML response: %s", xml_response)
@@ -456,7 +495,7 @@ class SyrConnectXmlAPI:
         try:
             # --- Make HTTP Request ---
             xml_response = await self.http_client.post(
-                _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL,
+                self._device_get_statistics_url,
                 {'xml': payload}
             )
             _LOGGER.debug("Statistics XML response: %s", xml_response)

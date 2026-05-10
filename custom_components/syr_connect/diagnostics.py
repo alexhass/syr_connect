@@ -14,8 +14,6 @@ from homeassistant.core import HomeAssistant
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
-    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
-    _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
     _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -286,7 +284,7 @@ async def async_get_config_entry_diagnostics(
                     payload = xml_api.payload_builder.build_device_list_payload(
                         xml_api.session_data or "", pid
                     )
-                    xml_resp = await _fetch(_SYR_CONNECT_API_XML_DEVICE_LIST_URL, {"xml": payload})
+                    xml_resp = await _fetch(xml_api._device_list_url, {"xml": payload})
 
                     # Redact the device list XML and replace personal attributes:
                     # - `pn="..."` -> `My+Project` (project name)
@@ -321,7 +319,7 @@ async def async_get_config_entry_diagnostics(
                             payload2 = xml_api.payload_builder.build_device_status_payload(
                                 xml_api.session_data or "", did
                             )
-                            xml_status = await _fetch(_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL, {"xml": payload2})
+                            xml_status = await _fetch(xml_api._device_get_status_url, {"xml": payload2})
                             return did, _redact_xml(xml_status, xml_api)
 
                         status_tasks.append(_fetch_status(device_id))

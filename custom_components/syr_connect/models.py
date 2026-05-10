@@ -44,7 +44,7 @@ UNKNOWN_MODEL: dict[str, Any] = {
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": "/neosoft",
-        "configuration_url": "https://api.conelclearpro.de/",
+        "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT",
         "manufacturer": "CONEL",
         "name": "conelclearprosoft",
@@ -53,7 +53,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 # TODO: Untested model
 #    {
 #        "base_path": "/neosoft",
-#        "configuration_url": "https://api.conelclearpro.de/",
+#        "configuration_url": "https://conelclearpro.de/",
 #        "display_name": "CLEAR PRO SOFT TWIN",
 #        "manufacturer": "CONEL",
 #        "name": "conelclearprosofttwin",
