@@ -45,20 +45,19 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": "/neosoft",
         "configuration_url": "https://conelclearpro.de/",
+        "display_name": "CLEAR PRO SOFT TWIN",
+        "manufacturer": "CONEL",
+        "name": "conelclearprosofttwin",
+        "srn_prefix": "214",
+    },
+    {
+        "base_path": "/neosoft",
+        "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT",
         "manufacturer": "CONEL",
         "name": "conelclearprosoft",
         "srn_prefix": "215",
     },
-# TODO: Untested model
-#    {
-#        "base_path": "/neosoft",
-#        "configuration_url": "https://conelclearpro.de/",
-#        "display_name": "CLEAR PRO SOFT TWIN",
-#        "manufacturer": "CONEL",
-#        "name": "conelclearprosofttwin",
-#        "srn_prefix": "xxx",
-#    },
     {
         "base_path": "/pontos-base",
         "configuration_url": "https://syrconnect.de/",
