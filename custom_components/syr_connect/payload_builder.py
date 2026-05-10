@@ -6,6 +6,12 @@ from datetime import UTC, datetime, timedelta
 from xml.sax.saxutils import escape
 
 from .checksum import SyrChecksum
+from .const import (
+    _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
+    _SYR_CONNECT_CLIENT_OS_MODEL,
+    _SYR_CONNECT_CLIENT_OS_NAME,
+    _SYR_CONNECT_CLIENT_OS_VERSION,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,15 +19,17 @@ _LOGGER = logging.getLogger(__name__)
 class PayloadBuilder:
     """Build XML payloads for SYR Connect API requests."""
 
-    def __init__(self, app_version: str, checksum_calculator: SyrChecksum) -> None:
+    def __init__(self, app_version: str, checksum_calculator: SyrChecksum, app_name: str = "SYR Connect") -> None:
         """Initialize payload builder.
 
         Args:
             app_version: Application version string
             checksum_calculator: Checksum calculator instance
+            app_name: Application name sent in the login payload ``<nfo v=...>``
         """
         self.app_version = app_version
         self.checksum = checksum_calculator
+        self.app_name = app_name
 
     @staticmethod
     def get_timestamp() -> str:
@@ -89,8 +97,8 @@ class PayloadBuilder:
         tzo = self._compute_local_tzo()
         lang, reg = self._compute_locale_lang_reg()
         payload = (
-            f'<nfo v="SYR Connect" version="3.7.10" osv="15.8.3" '
-            f'os="iOS" dn="iPhone" ts="{timestamp}" tzo="{tzo}" '
+            f'<nfo v="{self.app_name}" version="{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}" osv="{_SYR_CONNECT_CLIENT_OS_VERSION}" '
+            f'os="{_SYR_CONNECT_CLIENT_OS_NAME}" dn="{_SYR_CONNECT_CLIENT_OS_MODEL}" ts="{timestamp}" tzo="{tzo}" '
             f'lng="{lang}" reg="{reg}" />'
             f'<usr n="{safe_username}" v="{safe_password}" />'
         )
