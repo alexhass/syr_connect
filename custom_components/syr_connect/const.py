@@ -719,6 +719,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - Safe-T+
     # - NeoSoft 2500 / 5000
     # - SafeFloor
+    "getALD",   # Duration of alarm (s) - value "" means sensor is broken, should be "0" to show 0s.
     "getCEL",   # Temperature - value "" means sensor does not exists or not measured.
     "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
     "getLNG",   # Device language (0=Deutsch, 1=English)
