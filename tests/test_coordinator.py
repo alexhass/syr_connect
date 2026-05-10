@@ -15,6 +15,8 @@ from custom_components.syr_connect.const import (
     CONF_API_TYPE,
     CONF_HOST,
     CONF_MODEL,
+    CONF_SERVICE,
+    _SYR_CONNECT_API_SERVICES,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.exceptions import (
@@ -1762,3 +1764,23 @@ async def test_async_clear_device_alarm_cancels_pending_task(hass: HomeAssistant
 
         fake_pending.cancel.assert_called_once()
         assert coordinator._pending_refresh_task is new_task
+
+
+async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -> None:
+    """Test coordinator XML API init looks up service parameters when CONF_SERVICE is set (lines 122-127)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
+        mock_xml_api_class.return_value = MagicMock()
+
+        # Use the first registered service so the loop finds a match
+        svc = _SYR_CONNECT_API_SERVICES[0]
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+            CONF_SERVICE: svc["cf_bundle_identifier"],
+        }
+        SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+
+        call_kwargs = mock_xml_api_class.call_args.kwargs
+        assert call_kwargs["api_app_name"] == svc["api_app_name"]
+        assert call_kwargs["api_base_url"] == svc["api_base_url"]
+        assert call_kwargs["cf_bundle_identifier"] == svc["cf_bundle_identifier"]
