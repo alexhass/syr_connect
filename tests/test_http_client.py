@@ -1,11 +1,11 @@
 """Tests for the HTTP client helper."""
 from __future__ import annotations
 
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
-import logging
 
 from custom_components.syr_connect.http_client import HTTPClient
 

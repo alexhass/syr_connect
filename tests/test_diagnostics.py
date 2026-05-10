@@ -11,6 +11,9 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.const import (
+    _SYR_CONNECT_API_XML_BASE_URL,
+    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
+    _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -599,9 +602,9 @@ async def test_raw_json_api_getsrn_redacted_for_json_api_branch(hass: HomeAssist
     This explicitly forces `async_redact_data` to return the original dict so the
     code path that assigns `redacted["getSRN"] = "**REDACTED**"` is executed.
     """
+    import custom_components.syr_connect.diagnostics as diag_mod
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
     from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
-    import custom_components.syr_connect.diagnostics as diag_mod
 
     config_entry = ConfigEntry(
         version=1,
@@ -1596,8 +1599,8 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssista
     `SyrConnectJsonAPI(session, host, base_path)` and assigns
     `redacted['getSRN'] = "**REDACTED**"`.
     """
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
     import custom_components.syr_connect.diagnostics as diag_mod
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
 
     config_entry = ConfigEntry(
         version=1,
@@ -1875,6 +1878,8 @@ async def test_diagnostics_xml_raw_collection_and_masking_additional(hass) -> No
             self.payload_builder = FakePayloadBuilder()
             self.http_client = FakeHttpClient()
             self.response_parser = FakeResponseParser()
+            self._device_list_url = _SYR_CONNECT_API_XML_BASE_URL + _SYR_CONNECT_API_XML_DEVICE_LIST_URL
+            self._device_get_status_url = _SYR_CONNECT_API_XML_BASE_URL + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
 
         def is_session_valid(self):
             return True
@@ -2294,7 +2299,6 @@ async def test_fetch_device_json_status_exception(hass: HomeAssistant) -> None:
     fake_coord = type("C", (), {})()
     fake_coord._session = object()
     fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.0.2.1"}], "projects": []}
-    from datetime import datetime
     fake_coord.last_update_success = True
     fake_coord.last_update_success_time = None
 
@@ -2309,9 +2313,9 @@ async def test_fetch_device_json_status_exception(hass: HomeAssistant) -> None:
 
 async def test_json_redact_getsrn_contains_raises(monkeypatch, hass: HomeAssistant) -> None:
     """Ensure exceptions during '"getSRN" in redacted' are caught (covers except/pass branch)."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
-    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
     from custom_components.syr_connect import diagnostics as diag_mod
+    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
+    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
 
     config_entry = ConfigEntry(
         version=1,

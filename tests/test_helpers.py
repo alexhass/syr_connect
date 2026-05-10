@@ -1,9 +1,9 @@
 """Tests for helpers module."""
 from __future__ import annotations
 
+import re
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
-import re
 
 from custom_components.syr_connect import helpers
 from custom_components.syr_connect.const import API_TYPE_JSON

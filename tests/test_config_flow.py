@@ -10,7 +10,6 @@ from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.config_flow import validate_input_json
-from custom_components.syr_connect.exceptions import CannotConnectError
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -20,6 +19,7 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
     DOMAIN,
 )
+from custom_components.syr_connect.exceptions import CannotConnectError
 
 # Patch path for API class (lazy-loaded in config_flow)
 _API_PATCH_PATH = "custom_components.syr_connect.api_xml.SyrConnectXmlAPI"
@@ -1499,6 +1499,7 @@ async def test_validate_input_json_no_devices_raises(hass: HomeAssistant) -> Non
 async def test_reauth_confirm_homeassistant_error_json_direct(hass: HomeAssistant) -> None:
     """Direct call to `ConfigFlow.async_step_reauth_confirm` maps HomeAssistantError with 'port' to host_no_port."""
     from homeassistant.exceptions import HomeAssistantError
+
     from custom_components.syr_connect.config_flow import ConfigFlow
 
     entry = MockConfigEntry(
@@ -1529,6 +1530,7 @@ async def test_reauth_confirm_homeassistant_error_json_direct(hass: HomeAssistan
 async def test_reconfigure_homeassistant_error_direct(hass: HomeAssistant) -> None:
     """Direct call to `ConfigFlow.async_step_reconfigure` maps HomeAssistantError to host errors for JSON."""
     from homeassistant.exceptions import HomeAssistantError
+
     from custom_components.syr_connect.config_flow import ConfigFlow
 
     entry = MockConfigEntry(

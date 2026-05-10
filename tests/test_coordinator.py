@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
+from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     CONF_API_TYPE,
@@ -16,7 +17,6 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
