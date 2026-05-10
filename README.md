@@ -106,6 +106,10 @@ Tested and reported as working:
 Other devices are also of interest, but still need to be integrated (please report):
 
 - CONEL CLEAR PRO SOFT TWIN
+- concept Einzelenthärtungsanlage
+- concept Doppelenthärtungsanlage
+- Ditech Einzelenthärtungsanlage
+- Ditech Doppelenthärtungsanlage
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
@@ -116,6 +120,10 @@ Other devices are also of interest, but still need to be integrated (please repo
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
+- TAKE Einzelenthärtungsanlage
+- TAKE Doppelenthärtungsanlage
+- Optima Einzelenthärtungsanlage
+- Optima Doppelenthärtungsanlage
 
 **Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
 

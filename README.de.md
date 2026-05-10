@@ -106,6 +106,10 @@ Getestet und gemeldet als funktionierend:
 Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte melden):
 
 - CONEL CLEAR PRO SOFT TWIN
+- concept single water softener
+- concept twin water softener
+- Ditech single water softener
+- Ditech twin water softener
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
@@ -116,6 +120,10 @@ Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
+- TAKE single water softener
+- TAKE twin water softener
+- Optima single water softener
+- Optima twin water softener
 
 **Hinweis**: Wenn ein Gerät in deinem SYR Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
 
