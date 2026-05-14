@@ -105,7 +105,7 @@ _SYR_CONNECT_API_SERVICES: list[dict] = [
         "api_app_name": "DITECH Geräte",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.sanitaerunion.ditech.connect",
-        "display_name": "DITECH Geräte",
+        "display_name": "DITECH Haustechnik",
     },
     {
         "api_app_name": "optima CONNECT",
