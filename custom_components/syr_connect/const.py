@@ -89,6 +89,36 @@ _SYR_CONNECT_API_SERVICES: list[dict] = [
         "cf_bundle_identifier": "de.consoft.gc.conel.connect",
         "display_name": "CONEL CLEAR PRO",
     },
+    {
+        "api_app_name": "comfort CONNECT",
+        "api_base_url": "https://syrconnect.de/",
+        "cf_bundle_identifier": "de.consoft.gsh.comfort.connect",
+        "display_name": "Sanibel comfort CONNECT",
+    },
+    {
+        "api_app_name": "concept CONNECT",
+        "api_base_url": "https://syrconnect.de/",
+        "cf_bundle_identifier": "de.consoft.isg.concept.connect",
+        "display_name": "concept CONNECT",
+    },
+    {
+        "api_app_name": "DITECH Geräte",
+        "api_base_url": "https://syrconnect.de/",
+        "cf_bundle_identifier": "de.consoft.sanitaerunion.ditech.connect",
+        "display_name": "DITECH Geräte",
+    },
+    {
+        "api_app_name": "optima CONNECT",
+        "api_base_url": "https://syrconnect.de/",
+        "cf_bundle_identifier": "de.consoft.isg.optima.connect",
+        "display_name": "Optima CONNECT",
+    },
+    {
+        "api_app_name": "POLYGONVATRO Connect",
+        "api_base_url": "https://polygonvatro-connect.de/",
+        "cf_bundle_identifier": "de.consoft.polygonvatro.connect",
+        "display_name": "POLYGONVATRO Connect",
+    },
 ]
 
 # Device model mapping for salt capacity per salt container (kg).
