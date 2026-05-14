@@ -132,6 +132,9 @@ _SYR_CONNECT_API_SERVICES: list[dict] = [
 _SYR_CONNECT_MODEL_SALT_CAPACITY = {
     "conelclearprosoft": 40,
     "conelclearprosofttwin": 35,
+    "l10": 25,
+    "l20": 70,
+    "l30": 70,
     "lex10": 25,
     "lex20": 70,
     "lex30": 70,

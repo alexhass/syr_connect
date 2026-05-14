@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="c9177ac2-fcde-ee11-800a-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="14.05.2026 08:38:54" nrs="5" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="cc177ac2-fcde-ee11-800a-be3af2b6059f" sbt="0" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
+      <c n="getSRN" v="123456789" dt="14.05.2026 08:38:42" />
+      <c n="getVER" v="1.3" />
+      <c n="getFIR" v="OSC1" />
+      <c n="getTYP" v="40" />
+      <c n="getCNA" v="L20" />
+      <c n="getALM" v="" dt="10.03.2024 16:40:28" m="NoSalt" acd="12.05.2026 13:10:54" ih="1" />
+      <c n="getCDE" v="0102690835.01.033.3.1,7.0020" />
+      <c n="getCS1" v="41" />
+      <c n="getCS2" v="0" />
+      <c n="getCS3" v="0" />
+      <c n="getCYN" v="0" />
+      <c n="getCYT" v="00:00" />
+      <c n="getDEN" v="1" />
+      <c n="getDGW" v="0.0.0.0" />
+      <c n="getDWF" v="350" />
+      <c n="getFCO" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getHED" v="0" />
+      <c n="getHEM" v="1" />
+      <c n="getHEY" v="0" />
+      <c n="getHSD" v="0" />
+      <c n="getHSM" v="1" />
+      <c n="getHSY" v="0" />
+      <c n="getIPA" v="0.0.0.0" />
+      <c n="getIWH" v="36" />
+      <c n="getMAC" v="0c:73:eb:XX:XX:XX" />
+      <c n="getMAN" v="Oceanic" />
+      <c n="getNOT" v="" />
+      <c n="getOWH" v="0" />
+      <c n="getPA1" v="0" />
+      <c n="getPA2" v="0" />
+      <c n="getPA3" v="0" />
+      <c n="getPRS" v="49" />
+      <c n="getPST" v="1" />
+      <c n="getRDO" v="90" />
+      <c n="getRES" v="870" />
+      <c n="getRG1" v="0" />
+      <c n="getRG2" v="0" />
+      <c n="getRG3" v="0" />
+      <c n="getRPD" v="7" />
+      <c n="getRPW" v="0" />
+      <c n="getRTH" v="2" />
+      <c n="getRTI" v="00:00" />
+      <c n="getRTM" v="0" />
+      <c n="getSCR" v="0" />
+      <c n="getSIR" v="1" />
+      <c n="getSRE" v="0" />
+      <c n="getSS1" v="21" />
+      <c n="getSS2" v="0" />
+      <c n="getSS3" v="0" />
+      <c n="getSV1" v="40" />
+      <c n="getSV2" v="0" />
+      <c n="getSV3" v="0" />
+      <c n="getTOR" v="128" />
+      <c n="getVAC" v="0" />
+      <c n="getVS1" v="0" />
+      <c n="getVS2" v="0" />
+      <c n="getVS3" v="0" />
+      <c n="getWHU" v="1" />
+    </d>
+  </dvs>
+  <cs v="9159" />
+</sc>
