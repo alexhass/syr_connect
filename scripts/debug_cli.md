@@ -68,8 +68,8 @@ python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --set-device 123456789 `
-    --set-command setSIR `
-    --set-value 3
+    --set-command setSV1 `
+    --set-value 10
 ```
 
 Note: `--set-command` requires `--set-device` and `--set-value`. The script parses `"true"`/`"false"` to booleans, numeric strings to `int`/`float`, otherwise the raw string is sent.

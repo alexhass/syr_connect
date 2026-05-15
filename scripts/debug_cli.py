@@ -34,8 +34,8 @@ Execute a single set command (one-shot):
         --username me@example.com \\
         --password secret \\
         --set-device 1234567890 \\
-        --set-command setSIR \\
-        --set-value 3
+        --set-command setSV1 \\
+        --set-value 10
 
 Example (CLEAR PRO):
     python scripts/debug_cli.py \\
