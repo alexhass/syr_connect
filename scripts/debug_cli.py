@@ -159,7 +159,7 @@ class DebugXmlClient:
         base_url: str,
         app_version: str,
         app_name: str,
-        api_package_name: str,
+        api_package_name: str,  # embedded in app_version by caller; accepted here only for logging
         user_agent: str,
         skip_decrypt: bool = False,
         show_password: bool = False,
@@ -364,6 +364,7 @@ class DebugXmlClient:
 # that a missing marker never causes an import-time ValueError.
 _examples_start = __doc__.find("Examples:")
 _EXAMPLES_EPILOG = __doc__[_examples_start:] if _examples_start != -1 else __doc__
+del _examples_start  # throwaway; only _EXAMPLES_EPILOG belongs in the module namespace
 
 
 def _parse_args() -> argparse.Namespace:
