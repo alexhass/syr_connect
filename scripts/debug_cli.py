@@ -498,7 +498,6 @@ async def _run(args: argparse.Namespace) -> None:
             success = await client.set_device_status(dclg, args.set_command, value)
             if success:
                 _LOG.info("Set command succeeded: %s -> %s=%r", target.get("id"), args.set_command, value)
-                print("OK")
                 return
             _LOG.error("Set command failed for device %s", target.get("id"))
             sys.exit(1)
