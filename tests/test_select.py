@@ -981,6 +981,9 @@ async def test_async_setup_entry_skip_invalid_float_sv_values(hass: HomeAssistan
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
+                    # Use a known model so maximum_salt_volume is set and
+                    # the code actually attempts to parse the SV value.
+                    "getCNA": "LEXplus10S",
                     "getSV1": "invalid",  # Invalid value should be skipped
                     "getSV2": "5",
                 },
@@ -1081,6 +1084,9 @@ async def test_async_setup_entry_skip_invalid_rpd(hass: HomeAssistant, create_mo
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
+                    # Ensure model provides maximum_regeneration_interval so
+                    # the code attempts to parse getRPD and hits the except branch.
+                    "getCNA": "LEXplus10S",
                     "getRPD": "invalid",
                 },
             }
