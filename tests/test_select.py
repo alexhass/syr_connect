@@ -1973,6 +1973,59 @@ async def test_async_setup_entry_adds_rotation_select(hass: HomeAssistant, creat
     assert len(rot_entities) == 1
 
 
+async def test_async_setup_entry_creates_rpd_select_for_model_with_max_rpd(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Test async_setup_entry creates an RPD numeric select when model provides max interval."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getRPD": "2",
+                    "getCNA": "LEXplus10S",  # model with maximum_regeneration_interval set
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # Should create an RPD numeric select when model provides max regeneration interval
+    rpd_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getRPD']
+    assert len(rpd_entities) == 1
+
+
+async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Test async_setup_entry creates SV1 select when model is detected via SRN prefix."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getSRN": "214AAA0001",  # matches srn_prefix for a CONEL model in signatures
+                    "getSV1": "5",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
+    assert len(sv1_entities) == 1
+
+
 # ---------------------------------------------------------------------------
 # Lines 105-106, 133-134, 180-181 — setup_platform exception branches
 # ---------------------------------------------------------------------------
