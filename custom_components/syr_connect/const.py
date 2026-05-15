@@ -283,7 +283,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getRTI",   # Total regeneration cycle duration
     "getRTM",   # Regeneration time (combined HH:MM string)
     "getSCR",   # Service regeneration cycle count
-    "getSRE",   # Regeneration active flag
+    #"getSRE",   # Regeneration active flag - Disabled - Not clear what value 3/5 means.
     "getTOR",   # Total regeneration count (all time)
     # --- Self-Learning Phase (Trio DFR/LS) ---
     "getSLE",   # Remaining time in active self-learning phase (s)
