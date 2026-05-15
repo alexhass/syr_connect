@@ -2,7 +2,7 @@
 """Debug script for tracing the XML API login process.
 
 Usage:
-    python scripts/debug_login.py --username <email> --password <pw> [options]
+    python scripts/debug_cli.py --username <email> --password <pw> [options]
 
 Options:
     --username EMAIL            API account e-mail
@@ -18,7 +18,7 @@ Options:
     --no-decrypt                Skip decryption step (show raw encrypted response)
 
 Example (CLEAR PRO):
-    python scripts/debug_login.py \\
+    python scripts/debug_cli.py \\
         --username me@example.com \\
         --password secret \\
         --base-url https://api.conelclearpro.de \\
@@ -96,7 +96,7 @@ def _setup_logging(log_file: str | None = None) -> None:
     logging.getLogger("aiohttp.client").setLevel(logging.DEBUG)
 
 
-_LOG = logging.getLogger("debug_login")
+_LOG = logging.getLogger("debug_cli")
 
 
 # ---------------------------------------------------------------------------
@@ -327,7 +327,7 @@ def _parse_args() -> argparse.Namespace:
         "--log-file",
         default=None,
         metavar="PATH",
-        help="Write log output to this file in addition to stdout (default: debug_login.log)",
+        help="Write log output to this file in addition to stdout (default: debug_cli.log)",
     )
     return parser.parse_args()
 
@@ -398,3 +398,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

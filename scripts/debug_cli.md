@@ -1,4 +1,4 @@
-# debug_login.py – Command Reference
+﻿# debug_cli.py â€“ Command Reference
 
 ## Options
 
@@ -6,14 +6,14 @@
 | --- | --- | --- |
 | `--username EMAIL` | *(required)* | SYR Connect account e-mail |
 | `--password PASSWORD` | *(required)* | Account password |
-| `--show-password` | — | Show password in log output (default: masked as `***`) |
+| `--show-password` | â€” | Show password in log output (default: masked as `***`) |
 | `--base-url URL` | `https://syrconnect.de` | API base URL |
 | `--api-app-name STRING` | `SYR Connect` | API app name for login payload. Login fails if value is wrong. |
 | `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. |
 | `--user-agent STRING` | `_SYR_CONNECT_CLIENT_USER_AGENT` from `const.py` | HTTP User-Agent header |
-| `--get-devices` | — | Fetch device list for every project after login |
-| `--get-status` | — | Fetch device status for every device (implies `--get-devices`) |
-| `--no-decrypt` | — | Skip decryption, show raw XML response |
+| `--get-devices` | â€” | Fetch device list for every project after login |
+| `--get-status` | â€” | Fetch device status for every device (implies `--get-devices`) |
+| `--no-decrypt` | â€” | Skip decryption, show raw XML response |
 | `--log-file PATH` | *(none)* | Write log output to this file in addition to stdout |
 
 ---
@@ -25,7 +25,7 @@
 #### Login only
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password>
 ```
@@ -33,7 +33,7 @@ python scripts/debug_login.py `
 #### Login + device list
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-devices
@@ -42,7 +42,7 @@ python scripts/debug_login.py `
 #### Login + device list + status
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-status
@@ -51,7 +51,7 @@ python scripts/debug_login.py `
 #### With custom log file
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-status `
@@ -61,7 +61,7 @@ python scripts/debug_login.py `
 #### Raw XML response without decryption
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --no-decrypt
@@ -74,7 +74,7 @@ python scripts/debug_login.py `
 #### Login only
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --base-url https://api.conelclearpro.de `
@@ -85,7 +85,7 @@ python scripts/debug_login.py `
 #### Login + device list
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --base-url https://api.conelclearpro.de `
@@ -97,7 +97,7 @@ python scripts/debug_login.py `
 #### Login + device list + status
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --base-url https://api.conelclearpro.de `
@@ -109,7 +109,7 @@ python scripts/debug_login.py `
 #### With custom log file
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --base-url https://api.conelclearpro.de `
@@ -122,7 +122,7 @@ python scripts/debug_login.py `
 #### Raw XML response without decryption
 
 ```powershell
-python scripts/debug_login.py `
+python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --base-url https://api.conelclearpro.de `
@@ -130,3 +130,4 @@ python scripts/debug_login.py `
     --api-package-name de.consoft.gc.conel.connect `
     --no-decrypt
 ```
+
