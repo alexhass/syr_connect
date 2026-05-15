@@ -121,6 +121,29 @@ _LOG = logging.getLogger("debug_cli")
 
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _parse_set_value(raw: str) -> Any:
+    """Parse a CLI --set-value string into the most appropriate Python type.
+
+    Precedence: bool > int > float > str.  Handles scientific notation
+    correctly (e.g. "1e5" -> 100000.0, not a string).
+    """
+    lower = raw.lower()
+    if lower in ("true", "false"):
+        return lower == "true"
+    try:
+        return int(raw)
+    except ValueError:
+        pass
+    try:
+        return float(raw)
+    except ValueError:
+        return raw
+
+
+# ---------------------------------------------------------------------------
 # Inline API client that accepts custom URLs and constants
 # ---------------------------------------------------------------------------
 
@@ -164,7 +187,7 @@ class DebugXmlClient:
         _LOG.info("  user_agent        : %s", user_agent)
 
         self.session_data: str = ""
-        self.projects: list[dict] = []
+        self.projects: list[dict[str, Any]] = []
 
         self.encryption = SyrEncryption(
             _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
@@ -262,13 +285,14 @@ class DebugXmlClient:
             return True
         except Exception as exc:
             _LOG.error("Set command failed: %s", exc)
+            _LOG.debug("Set command traceback", exc_info=True)
             return False
 
     # ------------------------------------------------------------------
     # Devices
     # ------------------------------------------------------------------
 
-    async def get_devices(self, project_id: str) -> list[dict]:
+    async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
         _LOG.info("=== GET DEVICES  project_id=%s ===", project_id)
 
         payload = self.payload_builder.build_device_list_payload(self.session_data, project_id)
@@ -281,7 +305,7 @@ class DebugXmlClient:
         )
         _LOG.debug("--- Raw device list response ---\n%s", raw_response)
 
-        devices = self.response_parser.parse_device_list_response(raw_response)
+        devices: list[dict[str, Any]] = self.response_parser.parse_device_list_response(raw_response)
         for dev in devices:
             dev["project_id"] = project_id
             if "id" not in dev and "serial_number" in dev:
@@ -301,15 +325,13 @@ class DebugXmlClient:
     # Status
     # ------------------------------------------------------------------
 
-    async def get_status(self, device: dict) -> dict:
+    async def get_status(self, device: dict[str, Any]) -> dict[str, Any]:
         device_id = device.get("id", "?")
         dclg = device.get("dclg", "")
 
         _LOG.info("=== GET STATUS  device=%s  dclg=%s ===", device_id, dclg)
 
-        payload = self.payload_builder.build_device_status_payload(
-            self.session_data, dclg
-        )
+        payload = self.payload_builder.build_device_status_payload(self.session_data, dclg)
         _LOG.debug("--- Status request payload ---\n%s", payload)
 
         _LOG.info("POST %s", self.device_status_url)
@@ -319,34 +341,11 @@ class DebugXmlClient:
         )
         _LOG.debug("--- Raw status response (first 2000 chars) ---\n%s", raw_response[:2000])
 
-        status = self.response_parser.parse_device_status_response(raw_response)
+        status: dict[str, Any] = self.response_parser.parse_device_status_response(raw_response)
         _LOG.info("Status keys returned: %d", len(status))
         for k, v in sorted(status.items()):
             _LOG.info("  %-20s = %r", k, v)
         return status
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _parse_set_value(raw: str) -> Any:
-    """Parse a CLI --set-value string into the most appropriate Python type.
-
-    Precedence: bool > int > float > str.
-    """
-    lower = raw.lower()
-    if lower in ("true", "false"):
-        return lower == "true"
-    try:
-        return float(raw) if "." in raw else int(raw)
-    except ValueError:
-        return raw
-
-
-def _collect_all_devices(client: DebugXmlClient, projects: list[dict]) -> tuple[list[dict[str, Any]], list[str]]:
-    """Synchronous helper placeholder -- actual collection is done with await in _run."""
-    raise NotImplementedError("Use the async version in _run directly.")
 
 
 # ---------------------------------------------------------------------------
@@ -379,7 +378,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--api-app-name",
         default="SYR Connect",
-        help="App name sent in the login XML payload v=\"...\" attribute (default: %(default)s)",
+        help='App name sent in the login XML payload v="..." attribute (default: %(default)s)',
     )
     parser.add_argument(
         "--api-package-name",
@@ -425,6 +424,23 @@ def _parse_args() -> argparse.Namespace:
         help="Value to use with the set command (bool/int/float/string parsed automatically)",
     )
     return parser.parse_args()
+
+
+async def _collect_devices(client: DebugXmlClient) -> list[dict[str, Any]]:
+    """Fetch devices across all projects, logging and skipping per-project failures."""
+    all_devices: list[dict[str, Any]] = []
+    for project in client.projects:
+        try:
+            devices = await client.get_devices(project["id"])
+            all_devices.extend(devices)
+        except Exception as exc:
+            _LOG.error(
+                "Failed to get devices for project %s: %s",
+                project.get("name") or project.get("id"),
+                exc,
+            )
+            _LOG.debug("Device list traceback", exc_info=True)
+    return all_devices
 
 
 async def _run(args: argparse.Namespace) -> None:
@@ -489,14 +505,7 @@ async def _run(args: argparse.Namespace) -> None:
                 _LOG.error("--set-command requires --identity and --set-value")
                 sys.exit(1)
 
-            all_devices: list[dict[str, Any]] = []
-            for project in client.projects:
-                try:
-                    ds = await client.get_devices(project["id"])
-                except Exception as exc:
-                    _LOG.error("Failed to get devices for project %s: %s", project.get("name"), exc)
-                    continue
-                all_devices.extend(ds or [])
+            all_devices = await _collect_devices(client)
 
             target = next(
                 (
@@ -526,14 +535,7 @@ async def _run(args: argparse.Namespace) -> None:
         # --get-devices / --get-status: fetch and optionally poll status
         # ------------------------------------------------------------------
         if args.get_devices or args.get_status:
-            all_devices: list[dict[str, Any]] = []
-            for project in client.projects:
-                try:
-                    devices = await client.get_devices(project["id"])
-                    all_devices.extend(devices or [])
-                except Exception as exc:
-                    _LOG.error("Failed to get devices for project %s: %s", project.get("id"), exc)
-                    _LOG.debug("Device list traceback", exc_info=True)
+            all_devices = await _collect_devices(client)
 
             if args.get_status:
                 for device in all_devices:
