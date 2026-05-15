@@ -11,11 +11,31 @@ Options:
     --api-app-name STRING       App name in login XML payload (default: "SYR Connect")
     --api-package-name STRING   Package name in app-version string (default: de.consoft.syr.connect)
     --user-agent STRING         HTTP User-Agent header (default: from const.py)
-    --get-devices               Fetch device list for every project after login
+    --get-devices               Fetch device list for every project after login (continue running)
     --get-status                Fetch device status for every device (implies --get-devices)
+    --list-devices              List devices after login (prints id/dclg/name) and exit
+    --set-device DEVICE         Device identifier (id, dclg, serial_number or name) to target with --set-command
+    --set-command CMD           Set command to execute (e.g. setSIR, setSV1); requires --set-device and --set-value
+    --set-value VALUE           Value to use with --set-command (bool/int/float/string parsed)
     --log-file PATH             Write output additionally to this file (no file written by default)
     --show-password             Show password in log output (default: masked as "***")
     --no-decrypt                Skip decryption step (show raw encrypted response)
+
+Examples:
+
+Login and list devices:
+    python scripts/debug_cli.py \\
+        --username me@example.com \\
+        --password secret \\
+        --list-devices
+
+Execute a single set command (one-shot):
+    python scripts/debug_cli.py \\
+        --username me@example.com \\
+        --password secret \\
+        --set-device 1234567890 \\
+        --set-command setSIR \\
+        --set-value 3
 
 Example (CLEAR PRO):
     python scripts/debug_cli.py \\
@@ -32,6 +52,7 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Make the custom_components package importable when running from repo root
@@ -126,6 +147,8 @@ class DebugXmlClient:
         self.show_password = show_password
 
         # Derived URLs from base_url (same path segments as production)
+        # Endpoint for executing set commands (same service family)
+        self.device_set_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
         self.login_url = f"{base_url}/WebServices/Api/SyrApiService.svc/REST/GetProjects"
         self.device_list_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
         self.device_status_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
@@ -188,6 +211,32 @@ class DebugXmlClient:
             raise
         _LOG.debug("--- Raw login response ---\n%s", raw_response)
 
+        async def set_device_status(self, device_id: str, command: str, value: Any) -> bool:
+            """Execute a single set-command against a device (dclg).
+
+            Args:
+                device_id: DCLG / device identifier used by the API
+                command: Command name, e.g. 'setSIR', 'setSV1'
+                value: Value to send (int/str/bool)
+
+            Returns:
+                True on success
+            """
+            _LOG.info("Setting %s on device %s to %r", command, device_id, value)
+
+            if self.skip_decrypt:
+                _LOG.warning("--no-decrypt flag set — cannot perform set operation without a valid session.")
+                return False
+
+            payload = self.payload_builder.build_set_status_payload(self.session_data, device_id, command, value)
+            try:
+                resp = await self.http_client.post(self.device_set_url, {'xml': payload})
+                _LOG.debug("Set response: %s", resp)
+                _LOG.info("Set command completed for %s", device_id)
+                return True
+            except Exception as exc:
+                _LOG.error("Set command failed: %s", exc)
+                return False
         if self.skip_decrypt:
             _LOG.warning("--no-decrypt flag set â€” skipping decryption, cannot extract session.")
             return False
@@ -330,6 +379,23 @@ def _parse_args() -> argparse.Namespace:
         metavar="PATH",
         help="Write log output to this file in addition to stdout (default: debug_cli.log)",
     )
+    parser.add_argument(
+        "--list-devices",
+        action="store_true",
+        help="List devices after login and exit",
+    )
+    parser.add_argument(
+        "--set-device",
+        help="Device identifier (id, dclg or name) to target with a set command",
+    )
+    parser.add_argument(
+        "--set-command",
+        help="Set command to execute (e.g. setSIR, setSV1)",
+    )
+    parser.add_argument(
+        "--set-value",
+        help="Value to use with the set command",
+    )
     return parser.parse_args()
 
 
@@ -369,6 +435,73 @@ async def _run(args: argparse.Namespace) -> None:
         if not ok:
             _LOG.warning("Login returned False â€” aborting further steps.")
             return
+
+        # If requested, list devices and exit
+        if args.list_devices:
+            _LOG.info("Listing devices for all projects")
+            for project in client.projects:
+                try:
+                    devices = await client.get_devices(project["id"])
+                except Exception as exc:
+                    _LOG.error("Failed to get devices for project %s: %s", project.get("name"), exc)
+                    continue
+                if devices:
+                    print(f"Project: {project.get('name')} (id={project.get('id')})")
+                    for d in devices:
+                        print(f"  id={d.get('id')}  dclg={d.get('dclg')}  name={d.get('name')}")
+            return
+
+        # If requested, execute a single set command and exit
+        if args.set_command:
+            if not args.set_device or args.set_value is None:
+                _LOG.error("--set-command requires --set-device and --set-value")
+                sys.exit(1)
+
+            # Collect devices from all projects
+            all_devices: list[dict[str, Any]] = []
+            for project in client.projects:
+                try:
+                    ds = await client.get_devices(project["id"])
+                except Exception as exc:
+                    _LOG.error("Failed to get devices for project %s: %s", project.get("name"), exc)
+                    continue
+                all_devices.extend(ds or [])
+
+            target = None
+            for d in all_devices:
+                if args.set_device in (d.get("id"), d.get("dclg"), d.get("serial_number"), d.get("name")):
+                    target = d
+                    break
+
+            if not target:
+                _LOG.error("Device '%s' not found. Available devices:", args.set_device)
+                for d in all_devices:
+                    _LOG.info("  id=%s  dclg=%s  name=%s", d.get("id"), d.get("dclg"), d.get("name"))
+                sys.exit(1)
+
+            dclg = target.get("dclg") or target.get("id")
+
+            # Parse value: booleans, ints, floats fallback to raw string
+            sval = args.set_value
+            sval_lower = sval.lower() if isinstance(sval, str) else ""
+            if sval_lower in ("true", "false"):
+                value: Any = sval_lower == "true"
+            else:
+                try:
+                    if "." in sval:
+                        value = float(sval)
+                    else:
+                        value = int(sval)
+                except Exception:
+                    value = sval
+
+            success = await client.set_device_status(dclg, args.set_command, value)
+            if success:
+                _LOG.info("Set command succeeded: %s -> %s=%r", target.get("id"), args.set_command, value)
+                print("OK")
+                return
+            _LOG.error("Set command failed for device %s", target.get("id"))
+            sys.exit(1)
 
         if args.get_devices or args.get_status:
             all_devices: list[dict] = []

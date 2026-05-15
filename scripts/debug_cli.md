@@ -11,6 +11,10 @@
 | `--api-app-name STRING` | `SYR Connect` | API app name for login payload. Login fails if value is wrong. |
 | `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. |
 | `--user-agent STRING` | `_SYR_CONNECT_CLIENT_USER_AGENT` from `const.py` | HTTP User-Agent header |
+| `--list-devices` | - | List devices after login (prints `Project`, `id`, `dclg`, `name`) and exit |
+| `--set-device DEVICE` | - | Target device identifier (matches `id`, `dclg`, `serial_number` or `name`) for a one-shot set command |
+| `--set-command CMD` | - | Set command to execute (e.g. `setSIR`, `setSV1`). Requires `--set-device` and `--set-value` |
+| `--set-value VALUE` | - | Value to use with `--set-command`. Parsed as `true`/`false` → bool, numbers → int/float, otherwise string |
 | `--get-devices` | - | Fetch device list for every project after login |
 | `--get-status` | - | Fetch device status for every device (implies `--get-devices`) |
 | `--no-decrypt` | - | Skip decryption, show raw XML response |
@@ -37,6 +41,15 @@ python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-devices
+
+#### List devices (short, prints id/dclg/name and exits)
+
+```powershell
+python scripts/debug_cli.py `
+    --username <username> `
+    --password <password> `
+    --list-devices
+```
 ```
 
 #### Login + device list + status
@@ -46,6 +59,19 @@ python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-status
+
+#### One-shot set command (execute single set command and exit)
+
+```powershell
+python scripts/debug_cli.py `
+    --username <username> `
+    --password <password> `
+    --set-device 123456789 `
+    --set-command setSIR `
+    --set-value 3
+```
+
+Note: `--set-command` requires `--set-device` and `--set-value`. The script parses `"true"`/`"false"` to booleans, numeric strings to `int`/`float`, otherwise the raw string is sent.
 ```
 
 #### With custom log file
