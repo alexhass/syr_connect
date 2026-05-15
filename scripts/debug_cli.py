@@ -153,7 +153,8 @@ class DebugXmlClient:
         )
         self.payload_builder = PayloadBuilder(app_version, checksum, app_name)
         self.response_parser = ResponseParser()
-        self.http_client = HTTPClient(session, user_agent)
+        # For debugging runs, disable retrying to surface errors immediately
+        self.http_client = HTTPClient(session, user_agent, max_retries=1)
 
     # ------------------------------------------------------------------
     # Login
