@@ -13,7 +13,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    _SYR_CONNECT_MODEL_SALT_CAPACITY,
     _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
@@ -144,8 +143,7 @@ async def async_setup_entry(
         status = device.get("status", {})
         # Salt amount selects (max depends on device model)
         model_info = detect_model(status)
-        model = model_info["name"]
-        max_capacity = int(_SYR_CONNECT_MODEL_SALT_CAPACITY.get(str(model), 25))
+        max_capacity = int(model_info.get("maximum_salt_volume") or 25)
         for sv_key in ("getSV1", "getSV2", "getSV3"):
             sv_value = status.get(sv_key)
             if sv_value is None or sv_value == "":

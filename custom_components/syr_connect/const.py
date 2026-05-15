@@ -121,35 +121,6 @@ _SYR_CONNECT_API_SERVICES: list[dict] = [
     },
 ]
 
-# Device model mapping for salt capacity per salt container (kg).
-# Keys are normalized to uppercase when looked up.
-#
-# Known models:
-# - LEXplus10, LEXplus10S, LEXplus10SL -> 25 kg per container
-#
-# Unknown models with similar names can have up to 300 kg per container.
-# Fallback to 25 kg when unknown.
-_SYR_CONNECT_MODEL_SALT_CAPACITY = {
-    "conelclearprosoft": 40,
-    "conelclearprosofttwin": 35,
-    "l10": 25,
-    "l20": 70,
-    "l30": 70,
-    "lex10": 25,
-    "lex20": 70,
-    "lex30": 70,
-    "lex40": 75,
-    "lex60": 110,
-    "lex80": 200,
-    "lex100": 300,
-    "lexplus10": 25,
-    "lexplus10s": 25,
-    "lexplus10sl": 25,
-    "neosoft2500": 40,
-    "neosoft5000": 35,
-    "sanibelsoftwateruno": 35,
-}
-
 # Old Models that use /clr/ala endpoint to clear alarms (JSON API only).
 # These devices do not support the standard setALA set-command for alarm reset.
 _SYR_CONNECT_MODEL_COMMAND_CLR_ALA = {
