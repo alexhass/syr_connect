@@ -71,7 +71,7 @@ python scripts/debug_cli.py `
 
 ### CLEAR PRO (api.conelclearpro.de)
 
-#### Login only
+#### CONEL Login only
 
 ```powershell
 python scripts/debug_cli.py `
@@ -82,7 +82,7 @@ python scripts/debug_cli.py `
     --api-package-name de.consoft.gc.conel.connect
 ```
 
-#### Login + device list
+#### CONEL Login + device list
 
 ```powershell
 python scripts/debug_cli.py `
@@ -94,7 +94,7 @@ python scripts/debug_cli.py `
     --get-devices
 ```
 
-#### Login + device list + status
+#### CONEL Login + device list + status
 
 ```powershell
 python scripts/debug_cli.py `
@@ -106,7 +106,7 @@ python scripts/debug_cli.py `
     --get-status
 ```
 
-#### With custom log file
+#### CONEL With custom log file
 
 ```powershell
 python scripts/debug_cli.py `
@@ -119,7 +119,7 @@ python scripts/debug_cli.py `
     --log-file conel.log
 ```
 
-#### Raw XML response without decryption
+#### CONEL Raw XML response without decryption
 
 ```powershell
 python scripts/debug_cli.py `
@@ -130,4 +130,3 @@ python scripts/debug_cli.py `
     --api-package-name de.consoft.gc.conel.connect `
     --no-decrypt
 ```
-
