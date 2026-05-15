@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Debug script for tracing the XML API login process.
+"""Debug script for tracing the XML API.
 
 Usage:
     python scripts/debug_cli.py --username <email> --password <pw> [options]
