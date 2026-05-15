@@ -12,7 +12,7 @@
 | `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. |
 | `--user-agent STRING` | `_SYR_CONNECT_CLIENT_USER_AGENT` from `const.py` | HTTP User-Agent header |
 | `--list-devices` | - | List devices after login (prints `Project`, `id`, `dclg`, `name`) and exit |
-| `--set-device DEVICE` | - | Target device identifier (matches `id`, `dclg`, `serial_number` or `name`) for a one-shot set command |
+| `--identity DEVICE` | - | Target device identifier (matches `id`, `dclg`, `serial_number` or `name`) for a one-shot set command |
 | `--set-command CMD` | - | Set command to execute (e.g. `setSIR`, `setSV1`). Requires `--set-device` and `--set-value` |
 | `--set-value VALUE` | - | Value to use with `--set-command`. Parsed as `true`/`false` → bool, numbers → int/float, otherwise string |
 | `--get-devices` | - | Fetch device list for every project after login |
@@ -67,7 +67,7 @@ python scripts/debug_cli.py `
 python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
-    --set-device 123456789 `
+    --identity 123456789 `
     --set-command setSV1 `
     --set-value 10
 ```
