@@ -490,7 +490,7 @@ These properties are only available on devices that contain leakage protection, 
 | getPCS          | "2"          |         | Profile configuration setting (SafeTech+)
 | getBMA          | "585"        | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)
 | getBMI          | "515"        | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)
-| getDFM          | "1"          |         | MultiController feature set: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backflush, 5=TRIO Lock Connect
+| getDFM          | "1"          |         | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS)
 | getPSE2         | "false"      |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)
 | getCSE2         | "false"      |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)
 | getSUP          | "1"          |         | Supervision or supply status (Sanibel Leak Protection Module A25)

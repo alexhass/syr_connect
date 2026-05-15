@@ -265,6 +265,16 @@
       "getden": {
         "name": "Device enabled"
       },
+      "getdfm": {
+        "name": "Device features",
+        "state": {
+          "1": "Leak protection",
+          "2": "Connection center",
+          "3": "All-in-One",
+          "4": "Automatic backwash (RSA)",
+          "5": "Backwash filter with pressure reducer (DM) + leak protection (LS)"
+        }
+      },
       "getdgw": {
         "name": "Gateway"
       },

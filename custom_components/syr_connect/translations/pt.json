@@ -265,6 +265,16 @@
       "getden": {
         "name": "Dispositivo ativado"
       },
+      "getdfm": {
+        "name": "Funcionalidades do dispositivo",
+        "state": {
+          "1": "Proteção contra vazamentos",
+          "2": "Centro de conexão",
+          "3": "All-in-One",
+          "4": "Retrolavagem automática (RSA)",
+          "5": "Filtro de retrolavagem com redutor de pressão (DM) + Proteção contra vazamentos (LS)"
+        }
+      },
       "getdgw": {
         "name": "Gateway"
       },

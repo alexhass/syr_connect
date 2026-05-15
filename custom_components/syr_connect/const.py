@@ -279,6 +279,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getVOL",   # Total volume (m³)
     # --- Device Status ---
     "getDEN",   # Device enabled flag
+    "getDFM",   # Device feature mode (device function type)
     "getSTA",   # Device operating status
     # --- Resin Capacity ---
     "getCS1",   # Remaining resin capacity – tank 1 (%)
@@ -596,6 +597,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     "getLNG",   # Device language (0=Deutsch, 1=English)
     "getNOT",   # Retrieving the current notification
     "getSRE",   # Regeneration active
+    "getDFM",   # Device feature mode - diagnostic/informational
     "getTYP",   # Device type code
     "getRG2", "getRG3",  # Regeneration running for tank
     "getRPD",   # Regeneration interval (days)
@@ -853,6 +855,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # Device Info
     "getCNA": "mdi:tag",
     "getCNO": "mdi:identifier",
+    "getDFM": "mdi:cog-outline",         # Device feature mode
     "getDGW": "mdi:router-network",
     "getFIR": "mdi:chip",
     "getIPA": "mdi:ip-network",
@@ -1299,6 +1302,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
+    "getDFM": 0,    # Device feature mode: show as whole number by default
     "getDRP": 0,    # Microleakage test interval: show as whole number by default
     "getDSV": 0,    # Microleakage test: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default

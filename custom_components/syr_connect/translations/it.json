@@ -265,6 +265,16 @@
       "getden": {
         "name": "Dispositivo abilitato"
       },
+      "getdfm": {
+        "name": "Funzionalità del dispositivo",
+        "state": {
+          "1": "Protezione dalle perdite",
+          "2": "Centro di connessione",
+          "3": "All-in-One",
+          "4": "Controlavaggio automatico (RSA)",
+          "5": "Filtro a controlavaggio con riduttore di pressione (DM) + Protezione dalle perdite (LS)"
+        }
+      },
       "getdgw": {
         "name": "Gateway"
       },

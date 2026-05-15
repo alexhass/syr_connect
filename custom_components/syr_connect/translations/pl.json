@@ -263,6 +263,16 @@
             "getden": {
                 "name": "Urządzenie włączone"
             },
+            "getdfm": {
+                "name": "Funkcje urządzenia",
+                "state": {
+                    "1": "Ochrona przed przeciekiem",
+                    "2": "Centrum połączeń",
+                    "3": "All-in-One",
+                    "4": "Automatyczne płukanie wsteczne (RSA)",
+                    "5": "Filtr z płukaniem wstecznym z reduktorem ciśnienia (DM) + Ochrona przed przeciekiem (LS)"
+                }
+            },
             "getdgw": {
                 "name": "Brama sieciowa"
             },

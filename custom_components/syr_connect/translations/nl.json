@@ -265,6 +265,16 @@
       "getden": {
         "name": "Apparaat ingeschakeld"
       },
+      "getdfm": {
+        "name": "Apparaatfuncties",
+        "state": {
+          "1": "Lekbeveiliging",
+          "2": "Aansluitcentrum",
+          "3": "All-in-One",
+          "4": "Automatische terugspoel (RSA)",
+          "5": "Terugspoefilter met drukregelaar (DM) + Lekbeveiliging (LS)"
+        }
+      },
       "getdgw": {
         "name": "Gateway"
       },

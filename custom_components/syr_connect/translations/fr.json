@@ -265,6 +265,16 @@
       "getden": {
         "name": "Appareil activé"
       },
+      "getdfm": {
+        "name": "Fonctionnalités de l'appareil",
+        "state": {
+          "1": "Protection contre les fuites",
+          "2": "Centre de connexions",
+          "3": "All-in-One",
+          "4": "Rétrolavage automatique (RSA)",
+          "5": "Filtre à rétrolavage avec réducteur de pression (DM) + Protection contre les fuites (LS)"
+        }
+      },
       "getdgw": {
         "name": "Passerelle"
       },

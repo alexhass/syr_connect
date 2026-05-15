@@ -265,6 +265,16 @@
       "getden": {
         "name": "Dispositivo activado"
       },
+      "getdfm": {
+        "name": "Funciones del dispositivo",
+        "state": {
+          "1": "Protección contra fugas",
+          "2": "Centro de conexiones",
+          "3": "All-in-One",
+          "4": "Retrolavado automático (RSA)",
+          "5": "Filtro de retrolavado con reductor de presión (DM) + Protección contra fugas (LS)"
+        }
+      },
       "getdgw": {
         "name": "Puerta de enlace"
       },

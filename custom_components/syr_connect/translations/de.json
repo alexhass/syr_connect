@@ -265,6 +265,16 @@
       "getden": {
         "name": "Gerät aktiviert"
       },
+      "getdfm": {
+        "name": "Gerätefunktionen",
+        "state": {
+          "1": "Leckageschutz",
+          "2": "Anschlusscenter",
+          "3": "All-in-One",
+          "4": "Rückspülautomatik (RSA)",
+          "5": "Rückspülfilter mit Druckminderer (DM) + Leckageschutz (LS)"
+        }
+      },
       "getdgw": {
         "name": "Gateway"
       },
