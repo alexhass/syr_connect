@@ -41,6 +41,7 @@ python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-devices
+```
 
 #### List devices (short, prints id/dclg/name and exits)
 
@@ -50,7 +51,6 @@ python scripts/debug_cli.py `
     --password <password> `
     --list-devices
 ```
-```
 
 #### Login + device list + status
 
@@ -59,6 +59,7 @@ python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --get-status
+```
 
 #### One-shot set command (execute single set command and exit)
 
@@ -72,7 +73,6 @@ python scripts/debug_cli.py `
 ```
 
 Note: `--set-command` requires `--set-device` and `--set-value`. The script parses `"true"`/`"false"` to booleans, numeric strings to `int`/`float`, otherwise the raw string is sent.
-```
 
 #### With custom log file
 
