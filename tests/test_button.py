@@ -143,7 +143,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "status": {"getSIR": 1},
+                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
             }
         ]
     }
@@ -164,13 +164,13 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mo
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": 1},
+                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
             },
             {
                 "id": "device2",
                 "name": "Device 2",
                 "project_id": "project1",
-                "status": {"getSIR": 1},
+                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
             },
         ]
     }
@@ -359,6 +359,7 @@ async def test_async_setup_entry_create_setsir_when_getsir_present(hass: HomeAss
                 "project_id": "project1",
                 "status": {
                     "getSIR": "1",  # getSIR is present - setSIR button should be created
+                    "getCNA": "LEXplus10S",  # model with maximum_regeneration_interval set
                 },
             }
         ]
@@ -405,7 +406,7 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": falsy_value},
+                "status": {"getSIR": falsy_value, "getCNA": "LEXplus10S"},
             }
         ]
     }

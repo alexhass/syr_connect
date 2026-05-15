@@ -181,7 +181,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
                     "getRTM": "30",
                     "getSV1": "5",
                     "getRPD": "2",
-                    "getCNA": "LEXPLUS10S",
+                    "getCNA": "LEXplus10S",
                 },
             }
         ]
@@ -600,6 +600,7 @@ async def test_async_setup_entry_zero_sv_values_always_shown(hass: HomeAssistant
                     "getSV1": "0",  # Zero value should still be shown
                     "getSV2": "0",  # Zero value should also be shown
                     "getSV3": "5",  # Non-zero should be created
+                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume set
                 },
             }
         ]
@@ -924,6 +925,7 @@ async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant, creat
                 "status": {
                     "getSV1": "",  # Empty value should be skipped
                     "getSV2": "5",
+                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume set
                 },
             }
         ]
@@ -1104,7 +1106,7 @@ async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant, crea
                 "type": "LEXPLUS10SL",
                 "project_id": "project1",
                 "status": {
-                    "getCNA": "LEXPLUS10SL",
+                    "getCNA": "LEXplus10SL",
                     "getSV1": "5",
                 },
             }
@@ -1121,7 +1123,12 @@ async def test_async_setup_entry_custom_model_capacity(hass: HomeAssistant, crea
 
 
 async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
-    """Test async_setup_entry gets model from type field when getCNA missing."""
+    """Test async_setup_entry does not create SVx selects for unknown models.
+
+    When getCNA is missing and the device type is not a known model name,
+    detect_model returns UNKNOWN_MODEL with maximum_salt_volume=None,
+    so no salt-container selects are created.
+    """
     data = {
         "devices": [
             {
@@ -1140,9 +1147,9 @@ async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, crea
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # Should use default capacity (25) for unknown model
+    # Unknown model has maximum_salt_volume=None, so getSV1 select must not be created
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
-    assert len(sv1_entities) == 1
+    assert len(sv1_entities) == 0
 
 
 async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> None:
@@ -1188,6 +1195,7 @@ async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant, create_mo
                     "getSV1": "5",
                     "getSV2": "10",
                     "getSV3": "15",
+                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume set
                 },
             }
         ]

@@ -73,7 +73,7 @@ async def test_button_platform_creates_entities(hass: HomeAssistant) -> None:
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": 1},
+                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
             }
         ]
     }
@@ -102,6 +102,7 @@ async def test_select_platform_creates_entities(hass: HomeAssistant) -> None:
                     "getRTM": "30",
                     "getSV1": "5",
                     "getRPD": "2",
+                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume and maximum_regeneration_interval set
                 },
             }
         ]
