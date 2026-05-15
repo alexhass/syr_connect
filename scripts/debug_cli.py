@@ -19,7 +19,7 @@ Options:
     --set-value VALUE           Value to use with --set-command (bool/int/float/string parsed)
     --log-file PATH             Write output additionally to this file (no file written by default)
     --show-password             Show password in log output (default: masked as "***")
-    --no-decrypt                Skip decryption step (show raw encrypted response)
+    --no-decrypt                Skip decryption step; also prevents set commands from running
 
 Examples:
 
@@ -81,7 +81,7 @@ from custom_components.syr_connect.payload_builder import PayloadBuilder  # noqa
 from custom_components.syr_connect.response_parser import ResponseParser  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Logging setup â€” maximum verbosity on every relevant logger
+# Logging setup -- maximum verbosity on every relevant logger
 # ---------------------------------------------------------------------------
 
 def _setup_logging(log_file: str | None = None) -> None:
@@ -146,22 +146,22 @@ class DebugXmlClient:
         self.skip_decrypt = skip_decrypt
         self.show_password = show_password
 
-        # Derived URLs from base_url (same path segments as production)
-        # Endpoint for executing set commands (same service family)
-        self.device_set_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
+        # Derived URLs -- same path segments as production, keyed by operation
         self.login_url = f"{base_url}/WebServices/Api/SyrApiService.svc/REST/GetProjects"
         self.device_list_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
         self.device_status_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
+        self.device_set_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
 
         _LOG.info("=== Endpoint configuration ===")
-        _LOG.info("  base_url        : %s", base_url)
-        _LOG.info("  login_url       : %s", self.login_url)
-        _LOG.info("  device_list_url : %s", self.device_list_url)
+        _LOG.info("  base_url          : %s", base_url)
+        _LOG.info("  login_url         : %s", self.login_url)
+        _LOG.info("  device_list_url   : %s", self.device_list_url)
         _LOG.info("  device_status_url : %s", self.device_status_url)
-        _LOG.info("  app_version     : %s", app_version)
-        _LOG.info("  api_app_name    : %s", app_name)
-        _LOG.info("  api_package_name: %s", api_package_name)
-        _LOG.info("  user_agent      : %s", user_agent)
+        _LOG.info("  device_set_url    : %s", self.device_set_url)
+        _LOG.info("  app_version       : %s", app_version)
+        _LOG.info("  api_app_name      : %s", app_name)
+        _LOG.info("  api_package_name  : %s", api_package_name)
+        _LOG.info("  user_agent        : %s", user_agent)
 
         self.session_data: str = ""
         self.projects: list[dict] = []
@@ -176,7 +176,7 @@ class DebugXmlClient:
         )
         self.payload_builder = PayloadBuilder(app_version, checksum, app_name)
         self.response_parser = ResponseParser()
-        # For debugging runs, disable retrying to surface errors immediately
+        # Disable retrying for debug runs to surface errors immediately
         self.http_client = HTTPClient(session, user_agent, max_retries=1)
 
     # ------------------------------------------------------------------
@@ -209,9 +209,10 @@ class DebugXmlClient:
             _LOG.error("Connection error: %s\n  Hint: check --base-url and network", exc)
             _LOG.debug("Full connection error details", exc_info=True)
             raise
+
         _LOG.debug("--- Raw login response ---\n%s", raw_response)
         if self.skip_decrypt:
-            _LOG.warning("--no-decrypt flag set â€” skipping decryption, cannot extract session.")
+            _LOG.warning("--no-decrypt flag set -- skipping decryption, cannot extract session.")
             return False
 
         _LOG.info("Parsing login response ...")
@@ -232,6 +233,10 @@ class DebugXmlClient:
 
         return True
 
+    # ------------------------------------------------------------------
+    # Set command
+    # ------------------------------------------------------------------
+
     async def set_device_status(self, device_id: str, command: str, value: Any) -> bool:
         """Execute a single set-command against a device (dclg).
 
@@ -246,7 +251,7 @@ class DebugXmlClient:
         _LOG.info("Setting %s on device %s to %r", command, device_id, value)
 
         if self.skip_decrypt:
-            _LOG.warning("--no-decrypt flag set — cannot perform set operation without a valid session.")
+            _LOG.warning("--no-decrypt flag set -- cannot perform set operation without a valid session.")
             return False
 
         payload = self.payload_builder.build_set_status_payload(self.session_data, device_id, command, value)
@@ -322,6 +327,29 @@ class DebugXmlClient:
 
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _parse_set_value(raw: str) -> Any:
+    """Parse a CLI --set-value string into the most appropriate Python type.
+
+    Precedence: bool > int > float > str.
+    """
+    lower = raw.lower()
+    if lower in ("true", "false"):
+        return lower == "true"
+    try:
+        return float(raw) if "." in raw else int(raw)
+    except ValueError:
+        return raw
+
+
+def _collect_all_devices(client: DebugXmlClient, projects: list[dict]) -> tuple[list[dict[str, Any]], list[str]]:
+    """Synchronous helper placeholder -- actual collection is done with await in _run."""
+    raise NotImplementedError("Use the async version in _run directly.")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -371,13 +399,13 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-decrypt",
         action="store_true",
-        help="Skip decryption of login response (show raw XML only)",
+        help="Skip decryption of login response (show raw XML only); also prevents set commands",
     )
     parser.add_argument(
         "--log-file",
         default=None,
         metavar="PATH",
-        help="Write log output to this file in addition to stdout (default: debug_cli.log)",
+        help="Write log output to this file in addition to stdout (no file written by default)",
     )
     parser.add_argument(
         "--list-devices",
@@ -386,7 +414,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--identity",
-        help="Device identifier (id, dclg or name) to target with a set command",
+        help="Device identifier (id, dclg, serial_number, or name) to target with a set command",
     )
     parser.add_argument(
         "--set-command",
@@ -394,7 +422,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--set-value",
-        help="Value to use with the set command",
+        help="Value to use with the set command (bool/int/float/string parsed automatically)",
     )
     return parser.parse_args()
 
@@ -433,10 +461,12 @@ async def _run(args: argparse.Namespace) -> None:
             sys.exit(1)
 
         if not ok:
-            _LOG.warning("Login returned False â€” aborting further steps.")
+            _LOG.warning("Login returned False -- aborting further steps.")
             return
 
-        # If requested, list devices and exit
+        # ------------------------------------------------------------------
+        # --list-devices: print a summary and exit
+        # ------------------------------------------------------------------
         if args.list_devices:
             _LOG.info("Listing devices for all projects")
             for project in client.projects:
@@ -451,13 +481,14 @@ async def _run(args: argparse.Namespace) -> None:
                         print(f"  id={d.get('id')}  dclg={d.get('dclg')}  name={d.get('name')}")
             return
 
-        # If requested, execute a single set command and exit
+        # ------------------------------------------------------------------
+        # --set-command: execute a single set command and exit
+        # ------------------------------------------------------------------
         if args.set_command:
             if not args.identity or args.set_value is None:
                 _LOG.error("--set-command requires --identity and --set-value")
                 sys.exit(1)
 
-            # Collect devices from all projects
             all_devices: list[dict[str, Any]] = []
             for project in client.projects:
                 try:
@@ -467,11 +498,13 @@ async def _run(args: argparse.Namespace) -> None:
                     continue
                 all_devices.extend(ds or [])
 
-            target = None
-            for d in all_devices:
-                if args.identity in (d.get("id"), d.get("dclg"), d.get("serial_number"), d.get("name")):
-                    target = d
-                    break
+            target = next(
+                (
+                    d for d in all_devices
+                    if args.identity in (d.get("id"), d.get("dclg"), d.get("serial_number"), d.get("name"))
+                ),
+                None,
+            )
 
             if not target:
                 _LOG.error("Device '%s' not found. Available devices:", args.identity)
@@ -480,20 +513,7 @@ async def _run(args: argparse.Namespace) -> None:
                 sys.exit(1)
 
             dclg = target.get("dclg") or target.get("id")
-
-            # Parse value: booleans, ints, floats fallback to raw string
-            sval = args.set_value
-            sval_lower = sval.lower() if isinstance(sval, str) else ""
-            if sval_lower in ("true", "false"):
-                value: Any = sval_lower == "true"
-            else:
-                try:
-                    if "." in sval:
-                        value = float(sval)
-                    else:
-                        value = int(sval)
-                except Exception:
-                    value = sval
+            value = _parse_set_value(args.set_value)
 
             success = await client.set_device_status(dclg, args.set_command, value)
             if success:
@@ -502,12 +522,15 @@ async def _run(args: argparse.Namespace) -> None:
             _LOG.error("Set command failed for device %s", target.get("id"))
             sys.exit(1)
 
+        # ------------------------------------------------------------------
+        # --get-devices / --get-status: fetch and optionally poll status
+        # ------------------------------------------------------------------
         if args.get_devices or args.get_status:
-            all_devices: list[dict] = []
+            all_devices: list[dict[str, Any]] = []
             for project in client.projects:
                 try:
                     devices = await client.get_devices(project["id"])
-                    all_devices.extend(devices)
+                    all_devices.extend(devices or [])
                 except Exception as exc:
                     _LOG.error("Failed to get devices for project %s: %s", project.get("id"), exc)
                     _LOG.debug("Device list traceback", exc_info=True)
@@ -531,4 +554,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
