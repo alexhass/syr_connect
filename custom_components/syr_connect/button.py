@@ -79,12 +79,20 @@ async def async_setup_entry(
 
         created_commands: set[str] = set()
 
+        model_info = detect_model(status)
+
         for command, _name in action_buttons:
             # Derive the corresponding "getXYZ" key from the command name
             # (e.g. 'setALA' -> 'getALA') and skip if it's not present
             # in the device status.
             get_key = "get" + command[3:]
             if get_key not in status:
+                continue
+
+            # setSIR (manual regeneration trigger) is only meaningful for
+            # softener models that actually support scheduled regeneration.
+            # Workaround for https://github.com/alexhass/syr_connect/issues/24
+            if command == "setSIR" and model_info.get("maximum_regeneration_interval") is None:
                 continue
 
             entities.append(
