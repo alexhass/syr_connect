@@ -17,6 +17,7 @@ UNKNOWN_MODEL: dict[str, Any] = {
     "configuration_url": "https://syrconnect.de/",
     "display_name": "Unknown model",
     "manufacturer": "Unknown",
+    "maximum_regeneration_interval": None,
     "name": "unknown",
 }
 
@@ -47,6 +48,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT TWIN",
         "manufacturer": "CONEL",
+        "maximum_regeneration_interval": 3,
         "name": "conelclearprosofttwin",
         "srn_prefix": "214",
     },
@@ -55,6 +57,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT",
         "manufacturer": "CONEL",
+        "maximum_regeneration_interval": 3,
         "name": "conelclearprosoft",
         "srn_prefix": "215",
     },
@@ -81,6 +84,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 4,
         "name": "lexplus10",
         "ver_prefix": None,
     },
@@ -90,6 +94,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 S Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 4,
         "name": "lexplus10s",
         "ver_prefix": None,
     },
@@ -99,6 +104,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 SL Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 4,
         "name": "lexplus10sl",
         "ver_prefix": None,
     },
@@ -108,6 +114,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX10 Connect",
         "manufacturer": "SYR Oceanic",
+        "maximum_regeneration_interval": 14,
         "name": "l10",
         "ver_prefix": None,
     },
@@ -117,6 +124,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX20 Connect",
         "manufacturer": "SYR Oceanic",
+        "maximum_regeneration_interval": 14,
         "name": "l20",
         "ver_prefix": None,
     },
@@ -126,6 +134,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX30 Connect",
         "manufacturer": "SYR Oceanic",
+        "maximum_regeneration_interval": 14,
         "name": "l30",
         "ver_prefix": None,
     },
@@ -135,6 +144,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX10 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex10",
         "ver_prefix": None,
     },
@@ -144,6 +154,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX20 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex20",
         "ver_prefix": None,
     },
@@ -153,6 +164,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX30 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex30",
         "ver_prefix": None,
     },
@@ -162,6 +174,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX40 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex40",
         "ver_prefix": None,
     },
@@ -171,6 +184,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX60 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex60",
         "ver_prefix": None,
     },
@@ -180,6 +194,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX80 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex80",
         "ver_prefix": None,
     },
@@ -189,6 +204,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX100 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 14,
         "name": "lex100",
         "ver_prefix": None,
     },
@@ -197,6 +213,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 2500 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 3,
         "name": "neosoft2500",
         "srn_prefix": "206",
     },
@@ -205,6 +222,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 5000 Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 3,
         "name": "neosoft5000",
         # TODO: Untested model.
         "ver_prefix": "NSS",
@@ -258,6 +276,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Softwater UNO A25",
         "manufacturer": "Sanibel",
+        "maximum_regeneration_interval": 3,
         "name": "sanibelsoftwateruno",
         "srn_prefix": "207",
     },
@@ -266,6 +285,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Trio DFR/LS Connect",
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 3,
         "name": "trio",
         "srn_prefix": "113",
     },
@@ -276,7 +296,7 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
-        dict: {"name": ..., "display_name": ..., "base_path": ..., "manufacturer": ..., "configuration_url": ...}
+        dict: {"name": ..., "display_name": ..., "base_path": ..., "manufacturer": ..., "configuration_url": ..., "maximum_regeneration_interval": ...}
         If no signature matches, returns an 'unknown' model dict.
 
     Detection priority (highest to lowest):
@@ -346,8 +366,9 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             display = sig.get("display_name", name)
             manufacturer = sig.get("manufacturer")
             configuration_url = sig.get("configuration_url")
+            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval}
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
@@ -358,8 +379,9 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             display = sig.get("display_name", name)
             manufacturer = sig.get("manufacturer")
             configuration_url = sig.get("configuration_url")
+            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval}
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
@@ -386,22 +408,25 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
                 continue
             manufacturer = sig.get("manufacturer")
             configuration_url = sig.get("configuration_url")
+            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval}
 
         # If only attribute equality is required and already matched, return this model.
         if sig.get("attrs_equals"):
             manufacturer = sig.get("manufacturer")
             configuration_url = sig.get("configuration_url")
+            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval}
 
         # If version prefix or contains is specified and matches, return this model.
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
             manufacturer = sig.get("manufacturer")
             configuration_url = sig.get("configuration_url")
+            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval}
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])

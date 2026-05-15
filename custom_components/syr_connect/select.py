@@ -143,7 +143,8 @@ async def async_setup_entry(
         device_name = device.get("name", device_id)
         status = device.get("status", {})
         # Salt amount selects (max depends on device model)
-        model = detect_model(status)["name"]
+        model_info = detect_model(status)
+        model = model_info["name"]
         max_capacity = int(_SYR_CONNECT_MODEL_SALT_CAPACITY.get(str(model), 25))
         for sv_key in ("getSV1", "getSV2", "getSV3"):
             sv_value = status.get(sv_key)
@@ -159,14 +160,12 @@ async def async_setup_entry(
                 )
             )
 
-        # Regeneration interval select (1..4 days)
+        # Regeneration interval select (max days depends on device model)
         rpd_value = status.get("getRPD")
         if rpd_value is not None and rpd_value != "":
             try:
                 if float(rpd_value) != 0:
-                    # Lex models support up to 4 days, other models only up to 3 days
-                    lex_models = {"lexplus10", "lexplus10s", "lexplus10sl"}
-                    max_rpd = 4 if str(model) in lex_models else 3
+                    max_rpd = model_info.get("maximum_regeneration_interval", 3)
                     entities.append(
                         SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 1, max_rpd, 1)
                     )
