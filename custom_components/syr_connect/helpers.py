@@ -889,16 +889,26 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         return (mapped, code) if mapped is not None else (None, code)
 
     if model in (
+        "concept200duo",
+        "concept200replacementfilter",
+        "conceptmuco",
         "conelclearprosoft",
         "conelclearprosofttwin",
-        "pontosbase",
+        "conelmuco",
+        "ditechmuco",
         "neosoft2500",
         "neosoft5000",
+        "optimamuco",
+        "optimat22duo",
+        "optimatreplacementfilter",
+        "pontosbase",
         "safetech",
-        "safetechv4",
         "safetechplus",
+        "safetechv4",
         "sanibelleakprotect",
+        "sanibelsoftwaterduo",
         "sanibelsoftwateruno",
+        "syrmuco",
         "trio",
     ):
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)
