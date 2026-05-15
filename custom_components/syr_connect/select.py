@@ -141,29 +141,30 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        # Salt amount selects (max depends on device model)
+        # Salt amount selects (max depends on device model; skip for models without salt containers)
         model_info = detect_model(status)
-        max_capacity = int(model_info.get("maximum_salt_volume") or 25)
-        for sv_key in ("getSV1", "getSV2", "getSV3"):
-            sv_value = status.get(sv_key)
-            if sv_value is None or sv_value == "":
-                continue
-            try:
-                float(sv_value)  # Validate it's a valid number
-            except (ValueError, TypeError):
-                continue
-            entities.append(
-                SyrConnectNumericSelect(
-                    coordinator, device_id, device_name, sv_key, 0, max_capacity, 1
+        max_capacity = model_info.get("maximum_salt_volume")
+        if max_capacity is not None:
+            for sv_key in ("getSV1", "getSV2", "getSV3"):
+                sv_value = status.get(sv_key)
+                if sv_value is None or sv_value == "":
+                    continue
+                try:
+                    float(sv_value)  # Validate it's a valid number
+                except (ValueError, TypeError):
+                    continue
+                entities.append(
+                    SyrConnectNumericSelect(
+                        coordinator, device_id, device_name, sv_key, 0, int(max_capacity), 1
+                    )
                 )
-            )
 
-        # Regeneration interval select (max days depends on device model)
+        # Regeneration interval select (max days depends on device model; skip for models without regeneration)
         rpd_value = status.get("getRPD")
-        if rpd_value is not None and rpd_value != "":
+        max_rpd = model_info.get("maximum_regeneration_interval")
+        if rpd_value is not None and rpd_value != "" and max_rpd is not None:
             try:
                 if float(rpd_value) != 0:
-                    max_rpd = model_info.get("maximum_regeneration_interval", 3)
                     entities.append(
                         SyrConnectNumericSelect(coordinator, device_id, device_name, "getRPD", 1, max_rpd, 1)
                     )
