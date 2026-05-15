@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Debug script for tracing the XML API login process.
 
 Usage:

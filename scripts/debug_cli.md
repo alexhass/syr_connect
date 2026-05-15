@@ -1,4 +1,4 @@
-﻿# debug_cli.py â€“ Command Reference
+# debug_cli.py - Command Reference
 
 ## Options
 
@@ -6,14 +6,14 @@
 | --- | --- | --- |
 | `--username EMAIL` | *(required)* | SYR Connect account e-mail |
 | `--password PASSWORD` | *(required)* | Account password |
-| `--show-password` | â€” | Show password in log output (default: masked as `***`) |
+| `--show-password` | - | Show password in log output (default: masked as `***`) |
 | `--base-url URL` | `https://syrconnect.de` | API base URL |
 | `--api-app-name STRING` | `SYR Connect` | API app name for login payload. Login fails if value is wrong. |
 | `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. |
 | `--user-agent STRING` | `_SYR_CONNECT_CLIENT_USER_AGENT` from `const.py` | HTTP User-Agent header |
-| `--get-devices` | â€” | Fetch device list for every project after login |
-| `--get-status` | â€” | Fetch device status for every device (implies `--get-devices`) |
-| `--no-decrypt` | â€” | Skip decryption, show raw XML response |
+| `--get-devices` | - | Fetch device list for every project after login |
+| `--get-status` | - | Fetch device status for every device (implies `--get-devices`) |
+| `--no-decrypt` | - | Skip decryption, show raw XML response |
 | `--log-file PATH` | *(none)* | Write log output to this file in addition to stdout |
 
 ---
