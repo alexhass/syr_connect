@@ -102,8 +102,9 @@ Getestet und gemeldet als funktionierend:
 - SYR SafeTech Connect
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
+- SYR Oceanic i-LEX / Limex iQ Single (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
 
-Andere Geräte sind auch interessant, müssen aber noch integriert werden (bitte melden):
+Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindest getestet werden (bitte melden):
 
 - CONEL CLEAR PRO SOFT TWIN
 - concept single water softener
@@ -204,7 +205,6 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 
 #### Binärsensoren
 
-- **Regeneration aktiv**: Zeigt an, ob gerade ein Regenerationszyklus läuft
 - **Summer-Status**: Zeigt an, ob der Gerätesummer aktuell aktiviert ist
 
 #### Buttons (Aktionen)
