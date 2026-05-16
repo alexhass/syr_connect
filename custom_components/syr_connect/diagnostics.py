@@ -367,7 +367,7 @@ async def async_get_config_entry_diagnostics(
                     if not devices:
                         raise Exception("no devices returned")
                     did = devices[0].get("id")
-                    data = await api.get_device_status(did)
+                    data = await api.get_device_status(str(did))
                     # Redact sensitive keys from the parsed JSON payload
                     redacted = async_redact_data(data, _TO_REDACT)
                     # Ensure SRN is fully redacted for raw_json payloads
