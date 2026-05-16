@@ -103,7 +103,7 @@ Tested and reported as working:
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
 
-Other devices are also of interest, but still need to be integrated (please report):
+Other devices are also of interest, but may need to be integrated or at least tested (please report):
 
 - CONEL CLEAR PRO SOFT TWIN
 - concept Einzelenthärtungsanlage
@@ -204,7 +204,6 @@ The integration provides comprehensive monitoring of your devices:
 
 #### Binary Sensors
 
-- **Regeneration Active**: Indicates whether a regeneration cycle is currently running
 - **Buzzer State**: Indicates whether the device buzzer is currently enabled
 
 #### Buttons (Actions)
