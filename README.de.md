@@ -102,15 +102,15 @@ Getestet und gemeldet als funktionierend:
 - SYR SafeTech Connect
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
-- SYR Oceanic i-LEX / Limex iQ Single (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
+- SYR Oceanic i-LEX / Limex iQ Einzel (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
 
 Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindest getestet werden (bitte melden):
 
 - CONEL CLEAR PRO SOFT TWIN
-- concept single water softener
-- concept twin water softener
-- Ditech single water softener
-- Ditech twin water softener
+- concept Einzelenthärtungsanlage
+- concept Doppelenthärtungsanlage
+- Ditech Einzelenthärtungsanlage
+- Ditech Doppelenthärtungsanlage
 - Hansgrohe PontosBase
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
@@ -121,10 +121,10 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
-- TAKE single water softener
-- TAKE twin water softener
-- Optima single water softener
-- Optima twin water softener
+- TAKE Einzelenthärtungsanlage
+- TAKE Doppelenthärtungsanlage
+- Optima Einzelenthärtungsanlage
+- Optima Doppelenthärtungsanlage
 
 **Hinweis**: Wenn ein Gerät in deinem SYR Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
 
