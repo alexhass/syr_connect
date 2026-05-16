@@ -102,7 +102,7 @@ Tested and reported as working:
 - SYR SafeTech Connect
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
-- SYR Oceanic i-LEX Single (i-LEX10/i-LEX12/i-LEX15/i-LEX20/i-LEX25/i-LEX30/i-LEX40/i-LEX50/i-LEX60/i-LEX70/i-LEX80/i-LEX90/i-LEX100)
+- SYR Oceanic i-LEX / Limex iQ Single (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
 
 Other devices are also of interest, but may need to be integrated or at least tested (please report):
 
