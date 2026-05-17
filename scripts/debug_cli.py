@@ -73,6 +73,7 @@ from custom_components.syr_connect.const import (  # noqa: E402
     _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
+    _SYR_CONNECT_CLIENT_OS_VERSION,
     _SYR_CONNECT_CLIENT_USER_AGENT,
 )
 from custom_components.syr_connect.encryption import SyrEncryption  # noqa: E402
@@ -468,6 +469,7 @@ async def _run(args: argparse.Namespace) -> None:
             f"-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}"
             f"-{_SYR_CONNECT_CLIENT_OS_NAME}"
             f"-{_SYR_CONNECT_CLIENT_OS_MODEL}"
+            f"-{_SYR_CONNECT_CLIENT_OS_VERSION}"
             f"-{args.api_package_name}"
         )
 

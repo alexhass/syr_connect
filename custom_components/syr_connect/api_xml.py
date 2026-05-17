@@ -47,6 +47,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
+    _SYR_CONNECT_CLIENT_OS_VERSION,
     _SYR_CONNECT_CLIENT_USER_AGENT,
     _SYR_CONNECT_SESSION_TIMEOUT_MINUTES,
 )
@@ -120,11 +121,13 @@ class SyrConnectXmlAPI:
         self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
         self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
 
+        # Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
         _app_version = (
             f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
             f"-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}"
             f"-{_SYR_CONNECT_CLIENT_OS_NAME}"
             f"-{_SYR_CONNECT_CLIENT_OS_MODEL}"
+            f"-{_SYR_CONNECT_CLIENT_OS_VERSION}"
             f"-{_bundle_id}"
         )
 
