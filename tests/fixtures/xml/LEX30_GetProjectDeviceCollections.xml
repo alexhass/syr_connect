@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <prs>
+    <pr pg="06ffcab9-bb6a-ee11-8007-be3af2b6059f" pn="My+Projekt" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="02:00:00" />
+  </prs>
+  <col>
+    <dcl dclg="daa8b540-c9cd-ef11-800c-be3af2b6059f" ali="Example+Water+Softener" dkv="16" mod="0" pg="06ffcab9-bb6a-ee11-8007-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+  </col>
+  <dvs>
+    <d dg="dca8b540-c9cd-ef11-800c-be3af2b6059f" sn="123456789" sbt="3" dfw="LEX+V6.4" dk="40" dclg="daa8b540-c9cd-ef11-800c-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="dba8b540-c9cd-ef11-800c-be3af2b6059f" so="1" ondt="" mac="" ss="0" owh="2" whu="0" />
+  </dvs>
+  <cs v="2D731" />
+</sc>
