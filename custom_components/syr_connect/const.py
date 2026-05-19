@@ -75,8 +75,17 @@ _SYR_CONNECT_CLIENT_OS_KERNEL = "Darwin/21.6.0"
 _SYR_CONNECT_CLIENT_USER_AGENT = f"{_SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME}/{_SYR_CONNECT_CLIENT_SYR_BUNDLE_BUILDNUMBER} {_SYR_CONNECT_CLIENT_OS_FRAMEWORK} {_SYR_CONNECT_CLIENT_OS_KERNEL}"
 
 # Cloud API service registry
+#
 # Each entry represents one distinct backend service.
-# `service` (== cf_bundle_identifier) is used as the unique key stored in config entries.
+# - api_app_name: Required. The app name sent in the API login request. Must match the expected value for the service,
+#   otherwise login will fail.
+# - api_base_url: Required. Base URL for API endpoints (e.g. login, device status) - used to construct full API URLs.
+# - cf_bundle_identifier: The Core Foundation bundle identifier of the official app - used as unique key for service
+#   registry.
+# - display_name: Human-friendly name for the service - used in HA integration UI for configuration.
+#
+# Note: The value of "api_app_name" and "api_base_url" are hard bound to each other. These need to be used together or
+# the api login fails. cf_bundle_identifier is not validated on server side, but should be used to emulate the mobile app.
 _SYR_CONNECT_API_SERVICES: list[dict] = [
     {
         "api_app_name": "SYR Connect",
