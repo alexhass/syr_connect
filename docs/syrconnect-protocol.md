@@ -288,7 +288,7 @@ The third request and all following requests are also to GetAllCommands answerin
 | 61 | Hygiene module | |
 | 62 | Hygiene module | |
 | 63 | Hygiene module | |
-| 80 | LEX Plus 10 | sbt: 2=LEX Plus S<br>3=LEX 10<br>4=LEX 20<br>5=LEX 30<br6=R+F Ion One Connect |
+| 80 | LEX Plus 10 | sbt: 2=LEX Plus S<br>3=LEX 10<br>4=LEX 20<br>5=LEX 30<br>6=R+F Ion One Connect |
 | 100 | CONTROLICmini | |
 | 120 | SafeFloor | |
 | 122 | SafeFloor | |
