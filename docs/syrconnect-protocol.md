@@ -404,7 +404,7 @@ The third request and all following requests are also to GetAllCommands answerin
 
 ### WiFi-APs
 
-Hinweis: Ein `dkv`-Eintrag mit `ref=XX` verweist auf `dkv` `XX` und verwendet denselben WiFi-AP. Die Tabelle unten listet die bekannten WiFi-APs und enthält auch die referenzierenden `dkv`-IDs.
+Note: A `dkv` entry with `ref=XX` refers to `dkv` `XX` and uses the same Wi-Fi access point. The table below lists the known Wi-Fi access points and also includes the referencing `dkv` IDs.
 
 | dkv | Device name | WiFi-AP |
 | ----: | --- | --- |
