@@ -438,106 +438,106 @@ All known properties have 2-character names, e.g. XY or 3-character names, e.g. 
 
 This data is used to "register" the device in the SYR Connect cloud via GetBasicCommands.
 
-| Property        | Example      | Unit   | Description
-|-----------------|--------------|--------|-------------------------------------------------------
-| getSRN          | "123456789"  |        | Serial number of the water softening unit. Used to identify the unit in the SYR Connect cloud
-| getVER          | "1.7"        |        | Firmware version
-| getTYP          | "80"         |        | Type of device. Known values: 1 = Safe-T+, 80 = Lex water softeners
-| getCNA          | "LEXplus10S" |        | Name of device. Known values: "LEXplus10", "LEXplus10S", "LEXplus10SL"
+| Property          | Example        | Unit     | Description                                                            |
+| ----------------- | -------------- | -------- | ---------------------------------------------------------------------- |
+| getSRN            | "123456789"    |          | Serial number of the water softening unit. Used to identify the unit in the SYR Connect cloud |
+| getVER            | "1.7"          |          | Firmware version                                                       |
+| getTYP            | "80"           |          | Type of device. Known values: 1 = Safe-T+, 80 = Lex water softeners    |
+| getCNA            | "LEXplus10S"   |          | Name of device. Known values: "LEXplus10", "LEXplus10S", "LEXplus10SL" |
 
 ### Further Device data
 
 Some further data about the device
 
-| Property        | Example                          | Unit   | Description
-|-----------------|----------------------------------|--------|-------------------------------------------------------
-| getMAN          | "Syr"                            |        | Manufacturer
-| getFIR          | "SLPS"                           |        | Firmware name. Used to find the correct firmware file during firmware update
-| getCDE          | "010SCA19DF0917.01.024.1.1.0010" |        | *unknown constant (some kind of device identifier?)*
-| getTMZ          | "4" (old docs: "01:00" ?)        |        | Timezone (Returns unclear value "4" on LEXplus10SL, NeoSoft2500)
-| getDAT          | "1694635165"                     |        | Current time as UNIX timestamp (seconds since 1.1.1970)
-| getLAN          | "1"                              |        | Language of the UI (0=English, 1=German, 3=Spanish)
-| getHWV          | "V1"                             |        | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+)
-| getCFW          | "176"                            |        | Connected firmware component version (Trio DFR/LS, Sanibel)
-| getVER2         | "2.4.2.0_4.3.2_2.4.6"            |        | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER
-| getENV          | "PROD"                           |        | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel)
-| getRTC          | "1775055037"                     |        | Device RTC as UNIX timestamp (NeoSoft, Sanibel). See also getDAT
-| getRURL         | `"https://storageiotsyr.blob..."`|        | Firmware update resource URL (NeoSoft, Sanibel)
-| getFRN          | "A25032111217"                   |        | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel)
-| getSRV          | "14.02.2027"                     |        | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel)
-| getCNO          | "EPFI6860AAPA7S8"                |        | Code number / device sub-identifier (Safe-T+, LEXplus10SL)
+| Property        | Example                          | Unit   | Description                                                                   |
+|-----------------|----------------------------------|--------|------------------------------------------------------------------------------ |
+| getMAN          | "Syr"                            |        | Manufacturer                                                                  |
+| getFIR          | "SLPS"                           |        | Firmware name. Used to find the correct firmware file during firmware update  |
+| getCDE          | "010SCA19DF0917.01.024.1.1.0010" |        | *unknown constant (some kind of device identifier?)*                          |
+| getTMZ          | "4" (old docs: "01:00" ?)        |        | Timezone (Returns unclear value "4" on LEXplus10SL, NeoSoft2500)              |
+| getDAT          | "1694635165"                     |        | Current time as UNIX timestamp (seconds since 1.1.1970)                       |
+| getLAN          | "1"                              |        | Language of the UI (0=English, 1=German, 3=Spanish)                           |
+| getHWV          | "V1"                             |        | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+)             |
+| getCFW          | "176"                            |        | Connected firmware component version (Trio DFR/LS, Sanibel)                   |
+| getVER2         | "2.4.2.0_4.3.2_2.4.6"            |        | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER |
+| getENV          | "PROD"                           |        | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel)             |
+| getRTC          | "1775055037"                     |        | Device RTC as UNIX timestamp (NeoSoft, Sanibel). See also getDAT              |
+| getRURL         | `"https://storageiotsyr.blob..."`|        | Firmware update resource URL (NeoSoft, Sanibel)                               |
+| getFRN          | "A25032111217"                   |        | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
+| getSRV          | "14.02.2027"                     |        | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel) |
+| getCNO          | "EPFI6860AAPA7S8"                |        | Code number / device sub-identifier (Safe-T+, LEXplus10SL)                    |
 
 ### Device Status
 
-| Property        | Example                          | Unit   | Description
-|-----------------|----------------------------------|--------|-------------------------------------------------------
-| getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes.
-| getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"        |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.
-| getDEN          | "1"                              |        | Device enabled/disabled flag (1 = enabled, 0 = disabled)
-| getALH          | "2026-02-07 17:41:10:A0..."      |        | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel)
+| Property        | Example                          | Unit   | Description |
+|-----------------|----------------------------------|--------|------------------------------------------------------- |
+| getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes. |
+| getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"        |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized. |
+| getDEN          | "1"                              |        | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
+| getALH          | "2026-02-07 17:41:10:A0..."      |        | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel) |
 
 ### Network
 
-| Property        | Example               | Unit   | Description
-|-----------------|-----------------------|--------|-------------------------------------------------------
-| getAPT          | "300"                 | s      | Access Point Timeout
-| getMAC          | "01:23:45:67:89:AB"   |        | MAC address of the network port
-| getIPA          | "123.123.123.1"       |        | IP-Adress
-| getSNM          | "255.255.255.0"       |        | Subnet mask
-| getDNS          | "123.123.123.254"     |        | DNS server
-| getDGW          | "123.123.123.254"     |        | Default gateway
-| getCURL         | "iot-syrconnect.azure-devices.net" |  | Azure IoT Hub connection URL (Trio DFR/LS, SafeTech, NeoSoft, Sanibel)
-| getMQT          | "1"                   |        | Network protocol: 1 = MQTT (Safe-Tech V4) - may be WRONG
-| getWFL          | ["SSID1:Strength", ...] |      | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel)
-| getWAD          | "False"               |        | Wi-Fi auto-discovery flag (NeoSoft, Sanibel)
-| getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel)
-| getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)
-| getWNS          | "False"               |        | Wi-Fi network scan flag (Trio DFR/LS)
+| Property        | Example               | Unit   | Description                                            |
+|-----------------|-----------------------|--------|------------------------------------------------------- |
+| getAPT          | "300"                 | s      | Access Point Timeout                                   |
+| getMAC          | "01:23:45:67:89:AB"   |        | MAC address of the network port                        |
+| getIPA          | "123.123.123.1"       |        | IP-Adress                                              |
+| getSNM          | "255.255.255.0"       |        | Subnet mask                                            |
+| getDNS          | "123.123.123.254"     |        | DNS server                                             |
+| getDGW          | "123.123.123.254"     |        | Default gateway                                        |
+| getCURL         | "iot-syrconnect.azure-devices.net" |  | Azure IoT Hub connection URL (Trio DFR/LS, SafeTech, NeoSoft, Sanibel) |
+| getMQT          | "1"                   |        | Network protocol: 1 = MQTT (Safe-Tech V4) - may be WRONG |
+| getWFL          | ["SSID1:Strength", ...] |      | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel) |
+| getWAD          | "False"               |        | Wi-Fi auto-discovery flag (NeoSoft, Sanibel)           |
+| getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel) |
+| getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)          |
+| getWNS          | "False"               |        | Wi-Fi network scan flag (Trio DFR/LS)                  |
 
 ### Holiday
 
 Some devices seem to support setting holidays. The consequences for the water softening unit are unknown. For devices with leakage detection it makes the device more sensitive to consumed water. On the SYR Lex Plus 10 S Connect that was analysed the system automatically sets the holiday end to the current date.
 
-| Property        | Example      | Unit   | Description
-|-----------------|--------------|--------|-------------------------------------------------------
-| getHSD          | "13"         |        | Holiday start day
-| getHSM          | "9"          |        | Holiday start month
-| getHSY          | "19"         |        | Holiday start **hour**
-| getHED          | "13"         |        | Holiday end day
-| getHEM          | "9"          |        | Holiday end month
-| getHEY          | "2023"       |        | Holiday end **year**
+| Property        | Example      | Unit   | Description                                             |
+|-----------------|--------------|--------|-------------------------------------------------------  |
+| getHSD          | "13"         |        | Holiday start day                                       |
+| getHSM          | "9"          |        | Holiday start month                                     |
+| getHSY          | "19"         |        | Holiday start **hour**                                  |
+| getHED          | "13"         |        | Holiday end day                                         |
+| getHEM          | "9"          |        | Holiday end month                                       |
+| getHEY          | "2023"       |        | Holiday end **year**                                    |
 
 ### Settings
 
 These settings can be set by the user.
 
-| Property        | Example      | Unit      | Description
-|-----------------|--------------|-----------|-------------------------------------------------------
-| getALD / setALD | "20"         | s         | Duration of alarm in seconds (Neosoft, SafeFloor)
-| getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water), can be set from 1-100 °dH
-| getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have), can be set from 0-100 °dH
-| getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH
-| getRDO / setRDO | "90"         | g/L       | Salt dosage
-| getRTH / setRTH | "16"         | hour      | Regeneration time (hour)
-| getRTM / setRTM | "0"          | minute    | Regeneration time (minute)
-| getRPD / setRPD | "4"          | days      | Regeneration interval
-| getRPW / setRPW | "0"          | bits      | Days on which regeneration is allowed stored as a bit mask (bit 0 = Mon .. bit 6 = Sun); mask `0` indicates no days configured.
-| getRTY / setRTY | "0"          |           | 0 = Delayed regeneration, 1 = Immediate regeneration
-| getCHG / setCHG | "0"          |           | Type of chlor generator: 0 = Chlor generator, 1 = Salt sensor, 2 = not available
-| getPST / setPST | "1"          |           | Pressure sensor installed: 1 = not available, 2 = available
-| getMPR / setMPR | "40"         | 1/10 bar  | The set water pressure
-| getDWF / setDWF | "200"        | L         | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start
-| getFCO / setFCO | "0"          | ppm       | Iron content (always 0?)
-| getCFO          | "0"          |           | Cycle flow offset, numeric counter
-| getLNG          | "0"          |           | Language setting (0=German, 1=English).
-| getDTR          | "[0,0,0,0,0,0,0,0]" |           | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel)
-| getLOCK         | "False"      |           | Device keypad/remote lock flag (Trio DFR/LS, SafeTech)
-| getMIH / setMIH | "5"          | %         | Minimum huminity; Values: 0=Off, 0-95% (5% steps)
-| getMXH / setMXH | "95"         | %         | Maximum huminity, Values: 100=Off, 5-100% (5% steps)
-| getMIT / setMIT | "-40"        | 1/10      | Minium temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps)
-| getMXT / setMXT | "490"        | 1/10      | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps)
-| getRCP / setRCP | "43200"      | s         | Synchronisation interval, shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w
-| getWMP / setWMP | "3600"       | s         | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h
+| Property        | Example      | Unit      | Description                                                                                   |
+|-----------------|--------------|-----------|---------------------------------------------------------------------------------------------- |
+| getALD / setALD | "20"         | s         | Duration of alarm in seconds (Neosoft, SafeFloor)                                             |
+| getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water), can be set from 1-100 °dH                        |
+| getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have), can be set from 0-100 °dH           |
+| getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH                                                         |
+| getRDO / setRDO | "90"         | g/L       | Salt dosage                                                                                   |
+| getRTH / setRTH | "16"         | hour      | Regeneration time (hour)                                                                      |
+| getRTM / setRTM | "0"          | minute    | Regeneration time (minute)                                                                    |
+| getRPD / setRPD | "4"          | days      | Regeneration interval                                                                         |
+| getRPW / setRPW | "0"          | bits      | Days on which regeneration is allowed stored as a bit mask (bit 0 = Mon .. bit 6 = Sun); mask `0` indicates no days configured. |
+| getRTY / setRTY | "0"          |           | 0 = Delayed regeneration, 1 = Immediate regeneration                                          |
+| getCHG / setCHG | "0"          |           | Type of chlor generator: 0 = Chlor generator, 1 = Salt sensor, 2 = not available              |
+| getPST / setPST | "1"          |           | Pressure sensor installed: 1 = not available, 2 = available                                   |
+| getMPR / setMPR | "40"         | 1/10 bar  | The set water pressure                                                                        |
+| getDWF / setDWF | "200"        | L         | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |
+| getFCO / setFCO | "0"          | ppm       | Iron content (always 0?)                                                                      |
+| getCFO          | "0"          |           | Cycle flow offset, numeric counter                                                            |
+| getLNG          | "0"          |           | Language setting (0=German, 1=English).                                                       |
+| getDTR          | "[0,0,0,0,0,0,0,0]" |           | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
+| getLOCK         | "False"      |           | Device keypad/remote lock flag (Trio DFR/LS, SafeTech)                                        |
+| getMIH / setMIH | "5"          | %         | Minimum huminity; Values: 0=Off, 0-95% (5% steps)                                             |
+| getMXH / setMXH | "95"         | %         | Maximum huminity, Values: 100=Off, 5-100% (5% steps)                                          |
+| getMIT / setMIT | "-40"        | 1/10      | Minium temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
+| getMXT / setMXT | "490"        | 1/10      | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
+| getRCP / setRCP | "43200"      | s         | Synchronisation interval, shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
+| getWMP / setWMP | "3600"       | s         | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
 
 ### Measurements
 
