@@ -274,61 +274,61 @@ The third request and all following requests are also to GetAllCommands answerin
 
 - Subtype: "sbt" attribute is visible in XML
 
-| dk | Device name | Notes |
-| ---- | ----------- | ---------- |
-| 1 | Safe-T stand-alone | |
-| 2 | Safe-T Master | |
-| 3 | Safe-T Slave | |
-| 4 | Safe-T Slave | |
-| 5 | Safe-T Communication module | |
-| 20 | HVA | |
-| 25 | Inliner-HWA 3300 | |
-| 40 | Limex | sbt: 1=Limex 10, 2=Limex 20, 3=Limex 30 |
-| 60 | Hygiene module | |
-| 61 | Hygiene module | |
-| 62 | Hygiene module | |
-| 63 | Hygiene module | |
-| 80 | LEX Plus 10 | sbt: 2=LEX Plus S<br>3=LEX 10<br>4=LEX 20<br>5=LEX 30<br>6=R+F Ion One Connect |
-| 100 | CONTROLICmini | |
-| 120 | SafeFloor | |
-| 122 | SafeFloor | |
-| 140 | SafeTech | |
-| 141 | SafeTech | |
-| 142 | SafeTech+ | |
-| 145 | SafeTech | |
-| 160 | All in One + | |
-| 180 | HygBox | |
-| 190 | Dosing Pump | |
-| 1100 | Trio LS | alarmClearViaSet |
-| 1110 | concept 200 Wechselfilter | alarmClearViaSet |
-| 1111 | Optima T Wechselfilter | alarmClearViaSet |
-| 1112 | SafeTech+ | alarmClearViaSet |
-| 1113 | Trio DFR LS | alarmClearViaSet |
-| 1200 | NeoSoft | alarmClearViaSet |
-| 1206 | NeoSoft Single | alarmClearViaSet |
-| 1207 | comfort-Enthärtungsanlage Softwater Uno | alarmClearViaSet |
-| 1208 | concept Einzelenthärtungsanlage | alarmClearViaSet |
-| 1209 | Optima Einzelenthärtungsanlage | alarmClearViaSet |
-| 1210 | concept 200 Doppelenthärtungsanlage | alarmClearViaSet |
-| 1211 | Optima T2.2 Doppelenthärtungsanlage | alarmClearViaSet |
-| 1212 | comfort-Enthärtungsanlage Softwater Duo | alarmClearViaSet |
-| 1213 | Optima Doppelenthärtungsanlage | alarmClearViaSet |
-| 1214 | CLEAR PRO SOFT TWIN CONEL | alarmClearViaSet |
-| 1215 | CLEAR PRO SOFT CONEL | alarmClearViaSet |
-| 1216 | concept Doppelenthärtungsanlage | alarmClearViaSet |
-| 1217 | Ditech Doppelenthärtungsanlage | alarmClearViaSet |
-| 1218 | TAKE Doppelenthärtungsanlage | alarmClearViaSet |
-| 1219 | Ditech Einzelenthärtungsanlage | alarmClearViaSet |
-| 1220 | TAKE Einzelenthärtungsanlage | alarmClearViaSet |
-| 1221 | NeoSoft Lock Connect II | alarmClearViaSet |
-| 1222 | NeoSoft Lock Connect I | alarmClearViaSet |
-| 1500 | MultiController | alarmClearViaSet, subtypeAttr=dfm |
-| 1501 | MultiController (comfort) | alarmClearViaSet, subtypeAttr=dfm |
-| 1502 | Ditech Multicontroller | alarmClearViaSet, subtypeAttr=dfm |
-| 1503 | TAKE Multicontroller | alarmClearViaSet, subtypeAttr=dfm |
-| 1504 | concept Multicontroller | alarmClearViaSet, subtypeAttr=dfm |
-| 1505 | Optima Multicontroller | alarmClearViaSet, subtypeAttr=dfm |
-| 1506 | SYR MultiController | alarmClearViaSet, subtypeAttr=dfm |
+| dk | Device name | Subtype (sbt) | Notes |
+| ---- | ----------- | ---------- | ---------- |
+| 1 | Safe-T stand-alone | | |
+| 2 | Safe-T Master | | |
+| 3 | Safe-T Slave | | |
+| 4 | Safe-T Slave | | |
+| 5 | Safe-T Communication module | | |
+| 20 | HVA | | |
+| 25 | Inliner-HWA 3300 | | |
+| 40 | Limex | 1=Limex 10<br>2=Limex 20<br>3=Limex 30 | |
+| 60 | Hygiene module | | |
+| 61 | Hygiene module | | |
+| 62 | Hygiene module | | |
+| 63 | Hygiene module | | |
+| 80 | LEX Plus 10 | 2=LEX Plus 10 S<br>3=LEX 10 (?)<br>4=LEX 20 (?)<br>5=LEX 30 (?)<br>6=R+F Ion One Connect<br>7=LEX Plus 10 SL | |
+| 100 | CONTROLICmini | | |
+| 120 | SafeFloor | | |
+| 122 | SafeFloor | | |
+| 140 | SafeTech | | |
+| 141 | SafeTech | | |
+| 142 | SafeTech+ | | |
+| 145 | SafeTech | | |
+| 160 | All in One + | | |
+| 180 | HygBox | | |
+| 190 | Dosing Pump | | |
+| 1100 | Trio LS | | alarmClearViaSet |
+| 1110 | concept 200 Wechselfilter | | alarmClearViaSet |
+| 1111 | Optima T Wechselfilter | | alarmClearViaSet |
+| 1112 | SafeTech+ | | alarmClearViaSet |
+| 1113 | Trio DFR LS |  | alarmClearViaSet |
+| 1200 | NeoSoft |  | alarmClearViaSet |
+| 1206 | NeoSoft Single |  | alarmClearViaSet |
+| 1207 | comfort-Enthärtungsanlage Softwater Uno | | alarmClearViaSet |
+| 1208 | concept Einzelenthärtungsanlage | | alarmClearViaSet |
+| 1209 | Optima Einzelenthärtungsanlage |  | alarmClearViaSet |
+| 1210 | concept 200 Doppelenthärtungsanlage | | alarmClearViaSet |
+| 1211 | Optima T2.2 Doppelenthärtungsanlage | | alarmClearViaSet |
+| 1212 | comfort-Enthärtungsanlage Softwater Duo | | alarmClearViaSet |
+| 1213 | Optima Doppelenthärtungsanlage | | alarmClearViaSet |
+| 1214 | CLEAR PRO SOFT TWIN CONEL | | alarmClearViaSet |
+| 1215 | CLEAR PRO SOFT CONEL | | alarmClearViaSet |
+| 1216 | concept Doppelenthärtungsanlage | | alarmClearViaSet |
+| 1217 | Ditech Doppelenthärtungsanlage | | alarmClearViaSet |
+| 1218 | TAKE Doppelenthärtungsanlage | | alarmClearViaSet |
+| 1219 | Ditech Einzelenthärtungsanlage | | alarmClearViaSet |
+| 1220 | TAKE Einzelenthärtungsanlage | | alarmClearViaSet |
+| 1221 | NeoSoft Lock Connect II | | alarmClearViaSet |
+| 1222 | NeoSoft Lock Connect I | | alarmClearViaSet |
+| 1500 | MultiController | | alarmClearViaSet, subtypeAttr=dfm |
+| 1501 | MultiController (comfort) | | alarmClearViaSet, subtypeAttr=dfm |
+| 1502 | Ditech Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
+| 1503 | TAKE Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
+| 1504 | concept Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
+| 1505 | Optima Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
+| 1506 | SYR MultiController | | alarmClearViaSet, subtypeAttr=dfm |
 
 ### deviceKindVersions (dkv) — SRN-Prefix = dkv-Number
 
@@ -338,69 +338,69 @@ The third request and all following requests are also to GetAllCommands answerin
 - LS = Leckageschutz
 - DFR = Druckminderer mit Rückspülfilter
 
-| dkv | Device name | Notes |
-| ----- | ----------- | ---------- |
-| 2 | Safe-T leakage detector unit – Primary unit | |
-| 3 | Safe-T leakage detector unit – Secondary unit (front-wall mounted) | |
-| 4 | Safe-T leakage detector unit – Secondary unit (in-wall mounted) | ref=3 |
-| 5 | Safe-T Hygiene module (front-wall installation) | |
-| 6 | Safe-T – stand-alone – leakage detector unit | |
-| 10 | Safe-T Secondary unit Dual module | ref=3, inCollectionAmount=2 |
-| 12 | Safe-T – Communication module | |
-| 13 | Safe-T Dual leakage detector unit | inCollectionAmount=2 |
-| 14 | Safe-T Triple leakage detector unit | inCollectionAmount=3 |
-| 15 | Safe-T Hygiene module | |
-| 16 | Limex | sub: 2–4=LEX 20, 5–12=Doppel-Pendelanlagen XL, 14=Limex T2 |
-| 17 | Safe-T Master Dual | ref=13 |
-| 18 | Safe-T Master Triple | ref=14 |
-| 19 | HVA | ref=20 |
-| 20 | HVA | |
-| 21 | Hygiene module cold | |
-| 22 | Hygiene module warm | |
-| 23 | Hygiene module warm and cold | |
-| 24 | Hygiene module cold and warm | |
-| 25 | LEX Plus | sub: 1=LEX Plus 10, 2=LEX Plus S, 3=1500-00-010, 4=1500-00-020, 5=1500-00-030, 6=1500-01-611, 7=LEX Plus 10 SL |
-| 26 | Inliner-HWA 3300 | |
-| 27 | CONTROLICmini | |
-| 34 | SafeFloor | WiFi-AP: `Floorsensor[…]` |
-| 35 | SafeTech | WiFi-AP: `Safe-Tec[…]` |
-| 36 | All in One + | WiFi-AP: `All-in-One+[…]` |
-| 37 | HygBox | WiFi-AP: `HygBox[…]` |
-| 38 | SafeTech (Polygonvatro) | ref=35 |
-| 39 | SafeTech+ | ref=35 |
-| 42 | SafeTech (RWC) | ref=35 |
-| 43 | SafeFloor (RWC) | ref=34 |
-| 44 | Dosing Pump | WiFi-AP: `DosingPump[…]` |
-| 100 | Trio LS | Azure, WiFi-AP: `SYR` |
-| 110 | concept 200 Wechselfilter | ref=100 |
-| 111 | Optima T Wechselfilter | ref=100 |
-| 112 | SafeTech+ | Azure, WiFi-AP: `SYR` |
-| 113 | Trio DFR LS | Azure, ref=100 |
-| 200 | NeoSoft | Azure |
-| 206 | NeoSoft Single | ref=200 |
-| 207 | comfort-Enthärtungsanlage Softwater Uno | ref=200 |
-| 208 | concept Einzelenthärtungsanlage | ref=200 |
-| 209 | Optima Einzelenthärtungsanlage | ref=200 |
-| 210 | concept 200 Doppelenthärtungsanlage | ref=200 |
-| 211 | Optima T2.2 Doppelenthärtungsanlage | ref=200 |
-| 212 | comfort-Enthärtungsanlage Softwater Duo | ref=200 |
-| 213 | Optima Doppelenthärtungsanlage | ref=200 |
-| 214 | CLEAR PRO SOFT TWIN CONEL | ref=200 |
-| 215 | CLEAR PRO SOFT CONEL | ref=200 |
-| 216 | concept Doppelenthärtungsanlage | ref=200 |
-| 217 | Ditech Doppelenthärtungsanlage | ref=200 |
-| 218 | TAKE Doppelenthärtungsanlage | ref=200 |
-| 219 | Ditech Einzelenthärtungsanlage | ref=200 |
-| 220 | TAKE Einzelenthärtungsanlage | ref=200 |
-| 221 | NeoSoft Lock Connect II | ref=200 |
-| 222 | NeoSoft Lock Connect I | ref=200 |
-| 500 | MultiController (CONEL) | Azure, WiFi-AP: `SYR`; DFM 1=Leckageschutz, 2=Anschlusscenter, 3=All-in-One, 4=RSA |
-| 501 | MultiController (GSH) | ref=500; DFM 1=Leckageschutz, 2=Anschlusscenter, 4=RSA |
-| 502 | Ditech Multicontroller | ref=500; DFM 1=Leckageschutz, 2=Anschlusscenter, 4=RSA, 5=Rückspülfilter mit DM+LS |
-| 503 | TAKE Multicontroller | ref=500; DFM analog 502 |
-| 504 | concept Multicontroller | ref=500; DFM analog 502 |
-| 505 | Optima Multicontroller | ref=500; DFM analog 502 |
-| 506 | SYR MultiController | ref=500; DFM 1=SafeTech Lock Connect, 2=AC 3200 Connect, 3=AC All-in-One 3228, 4=RSA Connect, 5=TRIO Lock Connect |
+| dkv | Device name | Brand | Brand product name |Notes |
+| ----- | ----------- | ---------- | ---------- | ---------- |
+| 2 | Safe-T leakage detector unit – Primary unit | | | |
+| 3 | Safe-T leakage detector unit – Secondary unit (front-wall mounted) | | | |
+| 4 | Safe-T leakage detector unit – Secondary unit (in-wall mounted) | | | ref=3 |
+| 5 | Safe-T Hygiene module (front-wall installation) | | | |
+| 6 | Safe-T – stand-alone – leakage detector unit | | | |
+| 10 | Safe-T Secondary unit Dual module | | | ref=3, inCollectionAmount=2 |
+| 12 | Safe-T – Communication module | | | |
+| 13 | Safe-T Dual leakage detector unit | | | inCollectionAmount=2 |
+| 14 | Safe-T Triple leakage detector unit | | | inCollectionAmount=3 |
+| 15 | Safe-T Hygiene module | | | |
+| 16 | Limex | | | sbt:<br>1=Limex 10<br>2=Limex 20<br>3=Limex 30<br>5–12=Doppel-Pendelanlagen XL<br>14=Limex T2 |
+| 17 | Safe-T Master Dual | | | ref=13 |
+| 18 | Safe-T Master Triple | | | ref=14 |
+| 19 | HVA | | | |
+| 20 | HVA | | | ref=19 |
+| 21 | Hygiene module cold | | | |
+| 22 | Hygiene module warm | | | |
+| 23 | Hygiene module warm and cold | | | |
+| 24 | Hygiene module cold and warm | | | |
+| 25 | LEX Plus | | | sbt:<br>1=LEX Plus 10<br>2=LEX Plus 10 S<br>3=1500-00-010<br>4=1500-00-020<br>5=1500-00-030<br>6=1500-01-611v7=LEX Plus 10 SL |
+| 26 | Inliner-HWA 3300 | | | |
+| 27 | CONTROLICmini| | | |
+| 34 | SafeFloor | | | WiFi-AP: `Floorsensor[…]` |
+| 35 | SafeTech | | | WiFi-AP: `Safe-Tec[…]` |
+| 36 | All in One + | | | WiFi-AP: `All-in-One+[…]` |
+| 37 | HygBox | | | WiFi-AP: `HygBox[…]` |
+| 38 | SafeTech (Polygonvatro) | | | ref=35 |
+| 39 | SafeTech+ | | | ref=35 |
+| 42 | SafeTech (RWC) | Reliance Valves | MultiSafe Leak Detector Control Valve | ref=35 |
+| 43 | SafeFloor (RWC) | Reliance Valves | MultiSafe Floor Leak Sensor | ref=34 |
+| 44 | Dosing Pump | | | WiFi-AP: `DosingPump[…]` |
+| 100 | Trio LS | | | Azure, WiFi-AP: `SYR` |
+| 110 | concept 200 Wechselfilter | | | ref=100 |
+| 111 | Optima T Wechselfilter | | | ref=100 |
+| 112 | SafeTech+ | | | Azure, WiFi-AP: `SYR` |
+| 113 | Trio DFR LS | | | Azure, ref=100 |
+| 200 | NeoSoft | | | Azure |
+| 206 | NeoSoft Single | | | ref=200 |
+| 207 | comfort-Enthärtungsanlage Softwater Uno | Sanibel | Softwater UNO A25 | ref=200 |
+| 208 | concept Einzelenthärtungsanlage | | | ref=200 |
+| 209 | Optima Einzelenthärtungsanlage | | | ref=200 |
+| 210 | concept 200 Doppelenthärtungsanlage | | | ref=200 |
+| 211 | Optima T2.2 Doppelenthärtungsanlage | | | ref=200 |
+| 212 | comfort-Enthärtungsanlage Softwater Duo | Sanibel | Softwater DUO A25 | ref=200 |
+| 213 | Optima Doppelenthärtungsanlage | | | ref=200 |
+| 214 | CLEAR PRO SOFT TWIN CONEL | CONEL | CLEAR PRO SOFT TWIN | ref=200 |
+| 215 | CLEAR PRO SOFT CONEL | CONEL | CLEAR PRO SOFT | ref=200 |
+| 216 | concept Doppelenthärtungsanlage | | | ref=200 |
+| 217 | Ditech Doppelenthärtungsanlage | | | ref=200 |
+| 218 | TAKE Doppelenthärtungsanlage | | | ref=200 |
+| 219 | Ditech Einzelenthärtungsanlage | | | ref=200 |
+| 220 | TAKE Einzelenthärtungsanlage| | | ref=200 |
+| 221 | NeoSoft Lock Connect II | | | ref=200 |
+| 222 | NeoSoft Lock Connect I | | | ref=200 |
+| 500 | MultiController (CONEL) | CONEL | | Azure, WiFi-AP: `SYR`;<br>DFM<br>1=Leckageschutz<br>2=Anschlusscenter<br>3=All-in-One<br>4=RSA |
+| 501 | MultiController (GSH) | Sanibel | | ref=500;<br>DFM:<br>1=Leckageschutz<br>2=Anschlusscenter<br>4=RSA |
+| 502 | Ditech Multicontroller | Ditech | | ref=500;<br>DFM:<br>1=Leckageschutz<br>2=Anschlusscenter<br>4=RSA<br>5=Rückspülfilter mit DM+LS |
+| 503 | TAKE Multicontroller | TAKE | | ref=500;<br>DFM: analog 502 |
+| 504 | concept Multicontroller | concept | | ref=500;<br>DFM: analog 502 |
+| 505 | Optima Multicontroller | Optima | | ref=500;<br>DFM: analog 502 |
+| 506 | SYR MultiController | | | ref=500;<br>DFM:<br>1=SafeTech Lock Connect<br>2=AC 3200 Connect<br>3=AC All-in-One 3228<br>4=RSA Connect<br>5=TRIO Lock Connect |
 
 ### WiFi-APs
 
