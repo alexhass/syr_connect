@@ -407,7 +407,7 @@ The third request and all following requests are also to GetAllCommands answerin
 Note: A `dkv` entry with `ref=XX` refers to `dkv` `XX` and uses the same Wi-Fi access point. The table below lists the known Wi-Fi access points and also includes the referencing `dkv` IDs.
 
 | dkv | Device name | WiFi-AP |
-| ----: | --- | --- |
+| ---- | --- | --- |
 | 34 | SafeFloor | Floorsensor[…] |
 | 43 | SafeFloor (RWC) (ref=34) | Floorsensor[…] |
 | 35 | SafeTech | Safe-Tec[…] |
