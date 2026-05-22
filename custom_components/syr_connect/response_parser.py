@@ -218,14 +218,20 @@ class ResponseParser:
                 dclg_id = device['@dclg']
                 serial_number = device.get('@sn', 'Unknown')
                 device_name = device_aliases.get(dclg_id, serial_number)
+                dk = int(device.get('@dk') or 0)
+                dkv = int(device.get('@dkv') or 0)
+                sbt = int(device.get('@sbt') or 0)
 
-                _LOGGER.debug("Adding device: %s (DCLG: %s, SN: %s)", device_name, dclg_id, serial_number)
+                _LOGGER.debug("Adding device: %s (DCLG: %s, SN: %s, DK=%s, DKV=%s, SBT=%s)", device_name, dclg_id, serial_number, dk, dkv, sbt)
 
                 devices.append({
                     'id': serial_number,  # Use serial number as device ID
                     'dclg': dclg_id,
                     'serial_number': serial_number,
                     'name': device_name,
+                    'dk': dk,
+                    'dkv': dkv,
+                    'sbt': sbt,
                 })
             else:
                 _LOGGER.debug("Skipping device without @dclg: %s", device)
