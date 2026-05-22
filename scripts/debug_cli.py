@@ -321,10 +321,13 @@ class DebugXmlClient:
         _LOG.info("Devices found: %d", len(devices))
         for dev in devices:
             _LOG.info(
-                "  Device: id=%s  name=%s  dclg=%s",
+                "  Device: id=%s  name=%s  dclg=%s  dk=%s  dkv=%s  sbt=%s",
                 dev.get("id"),
                 dev.get("name"),
                 dev.get("dclg"),
+                dev.get("dk"),
+                dev.get("dkv"),
+                dev.get("sbt"),
             )
         return devices
 
