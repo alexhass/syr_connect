@@ -515,7 +515,10 @@ async def _run(args: argparse.Namespace) -> None:
                 if devices:
                     print(f"Project: {project.get('name')} (id={project.get('id')})")
                     for d in devices:
-                        print(f"  id={d.get('id')}  dclg={d.get('dclg')}  name={d.get('name')}")
+                        print(
+                            f"  id={d.get('id')}  dclg={d.get('dclg')}  name={d.get('name')}"
+                            f"  dk={d.get('dk')}  dkv={d.get('dkv')}  sbt={d.get('sbt')}"
+                        )
             return
 
         # ------------------------------------------------------------------
@@ -539,7 +542,15 @@ async def _run(args: argparse.Namespace) -> None:
             if not target:
                 _LOG.error("Device '%s' not found. Available devices:", args.identity)
                 for d in all_devices:
-                    _LOG.info("  id=%s  dclg=%s  name=%s", d.get("id"), d.get("dclg"), d.get("name"))
+                    _LOG.info(
+                        "  id=%s  dclg=%s  name=%s  dk=%s  dkv=%s  sbt=%s",
+                        d.get("id"),
+                        d.get("dclg"),
+                        d.get("name"),
+                        d.get("dk"),
+                        d.get("dkv"),
+                        d.get("sbt"),
+                    )
                 sys.exit(1)
 
             dclg = target.get("dclg") or target.get("id")
