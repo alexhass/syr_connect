@@ -404,8 +404,8 @@ class SyrConnectJsonAPI:
             raise
         else:
             # Successful HTTP call to login endpoint - inspect response.
-            # Some devices return a special "FACTORY" status for the
-            # login set-command (e.g. {"setADM(2)f": "FACTORY"}). This
+            # Some older SafeTechV4 devices return a special "FACTORY" status
+            # for the login set-command (e.g. {"setADM(2)f": "FACTORY"}). This
             # indicates the device is in factory mode and an ADM login is
             # not required. Treat that as "login not required" so callers
             # can continue to fetch /get/all without failing.
