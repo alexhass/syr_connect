@@ -306,6 +306,32 @@ async def test_login_404_treated_as_not_required() -> None:
     assert client._login_required is False
 
 
+async def test_login_factory_treated_as_not_required() -> None:
+    """Test login treats response 'FACTORY' as 'login not required'."""
+
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"setADM(2)f": "FACTORY"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/safe-tec/"
+    )
+
+    result = await client.login()
+
+    assert result is True
+    assert client._login_required is False
+    assert client._last_login is not None
+    assert client.projects and client.projects[0]["id"] == "local"
+
+
 async def test_get_device_status_does_not_call_login_if_not_required() -> None:
     """Ensure get_device_status skips login when login not required."""
     sess = MagicMock()
