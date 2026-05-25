@@ -24,6 +24,13 @@ test fixtures, and in the parsing/encryption layers implemented here.
 - Mitigation in this project:
   - Ignores broken responses: `_ignore_broken_response()` in `custom_components/syr_connect/response_parser.py` implements this heuristic.
 
+### 2. Offline devices return incorrect data types
+
+- Tentatively be considered part of the design, but it is not ideal.
+- Description: API may return incorrect data types if device is offline.
+- Impact: Valid responses containing correct setting values, but all device measurements return empty strings and not the last known state. Causing unexpected data type errors in Python.
+- Mitigation in this project: Check for sta="3" ("offline" status) and set all values as unknown.
+
 ## References
 
 - Parser: [custom_components/syr_connect/response_parser.py](custom_components/syr_connect/response_parser.py)
