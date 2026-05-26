@@ -406,8 +406,8 @@ class SyrConnectJsonAPI:
             # Successful HTTP call to login endpoint - record that login is required
             self._login_required = True
 
-        # Validate set-command response: {"setADM(2)f":"OK"}
-        # Use shared validation logic that checks for OK/MIMA/NSC status codes
+        # Validate set-command response: {"setADM(2)f":"FACTORY"}
+        # Use shared validation logic that checks for FACTORY/OK/MIMA/NSC status codes
         try:
             self._validate_set_response(response, "ADM", "(2)f", "login", is_login=True)
         except SyrConnectInvalidResponseError as err:
@@ -703,6 +703,9 @@ class SyrConnectJsonAPI:
         # Check status value
         if status == "OK":
             # Success - no action needed, caller will log
+            return
+        elif status == "FACTORY":
+            # Success - for ADM command, no action needed, caller will log
             return
         elif status == "MIMA":
             msg = f"Value {value} is outside valid range for command {cmd}"

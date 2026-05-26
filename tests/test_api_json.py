@@ -306,8 +306,8 @@ async def test_login_404_treated_as_not_required() -> None:
     assert client._login_required is False
 
 
-async def test_login_factory_treated_as_not_required() -> None:
-    """Test login treats response 'FACTORY' as 'login not required'."""
+async def test_login_factory_treated_as_required() -> None:
+    """Test login treats response 'FACTORY' as 'login required'."""
 
     sess = MagicMock()
     mock_response = MagicMock()
@@ -327,7 +327,7 @@ async def test_login_factory_treated_as_not_required() -> None:
     result = await client.login()
 
     assert result is True
-    assert client._login_required is False
+    assert client._login_required is True
     assert client._last_login is not None
     assert client.projects and client.projects[0]["id"] == "local"
 
