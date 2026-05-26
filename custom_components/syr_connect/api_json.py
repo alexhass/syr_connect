@@ -403,31 +403,7 @@ class SyrConnectJsonAPI:
             # Non-HTTP connection errors (network, timeouts) should propagate
             raise
         else:
-            # Successful HTTP call to login endpoint - inspect response.
-            # Some older SafeTechV4 devices return a special "FACTORY" status
-            # for the login set-command (e.g. {"setADM(2)f": "FACTORY"}). This
-            # indicates the device is in factory mode and an ADM login is
-            # not required. Treat that as "login not required" so callers
-            # can continue to fetch /get/all without failing.
-            response_key = self._response_key_for("ADM", "(2)f")
-            found_key = next((k for k in response.keys() if k.lower() == response_key.lower()), None)
-            if found_key:
-                status = response[found_key]
-                if isinstance(status, str) and status.upper() == "FACTORY":
-                    _LOGGER.info(
-                        "JSON API: Login endpoint returned 'FACTORY' at %s; treating as no-login required",
-                        self._build_base_url(),
-                    )
-                    # Mark session as valid to avoid retrying login
-                    self._last_login = datetime.now(UTC)
-                    # Remember that this device doesn't require ADM login
-                    self._login_required = False
-                    # Clear any cached data and provide projects placeholder
-                    self._cached_get_all = None
-                    self.projects = [{"id": "local", "name": "Local JSON API"}]
-                    return True
-
-            # Default: successful call indicates login is required
+            # Successful HTTP call to login endpoint - record that login is required
             self._login_required = True
 
         # Validate set-command response: {"setADM(2)f":"OK"}
