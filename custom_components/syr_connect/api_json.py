@@ -130,37 +130,9 @@ class SyrConnectJsonAPI:
         _LOGGER.debug("JSON API: Attempting to build base URL - host=%r, base_path=%r", self._host, self._base_path)
         if not self._host or not self._base_path:
             _LOGGER.error("JSON API: Cannot build base URL - host=%r, base_path=%r", self._host, self._base_path)
-            return None
-
-        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
-        _LOGGER.debug(
-            "JSON API: Built base URL from host and base_path: %s (host=%r, port=%s, base_path=%r)",
-            result,
-            self._host,
-            _SYR_CONNECT_JSON_API_PORT,
-            self._base_path,
-        )
-        return result
-
-    def is_session_valid(self) -> bool:
-        """Check if the current session is still valid.
-
-        Sessions expire after 30 minutes of inactivity. This method checks if:
-        1. A login has occurred (_last_login is set)
-        2. The session hasn't exceeded the timeout period
-
-        Returns:
-            True if session is valid and doesn't need re-login, False otherwise
-        """
-        return (
-            self._last_login is not None
-            and datetime.now(UTC) < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
-        )
-
-    async def _ensure_session(self) -> None:
-        """Ensure a valid session exists before making an API request.
-
-        Skips login when:
+            else:
+                # Successful HTTP call to login endpoint - record that login is required
+                self._login_required = True
         - ``_base_url`` is set (direct/local mode — no authentication needed)
         - The current session is still within its validity window
         - ``_login_required`` is explicitly ``False`` (ADM login not required)
@@ -403,6 +375,7 @@ class SyrConnectJsonAPI:
             # Non-HTTP connection errors (network, timeouts) should propagate
             raise
         else:
+<<<<<<< HEAD
             # Successful HTTP call to login endpoint - inspect response.
             # Some older SafeTechV4 devices return a special "FACTORY" status
             # for the login set-command (e.g. {"setADM(2)f": "FACTORY"}). This
@@ -428,6 +401,9 @@ class SyrConnectJsonAPI:
                     return True
 
             # Default: successful call indicates login is required
+=======
+            # Successful HTTP call to login endpoint - record that login is required
+>>>>>>> parent of bdd6b30 (#36: Handle factory mode response in login endpoint to avoid unnecessary login requirement)
             self._login_required = True
 
         # Validate set-command response: {"setADM(2)f":"OK"}
