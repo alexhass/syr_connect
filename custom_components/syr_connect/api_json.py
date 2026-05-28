@@ -145,6 +145,8 @@ class SyrConnectJsonAPI:
     def is_session_valid(self) -> bool:
         """Check if the current session is still valid.
 
+        WARNING: There is no session, but this behaviour reduces the load to the device.
+
         Sessions expire after 30 minutes of inactivity. This method checks if:
         1. A login has occurred (_last_login is set)
         2. The session hasn't exceeded the timeout period
@@ -168,14 +170,12 @@ class SyrConnectJsonAPI:
         Calls ``login()`` when the session is expired or login status is unknown.
         """
         if self._base_url or self.is_session_valid():
+            _LOGGER.debug("JSON API: ADM session still valid; skipping login for %s", self._build_base_url())
             return
         if self._login_required is False:
             _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
         else:
-            _LOGGER.debug(
-                "JSON API: ADM login required or unknown; calling login for %s",
-                self._build_base_url(),
-            )
+            _LOGGER.debug("JSON API: ADM login required or unknown; calling login for %s", self._build_base_url())
             await self.login()
 
     def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
