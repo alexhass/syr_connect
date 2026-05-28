@@ -740,10 +740,13 @@ class SyrConnectJsonAPI:
         Known error codes:
         - "NSC" (No Such Command): Command doesn't exist for this device model
         - "MIMA" (Min/Max): Value is outside the valid range for this parameter
+        - "ADM" (Admin): ADM mode not set, required for this command
 
         Example error response:
             {"getRTM": "NSC"}  # RTM command not supported on this device
             {"getSV1": "MIMA"} # Value exceeds min/max limits
+            {"getXYZ": "ERROR: NSC"} # XYZ command not supported on this device
+            {"getXYZ": "ERROR: ADM"} # ADM mode not set on this device
 
         Args:
             data: Parsed JSON response dictionary
@@ -753,6 +756,7 @@ class SyrConnectJsonAPI:
         error_messages = {
             "NSC": "Command does not exist (NSC error)",
             "MIMA": "Value is outside valid range (MIMA error)",
+            "ADM": "ADM mode not set (ADM error)",
         }
 
         # Scan response values for error codes. Only exact uppercase codes
