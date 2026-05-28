@@ -713,7 +713,9 @@ class SyrConnectJsonAPI:
             # properly by the calling entity (select, button, etc.)
             _LOGGER.debug("JSON API: %s (device: %s)", msg, device_id)
             raise SyrConnectInvalidResponseError(msg)
-        elif status == "NSC":
+        elif status in ("NSC", "ERROR: NSC"):
+            # - Pontos / SafeTech V4: "ERROR: NSC"
+            # - Other devices: "NSC"
             msg = f"Command {cmd} does not exist for device {device_id}"
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
@@ -771,6 +773,17 @@ class SyrConnectJsonAPI:
             if (msg := error_messages.get(val)):
                 _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
                 continue
+
+            # Accept 'ERROR: {CODE}' variants (older firmware may return this)
+            if isinstance(val, str) and ':' in val:
+                try:
+                    _, code = val.split(':', 1)
+                    code = code.strip()
+                except ValueError:
+                    code = ''
+                if (msg := error_messages.get(code)):
+                    _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
+                    continue
 
             # Non-uppercase variant of a known code: treat as invalid
             if val.upper() in error_messages:
