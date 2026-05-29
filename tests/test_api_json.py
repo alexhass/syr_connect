@@ -770,6 +770,20 @@ async def test_validate_response_errors_accepts_error_colon_variant(caplog: pyte
 
     assert "JSON API: 'getXYZ' Command does not exist (NSC error)" in caplog.text
 
+async def test_validate_response_errors_handles_split_value_error(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _validate_response_errors handles ValueError from split() gracefully."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    class BadSplit(str):
+        def split(self, sep=None, maxsplit=-1):
+            raise ValueError("split failed")
+
+    with caplog.at_level(logging.WARNING):
+        client._validate_response_errors({"getXYZ": BadSplit("ERROR: NSC")}, "http://test")
+
+    # Because split failed, code becomes '' and no NSC warning should be logged
+    assert "Command does not exist (NSC error)" not in caplog.text
 
 async def test_validate_response_errors_ignores_non_string_values() -> None:
     """Test _validate_response_errors ignores non-string values."""
