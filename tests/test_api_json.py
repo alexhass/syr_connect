@@ -760,6 +760,16 @@ async def test_validate_response_errors_case_sensitive() -> None:
     with pytest.raises(SyrConnectInvalidResponseError):
         client._validate_response_errors({"key6": "MiMa"}, "http://test")
 
+async def test_validate_response_errors_accepts_error_colon_variant(caplog: pytest.LogCaptureFixture) -> None:
+    """Test _validate_response_errors accepts 'ERROR: CODE' variants and logs warnings."""
+    sess = MagicMock()
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with caplog.at_level(logging.WARNING):
+        client._validate_response_errors({"getXYZ": "ERROR: NSC"}, "http://test")
+
+    assert "JSON API: 'getXYZ' Command does not exist (NSC error)" in caplog.text
+
 
 async def test_validate_response_errors_ignores_non_string_values() -> None:
     """Test _validate_response_errors ignores non-string values."""
