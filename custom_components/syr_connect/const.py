@@ -124,6 +124,12 @@ _SYR_CONNECT_API_SERVICES: list[dict] = [
         "display_name": "Optima CONNECT",
     },
     {
+        "api_app_name": "RwcMultisafe",
+        "api_base_url": "https://rwcmultisafe.com/",
+        "cf_bundle_identifier": "de.consoft.rwc.connect",
+        "display_name": "RWC MultiSafe",
+    },
+    {
         "api_app_name": "POLYGONVATRO Connect",
         "api_base_url": "https://polygonvatro-connect.de/",
         "cf_bundle_identifier": "de.consoft.polygonvatro.connect",

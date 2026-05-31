@@ -112,6 +112,8 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - Ditech Einzelenthärtungsanlage
 - Ditech Doppelenthärtungsanlage
 - Hansgrohe PontosBase
+- RWC MultiSafe Floor Leak Sensor
+- RWC MultiSafe Leak Detector Control Valve
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
 - SYR IT 3000 Pendelanlage

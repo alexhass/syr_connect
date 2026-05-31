@@ -112,6 +112,8 @@ Other devices are also of interest, but may need to be integrated or at least te
 - Ditech Single Water Softener
 - Ditech Twin Water Softener
 - Hansgrohe PontosBase
+- RWC MultiSafe Floor Leak Sensor
+- RWC MultiSafe Leak Detector Control Valve
 - Sanibel Softwater DUO A25
 - SYR HygBox Connect
 - SYR IT 3000 Pendulum system
