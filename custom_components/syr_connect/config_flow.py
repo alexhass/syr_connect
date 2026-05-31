@@ -19,6 +19,7 @@ from .const import (
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
     _SYR_CONNECT_API_SERVICES,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -38,11 +39,11 @@ _LOGGER = logging.getLogger(__name__)
 # Schema for Cloud/XML API initial setup (backend selector + username + password)
 STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_SERVICE, default=_SYR_CONNECT_API_SERVICES[0]["cf_bundle_identifier"]): selector.SelectSelector(
+        vol.Required(CONF_SERVICE, default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
                     selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
-                    for svc in _SYR_CONNECT_API_SERVICES
+                    for svc in sorted(_SYR_CONNECT_API_SERVICES, key=lambda s: s["display_name"].casefold())
                 ],
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )
@@ -71,7 +72,7 @@ LOCAL_API_MODELS = sorted(
         for sig in MODEL_SIGNATURES
         if sig.get("base_path") is not None
     ],
-    key=lambda x: x[1],  # Sort by display_name
+    key=lambda x: x[1].casefold(),  # Sort by display_name (case-insensitive)
 )
 
 # Schema for Local/JSON API configuration (host + model)
@@ -461,10 +462,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_MODEL: user_input[CONF_MODEL],
                     }
                 else:
-                    await validate_input_xml(self.hass, user_input)
+                    # Use the existing configured service; do not allow changing it here.
+                    service = entry.data.get(CONF_SERVICE)
+                    await validate_input_xml(self.hass, {**user_input, CONF_SERVICE: service})
                     new_data = {
                         CONF_API_TYPE: API_TYPE_XML,
-                        CONF_SERVICE: user_input[CONF_SERVICE],
+                        CONF_SERVICE: service,
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
@@ -524,22 +527,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
         else:
             # Pre-fill with current values for XML API (or defaults if entry is None)
+            # Do not allow changing the configured service here; only credentials may be updated.
             return self.async_show_form(
                 step_id="reconfigure",
                 data_schema=vol.Schema(
                     {
-                        vol.Required(
-                            CONF_SERVICE,
-                            default=entry.data.get(CONF_SERVICE, _SYR_CONNECT_API_SERVICES[0]["cf_bundle_identifier"]) if entry else _SYR_CONNECT_API_SERVICES[0]["cf_bundle_identifier"],
-                        ): selector.SelectSelector(
-                            selector.SelectSelectorConfig(
-                                options=[
-                                    selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
-                                    for svc in _SYR_CONNECT_API_SERVICES
-                                ],
-                                mode=selector.SelectSelectorMode.DROPDOWN,
-                            )
-                        ),
                         vol.Required(
                             CONF_USERNAME,
                             default=entry.data.get(CONF_USERNAME, "") if entry else ""

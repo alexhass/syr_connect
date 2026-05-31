@@ -131,6 +131,10 @@ _SYR_CONNECT_API_SERVICES: list[dict] = [
     },
 ]
 
+# Default CF bundle identifier used as the default selection in the UI
+# Keep as a separate named constant to avoid hard-coded strings scattered across the codebase.
+_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
+
 # Old Models that use /clr/ala endpoint to clear alarms (JSON API only).
 # These devices do not support the standard setALA set-command for alarm reset.
 _SYR_CONNECT_MODEL_COMMAND_CLR_ALA = {
