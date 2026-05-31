@@ -1015,6 +1015,7 @@ _SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
 # To add support for a new device, append its getTYP value as a string.
 _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE = {
     "120",  # SafeFloor – reports e.g. "40" = 40%
+    "122",  # SafeFloor – reports e.g. "40" = 40%
 }
 
 # Mapping for getLE sensor values (Leakage protection - Present level)
