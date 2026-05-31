@@ -1035,7 +1035,8 @@ def test_local_api_models_sorted_by_label() -> None:
     from custom_components.syr_connect.config_flow import LOCAL_API_MODELS
 
     labels = [label for _, label in LOCAL_API_MODELS]
-    assert labels == sorted(labels), "LOCAL_API_MODELS is not sorted by label"
+    # Compare case-insensitively to match UI expectations (ignore casing differences)
+    assert labels == sorted(labels, key=lambda s: s.casefold()), "LOCAL_API_MODELS is not sorted by label (case-insensitive)"
 
 
 async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
