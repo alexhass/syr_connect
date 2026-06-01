@@ -242,7 +242,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Valve & Flow ---
     "getAB",    # Valve shutoff state (open / closed)
     "getAVO",   # Current instantaneous flow rate
-    "getFLO",   # Water flow rate (l/min)
+    "getFLO",   # Water flow rate (l/h)
     "getVLV",   # Valve position (10=closed, 11=closing, 20=open, 21=opening)
     # --- Alarm / Notification / Warning ---
     "getALA",   # Current alarm code
@@ -1166,7 +1166,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # getIWH and getOWH units are set dynamically from getWHU
     "getAVO": UnitOfVolume.LITERS,                          # Current flow in Liters (e.g. "1655mL" -> 1.655 L)
     "getDWF": UnitOfVolume.LITERS,                          # Expected daily water consumption
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_MINUTE,       # Flow rate
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_HOUR,         # Flow rate
     "getFCO": "ppm",                                        # Iron content (parts per million)
     "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)

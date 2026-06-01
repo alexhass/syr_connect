@@ -547,8 +547,8 @@ These settings can be set by the user.
 | getPRS                                                | "40"               | 1/10 bar | Measured water pressure if sensor is available (getPST() = 2), otherwise same as getMPR()<br>255 indicates an invalid values, e.g. when no pressure sensor is available but getPST() = 2
 | getMXP                                                | "40"               | 1/10 bar | The maximum measured water pressure (reset at midnight)
 | getMNP                                                | "40"               | 1/10 bar | The minimum measured water pressure (reset at midnight)
-| getFLO                                                | "0"                | L/min    | Measured water flow
-| getMXF                                                | "22"               | L/min    | Maximum flow within this hour
+| getFLO                                                | "0"                | L/h      | Measured water flow
+| getMXF                                                | "22"               | L/h      | Maximum flow within this hour
 | getRES                                                | "1982"             | L        | Remaining capacity of water that can be treated
 | getVOL                                                | "2000"             | L        | Total capacity
 | getCS1<br>getCS2<br>getCS3                            | "63"<br>"0"<br>"0" | %        | Remaining capacity of the resin in tank 1, 2 or 3
