@@ -162,6 +162,16 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
             self._attr_entity_category = EntityCategory.CONFIG
 
     @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        if not self.coordinator.last_update_success:
+            return False
+        for device in self.coordinator.data.get("devices", []):
+            if device["id"] == self._device_id:
+                return device.get("available", True)
+        return True
+
+    @property
     def is_on(self) -> bool | None:
         """Return True if buzzer is on."""
         device = next((d for d in self.coordinator.data.get("devices", []) if d["id"] == self._device_id), None)
