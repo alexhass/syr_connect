@@ -75,6 +75,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Delegate migration steps to helpers in migrations.py
     # Migrate v1 -> v2
+    # Integration version 1.19.0 -> 1.20.0
     if entry.version == 1:
         update_kwargs = v1_to_v2_update_kwargs(entry)
         if update_kwargs:
@@ -91,6 +92,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config_entries.async_update_entry(entry, version=3)
 
     # Migrate v3 -> v4
+    # Integration version 1.21.0 -> 1.22.0
     if entry.version == 3:
         update_kwargs = v3_to_v4_add_service(entry)
         if update_kwargs:
