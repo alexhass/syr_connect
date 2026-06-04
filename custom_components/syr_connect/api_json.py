@@ -609,22 +609,29 @@ class SyrConnectJsonAPI:
         _LOGGER.debug("JSON API: Retrieved %s=%s", expected_key, data[expected_key])
         return data
 
-    async def set_device_status(self, device_id: str, command: str, value: Any) -> bool:
-        """Attempt to set a device value using the JSON API.
+    async def set_device_status(self, device_id: str, commands: list[tuple[str, Any]]) -> bool:
+        """Attempt to set one or more device values using the JSON API.
 
         Args:
             device_id: Device identifier
-            command: Command name (e.g., "setRTM" or "RTM")
-            value: Value to set
+            commands: Sequence of (command, value) pairs, executed in order.
+                Each command is a string such as "setRTM" or "RTM" and
+                each value is the new value to set.
 
         Returns:
-            True if the request succeeds
+            True if all requests succeed
 
         Raises:
             SyrConnectAuthError: On authentication errors
             SyrConnectConnectionError: On connection errors
             SyrConnectInvalidResponseError: On validation errors (NSC, MIMA)
         """
+        for command, value in commands:
+            await self._set_device_status_single(device_id, command, value)
+        return True
+
+    async def _set_device_status_single(self, device_id: str, command: str, value: Any) -> None:
+        """Send a single set command to the JSON API."""
         # --- Normalize Command Name ---
         # Some callers send "setAB", others send "AB" - normalize to base
         # command and build the correct URL form via helpers.
@@ -645,7 +652,6 @@ class SyrConnectJsonAPI:
         self._validate_set_response(response, base_cmd, value, device_id)
 
         _LOGGER.info("JSON API: Set %s=%s for device %s (status: OK)", base_cmd, value, device_id)
-        return True
 
     def _validate_set_response(
         self,

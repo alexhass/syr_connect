@@ -453,7 +453,7 @@ async def test_set_device_status_no_base_url_raises() -> None:
     client = SyrConnectJsonAPI(sess)  # No host/base_path/base_url
 
     with pytest.raises(ValueError, match="Base URL not configured"):
-        await client.set_device_status("device1", "setAB", "true")
+        await client.set_device_status("device1", [("setAB", "true")])
 
 
 async def test_set_device_status_strips_set_prefix() -> None:
@@ -469,7 +469,7 @@ async def test_set_device_status_strips_set_prefix() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    result = await client.set_device_status("device1", "setAB", "true")
+    result = await client.set_device_status("device1", [("setAB", "true")])
 
     # Verify URL contains "/set/ab/true" (not "/set/setAB/true")
     called_url = str(sess.get.call_args[0][0])
@@ -491,7 +491,7 @@ async def test_set_device_status_success() -> None:
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    result = await client.set_device_status("device1", "XY", "123")
+    result = await client.set_device_status("device1", [("XY", "123")])
 
     assert result is True
 
@@ -516,7 +516,7 @@ async def test_set_device_status_http_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectAuthError):
-        await client.set_device_status("device1", "AB", "false")
+        await client.set_device_status("device1", [("AB", "false")])
 
 
 async def test_get_device_status_skips_login_with_base_url() -> None:
@@ -594,7 +594,7 @@ async def test_set_device_status_raises_on_nsc_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectInvalidResponseError, match="Command INVALID does not exist"):
-        await client.set_device_status("device1", "INVALID", "value")
+        await client.set_device_status("device1", [("INVALID", "value")])
 
 
 async def test_set_device_status_raises_on_mima_error() -> None:
@@ -613,7 +613,7 @@ async def test_set_device_status_raises_on_mima_error() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with pytest.raises(SyrConnectInvalidResponseError, match="Value 999 is outside valid range for command PRF9"):
-        await client.set_device_status("device1", "PRF9", "999")
+        await client.set_device_status("device1", [("PRF9", "999")])
 
 
 async def test_set_device_status_url_encodes_special_characters() -> None:
@@ -630,7 +630,7 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Test with time value containing colon (e.g., "02:15")
-    result = await client.set_device_status("device1", "RTM", "02:15")
+    result = await client.set_device_status("device1", [("RTM", "02:15")])
 
     # Verify URL contains literal colon (not percent-encoded) because device
     # firmware does not decode %3A and rejects encoded values.
