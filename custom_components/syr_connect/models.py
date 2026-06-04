@@ -123,6 +123,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── i-LEX / LEX (dk=40, dkv=16) ─────────────────────────────────────────────
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L10",
         "display_name": "i-LEX 10 Connect",
@@ -135,6 +136,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L12",
         "display_name": "i-LEX 12 Connect",
@@ -147,6 +149,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L15",
         "display_name": "i-LEX 15 Connect",
@@ -159,6 +162,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L20",
         "display_name": "i-LEX 20 Connect",
@@ -171,6 +175,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L25",
         "display_name": "i-LEX 25 Connect",
@@ -183,6 +188,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L30",
         "display_name": "i-LEX 30 Connect",
@@ -195,6 +201,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L40",
         "display_name": "i-LEX 40 Connect",
@@ -207,6 +214,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L50",
         "display_name": "i-LEX 50 Connect",
@@ -219,6 +227,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L60",
         "display_name": "i-LEX 60 Connect",
@@ -231,6 +240,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L70",
         "display_name": "i-LEX 70 Connect",
@@ -243,6 +253,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L80",
         "display_name": "i-LEX 80 Connect",
@@ -255,6 +266,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L90",
         "display_name": "i-LEX 90 Connect",
@@ -267,6 +279,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L100",
         "display_name": "i-LEX 100 Connect",
@@ -279,6 +292,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX10",
         "display_name": "LEX 10 Connect",
@@ -292,6 +306,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX20",
         "display_name": "LEX 20 Connect",
@@ -305,6 +320,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX30",
         "display_name": "LEX 30 Connect",
@@ -318,6 +334,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX40",
         "display_name": "LEX 40 Connect",
@@ -330,6 +347,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX60",
         "display_name": "LEX 60 Connect",
@@ -342,6 +360,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX80",
         "display_name": "LEX 80 Connect",
@@ -354,6 +373,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX100",
         "display_name": "LEX 100 Connect",
@@ -406,6 +426,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEXplus10",
         "display_name": "LEX Plus 10 Connect",
@@ -419,6 +440,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEXplus10S",
         "display_name": "LEX Plus 10 S Connect",
@@ -432,6 +454,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
+        "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEXplus10SL",
         "display_name": "LEX Plus 10 SL Connect",
