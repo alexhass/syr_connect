@@ -43,7 +43,7 @@ STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
             selector.SelectSelectorConfig(
                 options=[
                     selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
-                    for svc in sorted(_SYR_CONNECT_API_SERVICES, key=lambda s: s["display_name"].casefold())
+                    for svc in sorted(_SYR_CONNECT_API_SERVICES.values(), key=lambda s: s["display_name"].casefold())
                 ],
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )
@@ -116,15 +116,10 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
 
     # Look up backend-specific parameters from _SYR_CONNECT_API_SERVICES
     conf_service = data.get(CONF_SERVICE)
-    api_base_url = None
-    cf_bundle_identifier = None
-    api_app_name = None
-    for svc in _SYR_CONNECT_API_SERVICES:
-        if svc["cf_bundle_identifier"] == conf_service:
-            api_base_url = svc["api_base_url"]
-            cf_bundle_identifier = svc["cf_bundle_identifier"]
-            api_app_name = svc["api_app_name"]
-            break
+    svc = _SYR_CONNECT_API_SERVICES.get(conf_service) if conf_service else None
+    api_base_url = svc["api_base_url"] if svc else None
+    cf_bundle_identifier = svc["cf_bundle_identifier"] if svc else None
+    api_app_name = svc["api_app_name"] if svc else None
 
     api = SyrConnectXmlAPI(
         session,

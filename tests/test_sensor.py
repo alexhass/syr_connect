@@ -5230,8 +5230,8 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
 
     async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> None:
         """Exhaustive-ish test for getALA, getNOT and getWRN with many input variants."""
-        truthy = {"true", "True", "TRUE", "on", "ON", "yes", "1", 1, True}
-        falsy = {"false", "False", "FALSE", "off", "OFF", "no", "0", 0, False}
+        truthy = {"true", "True", "TRUE", "on", "ON", "yes", "1", 1}
+        falsy = {"false", "False", "FALSE", "off", "OFF", "no", "0", 0}
 
         variants = [
             None,

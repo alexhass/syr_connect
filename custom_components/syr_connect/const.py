@@ -86,56 +86,56 @@ _SYR_CONNECT_CLIENT_USER_AGENT = f"{_SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME}/{_SYR_C
 #
 # Note: The value of "api_app_name" and "api_base_url" are hard bound to each other. These need to be used together or
 # the api login fails. cf_bundle_identifier is not validated on server side, but should be used to emulate the mobile app.
-_SYR_CONNECT_API_SERVICES: list[dict] = [
-    {
+_SYR_CONNECT_API_SERVICES: dict[str, dict] = {
+    "de.consoft.syr.connect": {
         "api_app_name": "SYR Connect",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.syr.connect",
         "display_name": "SYR Connect",
     },
-    {
+    "de.consoft.gc.conel.connect": {
         "api_app_name": "CLEAR PRO",
         "api_base_url": "https://api.conelclearpro.de/",
         "cf_bundle_identifier": "de.consoft.gc.conel.connect",
         "display_name": "CONEL CLEAR PRO",
     },
-    {
+    "de.consoft.gsh.comfort.connect": {
         "api_app_name": "comfort CONNECT",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.gsh.comfort.connect",
         "display_name": "Sanibel comfort CONNECT",
     },
-    {
+    "de.consoft.isg.concept.connect": {
         "api_app_name": "concept CONNECT",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.isg.concept.connect",
         "display_name": "concept CONNECT",
     },
-    {
+    "de.consoft.sanitaerunion.ditech.connect": {
         "api_app_name": "DITECH Geräte",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.sanitaerunion.ditech.connect",
         "display_name": "DITECH Haustechnik",
     },
-    {
+    "de.consoft.isg.optima.connect": {
         "api_app_name": "optima CONNECT",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.isg.optima.connect",
         "display_name": "Optima CONNECT",
     },
-    {
+    "de.consoft.rwc.connect": {
         "api_app_name": "RwcMultisafe",
         "api_base_url": "https://rwcmultisafe.com/",
         "cf_bundle_identifier": "de.consoft.rwc.connect",
         "display_name": "RWC MultiSafe",
     },
-    {
+    "de.consoft.polygonvatro.connect": {
         "api_app_name": "POLYGONVATRO Connect",
         "api_base_url": "https://polygonvatro-connect.de/",
         "cf_bundle_identifier": "de.consoft.polygonvatro.connect",
         "display_name": "POLYGONVATRO Connect",
     },
-]
+}
 
 # Default CF bundle identifier used as the default selection in the UI
 # Keep as a separate named constant to avoid hard-coded strings scattered across the codebase.

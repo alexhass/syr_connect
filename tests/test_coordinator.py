@@ -11,12 +11,13 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import (
+    _SYR_CONNECT_API_SERVICES,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     CONF_API_TYPE,
     CONF_HOST,
     CONF_MODEL,
     CONF_SERVICE,
-    _SYR_CONNECT_API_SERVICES,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.exceptions import (
@@ -1771,8 +1772,7 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
         mock_xml_api_class.return_value = MagicMock()
 
-        # Use the first registered service so the loop finds a match
-        svc = _SYR_CONNECT_API_SERVICES[0]
+        svc = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
         config_data = {
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",

@@ -114,17 +114,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             password = config_data[CONF_PASSWORD]
 
             # Look up service parameters from CONF_SERVICE (cf_bundle_identifier)
-            api_app_name = None
-            api_base_url = None
-            cf_bundle_identifier = None
             conf_service = config_data.get(CONF_SERVICE)
-            if conf_service:
-                for svc in _SYR_CONNECT_API_SERVICES:
-                    if svc["cf_bundle_identifier"] == conf_service:
-                        api_app_name = svc["api_app_name"]
-                        api_base_url = svc["api_base_url"]
-                        cf_bundle_identifier = svc["cf_bundle_identifier"]
-                        break
+            svc = _SYR_CONNECT_API_SERVICES.get(conf_service) if conf_service else None
+            api_app_name = svc["api_app_name"] if svc else None
+            api_base_url = svc["api_base_url"] if svc else None
+            cf_bundle_identifier = svc["cf_bundle_identifier"] if svc else None
 
             self.api = SyrConnectXmlAPI(
                 session,

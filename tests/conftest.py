@@ -29,7 +29,7 @@ def expected_lingering_timers() -> bool:
 
 
 @pytest.fixture
-def mock_setup_entry() -> Generator[AsyncMock, None, None]:
+def mock_setup_entry() -> Generator[AsyncMock]:
     """Override async_setup_entry."""
     with patch("custom_components.syr_connect.async_setup_entry", new_callable=AsyncMock) as mock_setup_entry:
         mock_setup_entry.return_value = True
