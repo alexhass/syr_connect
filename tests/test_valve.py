@@ -1154,7 +1154,7 @@ async def test_async_open_valve_active_alarm_json_calls_clr_then_set(hass: HomeA
     await coordinator.async_open_valve("dev4", "setAB", 1)
 
     coordinator.api.request_json_data.assert_awaited_once_with("clr/ala")
-    coordinator.api.set_device_status.assert_awaited_once_with("dev4", "setAB", 1)
+    coordinator.api.set_device_status.assert_awaited_once_with("dev4", [("setAB", 1)])
 
 
 async def test_async_open_valve_alarm_style_alm_uses_clr_alm(hass: HomeAssistant) -> None:

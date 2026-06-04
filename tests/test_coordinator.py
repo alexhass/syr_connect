@@ -161,7 +161,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
-        mock_api.set_device_status.assert_called_once_with("dclg1", "setSIR", 0)
+        mock_api.set_device_status.assert_called_once_with("dclg1", [("setSIR", 0)])
 
 
 async def test_set_device_status_api_raises_propagates(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -902,7 +902,7 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
                     await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Should use device ID as fallback
-        mock_api.set_device_status.assert_called_once_with("device1", "setSIR", 0)
+        mock_api.set_device_status.assert_called_once_with("device1", [("setSIR", 0)])
 
 
 async def test_pending_refresh_task_cancelled_on_set(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -1689,10 +1689,10 @@ async def test_coordinator_device_available_when_sta_is_2(
         assert device["available"] is True
 
 
-async def test_async_clear_device_alarm_raises_for_xml_api(
+async def test_async_clear_device_alarm_xml_api_sends_clr_command(
     hass: HomeAssistant, setup_in_progress_config_entry
 ) -> None:
-    """async_clear_device_alarm must raise HomeAssistantError when not using JSON API."""
+    """async_clear_device_alarm sends clrALA via set_device_status for XML API."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -1706,10 +1706,13 @@ async def test_async_clear_device_alarm_raises_for_xml_api(
         coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
         coordinator.config_entry = setup_in_progress_config_entry
         coordinator.data = {"devices": [{"id": "device1", "dclg": "dclg1", "status": {}}], "projects": []}
+        mock_api.set_device_status = AsyncMock(return_value=True)
         coordinator.api = mock_api
 
-        with pytest.raises(HomeAssistantError, match="only supported for the local JSON API"):
-            await coordinator.async_clear_device_alarm("device1")
+        coordinator.hass.async_create_task = MagicMock(side_effect=_consume_coro_return_task)
+        await coordinator.async_clear_device_alarm("device1")
+
+        mock_api.set_device_status.assert_awaited_once_with("device1", [("clrALA", "")])
 
 
 async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:

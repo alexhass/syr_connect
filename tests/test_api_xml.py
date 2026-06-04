@@ -109,7 +109,7 @@ async def test_set_device_status_value_conversion(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>') as mock_post:
-        await api_client.set_device_status("device1", "setSIR", 0)
+        await api_client.set_device_status("device1", [("setSIR", 0)])
 
         # Verify the payload contains '1' not 'True'
         call_args = mock_post.call_args
@@ -211,7 +211,7 @@ async def test_set_device_status_with_expired_session(api_client):
     with patch.object(api_client, 'login', return_value=True) as mock_login, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
-        await api_client.set_device_status("device1", "setSIR", 1)
+        await api_client.set_device_status("device1", [("setSIR", 1)])
 
         # Should have called login due to expired session
         mock_login.assert_called_once()
@@ -254,7 +254,7 @@ async def test_set_device_status_exception_handling(api_client):
 
     with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Set error")):
         with pytest.raises(RuntimeError, match="Set error"):
-            await api_client.set_device_status("device1", "setSIR", 1)
+            await api_client.set_device_status("device1", [("setSIR", 1)])
 
 
 async def test_get_statistics_water(api_client):
