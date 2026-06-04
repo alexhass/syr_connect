@@ -47,6 +47,8 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #                                   present in the flattened response for the signature to match. When
 #                                   `v_keys` are defined, the code also enforces any `ver_*` or
 #                                   `attrs_equals` constraints before returning a match.
+# - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
+#                                   command (setALM) rather than by a clrALM command.
 #
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
@@ -498,6 +500,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── Trio LS platform (dk=1100–1113) ──────────────────────────────────────────
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Trio LS Connect",
@@ -509,6 +512,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "100",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "concept 200 Replacement Filter",
@@ -520,6 +524,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "110",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima T Replacement Filter",
@@ -531,6 +536,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "111",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Plus Connect",
@@ -541,6 +547,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "112",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Trio DFR/LS Connect",
@@ -553,6 +560,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── NeoSoft platform (dk=1206–1222) ──────────────────────────────────────────
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 2500 Connect",
@@ -565,6 +573,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "206",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 5000 Connect",
@@ -580,6 +589,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "v_keys_required": 2,
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Softwater UNO A25",
@@ -592,6 +602,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "207",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "concept Single Softening System",
@@ -605,6 +616,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "208",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima Single Softening System",
@@ -618,6 +630,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "209",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "concept 200 Double Softening System",
@@ -631,6 +644,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "210",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima T2.2 Double Softening System",
@@ -644,6 +658,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "211",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Softwater DUO A25",
@@ -657,6 +672,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "212",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima Double Softening System",
@@ -670,6 +686,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "213",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT TWIN",
@@ -682,6 +699,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "214",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT",
@@ -694,6 +712,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "215",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "concept Double Softening System",
@@ -707,6 +726,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "216",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Ditech Double Softening System",
@@ -720,6 +740,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "217",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "TAKE Double Softening System",
@@ -733,6 +754,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "218",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Ditech Single Softening System",
@@ -746,6 +768,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "219",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "TAKE Single Softening System",
@@ -759,6 +782,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "220",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft Lock Connect II",
@@ -771,6 +795,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "221",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft Lock Connect I",
@@ -785,6 +810,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://conelclearpro.de/",
         "display_name": "Conel MultiController",
@@ -796,6 +822,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "500",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Leak Protection Module A25",
@@ -806,6 +833,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "501",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Ditech Multicontroller",
@@ -817,6 +845,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "502",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "TAKE Multicontroller",
@@ -828,6 +857,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "503",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "concept Multicontroller",
@@ -839,6 +869,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "504",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima Multicontroller",
@@ -850,6 +881,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "505",
     },
     {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
         "display_name": "Syr Multicontroller",
