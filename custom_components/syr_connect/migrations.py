@@ -8,7 +8,9 @@ or `None` if no update is required.
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_USERNAME
+from homeassistant.const import CONF_USERNAME, UnitOfVolumeFlowRate
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_HOST, CONF_MODEL
 
@@ -41,3 +43,35 @@ def v1_to_v2_update_kwargs(entry: ConfigEntry) -> dict | None:
         update_kwargs["unique_id"] = f"{desired_api}_{username}"
 
     return update_kwargs
+
+
+def v2_to_v3_fix_flo_unit(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reset entity registry unit override for getFLO sensors (v2 → v3).
+
+    When getFLO's native_unit_of_measurement changed from L/min to L/h,
+    existing entity registry entries may have "L/min" stored as the display
+    unit override. HA respects that override and keeps converting the value
+    back to L/min even though the native unit is now L/h. Resetting the
+    override to None lets HA pick up the new native unit from the code.
+    """
+    ent_reg = er.async_get(hass)
+    for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+        if entity_entry.domain != "sensor" or not entity_entry.unique_id.endswith("_getFLO"):
+            continue
+        # Legacy field: set directly on entity (older HA versions / manual UI override)
+        if entity_entry.unit_of_measurement == UnitOfVolumeFlowRate.LITERS_PER_MINUTE:
+            ent_reg.async_update_entity(entity_entry.entity_id, unit_of_measurement=None)
+        # HA stores the suggested unit in "sensor.private" (set automatically on first
+        # registration) and the user-selected unit in "sensor" (set via UI).
+        # Both namespaces must be cleared so HA picks up the new native unit from code.
+        for namespace in ("sensor.private", "sensor"):
+            ns_opts = dict(entity_entry.options.get(namespace, {}))
+            changed = False
+            for key in ("unit_of_measurement", "suggested_unit_of_measurement"):
+                if ns_opts.get(key) == UnitOfVolumeFlowRate.LITERS_PER_MINUTE:
+                    ns_opts.pop(key)
+                    changed = True
+            if changed:
+                ent_reg.async_update_entity_options(
+                    entity_entry.entity_id, namespace, ns_opts or None
+                )

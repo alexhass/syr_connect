@@ -130,7 +130,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 cf_bundle_identifier=cf_bundle_identifier,
             )
             self._username = username
-            self._configuration_url: str | None = svc["configuration_url"] if svc else None
+            self._configuration_url = svc["configuration_url"] if svc else None
             _LOGGER.info("Coordinator initialized with XML API (username=%s)", username)
 
         # Keep aiohttp session for optional JSON API usage per-device

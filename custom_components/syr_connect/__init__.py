@@ -22,7 +22,7 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import get_default_scan_interval_for_entry
-from .migrations import v1_to_v2_update_kwargs
+from .migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,6 +55,8 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     Version history:
       1 → 2: Added CONF_API_TYPE field and updated unique_id to include
              API type prefix (legacy entries always used the XML API).
+      2 → 3: Reset entity registry unit override for getFLO sensors from
+             L/min to L/h (native_unit_of_measurement changed in code).
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -78,6 +80,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             safe_update = _mask_sensitive_data(update_kwargs)
             _LOGGER.debug("Applying v1->v2 migration for entry %s: %s", entry.entry_id, safe_update)
             hass.config_entries.async_update_entry(entry, **update_kwargs)
+
+    # Migrate v2 -> v3
+    # Integration version 1.21.0 -> 1.22.0
+    if entry.version == 2:
+        _LOGGER.debug("Applying v2->v3 migration for entry %s: resetting getFLO unit override", entry.entry_id)
+        v2_to_v3_fix_flo_unit(hass, entry)
+        hass.config_entries.async_update_entry(entry, version=3)
 
     return True
 

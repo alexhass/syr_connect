@@ -532,6 +532,31 @@ async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
     mock_update.assert_not_called()
 
 
+async def test_async_migrate_entry_v2_to_v3(hass: HomeAssistant) -> None:
+    """Test v2->v3 migration calls fix_flo_unit and bumps version to 3."""
+    config_entry = MockConfigEntry(
+        version=2,
+        minor_version=0,
+        domain=DOMAIN,
+        title="V2 Entry",
+        data={"username": "v2user@example.com", "password": "password"},
+        source="user",
+        entry_id="v2_entry",
+        unique_id="xml_v2user@example.com",
+    )
+    config_entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.syr_connect.v2_to_v3_fix_flo_unit") as mock_fix,
+        patch.object(hass.config_entries, "async_update_entry") as mock_update,
+    ):
+        result = await async_migrate_entry(hass, config_entry)
+
+    assert result is True
+    mock_fix.assert_called_once_with(hass, config_entry)
+    mock_update.assert_called_once_with(config_entry, version=3)
+
+
 async def test_async_options_update_listener_logs_unchanged(hass: HomeAssistant, caplog) -> None:
     """Ensure options update listener logs when scan interval is unchanged."""
     config_entry = MockConfigEntry(
