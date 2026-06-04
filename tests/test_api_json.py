@@ -640,7 +640,7 @@ async def test_set_device_status_url_encodes_special_characters() -> None:
 
     # Test with value containing slash – also sent without encoding
     mock_response.json = AsyncMock(return_value={"setCMDvalue/with/slash": "OK"})
-    result2 = await client.set_device_status("device1", "CMD", "value/with/slash")
+    result2 = await client.set_device_status("device1", [("CMD", "value/with/slash")])
     called_url2 = str(sess.get.call_args[0][0])
     assert "value/with/slash" in called_url2
     assert result2 is True
@@ -660,7 +660,7 @@ async def test_set_device_status_missing_response_key(caplog: pytest.LogCaptureF
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with caplog.at_level(logging.WARNING):
-        result = await client.set_device_status("device1", "TEST", "123")
+        result = await client.set_device_status("device1", [("TEST", "123")])
 
     # Should not raise exception, just log warning and return True
     assert result is True
@@ -681,7 +681,7 @@ async def test_set_device_status_unknown_status_code(caplog: pytest.LogCaptureFi
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     with caplog.at_level(logging.WARNING):
-        result = await client.set_device_status("device1", "UNKNOWN", "42")
+        result = await client.set_device_status("device1", [("UNKNOWN", "42")])
 
     # Should not raise exception, just log warning and return True
     assert result is True
