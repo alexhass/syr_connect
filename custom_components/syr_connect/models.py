@@ -1002,8 +1002,11 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
-        dict: {"name": ..., "display_name": ..., "base_path": ..., "manufacturer": ..., "maximum_regeneration_interval": ...}
-        If no signature matches, returns an 'unknown' model dict.
+        dict: A full copy of the matched MODEL_SIGNATURES entry. Contains all
+        signature fields (e.g. ``name``, ``display_name``, ``base_path``,
+        ``manufacturer``, ``alarm_clear_via_set``, ``alarm_style_alm``,
+        ``maximum_regeneration_interval``, ``maximum_salt_volume``, ...).
+        If no signature matches, returns the ``UNKNOWN_MODEL`` dict.
 
     Detection priority (highest to lowest):
     1. Serial number prefix (srn_prefix):
@@ -1062,39 +1065,29 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             return False
         return True
 
+    def _sig_to_result(sig: dict, method: str) -> dict:
+        """Return a full copy of sig."""
+        out = dict(sig)
+        _LOGGER.debug("detect_model: detected model %s (%s)", out.get("display_name"), method)
+        return out
+
     # Step 1: Check all serial number prefix/contains matches first (highest priority)
     # If a model signature defines 'srn_prefix' or 'srn_contains' and the serial number matches,
     # return this model immediately. This ensures serial number detection always wins over other methods.
     for sig in MODEL_SIGNATURES:
         if (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
-            base_path = sig.get("base_path")
-            name = sig.get("name")
-            display = sig.get("display_name", name)
-            manufacturer = sig.get("manufacturer")
-            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
-            maximum_salt_volume = sig.get("maximum_salt_volume")
-            _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return _sig_to_result(sig, "srn_equals")
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
     for sig in MODEL_SIGNATURES:
         if sig.get("cna_equals") and cna == sig.get("cna_equals"):
-            base_path = sig.get("base_path")
-            name = sig.get("name")
-            display = sig.get("display_name", name)
-            manufacturer = sig.get("manufacturer")
-            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
-            maximum_salt_volume = sig.get("maximum_salt_volume")
-            _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return _sig_to_result(sig, "cna_equals")
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
     for sig in MODEL_SIGNATURES:
-        base_path = sig.get("base_path")
         name = sig.get("name")
-        display = sig.get("display_name", name)
 
         # If the signature requires certain attributes to match, skip if not satisfied.
         if not attrs_match(sig):
@@ -1112,27 +1105,15 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             if not ver_match(sig):
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
-            manufacturer = sig.get("manufacturer")
-            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
-            maximum_salt_volume = sig.get("maximum_salt_volume")
-            _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return _sig_to_result(sig, "v_keys")
 
         # If only attribute equality is required and already matched, return this model.
         if sig.get("attrs_equals"):
-            manufacturer = sig.get("manufacturer")
-            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
-            maximum_salt_volume = sig.get("maximum_salt_volume")
-            _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return _sig_to_result(sig, "attrs_equals")
 
         # If version prefix or contains is specified and matches, return this model.
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
-            manufacturer = sig.get("manufacturer")
-            maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
-            maximum_salt_volume = sig.get("maximum_salt_volume")
-            _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return _sig_to_result(sig, "ver")
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
