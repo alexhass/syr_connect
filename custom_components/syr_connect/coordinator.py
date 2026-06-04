@@ -442,25 +442,22 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             except Exception:  # pragma: no cover - defensive
                 _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
 
-    async def async_clear_device_alarm(self, device_id: str) -> None:
-        """Clear active alarm via the /clr/ala endpoint (JSON API only).
-
-        Used by device models (Pontos Base, SafeTech V4) that expose a
-        dedicated clear-alarm HTTP endpoint instead of the standard setALA
-        set-command.
+    async def async_clear_device_alarm(self, device_id: str, field: str = "ala") -> None:
+        """Clear active alarm via the /clr/{field} endpoint (JSON API) or clr command (XML API).
 
         Args:
-            device_id: The device ID (serial number) — used for logging
+            device_id: The device ID (serial number)
+            field: Alarm field to clear — ``"ala"`` (default) or ``"alm"``
 
         Raises:
-            HomeAssistantError: If not using the JSON API or if the request fails
+            HomeAssistantError: If the request fails
         """
-        if not isinstance(self.api, SyrConnectJsonAPI):
-            raise HomeAssistantError(
-                "Clear alarm via /clr/ala is only supported for the local JSON API"
-            )
-        await self.api.request_json_data("clr/ala")
-        _LOGGER.info("Coordinator: Cleared alarm via /clr/ala for device %s", device_id)
+        if isinstance(self.api, SyrConnectJsonAPI):
+            await self.api.request_json_data(f"clr/{field}")
+            _LOGGER.info("Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id)
+        else:
+            await self.api.set_device_status(device_id, f"clr{field.upper()}", "")
+            _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
         try:
             if self._pending_refresh_task and not self._pending_refresh_task.done():
                 self._pending_refresh_task.cancel()

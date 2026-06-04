@@ -413,7 +413,7 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    # getSIR='false' → softener is idle → setSIR button must be created
+    # getSIR='false' -> softener is idle -> setSIR button must be created
     assert len(entities) == 1
 
 
@@ -558,30 +558,32 @@ async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
         await button.async_press()
 
 
-async def test_button_reset_send_empty_for_lex10_and_safet(hass: HomeAssistant) -> None:
-    """When model is lex10/safetplus, reset sends empty string."""
+async def test_button_reset_ala_lexplus10s_calls_clr_alm(hass: HomeAssistant) -> None:
+    """LEXplus10S uses getALM (alarm_style_alm=True) and clears via clrALM (alarm_clear_via_set=False)."""
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getALA": "A5", "getCNA": "LEXplus10S"},
+                "status": {"getALM": "LowSalt", "getCNA": "LEXplus10S"},
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setALA")
 
     await button.async_press()
 
-    coordinator.async_set_device_value.assert_called_once_with("device1", "setALA", "")
+    coordinator.async_clear_device_alarm.assert_called_once_with("device1", "alm")
+    coordinator.async_set_device_value.assert_not_called()
 
 
-async def test_button_reset_send_ff_for_other_models(hass: HomeAssistant) -> None:
-    """When model unknown/other, reset sends 'FF'."""
+async def test_button_reset_ala_unknown_model_calls_clr_ala(hass: HomeAssistant) -> None:
+    """Unknown model (no alarm_clear_via_set) clears alarm via clrALA endpoint."""
     data = {
         "devices": [
             {
@@ -594,16 +596,18 @@ async def test_button_reset_send_ff_for_other_models(hass: HomeAssistant) -> Non
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
 
     button = SyrConnectButton(coordinator, "device2", "Device 2", "project1", "setALA")
 
     await button.async_press()
 
-    coordinator.async_set_device_value.assert_called_once_with("device2", "setALA", "FF")
+    coordinator.async_clear_device_alarm.assert_called_once_with("device2", "ala")
+    coordinator.async_set_device_value.assert_not_called()
 
 
 async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypatch) -> None:
-    """If detect_model raises, the code falls back and sends 'FF'."""
+    """If detect_model raises, falls back to default model_info={} and calls clrALA."""
     from custom_components.syr_connect import button as button_mod
 
     data = {
@@ -618,6 +622,7 @@ async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypa
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
 
     # Make detect_model raise
     monkeypatch.setattr(button_mod, "detect_model", lambda *_: (_ for _ in ()).throw(ValueError("boom")))
@@ -626,7 +631,9 @@ async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypa
 
     await button.async_press()
 
-    coordinator.async_set_device_value.assert_called_once_with("device3", "setALA", "FF")
+    # model_info={} -> alarm_clear_via_set=False -> clrALA endpoint
+    coordinator.async_clear_device_alarm.assert_called_once_with("device3", "ala")
+    coordinator.async_set_device_value.assert_not_called()
 
 async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> None:
     """Pontos Base (JSON API) clears alarm via /clr/ala, not setALA."""
@@ -647,7 +654,7 @@ async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> 
     button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "project1", "setALA")
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos")
+    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
     coordinator.async_set_device_value.assert_not_called()
 
 
@@ -670,17 +677,17 @@ async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> 
     button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "project1", "setALA")
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_stv4")
+    coordinator.async_clear_device_alarm.assert_called_once_with("device_stv4", "ala")
     coordinator.async_set_device_value.assert_not_called()
 
 
-async def test_button_reset_ala_clr_endpoint_not_used_for_xml_api(hass: HomeAssistant) -> None:
-    """Pontos Base model falls back to setALA/FF when async_clear_device_alarm raises (e.g. XML API)."""
+async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> None:
+    """Errors from async_clear_device_alarm propagate and are not swallowed."""
     data = {
         "devices": [
             {
-                "id": "device_pontos_xml",
-                "name": "Device Pontos XML",
+                "id": "device_pontos",
+                "name": "Device Pontos",
                 "project_id": "project1",
                 "status": {"getALA": "A5", "getVER": "PontosBase V1.31"},
             }
@@ -688,17 +695,15 @@ async def test_button_reset_ala_clr_endpoint_not_used_for_xml_api(hass: HomeAssi
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
-    # Simulate XML API: async_clear_device_alarm raises HomeAssistantError
     coordinator.async_clear_device_alarm = AsyncMock(
-        side_effect=HomeAssistantError("Clear alarm via /clr/ala is only supported for the local JSON API")
+        side_effect=HomeAssistantError("Connection failed")
     )
 
-    button = SyrConnectButton(coordinator, "device_pontos_xml", "Device Pontos XML", "project1", "setALA")
-    # HomeAssistantError from async_clear_device_alarm propagates (not caught by button logic)
+    button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "project1", "setALA")
     with pytest.raises(HomeAssistantError):
         await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos_xml")
+    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
     coordinator.async_set_device_value.assert_not_called()
 
 
@@ -722,15 +727,15 @@ async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
         await button.async_press()
 
 
-async def test_button_reset_not_send_empty_for_lex10_and_safet(hass: HomeAssistant) -> None:
-    """When model is lex10/safetplus, setNOT reset sends empty string."""
+async def test_button_reset_not_sends_ff_via_xml_api(hass: HomeAssistant) -> None:
+    """setNOT sends 'FF' when using the XML API (MagicMock api is not SyrConnectJsonAPI)."""
     data = {
         "devices": [
             {
                 "id": "device_not1",
                 "name": "Device NOT1",
                 "project_id": "project1",
-                "status": {"getNOT": "01", "getCNA": "LEXplus10S"},
+                "status": {"getNOT": "01"},
             }
         ]
     }
@@ -741,7 +746,7 @@ async def test_button_reset_not_send_empty_for_lex10_and_safet(hass: HomeAssista
 
     await button.async_press()
 
-    coordinator.async_set_device_value.assert_called_once_with("device_not1", "setNOT", "")
+    coordinator.async_set_device_value.assert_called_once_with("device_not1", "setNOT", "FF")
 
 
 async def test_button_reset_not_send_ff_for_other_models(hass: HomeAssistant) -> None:
@@ -786,15 +791,15 @@ async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
         await button.async_press()
 
 
-async def test_button_reset_wrn_send_empty_for_lex10_and_safet(hass: HomeAssistant) -> None:
-    """When model is lex10/safetplus, setWRN reset sends empty string."""
+async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> None:
+    """setWRN sends 'FF' when using the XML API (MagicMock api is not SyrConnectJsonAPI)."""
     data = {
         "devices": [
             {
                 "id": "device_wrn1",
                 "name": "Device WRN1",
                 "project_id": "project1",
-                "status": {"getWRN": "02", "getVER": "Safe-T+ V2.00e"},
+                "status": {"getWRN": "02"},
             }
         ]
     }
@@ -805,7 +810,7 @@ async def test_button_reset_wrn_send_empty_for_lex10_and_safet(hass: HomeAssista
 
     await button.async_press()
 
-    coordinator.async_set_device_value.assert_called_once_with("device_wrn1", "setWRN", "")
+    coordinator.async_set_device_value.assert_called_once_with("device_wrn1", "setWRN", "FF")
 
 
 async def test_button_reset_wrn_send_ff_for_other_models(hass: HomeAssistant) -> None:
@@ -828,3 +833,104 @@ async def test_button_reset_wrn_send_ff_for_other_models(hass: HomeAssistant) ->
     await button.async_press()
 
     coordinator.async_set_device_value.assert_called_once_with("device_wrn2", "setWRN", "FF")
+
+
+async def test_button_reset_ala_alarm_clear_via_set_sends_ff(hass: HomeAssistant) -> None:
+    """When alarm_clear_via_set=True (Trio LS), reset sends setALA 'FF' instead of calling clrALA."""
+    data = {
+        "devices": [
+            {
+                "id": "device_trio",
+                "name": "Device Trio",
+                "project_id": "project1",
+                # getSRN starting with "100AAA" matches Trio LS (srn_prefix="100")
+                "status": {"getALA": "A5", "getSRN": "100AAA001"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "project1", "setALA")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_trio", "setALA", "FF")
+    coordinator.async_clear_device_alarm.assert_not_called()
+
+
+async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> None:
+    """setNOT sends integer 255 when using the JSON API (/set/not/255)."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
+    data = {
+        "devices": [
+            {
+                "id": "device_not_json",
+                "name": "Device NOT JSON",
+                "project_id": "project1",
+                "status": {"getNOT": "01"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    coordinator.api.__class__ = SyrConnectJsonAPI
+
+    button = SyrConnectButton(coordinator, "device_not_json", "Device NOT JSON", "project1", "setNOT")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_not_json", "setNOT", 255)
+
+
+async def test_button_reset_wrn_sends_255_via_json_api(hass: HomeAssistant) -> None:
+    """setWRN sends integer 255 when using the JSON API (/set/wrn/255)."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
+    data = {
+        "devices": [
+            {
+                "id": "device_wrn_json",
+                "name": "Device WRN JSON",
+                "project_id": "project1",
+                "status": {"getWRN": "02"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    coordinator.api.__class__ = SyrConnectJsonAPI
+
+    button = SyrConnectButton(coordinator, "device_wrn_json", "Device WRN JSON", "project1", "setWRN")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_wrn_json", "setWRN", 255)
+
+
+@pytest.mark.parametrize("sentinel", ["0", "00", "0000", "a0x0000", "A0X0000"])
+async def test_button_reset_ala_sentinel_values_no_reset(hass: HomeAssistant, sentinel: str) -> None:
+    """New sentinel values (0, 00, 0000, a0x0000) suppress the alarm reset."""
+    data = {
+        "devices": [
+            {
+                "id": "device_sentinel",
+                "name": "Device Sentinel",
+                "project_id": "project1",
+                "status": {"getALA": sentinel},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_clear_device_alarm = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_sentinel", "Device Sentinel", "project1", "setALA")
+
+    with pytest.raises(HomeAssistantError, match="No reset required"):
+        await button.async_press()
+
+    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_clear_device_alarm.assert_not_called()

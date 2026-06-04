@@ -1,16 +1,23 @@
 """Button platform for SYR Connect.
 
-This module implements `ButtonEntity` objects for SYR Connect devices.
+This module implements ButtonEntity objects for SYR Connect devices.
 
-Reset buttons (`setALA`, `setNOT`, `setWRN`) have special behavior: a
-reset is only performed when the device reports an active code. Values
-that represent "no code" include an empty string (`""`), the hex code
-`"FF"` (case-insensitive), or the numeric value `255`. When no code is
-present, the integration will not send a reset command.
+Reset buttons (setALA, setNOT, setWRN) only trigger when the device
+reports an active code. The following values are treated as "no alarm"
+and will suppress the reset command (case-insensitive):
 
-Some device families require a model-specific reset payload: for
-Safe-T+ / LEXplus10 variants the reset payload is an empty string;
-other models expect the string `"FF"`.
+    "", "0", "00", "0000", "ff", "a0x0000", "255"
+
+For setALA, both the alarm field and the reset method depend on the
+model signature:
+
+    alarm_style_alm: True  → field = ALM  (getALM / setALM / clrALM)
+    alarm_style_alm: False → field = ALA  (getALA / setALA / clrALA)
+
+    alarm_clear_via_set: True  → send setALA/setALM with value "FF"
+    alarm_clear_via_set: False → call dedicated clrALA/clrALM endpoint
+
+setNOT and setWRN always send "FF" via the standard set command.
 """
 from __future__ import annotations
 
@@ -25,7 +32,8 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_MODEL_COMMAND_CLR_ALA, _SYR_CONNECT_SENSOR_EXCLUDED
+from .api_json import SyrConnectJsonAPI
+from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import build_device_info, build_entity_id, registry_cleanup
@@ -83,9 +91,15 @@ async def async_setup_entry(
 
         for command, _name in action_buttons:
             # Derive the corresponding "getXYZ" key from the command name
-            # (e.g. 'setALA' -> 'getALA') and skip if it's not present
+            # (e.g. 'setNOT' -> 'getNOT') and skip if it's not present
             # in the device status.
-            get_key = "get" + command[3:]
+            # For setALA, the actual get-key depends on the model: devices with
+            # alarm_style_alm use getALM; all others use getALA.
+            if command == "setALA":
+                alarm_field = "alm" if model_info.get("alarm_style_alm") else "ala"
+                get_key = f"get{alarm_field.upper()}"
+            else:
+                get_key = "get" + command[3:]
             if get_key not in status:
                 continue
 
@@ -182,15 +196,19 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Press the button.
 
-        Sends the command to the device with value 0 to trigger the action.
+        Sends the command to the device to trigger the action.
 
-        Reset buttons (`setALA`, `setNOT`, `setWRN`) perform additional
-        validation before triggering a reset: they check the device's
-        reported `getXYZ` value and only send a model-appropriate reset
-        payload when a code is present.
+        Reset buttons (setALA, setNOT, setWRN) perform additional validation
+        before triggering a reset: they read the device's current getXYZ value
+        and only proceed when an active code is present. See module docstring
+        for the full list of "no alarm" sentinel values.
+
+        For setALA, the alarm field (ALA vs ALM) and the reset method
+        (set command vs dedicated clr endpoint) are determined from the
+        model signature flags alarm_style_alm and alarm_clear_via_set.
 
         Raises:
-            HomeAssistantError: If the button press fails
+            HomeAssistantError: If the button press fails or no reset is required
         """
         # Avoid accessing possibly unset internal name attribute; use translation key or unique id
         button_id = getattr(self, "_attr_translation_key", None) or getattr(self, "_attr_unique_id", None)
@@ -219,102 +237,81 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 await coordinator.async_set_device_value(self._device_id, self._command, value_sir)
                 return
 
-            # Reset buttons (setALA, setNOT, setWRN) should send 255 when the
-            # corresponding getXYZ value is neither "FF" nor empty.
+            # Reset buttons (setALA, setNOT, setWRN): read the current alarm/notification/
+            # warning value from the device status and only send a reset if an active code
+            # is present. This avoids unnecessary API calls when nothing needs clearing.
             if self._command in ("setALA", "setNOT", "setWRN"):
-                # Determine corresponding get key
-                if self._command == "setALA":
-                    get_key = "getALA"
-                elif self._command == "setNOT":
-                    get_key = "getNOT"
-                else:
-                    get_key = "getWRN"
-
-                # Find the device's status dictionary in the coordinator
-                # payload. `coordinator.data['devices']` is expected to be
-                # a list of device dictionaries; locate the entry with the
-                # matching `id` and read its `status` sub-dictionary.
+                # Locate the device's status dictionary in the coordinator payload.
+                # coordinator.data['devices'] is a list; find the entry by device id.
                 status = None
                 for device in coordinator.data.get("devices", []):
                     if device["id"] == self._device_id:
                         status = device.get("status", {})
                         break
 
-                # Some older JSON API models (Pontos Base, SafeTech V4) use a dedicated
-                # /clr/ala HTTP endpoint instead of the standard setALA set-command.
                 if self._command == "setALA":
+                    # Resolve alarm field (ALA vs ALM) and clear method (set vs clr)
+                    # from model signature flags:
+                    #   alarm_style_alm: True  → field = ALM (uses getALM / setALM / clrALM)
+                    #   alarm_style_alm: False → field = ALA (uses getALA / setALA / clrALA)
+                    #   alarm_clear_via_set: True  → reset via setALA/setALM "FF"
+                    #   alarm_clear_via_set: False → reset via dedicated clrALA/clrALM endpoint
                     try:
-                        model = detect_model(status or {}).get("name", "")
+                        model_info = detect_model(status or {})
                     except (ValueError, KeyError, AttributeError, TypeError) as err:
-                        _LOGGER.debug("Failed to detect model for /clr/ala check: %s", err)
-                        model = None
-                    if isinstance(model, str) and model in _SYR_CONNECT_MODEL_COMMAND_CLR_ALA:
-                        await coordinator.async_clear_device_alarm(self._device_id)
-                        return
+                        _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
+                        model_info = {}
 
-                # Read the raw reported value for the corresponding get key
-                # (e.g. `getALA`, `getNOT`, `getWRN`). `raw` may be `None`, a
-                # string, or a numeric type depending on the backend.
+                    alarm_style_alm: bool = bool(model_info.get("alarm_style_alm"))
+                    alarm_clear_via_set: bool = bool(model_info.get("alarm_clear_via_set"))
+                    field = "alm" if alarm_style_alm else "ala"
+                    get_key = f"get{field.upper()}"
+
+                    # Read the current alarm value. raw may be None, a string, or a number
+                    # depending on the device firmware.
+                    raw = status.get(get_key) if status is not None else None
+                    # Sentinel values that indicate no active alarm (see module docstring).
+                    if raw is None or str(raw).strip().lower() in ("", "0", "00", "0000", "ff", "a0x0000", "255"):
+                        raise HomeAssistantError(
+                            f"No reset required for {get_key} on {self._device_id}"
+                        )
+
+                    if alarm_clear_via_set:
+                        # Device resets the alarm via a standard set command with value "FF".
+                        set_cmd = f"set{field.upper()}"
+                        await coordinator.async_set_device_value(self._device_id, set_cmd, "FF")
+                    else:
+                        # Active alarm confirmed above via getALA / getALM;
+                        # send dedicated clear command (clrALA / clrALM).
+                        await coordinator.async_clear_device_alarm(self._device_id, field)
+                    return
+
+                # setNOT / setWRN: determine the corresponding get key, check for an
+                # active code, then send the appropriate reset value via the standard
+                # set command.
+                # - JSON API: integer 255 → URL path /set/not/255 or /set/wrn/255
+                # - XML API: string "FF" → payload value
+                if self._command == "setNOT":
+                    get_key = "getNOT"
+                else:
+                    get_key = "getWRN"
+
+                # raw may be None, a string, or a number depending on the device firmware.
                 raw = None
                 if status is not None:
                     raw = status.get(get_key)
 
-                # Explicit rules for "no code" (no reset required):
-                # - raw is None (no reported value)
-                # - raw is an empty string ("")
-                # - raw equals "FF" (case-insensitive)
-                # - raw equals numeric 255
-                #
-                # Use an explicit None check so that other falsy values like
-                # 0 are not treated as empty.
-                if raw is None or str(raw).strip().lower() in ("", "ff", "255"):
+                # Sentinel values that indicate no active notification / warning.
+                if raw is None or str(raw).strip().lower() in ("", "0", "00", "0000", "ff", "a0x0000", "255"):
                     raise HomeAssistantError(
                         f"No reset required for {get_key} on {self._device_id}"
                     )
 
-                # For safetplus and all lex10 models we reset by sending
-                # an empty string; for other models send "FF" (255).
-                try:
-                    model = detect_model(status or {}).get("name")
-                except (ValueError, KeyError, AttributeError, TypeError) as err:
-                    _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
-                    model = None
-
-                reset_value: str
-                if isinstance(model, str) and model.lower() in (
-                    "safetplus",
-                    "l10",
-                    "l12",
-                    "l15",
-                    "l20",
-                    "l25",
-                    "l30",
-                    "l40",
-                    "l50",
-                    "l60",
-                    "l70",
-                    "l80",
-                    "l90",
-                    "l100",
-                    "lex10",
-                    "lex20",
-                    "lex30",
-                    "lex40",
-                    "lex60",
-                    "lex80",
-                    "lex100",
-                    "lexplus10",
-                    "lexplus10s",
-                    "lexplus10sl",
-                ):
-                    reset_value = ""
-                else:
-                    reset_value = "FF"
-
+                reset_value: int | str = 255 if isinstance(coordinator.api, SyrConnectJsonAPI) else "FF"
                 await coordinator.async_set_device_value(self._device_id, self._command, reset_value)
                 return
 
-            # Default: do nothing for commands we don't explicitly handle.
+            # Default: no action for commands not explicitly handled above.
             return
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err
