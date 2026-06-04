@@ -12,7 +12,15 @@ from homeassistant.const import CONF_USERNAME, UnitOfVolumeFlowRate
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_HOST, CONF_MODEL
+from .const import (
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
+    CONF_HOST,
+    CONF_MODEL,
+    CONF_SERVICE,
+)
 
 
 def v1_to_v2_update_kwargs(entry: ConfigEntry) -> dict | None:
@@ -75,3 +83,20 @@ def v2_to_v3_fix_flo_unit(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 ent_reg.async_update_entity_options(
                     entity_entry.entity_id, namespace, ns_opts or None
                 )
+
+
+def v3_to_v4_add_service(entry: ConfigEntry) -> dict | None:
+    """Compute update kwargs for migrating v3 -> v4.
+
+    Existing XML API config entries created before CONF_SERVICE was introduced
+    don't have a service set. Without it the coordinator cannot look up the
+    service and configuration_url stays None. Default to the SYR Connect
+    service (the only service that existed before multi-service support).
+    JSON API entries don't use CONF_SERVICE and are left unchanged.
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_XML:
+        return None
+    if entry.data.get(CONF_SERVICE):
+        return None
+    new_data = {**entry.data, CONF_SERVICE: _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER}
+    return {"data": new_data, "version": 4}

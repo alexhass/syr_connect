@@ -12,8 +12,10 @@ from custom_components.syr_connect.const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_SERVICE,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
 )
-from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit
+from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit, v3_to_v4_add_service
 
 
 def test_v1_to_v2_with_host_sets_json_and_unique_id() -> None:
@@ -299,4 +301,55 @@ async def test_v2_to_v3_skips_flo_with_no_unit_stored(hass: HomeAssistant) -> No
 
     mock_reg.async_update_entity.assert_not_called()
     mock_reg.async_update_entity_options.assert_not_called()
+
+
+def test_v3_to_v4_adds_default_service_to_xml_entry() -> None:
+    """XML entries without CONF_SERVICE should get the default SYR Connect service."""
+    entry = MockConfigEntry(
+        version=3,
+        domain="syr_connect",
+        title="Legacy",
+        data={CONF_API_TYPE: API_TYPE_XML, "username": "user@example.com", "password": "pw"},
+        entry_id="legacy_xml",
+        unique_id="xml_user@example.com",
+    )
+
+    result = v3_to_v4_add_service(entry)
+
+    assert result is not None
+    assert result["version"] == 4
+    assert result["data"][CONF_SERVICE] == _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
+    assert result["data"]["username"] == "user@example.com"
+
+
+def test_v3_to_v4_skips_xml_entry_with_service_already_set() -> None:
+    """XML entries that already have CONF_SERVICE set should not be changed."""
+    entry = MockConfigEntry(
+        version=3,
+        domain="syr_connect",
+        title="Already set",
+        data={CONF_API_TYPE: API_TYPE_XML, CONF_SERVICE: "de.consoft.rwc.connect"},
+        entry_id="xml_with_service",
+        unique_id="xml_rwc",
+    )
+
+    result = v3_to_v4_add_service(entry)
+
+    assert result is None
+
+
+def test_v3_to_v4_skips_json_entry() -> None:
+    """JSON API entries do not use CONF_SERVICE and must not be touched."""
+    entry = MockConfigEntry(
+        version=3,
+        domain="syr_connect",
+        title="JSON",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "192.0.2.1"},
+        entry_id="json_entry",
+        unique_id="json_192.0.2.1",
+    )
+
+    result = v3_to_v4_add_service(entry)
+
+    assert result is None
 
