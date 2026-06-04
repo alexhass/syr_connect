@@ -82,6 +82,7 @@ _SYR_CONNECT_CLIENT_USER_AGENT = f"{_SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME}/{_SYR_C
 # - api_base_url: Required. Base URL for API endpoints (e.g. login, device status) - used to construct full API URLs.
 # - cf_bundle_identifier: The Core Foundation bundle identifier of the official app - used as unique key for service
 #   registry.
+# - configuration_url: User-facing URL displayed in the HA device info card (may differ from api_base_url).
 # - display_name: Human-friendly name for the service - used in HA integration UI for configuration.
 #
 # Note: The value of "api_app_name" and "api_base_url" are hard bound to each other. These need to be used together or
@@ -91,48 +92,56 @@ _SYR_CONNECT_API_SERVICES: dict[str, dict] = {
         "api_app_name": "SYR Connect",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.syr.connect",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "SYR Connect",
     },
     "de.consoft.gc.conel.connect": {
         "api_app_name": "CLEAR PRO",
         "api_base_url": "https://api.conelclearpro.de/",
         "cf_bundle_identifier": "de.consoft.gc.conel.connect",
+        "configuration_url": "https://conelclearpro.de/",
         "display_name": "CONEL CLEAR PRO",
     },
     "de.consoft.gsh.comfort.connect": {
         "api_app_name": "comfort CONNECT",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.gsh.comfort.connect",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Sanibel comfort CONNECT",
     },
     "de.consoft.isg.concept.connect": {
         "api_app_name": "concept CONNECT",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.isg.concept.connect",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "concept CONNECT",
     },
     "de.consoft.sanitaerunion.ditech.connect": {
         "api_app_name": "DITECH Geräte",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.sanitaerunion.ditech.connect",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "DITECH Haustechnik",
     },
     "de.consoft.isg.optima.connect": {
         "api_app_name": "optima CONNECT",
         "api_base_url": "https://syrconnect.de/",
         "cf_bundle_identifier": "de.consoft.isg.optima.connect",
+        "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima CONNECT",
     },
     "de.consoft.rwc.connect": {
         "api_app_name": "RwcMultisafe",
         "api_base_url": "https://rwcmultisafe.com/",
         "cf_bundle_identifier": "de.consoft.rwc.connect",
+        "configuration_url": "https://rwcmultisafe.com/",
         "display_name": "RWC MultiSafe",
     },
     "de.consoft.polygonvatro.connect": {
         "api_app_name": "POLYGONVATRO Connect",
         "api_base_url": "https://polygonvatro-connect.de/",
         "cf_bundle_identifier": "de.consoft.polygonvatro.connect",
+        "configuration_url": "https://polygonvatro-connect.de/",
         "display_name": "POLYGONVATRO Connect",
     },
 }

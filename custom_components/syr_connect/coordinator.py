@@ -107,6 +107,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 login_required=config_data.get(CONF_LOGIN_REQUIRED),
             )
             self._username = None  # Not used for JSON API
+            self._configuration_url: str | None = None  # No cloud service URL for local JSON API
             _LOGGER.info("Coordinator initialized with JSON API (host=%s, model=%s)", host, model)
         else:
             # Cloud XML API (default)
@@ -129,6 +130,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 cf_bundle_identifier=cf_bundle_identifier,
             )
             self._username = username
+            self._configuration_url: str | None = svc["configuration_url"] if svc else None
             _LOGGER.info("Coordinator initialized with XML API (username=%s)", username)
 
         # Keep aiohttp session for optional JSON API usage per-device
@@ -211,6 +213,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {
+                "configuration_url": self._configuration_url,
                 "devices": all_devices,
                 "projects": self.api.projects,
             }

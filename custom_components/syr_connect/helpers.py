@@ -141,7 +141,7 @@ def build_device_info(
             if display_name:
                 model = str(display_name)
             manufacturer = detected.get("manufacturer") or None
-            configuration_url = detected.get("configuration_url")
+            configuration_url = coordinator_data.get("configuration_url")
 
             # Get software version from getVER
             if 'getVER' in status and status['getVER']:

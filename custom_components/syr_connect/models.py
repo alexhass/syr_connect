@@ -14,7 +14,6 @@ _LOGGER = logging.getLogger(__name__)
 # Returned by detect_model when no signature matches or input is invalid.
 UNKNOWN_MODEL: dict[str, Any] = {
     "base_path": None,
-    "configuration_url": "https://syrconnect.de/",
     "display_name": "Unknown model",
     "manufacturer": "Unknown",
     "maximum_regeneration_interval": None,
@@ -54,7 +53,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Safe-T+ Connect",
         "dk": 1,
         "dkv": 6,
@@ -66,7 +64,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Safe-T Master",
         "dk": 2,
         "dkv": 2,
@@ -76,7 +73,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Safe-T Slave",
         "dk": 3,
         "dkv": 3,
@@ -86,7 +82,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Safe-T Slave",
         "dk": 4,
         "dkv": 4,
@@ -96,7 +91,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Safe-T Communication Module",
         "dk": 5,
         "dkv": 12,
@@ -108,7 +102,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "HVA",
         "dk": 20,
         "dkv": 19,
@@ -120,7 +113,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Inliner-HWA 3300 (dk=25) ─────────────────────────────────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Inliner-HWA 3300",
         "dk": 25,
         "dkv": 26,
@@ -133,7 +125,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L10",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 10 Connect",
         "dk": 40,
         "dkv": 16,
@@ -146,7 +137,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L12",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 12 Connect",
         "dk": 40,
         "dkv": 16,
@@ -159,7 +149,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L15",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 15 Connect",
         "dk": 40,
         "dkv": 16,
@@ -172,7 +161,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L20",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 20 Connect",
         "dk": 40,
         "dkv": 16,
@@ -185,7 +173,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L25",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 25 Connect",
         "dk": 40,
         "dkv": 16,
@@ -198,7 +185,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L30",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 30 Connect",
         "dk": 40,
         "dkv": 16,
@@ -211,7 +197,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L40",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 40 Connect",
         "dk": 40,
         "dkv": 16,
@@ -224,7 +209,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L50",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 50 Connect",
         "dk": 40,
         "dkv": 16,
@@ -237,7 +221,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L60",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 60 Connect",
         "dk": 40,
         "dkv": 16,
@@ -250,7 +233,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L70",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 70 Connect",
         "dk": 40,
         "dkv": 16,
@@ -263,7 +245,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L80",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 80 Connect",
         "dk": 40,
         "dkv": 16,
@@ -276,7 +257,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L90",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 90 Connect",
         "dk": 40,
         "dkv": 16,
@@ -289,7 +269,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "L100",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "i-LEX 100 Connect",
         "dk": 40,
         "dkv": 16,
@@ -302,7 +281,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX10",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 10 Connect",
         "dk": 40,
         "dkv": 16,
@@ -316,7 +294,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX20",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 20 Connect",
         "dk": 40,
         "dkv": 16,
@@ -330,7 +307,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX30",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 30 Connect",
         "dk": 40,
         "dkv": 16,
@@ -344,7 +320,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX40",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 40 Connect",
         "dk": 40,
         "dkv": 16,
@@ -357,7 +332,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX60",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 60 Connect",
         "dk": 40,
         "dkv": 16,
@@ -370,7 +344,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX80",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 80 Connect",
         "dk": 40,
         "dkv": 16,
@@ -383,7 +356,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEX100",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX 100 Connect",
         "dk": 40,
         "dkv": 16,
@@ -397,7 +369,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Hygiene module (dk=60–63) ────────────────────────────────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Hygiene Module (cold)",
         "dk": 60,
         "dkv": 21,
@@ -407,7 +378,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Hygiene Module (warm)",
         "dk": 61,
         "dkv": 22,
@@ -417,7 +387,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Hygiene Module (warm and cold)",
         "dk": 62,
         "dkv": 23,
@@ -427,7 +396,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Hygiene Module (cold and warm)",
         "dk": 63,
         "dkv": 24,
@@ -440,7 +408,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEXplus10",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 Connect",
         "dk": 80,
         "dkv": 25,
@@ -454,7 +421,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEXplus10S",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 S Connect",
         "dk": 80,
         "dkv": 25,
@@ -468,7 +434,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         "cna_equals": "LEXplus10SL",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "LEX Plus 10 SL Connect",
         "dk": 80,
         "dkv": 25,
@@ -483,7 +448,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "CONTROLICmini",
         "dk": 100,
         "dkv": 27,
@@ -495,7 +459,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeFloor Connect",
         "dk": 120,
         "dkv": 34,
@@ -506,7 +469,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://rwcmultisafe.com/",
         "display_name": "MultiSafe Floor Leak Sensor",
         "dk": 120,
         "dkv": 43,
@@ -517,7 +479,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeFloor Connect",
         "dk": 122,
         "dkv": 34,
@@ -529,7 +490,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
     {
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Connect",
         "dk": 140,
         "dkv": 35,
@@ -541,7 +501,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech V4 Connect",
         "dk": 140,
         "dkv": 35,
@@ -551,7 +510,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
-        "configuration_url": "https://polygonvatro-connect.de/",
         "display_name": "SafeTech Connect",
         "dk": 140,
         "dkv": 38,
@@ -562,7 +520,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
-        "configuration_url": "https://rwcmultisafe.com/",
         "display_name": "MultiSafe Leak Detector Control Valve",
         "dk": 140,
         "dkv": 42,
@@ -573,7 +530,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/pontos-base",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Pontos Base",
         "dk": 140,
         "dkv": None,
@@ -583,7 +539,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Connect",
         "dk": 141,
         "dkv": 35,
@@ -593,7 +548,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech+ Connect",
         "dk": 142,
         "dkv": 39,
@@ -604,7 +558,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Connect",
         "dk": 145,
         "dkv": 35,
@@ -616,7 +569,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
     {
         "base_path": "/all-in-one",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "All in One +",
         "dk": 160,
         "dkv": 36,
@@ -627,7 +579,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/hygbox",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "HygBox",
         "dk": 180,
         "dkv": 37,
@@ -638,7 +589,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/dosing-pump",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Dosing Pump",
         "dk": 190,
         "dkv": 44,
@@ -652,7 +602,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Trio LS Connect",
         "dk": 1100,
         "dkv": 100,
@@ -664,7 +613,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "concept 200 Replacement Filter",
         "dk": 1110,
         "dkv": 110,
@@ -676,7 +624,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima T Replacement Filter",
         "dk": 1111,
         "dkv": 111,
@@ -688,7 +635,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech Plus Connect",
         "dk": 1112,
         "dkv": 112,
@@ -699,7 +645,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Trio DFR/LS Connect",
         "dk": 1113,
         "dkv": 113,
@@ -711,7 +656,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── NeoSoft platform (dk=1200–1222) ──────────────────────────────────────────
     {
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft Connect",
         "dk": 1200,
         "dkv": 200,
@@ -723,7 +667,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 2500 Connect",
         "dk": 1206,
         "dkv": 206,
@@ -736,7 +679,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft 5000 Connect",
         "dk": 1206,
         "dkv": 206,
@@ -752,7 +694,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Softwater UNO A25",
         "dk": 1207,
         "dkv": 207,
@@ -765,7 +706,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "concept Single Softening System",
         "dk": 1208,
         "dkv": 208,
@@ -779,7 +719,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima Single Softening System",
         "dk": 1209,
         "dkv": 209,
@@ -793,7 +732,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "concept 200 Double Softening System",
         "dk": 1210,
         "dkv": 210,
@@ -807,7 +745,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima T2.2 Double Softening System",
         "dk": 1211,
         "dkv": 211,
@@ -821,7 +758,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Softwater DUO A25",
         "dk": 1212,
         "dkv": 212,
@@ -835,7 +771,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima Double Softening System",
         "dk": 1213,
         "dkv": 213,
@@ -849,7 +784,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT TWIN",
         "dk": 1214,
         "dkv": 214,
@@ -862,7 +796,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://conelclearpro.de/",
         "display_name": "CLEAR PRO SOFT",
         "dk": 1215,
         "dkv": 215,
@@ -875,7 +808,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "concept Double Softening System",
         "dk": 1216,
         "dkv": 216,
@@ -889,7 +821,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Ditech Double Softening System",
         "dk": 1217,
         "dkv": 217,
@@ -903,7 +834,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "TAKE Double Softening System",
         "dk": 1218,
         "dkv": 218,
@@ -917,7 +847,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Ditech Single Softening System",
         "dk": 1219,
         "dkv": 219,
@@ -931,7 +860,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "TAKE Single Softening System",
         "dk": 1220,
         "dkv": 220,
@@ -945,7 +873,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft Lock Connect II",
         "dk": 1221,
         "dkv": 221,
@@ -958,7 +885,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "NeoSoft Lock Connect I",
         "dk": 1222,
         "dkv": 222,
@@ -973,7 +899,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://conelclearpro.de/",
         "display_name": "Conel MultiController",
         "dk": 1500,
         "dkv": 500,
@@ -985,7 +910,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Leak Protection Module A25",
         "dk": 1501,
         "dkv": 501,
@@ -996,7 +920,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Ditech Multicontroller",
         "dk": 1502,
         "dkv": 502,
@@ -1008,7 +931,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "TAKE Multicontroller",
         "dk": 1503,
         "dkv": 503,
@@ -1020,7 +942,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "concept Multicontroller",
         "dk": 1504,
         "dkv": 504,
@@ -1032,7 +953,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Optima Multicontroller",
         "dk": 1505,
         "dkv": 505,
@@ -1044,7 +964,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "configuration_url": "https://syrconnect.de/",
         "display_name": "Syr Multicontroller",
         "dk": 1506,
         "dkv": 506,
@@ -1060,7 +979,7 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
-        dict: {"name": ..., "display_name": ..., "base_path": ..., "manufacturer": ..., "configuration_url": ..., "maximum_regeneration_interval": ...}
+        dict: {"name": ..., "display_name": ..., "base_path": ..., "manufacturer": ..., "maximum_regeneration_interval": ...}
         If no signature matches, returns an 'unknown' model dict.
 
     Detection priority (highest to lowest):
@@ -1129,11 +1048,10 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             name = sig.get("name")
             display = sig.get("display_name", name)
             manufacturer = sig.get("manufacturer")
-            configuration_url = sig.get("configuration_url")
             maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             maximum_salt_volume = sig.get("maximum_salt_volume")
             _LOGGER.debug("detect_model: detected model %s (srn_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
@@ -1143,11 +1061,10 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
             name = sig.get("name")
             display = sig.get("display_name", name)
             manufacturer = sig.get("manufacturer")
-            configuration_url = sig.get("configuration_url")
             maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             maximum_salt_volume = sig.get("maximum_salt_volume")
             _LOGGER.debug("detect_model: detected model %s (cna_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
@@ -1173,29 +1090,26 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
                 _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
                 continue
             manufacturer = sig.get("manufacturer")
-            configuration_url = sig.get("configuration_url")
             maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             maximum_salt_volume = sig.get("maximum_salt_volume")
             _LOGGER.debug("detect_model: detected model %s (v_keys)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
 
         # If only attribute equality is required and already matched, return this model.
         if sig.get("attrs_equals"):
             manufacturer = sig.get("manufacturer")
-            configuration_url = sig.get("configuration_url")
             maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             maximum_salt_volume = sig.get("maximum_salt_volume")
             _LOGGER.debug("detect_model: detected model %s (attrs_equals)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
 
         # If version prefix or contains is specified and matches, return this model.
         if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
             manufacturer = sig.get("manufacturer")
-            configuration_url = sig.get("configuration_url")
             maximum_regeneration_interval = sig.get("maximum_regeneration_interval")
             maximum_salt_volume = sig.get("maximum_salt_volume")
             _LOGGER.debug("detect_model: detected model %s (ver)", display)
-            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "configuration_url": configuration_url, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
+            return {"name": name, "display_name": display, "base_path": base_path, "manufacturer": manufacturer, "maximum_regeneration_interval": maximum_regeneration_interval, "maximum_salt_volume": maximum_salt_volume}
 
     # If no model signature matched, return the unknown model structure.
     _LOGGER.debug("detect_model: unknown model; keys found: %s", sorted(keys)[:20])
