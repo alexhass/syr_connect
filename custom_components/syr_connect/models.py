@@ -63,6 +63,72 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": "Safe-T+",
     },
 
+    # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Safe-T Master",
+        "dk": 2,
+        "dkv": 2,
+        "manufacturer": "SYR",
+        "name": "safetmaster",
+        # TODO: Untested model.
+    },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Safe-T Slave",
+        "dk": 3,
+        "dkv": 3,
+        "manufacturer": "SYR",
+        "name": "safetslave",
+        # TODO: Untested model.
+    },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Safe-T Slave",
+        "dk": 4,
+        "dkv": 4,
+        "manufacturer": "SYR",
+        "name": "safetslaveinwall",
+        # TODO: Untested model.
+    },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Safe-T Communication Module",
+        "dk": 5,
+        "dkv": 12,
+        "manufacturer": "SYR",
+        "name": "safetcomm",
+        # TODO: Untested model.
+    },
+
+    # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "HVA",
+        "dk": 20,
+        "dkv": 19,
+        "manufacturer": "SYR",
+        "name": "hva",
+        # TODO: Untested model.
+    },
+
+    # ── Inliner-HWA 3300 (dk=25) ─────────────────────────────────────────────────
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Inliner-HWA 3300",
+        "dk": 25,
+        "dkv": 26,
+        "manufacturer": "SYR",
+        "name": "inlinerhwa3300",
+        # TODO: Untested model.
+    },
+
     # ── i-LEX / LEX (dk=40, dkv=16) ─────────────────────────────────────────────
     {
         "base_path": None,
@@ -75,19 +141,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "maximum_regeneration_interval": 99,
         "maximum_salt_volume": 25,
         "name": "l10",
-        "ver_prefix": None,
-    },
-    {
-        "base_path": None,
-        "cna_equals": "L100",
-        "configuration_url": "https://syrconnect.de/",
-        "display_name": "i-LEX 100 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 300,
-        "name": "l100",
         "ver_prefix": None,
     },
     {
@@ -235,54 +288,15 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        "cna_equals": "LEX100",
+        "cna_equals": "L100",
         "configuration_url": "https://syrconnect.de/",
-        "display_name": "LEX 100 Connect",
+        "display_name": "i-LEX 100 Connect",
         "dk": 40,
         "dkv": 16,
-        "manufacturer": "SYR",
+        "manufacturer": "SYR Oceanic",
         "maximum_regeneration_interval": 99,
         "maximum_salt_volume": 300,
-        "name": "lex100",
-        "ver_prefix": None,
-    },
-    {
-        "base_path": None,
-        "cna_equals": "LEX40",
-        "configuration_url": "https://syrconnect.de/",
-        "display_name": "LEX 40 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 75,
-        "name": "lex40",
-        "ver_prefix": None,
-    },
-    {
-        "base_path": None,
-        "cna_equals": "LEX60",
-        "configuration_url": "https://syrconnect.de/",
-        "display_name": "LEX 60 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 110,
-        "name": "lex60",
-        "ver_prefix": None,
-    },
-    {
-        "base_path": None,
-        "cna_equals": "LEX80",
-        "configuration_url": "https://syrconnect.de/",
-        "display_name": "LEX 80 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 200,
-        "name": "lex80",
+        "name": "l100",
         "ver_prefix": None,
     },
     {
@@ -326,6 +340,100 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "lex30",
         "sbt": 3,
         "ver_prefix": None,
+    },
+    {
+        "base_path": None,
+        "cna_equals": "LEX40",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "LEX 40 Connect",
+        "dk": 40,
+        "dkv": 16,
+        "manufacturer": "SYR",
+        "maximum_regeneration_interval": 99,
+        "maximum_salt_volume": 75,
+        "name": "lex40",
+        "ver_prefix": None,
+    },
+    {
+        "base_path": None,
+        "cna_equals": "LEX60",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "LEX 60 Connect",
+        "dk": 40,
+        "dkv": 16,
+        "manufacturer": "SYR",
+        "maximum_regeneration_interval": 99,
+        "maximum_salt_volume": 110,
+        "name": "lex60",
+        "ver_prefix": None,
+    },
+    {
+        "base_path": None,
+        "cna_equals": "LEX80",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "LEX 80 Connect",
+        "dk": 40,
+        "dkv": 16,
+        "manufacturer": "SYR",
+        "maximum_regeneration_interval": 99,
+        "maximum_salt_volume": 200,
+        "name": "lex80",
+        "ver_prefix": None,
+    },
+    {
+        "base_path": None,
+        "cna_equals": "LEX100",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "LEX 100 Connect",
+        "dk": 40,
+        "dkv": 16,
+        "manufacturer": "SYR",
+        "maximum_regeneration_interval": 99,
+        "maximum_salt_volume": 300,
+        "name": "lex100",
+        "ver_prefix": None,
+    },
+
+    # ── Hygiene module (dk=60–63) ────────────────────────────────────────────────
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Hygiene Module (cold)",
+        "dk": 60,
+        "dkv": 21,
+        "manufacturer": "SYR",
+        "name": "hygienemodulecold",
+        # TODO: Untested model.
+    },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Hygiene Module (warm)",
+        "dk": 61,
+        "dkv": 22,
+        "manufacturer": "SYR",
+        "name": "hygienemodulwarm",
+        # TODO: Untested model.
+    },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Hygiene Module (warm and cold)",
+        "dk": 62,
+        "dkv": 23,
+        "manufacturer": "SYR",
+        "name": "hygienemodulwarmcold",
+        # TODO: Untested model.
+    },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "Hygiene Module (cold and warm)",
+        "dk": 63,
+        "dkv": 24,
+        "manufacturer": "SYR",
+        "name": "hygienemodulcoldwarm",
+        # TODO: Untested model.
     },
 
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────
@@ -372,7 +480,19 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
 
-    # ── SafeFloor (dk=120) ───────────────────────────────────────────────────────
+    # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "CONTROLICmini",
+        "dk": 100,
+        "dkv": 27,
+        "manufacturer": "SYR",
+        "name": "controlicmini",
+        # TODO: Untested model.
+    },
+
+    # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     {
         "base_path": None,
         "configuration_url": "https://syrconnect.de/",
@@ -395,8 +515,18 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         # TODO: Untested model.
         "srn_prefix": "43",
     },
+    {
+        "base_path": None,
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "SafeFloor Connect",
+        "dk": 122,
+        "dkv": 34,
+        "manufacturer": "SYR",
+        "name": "safefloor122",
+        # TODO: Untested model.
+    },
 
-    # ── SafeTech / SafeTech+ (dk=140/142) ────────────────────────────────────────
+    # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
     {
         "base_path": "/trio",
         "configuration_url": "https://syrconnect.de/",
@@ -452,6 +582,16 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": "PontosBase",
     },
     {
+        "base_path": "/safe-tec",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "SafeTech Connect",
+        "dk": 141,
+        "dkv": 35,
+        "manufacturer": "SYR",
+        "name": "safetech141",
+        # TODO: Untested model.
+    },
+    {
         "base_path": None,
         "configuration_url": "https://syrconnect.de/",
         "display_name": "SafeTech+ Connect",
@@ -461,6 +601,16 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "safetechpluswifi",
         # TODO: Untested model.
         "srn_prefix": "39",
+    },
+    {
+        "base_path": "/safe-tec",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "SafeTech Connect",
+        "dk": 145,
+        "dkv": 35,
+        "manufacturer": "SYR",
+        "name": "safetech145",
+        # TODO: Untested model.
     },
 
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
@@ -558,7 +708,18 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "113",
     },
 
-    # ── NeoSoft platform (dk=1206–1222) ──────────────────────────────────────────
+    # ── NeoSoft platform (dk=1200–1222) ──────────────────────────────────────────
+    {
+        "base_path": "/neosoft",
+        "configuration_url": "https://syrconnect.de/",
+        "display_name": "NeoSoft Connect",
+        "dk": 1200,
+        "dkv": 200,
+        "manufacturer": "SYR",
+        "name": "neosoft",
+        # TODO: Untested model.
+        "srn_prefix": "200",
+    },
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
