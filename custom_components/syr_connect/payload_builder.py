@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from xml.sax.saxutils import escape
 
 from .checksum import SyrChecksum
@@ -147,29 +148,33 @@ class PayloadBuilder:
         return self._add_checksum(payload)
 
     def build_set_status_payload(
-        self, session_id: str, device_id: str, command: str, value: int | str
+        self,
+        session_id: str,
+        device_id: str,
+        commands: list[tuple[str, Any]],
     ) -> str:
         """Build set device status XML payload with checksum.
 
         Args:
             session_id: Active session ID
             device_id: Device ID to control
-            command: Command name
-            value: Command value
+            commands: Sequence of ``(command, value)`` pairs, executed in order
 
         Returns:
             XML string with checksum
         """
         safe_session = escape(session_id)
         safe_device = escape(device_id)
-        safe_command = escape(command)
-        safe_value = escape(str(value))
+        cmd_elements = "".join(
+            f'<c n="{escape(str(cmd))}" v="{escape(str(val))}"/>'
+            for cmd, val in commands
+        )
         payload = (
             f'<?xml version="1.0" encoding="utf-8"?><sc>'
             f'<si v="{escape(self.app_version)}"/>'
             f'<us ug="{safe_session}"/>'
             f'<col><dcl dclg="{safe_device}" fref="1">'
-            f'<c n="{safe_command}" v="{safe_value}"/>'
+            f'{cmd_elements}'
             f'</dcl></col>'
             f'</sc>'
         )

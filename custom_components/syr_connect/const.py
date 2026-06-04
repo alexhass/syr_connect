@@ -150,6 +150,9 @@ _SYR_CONNECT_API_SERVICES: dict[str, dict] = {
 # Keep as a separate named constant to avoid hard-coded strings scattered across the codebase.
 _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
 
+# Values that mean "no alarm present" (case-insensitive, after strip()).
+_SYR_CONNECT_NO_ALARM_CODES = {"", "0", "00", "0000", "ff", "a0x0000", "255"}
+
 # Alarm codes for SafeFloor devices (raw API getALA -> internal translation key)
 # Original casing in API is "A0x0000", but we normalize it for get_sensor_ala_map() lookups.
 # Codes are hexadecimal bitmask values (0x0002, 0x0004, ..., 0x0100).

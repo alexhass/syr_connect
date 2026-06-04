@@ -22,6 +22,7 @@ from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_SERVICES,
+    _SYR_CONNECT_NO_ALARM_CODES,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -33,7 +34,7 @@ from .const import (
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import get_default_scan_interval_for_entry, get_sensor_iwh_value
-from .models import MODEL_SIGNATURES
+from .models import MODEL_SIGNATURES, detect_model
 from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
@@ -425,7 +426,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
         try:
-            await self.api.set_device_status(dclg, command, value)
+            await self.api.set_device_status(dclg, [(command, value)])
         except Exception:  # pragma: no cover - defensive
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
@@ -456,7 +457,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             await self.api.request_json_data(f"clr/{field}")
             _LOGGER.info("Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id)
         else:
-            await self.api.set_device_status(device_id, f"clr{field.upper()}", "")
+            await self.api.set_device_status(device_id, [(f"clr{field.upper()}", "")])
             _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
         try:
             if self._pending_refresh_task and not self._pending_refresh_task.done():
@@ -464,6 +465,147 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             self._pending_refresh_task = self.hass.async_create_task(self._delayed_refresh())
         except Exception:  # pragma: no cover - defensive
             _LOGGER.exception("Failed to schedule delayed refresh after clear alarm")
+
+    async def async_open_valve(self, device_id: str, set_key: str, set_val: Any) -> None:
+        """Open the valve, prepending an alarm-clear command when an alarm is active.
+
+        When an active alarm is detected in the device status the clear command
+        is sent atomically with the open command:
+
+        - **XML API**: both commands travel in a single XML request so the
+          device processes them in order without an intermediate state where
+          the alarm is cleared but the valve has not yet been commanded open.
+        - **JSON API**: the clear request is sent first, then the open request
+          as two sequential HTTP calls (the JSON API has no multi-command
+          endpoint).
+
+        If no alarm is detected, or alarm detection fails for any reason, the
+        open command is issued without any clear prefix — identical behaviour
+        to a direct ``async_set_device_value`` call.
+
+        Args:
+            device_id: The device ID (serial number)
+            set_key: Valve set command (e.g. ``"setAB"``)
+            set_val: Value to send (e.g. ``1``)
+
+        Raises:
+            HomeAssistantError: If the API call fails
+        """
+        if not self.data:
+            raise HomeAssistantError("Coordinator data not available")
+
+        # Locate device and resolve DCLG
+        dclg: str | None = None
+        status: dict = {}
+        for device in self.data.get("devices", []):
+            if device["id"] == device_id:
+                dclg = device.get("dclg", device_id)
+                status = device.get("status", {}) or {}
+                break
+
+        if dclg is None:
+            raise HomeAssistantError(f"Device {device_id} not found")
+
+        # --- Detect active alarm and compute clear command ---
+        # Returns (command, value) when an alarm must be cleared first, or None.
+        clear_prefix: tuple[str, Any] | None = None
+        try:
+            model_info = detect_model(status)
+            alarm_style_alm: bool = bool(model_info.get("alarm_style_alm"))
+            alarm_clear_via_set: bool = bool(model_info.get("alarm_clear_via_set"))
+            field = "alm" if alarm_style_alm else "ala"
+            get_key = f"get{field.upper()}"
+            raw = status.get(get_key)
+            if raw is not None and str(raw).strip().lower() not in _SYR_CONNECT_NO_ALARM_CODES:
+                if alarm_clear_via_set:
+                    clear_prefix = (f"set{field.upper()}", "FF")
+                else:
+                    clear_prefix = (f"clr{field.upper()}", "")
+                _LOGGER.info(
+                    "Valve open: active alarm %s=%r on device %s; prepending %s",
+                    get_key,
+                    raw,
+                    device_id,
+                    clear_prefix[0],
+                )
+        except Exception as err:
+            _LOGGER.debug(
+                "Valve open: alarm detection failed for %s (will open without clear): %s",
+                device_id,
+                err,
+            )
+            clear_prefix = None
+
+        if clear_prefix is None:
+            # No active alarm (or detection failed) — normal open path
+            await self.async_set_device_value(device_id, set_key, set_val)
+            return
+
+        # --- Active alarm: apply optimistic update then send clear + open ---
+        get_key_ab: str | None = f"get{set_key[3:]}" if set_key.startswith("set") else None
+        try:
+            if isinstance(self.data, dict) and get_key_ab:
+                new_data = copy.deepcopy(self.data)
+                for dev in new_data.get("devices", []):
+                    if dev.get("id") == device_id:
+                        dev.setdefault("status", {})[get_key_ab] = str(set_val)
+                        dev["available"] = True
+                        break
+                self.async_set_updated_data(new_data)
+                if get_key_ab.lower() == "getab":
+                    self._ignore_until[(device_id, get_key_ab)] = (
+                        time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
+                    )
+        except (KeyError, AttributeError, TypeError, ValueError) as err:
+            _LOGGER.warning(
+                "Valve open with alarm clear: failed to apply optimistic update for %s: %s",
+                device_id,
+                err,
+            )
+
+        try:
+            if isinstance(self.api, SyrConnectJsonAPI):
+                # JSON API: two sequential requests (no multi-command endpoint)
+                if clear_prefix[0].startswith("clr"):
+                    await self.api.request_json_data(f"clr/{clear_prefix[0][3:].lower()}")
+                else:
+                    await self.api.set_device_status(dclg, [(clear_prefix[0], clear_prefix[1])])
+                await self.api.set_device_status(dclg, [(set_key, set_val)])
+                _LOGGER.info(
+                    "Valve open with alarm clear (JSON): sent %s then %s=%s for device %s",
+                    clear_prefix[0],
+                    set_key,
+                    set_val,
+                    device_id,
+                )
+            else:
+                # XML API: clear + open in a single multi-command payload
+                await self.api.set_device_status(
+                    dclg, [clear_prefix, (set_key, set_val)]
+                )
+                _LOGGER.info(
+                    "Valve open with alarm clear (XML): sent [%s, %s=%s] for device %s",
+                    clear_prefix[0],
+                    set_key,
+                    set_val,
+                    device_id,
+                )
+        except Exception:
+            _LOGGER.debug(
+                "Valve open with alarm clear failed for device %s, re-raising", device_id
+            )
+            raise
+        else:
+            try:
+                if self._pending_refresh_task and not self._pending_refresh_task.done():
+                    self._pending_refresh_task.cancel()
+                self._pending_refresh_task = self.hass.async_create_task(
+                    self._delayed_refresh()
+                )
+            except Exception:  # pragma: no cover - defensive
+                _LOGGER.exception(
+                    "Failed to schedule delayed refresh after valve open with alarm clear"
+                )
 
     async def _delayed_refresh(self, delay: int = _SYR_CONNECT_DELAYED_REFRESH_SECONDS) -> None:
         """Wait `delay` seconds then refresh coordinator data.

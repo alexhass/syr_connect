@@ -398,61 +398,59 @@ class SyrConnectXmlAPI:
             _LOGGER.error("Failed to get device status: %s", err)
             raise
 
-    async def set_device_status(self, device_id: str, command: str, value: Any) -> bool:
-        """Set a device parameter or execute a command.
-
-        This method can:
-        - Change configuration values (regeneration times, thresholds, etc.)
-        - Execute commands (manual regeneration, alarm reset, etc.)
-        - Control outputs (valve positions, etc.)
-
-        Common commands:
-        - setRTM: Set regeneration time (format: "HH:MM")
-        - setAB: Trigger manual regeneration (value: 2)
-        - setVLV: Set valve position (value: 0-100)
+    async def set_device_status(
+        self,
+        device_id: str,
+        commands: list[tuple[str, Any]],
+    ) -> bool:
+        """Set one or more device parameters in a single XML request.
 
         Args:
             device_id: Device collection group ID (DCLG)
-            command: Command name (e.g., 'setRTM', 'setAB', 'setVLV')
-            value: Command value (type depends on command - int, str, bool)
+            commands: Sequence of ``(command, value)`` pairs, executed in order.
+                Use a single-element list for single commands.
 
         Returns:
-            True if the command was accepted (does not guarantee completion)
+            True if the request was accepted (does not guarantee completion)
 
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
             SyrConnectConnectionError: If network/HTTP errors occur
         """
-        # --- Ensure Valid Session ---
         await self._ensure_session()
 
-        _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
+        _LOGGER.debug(
+            "Setting device %s with %d command(s): %s",
+            device_id,
+            len(commands),
+            commands,
+        )
 
-        # --- Normalize Boolean Values ---
-        # API expects integers (0/1) for boolean commands, not true/false
-        if isinstance(value, bool):
-            original_value = value
-            value = 1 if value else 0
-            _LOGGER.debug("Converted boolean %s to int %s", original_value, value)
+        # Normalize boolean values to 0/1
+        normalized: list[tuple[str, Any]] = [
+            (cmd, (1 if val is True else (0 if val is False else val)))
+            for cmd, val in commands
+        ]
 
-        # --- Build Request Payload ---
         payload = self.payload_builder.build_set_status_payload(
-            self.session_data, device_id, command, value
+            self.session_data, device_id, normalized
         )
         _LOGGER.debug("Set status payload: %s", mask_ug_value(payload))
 
         try:
-            # --- Make HTTP Request ---
             xml_response = await self.http_client.post(
                 self._device_set_status_url,
-                {'xml': payload}
+                {"xml": payload},
             )
             _LOGGER.debug("Set status XML response: %s", xml_response)
-            _LOGGER.info("Successfully set %s=%s for device %s", command, value, device_id)
+            _LOGGER.info(
+                "Successfully executed %d command(s) for device %s",
+                len(commands),
+                device_id,
+            )
             return True
-
         except Exception as err:
-            _LOGGER.error("Failed to set device status: %s", err)
+            _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
             raise
 
     async def get_statistics(self, device_id: str, statistic_type: str = "water") -> dict[str, Any]:

@@ -33,7 +33,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api_json import SyrConnectJsonAPI
-from .const import _SYR_CONNECT_BUTTON_KNOWN_KEYS, _SYR_CONNECT_SENSOR_EXCLUDED
+from .const import (
+    _SYR_CONNECT_BUTTON_KNOWN_KEYS,
+    _SYR_CONNECT_NO_ALARM_CODES,
+    _SYR_CONNECT_SENSOR_EXCLUDED,
+)
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import build_device_info, build_entity_id, registry_cleanup
@@ -271,7 +275,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     # depending on the device firmware.
                     raw = status.get(get_key) if status is not None else None
                     # Sentinel values that indicate no active alarm (see module docstring).
-                    if raw is None or str(raw).strip().lower() in ("", "0", "00", "0000", "ff", "a0x0000", "255"):
+                    if raw is None or str(raw).strip().lower() in _SYR_CONNECT_NO_ALARM_CODES:
                         raise HomeAssistantError(
                             f"No reset required for {get_key} on {self._device_id}"
                         )
@@ -302,7 +306,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     raw = status.get(get_key)
 
                 # Sentinel values that indicate no active notification / warning.
-                if raw is None or str(raw).strip().lower() in ("", "0", "00", "0000", "ff", "a0x0000", "255"):
+                if raw is None or str(raw).strip().lower() in _SYR_CONNECT_NO_ALARM_CODES:
                     raise HomeAssistantError(
                         f"No reset required for {get_key} on {self._device_id}"
                     )

@@ -225,11 +225,11 @@ async def test_set_device_status_boolean_false(api_client):
     with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
-        await api_client.set_device_status("device1", "setSIR", False)
+        await api_client.set_device_status("device1", [("setSIR", False)])
 
         # Verify boolean False was converted to 0
         call_args = mock_build.call_args
-        assert call_args[0][3] == 0  # value parameter should be 0
+        assert call_args[0][2] == [("setSIR", 0)]  # commands list with normalized value
 
 
 async def test_set_device_status_boolean_true(api_client):
@@ -240,11 +240,11 @@ async def test_set_device_status_boolean_true(api_client):
     with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
-        await api_client.set_device_status("device1", "setSIR", True)
+        await api_client.set_device_status("device1", [("setSIR", True)])
 
         # Verify boolean True was converted to 1
         call_args = mock_build.call_args
-        assert call_args[0][3] == 1  # value parameter should be 1
+        assert call_args[0][2] == [("setSIR", 1)]  # commands list with normalized value
 
 
 async def test_set_device_status_exception_handling(api_client):
@@ -381,11 +381,11 @@ async def test_set_device_status_non_boolean_value(api_client):
     with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
-        await api_client.set_device_status("device1", "setSV1", 10)
+        await api_client.set_device_status("device1", [("setSV1", 10)])
 
         # Verify value is passed as-is (not converted)
         call_args = mock_build.call_args
-        assert call_args[0][3] == 10  # value parameter should be 10
+        assert call_args[0][2] == [("setSV1", 10)]  # commands list with value unchanged
 
 
 async def test_get_devices_with_device_already_has_id(api_client):

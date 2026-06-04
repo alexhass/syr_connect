@@ -331,8 +331,8 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             except RuntimeError:
                 pass
 
-            # Send command to backend; await result but do not block UI update
-            await self._sc_coordinator.async_set_device_value(self._device_id, set_key, set_val)
+            # Send command to backend; prepend alarm-clear when an alarm is active
+            await self._sc_coordinator.async_open_valve(self._device_id, set_key, set_val)
         except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
             # On failure, clear optimistic cache and restore state
             _LOGGER.error("Failed to open valve %s: %s", self._device_id, err)

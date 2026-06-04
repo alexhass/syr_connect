@@ -284,7 +284,7 @@ class DebugXmlClient:
             _LOG.warning("--no-decrypt flag set -- cannot perform set operation without a valid session.")
             return False
 
-        payload = self.payload_builder.build_set_status_payload(self.session_data, device_id, command, value)
+        payload = self.payload_builder.build_set_status_payload(self.session_data, device_id, [(command, value)])
         try:
             resp = await self.http_client.post(self.device_set_url, {"xml": payload})
             _LOG.debug("Set response: %s", resp)

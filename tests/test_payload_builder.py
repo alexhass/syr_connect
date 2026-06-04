@@ -214,7 +214,7 @@ def test_build_device_status_payload(payload_builder):
 
 def test_build_set_status_payload(payload_builder):
     """Test building set status payload."""
-    payload = payload_builder.build_set_status_payload("session123", "device789", "setSIR", 0)
+    payload = payload_builder.build_set_status_payload("session123", "device789", [("setSIR", 0)])
 
     assert "session123" in payload
     assert "device789" in payload
@@ -224,7 +224,7 @@ def test_build_set_status_payload(payload_builder):
 
 def test_build_set_status_payload_with_string_value(payload_builder):
     """Test building set status payload with string value."""
-    payload = payload_builder.build_set_status_payload("session123", "device789", "setCNA", "NewName")
+    payload = payload_builder.build_set_status_payload("session123", "device789", [("setCNA", "NewName")])
 
     assert "NewName" in payload
 
@@ -316,8 +316,7 @@ def test_build_set_status_payload_escaping(payload_builder):
     payload = payload_builder.build_set_status_payload(
         "session&123",
         "device<456>",
-        "command\"test",
-        "value'123"
+        [("command\"test", "value'123")],
     )
 
     # Special characters should be escaped
@@ -357,7 +356,7 @@ def test_add_checksum_integration(payload_builder):
 
 def test_build_set_status_payload_int_value(payload_builder):
     """Test set status payload with integer value."""
-    payload = payload_builder.build_set_status_payload("sess", "dev", "cmd", 42)
+    payload = payload_builder.build_set_status_payload("sess", "dev", [("cmd", 42)])
 
     # Integer should be converted to string
     assert 'v="42"' in payload
