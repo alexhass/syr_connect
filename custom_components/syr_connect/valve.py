@@ -197,33 +197,12 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
     @property
     def is_closed(self) -> bool | None:
-        """Return True if valve is closed, False if open, None if unknown.
-
-        Preference order:
-        1. Use `getVLV` if it is reported (authoritative discrete state).
-        2. Fall back to `getAB` control value (1=open, 2=closed).
-        """
+        """Return True if valve is closed, False if open, None if unknown."""
         status = self._get_status()
         if status is None:
             return None
 
-        # Prefer authoritative valve state from `getVLV` when available
-        vlv = status.get("getVLV")
-        if vlv is not None and vlv != "":
-            try:
-                ival = int(float(vlv))
-                # Mapping:
-                # 10 = closed, 11 = closing, 20 = open, 21 = opening
-                if ival == 10:
-                    return True
-                else:
-                    return False
-            except (ValueError, TypeError):
-                pass
-
-        # Fallback to getAB control value (use helper to normalize)
-        ab = get_sensor_ab_value(status)
-        return ab
+        return get_sensor_ab_value(status)
 
     @property
     def is_opening(self) -> bool | None:
