@@ -155,7 +155,6 @@ _SYR_CONNECT_NO_ALARM_CODES = {
     "",
     "0",
     "00",
-    "0000",
     "ff",
     "a0x0000",
     "255"
