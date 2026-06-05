@@ -22,7 +22,7 @@ from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_SERVICES,
-    _SYR_CONNECT_NO_ALARM_CODES,
+    _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -516,7 +516,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             field = "alm" if alarm_style_alm else "ala"
             get_key = f"get{field.upper()}"
             raw = status.get(get_key)
-            if raw is not None and str(raw).strip().lower() not in _SYR_CONNECT_NO_ALARM_CODES:
+            if raw is not None and str(raw).strip().lower() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
                 if alarm_clear_via_set:
                     clear_prefix = (f"set{field.upper()}", "FF")
                 else:

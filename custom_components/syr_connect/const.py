@@ -151,7 +151,7 @@ _SYR_CONNECT_API_SERVICES: dict[str, dict] = {
 _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
 
 # Values that mean "no alarm present" (case-insensitive, after strip()).
-_SYR_CONNECT_NO_ALARM_CODES = {
+_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM = {
     "",
     "0",
     "00",
