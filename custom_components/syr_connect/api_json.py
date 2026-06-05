@@ -695,6 +695,14 @@ class SyrConnectJsonAPI:
         # Perform a case-insensitive lookup for the response key so that
         # devices returning e.g. 'setala255' or 'setALA255' are accepted.
         found_key = next((k for k in response.keys() if k.lower() == response_key.lower()), None)
+
+        # Some devices (e.g. Floorsensor) omit the "set" prefix in the response key:
+        # {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
+        # Fall back to a prefix-less lookup: cmd+value (case-insensitive).
+        if not found_key:
+            bare_key = f"{str(cmd).upper()}{value}"
+            found_key = next((k for k in response.keys() if k.lower() == bare_key.lower()), None)
+
         if not found_key:
             msg = f"Response missing expected key '{response_key}'"
             _LOGGER.warning("JSON API: %s for device %s (response: %s)", msg, device_id, response)

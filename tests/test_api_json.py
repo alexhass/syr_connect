@@ -332,6 +332,34 @@ async def test_login_factory_treated_as_required() -> None:
     assert client.projects and client.projects[0]["id"] == "local"
 
 
+async def test_login_factory_without_set_prefix() -> None:
+    """Test login accepts response key without 'set' prefix (e.g. Floorsensor firmware).
+
+    Some devices return {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
+    """
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"ADM(2)f": "FACTORY"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        host="192.168.1.100",
+        base_path="/floorsensor/",
+    )
+
+    result = await client.login()
+
+    assert result is True
+    assert client._login_required is True
+    assert client._last_login is not None
+    assert client.projects and client.projects[0]["id"] == "local"
+
+
 async def test_get_device_status_does_not_call_login_if_not_required() -> None:
     """Ensure get_device_status skips login when login not required."""
     sess = MagicMock()
