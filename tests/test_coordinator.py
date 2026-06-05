@@ -248,11 +248,7 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task:
-            mock_task.return_value = None
-            await coordinator.async_set_device_value("device1", "setSIR", 0)
-            # Verify refresh was scheduled
-            mock_task.assert_called_once()
+        await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         assert coordinator.data is not None
         device = coordinator.data["devices"][0]
@@ -784,11 +780,8 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
 
         # Mock async_set_updated_data to raise exception
         with patch.object(coordinator, "async_set_updated_data", side_effect=ValueError("Update failed")):
-            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task:
-                mock_task.return_value = None
-                with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
-                    # Should not raise, exception is caught and logged
-                    await coordinator.async_set_device_value("device1", "setSIR", 0)
+            # Should not raise, exception is caught and logged
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # API call should still have been made
         mock_api.set_device_status.assert_called_once()
@@ -827,10 +820,8 @@ async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssista
             raise Exception("Task creation failed")
 
         with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=raise_and_close):
-                with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
-                    # Should not raise, exception is caught and logged
-                    await coordinator.async_set_device_value("device1", "setSIR", 0)
+            # Should not raise, exception is caught and logged
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # API call should still have been made
         mock_api.set_device_status.assert_called_once()

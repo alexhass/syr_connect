@@ -313,10 +313,10 @@ async def test_is_closing_state_and_icon(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "c1", "C1")
 
-    # getVLV=11 -> closing True, is_closed False
+    # getVLV=11 -> closing True, is_closed None (no getAB)
     assert valve.is_closing is True
     assert valve.is_opening is False
-    assert valve.is_closed is False
+    assert valve.is_closed is None
     # moving icon for closing
     assert valve.icon == "mdi:valve"
 
@@ -423,10 +423,10 @@ async def test_sync_wrappers_without_hass_do_nothing(hass: HomeAssistant) -> Non
 
 
 async def test_icon_open_state(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "o1", "name": "O1", "status": {"getVLV": "20"}}]}
+    data = {"devices": [{"id": "o1", "name": "O1", "status": {"getVLV": "20", "getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "o1", "O1")
-    # getVLV=20 -> open -> icon should be open
+    # getAB=1 -> open -> icon should be open
     assert valve.is_closed is False
     assert valve.icon == "mdi:valve-open"
 
