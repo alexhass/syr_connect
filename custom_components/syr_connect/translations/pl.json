@@ -169,6 +169,8 @@
             "getala": {
                 "name": "Alarm",
                 "state": {
+                    "alarm_battery_low": "Bateria rozładowana",
+                    "alarm_battery_weak": "Słaba bateria!",
                     "alarm_end_switch": "Wyłącznik krańcowy",
                     "alarm_external_sensor_leakage_cable": "Zewnętrzny czujnik przecieku (kabel)",
                     "alarm_external_sensor_leakage_radio": "Zewnętrzny czujnik przecieku (radio)",
@@ -185,11 +187,17 @@
                     "alarm_safefloor_low_humidity": "Przekroczono próg niskiej wilgotności",
                     "alarm_safefloor_low_temperature": "Przekroczono próg niskiej temperatury",
                     "alarm_safefloor_weather": "Błąd czujnika temperatury",
+                    "alarm_safet_absence_leakage_detected": "Wykryto wyciek w trybie nieobecności. Przekroczono objętość",
+                    "alarm_safet_flow_leakage_detected": "Wykryto wyciek przepływu: przepływ objętościowy > 3500 l/h",
+                    "alarm_safet_flow_time_exceeded": "Przekroczono kryterium czasu przepływu.",
+                    "alarm_safet_leakage_volume_reached": "Wykryto wyciek w trybie obecności. Przekroczono objętość",
+                    "alarm_safet_microleakage_detected": "Wykryto mikroprzeciek. Przekroczono wartość graniczną",
+                    "alarm_safet_turbine_no_signal": "Brak sygnału turbiny",
+                    "alarm_safet_valve_cannot_be_operated": "Zawór nie może być obsługiwany",
                     "alarm_salt_supply_empty": "Brak soli",
                     "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
                     "alarm_turbine_blocked": "Turbina zablokowana!",
                     "alarm_valve_position": "Pozycja zaworu",
-                    "alarm_weak_battery": "Słaba bateria!",
                     "error_no_information": "Błąd: brak dostępnych informacji",
                     "fault_conductance_sensor": "Czujnik przewodności uszkodzony!",
                     "no_alarm": "Brak alarmu"

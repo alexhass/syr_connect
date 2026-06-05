@@ -171,6 +171,8 @@
       "getala": {
         "name": "Alarm",
         "state": {
+          "alarm_battery_low": "Batterij leeg",
+          "alarm_battery_weak": "Zwakke batterij!",
           "alarm_end_switch": "Eindschakelaar",
           "alarm_external_sensor_leakage_cable": "Externe sensor lek (kabel)",
           "alarm_external_sensor_leakage_radio": "Externe sensor lek (radio)",
@@ -187,11 +189,17 @@
           "alarm_safefloor_low_humidity": "Lage vochtigheidsdrempel overschreden",
           "alarm_safefloor_low_temperature": "Lage temperatuurdrempel overschreden",
           "alarm_safefloor_weather": "Temperatuursensorfout",
+          "alarm_safet_absence_leakage_detected": "Afwezigheidslek gedetecteerd. Volume overschreden",
+          "alarm_safet_flow_leakage_detected": "Stroomlek gedetecteerd: volumestroom > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Tijdcriterium voor doorstroming overschreden.",
+          "alarm_safet_leakage_volume_reached": "Aanwezigheidslek gedetecteerd. Volume overschreden",
+          "alarm_safet_microleakage_detected": "Microlek gedetecteerd. Grenswaarde overschreden",
+          "alarm_safet_turbine_no_signal": "Geen turbinesignaal",
+          "alarm_safet_valve_cannot_be_operated": "Klep kan niet worden bediend",
           "alarm_salt_supply_empty": "Zoutvoorraad leeg",
           "alarm_temperature_sensor_faulty": "Temperatuursensor defect!",
           "alarm_turbine_blocked": "Turbine geblokkeerd!",
           "alarm_valve_position": "Klepstand",
-          "alarm_weak_battery": "Zwakke batterij!",
           "error_no_information": "Fout: geen informatie beschikbaar",
           "fault_conductance_sensor": "Geleidbaarheidssensor defect!",
           "no_alarm": "Geen alarm"

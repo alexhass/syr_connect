@@ -171,6 +171,8 @@
       "getala": {
         "name": "Alarme",
         "state": {
+          "alarm_battery_low": "Bateria vazia",
+          "alarm_battery_weak": "Bateria fraca!",
           "alarm_end_switch": "Fim de curso",
           "alarm_external_sensor_leakage_cable": "Vazamento do sensor externo (cabo)",
           "alarm_external_sensor_leakage_radio": "Vazamento do sensor externo (rádio)",
@@ -187,11 +189,17 @@
           "alarm_safefloor_low_humidity": "Limiar de humidade baixa ultrapassado",
           "alarm_safefloor_low_temperature": "Limiar de temperatura baixa ultrapassado",
           "alarm_safefloor_weather": "Falha do sensor de temperatura",
+          "alarm_safet_absence_leakage_detected": "Vazamento de ausência detectado. Volume excedido",
+          "alarm_safet_flow_leakage_detected": "Vazamento de fluxo detectado: fluxo volumétrico > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Critério de tempo de fluxo excedido.",
+          "alarm_safet_leakage_volume_reached": "Vazamento de presença detectado. Volume excedido",
+          "alarm_safet_microleakage_detected": "Microvazamento detectado. Valor limite excedido",
+          "alarm_safet_turbine_no_signal": "Sem sinal de turbina",
+          "alarm_safet_valve_cannot_be_operated": "A válvula não pode ser acionada",
           "alarm_salt_supply_empty": "Suprimento de sal vazio",
           "alarm_temperature_sensor_faulty": "Sensor de temperatura com defeito!",
           "alarm_turbine_blocked": "Turbina bloqueada!",
           "alarm_valve_position": "Posição da válvula",
-          "alarm_weak_battery": "Bateria fraca!",
           "error_no_information": "Nenhuma informação disponível",
           "fault_conductance_sensor": "Falha no sensor de condutividade!",
           "no_alarm": "Sem alarme"

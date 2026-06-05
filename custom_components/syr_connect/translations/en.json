@@ -171,6 +171,8 @@
       "getala": {
         "name": "Alarm",
         "state": {
+          "alarm_battery_low": "Low battery",
+          "alarm_battery_weak": "Weak battery!",
           "alarm_end_switch": "End switch",
           "alarm_external_sensor_leakage_cable": "External sensor leakage (cable)",
           "alarm_external_sensor_leakage_radio": "External sensor leakage (radio)",
@@ -187,11 +189,17 @@
           "alarm_safefloor_low_humidity": "Low humidity threshold exceeded",
           "alarm_safefloor_low_temperature": "Low temperature threshold exceeded",
           "alarm_safefloor_weather": "Temperature sensor fault",
+          "alarm_safet_absence_leakage_detected": "Absence leakage detected. Volume exceeded",
+          "alarm_safet_flow_leakage_detected": "Flow leakage detected: Volume flow > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Flow time criterion exceeded.",
+          "alarm_safet_leakage_volume_reached": "Presence leakage detected. Volume exceeded",
+          "alarm_safet_microleakage_detected": "Microleakage detected. Limit value exceeded",
+          "alarm_safet_turbine_no_signal": "No turbine signal",
+          "alarm_safet_valve_cannot_be_operated": "Valve cannot be operated",
           "alarm_salt_supply_empty": "Salt supply empty",
           "alarm_temperature_sensor_faulty": "Temperature sensor faulty!",
           "alarm_turbine_blocked": "Turbine blocked!",
           "alarm_valve_position": "Valve position",
-          "alarm_weak_battery": "Weak battery!",
           "error_no_information": "Error: no information available",
           "fault_conductance_sensor": "Conductivity sensor faulty!",
           "no_alarm": "No alarm"

@@ -171,6 +171,8 @@
       "getala": {
         "name": "Alarma",
         "state": {
+          "alarm_battery_low": "Batería agotada",
+          "alarm_battery_weak": "¡Batería débil!",
           "alarm_end_switch": "Interruptor final",
           "alarm_external_sensor_leakage_cable": "Fuga sensor externo (cable)",
           "alarm_external_sensor_leakage_radio": "Fuga sensor externo (radio)",
@@ -187,11 +189,17 @@
           "alarm_safefloor_low_humidity": "Umbral de humedad baja superado",
           "alarm_safefloor_low_temperature": "Umbral de temperatura baja superado",
           "alarm_safefloor_weather": "Fallo del sensor de temperatura",
+          "alarm_safet_absence_leakage_detected": "Fuga de ausencia detectada. Volumen superado",
+          "alarm_safet_flow_leakage_detected": "Fuga de flujo detectada: Caudal > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Criterio de tiempo de flujo superado.",
+          "alarm_safet_leakage_volume_reached": "Fuga de presencia detectada. Volumen superado",
+          "alarm_safet_microleakage_detected": "Microfuga detectada. Valor límite superado",
+          "alarm_safet_turbine_no_signal": "Sin señal de turbina",
+          "alarm_safet_valve_cannot_be_operated": "La válvula no puede ser accionada",
           "alarm_salt_supply_empty": "Suministro de sal vacío",
           "alarm_temperature_sensor_faulty": "¡Sensor de temperatura defectuoso!",
           "alarm_turbine_blocked": "¡Turbina bloqueada!",
           "alarm_valve_position": "Posición de la válvula",
-          "alarm_weak_battery": "¡Batería débil!",
           "error_no_information": "Error: no hay información disponible",
           "fault_conductance_sensor": "¡Sensor de conductividad defectuoso!",
           "no_alarm": "Sin alarma"

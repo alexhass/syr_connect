@@ -171,6 +171,8 @@
       "getala": {
         "name": "Allarme",
         "state": {
+          "alarm_battery_low": "Batteria esaurita",
+          "alarm_battery_weak": "Batteria scarica!",
           "alarm_end_switch": "Interruttore di fine corsa",
           "alarm_external_sensor_leakage_cable": "Perdita del sensore esterno (cavo)",
           "alarm_external_sensor_leakage_radio": "Perdita del sensore esterno (radio)",
@@ -187,11 +189,17 @@
           "alarm_safefloor_low_humidity": "Soglia umidità bassa superata",
           "alarm_safefloor_low_temperature": "Soglia temperatura bassa superata",
           "alarm_safefloor_weather": "Guasto sensore di temperatura",
+          "alarm_safet_absence_leakage_detected": "Perdita in assenza rilevata. Volume superato",
+          "alarm_safet_flow_leakage_detected": "Perdita di flusso rilevata: portata volumetrica > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Criterio di tempo di flusso superato.",
+          "alarm_safet_leakage_volume_reached": "Perdita in presenza rilevata. Volume superato",
+          "alarm_safet_microleakage_detected": "Microperdita rilevata. Valore limite superato",
+          "alarm_safet_turbine_no_signal": "Nessun segnale turbina",
+          "alarm_safet_valve_cannot_be_operated": "La valvola non può essere azionata",
           "alarm_salt_supply_empty": "Rifornimento di sale vuoto",
           "alarm_temperature_sensor_faulty": "Sensore di temperatura difettoso!",
           "alarm_turbine_blocked": "Turbina bloccata!",
           "alarm_valve_position": "Posizione della valvola",
-          "alarm_weak_battery": "Batteria scarica!",
           "error_no_information": "Errore: nessuna informazione disponibile",
           "fault_conductance_sensor": "Sensore di conducibilità difettoso!",
           "no_alarm": "Nessun allarme"

@@ -172,7 +172,7 @@ _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
     "A0X0020": "alarm_safefloor_high_temperature",
     "A0X0040": "alarm_safefloor_low_humidity",
     "A0X0080": "alarm_safefloor_high_humidity",
-    "A0X0100": "alarm_weak_battery",
+    "A0X0100": "alarm_battery_weak",
 }
 
 # Alarm code mappings per device model (raw API getALA -> internal translation key)
@@ -203,19 +203,21 @@ _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT = {
 
 _SYR_CONNECT_SENSOR_ALA_CODES_SAFET = {
     "FF": "no_alarm",
-    "A1": "alarm_end_switch",
-    "A2": "alarm_turbine_blocked",
-    "A3": "alarm_leakage_volume_reached",
-    "A4": "alarm_leakage_time_reached",
-    "A5": "alarm_max_flow_rate_reached",
-    "A6": "alarm_microleakage_detected",
+    "A0": "alarm_safet_microleakage_detected",
+    "A1": "alarm_safet_valve_cannot_be_operated",
+    "A2": "alarm_safet_turbine_no_signal",
+    "A3": "alarm_safet_leakage_volume_reached",
+    "A4": "alarm_safet_flow_leakage_detected",
+    "A5": "alarm_safet_absence_leakage_detected",
+    "A6": "alarm_safefloor_flood",
     "A7": "alarm_external_sensor_leakage_radio",
     "A8": "alarm_external_sensor_leakage_cable",
-    "A9": "alarm_pressure_sensor_faulty",
+    "A9": "alarm_safet_flow_time_exceeded",
     "AA": "alarm_temperature_sensor_faulty",
-    "AB": "alarm_weak_battery",
+    "AB": "alarm_battery_weak",
     "AE": "error_no_information",
-    "WeakBat": "alarm_weak_battery",
+    "LowBat": "alarm_battery_low",
+    "WeakBat": "alarm_battery_weak",
 }
 
 # Notification code mappings

@@ -171,6 +171,8 @@
       "getala": {
         "name": "Alarm",
         "state": {
+          "alarm_battery_low": "Batterien leer",
+          "alarm_battery_weak": "Batterien schwach",
           "alarm_end_switch": "Endschalter",
           "alarm_external_sensor_leakage_cable": "EXT. SENSOR LECKAGE KABEL",
           "alarm_external_sensor_leakage_radio": "EXT. SENSOR LECKAGE FUNK",
@@ -187,11 +189,17 @@
           "alarm_safefloor_low_humidity": "Luftfeuchtigkeit unterschritten",
           "alarm_safefloor_low_temperature": "Temperatur unterschritten",
           "alarm_safefloor_weather": "Störung Temperatursensor",
+          "alarm_safet_absence_leakage_detected": "Abwesenheits-Leckage erkannt. Volumen überschritten",
+          "alarm_safet_flow_leakage_detected": "Durchfluss-Leckage: Volumenstrom > 3500 l/h erkannt",
+          "alarm_safet_flow_time_exceeded": "Zeitkriterium des Durchflusses überschritten.",
+          "alarm_safet_leakage_volume_reached": "Anwesenheits-Leckage erkannt. Volumen überschritten",
+          "alarm_safet_microleakage_detected": "Mikroleckage erkannt. Grenzwert überschritten",
+          "alarm_safet_turbine_no_signal": "Kein Turbinen-Signal",
+          "alarm_safet_valve_cannot_be_operated": "Absperrung kann nicht betätigt werden",
           "alarm_salt_supply_empty": "Salzversorgung leer",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
           "alarm_turbine_blocked": "Turbine blockiert!",
           "alarm_valve_position": "Ventilstellung",
-          "alarm_weak_battery": "Schwache Batterie!",
           "error_no_information": "Fehler: keine Informationen verfügbar",
           "fault_conductance_sensor": "Leitfähigkeitssensor fehlerhaft!",
           "no_alarm": "Kein Alarm"

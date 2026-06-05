@@ -171,6 +171,8 @@
       "getala": {
         "name": "Alarme",
         "state": {
+          "alarm_battery_low": "Batterie vide",
+          "alarm_battery_weak": "Batterie faible",
           "alarm_end_switch": "Fin de course",
           "alarm_external_sensor_leakage_cable": "Fuite du capteur externe (câble)",
           "alarm_external_sensor_leakage_radio": "Fuite du capteur externe (radio)",
@@ -178,7 +180,7 @@
           "alarm_leakage_time_reached": "Temps de fuite atteint",
           "alarm_leakage_volume_reached": "Volume de fuite atteint",
           "alarm_max_flow_rate_reached": "Débit maximal atteint",
-          "alarm_microleakage_detected": "Micro‑fuite détectée",
+          "alarm_microleakage_detected": "Micro-fuite détectée",
           "alarm_pressure_sensor_faulty": "Capteur de pression défectueux",
           "alarm_safefloor_communication": "Défaut de connexion réseau",
           "alarm_safefloor_flood": "Une fuite au capteur de sol a été détectée",
@@ -187,12 +189,18 @@
           "alarm_safefloor_low_humidity": "Seuil d'humidité basse dépassé",
           "alarm_safefloor_low_temperature": "Seuil de température basse dépassé",
           "alarm_safefloor_weather": "Défaut capteur de température",
+          "alarm_safet_absence_leakage_detected": "Fuite d’absence détectée. Volume dépassé",
+          "alarm_safet_flow_leakage_detected": "Fuite de débit détectée : débit volumique > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Critère de durée d’écoulement dépassé.",
+          "alarm_safet_leakage_volume_reached": "Fuite de présence détectée. Volume dépassé",
+          "alarm_safet_microleakage_detected": "Micro-fuite détectée. Valeur limite dépassée",
+          "alarm_safet_turbine_no_signal": "Aucun signal de turbine",
+          "alarm_safet_valve_cannot_be_operated": "La vanne ne peut pas être actionnée",
           "alarm_salt_supply_empty": "Approvisionnement en sel vide",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
           "alarm_turbine_blocked": "Turbine bloquée",
           "alarm_valve_position": "Position de la vanne",
-          "alarm_weak_battery": "Batterie faible",
-          "error_no_information": "Erreur : aucune information disponible",
+          "error_no_information": "Erreur: aucune information disponible",
           "fault_conductance_sensor": "Capteur de conductivité défectueux",
           "no_alarm": "Aucune alarme"
         }
