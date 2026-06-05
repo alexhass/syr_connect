@@ -262,7 +262,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # others real data values may change its data type and return empty strings.
             #
             # sta=3 (offline) means the device is not reachable via the cloud.
-            # Mark it unavailable so all entities show as unavailable in HA.
+            # Mark it unavailable so all entities show as "Unavailable" in HA.
             if str(status.get("sta", "")).strip() == "3":
                 _LOGGER.debug("Device %s is offline (sta=%s); marking unavailable", device.get("id"), status.get("sta"))
                 device["available"] = False
