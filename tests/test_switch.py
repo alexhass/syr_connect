@@ -554,3 +554,44 @@ async def test_set_buz_else_fallback_uses_string_true_false() -> None:
 
     # else branch → value = "True"
     mock_coordinator.async_set_device_value.assert_awaited_once_with("SN1003", "setBUZ", "True")
+
+
+def test_available_returns_false_when_last_update_failed() -> None:
+    """available returns False when last_update_success is False (line 167)."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    device = {"id": "SN2001", "name": "Dev", "status": {"getBUZ": "1"}, "available": True}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    mock_coordinator.last_update_success = False
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "SN2001", "Dev", "", "getBUZ")
+
+    assert sw.available is False
+
+
+def test_available_returns_device_available_flag() -> None:
+    """available returns device.available when device is found (lines 168-170)."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    device_unavailable = {"id": "SN2002", "name": "Dev", "status": {"getBUZ": "1"}, "available": False}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device_unavailable]}
+    mock_coordinator.last_update_success = True
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "SN2002", "Dev", "", "getBUZ")
+
+    assert sw.available is False
+
+
+def test_available_returns_true_when_device_not_in_list() -> None:
+    """available returns True when device_id is not found in devices list (line 172)."""
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": []}
+    mock_coordinator.last_update_success = True
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "MISSING", "Dev", "", "getBUZ")
+
+    assert sw.available is True

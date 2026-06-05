@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -1252,3 +1252,131 @@ async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
 
     # Cache must be cleared on failure
     assert valve._cached_ab is None
+
+
+# ---------------------------------------------------------------------------
+# Additional coordinator.async_open_valve branch coverage
+# ---------------------------------------------------------------------------
+
+
+async def test_async_open_valve_no_data_raises(hass: HomeAssistant) -> None:
+    """async_open_valve raises HomeAssistantError when coordinator data is not available."""
+    coordinator = _build_coordinator(hass, {"devices": []})
+    coordinator.data = None  # force data to be falsy
+
+    with pytest.raises(HomeAssistantError, match="Coordinator data not available"):
+        await coordinator.async_open_valve("dev_x", "setAB", 1)
+
+
+async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> None:
+    """async_open_valve raises HomeAssistantError when device_id is not in devices list."""
+    data = {"devices": [{"id": "other_device", "name": "Other", "project_id": "p1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    with pytest.raises(HomeAssistantError, match="Device missing_device not found"):
+        await coordinator.async_open_valve("missing_device", "setAB", 1)
+
+
+async def test_async_open_valve_alarm_detection_exception_falls_back_to_set(hass: HomeAssistant) -> None:
+    """When detect_model raises, alarm detection fails gracefully and valve opens normally."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_x",
+                "name": "DevX",
+                "project_id": "p1",
+                "status": {"getAB": "2", "getALA": "A5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    with patch("custom_components.syr_connect.coordinator.detect_model", side_effect=RuntimeError("boom")):
+        await coordinator.async_open_valve("dev_x", "setAB", 1)
+
+    # Should fall back to normal open (no clear) because detection failed
+    coordinator.async_set_device_value.assert_awaited_once_with("dev_x", "setAB", 1)
+
+
+async def test_async_open_valve_optimistic_update_exception_still_sends_command(hass: HomeAssistant) -> None:
+    """Optimistic update failure is logged as warning; the valve command is still sent."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
+    data = {
+        "devices": [
+            {
+                "id": "dev_y",
+                "name": "DevY",
+                "project_id": "p1",
+                "status": {"getAB": "2", "getALA": "A5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.api.__class__ = SyrConnectJsonAPI
+    coordinator.api.request_json_data = AsyncMock(return_value={})
+    coordinator.api.set_device_status = AsyncMock(return_value=True)
+    coordinator.hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
+
+    with patch("custom_components.syr_connect.coordinator.copy.deepcopy", side_effect=TypeError("deepcopy failed")):
+        await coordinator.async_open_valve("dev_y", "setAB", 1)
+
+    # Valve command should still be sent despite optimistic update failure
+    coordinator.api.set_device_status.assert_awaited_once_with("dev_y", [("setAB", 1)])
+
+
+async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open(hass: HomeAssistant) -> None:
+    """alarm_clear_via_set=True with JSON API: uses set_device_status for clear (not request_json_data)."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
+    data = {
+        "devices": [
+            {
+                "id": "dev_z",
+                "name": "DevZ",
+                "project_id": "p1",
+                # getSRN "100AAA001" -> Trio LS (alarm_clear_via_set=True)
+                "status": {"getAB": "2", "getALA": "A5", "getSRN": "100AAA001"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.api.__class__ = SyrConnectJsonAPI
+    coordinator.api.set_device_status = AsyncMock(return_value=True)
+    coordinator.hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
+
+    await coordinator.async_open_valve("dev_z", "setAB", 1)
+
+    # First call: clear alarm via set_device_status (clear_prefix starts with "set")
+    # Second call: open valve
+    assert coordinator.api.set_device_status.await_count == 2
+    calls = coordinator.api.set_device_status.await_args_list
+    assert calls[0].args == ("dev_z", [("setALA", "FF")])
+    assert calls[1].args == ("dev_z", [("setAB", 1)])
+
+
+async def test_async_open_valve_cancels_pending_refresh_task(hass: HomeAssistant) -> None:
+    """An existing pending refresh task is cancelled before scheduling a new one."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_c",
+                "name": "DevC",
+                "project_id": "p1",
+                "status": {"getAB": "2", "getALA": "A5"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.api.set_device_status = AsyncMock(return_value=True)
+    coordinator.hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
+
+    # Plant a pending (not-done) task
+    pending_task = MagicMock()
+    pending_task.done.return_value = False
+    coordinator._pending_refresh_task = pending_task
+
+    await coordinator.async_open_valve("dev_c", "setAB", 1)
+
+    pending_task.cancel.assert_called_once()
