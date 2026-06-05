@@ -910,9 +910,9 @@ async def test_button_reset_wrn_sends_255_via_json_api(hass: HomeAssistant) -> N
     coordinator.async_set_device_value.assert_called_once_with("device_wrn_json", "setWRN", 255)
 
 
-@pytest.mark.parametrize("sentinel", ["0", "00", "0000", "a0x0000", "A0X0000"])
+@pytest.mark.parametrize("sentinel", ["0", "00", "a0x0000", "A0X0000"])
 async def test_button_reset_ala_sentinel_values_no_reset(hass: HomeAssistant, sentinel: str) -> None:
-    """New sentinel values (0, 00, 0000, a0x0000) suppress the alarm reset."""
+    """Sentinel values (0, 00, a0x0000) suppress the alarm reset."""
     data = {
         "devices": [
             {

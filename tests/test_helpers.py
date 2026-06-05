@@ -685,7 +685,7 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     # ALA: Safe-T+ family (detect via getVER prefix)
     status_safet = {"getVER": "Safe-T+ V2.00e"}
     mapped3, raw3 = get_sensor_ala_map(status_safet, "A1")
-    assert mapped3 == "alarm_end_switch" and raw3 == "A1"
+    assert mapped3 == "alarm_safet_valve_cannot_be_operated" and raw3 == "A1"
 
     # ALA: unknown model -> returns (None, raw)
     mapped4, raw4 = get_sensor_ala_map({}, "A5")

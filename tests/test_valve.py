@@ -580,48 +580,48 @@ async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -
 
 
 async def test_is_closed_with_getvlv_11_closing(hass: HomeAssistant) -> None:
-    """Test is_closed returns False for getVLV=11 (closing)."""
+    """Test is_closed returns None for getVLV=11 (closing) without getAB."""
     data = {"devices": [{"id": "v11", "name": "V11", "status": {"getVLV": "11"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v11", "V11")
 
-    # getVLV=11 is closing, not closed, so is_closed should be False
-    assert valve.is_closed is False
+    # No getAB -> is_closed is None; getVLV only drives is_closing
+    assert valve.is_closed is None
     assert valve.is_closing is True
 
 
 async def test_is_closed_with_getvlv_20_open(hass: HomeAssistant) -> None:
-    """Test is_closed returns False for getVLV=20 (open)."""
+    """Test is_closed returns None for getVLV=20 (open) without getAB."""
     data = {"devices": [{"id": "v20", "name": "V20", "status": {"getVLV": "20"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v20", "V20")
 
-    # getVLV=20 is open, so is_closed should be False
-    assert valve.is_closed is False
+    # No getAB -> is_closed is None; getVLV only drives is_opening/is_closing
+    assert valve.is_closed is None
     assert valve.is_opening is False
 
 
 async def test_is_closed_with_getvlv_21_opening(hass: HomeAssistant) -> None:
-    """Test is_closed returns False for getVLV=21 (opening)."""
+    """Test is_closed returns None for getVLV=21 (opening) without getAB."""
     data = {"devices": [{"id": "v21", "name": "V21", "status": {"getVLV": "21"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v21", "V21")
 
-    # getVLV=21 is opening, not closed, so is_closed should be False
-    assert valve.is_closed is False
+    # No getAB -> is_closed is None; getVLV only drives is_opening
+    assert valve.is_closed is None
     assert valve.is_opening is True
 
 
 async def test_shadow_ab_false_overrides_vlv(hass: HomeAssistant) -> None:
-    """Test that getAB=1 (open) overrides getVLV=10 (closed) when getVLV is absent."""
+    """Test that getAB=1 (open) correctly reflects open state regardless of getVLV."""
     data = {"devices": [{"id": "cf", "name": "CF", "status": {"getVLV": "10", "getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "cf", "CF")
 
-    # getVLV=10 -> closed (authoritative)
-    assert valve.is_closed is True
+    # getAB=1 means open (is_closed reads only getAB)
+    assert valve.is_closed is False
 
-    # Without getVLV, getAB=1 means open
+    # Without getVLV, getAB=1 still means open
     coordinator.async_set_updated_data(
         {"devices": [{"id": "cf", "name": "CF", "status": {"getAB": "1"}}]}
     )
