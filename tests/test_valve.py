@@ -1,7 +1,6 @@
 """Tests for valve platform."""
 from __future__ import annotations
 
-import time
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -227,27 +226,6 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
     assert valve.icon == "mdi:valve"
 
 
-async def test_cached_ab_overrides_vlv_and_expires(hass: HomeAssistant) -> None:
-    data = {
-        "devices": [
-            {"id": "dev2", "name": "Dev2", "status": {"getVLV": "20"}}
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    valve = SyrConnectValve(coordinator, "dev2", "Dev2")
-
-    # By default getVLV=20 -> open
-    assert valve.is_closed is False
-
-    # Inject cached getAB=2 (closed) with future expiry (store boolean True)
-    valve._cached_ab = {"value": True, "expires": time.time() + 5}
-    assert valve.is_closed is True
-
-    # Expire the cache and confirm we return to authoritative VLV
-    valve._cached_ab["expires"] = time.time() - 1
-    assert valve.is_closed is False
-
-
 async def test_fallback_to_getab_and_invalid_values(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "x", "name": "X", "status": {"getAB": "2"}}]}
     coordinator = _build_coordinator(hass, data)
@@ -288,20 +266,17 @@ async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None
 
     await valve.async_open()
     coordinator.async_set_device_value.assert_awaited_with("op", "setAB", 1)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] is False
 
     # Test close
     coordinator.async_set_device_value.reset_mock()
     await valve.async_close()
     coordinator.async_set_device_value.assert_awaited_with("op", "setAB", 2)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] is True
 
     # Simulate failure
     async def _fail(*args, **kwargs):
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
-    valve._cached_ab = None
     try:
         await valve.async_open()
         raise AssertionError("Expected HomeAssistantError")
@@ -369,16 +344,9 @@ async def test_async_open_handles_write_state_exception(hass: HomeAssistant) -> 
     coordinator.async_set_device_value = AsyncMock()
     valve = SyrConnectValve(coordinator, "w1", "W1")
 
-    # Make async_write_ha_state raise; async_open should swallow it
-    def _fail():
-        raise RuntimeError("ui fail")
-
-    valve.async_write_ha_state = _fail
-
     await valve.async_open()
-    # Command sent and cache set despite UI failure
+    # Command was sent successfully
     coordinator.async_set_device_value.assert_awaited_with("w1", "setAB", 1)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] is False
 
 
 async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -> None:
@@ -644,19 +612,19 @@ async def test_is_closed_with_getvlv_21_opening(hass: HomeAssistant) -> None:
     assert valve.is_opening is True
 
 
-async def test_cached_ab_false_value(hass: HomeAssistant) -> None:
-    """Test cached_ab with False value (open) overrides getVLV."""
-    data = {"devices": [{"id": "cf", "name": "CF", "status": {"getVLV": "10"}}]}
+async def test_shadow_ab_false_overrides_vlv(hass: HomeAssistant) -> None:
+    """Test that getAB=1 (open) overrides getVLV=10 (closed) when getVLV is absent."""
+    data = {"devices": [{"id": "cf", "name": "CF", "status": {"getVLV": "10", "getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "cf", "CF")
 
-    # Initially getVLV=10 -> closed
+    # getVLV=10 -> closed (authoritative)
     assert valve.is_closed is True
 
-    # Set cached_ab to False (open) with future expiry
-    valve._cached_ab = {"value": False, "expires": time.time() + 10}
-
-    # Should use cached value False (open)
+    # Without getVLV, getAB=1 means open
+    coordinator.async_set_updated_data(
+        {"devices": [{"id": "cf", "name": "CF", "status": {"getAB": "1"}}]}
+    )
     assert valve.is_closed is False
 
 
@@ -705,13 +673,12 @@ async def test_async_close_handles_write_state_exception(hass: HomeAssistant) ->
     valve.async_write_ha_state = _fail
 
     await valve.async_close()
-    # Command sent and cache set despite UI failure
+    # Command sent successfully
     coordinator.async_set_device_value.assert_awaited_with("w2", "setAB", 2)
-    assert valve._cached_ab is not None and valve._cached_ab["value"] is True
 
 
-async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
-    """Test async_close clears optimistic cache on command failure."""
+async def test_async_close_raises_on_failure(hass: HomeAssistant) -> None:
+    """Test async_close raises HomeAssistantError on command failure."""
     data = {"devices": [{"id": "cf1", "name": "CF1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
 
@@ -723,19 +690,15 @@ async def test_async_close_clears_cache_on_failure(hass: HomeAssistant) -> None:
     valve = SyrConnectValve(coordinator, "cf1", "CF1")
     valve.async_write_ha_state = Mock()
 
-    # Set initial cache
-    valve._cached_ab = {"value": True, "expires": time.time() + 10}
-
     try:
         await valve.async_close()
         raise AssertionError("Expected HomeAssistantError")
     except HomeAssistantError:
-        # Cache should be cleared on failure
-        assert valve._cached_ab is None
+        pass  # expected
 
 
-async def test_async_open_clears_cache_on_failure(hass: HomeAssistant) -> None:
-    """Test async_open clears optimistic cache on command failure."""
+async def test_async_open_raises_on_failure(hass: HomeAssistant) -> None:
+    """Test async_open raises HomeAssistantError on command failure."""
     data = {"devices": [{"id": "of1", "name": "OF1", "status": {"getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
 
@@ -747,15 +710,11 @@ async def test_async_open_clears_cache_on_failure(hass: HomeAssistant) -> None:
     valve = SyrConnectValve(coordinator, "of1", "OF1")
     valve.async_write_ha_state = Mock()
 
-    # Set initial cache
-    valve._cached_ab = {"value": False, "expires": time.time() + 10}
-
     try:
         await valve.async_open()
         raise AssertionError("Expected HomeAssistantError")
     except HomeAssistantError:
-        # Cache should be cleared on failure
-        assert valve._cached_ab is None
+        pass  # expected
 
 
 async def test_async_open_second_write_state_exception_on_failure(hass: HomeAssistant) -> None:
@@ -780,8 +739,7 @@ async def test_async_open_second_write_state_exception_on_failure(hass: HomeAssi
         await valve.async_open()
         raise AssertionError("Expected HomeAssistantError")
     except HomeAssistantError:
-        # Should still raise HomeAssistantError despite write_state failure
-        assert valve._cached_ab is None
+        pass  # expected
 
 
 async def test_async_close_second_write_state_exception_on_failure(hass: HomeAssistant) -> None:
@@ -806,8 +764,7 @@ async def test_async_close_second_write_state_exception_on_failure(hass: HomeAss
         await valve.async_close()
         raise AssertionError("Expected HomeAssistantError")
     except HomeAssistantError:
-        # Should still raise HomeAssistantError despite write_state failure
-        assert valve._cached_ab is None
+        pass  # expected
 
 
 async def test_is_closed_getvlv_empty_string(hass: HomeAssistant) -> None:
@@ -1250,9 +1207,6 @@ async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
     with pytest.raises(HomeAssistantError):
         await valve.async_open()
 
-    # Cache must be cleared on failure
-    assert valve._cached_ab is None
-
 
 # ---------------------------------------------------------------------------
 # Additional coordinator.async_open_valve branch coverage
@@ -1354,29 +1308,3 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
     calls = coordinator.api.set_device_status.await_args_list
     assert calls[0].args == ("dev_z", [("setALA", "FF")])
     assert calls[1].args == ("dev_z", [("setAB", 1)])
-
-
-async def test_async_open_valve_cancels_pending_refresh_task(hass: HomeAssistant) -> None:
-    """An existing pending refresh task is cancelled before scheduling a new one."""
-    data = {
-        "devices": [
-            {
-                "id": "dev_c",
-                "name": "DevC",
-                "project_id": "p1",
-                "status": {"getAB": "2", "getALA": "A5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.api.set_device_status = AsyncMock(return_value=True)
-    coordinator.hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
-
-    # Plant a pending (not-done) task
-    pending_task = MagicMock()
-    pending_task.done.return_value = False
-    coordinator._pending_refresh_task = pending_task
-
-    await coordinator.async_open_valve("dev_c", "setAB", 1)
-
-    pending_task.cancel.assert_called_once()

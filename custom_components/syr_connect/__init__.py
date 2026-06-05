@@ -176,14 +176,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        coordinator = getattr(entry, "runtime_data", None)
-        try:
-            task = getattr(coordinator, "_pending_refresh_task", None)
-            if coordinator and task and not task.done():
-                task.cancel()
-        except Exception:
-            _LOGGER.debug("Failed to cancel pending coordinator refresh task during unload", exc_info=True)
-
         _LOGGER.info("SYR Connect integration unloaded successfully")
     else:
         _LOGGER.warning("Failed to unload SYR Connect integration")

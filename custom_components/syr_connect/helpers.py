@@ -38,17 +38,17 @@ _LOGGER = logging.getLogger(__name__)
 def is_value_true(val: object) -> bool:
     """Normalize a heterogeneous API flag value to a Python bool.
 
-    SYR devices report binary activation flags (e.g. ``getPAx``) in varying
-    formats depending on firmware version: native ``bool``, ``int``/``float``,
-    or strings such as ``"1"`` or ``"true"``. This function provides a single,
+    SYR devices report binary activation flags (e.g. getPAx) in varying
+    formats depending on firmware version: native bool, int/float,
+    or strings such as "1" or "true". This function provides a single,
     consistent conversion so callers do not need to handle each format separately.
 
     Args:
         val: Raw value received from the device API.
 
     Returns:
-        ``True`` if *val* represents a truthy/active state, ``False`` otherwise.
-        Unknown or unconvertible values always return ``False``.
+        True if val represents a truthy/active state, False otherwise.
+        Unknown or unconvertible values always return False.
     """
     if isinstance(val, bool):
         return val
@@ -202,19 +202,19 @@ def registry_cleanup(
     """Remove previously-registered entities from the entity registry.
 
     Scans all registered entities for the given domain/devices and removes
-    any whose key is NOT in ``allowed_keys``. If ``allowed_keys`` is None,
+    any whose key is NOT in allowed_keys. If allowed_keys is None,
     nothing is removed.
 
     For sensor entities, also removes entries for keys that are conditionally
-    hidden (i.e. listed in ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_*``) when
-    ``is_sensor_visible`` returns ``False`` for the current device status. This
+    hidden (i.e. listed in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_*) when
+    is_sensor_visible returns False for the current device status. This
     covers keys that are absent from the device status entirely as well as keys
     that are present with an empty or zero value.
 
     Args:
         hass: Home Assistant instance.
-        coordinator_data: Coordinator ``.data`` mapping containing ``devices``.
-        domain: Entity domain string (e.g. ``"sensor"``).
+        coordinator_data: Coordinator .data mapping containing devices.
+        domain: Entity domain string (e.g. "sensor").
         allowed_keys: Set of permitted sensor keys. Entities whose key is not
             in this set will be removed from the entity registry.
     """
@@ -435,7 +435,7 @@ def get_sensor_lng_value(value: str | int | float) -> str | int | float | None:
     """Extract the leading integer from a getLNG value.
 
     Some devices append a human-readable annotation to the numeric value,
-    e.g. ``"0 (0=Deutsch 1=English)"`` instead of plain ``"0"``.
+    e.g. "0 (0=Deutsch 1=English)" instead of plain "0".
     This function returns only the leading integer token so it can be matched
     against the translation state map.
 
@@ -526,8 +526,8 @@ def get_sensor_net_value(value: str | int | float) -> float | None:
 def is_valid_host(host: str) -> bool:
     """Return True if *host* is a valid IPv4, IPv6 or hostname (no port).
 
-    - Accepts IPv4 and IPv6 addresses using the stdlib ``ipaddress`` module
-    - Rejects explicit ``host:port`` strings
+    - Accepts IPv4 and IPv6 addresses using the stdlib ipaddress module
+    - Rejects explicit host:port strings
     - Allows DNS hostnames that meet length and label rules
 
     This function intentionally returns a boolean so callers can handle
@@ -665,7 +665,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     1. If `getIWH` exists and is numeric, return it (int if whole).
     2. If `getIWH` missing/empty but `getCND` exists and is numeric,
        default `getWHU` to 0 when missing and compute `getIWH = getCND / 33`.
-    3. Return ``None`` when values are missing or unparseable.
+    3. Return None when values are missing or unparseable.
     """
     if not status:
         return None
@@ -768,7 +768,12 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
         - False if valve is open
         - None if unknown/unparseable
 
-    Devices may report `getAB` in multiple formats:
+    The value stored under getAB may be a plain raw value from the API
+    (string, int, bool). The device itself signals a pending change via the
+    "s" attribute in the XML response, which the ResponseParser already
+    writes as the current value.
+
+    Devices may report the raw value in multiple formats:
     - Numeric: 1 (open), 2 (closed) - Used by older Safe-T devices
     - Boolean strings: "true" (closed), "false" (open) - Used by newer Trio devices
 
@@ -782,6 +787,14 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
     if val is None or val == "":
         return None
 
+    return _parse_ab_raw(val)
+
+
+def _parse_ab_raw(val: Any) -> bool | None:
+    """Parse a single raw getAB value (string/int/bool) to bool | None.
+
+    Returns True (closed), False (open), or None (unknown).
+    """
     # Boolean values (native JSON booleans)
     if isinstance(val, bool):
         # In JSON API boolean True means closed, False means open
@@ -1013,28 +1026,28 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     values that may be strings, numbers, booleans or None.
 
     Rules (applied in order):
-    - Group-controlled keys: keys matching ``getPVx,getPTx,getPFx,getPNx,``
-        ``getPMx,getPWx,getPBx,getPRx`` are only visible when the device's
-        corresponding ``getPAx`` flag is truthy (``1``, ``true``, "on", etc.).
-    - Special-case salt counters (``getCS1/2/3``): shown if the associated
-        ``getSVx`` value is non-zero; otherwise they follow the normal empty
+    - Group-controlled keys: keys matching getPVx, getPTx, getPFx, getPNx,
+        getPMx, getPWx, getPBx, getPRx are only visible when the device's
+        corresponding getPAx flag is truthy (1, "true", "on", etc.).
+    - Special-case salt counters (getCS1/2/3): shown if the associated
+        getSVx value is non-zero; otherwise they follow the normal empty
         value rules (hide when 0, "0", empty or None).
     - Empty-string exclusions: keys listed in
-        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING`` are hidden when the
+        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING are hidden when the
         reported value is None or a whitespace-only string.
     - Empty-value exclusions: keys listed in
-        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE`` are hidden when the
+        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE are hidden when the
         reported value is numeric zero (0), the string "0", an empty string,
         or None.
     - Empty-IP exclusions: keys listed in
-        ``_SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IP`` are hidden when the
+        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IP are hidden when the
         reported value is None, an empty/whitespace string, or the placeholder
-        IP ``"0.0.0.0"``.
+        IP "0.0.0.0".
 
     Args:
             status: The full flattened device status mapping (used for cross-key
-                    checks such as ``getPAx`` and ``getSVx``).
-            key: The status key being considered (e.g. ``getWIP``, ``getPV1``).
+                    checks such as getPAx and getSVx).
+            key: The status key being considered (e.g. getWIP, getPV1).
             value: The raw value reported by the device for this key.
 
     Returns:

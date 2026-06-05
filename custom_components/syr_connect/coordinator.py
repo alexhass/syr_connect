@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
-import time
 from datetime import timedelta
 from typing import Any
 
@@ -38,15 +37,6 @@ from .models import MODEL_SIGNATURES, detect_model
 from .repairs import create_issue, delete_issue
 
 _LOGGER = logging.getLogger(__name__)
-
-# How long to suppress incoming API values for getAB after a set command.
-# Must be long enough for the valve motor to physically move (~30-60 s).
-_SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS = 60
-
-# How long to wait before re-polling after a set command.
-# Should be >= OPTIMISTIC_UPDATE_IGNORE_SECONDS so the ignore window
-# has expired before the authoritative data arrives.
-_SYR_CONNECT_DELAYED_REFRESH_SECONDS = 60
 
 
 class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
@@ -136,15 +126,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session
-        # Tracks valve state (getAB) ignore windows: {(device_id, "getAB") -> expire_timestamp}.
-        # SYR devices can take up to ~60 s to reflect a valve open/close command, so we suppress
-        # incoming API values for getAB during that window to avoid immediately reverting the
-        # optimistic UI state. All other keys are intentionally NOT protected and will be
-        # overwritten by the next regular poll cycle.
-        self._ignore_until: dict[tuple[str, str], float] = {}
-        # Task reference for the scheduled delayed refresh, so it can be
-        # cancelled when the entry is unloaded before the delay expires.
-        self._pending_refresh_task: asyncio.Task[None] | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
@@ -299,36 +280,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Delete offline issue if device is back online
             delete_issue(self.hass, f"device_offline_{device['id']}")
 
-            # For getAB (valve state): if the ignore window is still active, restore
-            # the previously-stored optimistic value so the entity does not revert
-            # to the stale API state before the device has processed the command.
-            # All other keys are not in _ignore_until and pass through unchanged.
-            try:
-                if getattr(self, "data", None) and isinstance(self.data, dict):
-                    prev_devices = {d.get("id"): d for d in self.data.get("devices", []) if isinstance(d, dict)}
-                else:
-                    prev_devices = {}
-
-                dev_id_str = str(device.get("id") or "")
-                now = time.time()
-                for key in list(status.keys()):
-                    ignore_key = (dev_id_str, key)
-                    expire = self._ignore_until.get(ignore_key)
-                    if expire is None:
-                        continue
-                    if now < expire:
-                        prev = prev_devices.get(device.get("id"))
-                        if prev and isinstance(prev.get("status"), dict) and key in prev["status"]:
-                            status[key] = prev["status"][key]
-                        else:
-                            # Remove the key so we don't overwrite with possibly stale API value
-                            status.pop(key, None)
-                    else:
-                        # Clean up expired entry
-                        self._ignore_until.pop(ignore_key, None)
-            except (KeyError, AttributeError, TypeError) as err:  # pragma: no cover - defensive
-                _LOGGER.warning("Failed to apply ignore rules to device status for %s: %s", device.get("id"), err)
-
             return device
 
         except SyrConnectAuthError:
@@ -409,19 +360,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             break
                     self.async_set_updated_data(new_data)
 
-                    # For valve commands (getAB) only: suppress incoming API values for
-                    # 60 s because SYR devices take time to reflect the new state.
-                    # All other keys are intentionally not protected — they will be
-                    # overwritten by the next poll, which is the desired behaviour.
-                    try:
-                        # Only set ignore window when we have a valid get_key
-                        if get_key and get_key.lower() == "getab":
-                            self._ignore_until[(device_id, get_key)] = (
-                                time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
-                            )
-                    except (KeyError, TypeError) as err:
-                        _LOGGER.debug("Failed to set ignore_until for getab: %s", err)
-
         except (KeyError, AttributeError, TypeError, ValueError) as err:  # pragma: no cover - defensive
             _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
@@ -432,23 +370,13 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # properly by the calling entity (select, button, etc.)
             _LOGGER.debug("Failed to set device %s via API, re-raising to caller", device_id)
             raise
-        else:
-            # Only schedule a delayed refresh if the API call succeeded.
-            # This avoids a phantom refresh log/error when the set operation
-            # raised an exception and was handled by the caller.
-            try:
-                if self._pending_refresh_task and not self._pending_refresh_task.done():
-                    self._pending_refresh_task.cancel()
-                self._pending_refresh_task = self.hass.async_create_task(self._delayed_refresh())
-            except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception("Failed to schedule delayed coordinator refresh after setting device value")
 
     async def async_clear_device_alarm(self, device_id: str, field: str = "ala") -> None:
         """Clear active alarm via the /clr/{field} endpoint (JSON API) or clr command (XML API).
 
         Args:
             device_id: The device ID (serial number)
-            field: Alarm field to clear — ``"ala"`` (default) or ``"alm"``
+            field: Alarm field to clear — "ala" (default) or "alm"
 
         Raises:
             HomeAssistantError: If the request fails
@@ -459,13 +387,6 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         else:
             await self.api.set_device_status(device_id, [(f"clr{field.upper()}", "")])
             _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
-        try:
-            if self._pending_refresh_task and not self._pending_refresh_task.done():
-                self._pending_refresh_task.cancel()
-            self._pending_refresh_task = self.hass.async_create_task(self._delayed_refresh())
-        except Exception:  # pragma: no cover - defensive
-            _LOGGER.exception("Failed to schedule delayed refresh after clear alarm")
-
     async def async_open_valve(self, device_id: str, set_key: str, set_val: Any) -> None:
         """Open the valve, prepending an alarm-clear command when an alarm is active.
 
@@ -481,12 +402,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         If no alarm is detected, or alarm detection fails for any reason, the
         open command is issued without any clear prefix — identical behaviour
-        to a direct ``async_set_device_value`` call.
+        to a direct "async_set_device_value" call.
 
         Args:
             device_id: The device ID (serial number)
-            set_key: Valve set command (e.g. ``"setAB"``)
-            set_val: Value to send (e.g. ``1``)
+            set_key: Valve set command (e.g. "setAB")
+            set_val: Value to send (e.g. "1")
 
         Raises:
             HomeAssistantError: If the API call fails
@@ -548,14 +469,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 new_data = copy.deepcopy(self.data)
                 for dev in new_data.get("devices", []):
                     if dev.get("id") == device_id:
-                        dev.setdefault("status", {})[get_key_ab] = str(set_val)
+                        status = dev.setdefault("status", {})
+                        status[get_key_ab] = str(set_val)
                         dev["available"] = True
                         break
                 self.async_set_updated_data(new_data)
-                if get_key_ab.lower() == "getab":
-                    self._ignore_until[(device_id, get_key_ab)] = (
-                        time.time() + _SYR_CONNECT_OPTIMISTIC_UPDATE_IGNORE_SECONDS
-                    )
         except (KeyError, AttributeError, TypeError, ValueError) as err:
             _LOGGER.warning(
                 "Valve open with alarm clear: failed to apply optimistic update for %s: %s",
@@ -595,38 +513,3 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 "Valve open with alarm clear failed for device %s, re-raising", device_id
             )
             raise
-        else:
-            try:
-                if self._pending_refresh_task and not self._pending_refresh_task.done():
-                    self._pending_refresh_task.cancel()
-                self._pending_refresh_task = self.hass.async_create_task(
-                    self._delayed_refresh()
-                )
-            except Exception:  # pragma: no cover - defensive
-                _LOGGER.exception(
-                    "Failed to schedule delayed refresh after valve open with alarm clear"
-                )
-
-    async def _delayed_refresh(self, delay: int = _SYR_CONNECT_DELAYED_REFRESH_SECONDS) -> None:
-        """Wait `delay` seconds then refresh coordinator data.
-
-        This gives the SYR API time to process changes so the subsequent
-        refresh will return the authoritative, updated device status.
-
-        This delay does not change dynamically based on the API type or command since
-        valve motors take time to close the valve. SYR does not provide any feedback
-        mechanism or status for in-progress commands, so we have no way to know when
-        the device has finished processing the command.
-
-        By waiting a full 60 seconds, we can ensure that even slow-processing
-        commands have time to complete before we refresh and fetch the new state
-        from the API.
-        """
-        try:
-            await asyncio.sleep(delay)
-            await self.async_refresh()
-        except asyncio.CancelledError:
-            _LOGGER.debug("Delayed refresh cancelled (entry unloaded)")
-            raise  # propagate cleanly; this is an intentional cancellation
-        except Exception:
-            _LOGGER.exception("Delayed refresh failed")

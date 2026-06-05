@@ -1,6 +1,5 @@
 """Test the SYR Connect coordinator."""
 import asyncio
-import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -905,56 +904,6 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         mock_api.set_device_status.assert_called_once_with("device1", [("setSIR", 0)])
 
 
-async def test_pending_refresh_task_cancelled_on_set(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
-    """Ensure an existing pending refresh task is cancelled when scheduling a new one."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1", "status": {}}])
-        mock_api.get_device_status = AsyncMock(return_value={})
-        mock_api.set_device_status = AsyncMock(return_value=True)
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-
-        # Populate coordinator data so async_set_device_value does not raise
-        coordinator.data = {"devices": [{"id": "device1", "dclg": "dclg1", "status": {}}], "projects": []}
-        coordinator.api = mock_api
-
-        # Create a fake pending task that is not done and should be cancelled
-        fake_pending = MagicMock()
-        fake_pending.done.return_value = False
-        fake_pending.cancel = MagicMock()
-        coordinator._pending_refresh_task = fake_pending
-
-        new_task = MagicMock()
-
-        def _close_and_return(coro):
-            # Ensure the coroutine is closed to avoid "coroutine was never awaited" warnings
-            _consume_coro_return_task(coro)
-            return new_task
-
-        with patch.object(hass, "async_create_task", side_effect=_close_and_return):
-            with patch.object(coordinator, "async_set_updated_data"):
-                await coordinator.async_set_device_value("device1", "setSIR", 0)
-
-        # The previous pending task should have been cancelled and replaced
-        fake_pending.cancel.assert_called_once()
-        assert coordinator._pending_refresh_task is new_task
-
-
 async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exception from gather for device tasks."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
@@ -986,89 +935,6 @@ async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_i
         # Should have no devices
         assert coordinator.data is not None
         assert len(coordinator.data["devices"]) == 0
-
-
-async def test_coordinator_preserve_optimistic_getab(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
-    """Test that optimistic `getAB` updates are preserved for the ignore window."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1"}
-        ])
-        # Initial status shows valve open (1)
-        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-        mock_api.set_device_status = AsyncMock(return_value=True)
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-        await coordinator.async_config_entry_first_refresh()
-
-        # Ensure initial API value
-        assert coordinator.data is not None
-        assert coordinator.data["devices"][0]["status"]["getAB"] == "1"
-
-        # Set AB to 2 (closed) optimistically
-        with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
-            await coordinator.async_set_device_value("device1", "setAB", 2)
-
-
-    async def test_fetch_device_status_handles_internal_type_error_and_creates_issue(
-        hass: HomeAssistant, setup_in_progress_config_entry
-    ) -> None:
-        """If internal ignore dict.get raises TypeError, fetch should mark device unavailable and create an issue."""
-        with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-             patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
-            mock_api = MagicMock()
-            mock_api.session_data = "sess"
-            mock_api.projects = [{"id": "p1", "name": "P1"}]
-            mock_api.is_session_valid = MagicMock(return_value=True)
-            mock_api.get_device_status = AsyncMock(return_value={"getPRS": "50"})
-            mock_api_class.return_value = mock_api
-
-            config_data = {CONF_USERNAME: "u", CONF_PASSWORD: "p"}
-            coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
-            # Provide previous data so the code path attempts to consult prev_devices
-            coord.data = {"devices": [{"id": "dev1", "status": {"getPRS": "40"}}]}
-
-            # Make _ignore_until.get raise TypeError to trigger the defensive except
-            bad = MagicMock()
-            bad.get.side_effect = TypeError("boom")
-            coord._ignore_until = bad
-
-            device = {"id": "dev1", "dclg": "dclg1"}
-
-            result = await coord._fetch_device_status(device)
-
-            # Should have marked device unavailable and created an issue
-            assert isinstance(result, dict)
-            assert result.get("available") is False
-            mock_create_issue.assert_called()
-
-        # Ignore window should be set
-        key = ("device1", "getAB")
-        assert key in coordinator._ignore_until
-        assert coordinator._ignore_until[key] - time.time() > 50
-
-        # Now simulate API still reporting old value (1)
-        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-        # Run refresh which should preserve optimistic value due to ignore window
-        await coordinator.async_refresh()
-
-        assert coordinator.data is not None
-        assert coordinator.data["devices"][0]["status"]["getAB"] == "2"
 
 
 async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -1103,102 +969,8 @@ async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant
         assert "projects" in coordinator.data
 
 
-async def test_ignore_rule_removes_key_when_no_previous_status(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
-    """If an ignore rule exists but no previous status is present, the key should be removed from API status."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        # API reports getAB but we have no previous stored status
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "deviceX", "dclg": "dclgX"}])
-        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-
-        # Pretend we have a recent ignore rule for deviceX:getAB but no previous data
-        coordinator._ignore_until[("deviceX", "getAB")] = time.time() + 60
-
-        # Call internal fetch to exercise ignore logic
-        device = {"id": "deviceX", "dclg": "dclgX"}
-        result = await coordinator._fetch_device_status(device)
-
-        # The returned status should NOT contain getAB because no previous status existed
-        assert isinstance(result, dict)
-        assert result.get("status", {}) == {}
-
-
-async def test_fetch_device_status_preserves_prev_value_when_ignore_active(hass: HomeAssistant) -> None:
-    """When an ignore window exists and previous device status has the key, keep prev value."""
-    mock_api = MagicMock()
-    mock_api.session_data = "sess"
-    mock_api.projects = [{"id": "p1", "name": "P1"}]
-    mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-
-    config_data = {CONF_USERNAME: "u", CONF_PASSWORD: "p"}
-    coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
-    # Inject a fake api that returns the API status
-    coord.api = mock_api
-
-    # Provide previous data so the code path uses it
-    coord.data = {"devices": [{"id": "dev1", "status": {"getAB": "2"}}]}
-
-    # Set the ignore window for the device:key to be in the future
-    coord._ignore_until[("dev1", "getAB")] = time.time() + 60
-
-    device = {"id": "dev1", "dclg": "dclg1"}
-
-    result = await coord._fetch_device_status(device)
-
-    assert isinstance(result, dict)
-    assert result.get("status", {}).get("getAB") == "2"
-
-
-async def test_fetch_device_status_ignore_key_pop_when_prev_missing(hass: HomeAssistant) -> None:
-    """If an ignore rule is present but the previous device has no key, it should be removed from status."""
-    from unittest.mock import patch
-
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "p1", "name": "P1"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        # API reports getAB initially
-        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-        mock_api_class.return_value = mock_api
-
-        config_data = {"username": "u", "password": "p"}
-        coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
-
-        # Provide previous data without the getAB key
-        coord.data = {"devices": [{"id": "dev1", "status": {}}]}
-
-        # Set ignore window for device:getAB so now < expire branch executes
-        coord._ignore_until[("dev1", "getAB")] = time.time() + 60
-
-        device = {"id": "dev1", "dclg": "dclg1"}
-
-        result = await coord._fetch_device_status(device)
-
-        # getAB should have been removed from returned status
-        assert isinstance(result, dict)
-        assert "status" in result
-        assert "getAB" not in result["status"]
-
-
 async def test_fetch_device_status_no_ignore_key_keeps_status(hass: HomeAssistant) -> None:
-    """If no ignore rule exists for a key, the API value should pass through unchanged."""
+    """Non-getAB API values always pass through unchanged on each poll."""
     from unittest.mock import patch
 
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
@@ -1212,96 +984,12 @@ async def test_fetch_device_status_no_ignore_key_keeps_status(hass: HomeAssistan
         config_data = {"username": "u", "password": "p"}
         coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
-        # No previous ignore rules set
-        coord._ignore_until = {}
-
         device = {"id": "dev1", "dclg": "dclg1"}
 
         result = await coord._fetch_device_status(device)
 
         assert isinstance(result, dict)
         assert result.get("status", {}).get("getPRS") == "75"
-
-
-async def test_ignore_rule_expires_and_is_removed(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
-    """Expired ignore rules should be cleaned up and API values used."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "devY", "dclg": "dclgY"}])
-        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-
-        # Set an ignore entry that already expired
-        coordinator._ignore_until[("devY", "getAB")] = time.time() - 1
-
-        device = {"id": "devY", "dclg": "dclgY"}
-        result = await coordinator._fetch_device_status(device)
-
-        # Expired entry should be removed and status preserved
-        assert ("devY", "getAB") not in coordinator._ignore_until
-        assert isinstance(result, dict)
-        assert result.get("status", {}).get("getAB") == "1"
-
-
-async def test_delayed_refresh_calls_async_refresh(hass: HomeAssistant) -> None:
-    """Ensure _delayed_refresh awaits and calls async_refresh."""
-    from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-
-    config_data = {
-        CONF_USERNAME: "test@example.com",
-        CONF_PASSWORD: "password",
-    }
-    coordinator = SyrConnectDataUpdateCoordinator(
-        hass,
-        MagicMock(),
-        config_data,
-        60,
-    )
-
-    coordinator.async_refresh = AsyncMock()
-    # Call with zero delay to avoid waiting
-    await coordinator._delayed_refresh(delay=0)
-    coordinator.async_refresh.assert_awaited()
-
-
-async def test_delayed_refresh_cancel_propagates(hass: HomeAssistant) -> None:
-    """Ensure cancelling the delayed refresh raises CancelledError and propagates."""
-    config_data = {
-        CONF_USERNAME: "test@example.com",
-        CONF_PASSWORD: "password",
-    }
-    coordinator = SyrConnectDataUpdateCoordinator(
-        hass,
-        MagicMock(),
-        config_data,
-        60,
-    )
-
-    # Start the delayed refresh with a long delay and then cancel it
-    task = asyncio.create_task(coordinator._delayed_refresh(delay=60))
-    # Give the task a chance to start and enter sleep
-    await asyncio.sleep(0)
-    task.cancel()
-
-    import pytest
-
-    with pytest.raises(asyncio.CancelledError):
-        await task
 
 
 async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -1476,30 +1164,6 @@ async def test_coordinator_init_defaults_to_xml_api(hass: HomeAssistant) -> None
         assert coordinator._username == "test@example.com"
 
 
-async def test_delayed_refresh_exception_handling(hass: HomeAssistant) -> None:
-    """Test _delayed_refresh handles exceptions gracefully."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-
-        # Mock async_refresh to raise an exception
-        with patch.object(coordinator, "async_refresh", side_effect=Exception("Refresh failed")):
-            # _delayed_refresh should catch the exception and not re-raise
-            await coordinator._delayed_refresh(delay=0)
-            # Test passes if no exception is raised
-
-
 async def test_coordinator_init_default_scan_interval(hass: HomeAssistant) -> None:
     """Test coordinator uses default scan interval when none is provided (line 68)."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
@@ -1568,43 +1232,6 @@ async def test_coordinator_device_status_result_is_exception(
         # No devices should appear since the only device fetch raised
         assert coordinator.data is not None
         assert coordinator.data["devices"] == []
-
-
-async def test_coordinator_set_value_getab_ignore_until_type_error(
-    hass: HomeAssistant, setup_in_progress_config_entry
-) -> None:
-    """Test ignore_until assignment TypeError is caught gracefully (lines 356-358)."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
-        mock_api.get_device_status = AsyncMock(return_value={"getAB": "1"})
-        mock_api.set_device_status = AsyncMock(return_value=True)
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-        await coordinator.async_config_entry_first_refresh()
-
-        # Replace _ignore_until with a mock whose __setitem__ raises TypeError
-        broken_dict: dict = MagicMock()
-        broken_dict.__setitem__ = MagicMock(side_effect=TypeError("unhashable type"))
-        coordinator._ignore_until = broken_dict
-
-        # Setting getAB triggers the ignore_until assignment; TypeError must be swallowed
-        with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
-            await coordinator.async_set_device_value("device1", "setAB", 2)
 
 
 async def test_fetch_device_status_iwh_compute_error_is_logged(
@@ -1716,7 +1343,7 @@ async def test_async_clear_device_alarm_xml_api_sends_clr_command(
 
 
 async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:
-    """async_clear_device_alarm succeeds with JSON API and schedules a delayed refresh."""
+    """async_clear_device_alarm succeeds with JSON API."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
         mock_xml_api_class.return_value = MagicMock()
 
@@ -1727,47 +1354,9 @@ async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) ->
         mock_api.request_json_data = AsyncMock(return_value=None)
         coordinator.api = mock_api
 
-        new_task = MagicMock()
-
-        def _close_and_return(coro):
-            _consume_coro_return_task(coro)
-            return new_task
-
-        with patch.object(hass, "async_create_task", side_effect=_close_and_return):
-            await coordinator.async_clear_device_alarm("device1")
+        await coordinator.async_clear_device_alarm("device1")
 
         mock_api.request_json_data.assert_called_once_with("clr/ala")
-        assert coordinator._pending_refresh_task is new_task
-
-
-async def test_async_clear_device_alarm_cancels_pending_task(hass: HomeAssistant) -> None:
-    """async_clear_device_alarm cancels an existing pending refresh task before scheduling a new one."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_xml_api_class:
-        mock_xml_api_class.return_value = MagicMock()
-
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
-        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
-
-        mock_api = MagicMock(spec=SyrConnectJsonAPI)
-        mock_api.request_json_data = AsyncMock(return_value=None)
-        coordinator.api = mock_api
-
-        fake_pending = MagicMock()
-        fake_pending.done.return_value = False
-        fake_pending.cancel = MagicMock()
-        coordinator._pending_refresh_task = fake_pending
-
-        new_task = MagicMock()
-
-        def _close_and_return(coro):
-            _consume_coro_return_task(coro)
-            return new_task
-
-        with patch.object(hass, "async_create_task", side_effect=_close_and_return):
-            await coordinator.async_clear_device_alarm("device1")
-
-        fake_pending.cancel.assert_called_once()
-        assert coordinator._pending_refresh_task is new_task
 
 
 async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -> None:
