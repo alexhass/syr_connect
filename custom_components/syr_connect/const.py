@@ -679,6 +679,7 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
     "getBUZ",   # Buzzer on/off
+    "sta",      # Device connectivity (virtual, always created)
 }
 
 # Known keys for the valve platform — used by registry_cleanup to remove stale entries.

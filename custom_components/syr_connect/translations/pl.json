@@ -68,6 +68,13 @@
                     "false": "Wyłączony",
                     "true": "Włączony"
                 }
+            },
+            "sta": {
+                "name": "Łączność urządzenia",
+                "state": {
+                    "false": "Rozłączony",
+                    "true": "Połączony"
+                }
             }
         },
         "button": {

@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
+    SyrConnectConnectivityBinarySensor,
     async_setup_entry,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -120,8 +121,9 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # getBUZ is in _SYR_CONNECT_SENSOR_BINARY and is not excluded — one entity expected.
-    assert len(entities) == 1
+    # getBUZ is in _SYR_CONNECT_SENSOR_BINARY and is not excluded — one binary sensor
+    # plus one connectivity sensor = 2 entities total.
+    assert len(entities) == 2
 
 
 async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
@@ -558,3 +560,150 @@ async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
 
     # Should have icon set from const
     assert sensor._attr_icon is not None
+
+
+# ---------------------------------------------------------------------------
+# SyrConnectConnectivityBinarySensor tests
+# ---------------------------------------------------------------------------
+
+def _build_connectivity_sensor(hass: HomeAssistant, data: dict, device_id: str = "device1") -> SyrConnectConnectivityBinarySensor:
+    coordinator = _build_coordinator(hass, data)
+    return SyrConnectConnectivityBinarySensor(coordinator, device_id, "Device 1", "project1")
+
+
+async def test_connectivity_sensor_is_always_available(hass: HomeAssistant) -> None:
+    """Connectivity sensor must always be available regardless of coordinator state."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.available is True
+
+
+async def test_connectivity_sensor_available_when_coordinator_fails(hass: HomeAssistant) -> None:
+    """Connectivity sensor stays available even when coordinator update fails."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    sensor = SyrConnectConnectivityBinarySensor(coordinator, "device1", "Device 1", "project1")
+    assert sensor.available is True
+
+
+async def test_connectivity_sensor_is_on_sta_missing(hass: HomeAssistant) -> None:
+    """is_on returns True when sta key is absent (assume online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is True
+
+
+async def test_connectivity_sensor_is_on_sta_zero(hass: HomeAssistant) -> None:
+    """is_on returns True when sta=0 (online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 0}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is True
+
+
+async def test_connectivity_sensor_is_on_sta_one(hass: HomeAssistant) -> None:
+    """is_on returns True when sta=1 (online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 1}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is True
+
+
+async def test_connectivity_sensor_is_off_sta_three(hass: HomeAssistant) -> None:
+    """is_on returns False when sta=3 (offline)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 3}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is False
+
+
+async def test_connectivity_sensor_is_off_sta_three_string(hass: HomeAssistant) -> None:
+    """is_on returns False when sta='3' as string (offline)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "3"}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is False
+
+
+async def test_connectivity_sensor_is_on_sta_nonnumeric(hass: HomeAssistant) -> None:
+    """is_on returns True for non-numeric sta value (assume online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "online"}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is True
+
+
+async def test_connectivity_sensor_is_on_sta_none(hass: HomeAssistant) -> None:
+    """is_on returns True when sta is None (assume online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": None}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is True
+
+
+async def test_connectivity_sensor_is_off_when_coordinator_fails(hass: HomeAssistant) -> None:
+    """is_on returns False when coordinator last update failed."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 0}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    sensor = SyrConnectConnectivityBinarySensor(coordinator, "device1", "Device 1", "project1")
+    assert sensor.is_on is False
+
+
+async def test_connectivity_sensor_is_off_when_no_data(hass: HomeAssistant) -> None:
+    """is_on returns False when coordinator has no data."""
+    coordinator = _build_coordinator(hass, {})
+    sensor = SyrConnectConnectivityBinarySensor(coordinator, "device1", "Device 1", "project1")
+    assert sensor.is_on is False
+
+
+async def test_connectivity_sensor_device_not_found(hass: HomeAssistant) -> None:
+    """is_on returns False when device is not in coordinator data."""
+    data = {"devices": [{"id": "other_device", "name": "Other", "project_id": "project1", "status": {}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor.is_on is False
+
+
+async def test_connectivity_sensor_entity_category(hass: HomeAssistant) -> None:
+    """Connectivity sensor must have DIAGNOSTIC entity category."""
+    from homeassistant.helpers.entity import EntityCategory
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor._attr_entity_category == EntityCategory.DIAGNOSTIC
+
+
+async def test_connectivity_sensor_unique_id(hass: HomeAssistant) -> None:
+    """Connectivity sensor unique_id is {device_id}_sta."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connectivity_sensor(hass, data)
+    assert sensor._attr_unique_id == "device1_sta"
+
+
+async def test_async_setup_entry_creates_connectivity_sensor(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+    """async_setup_entry creates a connectivity sensor for each device."""
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}},
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities = []
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    connectivity_sensors = [e for e in entities if isinstance(e, SyrConnectConnectivityBinarySensor)]
+    assert len(connectivity_sensors) == 1
+
+
+async def test_async_setup_entry_connectivity_sensor_per_device(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+    """async_setup_entry creates one connectivity sensor per device."""
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}},
+            {"id": "device2", "name": "Device 2", "project_id": "project1", "status": {}},
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities = []
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    connectivity_sensors = [e for e in entities if isinstance(e, SyrConnectConnectivityBinarySensor)]
+    assert len(connectivity_sensors) == 2

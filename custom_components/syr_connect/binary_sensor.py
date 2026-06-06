@@ -61,6 +61,16 @@ async def async_setup_entry(
         project_id = device['project_id']
         status = device.get('status', {})
 
+        # Always create a connectivity sensor per device
+        entities.append(
+            SyrConnectConnectivityBinarySensor(
+                coordinator,
+                device_id,
+                device_name,
+                project_id,
+            )
+        )
+
         # Create binary sensors for boolean status values
         for sensor_key, device_class in _SYR_CONNECT_SENSOR_BINARY.items():
             if sensor_key in status and sensor_key not in _SYR_CONNECT_SENSOR_EXCLUDED:
@@ -165,4 +175,56 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
             if device['id'] == self._device_id:
                 return device.get('available', True)
 
+        return True
+
+
+class SyrConnectConnectivityBinarySensor(CoordinatorEntity, BinarySensorEntity):
+    """Connectivity binary sensor for a SYR Connect device.
+
+    Always available so Home Assistant can show connected/disconnected state
+    even when the coordinator cannot reach the device.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_has_entity_name = True
+    _attr_translation_key = "sta"
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        project_id: str,
+    ) -> None:
+        """Initialize the connectivity binary sensor."""
+        super().__init__(coordinator)
+
+        self._device_id = device_id
+        self._device_name = device_name
+        self._project_id = project_id
+
+        self._attr_unique_id = f"{device_id}_sta"
+        self.entity_id = build_entity_id("binary_sensor", device_id, "sta")
+        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if the device is online (sta != 3)."""
+        if not self.coordinator.last_update_success:
+            return False
+        if not self.coordinator.data:
+            return False
+        for device in self.coordinator.data.get('devices', []):
+            if device['id'] == self._device_id:
+                sta = device.get('status', {}).get('sta')
+                try:
+                    return int(sta) != 3
+                except (TypeError, ValueError):
+                    return True
+        return False
+
+    @property
+    def available(self) -> bool:
+        """Always available so the connected/disconnected state is always shown."""
         return True

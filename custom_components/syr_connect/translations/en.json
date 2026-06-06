@@ -70,6 +70,13 @@
           "false": "Disabled",
           "true": "Enabled"
         }
+      },
+      "sta": {
+        "name": "Device connectivity",
+        "state": {
+          "false": "Disconnected",
+          "true": "Connected"
+        }
       }
     },
     "button": {

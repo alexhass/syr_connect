@@ -70,6 +70,13 @@
           "false": "Désactivé",
           "true": "Activé"
         }
+      },
+      "sta": {
+        "name": "Connectivité de l'appareil",
+        "state": {
+          "false": "Déconnecté",
+          "true": "Connecté"
+        }
       }
     },
     "button": {

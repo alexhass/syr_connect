@@ -70,6 +70,13 @@
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
+      },
+      "sta": {
+        "name": "Apparaatconnectiviteit",
+        "state": {
+          "false": "Verbroken",
+          "true": "Verbonden"
+        }
       }
     },
     "button": {
