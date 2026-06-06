@@ -8,7 +8,7 @@
       "reconfigure_successful": "Reconfiguration successful"
     },
     "error": {
-      "cannot_connect": "Unable to connect to SYR Connect. Please check your internet connection and try again.",
+      "cannot_connect": "Unable to connect to service. Please check your internet connection and try again.",
       "cannot_connect_local": "Unable to connect to local device. Please verify the device IP address is correct and the device is powered on and connected to your local network.",
       "host_invalid": "Invalid host. Enter a valid IP address or hostname (no spaces, no port number).",
       "host_no_port": "Host must not include a port number. Enter only the IP address or hostname.",
@@ -27,11 +27,11 @@
       "api_xml": {
         "data": {
           "password": "Password",
-          "service": "Cloud service",
+          "service": "Service",
           "username": "Username"
         },
-        "description": "Enter your SYR Connect App credentials for cloud access",
-        "title": "SYR Connect"
+        "description": "Enter your mobile app credentials for cloud access",
+        "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
         "data": {
@@ -46,14 +46,14 @@
           "host": "Hostname or IP address",
           "model": "Device model",
           "password": "Password",
-          "service": "Cloud service",
+          "service": "Service",
           "username": "Username"
         },
-        "description": "Update your SYR Connect settings.",
+        "description": "Update your settings.",
         "title": "Reconfigure SYR Connect"
       },
       "user": {
-        "description": "Choose how to connect to your SYR device:\n\n- **Cloud Access**: Use your SYR Connect App credentials to access all your devices via the SYR cloud service. Requires internet connection.\n\n- **Local Access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
+        "description": "Choose how to connect to your SYR device:\n\n- **Cloud Access**: Use your mobile app credentials to access all your devices via the SYR cloud service. Requires internet connection.\n\n- **Local Access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
         "menu_options": {
           "api_json": "Local Access",
           "api_xml": "Cloud Access"

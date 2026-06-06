@@ -8,7 +8,7 @@
       "reconfigure_successful": "Reconfiguração bem-sucedida"
     },
     "error": {
-      "cannot_connect": "Não foi possível conectar ao SYR Connect. Verifique sua conexão com a Internet e tente novamente.",
+      "cannot_connect": "Não foi possível conectar ao serviço. Verifique sua conexão com a Internet e tente novamente.",
       "cannot_connect_local": "Não é possível conectar ao dispositivo local. Por favor, verifique se o endereço IP está correto e se o dispositivo está ligado e conectado à sua rede local.",
       "host_invalid": "Host inválido. Insira um endereço IP ou nome de host válido (sem espaços nem número de porta).",
       "host_no_port": "O host não deve incluir um número de porta. Insira apenas o endereço IP ou o nome de host.",
@@ -27,11 +27,11 @@
       "api_xml": {
         "data": {
           "password": "Senha",
-          "service": "Serviço em nuvem",
+          "service": "Serviço",
           "username": "Nome de usuário"
         },
-        "description": "Digite as credenciais do aplicativo SYR Connect para acesso à nuvem",
-        "title": "SYR Connect"
+        "description": "Digite as credenciais do aplicativo móvel para acesso à nuvem",
+        "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
         "data": {
@@ -46,14 +46,14 @@
           "host": "Nome do host ou endereço IP",
           "model": "Modelo do dispositivo",
           "password": "Senha",
-          "service": "Serviço em nuvem",
+          "service": "Serviço",
           "username": "Nome de usuário"
         },
-        "description": "Atualize sua configuração do SYR Connect.",
+        "description": "Atualize sua configuração.",
         "title": "Reconfigurar SYR Connect"
       },
       "user": {
-        "description": "Escolha como conectar ao seu dispositivo SYR:\n\n- **Acesso à nuvem**: Use as credenciais do aplicativo SYR Connect para acessar todos os seus dispositivos através do serviço de nuvem SYR. Requer conexão com a Internet.\n\n- **Acesso local**: Conecte-se diretamente a um dispositivo na sua rede local usando seu endereço IP. Funciona offline e oferece tempos de resposta mais rápidos.",
+        "description": "Escolha como conectar ao seu dispositivo SYR:\n\n- **Acesso à nuvem**: Use as credenciais do aplicativo móvel para acessar todos os seus dispositivos através do serviço de nuvem SYR. Requer conexão com a Internet.\n\n- **Acesso local**: Conecte-se diretamente a um dispositivo na sua rede local usando seu endereço IP. Funciona offline e oferece tempos de resposta mais rápidos.",
         "menu_options": {
           "api_json": "Acesso local",
           "api_xml": "Acesso à nuvem"

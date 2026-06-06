@@ -8,7 +8,7 @@
       "reconfigure_successful": "Neukonfiguration erfolgreich"
     },
     "error": {
-      "cannot_connect": "Verbindung zu SYR Connect nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+      "cannot_connect": "Verbindung zum Dienst nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
       "cannot_connect_local": "Verbindung zum lokalen Gerät nicht möglich. Bitte überprüfen Sie, ob die IP-Adresse korrekt ist und das Gerät eingeschaltet und mit Ihrem lokalen Netzwerk verbunden ist.",
       "host_invalid": "Ungültiger Host. Geben Sie eine gültige IP-Adresse oder einen Hostnamen ein (keine Leerzeichen, keine Portnummer).",
       "host_no_port": "Der Host darf keine Portnummer enthalten. Geben Sie nur die IP-Adresse oder den Hostnamen ein.",
@@ -27,11 +27,11 @@
       "api_xml": {
         "data": {
           "password": "Passwort",
-          "service": "Cloud-Dienst",
+          "service": "Dienst",
           "username": "Benutzername"
         },
-        "description": "Geben Sie Ihre SYR Connect App Anmeldedaten für den Cloud-Zugriff ein",
-        "title": "SYR Connect"
+        "description": "Geben Sie Ihre App-Anmeldedaten für den Cloud-Zugriff ein",
+        "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
         "data": {
@@ -46,14 +46,14 @@
           "host": "Hostname oder IP-Adresse",
           "model": "Gerätemodell",
           "password": "Passwort",
-          "service": "Cloud-Dienst",
+          "service": "Dienst",
           "username": "Benutzername"
         },
-        "description": "Aktualisieren Sie Ihre SYR Connect Einstellungen.",
+        "description": "Aktualisieren Sie Ihre Einstellungen.",
         "title": "SYR Connect neu konfigurieren"
       },
       "user": {
-        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:\n\n- **Cloud-Zugriff**: Verwenden Sie Ihre SYR Connect App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Dies benötigt eine Internetverbindung.\n\n- **Lokaler Zugriff**: Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Dies funktioniert offline und bietet schnellere Reaktionszeiten.",
+        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:\n\n- **Cloud-Zugriff**: Verwenden Sie Ihre App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Dies benötigt eine Internetverbindung.\n\n- **Lokaler Zugriff**: Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Dies funktioniert offline und bietet schnellere Reaktionszeiten.",
         "menu_options": {
           "api_json": "Lokaler-Zugriff",
           "api_xml": "Cloud-Zugriff"

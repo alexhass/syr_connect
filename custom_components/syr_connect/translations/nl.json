@@ -8,7 +8,7 @@
       "reconfigure_successful": "Herconfiguratie geslaagd"
     },
     "error": {
-      "cannot_connect": "Kan geen verbinding maken met SYR Connect. Controleer uw internetverbinding en probeer het opnieuw.",
+      "cannot_connect": "Kan geen verbinding maken met de service. Controleer uw internetverbinding en probeer het opnieuw.",
       "cannot_connect_local": "Kan geen verbinding maken met het lokale apparaat. Controleer of het IP-adres correct is en of het apparaat is ingeschakeld en verbonden met uw lokale netwerk.",
       "host_invalid": "Ongeldige host. Voer een geldig IP-adres of hostnaam in (geen spaties, geen poortnummer).",
       "host_no_port": "De host mag geen poortnummer bevatten. Voer alleen het IP-adres of de hostnaam in.",
@@ -27,11 +27,11 @@
       "api_xml": {
         "data": {
           "password": "Wachtwoord",
-          "service": "Cloudservice",
+          "service": "Service",
           "username": "Gebruikersnaam"
         },
-        "description": "Voer uw SYR Connect App-aanmeldingsgegevens in voor cloudtoegang",
-        "title": "SYR Connect"
+        "description": "Voer uw app-aanmeldingsgegevens in voor cloudtoegang",
+        "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
         "data": {
@@ -46,14 +46,14 @@
           "host": "Hostnaam of IP-adres",
           "model": "Apparaatmodel",
           "password": "Wachtwoord",
-          "service": "Cloudservice",
+          "service": "Service",
           "username": "Gebruikersnaam"
         },
-        "description": "Werk uw SYR Connect-instellingen bij.",
+        "description": "Werk uw instellingen bij.",
         "title": "SYR Connect opnieuw configureren"
       },
       "user": {
-        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:\n\n- **Cloudtoegang**: Gebruik uw SYR Connect App-aanmeldingsgegevens om via de SYR cloudservice toegang te krijgen tot al uw apparaten. Vereist internetverbinding.\n\n- **Lokale toegang**: Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
+        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:\n\n- **Cloudtoegang**: Gebruik uw app-aanmeldingsgegevens om via de SYR cloudservice toegang te krijgen tot al uw apparaten. Vereist internetverbinding.\n\n- **Lokale toegang**: Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
         "menu_options": {
           "api_json": "Lokale toegang",
           "api_xml": "Cloudtoegang"

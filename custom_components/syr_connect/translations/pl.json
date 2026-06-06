@@ -8,7 +8,7 @@
             "reconfigure_successful": "Rekonfiguracja zakończona sukcesem"
         },
         "error": {
-            "cannot_connect": "Nie można połączyć się z SYR Connect. Sprawdź połączenie internetowe i spróbuj ponownie.",
+            "cannot_connect": "Nie można połączyć się z usługą. Sprawdź połączenie internetowe i spróbuj ponownie.",
             "cannot_connect_local": "Nie można połączyć się z lokalnym urządzeniem. Sprawdź, czy adres IP urządzenia jest poprawny i czy urządzenie jest włączone oraz podłączone do sieci lokalnej.",
             "host_invalid": "Nieprawidłowy host. Podaj prawidłowy adres IP lub nazwę hosta (bez spacji, bez numeru portu).",
             "host_no_port": "Host nie może zawierać numeru portu. Podaj tylko adres IP lub nazwę hosta.",
@@ -27,10 +27,11 @@
             "api_xml": {
                 "data": {
                     "password": "Hasło",
+                    "service": "Usługa",
                     "username": "Nazwa użytkownika"
                 },
-                "description": "Podaj dane logowania do aplikacji SYR Connect, aby uzyskać dostęp przez chmurę",
-                "title": "SYR Connect"
+                "description": "Podaj dane logowania do aplikacji mobilnej, aby uzyskać dostęp przez chmurę",
+                "title": "SYR Connect (Cloud)"
             },
             "reauth_confirm": {
                 "data": {
@@ -45,13 +46,14 @@
                     "host": "Nazwa hosta lub adres IP",
                     "model": "Model urządzenia",
                     "password": "Hasło",
+                    "service": "Usługa",
                     "username": "Nazwa użytkownika"
                 },
-                "description": "Zaktualizuj ustawienia SYR Connect.",
+                "description": "Zaktualizuj ustawienia.",
                 "title": "Rekonfiguruj SYR Connect"
             },
             "user": {
-                "description": "Wybierz sposób połączenia z urządzeniem SYR:\n\n- **Dostęp przez chmurę**: Użyj danych logowania do aplikacji SYR Connect, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego.\n\n- **Dostęp lokalny**: Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
+                "description": "Wybierz sposób połączenia z urządzeniem SYR:\n\n- **Dostęp przez chmurę**: Użyj danych logowania do aplikacji mobilnej, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego.\n\n- **Dostęp lokalny**: Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
                 "menu_options": {
                     "api_json": "Dostęp lokalny",
                     "api_xml": "Dostęp przez chmurę"
