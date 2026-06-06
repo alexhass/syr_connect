@@ -601,11 +601,11 @@ async def test_connectivity_sensor_is_on_sta_zero(hass: HomeAssistant) -> None:
     assert sensor.is_on is True
 
 
-async def test_connectivity_sensor_is_on_sta_one(hass: HomeAssistant) -> None:
-    """is_on returns True when sta=1 (online)."""
+async def test_connectivity_sensor_is_off_sta_one(hass: HomeAssistant) -> None:
+    """is_on returns False when sta=1 (disconnected)."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 1}}]}
     sensor = _build_connectivity_sensor(hass, data)
-    assert sensor.is_on is True
+    assert sensor.is_on is False
 
 
 async def test_connectivity_sensor_is_off_sta_three(hass: HomeAssistant) -> None:

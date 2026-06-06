@@ -210,7 +210,7 @@ class SyrConnectConnectivityBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
     @property
     def is_on(self) -> bool:
-        """Return True if the device is online (sta != 3)."""
+        """Return True if the device is online (sta not in {1, 3})."""
         if not self.coordinator.last_update_success:
             return False
         if not self.coordinator.data:
@@ -219,7 +219,7 @@ class SyrConnectConnectivityBinarySensor(CoordinatorEntity, BinarySensorEntity):
             if device['id'] == self._device_id:
                 sta = device.get('status', {}).get('sta')
                 try:
-                    return int(sta) != 3
+                    return int(sta) not in {1, 3}
                 except (TypeError, ValueError):
                     return True
         return False
