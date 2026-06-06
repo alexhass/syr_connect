@@ -62,7 +62,8 @@ async def test_binary_sensor_platform_creates_entities(hass: HomeAssistant) -> N
 
     add_entities.assert_called_once()
     entities = add_entities.call_args.args[0]
-    assert len(entities) == 1
+    # 1 connectivity sensor + 1 getBUZ binary sensor = 2
+    assert len(entities) == 2
 
 
 async def test_button_platform_creates_entities(hass: HomeAssistant) -> None:

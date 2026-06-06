@@ -44,7 +44,7 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect binary sensors")
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
 
-    entities = []
+    entities: list[BinarySensorEntity] = []
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for binary sensors")
