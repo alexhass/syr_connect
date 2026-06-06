@@ -387,6 +387,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         else:
             await self.api.set_device_status(device_id, [(f"clr{field.upper()}", "")])
             _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
+
     async def async_open_valve(self, device_id: str, set_key: str, set_val: Any) -> None:
         """Open the valve, prepending an alarm-clear command when an alarm is active.
 

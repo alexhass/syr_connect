@@ -226,12 +226,12 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
     assert valve.icon == "mdi:valve"
 
 
-async def test_fallback_to_getab_and_invalid_values(hass: HomeAssistant) -> None:
+async def test_is_closed_reads_only_getab(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "x", "name": "X", "status": {"getAB": "2"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "x", "X")
 
-    # No getVLV, fallback to getAB
+    # No getVLV — is_closed reads only getAB
     assert valve.is_closed is True
 
     # Invalid getAB -> unknown
@@ -369,10 +369,10 @@ async def test_invalid_getvlv_does_not_raise_and_falls_back(hass: HomeAssistant)
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v1", "V1")
 
-    # Invalid getVLV string should not raise and we fall back to getAB
+    # Invalid getVLV string should not raise; is_opening/is_closing return None for invalid getVLV
     assert valve.is_opening is None
     assert valve.is_closing is None
-    # getAB '1' should be present and maps to open -> is_closed False
+    # is_closed reads only getAB; getAB=1 maps to open -> is_closed False
     attrs = valve.extra_state_attributes
     assert attrs is not None and attrs.get("getAB") == "1"
     assert not valve.is_closed
@@ -634,7 +634,7 @@ async def test_is_closed_getvlv_valueerror(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "ve", "VE")
 
-    # Invalid getVLV should fall back to getAB
+    # is_closed reads only getAB; getVLV content is irrelevant for is_closed
     # getAB=2 means closed
     assert valve.is_closed is True
 
@@ -773,7 +773,7 @@ async def test_is_closed_getvlv_empty_string(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "es", "ES")
 
-    # Empty getVLV should fall back to getAB
+    # is_closed reads only getAB; getVLV content is irrelevant for is_closed
     # getAB=1 means open
     assert valve.is_closed is False
 
@@ -804,7 +804,7 @@ async def test_is_closed_getvlv_typeerror(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "te", "TE")
 
-    # None getVLV triggers empty string check, falls back to getAB
+    # None getVLV is treated as absent; is_closed reads only getAB
     # getAB=2 means closed
     assert valve.is_closed is True
 
