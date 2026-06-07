@@ -398,7 +398,7 @@ async def test_diagnostics_with_api_and_projects(hass: HomeAssistant) -> None:
     # Mock response parser
     mock_response_parser = MagicMock()
     mock_response_parser.parse_device_list_response = MagicMock(return_value=[
-        {"id": "dev1", "dclg": "dclg1"}
+        {"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}
     ])
     mock_api.response_parser = mock_response_parser
 
@@ -1206,7 +1206,7 @@ async def test_diagnostics_status_fetch_exception(hass: HomeAssistant) -> None:
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
     )
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -1509,7 +1509,7 @@ async def test_diagnostics_gather_returns_tuple_wrong_length(hass: HomeAssistant
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
     )
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -1788,7 +1788,7 @@ async def test_diagnostics_fetch_exception_in_gather(hass: HomeAssistant) -> Non
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
     )
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -4000,7 +4000,7 @@ async def test_diagnostics_xml_device_status_gather_exception(hass: HomeAssistan
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dclg1"}]
+        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
     )
 
     coordinator = _cov_coordinator()

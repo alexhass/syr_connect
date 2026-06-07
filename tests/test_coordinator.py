@@ -325,7 +325,7 @@ async def test_coordinator_device_fetch_exception(hass: HomeAssistant, setup_in_
         async def get_devices_side_effect(project_id):
             if project_id == "project1":
                 raise Exception("Failed to fetch devices")
-            return [{"id": "device2", "dclg": "dclg2"}]
+            return [{"id": "device2", "dclg": "c4d5e6f7-a8b9-0123-cdef-123456789012"}]
 
         mock_api.get_devices = AsyncMock(side_effect=get_devices_side_effect)
         mock_api.get_device_status = AsyncMock(return_value={"getPRS": "50"})
@@ -508,7 +508,7 @@ async def test_coordinator_device_status_exception_result(hass: HomeAssistant, s
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
             {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"},
-            {"id": "device2", "dclg": "dclg2"},
+            {"id": "device2", "dclg": "c4d5e6f7-a8b9-0123-cdef-123456789012"},
         ])
 
         # First device succeeds, second fails
@@ -1184,7 +1184,7 @@ async def test_fetch_device_status_propagates_auth_error(hass: HomeAssistant) ->
         coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
         with pytest.raises(SyrConnectAuthError):
-            await coord._fetch_device_status({"id": "deviceX", "dclg": "dclgX"})
+            await coord._fetch_device_status({"id": "deviceX", "dclg": "d5e6f7a8-b9c0-1234-defa-234567890123"})
 
 
 async def test_coordinator_device_status_result_is_exception(

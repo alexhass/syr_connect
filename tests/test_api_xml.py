@@ -168,7 +168,7 @@ async def test_get_devices_id_fallback(api_client):
     device_without_id = {
         "name": "Test Device",
         "serial_number": "SN12345",
-        "dclg": "DCLG123",
+        "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     }
 
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
@@ -330,7 +330,7 @@ async def test_get_devices_adds_project_id(api_client):
         "id": "device1",
         "name": "Test Device",
         "serial_number": "SN123",
-        "dclg": "DCLG123",
+        "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     }
 
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
@@ -397,7 +397,7 @@ async def test_get_devices_with_device_already_has_id(api_client):
         "id": "EXISTING_ID",
         "name": "Test Device",
         "serial_number": "SN12345",
-        "dclg": "DCLG123",
+        "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     }
 
     with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
