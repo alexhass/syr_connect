@@ -303,6 +303,15 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             return device
 
+    def _resolve_device_dclg(self, device_id: str) -> str | None:
+        """Return the DCLG for the given device serial number, or None if not found."""
+        if not self.data:
+            return None
+        for device in self.data.get("devices", []):
+            if device["id"] == device_id:
+                return device.get("dclg", device_id)
+        return None
+
     async def async_set_device_value(self, device_id: str, command: str, value: Any) -> None:
         """Set a device value.
 
@@ -319,13 +328,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if not self.data:
             raise HomeAssistantError("Coordinator data not available")
 
-        # Find the DCLG for this device_id (which is now SN)
-        dclg = None
-        for device in self.data.get("devices", []):
-            if device["id"] == device_id:
-                dclg = device.get("dclg", device_id)
-                break
-
+        dclg = self._resolve_device_dclg(device_id)
         if dclg is None:
             raise HomeAssistantError(f"Device {device_id} not found")
 
@@ -385,12 +388,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             await self.api.request_json_data(f"clr/{field}")
             _LOGGER.info("Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id)
         else:
-            dclg = device_id
-            if self.data:
-                for device in self.data.get("devices", []):
-                    if device["id"] == device_id:
-                        dclg = device.get("dclg", device_id)
-                        break
+            dclg = self._resolve_device_dclg(device_id) or device_id
             await self.api.set_device_status(dclg, [(f"clr{field.upper()}", "")])
             _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
 
@@ -422,17 +420,15 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if not self.data:
             raise HomeAssistantError("Coordinator data not available")
 
-        # Locate device and resolve DCLG
-        dclg: str | None = None
+        dclg = self._resolve_device_dclg(device_id)
+        if dclg is None:
+            raise HomeAssistantError(f"Device {device_id} not found")
+
         status: dict = {}
         for device in self.data.get("devices", []):
             if device["id"] == device_id:
-                dclg = device.get("dclg", device_id)
                 status = device.get("status", {}) or {}
                 break
-
-        if dclg is None:
-            raise HomeAssistantError(f"Device {device_id} not found")
 
         # --- Detect active alarm and compute clear command ---
         # Returns (command, value) when an alarm must be cleared first, or None.
