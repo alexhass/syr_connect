@@ -284,7 +284,7 @@ class DebugXmlClient:
             _LOG.warning("--no-decrypt flag set -- cannot perform set operation without a valid session.")
             return False
 
-        payload = self.payload_builder.build_set_status_payload(self.session_data, device_id, [(command, value)])
+        payload = self.payload_builder.build_device_set_status_payload(self.session_data, device_id, [(command, value)])
         try:
             resp = await self.http_client.post(self.device_set_url, {"xml": payload})
             _LOG.debug("Set response: %s", resp)
@@ -302,7 +302,7 @@ class DebugXmlClient:
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
         _LOG.info("=== GET DEVICES  project_id=%s ===", project_id)
 
-        payload = self.payload_builder.build_device_list_payload(self.session_data, project_id)
+        payload = self.payload_builder.build_device_get_list_payload(self.session_data, project_id)
         _LOG.debug("--- Device list payload ---\n%s", payload)
 
         _LOG.info("POST %s", self.device_list_url)
@@ -341,7 +341,7 @@ class DebugXmlClient:
 
         _LOG.info("=== GET STATUS  device=%s  dclg=%s ===", device_id, dclg)
 
-        payload = self.payload_builder.build_device_status_payload(self.session_data, dclg)
+        payload = self.payload_builder.build_device_get_status_payload(self.session_data, dclg)
         _LOG.debug("--- Status request payload ---\n%s", payload)
 
         _LOG.info("POST %s", self.device_status_url)

@@ -281,7 +281,7 @@ async def async_get_config_entry_diagnostics(
                     if not pid:
                         continue
                     projects_raw[pid] = {"device_list": "", "devices": {}}
-                    payload = xml_api.payload_builder.build_device_list_payload(
+                    payload = xml_api.payload_builder.build_device_get_list_payload(
                         xml_api.session_data or "", pid
                     )
                     xml_resp = await _fetch(xml_api._device_list_url, {"xml": payload})
@@ -316,7 +316,7 @@ async def async_get_config_entry_diagnostics(
                             continue
 
                         async def _fetch_status(did: str):
-                            payload2 = xml_api.payload_builder.build_device_status_payload(
+                            payload2 = xml_api.payload_builder.build_device_get_status_payload(
                                 xml_api.session_data or "", did
                             )
                             xml_status = await _fetch(xml_api._device_get_status_url, {"xml": payload2})

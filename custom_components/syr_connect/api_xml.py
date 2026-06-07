@@ -297,7 +297,7 @@ class SyrConnectXmlAPI:
 
         # --- Build Request Payload ---
         # Payload includes session token and project ID
-        payload = self.payload_builder.build_device_list_payload(self.session_data, project_id)
+        payload = self.payload_builder.build_device_get_list_payload(self.session_data, project_id)
         _LOGGER.debug("Payload prepared: %s", mask_ug_value(payload))
 
         try:
@@ -371,7 +371,7 @@ class SyrConnectXmlAPI:
 
         # --- Build Request Payload ---
         # Payload includes session token and device DCLG ID
-        payload = self.payload_builder.build_device_status_payload(self.session_data, device_id)
+        payload = self.payload_builder.build_device_get_status_payload(self.session_data, device_id)
         _LOGGER.debug("Status request payload: %s", mask_ug_value(payload))
 
         try:
@@ -432,7 +432,7 @@ class SyrConnectXmlAPI:
             for cmd, val in commands
         ]
 
-        payload = self.payload_builder.build_set_status_payload(
+        payload = self.payload_builder.build_device_set_status_payload(
             self.session_data, device_id, normalized
         )
         _LOGGER.debug("Set status payload: %s", mask_ug_value(payload))
@@ -488,7 +488,7 @@ class SyrConnectXmlAPI:
         _LOGGER.debug("Getting %s statistics for device: %s", statistic_type, device_id)
 
         # --- Build Request Payload ---
-        payload = self.payload_builder.build_statistics_payload(
+        payload = self.payload_builder.build_device_get_statistics_payload(
             self.session_data, device_id, statistic_type
         )
         _LOGGER.debug("Statistics payload: %s", mask_ug_value(payload))

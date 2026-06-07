@@ -222,7 +222,7 @@ async def test_set_device_status_boolean_false(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
+    with patch.object(api_client.payload_builder, 'build_device_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
         await api_client.set_device_status("device1", [("setSIR", False)])
@@ -237,7 +237,7 @@ async def test_set_device_status_boolean_true(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
+    with patch.object(api_client.payload_builder, 'build_device_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
         await api_client.set_device_status("device1", [("setSIR", True)])
@@ -378,7 +378,7 @@ async def test_set_device_status_non_boolean_value(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.payload_builder, 'build_set_status_payload', return_value="<payload/>") as mock_build, \
+    with patch.object(api_client.payload_builder, 'build_device_set_status_payload', return_value="<payload/>") as mock_build, \
          patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
 
         await api_client.set_device_status("device1", [("setSV1", 10)])

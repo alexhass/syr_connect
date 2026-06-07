@@ -105,12 +105,12 @@ class PayloadBuilder:
         )
         return f'<?xml version="1.0" encoding="utf-8"?><sc><api version="1.0">{payload}</api></sc>'
 
-    def build_device_list_payload(self, session_id: str, project_id: str) -> str:
+    def build_device_get_list_payload(self, session_id: str, project_id: str) -> str:
         """Build device list XML payload with checksum.
 
         Args:
             session_id: Active session ID
-            project_id: Project ID to query
+            project_id: Project ID to query (GUID)
 
         Returns:
             XML string with checksum
@@ -126,12 +126,12 @@ class PayloadBuilder:
         )
         return self._add_checksum(payload)
 
-    def build_device_status_payload(self, session_id: str, device_id: str) -> str:
-        """Build device status XML payload with checksum.
+    def build_device_get_status_payload(self, session_id: str, device_id: str) -> str:
+        """Build "get" device status XML payload with checksum.
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to query
+            device_id: Device ID to query (GUID)
 
         Returns:
             XML string with checksum
@@ -147,13 +147,13 @@ class PayloadBuilder:
         )
         return self._add_checksum(payload)
 
-    def build_set_status_payload(
+    def build_device_set_status_payload(
         self,
         session_id: str,
         device_id: str,
         commands: list[tuple[str, Any]],
     ) -> str:
-        """Build set device status XML payload with checksum.
+        """Build "set" device status XML payload with checksum.
 
         Args:
             session_id: Active session ID
@@ -180,7 +180,7 @@ class PayloadBuilder:
         )
         return self._add_checksum(payload)
 
-    def build_statistics_payload(
+    def build_device_get_statistics_payload(
         self, session_id: str, device_id: str, statistic_type: str = "water"
     ) -> str:
         """Build statistics XML payload with checksum.

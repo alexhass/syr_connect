@@ -385,7 +385,13 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             await self.api.request_json_data(f"clr/{field}")
             _LOGGER.info("Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id)
         else:
-            await self.api.set_device_status(device_id, [(f"clr{field.upper()}", "")])
+            dclg = device_id
+            if self.data:
+                for device in self.data.get("devices", []):
+                    if device["id"] == device_id:
+                        dclg = device.get("dclg", device_id)
+                        break
+            await self.api.set_device_status(dclg, [(f"clr{field.upper()}", "")])
             _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
 
     async def async_open_valve(self, device_id: str, set_key: str, set_val: Any) -> None:
