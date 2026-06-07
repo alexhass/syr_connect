@@ -281,12 +281,12 @@ The third request and all following requests are also to GetAllCommands answerin
 | 5 | Safe-T Communication module | | |
 | 20 | HVA | | |
 | 25 | Inliner-HWA 3300 | | |
-| 40 | Limex | 1=Limex 10<br>2=Limex 20<br>3=Limex 30 | |
+| 40 | Limex | 1=Limex 10<br>2=Limex 20<br>3=Limex 30 | alarm_style_alm (alarmStyleAlm) |
 | 60 | Hygiene module | | |
 | 61 | Hygiene module | | |
 | 62 | Hygiene module | | |
 | 63 | Hygiene module | | |
-| 80 | LEX Plus 10 | 2=LEX Plus 10 S<br>3=LEX 10 (?)<br>4=LEX 20 (?)<br>5=LEX 30 (?)<br>6=R+F Ion One Connect<br>7=LEX Plus 10 SL | |
+| 80 | LEX Plus 10 | 2=LEX Plus 10 S<br>3=LEX 10 (?)<br>4=LEX 20 (?)<br>5=LEX 30 (?)<br>6=R+F Ion One Connect<br>7=LEX Plus 10 SL | alarm_style_alm (alarmStyleAlm) |
 | 100 | CONTROLICmini | | |
 | 120 | SafeFloor | | |
 | 122 | SafeFloor | | |
@@ -297,36 +297,36 @@ The third request and all following requests are also to GetAllCommands answerin
 | 160 | All in One + | | |
 | 180 | HygBox | | |
 | 190 | Dosing Pump | | |
-| 1100 | Trio LS | | alarmClearViaSet |
-| 1110 | concept 200 Wechselfilter | | alarmClearViaSet |
-| 1111 | Optima T Wechselfilter | | alarmClearViaSet |
-| 1112 | SafeTech+ | | alarmClearViaSet |
-| 1113 | Trio DFR LS |  | alarmClearViaSet |
-| 1200 | NeoSoft |  | alarmClearViaSet |
-| 1206 | NeoSoft Single |  | alarmClearViaSet |
-| 1207 | comfort-Enthärtungsanlage Softwater Uno | | alarmClearViaSet |
-| 1208 | concept Einzelenthärtungsanlage | | alarmClearViaSet |
-| 1209 | Optima Einzelenthärtungsanlage |  | alarmClearViaSet |
-| 1210 | concept 200 Doppelenthärtungsanlage | | alarmClearViaSet |
-| 1211 | Optima T2.2 Doppelenthärtungsanlage | | alarmClearViaSet |
-| 1212 | comfort-Enthärtungsanlage Softwater Duo | | alarmClearViaSet |
-| 1213 | Optima Doppelenthärtungsanlage | | alarmClearViaSet |
-| 1214 | CLEAR PRO SOFT TWIN CONEL | | alarmClearViaSet |
-| 1215 | CLEAR PRO SOFT CONEL | | alarmClearViaSet |
-| 1216 | concept Doppelenthärtungsanlage | | alarmClearViaSet |
-| 1217 | Ditech Doppelenthärtungsanlage | | alarmClearViaSet |
-| 1218 | TAKE Doppelenthärtungsanlage | | alarmClearViaSet |
-| 1219 | Ditech Einzelenthärtungsanlage | | alarmClearViaSet |
-| 1220 | TAKE Einzelenthärtungsanlage | | alarmClearViaSet |
-| 1221 | NeoSoft Lock Connect II | | alarmClearViaSet |
-| 1222 | NeoSoft Lock Connect I | | alarmClearViaSet |
-| 1500 | MultiController | | alarmClearViaSet, subtypeAttr=dfm |
-| 1501 | MultiController (comfort) | | alarmClearViaSet, subtypeAttr=dfm |
-| 1502 | Ditech Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
-| 1503 | TAKE Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
-| 1504 | concept Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
-| 1505 | Optima Multicontroller | | alarmClearViaSet, subtypeAttr=dfm |
-| 1506 | SYR MultiController | | alarmClearViaSet, subtypeAttr=dfm |
+| 1100 | Trio LS | | alarm_clear_via_set (alarmClearViaSet) |
+| 1110 | concept 200 Wechselfilter | | alarm_clear_via_set (alarmClearViaSet) |
+| 1111 | Optima T Wechselfilter | | alarm_clear_via_set (alarmClearViaSet) |
+| 1112 | SafeTech+ | | alarm_clear_via_set (alarmClearViaSet) |
+| 1113 | Trio DFR LS |  | alarm_clear_via_set (alarmClearViaSet) |
+| 1200 | NeoSoft |  | alarm_clear_via_set (alarmClearViaSet) |
+| 1206 | NeoSoft Single |  | alarm_clear_via_set (alarmClearViaSet) |
+| 1207 | comfort-Enthärtungsanlage Softwater Uno | | alarm_clear_via_set (alarmClearViaSet) |
+| 1208 | concept Einzelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1209 | Optima Einzelenthärtungsanlage |  | alarm_clear_via_set (alarmClearViaSet) |
+| 1210 | concept 200 Doppelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1211 | Optima T2.2 Doppelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1212 | comfort-Enthärtungsanlage Softwater Duo | | alarm_clear_via_set (alarmClearViaSet) |
+| 1213 | Optima Doppelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1214 | CLEAR PRO SOFT TWIN CONEL | | alarm_clear_via_set (alarmClearViaSet) |
+| 1215 | CLEAR PRO SOFT CONEL | | alarm_clear_via_set (alarmClearViaSet) |
+| 1216 | concept Doppelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1217 | Ditech Doppelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1218 | TAKE Doppelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1219 | Ditech Einzelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1220 | TAKE Einzelenthärtungsanlage | | alarm_clear_via_set (alarmClearViaSet) |
+| 1221 | NeoSoft Lock Connect II | | alarm_clear_via_set (alarmClearViaSet) |
+| 1222 | NeoSoft Lock Connect I | | alarm_clear_via_set (alarmClearViaSet) |
+| 1500 | MultiController | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
+| 1501 | MultiController (comfort) | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
+| 1502 | Ditech Multicontroller | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
+| 1503 | TAKE Multicontroller | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
+| 1504 | concept Multicontroller | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
+| 1505 | Optima Multicontroller | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
+| 1506 | SYR MultiController | | alarm_clear_via_set (alarmClearViaSet), subtypeAttr=dfm |
 
 ### deviceKindVersions (dkv) — SRN-Prefix = dkv-Number
 
