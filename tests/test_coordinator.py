@@ -63,7 +63,7 @@ async def test_coordinator_update_success(hass: HomeAssistant, setup_in_progress
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "dclg": "dclg1",
+                "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             }
         ])
         mock_api.get_device_status = AsyncMock(return_value={
@@ -132,7 +132,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "dclg": "dclg1",
+                "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
             }
         ])
         mock_api.get_device_status = AsyncMock(return_value={})
@@ -159,7 +159,7 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
                 await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
-        mock_api.set_device_status.assert_called_once_with("dclg1", [("setSIR", 0)])
+        mock_api.set_device_status.assert_called_once_with("f47ac10b-58cc-4372-a567-0e02b2c3d479", [("setSIR", 0)])
 
 
 async def test_set_device_status_api_raises_propagates(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -169,7 +169,7 @@ async def test_set_device_status_api_raises_propagates(hass: HomeAssistant, setu
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}])
         mock_api.get_device_status = AsyncMock(return_value={})
         mock_api.set_device_status = AsyncMock(side_effect=Exception("set failed"))
         mock_api_class.return_value = mock_api
@@ -193,7 +193,7 @@ async def test_invalid_command_no_optimistic_update(hass: HomeAssistant, setup_i
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1", "status": {}}])
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "status": {}}])
         mock_api.get_device_status = AsyncMock(return_value={})
         mock_api.set_device_status = AsyncMock(return_value=True)
         mock_api.is_session_valid = MagicMock(return_value=True)
@@ -225,7 +225,7 @@ async def test_coordinator_optimistic_update(hass: HomeAssistant, setup_in_progr
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "dclg": "dclg1",
+                "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
                 "status": {"getSIR": "1"},
             }
         ])
@@ -387,7 +387,7 @@ async def test_coordinator_device_status_none(hass: HomeAssistant, setup_in_prog
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1", "cna": "Device 1"}
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "cna": "Device 1"}
         ])
         # Return None to simulate unexpected structure
         mock_api.get_device_status = AsyncMock(return_value=None)
@@ -423,7 +423,7 @@ async def test_coordinator_device_status_none_reuses_previous(hass: HomeAssistan
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1", "cna": "Device 1"}
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "cna": "Device 1"}
         ])
         # First call returns valid status, second returns None
         mock_api.get_device_status = AsyncMock(side_effect=[
@@ -463,7 +463,7 @@ async def test_coordinator_device_status_exception(hass: HomeAssistant, setup_in
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1", "cna": "Device 1"}
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "cna": "Device 1"}
         ])
         # Raise exception when getting device status
         mock_api.get_device_status = AsyncMock(side_effect=Exception("Connection timeout"))
@@ -507,7 +507,7 @@ async def test_coordinator_device_status_exception_result(hass: HomeAssistant, s
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1"},
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"},
             {"id": "device2", "dclg": "dclg2"},
         ])
 
@@ -580,7 +580,7 @@ async def test_coordinator_device_status_poll_auth_error(
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}])
         mock_api_class.return_value = mock_api
 
         config_data = {
@@ -692,7 +692,7 @@ async def test_coordinator_delete_offline_issue_on_recovery(hass: HomeAssistant,
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1", "cna": "Device 1"}
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "cna": "Device 1"}
         ])
         mock_api.get_device_status = AsyncMock(return_value={"getPRS": "50"})
         mock_api_class.return_value = mock_api
@@ -723,7 +723,7 @@ async def test_coordinator_device_without_cna_fallback_to_id(hass: HomeAssistant
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1"}  # No 'cna' field
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}  # No 'cna' field
         ])
         mock_api.get_device_status = AsyncMock(side_effect=Exception("Device offline"))
         mock_api_class.return_value = mock_api
@@ -757,7 +757,7 @@ async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssist
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1"}
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
         ])
         mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
         mock_api.set_device_status = AsyncMock(return_value=True)
@@ -793,7 +793,7 @@ async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssista
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "dclg1"}
+            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
         ])
         mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
         mock_api.set_device_status = AsyncMock(return_value=True)
@@ -974,7 +974,7 @@ async def test_fetch_device_status_no_ignore_key_keeps_status(hass: HomeAssistan
         config_data = {"username": "u", "password": "p"}
         coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
-        device = {"id": "dev1", "dclg": "dclg1"}
+        device = {"id": "dev1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
 
         result = await coord._fetch_device_status(device)
 
@@ -1196,7 +1196,7 @@ async def test_coordinator_device_status_result_is_exception(
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}])
         mock_api_class.return_value = mock_api
 
         config_data = {
@@ -1238,7 +1238,7 @@ async def test_fetch_device_status_iwh_compute_error_is_logged(
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(
-            return_value=[{"id": "device1", "dclg": "dclg1", "project_id": "project1"}]
+            return_value=[{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "project_id": "project1"}]
         )
         mock_api.get_device_status = AsyncMock(return_value={"getCND": "bad"})
         mock_api_class.return_value = mock_api
@@ -1265,7 +1265,7 @@ async def test_coordinator_device_marked_unavailable_when_sta_is_3(
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(
-            return_value=[{"id": "device1", "name": "Device 1", "dclg": "dclg1", "project_id": "project1"}]
+            return_value=[{"id": "device1", "name": "Device 1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "project_id": "project1"}]
         )
         # sta=3 means the device is offline / not reachable via the cloud
         mock_api.get_device_status = AsyncMock(return_value={"sta": "3", "getPRS": "50"})
@@ -1291,7 +1291,7 @@ async def test_coordinator_device_available_when_sta_is_2(
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.get_devices = AsyncMock(
-            return_value=[{"id": "device1", "name": "Device 1", "dclg": "dclg1", "project_id": "project1"}]
+            return_value=[{"id": "device1", "name": "Device 1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "project_id": "project1"}]
         )
         mock_api.get_device_status = AsyncMock(return_value={"sta": "2", "getPRS": "50"})
         mock_api_class.return_value = mock_api
@@ -1315,21 +1315,21 @@ async def test_async_clear_device_alarm_xml_api_sends_clr_command(
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
         mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "dclg1"}])
+        mock_api.get_devices = AsyncMock(return_value=[{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}])
         mock_api.get_device_status = AsyncMock(return_value={})
         mock_api_class.return_value = mock_api
 
         config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
         coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
         coordinator.config_entry = setup_in_progress_config_entry
-        coordinator.data = {"devices": [{"id": "device1", "dclg": "dclg1", "status": {}}], "projects": []}
+        coordinator.data = {"devices": [{"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "status": {}}], "projects": []}
         mock_api.set_device_status = AsyncMock(return_value=True)
         coordinator.api = mock_api
 
         coordinator.hass.async_create_task = MagicMock(side_effect=_consume_coro_return_task)
         await coordinator.async_clear_device_alarm("device1")
 
-        mock_api.set_device_status.assert_awaited_once_with("device1", [("clrALA", "")])
+        mock_api.set_device_status.assert_awaited_once_with("f47ac10b-58cc-4372-a567-0e02b2c3d479", [("clrALA", "")])
 
 
 async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:
