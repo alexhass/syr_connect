@@ -304,7 +304,20 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             return device
 
     def _resolve_device_dclg(self, device_id: str) -> str | None:
-        """Return the DCLG for the given device serial number, or None if not found."""
+        """Return the DCLG (Device Collection Group UUID) for the given device serial number.
+
+        The coordinator stores devices keyed by serial number (`device["id"]`),
+        but XML API calls require the DCLG — the cloud-side UUID assigned to the
+        device collection. This helper performs that mapping.
+
+        Args:
+            device_id: Serial number of the device to look up.
+
+        Returns:
+            The DCLG string when found, or `None` when no device with the given
+            serial number is present in coordinator data (including when coordinator
+            data is not yet available).
+        """
         if not self.data:
             return None
         for device in self.data.get("devices", []):

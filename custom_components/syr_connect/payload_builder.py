@@ -110,7 +110,7 @@ class PayloadBuilder:
 
         Args:
             session_id: Active session ID
-            project_id: Project ID to query (GUID)
+            project_id: Project ID to query (UUID)
 
         Returns:
             XML string with checksum
@@ -131,7 +131,7 @@ class PayloadBuilder:
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to query (GUID)
+            device_id: Device ID to query (UUID)
 
         Returns:
             XML string with checksum
@@ -157,7 +157,7 @@ class PayloadBuilder:
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to control (GUID)
+            device_id: Device ID to control (UUID)
             commands: Sequence of ``(command, value)`` pairs, executed in order
 
         Returns:
@@ -187,7 +187,7 @@ class PayloadBuilder:
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to query (GUID)
+            device_id: Device ID to query (UUID)
             statistic_type: Type of statistics ("water" or "salt")
 
         Returns:

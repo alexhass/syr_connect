@@ -843,7 +843,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
-| dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"     | Device GUID
+| dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"     | Device UUID
 | sbt         | "7"                                        | Subtype, see deviceKinds table for reference
 | sta         | "2"                                        | Device connection state: 1=never online, 2=online, 3=offline, 4=unknown, 5=warning triggered (?), 6=standby
 | dst         | "2"                                        | Device state
@@ -858,7 +858,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
-| dclg        | "dbb60fa9-76f0-4221-8e89-69d2214714f1"     | Device collection GUID
+| dclg        | "dbb60fa9-76f0-4221-8e89-69d2214714f1"     | Device collection UUID
 | clb         | "1"                                        | Collection base
 | nrdt        | "06.01.2026 00:35:51"                      | Next regeneration date/time
 | nrs         | "11"                                       | Number of regenerations since install
