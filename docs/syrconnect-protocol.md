@@ -580,8 +580,7 @@ These settings can be set by the user.
 | getCS1<br>getCS2<br>getCS3                            | "63"<br>"0"<br>"0" | %        | Remaining capacity of the resin in tank 1, 2 or 3
 | getSV1 / setSV1<br>getSV2 / setSV1<br>getSV3 / setSV1 | "7"<br>"0"<br>"0"  | kg       | Salt stored in tank 1, 2 or 3 (can also be set, e.g. on refill)
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
-| getPA1<br>getPA2<br>getPA3                            | "0"<br>"0"<br>"0"  |          | *unknown*
-| getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  |          | *unknown*
+| getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  | L        | Volume threshold 1–3 (advanced configuration)
 | getBAR2                                               | "0"                | mbar     | Measured pressure for second channel (Trio DFR/LS, Sanibel). Duplicate of getBAR with 2 suffix
 | getBPT                                                | "40"               | mbar?    | Back-pressure threshold (Trio DFR/LS)
 | getPRE                                                | "0"                |          | Pressure-related value (NeoSoft 2500/5000)
@@ -642,16 +641,13 @@ These properties are only available on devices that contain leakage protection, 
 | getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.
 | getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists;
 | getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
-| getLE / setLE   | "4"          |         | Leakage volume when present: 1 = ?L, 2 = 100L, 3=150L, 3 = 200L
+| getLE / setLE   | "4"          | L       | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L
+| getUL / setUL   | "0"          | L       | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L
 | getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
 | getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h
 | getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds
-| getUL / setUL   | "0"          |         | User profile Leakage protection mode: 0 = present, 1 = absent
 | getCEL          | "203"        | 1/10 °C | Temperature / Water temperature, e.g. 203 = 20.3°C
 | getNPS          | "22"         |         | Microleakage count
-| getPF1<br>getPF2<br>getPF3<br>getPF4<br>getPF5<br>getPF6<br>getPF7<br>getPF8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L/h | Leak protection flow rate 1-8
-| getPT1<br>getPT2<br>getPT3<br>getPT4<br>getPT5<br>getPT6<br>getPT7<br>getPT8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | minutes | Leak protection time 1-8
-| getPV1<br>getPV2<br>getPV3<br>getPV4<br>getPV5<br>getPV6<br>getPV7<br>getPV8 | "0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0"<br>"0" | L | Leak protection volume 1-8
 | getCND          | "250"        | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)
 | getCND2         | "0"          | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix
 | getBSI          | "2 (16 bar)" |         | Pressure sensor type and range identifier (Safe-T+)
@@ -661,27 +657,45 @@ These properties are only available on devices that contain leakage protection, 
 | getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, Sanibel)
 | getLWT          | "90"         |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)
 | getPSE          | "True"       |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)
-| getPRN          | "2"          |         | Active profile number, duplicate of getPRF (Trio DFR/LS, Sanibel)
 | getSFV          | "False"      |         | Safe-force-valve flag (Trio DFR/LS)
 | getVTO          | "False"      |         | Valve-timeout flag (Trio DFR/LS)
 | getSMF          | "2500"       | L/h?    | Flow or maintenance threshold (Trio DFR/LS, Sanibel)
 | getLDT          | "0"          | s?      | Leak detection timeout (SafeTech, SafeTech+)
 | getPB           | "true"       |         | Buzzer-pulse enable flag (SafeTech)
-| getPF / setPF   | "3500"       | L/h     | Default leak-protection flow threshold (SafeTech). See getPF1...getPF8
-| getPM / setPM   | "true"       |         | Default leak-protection mode (SafeTech). See getPM1...getPM8
-| getPT / setPT   | "30"         | min     | Default leak-protection time (SafeTech). See getPT1...getPT8
-| getPV / setPV   | "200"        | L       | Default leak-protection volume (SafeTech). See getPV1...getPV8
-| getPW / setPW   | "true"       |         | Default leak-protection weekend mode (SafeTech). See getPW1...getPW8
 | getFLF          | "10"         | L/h?    | Minimum flow filter threshold (SafeTech+)
-| getPCI          | "1"          |         | Profile count or index (SafeTech+)
-| getPCO          | "false"      |         | Profile configuration option (SafeTech+)
-| getPCS          | "2"          |         | Profile configuration setting (SafeTech+)
 | getBMA          | "585"        | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)
 | getBMI          | "515"        | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)
 | getDFM          | "1"          |         | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS)
 | getPSE2         | "false"      |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)
 | getCSE2         | "false"      |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)
 | getSUP          | "1"          |         | Supervision or supply status (Sanibel Leak Protection Module A25)
+
+### Leak protection profiles
+
+LEXplus10SL, SafeTech, SafeTech+, Trio DFR/LS and Sanibel devices support up to 8 configurable usage profiles. Each profile independently defines active state, name, flow/time/volume thresholds, microleakage test, warning, buzzer, and return-to-present-profile timeout. The no-suffix defaults (`getPF`/`getPT`/`getPV`/`getPM`/`getPW`/`getPB`) are SafeTech-only template fields used when creating or resetting a profile.
+
+| Property | Example | Unit | Description |
+|---|---|---|---|
+| getPRF | "1" | | Currently active profile index: 1 = present, 2 = absent (SafeTech, SafeTech+, Trio DFR/LS, Sanibel) |
+| getPRN | "2" | | Duplicate of getPRF (Trio DFR/LS, Sanibel) |
+| getPCI | "2" | | Number of configured profiles (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
+| getPCO | "false" | | Profile configuration option (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
+| getPCS | "1" | | Profile configuration setting (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
+| getPF | "3500" | L/h | Default flow leak threshold — template for getPF1…getPF8 (SafeTech only, not exposed as HA entity) |
+| getPM | "true" | | Default microleakage test enabled — template for getPM1…getPM8 (SafeTech only, not exposed as HA entity) |
+| getPT | "30" | min | Default max. leak duration — template for getPT1…getPT8 (SafeTech only, not exposed as HA entity) |
+| getPV | "200" | L | Default max. leak volume — template for getPV1…getPV8 (SafeTech only, not exposed as HA entity) |
+| getPW | "true" | | Default leak warning enabled — template for getPW1…getPW8 (SafeTech only, not exposed as HA entity) |
+| getPB | "true" | | Default buzzer alert enabled — template for getPB1…getPB8 (SafeTech only, not exposed as HA entity) |
+| getPA1 … getPA8 | "false" | | Profile 1–8 active flag (true/false) |
+| getPB1 … getPB8 | "false" | | Profile 1–8 buzzer alert enabled (true/false) |
+| getPF1 … getPF8 | "0" | L/h | Profile 1–8 flow leak threshold |
+| getPM1 … getPM8 | "false" | | Profile 1–8 microleakage test enabled (true/false) |
+| getPN1 … getPN8 | "" | | Profile 1–8 name |
+| getPR1 … getPR8 | "0" | h | Profile 1–8 return time to present profile |
+| getPT1 … getPT8 | "0" | min | Profile 1–8 max. leak duration |
+| getPV1 … getPV8 | "0" | L | Profile 1–8 max. leak volume |
+| getPW1 … getPW8 | "false" | | Profile 1–8 leak warning enabled (true/false) |
 
 ### Unknown leakage protection
 
