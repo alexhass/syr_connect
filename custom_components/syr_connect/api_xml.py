@@ -32,9 +32,9 @@ import aiohttp
 from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_API_XML_BASE_URL,
+    _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
-    _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
     _SYR_CONNECT_API_XML_LOGIN_URL,
     _SYR_CONNECT_CLIENT_APP_NAME,
@@ -116,7 +116,7 @@ class SyrConnectXmlAPI:
         _base = api_base_url or _SYR_CONNECT_API_XML_BASE_URL
         _bundle_id = cf_bundle_identifier or _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER
         self._login_url = _base + _SYR_CONNECT_API_XML_LOGIN_URL
-        self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_LIST_URL
+        self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
         self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
         self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
         self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL

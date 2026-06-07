@@ -13,7 +13,7 @@ from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_API_XML_BASE_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
-    _SYR_CONNECT_API_XML_DEVICE_LIST_URL,
+    _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -1878,7 +1878,7 @@ async def test_diagnostics_xml_raw_collection_and_masking_additional(hass) -> No
             self.payload_builder = FakePayloadBuilder()
             self.http_client = FakeHttpClient()
             self.response_parser = FakeResponseParser()
-            self._device_list_url = _SYR_CONNECT_API_XML_BASE_URL + _SYR_CONNECT_API_XML_DEVICE_LIST_URL
+            self._device_list_url = _SYR_CONNECT_API_XML_BASE_URL + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
             self._device_get_status_url = _SYR_CONNECT_API_XML_BASE_URL + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
 
         def is_session_valid(self):

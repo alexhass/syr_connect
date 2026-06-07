@@ -41,7 +41,7 @@ _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 # API URLs (internal)
 _SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"
-_SYR_CONNECT_API_XML_DEVICE_LIST_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+_SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
 _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
 _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
 _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
