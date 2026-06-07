@@ -146,7 +146,7 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
 
     _LOGGER.info("XML API: authentication successful for user: %s", data[CONF_USERNAME])
 
-    title_label = api_app_name or "SYR Connect"
+    title_label = (svc["display_name"] if svc else None) or "SYR Connect"
     return {"title": f"{title_label} ({data[CONF_USERNAME]})"}
 
 
