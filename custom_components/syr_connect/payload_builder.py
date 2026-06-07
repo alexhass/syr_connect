@@ -157,7 +157,7 @@ class PayloadBuilder:
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to control
+            device_id: Device ID to control (GUID)
             commands: Sequence of ``(command, value)`` pairs, executed in order
 
         Returns:
@@ -187,7 +187,7 @@ class PayloadBuilder:
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to query
+            device_id: Device ID to query (GUID)
             statistic_type: Type of statistics ("water" or "salt")
 
         Returns:
