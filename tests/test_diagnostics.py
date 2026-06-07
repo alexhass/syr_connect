@@ -12,8 +12,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_API_XML_BASE_URL,
-    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
+    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,

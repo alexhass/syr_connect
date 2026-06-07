@@ -8,12 +8,12 @@ from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.const import (
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
     CONF_SERVICE,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
 )
 from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit, v3_to_v4_add_service
 
