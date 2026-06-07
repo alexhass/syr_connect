@@ -430,78 +430,31 @@ Note: A `dkv` entry with `ref=XX` refers to `dkv` `XX` and uses the same Wi-Fi a
 
 ## Command attribute: `v` (value) and `s` (shadow/pending value)
 
-Each `<c>` element in the XML protocol carries a mandatory value `v` attribute containing the current reported value of a property. Optionally a second attribute `s` (shadow value) may appear alongside `v`. Understanding both is essential for correctly interpreting device state, especially for battery-powered devices.
+Every `<c>` element carries a `v` attribute (last confirmed device value) and an optional `s` attribute (shadow/pending value set by the server but not yet applied by the device).
 
-### `v` – current device value
-
-`v` is the value the device last **confirmed** as active. It is always present on every `<c>` element. When no pending change exists, `v` is the authoritative reading.
-
-```xml
-<c n="getMXH" v="100" />
-```
-
-### `s` – shadow / pending value
-
-Shadow value `s` is written by the **server** to express a desired new value that has been pushed to the device but not yet applied. As long as `s` is present the device still operates with the old `v`; once the device has accepted and applied the change it reports the updated `v` and omits `s`.
+- **`v`** – authoritative when no pending change exists.
+- **`s`** – present while a desired value has been pushed but not yet acknowledged. The integration always prefers `s` over `v` so the UI immediately reflects the intended state.
 
 ```xml
-<!-- Server has requested getMXH=95, device still uses 100 -->
+<!-- pending change: server wants 95, device still uses 100 -->
 <c n="getMXH" v="100" s="95" />
-```
 
-When `s` is present the integration uses `s` as the displayed state, because that reflects the intended – and soon-to-be-active – configuration. Once the device confirms the change, `s` disappears and `v` carries the new value:
-
-```xml
-<!-- Device has applied the change; s is gone -->
+<!-- after device confirms: s disappears -->
 <c n="getMXH" v="95" />
 ```
 
-### Complete example: SafeFloor with pending settings
+**Battery-powered devices (SafeFloor):** `getBMP` defaults to 43200 s (12 h), so `s` can persist for up to 12 hours — this is expected, not an error.
 
-The following excerpt is from a real `GetDeviceCollectionStatus` response for a SafeFloor device. Four alarm-threshold settings were changed via the cloud while the device was offline. The server stores the desired values in `s`; the device has not yet acknowledged them:
-
-```xml
-<c n="getMIH" v="0"   s="5"   />   <!-- min. humidity threshold: pending 5 % -->
-<c n="getMXH" v="100" s="95"  />   <!-- max. humidity threshold: pending 95 % -->
-<c n="getMIT" v="0"   s="-40" />   <!-- min. temperature threshold: pending -4 °C -->
-<c n="getMXT" v="500" s="490" />   <!-- max. temperature threshold: pending 49 °C -->
-```
-
-### Special relevance for battery-powered SafeFloor devices
-
-SafeFloor sensors are **battery-powered** and spend most of their time in deep sleep to conserve energy. The regular poll interval is controlled by `getBMP` (battery mode poll interval, in seconds). In standard operation this value is **43200 seconds (12 hours)**, meaning the device only wakes up and synchronises its full settings with the server twice a day.
-
-Consequences for the `v`/`s` mechanism:
-
-- After a setting is changed via the cloud the `s` attribute will persist in server responses for **up to 12 hours** until the device wakes up, downloads the pending value and reports the updated `v`.
-- Clients must **not** treat a long-lived `s` attribute as an error or a stale read. It is the expected behaviour for sleeping devices.
-- The integration therefore always prefers `s` over `v` when `s` is present, so the UI immediately reflects the intended configuration rather than the outdated confirmed value.
-- Once the device wakes up, confirms the change and omits `s`, the UI automatically switches back to reporting the confirmed `v`.
+**Actuator properties (`getAB` / `setAB`):** valve travel takes ~60–120 s; `s` bridges that window to avoid a state flicker in the UI.
 
 ```xml
-<!-- SafeFloor poll interval: 43200 s = 12 h -->
-<c n="getBMP" v="43200" />
-```
-
-### `v`/`s` on actuator properties: `getAB` / `setAB` (valve shut-off)
-
-The same `v`/`s` mechanism applies to **writable actuator properties**, not just passive sensor thresholds. The most important example is `getAB` / `setAB`, the main valve shut-off command present on all leak-protection devices (SafeT, SafeTech, Trio, etc.).
-
-When the integration calls `setAB` to open or close the valve, the server immediately reflects the desired state as `s` while `v` still shows the last confirmed position:
-
-```xml
-<!-- User triggered "close valve"; device has not yet confirmed -->
+<!-- valve command sent, not yet confirmed -->
 <c n="getAB" v="false" s="true" />
+<!-- close valve command sent, not yet confirmed -->
+<c n="getAB" v="1" s="2" />
+<!-- open valve command sent, not yet confirmed -->
+<c n="getAB" v="2" s="1" />
 ```
-
-Once the physical valve has moved and the device reports back, `s` disappears and `v` carries the new confirmed state:
-
-```xml
-<!-- Valve fully closed; device has acknowledged -->
-<c n="getAB" v="true" />
-```
-
-**Why this matters for the integration:** the mechanical valve travel takes ~60-120 seconds. During that window the device continues to report the old `v`. Naively showing `v` would display the wrong state immediately after a user command. The integration therefore reads `s` in preference to `v` (identical to the SafeFloor threshold case) so the UI reflects the intended state without a confusing flicker back to the previous position.
 
 ## Getters and Setters
 
