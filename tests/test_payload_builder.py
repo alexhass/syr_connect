@@ -194,9 +194,9 @@ def test_build_login_payload_xml_escaping(payload_builder):
     assert 'v="pass<word>"' not in payload
 
 
-def test_build_device_list_payload(payload_builder):
+def test_build_device_get_list_payload(payload_builder):
     """Test building device list payload."""
-    payload = payload_builder.build_device_list_payload("session123", "project456")
+    payload = payload_builder.build_device_get_list_payload("session123", "project456")
 
     assert "session123" in payload
     assert "project456" in payload
@@ -287,12 +287,12 @@ def test_special_characters_escaping(payload_builder):
     assert 'n="user&name"' not in payload  # & should be escaped
 
 
-def test_build_device_list_payload_escaping(payload_builder):
+def test_build_device_get_list_payload_escaping(payload_builder):
     """Test XML escaping in device list payload."""
     session = "session&123"
     project = "project<456>"
 
-    payload = payload_builder.build_device_list_payload(session, project)
+    payload = payload_builder.build_device_get_list_payload(session, project)
 
     # Special characters should be escaped
     assert "&amp;" in payload
@@ -347,7 +347,7 @@ def test_build_device_get_statistics_payload_default_type(payload_builder):
 
 def test_add_checksum_integration(payload_builder):
     """Test that checksum is properly added to payloads."""
-    payload = payload_builder.build_device_list_payload("sess", "proj")
+    payload = payload_builder.build_device_get_list_payload("sess", "proj")
 
     # Checksum should be at the end before closing tag
     assert '<cs v="' in payload

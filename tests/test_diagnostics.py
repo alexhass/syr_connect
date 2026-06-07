@@ -226,7 +226,7 @@ async def test_diagnostics_masks_ug_attribute(hass: HomeAssistant) -> None:
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
 
@@ -280,7 +280,7 @@ async def test_diagnostics_mask_ug_value_exception_swallowed(hass: HomeAssistant
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
 
@@ -338,7 +338,7 @@ async def test_diagnostics_handles_resub_exceptions(hass: HomeAssistant, monkeyp
     mock_api.http_client = MagicMock()
     mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="payload2")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
@@ -391,7 +391,7 @@ async def test_diagnostics_with_api_and_projects(hass: HomeAssistant) -> None:
 
     # Mock payload builder
     mock_payload_builder = MagicMock()
-    mock_payload_builder.build_device_list_payload = MagicMock(return_value="payload1")
+    mock_payload_builder.build_device_get_list_payload = MagicMock(return_value="payload1")
     mock_payload_builder.build_device_get_status_payload = MagicMock(return_value="payload2")
     mock_api.payload_builder = mock_payload_builder
 
@@ -452,7 +452,7 @@ async def test_diagnostics_api_login_required(hass: HomeAssistant) -> None:
 
     # Mock payload builder and parser
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="payload")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
@@ -697,7 +697,7 @@ async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) 
 
     # Minimal payload builder and parser
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="payload2")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
@@ -835,7 +835,7 @@ async def test_diagnostics_xml_redaction_patterns(hass: HomeAssistant) -> None:
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="payload")
 
     mock_api.response_parser = MagicMock()
@@ -889,7 +889,7 @@ async def test_diagnostics_device_parsing_fails(hass: HomeAssistant) -> None:
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
 
     # Parser raises exception
     mock_api.response_parser = MagicMock()
@@ -940,7 +940,7 @@ async def test_diagnostics_http_fetch_fails(hass: HomeAssistant) -> None:
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = None
@@ -1052,7 +1052,7 @@ async def test_diagnostics_redact_obj_with_raw_xml(hass: HomeAssistant) -> None:
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
 
@@ -1142,7 +1142,7 @@ async def test_diagnostics_device_without_dclg_or_id(hass: HomeAssistant) -> Non
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
 
     # Return device without dclg or id
     mock_api.response_parser = MagicMock()
@@ -1201,7 +1201,7 @@ async def test_diagnostics_status_fetch_exception(hass: HomeAssistant) -> None:
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p1")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="p2")
 
     mock_api.response_parser = MagicMock()
@@ -1291,7 +1291,7 @@ async def test_diagnostics_redact_xml_key_value_pattern(hass: HomeAssistant) -> 
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
 
@@ -1504,7 +1504,7 @@ async def test_diagnostics_gather_returns_tuple_wrong_length(hass: HomeAssistant
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p1")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="p2")
 
     mock_api.response_parser = MagicMock()
@@ -1727,7 +1727,7 @@ async def test_diagnostics_redact_xml_regex_exceptions(hass: HomeAssistant) -> N
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="payload")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="payload")
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
@@ -1783,7 +1783,7 @@ async def test_diagnostics_fetch_exception_in_gather(hass: HomeAssistant) -> Non
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p1")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="p2")
 
     mock_api.response_parser = MagicMock()
@@ -1860,7 +1860,7 @@ async def test_diagnostics_xml_raw_collection_and_masking_additional(hass) -> No
             return [{"id": "dev1"}]
 
     class FakePayloadBuilder:
-        def build_device_list_payload(self, session, pid):
+        def build_device_get_list_payload(self, session, pid):
             return "<req/>"
 
         def build_device_get_status_payload(self, session, did):
@@ -2002,7 +2002,7 @@ async def test_diagnostics_generic_ip_mac_email_redaction(hass: HomeAssistant) -
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
@@ -2049,7 +2049,7 @@ async def test_diagnostics_parse_device_list_exception(hass: HomeAssistant) -> N
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
 
     # Make parser raise exception
     mock_api.response_parser = MagicMock()
@@ -2101,7 +2101,7 @@ async def test_diagnostics_redact_obj_preserves_raw_xml(hass: HomeAssistant) -> 
     mock_api.http_client = mock_http_client
 
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
 
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
@@ -2462,7 +2462,7 @@ async def test_redact_xml_handles_re_sub_exceptions(hass: HomeAssistant, monkeyp
     mock_api.http_client = MagicMock()
     mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
     mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_list_payload = MagicMock(return_value="p")
+    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
     mock_api.payload_builder.build_device_get_status_payload = MagicMock(return_value="p2")
     mock_api.response_parser = MagicMock()
     mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[{"id": "dev1", "dclg": "dev1"}])
@@ -3711,7 +3711,7 @@ async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:
     fake_api = MagicMock()
     fake_api.is_session_valid.return_value = True
     fake_api.projects = [{"id": "p1"}]
-    fake_api.payload_builder.build_device_list_payload.return_value = "<p/>"
+    fake_api.payload_builder.build_device_get_list_payload.return_value = "<p/>"
     fake_api.response_parser.parse_device_list_response.return_value = [{"id": "d1"}]
     fake_api.payload_builder.build_device_get_status_payload.return_value = "<s/>"
     fake_api.http_client = FakeHTTPClient()
@@ -3993,7 +3993,7 @@ async def test_diagnostics_xml_device_status_gather_exception(hass: HomeAssistan
     mock_api.http_client = mock_http_client
 
     mock_payload_builder = MagicMock()
-    mock_payload_builder.build_device_list_payload = MagicMock(return_value="p1")
+    mock_payload_builder.build_device_get_list_payload = MagicMock(return_value="p1")
     # Raising here causes _fetch_status to raise, captured by gather(return_exceptions=True)
     mock_payload_builder.build_device_get_status_payload = MagicMock(side_effect=RuntimeError("status fail"))
     mock_api.payload_builder = mock_payload_builder
