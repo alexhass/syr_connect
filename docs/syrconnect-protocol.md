@@ -468,7 +468,7 @@ This data is used to "register" the device in the SYR Connect cloud via GetBasic
 | ----------------- | -------------- | -------- | ---------------------------------------------------------------------- |
 | getSRN            | "123456789"    |          | Serial number of the device. Used to identify the unit in the SYR Connect cloud |
 | getVER            | "1.7"          |          | Firmware version                                                       |
-| getTYP            | "80"           |          | Type of device. See "dk" values in "deviceKinds" table, some devices return return empty "" or 0 in XML API. Value is reliable in JSON format. |
+| getTYP            | "80"           |          | Type of device. See "dk" values in "deviceKinds" table. Devices may return empty string "" or "0" in XML, but values are correct in JSON format. See fixtures for examples. |
 | getCNA            | "LEXplus10S"   |          | Name of device. Known values: "LEXplus10", "LEXplus10S", "LEXplus10SL" |
 
 ### Further Device data
