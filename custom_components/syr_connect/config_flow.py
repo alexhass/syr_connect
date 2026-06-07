@@ -117,9 +117,10 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
     # Look up backend-specific parameters from _SYR_CONNECT_API_SERVICES
     conf_service = data.get(CONF_SERVICE)
     svc = _SYR_CONNECT_API_SERVICES.get(conf_service) if conf_service else None
+    api_app_name = svc["api_app_name"] if svc else None
     api_base_url = svc["api_base_url"] if svc else None
     cf_bundle_identifier = svc["cf_bundle_identifier"] if svc else None
-    api_app_name = svc["api_app_name"] if svc else None
+    display_name = (svc["display_name"] if svc else None)
 
     api = SyrConnectXmlAPI(
         session,
@@ -146,7 +147,7 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
 
     _LOGGER.info("XML API: authentication successful for user: %s", data[CONF_USERNAME])
 
-    title_label = (svc["display_name"] if svc else None) or "SYR Connect"
+    title_label = display_name or "SYR Connect"
     return {"title": f"{title_label} ({data[CONF_USERNAME]})"}
 
 
