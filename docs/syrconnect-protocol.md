@@ -498,8 +498,10 @@ Some further data about the device
 | Property        | Example                          | Unit   | Description |
 |-----------------|----------------------------------|--------|------------------------------------------------------- |
 | getALM          | ""                               |        | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes. |
+| getALA          | ""                               |        | Current alarm code — used on SafeTech, SafeTech+, LEXplus10SL and similar leak-protection devices. Translated to human-readable alarm strings (e.g. `alarm_leakage_volume_reached`, `alarm_microleakage_detected`). |
 | getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"        |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized. |
 | getDEN          | "1"                              |        | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
+| getNOT          | ""                               |        | Current notification code (e.g. `new_software_available`, `annual_maintenance`). |
 | getALH          | "2026-02-07 17:41:10:A0..."      |        | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel) |
 
 ### Network
@@ -714,10 +716,9 @@ These properties are only available on devices that contain leakage protection, 
 | getDPL          | "10"         |        | *unknown*
 | getDTC          | "3"          |        | *unknown*
 | getDRP          | "1"          |        | Sets the test interval for micro-leakage tests e.g. 1-3<br>1=The test starts daily<br>2=The test starts weekly<br>3=The test starts monthly
-| getALA          | "0"          |        | *unknown*
 | getTN           | "20"         |        | *unknown*
 | getSMR          | "1"          |        | *unknown*
-| getSRE          | "0"          |        | *unknown*
+| getSRE          | "0"          |        | Regeneration state: 0 = not running, 1 = running (values 3/5 unclear)
 | getVAC          | "0"          |        | *unknown*
 | getVAT          | "3"          |        | *unknown*
 | get71           | "0"          |        | *unknown* (LEXplus10SL, SafeTech, Sanibel)
@@ -768,14 +769,9 @@ These properties are only available on devices that contain leakage protection, 
 | getIPH          | ""           |        | *unknown constant?*
 | getLGO          | "1"          |        | *unknown constant?*
 | getMOF          | "0"          |        | *unknown constant?*
-| getNOT          | ""           |        | *unknown constant?*
 | getREV          | "10"         |        | *unknown constant?*
 | getRPE          | "30"         |        | *unknown constant?*
 | getSDR          | "1"          |        | *unknown constant?*
-| getSMR          | "1"          |        | *unknown constant?*
-| getSRE          | "0"          |        | *unknown constant?*
-| getVAC          | "0"          |        | *unknown constant?*
-| getVAT          | "3"          |        | *unknown constant?*
 
 ### NeoSoft 2500/5000
 
@@ -848,8 +844,8 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | Attribute   | Example                                    | Description
 |-------------|--------------------------------------------|-------------------------------------------------
 | dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"     | Device GUID
-| sbt         | "7"                                        | Subscription type
-| sta         | "2"                                        | Device status code
+| sbt         | "7"                                        | Subtype, see deviceKinds table for reference
+| sta         | "2"                                        | Device connection state: 1=never online, 2=online, 3=offline, 4=unknown, 5=warning triggered (?), 6=standby
 | dst         | "2"                                        | Device state
 | ast         | "1"                                        | Alarm state
 | so          | "1"                                        | *unknown*
@@ -882,7 +878,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | getALA_m        | "A5"                         | Last alarm message codes
 | f               | "0"                          | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL)
 | b               | "0"                          | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL)
-| m               | "ff:ff:eb:52:ee:12"          | CI metadata attribute — likely MAC address (Safe-T+)
+| m               | "ff:ff:eb:52:ee:12"          | CI metadata attribute — MAC address of device (Safe-T+)
 
 ### Sanibel Leak Protection Module A25
 
