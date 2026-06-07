@@ -115,7 +115,7 @@ rules:
   
   parallel-updates:
     status: done
-    comment: PARALLEL_UPDATES = 1 set in sensor.py, binary_sensor.py, button.py, select.py
+    comment: PARALLEL_UPDATES = 1 set in sensor.py, binary_sensor.py, button.py, select.py, valve.py
   
   reauthentication-flow:
     status: done
@@ -124,24 +124,30 @@ rules:
   test-coverage:
     status: done
     comment: |
-      Comprehensive test suite with 200+ test cases:
-      - tests/test_config_flow.py (25 tests)
-      - tests/test_coordinator.py (24 tests)  
-      - tests/test_diagnostics.py (35 tests)
-      - tests/test_sensor.py (extensive coverage)
-      - tests/test_binary_sensor.py (22 tests)
-      - tests/test_select.py (comprehensive)
-      - tests/test_button.py (13 tests)
-      - tests/test_api.py (28 tests)
+      Comprehensive test suite with 1,300+ test cases:
+      - tests/test_api_json.py (83 tests)
+      - tests/test_api_xml.py (30 tests)
+      - tests/test_binary_sensor.py (38 tests)
+      - tests/test_button.py (38 tests)
+      - tests/test_checksum.py (10 tests)
+      - tests/test_config_flow.py (77 tests)
+      - tests/test_coordinator.py (45 tests)
+      - tests/test_diagnostics.py (111 tests)
       - tests/test_encryption.py (8 tests)
-      - tests/test_payload_builder.py
-      - tests/test_response_parser.py
-      - tests/test_checksum.py (15 tests)
-      - tests/test_http_client.py (11 tests)
-      - tests/test_helpers.py (3 tests)
-      - tests/test_init.py (8 tests)
-      - tests/test_repairs.py
-      - tests/test_platforms.py
+      - tests/test_exceptions.py (6 tests)
+      - tests/test_helpers.py (116 tests)
+      - tests/test_http_client.py (16 tests)
+      - tests/test_init.py (22 tests)
+      - tests/test_migrations.py (12 tests)
+      - tests/test_models.py (68 tests)
+      - tests/test_payload_builder.py (31 tests)
+      - tests/test_platforms.py (3 tests)
+      - tests/test_repairs.py (3 tests)
+      - tests/test_response_parser.py (81 tests)
+      - tests/test_select.py (133 tests)
+      - tests/test_sensor.py (376 tests)
+      - tests/test_switch.py (22 tests)
+      - tests/test_valve.py (70 tests)
       Code coverage tracked via pytest-cov and reported to codecov
 
   # GOLD TIER
@@ -207,7 +213,7 @@ rules:
   
   entity-translations:
     status: done
-    comment: Translations available in 6 languages: de.json, en.json, es.json, fr.json, it.json, pt.json
+    comment: Translations available in 8 languages: de.json, en.json, es.json, fr.json, it.json, nl.json, pl.json, pt.json
   
   exception-translations:
     status: done
