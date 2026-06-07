@@ -1172,6 +1172,19 @@ async def test_coordinator_init_default_scan_interval(hass: HomeAssistant) -> No
         assert coordinator.update_interval is not None
 
 
+async def test_resolve_device_dclg_returns_none_when_device_not_found(hass: HomeAssistant) -> None:
+    """_resolve_device_dclg returns None when device_id is not in coordinator data (line 309)."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api_class.return_value = MagicMock()
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.data = {"devices": [{"id": "other_device", "dclg": "e6f7a8b9-c0d1-2345-efab-345678901234"}], "projects": []}
+
+        result = coordinator._resolve_device_dclg("nonexistent_device")
+
+        assert result is None
+
+
 async def test_fetch_device_status_propagates_auth_error(hass: HomeAssistant) -> None:
     """If API raises `SyrConnectAuthError`, `_fetch_device_status` should re-raise it (covers line ~291)."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
