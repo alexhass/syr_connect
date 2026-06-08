@@ -70,13 +70,6 @@
           "false": "Desativado",
           "true": "Ativado"
         }
-      },
-      "sta": {
-        "name": "Conectividade do dispositivo",
-        "state": {
-          "false": "Desconectado",
-          "true": "Conectado"
-        }
       }
     },
     "button": {
@@ -1032,6 +1025,17 @@
           "no_warning": "Nenhum aviso",
           "power_outage": "Falta de energia",
           "salt_supply_low": "Baixa reserva de sal"
+        }
+      },
+      "sta": {
+        "name": "Conectividade do dispositivo",
+        "state": {
+          "1": "Nunca esteve online",
+          "2": "Online",
+          "3": "Offline",
+          "4": "Alarme ativado",
+          "5": "Aviso ativado",
+          "6": "Em espera"
         }
       }
     },

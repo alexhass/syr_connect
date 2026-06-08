@@ -70,13 +70,6 @@
                     "false": "Wyłączony",
                     "true": "Włączony"
                 }
-            },
-            "sta": {
-                "name": "Łączność urządzenia",
-                "state": {
-                    "false": "Rozłączony",
-                    "true": "Połączony"
-                }
             }
         },
         "button": {
@@ -1032,6 +1025,17 @@
                     "no_warning": "Brak ostrzeżenia",
                     "power_outage": "Przerwa w zasilaniu",
                     "salt_supply_low": "Niski poziom soli"
+                }
+            },
+            "sta": {
+                "name": "Łączność urządzenia",
+                "state": {
+                    "1": "Nigdy nie było online",
+                    "2": "Online",
+                    "3": "Offline",
+                    "4": "Alarm wyzwolony",
+                    "5": "Ostrzeżenie wyzwolone",
+                    "6": "Czuwanie"
                 }
             }
         },

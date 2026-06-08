@@ -845,7 +845,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 |-------------|--------------------------------------------|-------------------------------------------------
 | dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"     | Device UUID
 | sbt         | "7"                                        | Subtype, see deviceKinds table for reference
-| sta         | "2"                                        | Device connection state: 1=never online, 2=online, 3=offline, 4=unknown, 5=warning triggered (?), 6=standby
+| sta         | "2"                                        | Device connection state: 1=never online, 2=online, 3=offline, 4=alarm triggered, 5=warning triggered, 6=standby
 | dst         | "2"                                        | Device state
 | ast         | "1"                                        | Alarm state
 | so          | "1"                                        | *unknown*

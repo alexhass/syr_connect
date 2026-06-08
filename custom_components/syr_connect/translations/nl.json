@@ -70,13 +70,6 @@
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
-      },
-      "sta": {
-        "name": "Apparaatconnectiviteit",
-        "state": {
-          "false": "Verbroken",
-          "true": "Verbonden"
-        }
       }
     },
     "button": {
@@ -1032,6 +1025,17 @@
           "no_warning": "Geen waarschuwing",
           "power_outage": "Stroomuitval",
           "salt_supply_low": "Zoutvoorraad laag"
+        }
+      },
+      "sta": {
+        "name": "Apparaatconnectiviteit",
+        "state": {
+          "1": "Nooit online geweest",
+          "2": "Online",
+          "3": "Offline",
+          "4": "Alarm geactiveerd",
+          "5": "Waarschuwing geactiveerd",
+          "6": "Stand-by"
         }
       }
     },

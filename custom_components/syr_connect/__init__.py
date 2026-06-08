@@ -22,7 +22,12 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import get_default_scan_interval_for_entry
-from .migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit, v3_to_v4_add_service
+from .migrations import (
+    v1_to_v2_update_kwargs,
+    v2_to_v3_fix_flo_unit,
+    v3_to_v4_add_service,
+    v4_to_v5_remove_sta_binary_sensor,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,6 +64,8 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
              L/min to L/h (native_unit_of_measurement changed in code).
       3 → 4: Add CONF_SERVICE to XML API entries that were created before
              multi-service support was introduced (defaults to SYR Connect).
+      4 → 5: Remove stale binary_sensor 'sta' entities from the entity
+             registry (the entity was migrated to the sensor platform).
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -101,6 +108,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.config_entries.async_update_entry(entry, **update_kwargs)
         else:
             hass.config_entries.async_update_entry(entry, version=4)
+
+    # Migrate v4 -> v5
+    # Integration version: sta entity moved from binary_sensor to sensor
+    if entry.version == 4:
+        _LOGGER.debug("Applying v4->v5 migration for entry %s: removing stale sta binary_sensor", entry.entry_id)
+        v4_to_v5_remove_sta_binary_sensor(hass, entry)
+        hass.config_entries.async_update_entry(entry, version=5)
 
     return True
 

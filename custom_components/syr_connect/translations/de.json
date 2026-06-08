@@ -70,13 +70,6 @@
           "false": "Deaktiviert",
           "true": "Aktiviert"
         }
-      },
-      "sta": {
-        "name": "Gerätekonnektivität",
-        "state": {
-          "false": "Getrennt",
-          "true": "Verbunden"
-        }
       }
     },
     "button": {
@@ -1032,6 +1025,17 @@
           "no_warning": "Keine Warnung",
           "power_outage": "Stromunterbrechung",
           "salt_supply_low": "Salzvorrat geht zur neige"
+        }
+      },
+      "sta": {
+        "name": "Gerätekonnektivität",
+        "state": {
+          "1": "Noch nie online gewesen",
+          "2": "Online",
+          "3": "Offline",
+          "4": "Alarm ausgelöst",
+          "5": "Warnung ausgelöst",
+          "6": "Standby"
         }
       }
     },

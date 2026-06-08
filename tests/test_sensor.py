@@ -16,7 +16,11 @@ from custom_components.syr_connect.const import (
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.sensor import SyrConnectSensor, async_setup_entry
+from custom_components.syr_connect.sensor import (
+    SyrConnectConnectionStateSensor,
+    SyrConnectSensor,
+    async_setup_entry,
+)
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -9072,4 +9076,180 @@ def test_sensor_getlng_annotated_value_stripped(create_mock_coordinator):
     sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
 
     assert sensor.native_value == "0"
+
+
+# ---------------------------------------------------------------------------
+# SyrConnectConnectionStateSensor tests
+# ---------------------------------------------------------------------------
+
+def _build_connection_state_sensor(
+    hass: HomeAssistant,
+    data: dict,
+    device_id: str = "device1",
+) -> SyrConnectConnectionStateSensor:
+    coordinator = _build_coordinator(hass, data)
+    return SyrConnectConnectionStateSensor(coordinator, device_id, "Device 1", "project1")
+
+
+async def test_connection_state_sensor_always_available(hass: HomeAssistant) -> None:
+    """Connection state sensor is always available."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.available is True
+
+
+async def test_connection_state_sensor_available_when_coordinator_fails(hass: HomeAssistant) -> None:
+    """Connection state sensor stays available even when coordinator update fails."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.last_update_success = False
+    sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1", "project1")
+    assert sensor.available is True
+
+
+async def test_connection_state_sensor_native_value_numeric(hass: HomeAssistant) -> None:
+    """native_value returns string for numeric sta value."""
+    for sta_val, expected in [(1, "1"), (2, "2"), (3, "3"), (4, "4"), (5, "5"), (6, "6")]:
+        data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": sta_val}}]}
+        sensor = _build_connection_state_sensor(hass, data)
+        assert sensor.native_value == expected, f"sta={sta_val}"
+
+
+async def test_connection_state_sensor_native_value_string(hass: HomeAssistant) -> None:
+    """native_value returns string for string sta value."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "2"}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.native_value == "2"
+
+
+async def test_connection_state_sensor_native_value_none(hass: HomeAssistant) -> None:
+    """native_value returns None when sta is absent."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.native_value is None
+
+
+async def test_connection_state_sensor_native_value_no_data(hass: HomeAssistant) -> None:
+    """native_value returns None when coordinator has no data."""
+    coordinator = _build_coordinator(hass, {})
+    sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1", "project1")
+    assert sensor.native_value is None
+
+
+async def test_connection_state_sensor_icon_online(hass: HomeAssistant) -> None:
+    """Icon is check-network-outline when sta=2 (online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 2}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:check-network-outline"
+
+
+async def test_connection_state_sensor_icon_offline(hass: HomeAssistant) -> None:
+    """Icon is close-network-outline when sta=3 (offline)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 3}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:close-network-outline"
+
+
+async def test_connection_state_sensor_icon_never_online(hass: HomeAssistant) -> None:
+    """Icon is network-outline when sta=1 (never been online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 1}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:network-outline"
+
+
+async def test_connection_state_sensor_icon_alarm(hass: HomeAssistant) -> None:
+    """Icon is help-network-outline when sta=4 (alarm)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 4}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:help-network-outline"
+
+
+async def test_connection_state_sensor_icon_warning(hass: HomeAssistant) -> None:
+    """Icon is help-network-outline when sta=5 (warning)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 5}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:help-network-outline"
+
+
+async def test_connection_state_sensor_icon_standby(hass: HomeAssistant) -> None:
+    """Icon is check-network-outline when sta=6 (standby)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 6}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:check-network-outline"
+
+
+async def test_connection_state_sensor_icon_fallback(hass: HomeAssistant) -> None:
+    """Icon falls back to network-outline when sta is None."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.icon == "mdi:network-outline"
+
+
+async def test_connection_state_sensor_entity_category(hass: HomeAssistant) -> None:
+    """Connection state sensor has DIAGNOSTIC entity category."""
+    from homeassistant.helpers.entity import EntityCategory
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor._attr_entity_category == EntityCategory.DIAGNOSTIC
+
+
+async def test_connection_state_sensor_unique_id(hass: HomeAssistant) -> None:
+    """Connection state sensor unique_id is {device_id}_sta."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor._attr_unique_id == "device1_sta"
+
+
+async def test_connection_state_sensor_translation_key(hass: HomeAssistant) -> None:
+    """Connection state sensor uses 'sta' as translation key."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor._attr_translation_key == "sta"
+
+
+async def test_async_setup_entry_creates_connection_state_sensor(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+    """async_setup_entry creates a connection state sensor for each device."""
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}},
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities = []
+
+    from unittest.mock import Mock
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    connection_sensors = [e for e in entities if isinstance(e, SyrConnectConnectionStateSensor)]
+    assert len(connection_sensors) == 1
+
+
+async def test_async_setup_entry_connection_state_sensor_per_device(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+    """async_setup_entry creates one connection state sensor per device."""
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}},
+            {"id": "device2", "name": "Device 2", "project_id": "project1", "status": {}},
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities = []
+
+    from unittest.mock import Mock
+    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    connection_sensors = [e for e in entities if isinstance(e, SyrConnectConnectionStateSensor)]
+    assert len(connection_sensors) == 2
+
+
+async def test_connection_state_sensor_device_not_found(hass: HomeAssistant) -> None:
+    """native_value returns None when device is not in coordinator data."""
+    data = {"devices": [{"id": "other_device", "name": "Other", "project_id": "project1", "status": {}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.native_value is None
+
 

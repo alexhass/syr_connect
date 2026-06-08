@@ -253,6 +253,8 @@ _SYR_CONNECT_SENSOR_BINARY = {
 # Only API keys listed here will become sensor entities. Any key returned by
 # a firmware update that is not listed here is silently ignored.
 _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
+    # --- Connectivity (virtual, always created) ---
+    "sta",      # Device connection state (1=never online, 2=online, 3=offline, 4=alarm, 5=warning, 6=standby)
     # --- Valve & Flow ---
     "getAB",    # Valve shutoff state (open / closed)
     "getAVO",   # Current instantaneous flow rate
@@ -479,6 +481,8 @@ _SYR_CONNECT_SENSOR_CONFIG = {
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
+    # --- Connectivity ---
+    "sta",      # Device connection state
     # --- Device Info ---
     "getCNA",   # Device name
     "getCNO",   # Code number / device sub-identifier
@@ -679,7 +683,6 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
     "getBUZ",   # Buzzer on/off
-    "sta",      # Device connectivity (virtual, always created)
 }
 
 # Known keys for the valve platform — used by registry_cleanup to remove stale entries.
@@ -856,6 +859,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getALW": "mdi:alert-plus-outline",     # List of last warnings
     "getALN": "mdi:bell-plus",              # List of last notifications
     "getSTA": "mdi:list-status",
+    # Connectivity (virtual sensor, icon changes per state)
+    "sta": "mdi:network-outline",           # Default / fallback icon
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",
     # Device Info
@@ -1018,6 +1023,17 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getSLF": "mdi:waves-arrow-right",
     "getSLT": "mdi:timer-outline",
     "getSLE": "mdi:timer-sand",
+}
+
+# Icon mapping for the virtual "sta" (device connection state) sensor.
+# Maps the raw API value (as string) to the corresponding MDI icon.
+_SYR_CONNECT_SENSOR_STA_ICON_MAP = {
+    "1": "mdi:network-outline",         # Never been online
+    "2": "mdi:check-network-outline",   # Online
+    "3": "mdi:close-network-outline",   # Offline
+    "4": "mdi:help-network-outline",    # Alarm triggered
+    "5": "mdi:help-network-outline",    # Warning triggered
+    "6": "mdi:check-network-outline",   # Standby
 }
 
 # Mapping for getALM sensor values

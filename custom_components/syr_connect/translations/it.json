@@ -70,13 +70,6 @@
           "false": "Disattivato",
           "true": "Attivato"
         }
-      },
-      "sta": {
-        "name": "Connettività del dispositivo",
-        "state": {
-          "false": "Disconnesso",
-          "true": "Connesso"
-        }
       }
     },
     "button": {
@@ -1032,6 +1025,17 @@
           "no_warning": "Nessun avviso",
           "power_outage": "Interruzione di corrente",
           "salt_supply_low": "Scorta di sale bassa"
+        }
+      },
+      "sta": {
+        "name": "Connettività del dispositivo",
+        "state": {
+          "1": "Non è mai stato online",
+          "2": "Online",
+          "3": "Offline",
+          "4": "Allarme attivato",
+          "5": "Avviso attivato",
+          "6": "Standby"
         }
       }
     },

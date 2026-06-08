@@ -100,3 +100,18 @@ def v3_to_v4_add_service(entry: ConfigEntry) -> dict | None:
         return None
     new_data = {**entry.data, CONF_SERVICE: _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER}
     return {"data": new_data, "version": 4}
+
+
+def v4_to_v5_remove_sta_binary_sensor(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Remove stale binary_sensor 'sta' entity from the registry (v4 → v5).
+
+    The 'sta' connectivity entity was converted from binary_sensor to sensor.
+    Any old binary_sensor.syr_connect_{device_id}_sta entries left in the
+    entity registry must be removed so HA does not display a ghost entity.
+    """
+    ent_reg = er.async_get(hass)
+    for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+        if entity_entry.domain != "binary_sensor":
+            continue
+        if entity_entry.unique_id.endswith("_sta"):
+            ent_reg.async_remove(entity_entry.entity_id)
