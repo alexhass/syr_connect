@@ -15,7 +15,7 @@ from custom_components.syr_connect.const import (
     CONF_HOST,
     CONF_SERVICE,
 )
-from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit, v3_to_v4_add_service
+from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit, v3_to_v4_add_service, v4_to_v5_remove_sta_binary_sensor
 
 
 def test_v1_to_v2_with_host_sets_json_and_unique_id() -> None:
@@ -353,3 +353,92 @@ def test_v3_to_v4_skips_json_entry() -> None:
 
     assert result is None
 
+
+async def test_v4_to_v5_removes_sta_binary_sensor(hass: HomeAssistant) -> None:
+    """v4_to_v5 removes binary_sensor entries whose unique_id ends with '_sta'."""
+    entry = MockConfigEntry(
+        version=4,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v4",
+        unique_id="xml_v4@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    sta_entity = MagicMock()
+    sta_entity.entity_id = "binary_sensor.syr_connect_123_sta"
+    sta_entity.unique_id = "123_sta"
+    sta_entity.domain = "binary_sensor"
+
+    other_entity = MagicMock()
+    other_entity.entity_id = "binary_sensor.syr_connect_123_getbuz"
+    other_entity.unique_id = "123_getBUZ"
+    other_entity.domain = "binary_sensor"
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [sta_entity, other_entity]
+
+        v4_to_v5_remove_sta_binary_sensor(hass, entry)
+
+    mock_reg.async_remove.assert_called_once_with("binary_sensor.syr_connect_123_sta")
+
+
+async def test_v4_to_v5_skips_sensor_domain_entries(hass: HomeAssistant) -> None:
+    """v4_to_v5 must not touch sensor.* entries, even if unique_id ends with '_sta'."""
+    entry = MockConfigEntry(
+        version=4,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v4b",
+        unique_id="xml_v4b@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    sensor_sta = MagicMock()
+    sensor_sta.entity_id = "sensor.syr_connect_123_sta"
+    sensor_sta.unique_id = "123_sta"
+    sensor_sta.domain = "sensor"
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [sensor_sta]
+
+        v4_to_v5_remove_sta_binary_sensor(hass, entry)
+
+    mock_reg.async_remove.assert_not_called()
+
+
+async def test_v4_to_v5_no_entries(hass: HomeAssistant) -> None:
+    """v4_to_v5 handles an empty entity registry gracefully."""
+    entry = MockConfigEntry(
+        version=4,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v4c",
+        unique_id="xml_v4c@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = []
+
+        v4_to_v5_remove_sta_binary_sensor(hass, entry)
+
+    mock_reg.async_remove.assert_not_called()

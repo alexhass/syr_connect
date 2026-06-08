@@ -9129,6 +9129,13 @@ async def test_connection_state_sensor_native_value_none(hass: HomeAssistant) ->
     assert sensor.native_value is None
 
 
+async def test_connection_state_sensor_native_value_non_integer_string(hass: HomeAssistant) -> None:
+    """native_value returns the raw string when sta cannot be cast to int."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "unknown"}}]}
+    sensor = _build_connection_state_sensor(hass, data)
+    assert sensor.native_value == "unknown"
+
+
 async def test_connection_state_sensor_native_value_no_data(hass: HomeAssistant) -> None:
     """native_value returns None when coordinator has no data."""
     coordinator = _build_coordinator(hass, {})
