@@ -161,6 +161,15 @@
       }
     },
     "sensor": {
+      "dst": {
+        "name": "Connettività del dispositivo",
+        "state": {
+          "0": "Non è mai stato online",
+          "1": "Offline",
+          "2": "Online",
+          "3": "Standby"
+        }
+      },
       "getab": {
         "name": "Chiusura valvola",
         "state": {
@@ -1025,17 +1034,6 @@
           "no_warning": "Nessun avviso",
           "power_outage": "Interruzione di corrente",
           "salt_supply_low": "Scorta di sale bassa"
-        }
-      },
-      "sta": {
-        "name": "Connettività del dispositivo",
-        "state": {
-          "1": "Non è mai stato online",
-          "2": "Online",
-          "3": "Offline",
-          "4": "Allarme attivato",
-          "5": "Notifica",
-          "6": "Standby"
         }
       }
     },

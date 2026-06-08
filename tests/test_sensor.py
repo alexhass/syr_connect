@@ -9108,30 +9108,30 @@ async def test_connection_state_sensor_available_when_coordinator_fails(hass: Ho
 
 
 async def test_connection_state_sensor_native_value_numeric(hass: HomeAssistant) -> None:
-    """native_value returns string for numeric sta value."""
-    for sta_val, expected in [(1, "1"), (2, "2"), (3, "3"), (4, "4"), (5, "5"), (6, "6")]:
-        data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": sta_val}}]}
+    """native_value returns string for numeric dst value."""
+    for dst_val, expected in [(0, "0"), (1, "1"), (2, "2"), (3, "3")]:
+        data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": dst_val}}]}
         sensor = _build_connection_state_sensor(hass, data)
-        assert sensor.native_value == expected, f"sta={sta_val}"
+        assert sensor.native_value == expected, f"dst={dst_val}"
 
 
 async def test_connection_state_sensor_native_value_string(hass: HomeAssistant) -> None:
-    """native_value returns string for string sta value."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "2"}}]}
+    """native_value returns string for string dst value."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": "2"}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.native_value == "2"
 
 
 async def test_connection_state_sensor_native_value_none(hass: HomeAssistant) -> None:
-    """native_value returns None when sta is absent."""
+    """native_value returns None when dst is absent."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.native_value is None
 
 
 async def test_connection_state_sensor_native_value_non_integer_string(hass: HomeAssistant) -> None:
-    """native_value returns the raw string when sta cannot be cast to int."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "unknown"}}]}
+    """native_value returns the raw string when dst cannot be cast to int."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": "unknown"}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.native_value == "unknown"
 
@@ -9144,43 +9144,29 @@ async def test_connection_state_sensor_native_value_no_data(hass: HomeAssistant)
 
 
 async def test_connection_state_sensor_icon_online(hass: HomeAssistant) -> None:
-    """Icon is check-network-outline when sta=2 (online)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 2}}]}
+    """Icon is check-network-outline when dst=2 (online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 2}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.icon == "mdi:check-network-outline"
 
 
 async def test_connection_state_sensor_icon_offline(hass: HomeAssistant) -> None:
-    """Icon is close-network-outline when sta=3 (offline)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 3}}]}
+    """Icon is close-network-outline when dst=1 (offline)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 1}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.icon == "mdi:close-network-outline"
 
 
 async def test_connection_state_sensor_icon_never_online(hass: HomeAssistant) -> None:
-    """Icon is network-outline when sta=1 (never been online)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 1}}]}
+    """Icon is network-outline when dst=0 (never been online)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 0}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.icon == "mdi:network-outline"
 
 
-async def test_connection_state_sensor_icon_alarm(hass: HomeAssistant) -> None:
-    """Icon is help-network-outline when sta=4 (alarm)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 4}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:help-network-outline"
-
-
-async def test_connection_state_sensor_icon_warning(hass: HomeAssistant) -> None:
-    """Icon is help-network-outline when sta=5 (warning)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 5}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:help-network-outline"
-
-
 async def test_connection_state_sensor_icon_standby(hass: HomeAssistant) -> None:
-    """Icon is check-network-outline when sta=6 (standby)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": 6}}]}
+    """Icon is check-network-outline when dst=3 (standby)."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 3}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.icon == "mdi:check-network-outline"
 
@@ -9201,24 +9187,24 @@ async def test_connection_state_sensor_entity_category(hass: HomeAssistant) -> N
 
 
 async def test_connection_state_sensor_unique_id(hass: HomeAssistant) -> None:
-    """Connection state sensor unique_id is {device_id}_sta."""
+    """Connection state sensor unique_id is {device_id}_dst."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     sensor = _build_connection_state_sensor(hass, data)
-    assert sensor._attr_unique_id == "device1_sta"
+    assert sensor._attr_unique_id == "device1_dst"
 
 
 async def test_connection_state_sensor_translation_key(hass: HomeAssistant) -> None:
-    """Connection state sensor uses 'sta' as translation key."""
+    """Connection state sensor uses 'dst' as translation key."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     sensor = _build_connection_state_sensor(hass, data)
-    assert sensor._attr_translation_key == "sta"
+    assert sensor._attr_translation_key == "dst"
 
 
 async def test_async_setup_entry_creates_connection_state_sensor(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
     """async_setup_entry creates a connection state sensor for each device."""
     data = {
         "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "2"}},
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": "2"}},
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
@@ -9237,8 +9223,8 @@ async def test_async_setup_entry_connection_state_sensor_per_device(hass: HomeAs
     """async_setup_entry creates one connection state sensor per device."""
     data = {
         "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "2"}},
-            {"id": "device2", "name": "Device 2", "project_id": "project1", "status": {"sta": "3"}},
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": "2"}},
+            {"id": "device2", "name": "Device 2", "project_id": "project1", "status": {"dst": "1"}},
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)

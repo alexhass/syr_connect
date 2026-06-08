@@ -22,11 +22,11 @@ from .const import (
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    _SYR_CONNECT_SENSOR_DST_ICON_MAP,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_STA_ICON_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
     _SYR_CONNECT_SENSOR_STRING,
@@ -105,8 +105,8 @@ async def async_setup_entry(
 
         _LOGGER.debug("Device %s (%s) has %d status values", device_name, device_id, len(status))
 
-        # Only create the connection state sensor when the API provides a "sta" value
-        if status.get("sta") is not None:
+        # Only create the connection state sensor when the API provides a "dst" value
+        if status.get("dst") is not None:
             entities.append(
                 SyrConnectConnectionStateSensor(
                     coordinator,
@@ -193,8 +193,8 @@ async def async_setup_entry(
             if key in _SYR_CONNECT_SENSOR_BINARY:
                 continue
 
-            # Skip sta — handled as a dedicated SyrConnectConnectionStateSensor (always created above)
-            if key == "sta":
+            # Skip dst — handled as a dedicated SyrConnectConnectionStateSensor (always created above)
+            if key == "dst":
                 continue
 
             # Skip keys already handled by getPA group logic above
@@ -891,7 +891,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
 
 class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):
-    """Sensor for the device connection state (virtual 'sta' field).
+    """Sensor for the device connection state (virtual 'dst' field).
 
     Always available so Home Assistant can always show the connectivity state,
     even when the coordinator cannot reach the device.
@@ -899,7 +899,7 @@ class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):
 
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_has_entity_name = True
-    _attr_translation_key = "sta"
+    _attr_translation_key = "dst"
 
     def __init__(
         self,
@@ -915,8 +915,8 @@ class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):
         self._device_name = device_name
         self._project_id = project_id
 
-        self._attr_unique_id = f"{device_id}_sta"
-        self.entity_id = build_entity_id("sensor", device_id, "sta")
+        self._attr_unique_id = f"{device_id}_dst"
+        self.entity_id = build_entity_id("sensor", device_id, "dst")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     @property
@@ -924,25 +924,25 @@ class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):
         """Return MDI icon based on current connection state value."""
         val = self.native_value
         if val is not None:
-            icon = _SYR_CONNECT_SENSOR_STA_ICON_MAP.get(str(val))
+            icon = _SYR_CONNECT_SENSOR_DST_ICON_MAP.get(str(val))
             if icon:
                 return icon
         return "mdi:network-outline"
 
     @property
     def native_value(self) -> str | None:
-        """Return the raw sta value as a string (translation key)."""
+        """Return the raw dst value as a string (translation key)."""
         if not self.coordinator.data:
             return None
         for device in self.coordinator.data.get('devices', []):
             if device['id'] == self._device_id:
-                sta = device.get('status', {}).get('sta')
-                if sta is None:
+                dst = device.get('status', {}).get('dst')
+                if dst is None:
                     return None
                 try:
-                    return str(int(sta))
+                    return str(int(dst))
                 except (TypeError, ValueError):
-                    return str(sta)
+                    return str(dst)
         return None
 
     @property

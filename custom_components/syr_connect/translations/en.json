@@ -161,6 +161,15 @@
       }
     },
     "sensor": {
+      "dst": {
+        "name": "Device connectivity",
+        "state": {
+          "0": "Never been online",
+          "1": "Offline",
+          "2": "Online",
+          "3": "Standby"
+        }
+      },
       "getab": {
         "name": "Valve shut-off",
         "state": {
@@ -1025,17 +1034,6 @@
           "no_warning": "No warning",
           "power_outage": "Power outage",
           "salt_supply_low": "Salt supply low"
-        }
-      },
-      "sta": {
-        "name": "Device connectivity",
-        "state": {
-          "1": "Never been online",
-          "2": "Online",
-          "3": "Offline",
-          "4": "Alarm triggered",
-          "5": "Notification",
-          "6": "Standby"
         }
       }
     },

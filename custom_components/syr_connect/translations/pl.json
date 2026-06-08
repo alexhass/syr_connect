@@ -161,6 +161,15 @@
             }
         },
         "sensor": {
+            "dst": {
+                "name": "Łączność urządzenia",
+                "state": {
+                    "0": "Nigdy nie było online",
+                    "1": "Offline",
+                    "2": "Online",
+                    "3": "Czuwanie"
+                }
+            },
             "getab": {
                 "name": "Zawór odcinający",
                 "state": {
@@ -1025,17 +1034,6 @@
                     "no_warning": "Brak ostrzeżenia",
                     "power_outage": "Przerwa w zasilaniu",
                     "salt_supply_low": "Niski poziom soli"
-                }
-            },
-            "sta": {
-                "name": "Łączność urządzenia",
-                "state": {
-                    "1": "Nigdy nie było online",
-                    "2": "Online",
-                    "3": "Offline",
-                    "4": "Alarm wyzwolony",
-                    "5": "Powiadomienie",
-                    "6": "Czuwanie"
                 }
             }
         },

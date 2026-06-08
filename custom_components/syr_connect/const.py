@@ -254,7 +254,7 @@ _SYR_CONNECT_SENSOR_BINARY = {
 # a firmware update that is not listed here is silently ignored.
 _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Connectivity (virtual, always created) ---
-    "sta",      # Device connection state (1=never online, 2=online, 3=offline, 4=alarm, 5=warning, 6=standby)
+    "dst",      # Device connection state (0=never online, 1=offline, 2=online, 3=standby)
     # --- Valve & Flow ---
     "getAB",    # Valve shutoff state (open / closed)
     "getAVO",   # Current instantaneous flow rate
@@ -482,7 +482,7 @@ _SYR_CONNECT_SENSOR_CONFIG = {
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     # --- Connectivity ---
-    "sta",      # Device connection state
+    "dst",      # Device connection state
     # --- Device Info ---
     "getCNA",   # Device name
     "getCNO",   # Code number / device sub-identifier
@@ -860,7 +860,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getALN": "mdi:bell-plus",              # List of last notifications
     "getSTA": "mdi:list-status",
     # Connectivity (virtual sensor, icon changes per state)
-    "sta": "mdi:network-outline",           # Default / fallback icon
+    "dst": "mdi:network-outline",           # Default / fallback icon
     "getPST": "mdi:check-circle",
     "getRDO": "mdi:shaker",
     # Device Info
@@ -1025,15 +1025,13 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getSLE": "mdi:timer-sand",
 }
 
-# Icon mapping for the virtual "sta" (device connection state) sensor.
+# Icon mapping for the virtual "dst" (device connection state) sensor.
 # Maps the raw API value (as string) to the corresponding MDI icon.
-_SYR_CONNECT_SENSOR_STA_ICON_MAP = {
-    "1": "mdi:network-outline",         # Never been online
+_SYR_CONNECT_SENSOR_DST_ICON_MAP = {
+    "0": "mdi:network-outline",         # Never been online
+    "1": "mdi:close-network-outline",   # Offline
     "2": "mdi:check-network-outline",   # Online
-    "3": "mdi:close-network-outline",   # Offline
-    "4": "mdi:help-network-outline",    # Alarm triggered
-    "5": "mdi:help-network-outline",    # Warning triggered
-    "6": "mdi:check-network-outline",   # Standby
+    "3": "mdi:check-network-outline",   # Standby
 }
 
 # Mapping for getALM sensor values

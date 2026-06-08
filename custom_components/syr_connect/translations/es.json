@@ -161,6 +161,15 @@
       }
     },
     "sensor": {
+      "dst": {
+        "name": "Conectividad del dispositivo",
+        "state": {
+          "0": "Nunca ha estado en línea",
+          "1": "Sin conexión",
+          "2": "En línea",
+          "3": "En espera"
+        }
+      },
       "getab": {
         "name": "Cierre de válvula",
         "state": {
@@ -1025,17 +1034,6 @@
           "no_warning": "Sin advertencias",
           "power_outage": "Corte de energía",
           "salt_supply_low": "Reserva de sal baja"
-        }
-      },
-      "sta": {
-        "name": "Conectividad del dispositivo",
-        "state": {
-          "1": "Nunca ha estado en línea",
-          "2": "En línea",
-          "3": "Sin conexión",
-          "4": "Alarma activada",
-          "5": "Notificación",
-          "6": "En espera"
         }
       }
     },

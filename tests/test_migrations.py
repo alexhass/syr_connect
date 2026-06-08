@@ -355,7 +355,7 @@ def test_v3_to_v4_skips_json_entry() -> None:
 
 
 async def test_v4_to_v5_removes_sta_binary_sensor(hass: HomeAssistant) -> None:
-    """v4_to_v5 removes binary_sensor entries whose unique_id ends with '_sta'."""
+    """v4_to_v5 removes any entry whose unique_id ends with '_sta' (any domain)."""
     entry = MockConfigEntry(
         version=4,
         domain="syr_connect",
@@ -389,8 +389,8 @@ async def test_v4_to_v5_removes_sta_binary_sensor(hass: HomeAssistant) -> None:
     mock_reg.async_remove.assert_called_once_with("binary_sensor.syr_connect_123_sta")
 
 
-async def test_v4_to_v5_skips_sensor_domain_entries(hass: HomeAssistant) -> None:
-    """v4_to_v5 must not touch sensor.* entries, even if unique_id ends with '_sta'."""
+async def test_v4_to_v5_also_removes_sensor_domain_sta_entries(hass: HomeAssistant) -> None:
+    """v4_to_v5 also removes sensor.* entries with unique_id ending '_sta' (field renamed to dst)."""
     entry = MockConfigEntry(
         version=4,
         domain="syr_connect",
@@ -416,7 +416,7 @@ async def test_v4_to_v5_skips_sensor_domain_entries(hass: HomeAssistant) -> None
 
         v4_to_v5_remove_sta_binary_sensor(hass, entry)
 
-    mock_reg.async_remove.assert_not_called()
+    mock_reg.async_remove.assert_called_once_with("sensor.syr_connect_123_sta")
 
 
 async def test_v4_to_v5_no_entries(hass: HomeAssistant) -> None:

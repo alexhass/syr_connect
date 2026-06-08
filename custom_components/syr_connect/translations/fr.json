@@ -161,6 +161,15 @@
       }
     },
     "sensor": {
+      "dst": {
+        "name": "Connectivité de l'appareil",
+        "state": {
+          "0": "Jamais été en ligne",
+          "1": "Hors ligne",
+          "2": "En ligne",
+          "3": "En veille"
+        }
+      },
       "getab": {
         "name": "Coupure de vanne",
         "state": {
@@ -1025,17 +1034,6 @@
           "no_warning": "Aucun avertissement",
           "power_outage": "Coupure de courant",
           "salt_supply_low": "Faible approvisionnement en sel"
-        }
-      },
-      "sta": {
-        "name": "Connectivité de l'appareil",
-        "state": {
-          "1": "Jamais été en ligne",
-          "2": "En ligne",
-          "3": "Hors ligne",
-          "4": "Alarme déclenchée",
-          "5": "Notification",
-          "6": "En veille"
         }
       }
     },
