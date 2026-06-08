@@ -51,8 +51,8 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    is_profile_active,
     is_sensor_visible,
-    is_value_true,
     registry_cleanup,
 )
 
@@ -126,7 +126,6 @@ async def async_setup_entry(
 
         for idx in range(1, 9):
             pa_key = f"getPA{idx}"
-            pa_val = status.get(pa_key)
             group_keys = [
                 f"getPA{idx}",
                 f"getPV{idx}",
@@ -139,9 +138,11 @@ async def async_setup_entry(
                 f"getPR{idx}"
             ]
 
+            # Determine whether the profile group is active.
+            profile_group_active = is_profile_active(status, idx)
+
             try:
-                if is_value_true(pa_val):
-                    # Create entities for group keys — only if the key is actually present in status.
+                if profile_group_active:
                     for gk in group_keys:
                         # Avoid duplicates when iterating over status later
                         handled_keys.add(gk)

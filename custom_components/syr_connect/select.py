@@ -26,6 +26,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     get_sensor_rtm_value,
+    is_profile_active,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
@@ -81,13 +82,20 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        # if any getPAx is truthy (e.g. "true" or "1"), create profile select
+        # if any getPAx is truthy (e.g. "true" or "1"), create profile select.
+        # For devices without getPAx (e.g. PontosBase), fall back to a non-empty getPNx name.
         has_profile = False
         for i in range(1, 9):
             pa = status.get(f"getPA{i}")
-            if is_value_true(pa):
-                has_profile = True
-                break
+            if pa is not None:
+                if is_value_true(pa):
+                    has_profile = True
+                    break
+            else:
+                pn = status.get(f"getPN{i}")
+                if pn is not None and isinstance(pn, str) and pn.strip() != "":
+                    has_profile = True
+                    break
         if has_profile:
             entities.append(SyrConnectPrfSelect(coordinator, device_id, device_name))
 
@@ -644,8 +652,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
                 continue
             status = dev.get("status", {})
             for i in range(1, 9):
-                pa = status.get(f"getPA{i}")
-                if not is_value_true(pa):
+                if not is_profile_active(status, i):
                     continue
                 name = status.get(f"getPN{i}") or str(i)
                 opts.append(str(name))
@@ -678,8 +685,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
                 continue
             status = dev.get("status", {})
             for i in range(1, 9):
-                pa = status.get(f"getPA{i}")
-                if not is_value_true(pa):
+                if not is_profile_active(status, i):
                     continue
                 name = status.get(f"getPN{i}") or str(i)
                 if str(name) == option:

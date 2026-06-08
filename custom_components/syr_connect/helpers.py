@@ -70,6 +70,27 @@ def is_value_true(val: object) -> bool:
     return False
 
 
+def is_profile_active(status: dict, idx: int) -> bool:
+    """Return whether leak-protection profile slot *idx* (1–8) is active.
+
+    Devices with an explicit ``getPAx`` flag (e.g. LEXplus10SL) use that flag.
+    Devices without ``getPAx`` (e.g. PontosBase) fall back to a non-empty
+    ``getPNx`` profile name as the presence indicator.
+
+    Args:
+        status: The full flattened device status dict.
+        idx: Profile index 1–8.
+
+    Returns:
+        True when the profile slot is considered active/enabled.
+    """
+    pa_key = f"getPA{idx}"
+    if pa_key in status:
+        return is_value_true(status[pa_key])
+    pn_val = status.get(f"getPN{idx}")
+    return pn_val is not None and isinstance(pn_val, str) and pn_val.strip() != ""
+
+
 def get_default_scan_interval_for_entry(entry: ConfigEntry | dict | None) -> int:
     """Return the default scan interval for a config entry.
 
@@ -1065,19 +1086,9 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     # Group keys controlled by getPAx should be hidden when getPAx is false
     m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
     if m:
-        idx = m.group(2)
-        pa_key = f"getPA{idx}"
-        if pa_key in status:
-            # Device has explicit getPAx flag (e.g. LEXplus10SL) — use it directly
-            if not is_value_true(status.get(pa_key)):
-                return False
-        else:
-            # Device has no getPAx (e.g. PontosBase) — fall back to getPNx:
-            # a non-empty profile name means the profile slot is in use
-            pn_key = f"getPN{idx}"
-            pn_val = status.get(pn_key)
-            if pn_val is None or (isinstance(pn_val, str) and pn_val.strip() == ""):
-                return False
+        idx = int(m.group(2))
+        if not is_profile_active(status, idx):
+            return False
 
     # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
     if key in ("getCS1", "getCS2", "getCS3"):
