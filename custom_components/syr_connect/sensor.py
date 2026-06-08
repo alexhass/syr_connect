@@ -93,7 +93,7 @@ async def async_setup_entry(
     # Registry handle used for per-group removals below
     registry = er.async_get(hass)
 
-    entities = []
+    entities: list[SensorEntity] = []
 
     _LOGGER.debug("Setting up sensors for %d device(s)", len(coordinator.data.get('devices', [])))
 
