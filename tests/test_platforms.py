@@ -62,7 +62,7 @@ async def test_binary_sensor_platform_creates_entities(hass: HomeAssistant) -> N
 
     add_entities.assert_called_once()
     entities = add_entities.call_args.args[0]
-    # 1 getBUZ binary sensor (connectivity sensor moved to sensor platform)
+    # 1 getBUZ binary sensor
     assert len(entities) == 1
 
 
