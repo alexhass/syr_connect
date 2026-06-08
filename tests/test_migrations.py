@@ -15,12 +15,7 @@ from custom_components.syr_connect.const import (
     CONF_HOST,
     CONF_SERVICE,
 )
-from custom_components.syr_connect.migrations import (
-    v1_to_v2_update_kwargs,
-    v2_to_v3_fix_flo_unit,
-    v3_to_v4_add_service,
-    v4_to_v5_remove_sta_binary_sensor,
-)
+from custom_components.syr_connect.migrations import v1_to_v2_update_kwargs, v2_to_v3_fix_flo_unit, v3_to_v4_add_service, v4_to_v5_remove_sta_binary_sensor
 
 
 def test_v1_to_v2_with_host_sets_json_and_unique_id() -> None:
