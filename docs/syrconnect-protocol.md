@@ -845,9 +845,9 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 |-------------|--------------------------------------------|-------------------------------------------------
 | dg          | "f2960d43-2161-446e-bb3f-3e142a589b57"     | Device UUID
 | sbt         | "7"                                        | Subtype, see deviceKinds table for reference
-| sta         | "2"                                        | Device connection state: 1=never online, 2=online, 3=offline, 4=alarm triggered, 5=warning triggered, 6=standby
-| dst         | "2"                                        | Device state
-| ast         | "1"                                        | Alarm state
+| sta         | "2"                                        | Device status: 1=never been online, 2=online, 3=offline, 4=alarm triggered, 5=hint triggered, 6=standby. Maps to `dst` (0–3) and `ast`.
+| dst         | "2"                                        | Device connectivity: 0=never been online, 1=offline, 2=online, 3=standby
+| ast         | "1"                                        | Alarm status: 0=undefined, 1=no alarm, 2=alarm triggered, 3=hint triggered, 4=notification
 | so          | "1"                                        | *unknown*
 | p1883       | "0"                                        | MQTT port 1883 enabled
 | p1883rd     | "14.06.2022 03:24:57"                      | MQTT port 1883 last active date

@@ -29,7 +29,7 @@ test fixtures, and in the parsing/encryption layers implemented here.
 - Tentatively be considered part of the design, but it is not ideal.
 - Description: API may return incorrect data types if device is offline.
 - Impact: Valid responses containing correct setting values, but all device measurements return empty strings and not the last known state. Causing unexpected data type errors in Python.
-- Mitigation in this project: Check for sta="3" ("offline" status) and set all values as unknown.
+- Mitigation in this project: Check for dst="0" ("never been online") or dst="1" ("offline" status) and set all values as unknown.
 
 ## References
 

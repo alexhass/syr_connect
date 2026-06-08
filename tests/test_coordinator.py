@@ -1282,10 +1282,10 @@ async def test_fetch_device_status_iwh_compute_error_is_logged(
         assert coordinator.data["devices"][0]["id"] == "device1"
 
 
-async def test_coordinator_device_marked_unavailable_when_sta_is_3(
+async def test_coordinator_device_marked_unavailable_when_dst_is_0_or_1(
     hass: HomeAssistant, setup_in_progress_config_entry
 ) -> None:
-    """When the API returns sta=3 the device must be marked unavailable (offline)."""
+    """When the API returns dst=1 the device must be marked unavailable (offline)."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -1294,8 +1294,8 @@ async def test_coordinator_device_marked_unavailable_when_sta_is_3(
         mock_api.get_devices = AsyncMock(
             return_value=[{"id": "device1", "name": "Device 1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "project_id": "project1"}]
         )
-        # sta=3 means the device is offline / not reachable via the cloud
-        mock_api.get_device_status = AsyncMock(return_value={"sta": "3", "getPRS": "50"})
+        # dst=1 means the device is offline / not reachable via the cloud
+        mock_api.get_device_status = AsyncMock(return_value={"dst": "1", "getPRS": "50"})
         mock_api_class.return_value = mock_api
 
         config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
@@ -1308,10 +1308,10 @@ async def test_coordinator_device_marked_unavailable_when_sta_is_3(
         assert device["available"] is False
 
 
-async def test_coordinator_device_available_when_sta_is_2(
+async def test_coordinator_device_marked_unavailable_when_dst_is_0(
     hass: HomeAssistant, setup_in_progress_config_entry
 ) -> None:
-    """When the API returns sta=2 (online) the device must remain available."""
+    """When the API returns dst=0 (never been online) the device must be marked unavailable."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
@@ -1320,7 +1320,33 @@ async def test_coordinator_device_available_when_sta_is_2(
         mock_api.get_devices = AsyncMock(
             return_value=[{"id": "device1", "name": "Device 1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "project_id": "project1"}]
         )
-        mock_api.get_device_status = AsyncMock(return_value={"sta": "2", "getPRS": "50"})
+        # dst=0 means the device has never been online
+        mock_api.get_device_status = AsyncMock(return_value={"dst": "0", "getPRS": "50"})
+        mock_api_class.return_value = mock_api
+
+        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+
+        assert coordinator.data is not None
+        device = coordinator.data["devices"][0]
+        assert device["available"] is False
+
+
+async def test_coordinator_device_available_when_dst_is_2(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """When the API returns dst=2 (online) the device must remain available."""
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_devices = AsyncMock(
+            return_value=[{"id": "device1", "name": "Device 1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479", "project_id": "project1"}]
+        )
+        mock_api.get_device_status = AsyncMock(return_value={"dst": "2", "getPRS": "50"})
         mock_api_class.return_value = mock_api
 
         config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}

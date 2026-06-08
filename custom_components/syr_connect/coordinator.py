@@ -261,10 +261,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # SYR returns broken data values; if a device is offline. Setting values are still returned properly,
             # others real data values may change its data type and return empty strings.
             #
-            # sta=3 (offline) means the device is not reachable via the cloud.
+            # dst=0 (never online) or dst=1 (offline) means the device is not reachable via the cloud.
             # Mark it unavailable so all entities show as "Unavailable" in HA.
-            if str(status.get("sta", "")).strip() == "3":
-                _LOGGER.debug("Device %s is offline (sta=%s); marking unavailable", device.get("id"), status.get("sta"))
+            if str(status.get("dst", "")).strip() in ("0", "1"):
+                _LOGGER.debug("Device %s is offline (dst=%s); marking unavailable", device.get("id"), status.get("dst"))
                 device["available"] = False
             else:
                 device["available"] = True
