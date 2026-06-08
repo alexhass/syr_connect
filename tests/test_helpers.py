@@ -1028,6 +1028,23 @@ def test_is_sensor_visible_group_pa_true_shows_group_keys() -> None:
     assert is_sensor_visible(status, "getPV1", "0") is True
 
 
+def test_is_sensor_visible_no_pa_key_falls_back_to_pn_name() -> None:
+    """PontosBase has no getPAx — visibility falls back to non-empty getPNx name."""
+    # Profile with a name → visible
+    status_with_name = {"getPN3": "Holiday"}
+    assert is_sensor_visible(status_with_name, "getPV3", "5") is True
+    assert is_sensor_visible(status_with_name, "getPT3", "30") is True
+    assert is_sensor_visible(status_with_name, "getPB3", "0") is True
+
+    # Profile with empty name → hidden
+    status_empty_name = {"getPN6": ""}
+    assert is_sensor_visible(status_empty_name, "getPV6", "300") is False
+    assert is_sensor_visible(status_empty_name, "getPN6", "") is False
+
+    # Profile name key absent entirely → hidden
+    assert is_sensor_visible({}, "getPV8", "300") is False
+
+
 def test_is_sensor_visible_cs_sv_non_numeric_falls_back() -> None:
     """When getSVx is non-numeric, CS follows empty/value rules and is hidden for '0'."""
     status = {"getSV1": "bad", "getCS1": "0"}

@@ -1067,8 +1067,17 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     if m:
         idx = m.group(2)
         pa_key = f"getPA{idx}"
-        if not is_value_true(status.get(pa_key)):
-            return False
+        if pa_key in status:
+            # Device has explicit getPAx flag (e.g. LEXplus10SL) — use it directly
+            if not is_value_true(status.get(pa_key)):
+                return False
+        else:
+            # Device has no getPAx (e.g. PontosBase) — fall back to getPNx:
+            # a non-empty profile name means the profile slot is in use
+            pn_key = f"getPN{idx}"
+            pn_val = status.get(pn_key)
+            if pn_val is None or (isinstance(pn_val, str) and pn_val.strip() == ""):
+                return False
 
     # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
     if key in ("getCS1", "getCS2", "getCS3"):
