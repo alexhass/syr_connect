@@ -9211,7 +9211,7 @@ async def test_async_setup_entry_creates_connection_state_sensor(hass: HomeAssis
     """async_setup_entry creates a connection state sensor for each device."""
     data = {
         "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}},
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "2"}},
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
@@ -9230,8 +9230,8 @@ async def test_async_setup_entry_connection_state_sensor_per_device(hass: HomeAs
     """async_setup_entry creates one connection state sensor per device."""
     data = {
         "devices": [
-            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}},
-            {"id": "device2", "name": "Device 2", "project_id": "project1", "status": {}},
+            {"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"sta": "2"}},
+            {"id": "device2", "name": "Device 2", "project_id": "project1", "status": {"sta": "3"}},
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)

@@ -106,7 +106,7 @@ async def async_setup_entry(
         _LOGGER.debug("Device %s (%s) has %d status values", device_name, device_id, len(status))
 
         # Only create the connection state sensor when the API provides a "sta" value
-        if "sta" in status:
+        if status.get("sta") is not None:
             entities.append(
                 SyrConnectConnectionStateSensor(
                     coordinator,
