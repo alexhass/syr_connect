@@ -357,7 +357,7 @@ The third request and all following requests are also to GetAllCommands answerin
 | 22 | Hygiene module warm | | | |
 | 23 | Hygiene module warm and cold | | | |
 | 24 | Hygiene module cold and warm | | | |
-| 25 | LEX Plus | | | sbt:<br>1=LEX Plus 10<br>2=LEX Plus 10 S<br>3=1500-00-010<br>4=1500-00-020<br>5=1500-00-030<br>6=1500-01-611v7=LEX Plus 10 SL |
+| 25 | LEX Plus | | | sbt:<br>1=LEX Plus 10<br>2=LEX Plus 10 S<br>3=1500-00-010<br>4=1500-00-020<br>5=1500-00-030<br>6=1500-01-611<br>7=LEX Plus 10 SL |
 | 26 | Inliner-HWA 3300 | | | |
 | 27 | CONTROLICmini| | | |
 | 34 | SafeFloor | | | WiFi-AP: `Floorsensor[…]` |
