@@ -1180,7 +1180,7 @@ async def test_resolve_device_dclg_returns_none_when_device_not_found(hass: Home
         coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
         coordinator.data = {"devices": [{"id": "other_device", "dclg": "e6f7a8b9-c0d1-2345-efab-345678901234"}], "projects": []}
 
-        result = coordinator._resolve_device_dclg("nonexistent_device")
+        result = coordinator._get_device_dclg_from_srn("nonexistent_device")
 
         assert result is None
 
@@ -1194,7 +1194,7 @@ async def test_resolve_device_dclg_returns_none_when_no_data(hass: HomeAssistant
         # data is None by default before the first successful update
         coordinator.data = None
 
-        result = coordinator._resolve_device_dclg("any_device")
+        result = coordinator._get_device_dclg_from_srn("any_device")
 
         assert result is None
 

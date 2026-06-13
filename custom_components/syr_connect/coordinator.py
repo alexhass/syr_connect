@@ -303,7 +303,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
             return device
 
-    def _resolve_device_dclg(self, device_id: str) -> str | None:
+    def _get_device_dclg_from_srn(self, device_id: str) -> str | None:
         """Return the DCLG (Device Collection Group UUID) for the given device serial number.
 
         The coordinator stores devices keyed by serial number (`device["id"]`),
@@ -341,7 +341,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if not self.data:
             raise HomeAssistantError("Coordinator data not available")
 
-        dclg = self._resolve_device_dclg(device_id)
+        dclg = self._get_device_dclg_from_srn(device_id)
         if dclg is None:
             raise HomeAssistantError(f"Device {device_id} not found")
 
@@ -401,7 +401,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             await self.api.request_json_data(f"clr/{field}")
             _LOGGER.info("Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id)
         else:
-            dclg = self._resolve_device_dclg(device_id) or device_id
+            dclg = self._get_device_dclg_from_srn(device_id) or device_id
             await self.api.set_device_status(dclg, [(f"clr{field.upper()}", "")])
             _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
 
@@ -433,7 +433,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if not self.data:
             raise HomeAssistantError("Coordinator data not available")
 
-        dclg = self._resolve_device_dclg(device_id)
+        dclg = self._get_device_dclg_from_srn(device_id)
         if dclg is None:
             raise HomeAssistantError(f"Device {device_id} not found")
 
