@@ -556,6 +556,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getDRP",   # Microleakage test interval (daily / weekly / monthly)
     "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
     "getDTT",   # Microleakage test duration / time
+    "getNPS",   # No turbine pulses since (s)
     # --- Leak Protection Settings ---
     "getLE",    # Leak protection volume limit – present profile (l)
     "getPST",   # Pressure sensor installed (1=not available, 2=available)
