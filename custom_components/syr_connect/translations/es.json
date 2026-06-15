@@ -436,7 +436,7 @@
         }
       },
       "getnps": {
-        "name": "Recuento de microfugas"
+        "name": "Sin impulsos de turbina desde"
       },
       "getowh": {
         "name": "Dureza del agua de salida"

@@ -436,7 +436,7 @@
         }
       },
       "getnps": {
-        "name": "Nombre de microfuites"
+        "name": "Sans impulsions de turbine depuis"
       },
       "getowh": {
         "name": "Dureté de l'eau adoucie"

@@ -436,7 +436,7 @@
                 }
             },
             "getnps": {
-                "name": "Liczba mikroprzecieków"
+                "name": "Brak impulsów turbiny od"
             },
             "getowh": {
                 "name": "Twardość wody wyjściowej"

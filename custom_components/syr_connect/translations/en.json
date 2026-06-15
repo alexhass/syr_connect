@@ -436,7 +436,7 @@
         }
       },
       "getnps": {
-        "name": "Microleakage count"
+        "name": "No turbine pulses since"
       },
       "getowh": {
         "name": "Output water hardness"

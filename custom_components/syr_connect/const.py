@@ -332,7 +332,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getDRP",   # Microleakage test interval (daily / weekly / monthly)
     "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
     "getDTT",   # Microleakage test duration / time
-    "getNPS",   # Microleakage event count
+    "getNPS",   # No turbine pulses since (s)
     # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
     "getLE",    # Leak protection volume limit – present profile (l)
     "getT1",    # Max. flow duration – present profile (h, 0.5 h steps)
@@ -767,7 +767,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     "getCEL",   # Temperature - value "" means sensor does not exists or not measured.
     "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
     "getLNG",   # Device language (0=Deutsch, 1=English)
-    "getNPS",   # Microleakage count - value "" means sensor does not exists.
+    "getNPS",   # No turbine pulses since (s) - value "" means sensor does not exist.
 
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
@@ -908,7 +908,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getRCP": "mdi:sync-circle",
     "getWMP": "mdi:timer-sync-outline",
     "getLE": "mdi:water-alert",
-    "getNPS": "mdi:pipe-leak",
+    "getNPS": "mdi:turbine",
     "getT1": "mdi:timer-outline",
     "getT2": "mdi:timer-outline",
     "getTMP": "mdi:timer-off-outline",
@@ -1146,7 +1146,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getMXH": SensorStateClass.MEASUREMENT,        # Maximum humidity threshold
     "getMXT": SensorStateClass.MEASUREMENT,        # Maximum temperature threshold
     "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
-    "getNPS": SensorStateClass.MEASUREMENT,        # Microleakage count
+    "getNPS": SensorStateClass.MEASUREMENT,        # No turbine pulses since (s)
     "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
     "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
     "getRCP": SensorStateClass.MEASUREMENT,        # Synchronisation interval
@@ -1298,6 +1298,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # - Trio DFR/LS
 
     "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Water conductivity (µS/cm)
+    "getNPS": UnitOfTime.SECONDS,                       # No turbine pulses since (s)
     "getSLE": UnitOfTime.SECONDS,                       # Remaining time in seconds of an active self-learning phase
     "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Self-learning phase volume (l/h)
     "getSLT": UnitOfTime.SECONDS,                       # Time in self-learning phase (seconds)
@@ -1344,7 +1345,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getMXT": 0,    # Maximum temperature threshold: e.g. 490 -> 49 °C
     "getNET": 2,    # Mains voltage: show with 2 decimal places
     "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
-    "getNPS": 0,    # Microleakage count: show as whole number by default
+    "getNPS": 0,    # No turbine pulses since: show as whole number of seconds
     "getOWH": 0,    # Outgoing water hardness: show as whole number by default
     "getPRF": 0,    # Active leak protection profile
     "getPR1": 0,    # Return time to profile 1

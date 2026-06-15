@@ -436,7 +436,7 @@
         }
       },
       "getnps": {
-        "name": "Microlekaantal"
+        "name": "Geen turbine-impulsen sinds"
       },
       "getowh": {
         "name": "Uitgaande waterhardheid"

@@ -649,7 +649,7 @@ These properties are only available on devices that contain leakage protection, 
 | getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h
 | getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds
 | getCEL          | "203"        | 1/10 °C | Temperature / Water temperature, e.g. 203 = 20.3°C
-| getNPS          | "22"         |         | Microleakage count
+| getNPS          | "22"         | s       | No turbine pulses since
 | getCND          | "250"        | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)
 | getCND2         | "0"          | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix
 | getBSI          | "2 (16 bar)" |         | Pressure sensor type and range identifier (Safe-T+)

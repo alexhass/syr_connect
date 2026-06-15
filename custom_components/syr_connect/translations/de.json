@@ -436,7 +436,7 @@
         }
       },
       "getnps": {
-        "name": "Mikroleckagen-Anzahl"
+        "name": "Keine Turbinenimpulse seit"
       },
       "getowh": {
         "name": "Weichwasserhärte"

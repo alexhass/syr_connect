@@ -436,7 +436,7 @@
         }
       },
       "getnps": {
-        "name": "Contagem de microvazamentos"
+        "name": "Sem impulsos de turbina desde"
       },
       "getowh": {
         "name": "Dureza da água de saída"
