@@ -968,3 +968,5 @@ These properties appear only on the **Sanibel Leak Protection Module A25** (comf
   <https://www.msxfaq.de/sonst/iot/syr_lexplus_10.htm> (German)
 - Analysis of the network traffic of a Syr Safe-T Connect with the SYR Connect cloud:  
   <https://www.msxfaq.de/sonst/iot/syr_safe-t_connect.htm> (German)
+- SYR Device API: Introduction to JSON API
+  <https://iotsyrpublicapi.z1.web.core.windows.net/> (German)

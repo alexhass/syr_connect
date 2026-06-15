@@ -185,7 +185,7 @@ curl -i "http://localhost:5333/trio/get/XYZ"
 
 ## References
 
-- Official API documentation: https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung
+- Official API documentation: https://iotsyrpublicapi.z1.web.core.windows.net/
 - Client code: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 - Tests: [tests/test_api_json.py](tests/test_api_json.py)
 - Fixtures: [tests/fixtures/json/SafeTech_get_all.json](tests/fixtures/json/SafeTech_get_all.json), [tests/fixtures/json/NeoSoft2500_get_all.json](tests/fixtures/json/NeoSoft2500_get_all.json)
