@@ -632,8 +632,8 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
 
-    "getVPS1",  # No turbine pulses on control head 1 since (timestamp) - technical metric for flow measurement, not useful for most users
-    "getVPS2",  # No turbine pulses on control head 2 since (timestamp) - technical metric for flow measurement, not useful for most users
+    "getVPS1",  # No turbine pulses on control head 1 since (s) - technical metric for flow measurement, not useful for most users
+    "getVPS2",  # No turbine pulses on control head 2 since (s) - technical metric for flow measurement, not useful for most users
 
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000 / Trio DFR/LS
@@ -772,8 +772,8 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
     "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
-    "getVPS1", # No turbine pulses on control head 1 since (timestamp). Value "" means sensor does not exists.
-    "getVPS2", # No turbine pulses on control head 2 since (timestamp). Value "" means sensor does not exists.
+    "getVPS1", # No turbine pulses on control head 1 since (s). Value "" means sensor does not exist.
+    "getVPS2", # No turbine pulses on control head 2 since (s). Value "" means sensor does not exist.
     "getWFC",  # Wi-Fi channel
 
     # Sensors exits in devices only:
