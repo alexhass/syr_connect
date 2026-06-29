@@ -798,7 +798,7 @@ These properties are only available on devices that contain leakage protection, 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
 | getAFW          | "0"          |        | *unknown*
-| getBAP          | ""           |        | *unknown*
+| getBAP          | "99"         | %      | Battery as percentage
 | getBFT          | ""           |        | *unknown*
 | getCCK          | ""           |        | *unknown*
 | getCSE          | "True"       |        | *unknown* — possibly cloud-service enable

@@ -237,6 +237,9 @@
       "getavo": {
         "name": "Aktueller Durchfluss"
       },
+      "getbap": {
+        "name": "Batteriestand"
+      },
       "getbar": {
         "name": "Eingangsdruck"
       },

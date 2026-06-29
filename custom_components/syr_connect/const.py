@@ -271,6 +271,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getBAR",   # Inlet pressure – mbar sensor (Safe-T+)
     "getPRS",   # Inlet pressure – bar sensor (LEXplus10SL)
     # --- Voltage / Battery ---
+    "getBAP",   # Battery level (%)
     "getBAT",   # Battery voltage (V) or battery level (%) – unit depends on device type
     "getNET",   # Mains (AC) voltage (V)
     # --- Water Quality ---
@@ -652,6 +653,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
 
 # Sensor device classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
+    "getBAP": SensorDeviceClass.BATTERY,
     "getBAR": SensorDeviceClass.PRESSURE,
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
@@ -807,6 +809,7 @@ _SYR_CONNECT_SENSOR_ICON = {
 
     # Safe-T+ specific
     "getBAR": "mdi:gauge",
+    "getBAP": "mdi:battery",
     "getBAT": "mdi:battery",
     "getDBD": "mdi:gauge",
     "getNET": "mdi:sine-wave",              # Mains voltage
@@ -1133,6 +1136,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getALD": SensorStateClass.MEASUREMENT,        # Alarm duration
     "getAPT": SensorStateClass.MEASUREMENT,        # Access point timeout
     "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
+    "getBAP": SensorStateClass.MEASUREMENT,        # Battery level (%)
     "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Temperature
@@ -1298,6 +1302,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - Trio DFR/LS
 
+    "getBAP": PERCENTAGE,                               # Battery level (%)
     "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Water conductivity (µS/cm)
     "getNPS": UnitOfTime.SECONDS,                       # No turbine pulses since (s)
     "getSLE": UnitOfTime.SECONDS,                       # Remaining time in seconds of an active self-learning phase

@@ -237,6 +237,9 @@
       "getavo": {
         "name": "Flujo actual"
       },
+      "getbap": {
+        "name": "Nivel de batería"
+      },
       "getbar": {
         "name": "Presión de entrada"
       },

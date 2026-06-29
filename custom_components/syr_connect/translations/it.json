@@ -237,6 +237,9 @@
       "getavo": {
         "name": "Flusso attuale"
       },
+      "getbap": {
+        "name": "Livello batteria"
+      },
       "getbar": {
         "name": "Pressione di ingresso"
       },

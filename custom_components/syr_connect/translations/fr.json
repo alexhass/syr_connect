@@ -237,6 +237,9 @@
       "getavo": {
         "name": "Débit actuel"
       },
+      "getbap": {
+        "name": "Niveau de batterie"
+      },
       "getbar": {
         "name": "Pression d'entrée"
       },

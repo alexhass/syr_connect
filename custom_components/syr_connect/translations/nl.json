@@ -237,6 +237,9 @@
       "getavo": {
         "name": "Huidige doorstroming"
       },
+      "getbap": {
+        "name": "Batterijniveau"
+      },
       "getbar": {
         "name": "Inlaatdruk"
       },
