@@ -1319,6 +1319,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getALD": 0,    # Alarm duration: show as whole number of seconds
     "getAPT": 0,    # Access point timeout: show as whole number of seconds
     "getAVO": 1,    # Current flow: show with 2 decimal places
+    "getBAP": 0,    # Battery level (%): show as whole number by default
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
