@@ -1070,6 +1070,23 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
         if not is_value_true(status.get(pa_key)):
             return False
 
+    # Firmware-bug workaround: suppress getBAP only when it is exactly 0/empty
+    # AND getBAT reports a non-zero voltage. In that case the device exposes a
+    # spurious percentage field alongside the real voltage reading.
+    if key == "getBAP":
+        try:
+            bap_zero = float(value) == 0
+        except (ValueError, TypeError):
+            bap_zero = value is None or str(value).strip() == ""
+        if bap_zero:
+            bat_val = status.get("getBAT")
+            if bat_val is not None:
+                try:
+                    if float(bat_val) > 0:
+                        return False
+                except (ValueError, TypeError):
+                    pass
+
     # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
     if key in ("getCS1", "getCS2", "getCS3"):
         sv_key = "getSV" + key[-1]
