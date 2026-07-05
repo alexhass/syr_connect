@@ -642,7 +642,7 @@ These properties are only available on devices that contain leakage protection, 
 | getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"
 | getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.
 | getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists;
-| getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening
+| getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening, 30 = "Absence leakage" (best guess from testing, not not confirmed)
 | getLE / setLE   | "4"          | L       | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L
 | getUL / setUL   | "0"          | L       | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L
 | getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
