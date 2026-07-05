@@ -521,6 +521,8 @@ Some further data about the device
 | getWTI          | "1740"                | s      | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel) |
 | getWAH          | "false"               |        | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel)          |
 | getWNS          | "False"               |        | Wi-Fi network scan flag (Trio DFR/LS)                  |
+| getWFC          | "MyNetwork"           |        | Connected Wi-Fi SSID
+| getWFR          | "75"                  | %      | Wi-Fi signal strength|
 
 ### Holiday
 
@@ -544,7 +546,7 @@ These settings can be set by the user.
 | getALD / setALD | "20"         | s         | Duration of alarm in seconds (Neosoft, SafeFloor)                                             |
 | getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water), can be set from 1-100 °dH                        |
 | getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have), can be set from 0-100 °dH           |
-| getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH                                                         |
+| getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH, 2 = ppm, 3 = mmol/l                                    |
 | getRDO / setRDO | "90"         | g/L       | Salt dosage                                                                                   |
 | getRTH / setRTH | "16"         | hour      | Regeneration time (hour)                                                                      |
 | getRTM / setRTM | "0"          | minute    | Regeneration time (minute)                                                                    |
@@ -583,10 +585,13 @@ These settings can be set by the user.
 | getSV1 / setSV1<br>getSV2 / setSV1<br>getSV3 / setSV1 | "7"<br>"0"<br>"0"  | kg       | Salt stored in tank 1, 2 or 3 (can also be set, e.g. on refill)
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
 | getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  | L        | Volume threshold 1–3 (advanced configuration)
+| getBAR                                                | "4077"             | mbar     | Measured pressure (Safe-T+). Example: "4077 mbar" = 4.077 bar
 | getBAR2                                               | "0"                | mbar     | Measured pressure for second channel (Trio DFR/LS, Sanibel). Duplicate of getBAR with 2 suffix
 | getBPT                                                | "40"               | mbar?    | Back-pressure threshold (Trio DFR/LS)
 | getPRE                                                | "0"                |          | Pressure-related value (NeoSoft 2500/5000)
 | getMPO                                                | "0"                |          | Max pressure offset (Sanibel Leak Protection Module A25)
+| getLTV                                                | "1655"             | L        | Last volume tapped
+| getRE1<br>getRE2                                      | "500"<br>"0"       | L        | Reserve capacity bottle 1 or 2
 
 ### Regeneration
 
@@ -602,6 +607,8 @@ These settings can be set by the user.
 | getSCR                     | "0"                     |          | *unknown, likely number of service regeneration cycles*
 | getINR                     | "2"                     |          | Number of incomplete regeneration cycles
 | setSIR                     | "1"                     |          | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this)
+| setSDR                     | "1"                     |          | Trigger delayed regeneration (write-only)
+| setSMR                     | "1"                     |          | Trigger multi-tank regeneration (write-only)
 | getRST                     | "0"                     |          | Reset device control — unclear what values trigger
 | getERE                     | "19"                    |          | Expected regenerations remaining (NeoSoft 2500/5000)
 | getNRE                     | "3"                     |          | Number of remaining regenerations (NeoSoft 2500/5000)
@@ -618,6 +625,13 @@ These settings can be set by the user.
 | getFHF          | "8, 1, 128, 256, 258, 143, 0, 12, 180, 168, 24, 14, 30, 11, 26, 7, 9, 14, 22, 3, 6, 33, 299, 296" | L      | Hourly water consumption last Friday
 | getSHF          | "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 12, 12, 33, 71, 28"                    | L      | Hourly water consumption last Saturday
 | getNHF          | "7, 15, 124, 255, 260, 285, 137, 34, 3, 18, 0, 0, 0, 42, 6, 30, 2, 8, 9, 11, 10, 0, 1, 43"        | L      | Hourly water consumption last Sunday
+| getMOF          | "1234"                                                                                            | L      | Water consumption last Monday
+| getTUF          | "1752"                                                                                            | L      | Water consumption last Tuesday
+| getWEF          | "997"                                                                                             | L      | Water consumption last Wednesday
+| getTHF          | "1212"                                                                                            | L      | Water consumption last Thursday
+| getFRF          | "1077"                                                                                            | L      | Water consumption last Friday
+| getSAF          | "1492"                                                                                            | L      | Water consumption last Saturday
+| getSUF          | "1168"                                                                                            | L      | Water consumption last Sunday
 | getTOF          | "916"                                                                                             | L      | Water consumption today (continuously updated)
 | getYEF          | "1429"                                                                                            | L      | Water consumption yesterday
 | getCWF          | "4265"                                                                                            | L      | Water consumption this week (continuously updated)
@@ -660,6 +674,10 @@ These properties are only available on devices that contain leakage protection, 
 | getSLP/setSLP   | "0"          | days    | Self-learning phase duration in days; 0 ends the self-learning phase. Range: 0–28 (LEXplus10SL, SafeTech) |
 | getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, SafeTech +) |
 | setSLD          | "true"       |         | Clears self-learning phase data when set to `true` (write-only) (TrioDFR LS, SafeTech +) |
+| getSLE          | "86400"      | s       | Self-learning phase remaining time                                                 |
+| getSLF          | "1200"       | L/h     | Self-learning phase current flow                                                   |
+| getSLT          | "0"          | s       | Self-learning phase total elapsed time                                             |
+| getSLV          | "0"          | L       | Self-learning phase total volume                                                   |
 | getLWT          | "90"         |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)                                   |
 | getPSE          | "True"       |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)                                 |
 | getSFV          | "False"      |         | Safe-force-valve flag (Trio DFR/LS)                                                |
@@ -730,7 +748,6 @@ These properties are only available on devices that contain leakage protection, 
 | getDPL          | "10"         |        | *unknown*
 | getDTC          | "3"          |        | *unknown*
 | getTN           | "20"         |        | *unknown*
-| getSMR          | "1"          |        | *unknown*
 | getSRE          | "0"          |        | Regeneration state: 0 = not running, 1 = running (values 3/5 unclear)
 | getVAC          | "0"          |        | *unknown*
 | getVAT          | "3"          |        | *unknown*
@@ -759,12 +776,6 @@ These properties are only available on devices that contain leakage protection, 
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
-| getTUF          | "1752"       |        | Somewhat related to water consumption. Updated on day change Monday -> Tuesday
-| getWEF          | "997"        |        | Somewhat related to water consumption. Updated on day change Tuesday -> Wednesday
-| getTHF          | "1212"       |        | Somewhat related to water consumption. Updated on day change Wednesday -> Thursday
-| getFRF          | "1077"       |        | Somewhat related to water consumption. Updated on day change Thursday -> Friday
-| getSAF          | "1492"       |        | Somewhat related to water consumption. Updated on day change Friday -> Saturday
-| getSUF          | "1168"       |        | Somewhat related to water consumption. Updated on day change Saturday -> Sunday **and** Sunday -> Monday (seems to be a bug)
 | getTFO          | "9508"       |        | *unknown*
 | getUWF          | "15599"      |        | *unknown*
 
@@ -781,10 +792,8 @@ These properties are only available on devices that contain leakage protection, 
 | getHOT          | "50"         |        | *unknown constant?*
 | getIPH          | ""           |        | *unknown constant?*
 | getLGO          | "1"          |        | *unknown constant?*
-| getMOF          | "0"          |        | *unknown constant?*
 | getREV          | "10"         |        | *unknown constant?*
 | getRPE          | "30"         |        | *unknown constant?*
-| getSDR          | "1"          |        | *unknown constant?*
 
 ### NeoSoft 2500/5000
 
