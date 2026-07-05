@@ -658,7 +658,7 @@ These properties are only available on devices that contain leakage protection, 
 | getFLL          | "0 50000"    |         | Minimum and maximum flow limits — two values (Safe-T+)
 | getSLO          | "10"         |         | Service-lock timeout (LEXplus10SL, Trio DFR/LS)
 | getSLP/setSLP   | "0"          | days    | Self-learning phase duration in days; 0 ends the self-learning phase. Range: 0–28 (LEXplus10SL, SafeTech)
-| getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, Sanibel)
+| getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, SafeTech +)
 | setSLD          | "true"       |         | Clears self-learning phase data when set to `true` (write-only) (TrioDFR LS, SafeTech +)
 | getLWT          | "90"         |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)
 | getPSE          | "True"       |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)
