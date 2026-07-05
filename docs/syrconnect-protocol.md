@@ -636,44 +636,44 @@ These settings can be set by the user.
 
 These properties are only available on devices that contain leakage protection, e.g. LEX Plus 10 SL Connect, Safe-T+.
 
-| Property        | Example      | Unit    | Description
-|-----------------|--------------|---------|-------------------------------------------------------
-| getAB / setAB   | "true"<br>"1"          |         | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed
-| getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"
-| getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.
-| getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists;
-| getVLV          | "20"         |         | Valve status: 10 = closed, 11 = closing, 20 = open, 21 = opening, 30 = "Absence leakage" (best guess from testing, not not confirmed)
-| getLE / setLE   | "4"          | L       | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L
-| getUL / setUL   | "0"          | L       | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L
-| getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h
-| getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h
-| getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds
-| getCEL          | "203"        | 1/10 °C | Temperature / Water temperature, e.g. 203 = 20.3°C
-| getNPS          | "22"         | s       | No turbine pulses since (Trio DFR/LS, SafeTech+)
-| getVPS1         | "3360"       | s       | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist.
-| getVPS2         | "3360"       | s       | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist.
-| getCND          | "250"        | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)
-| getCND2         | "0"          | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix
-| getBSI          | "2 (16 bar)" |         | Pressure sensor type and range identifier (Safe-T+)
-| getFLL          | "0 50000"    |         | Minimum and maximum flow limits — two values (Safe-T+)
-| getSLO          | "10"         |         | Service-lock timeout (LEXplus10SL, Trio DFR/LS)
-| getSLP/setSLP   | "0"          | days    | Self-learning phase duration in days; 0 ends the self-learning phase. Range: 0–28 (LEXplus10SL, SafeTech)
-| getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, SafeTech +)
-| setSLD          | "true"       |         | Clears self-learning phase data when set to `true` (write-only) (TrioDFR LS, SafeTech +)
-| getLWT          | "90"         |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)
-| getPSE          | "True"       |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)
-| getSFV          | "False"      |         | Safe-force-valve flag (Trio DFR/LS)
-| getVTO          | "False"      |         | Valve-timeout flag (Trio DFR/LS)
-| getSMF          | "2500"       | L/h?    | Flow or maintenance threshold (Trio DFR/LS, Sanibel)
-| getLDT          | "0"          | s?      | Leak detection timeout (SafeTech, SafeTech+)
-| getPB           | "true"       |         | Buzzer-pulse enable flag (SafeTech)
-| getFLF          | "10"         | L/h?    | Minimum flow filter threshold (SafeTech+)
-| getBMA          | "585"        | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)
-| getBMI          | "515"        | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)
-| getDFM          | "1"          |         | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS)
-| getPSE2         | "false"      |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)
-| getCSE2         | "false"      |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)
-| getSUP          | "1"          |         | Supervision or supply status (Sanibel Leak Protection Module A25)
+| Property        | Example      | Unit    | Description                                                                        |
+|-----------------|--------------|---------|------------------------------------------------------------------------------------|
+| getAB / setAB   | "true"<br>"1"          |         | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed |
+| getBAT          | "6,11 4,38 3,90" | V   | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat"        |
+| getBAT          | "363"        | V       | Battery voltage in 1/100 V e.g. 3,63 Volt.                                         |
+| getNET          | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V               |        | Mains voltage. 4 formats exists; |
+| getVLV          | "20"         |         | Current valve status:<br>10 = closed<br>11 = closing<br>20 = open<br>21 = opening<br>30 = "Absence leakage" (best guess from testing, not not confirmed) |
+| getLE / setLE   | "4"          | L       | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L |
+| getUL / setUL   | "0"          | L       | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L  |
+| getT1 / setT1   | "1"          |         | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h        |
+| getT2 / setT2   | "1"          |         | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h                     |
+| getTMP / setTMP | "0"          | seconds | Deactivate leakage protection for n seconds                                        |
+| getCEL          | "203"        | 1/10 °C | Temperature / Water temperature, e.g. 203 = 20.3°C                                 |
+| getNPS          | "22"         | s       | No turbine pulses since (Trio DFR/LS, SafeTech+)                                   |
+| getVPS1         | "3360"       | s       | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist. |
+| getVPS2         | "3360"       | s       | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist. |
+| getCND          | "250"        | µS/cm   | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel)              |
+| getCND2         | "0"          | µS/cm   | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix |
+| getBSI          | "2 (16 bar)" |         | Pressure sensor type and range identifier (Safe-T+)                                |
+| getFLL          | "0 50000"    |         | Minimum and maximum flow limits — two values (Safe-T+)                             |
+| getSLO          | "10"         |         | Service-lock timeout (LEXplus10SL, Trio DFR/LS)                                    |
+| getSLP/setSLP   | "0"          | days    | Self-learning phase duration in days; 0 ends the self-learning phase. Range: 0–28 (LEXplus10SL, SafeTech) |
+| getSLP_m<br>getSLP_sd<br>getSLP_ed | ""   |  | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, SafeTech +) |
+| setSLD          | "true"       |         | Clears self-learning phase data when set to `true` (write-only) (TrioDFR LS, SafeTech +) |
+| getLWT          | "90"         |         | Leakage watchdog timeout (LEXplus10SL, SafeTech)                                   |
+| getPSE          | "True"       |         | Pressure-sensor enable flag (Trio DFR/LS, Sanibel)                                 |
+| getSFV          | "False"      |         | Safe-force-valve flag (Trio DFR/LS)                                                |
+| getVTO          | "False"      |         | Valve-timeout flag (Trio DFR/LS)                                                   |
+| getSMF          | "2500"       | L/h?    | Flow or maintenance threshold (Trio DFR/LS, Sanibel)                               |
+| getLDT          | "0"          | s?      | Leak detection timeout (SafeTech, SafeTech+)                                       |
+| getPB           | "true"       |         | Buzzer-pulse enable flag (SafeTech)                                                |
+| getFLF          | "10"         | L/h?    | Minimum flow filter threshold (SafeTech+)                                          |
+| getBMA          | "585"        | mbar?   | Battery/pressure maximum value (Sanibel Leak Protection Module A25)                |
+| getBMI          | "515"        | mbar?   | Battery/pressure minimum value (Sanibel Leak Protection Module A25)                |
+| getDFM          | "1"          |         | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS) |
+| getPSE2         | "false"      |         | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25)     |
+| getCSE2         | "false"      |         | Remote-service enable for second channel (Sanibel Leak Protection Module A25)      |
+| getSUP          | "1"          |         | Supervision or supply status (Sanibel Leak Protection Module A25)                  |
 
 ### Leak protection profiles
 
