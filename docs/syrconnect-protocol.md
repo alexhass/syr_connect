@@ -681,7 +681,7 @@ LEXplus10SL, SafeTech, SafeTech+, Trio DFR/LS and Sanibel devices support up to 
 
 | Property | Example | Unit | Description |
 |---|---|---|---|
-| getPRF | "1" | | Currently active profile index: 1 = present, 2 = absent (SafeTech, SafeTech+, Trio DFR/LS, Sanibel) |
+| getPRF / setPRF | "1" | | Currently active profile index: 1–8 (1 = present, 2 = absent on SafeTech/SafeTech+, Trio DFR/LS, Sanibel) |
 | getPRN | "2" | | Duplicate of getPRF (Trio DFR/LS, Sanibel) |
 | getPCI | "2" | | Number of configured profiles (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
 | getPCO | "false" | | Profile configuration option (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
@@ -692,15 +692,15 @@ LEXplus10SL, SafeTech, SafeTech+, Trio DFR/LS and Sanibel devices support up to 
 | getPV | "200" | L | Default max. leak volume — template for getPV1…getPV8 (SafeTech only, not exposed as HA entity) |
 | getPW | "true" | | Default leak warning enabled — template for getPW1…getPW8 (SafeTech only, not exposed as HA entity) |
 | getPB | "true" | | Default buzzer alert enabled — template for getPB1…getPB8 (SafeTech only, not exposed as HA entity) |
-| getPA1 … getPA8 | "false" | | Profile 1–8 active flag (true/false) |
-| getPB1 … getPB8 | "false" | | Profile 1–8 buzzer alert enabled (true/false) |
-| getPF1 … getPF8 | "0" | L/h | Profile 1–8 flow leak threshold |
-| getPM1 … getPM8 | "false" | | Profile 1–8 microleakage test enabled (true/false) |
-| getPN1 … getPN8 | "" | | Profile 1–8 name |
-| getPR1 … getPR8 | "0" | h | Profile 1–8 return time to present profile |
-| getPT1 … getPT8 | "0" | min | Profile 1–8 max. leak duration |
-| getPV1 … getPV8 | "0" | L | Profile 1–8 max. leak volume |
-| getPW1 … getPW8 | "false" | | Profile 1–8 leak warning enabled (true/false) |
+| getPA1…getPA8 / setPA1…setPA8 | "false" | | Profile 1–8 availability (true/false) |
+| getPB1…getPB8 / setPB1…setPB8 | "false" | | Profile 1–8 buzzer enabled (true/false) |
+| getPF1…getPF8 / setPF1…setPF8 | "0" | L/h | Profile 1–8 max. flow threshold; 0 = flow leak detection disabled. Range: 0–5000 |
+| getPM1…getPM8 / setPM1…setPM8 | "false" | | Profile 1–8 microleakage test enabled (true/false) |
+| getPN1…getPN8 | "" | | Profile 1–8 name |
+| getPR1…getPR8 / setPR1…setPR8 | "0" | h | Profile 1–8 return time to profile 1 (present); 0 = profile remains permanently active. Range: 0–700 |
+| getPT1…getPT8 / setPT1…setPT8 | "0" | min | Profile 1–8 max. leak duration; 0 = time leak detection disabled. Range: 0–1500 |
+| getPV1…getPV8 / setPV1…setPV8 | "0" | L | Profile 1–8 max. leak volume; 0 = volume leak detection disabled. Range: 0–9000 |
+| getPW1…getPW8 / setPW1…setPW8 | "false" | | Profile 1–8 leak warning enabled (true/false) |
 
 ### Microleakage test
 
