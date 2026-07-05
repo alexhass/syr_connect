@@ -580,7 +580,7 @@ These settings can be set by the user.
 | getFLO                                                | "0"                | L/h      | Measured water flow
 | getMXF                                                | "22"               | L/h      | Maximum flow within this hour
 | getRES                                                | "1982"             | L        | Remaining capacity of water that can be treated
-| getVOL                                                | "2000"             | L        | Total capacity
+| getVOL                                                | "2000"             | L        | Total capacity, App shows in m³ (L/1000)
 | getCS1<br>getCS2<br>getCS3                            | "63"<br>"0"<br>"0" | %        | Remaining capacity of the resin in tank 1, 2 or 3
 | getSV1 / setSV1<br>getSV2 / setSV1<br>getSV3 / setSV1 | "7"<br>"0"<br>"0"  | kg       | Salt stored in tank 1, 2 or 3 (can also be set, e.g. on refill)
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
