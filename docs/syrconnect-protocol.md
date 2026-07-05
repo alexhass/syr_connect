@@ -645,6 +645,8 @@ These settings can be set by the user.
 | getMTF          | "2873,0,..."  | L      | Monthly water flow — 12-element array (LEXplus10SL)
 | getLMS          | "[0,0,...]"   |        | Monthly flow statistics — 12-element array (NeoSoft 2500/5000)
 | getCMS          | "[2736,1881,...]" |    | Monthly consumption statistics — 12-element array (Sanibel Softwater UNO A25)
+| getTFO          | "9508"                                                                                            | L      | Peak/total consumption level
+| getUWF          | "15599"                                                                                           | L      | Untreated water consumption
 
 ### Leakage protection
 
@@ -772,17 +774,10 @@ These properties are only available on devices that contain leakage protection, 
 | getTPA          | "32"         |        | *unknown* (Safe-T+)
 | getUNI          | "0"          |        | *unknown* (Safe-T+, Sanibel)
 
-### Unknown statistics
-
-| Property        | Example      | Unit   | Description
-|-----------------|--------------|--------|-------------------------------------------------------
-| getTFO          | "9508"       |        | *unknown*
-| getUWF          | "15599"      |        | *unknown*
-
 ### Unknown
 
 | Property        | Example      | Unit   | Description
-|-----------------|--------------|--------|-------------------------------------------------------
+|-----------------|--------------|--------|-------------------------------------------------
 | getBTM          | "1"          |        | *unknown constant?*
 | getBTS          | "0"          |        | *unknown constant?*
 | getCOR          | "30"         |        | *unknown constant?*
