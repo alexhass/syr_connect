@@ -702,6 +702,17 @@ LEXplus10SL, SafeTech, SafeTech+, Trio DFR/LS and Sanibel devices support up to 
 | getPV1 … getPV8 | "0" | L | Profile 1–8 max. leak volume |
 | getPW1 … getPW8 | "false" | | Profile 1–8 leak warning enabled (true/false) |
 
+### Microleakage test
+
+Available on Trio DFR/LS and SafeTech+.
+
+| Property        | Example      | Unit   | Description
+|-----------------|--------------|--------|-------------------------------------------------------------------------- |
+| setDEX          | "true"       |        | Starts the microleakage test (write-only)                                 |
+| getDRP / setDRP | "1"          |        | Microleakage test interval: 1 = daily, 2 = weekly, 3 = monthly            |
+| getDSV          | "0"          |        | Microleakage test status (read-only): 0 = not active, 1 = active, 2 = aborted due to pressure drop, 3 = skipped  |
+| getDTT / setDTT | "00:00"      |        | Time of day when the microleakage test is executed (format `HH:MM`)       |
+
 ### Unknown leakage protection
 
 These properties are only available on devices that contain leakage protection, e.g. LEX Plus 10 SL Connect.
@@ -718,7 +729,6 @@ These properties are only available on devices that contain leakage protection, 
 | getDOM          | "60"         |        | *unknown*
 | getDPL          | "10"         |        | *unknown*
 | getDTC          | "3"          |        | *unknown*
-| getDRP          | "1"          |        | Sets the test interval for micro-leakage tests e.g. 1-3<br>1=The test starts daily<br>2=The test starts weekly<br>3=The test starts monthly
 | getTN           | "20"         |        | *unknown*
 | getSMR          | "1"          |        | *unknown*
 | getSRE          | "0"          |        | Regeneration state: 0 = not running, 1 = running (values 3/5 unclear)
