@@ -27,6 +27,7 @@ from .migrations import (
     v2_to_v3_fix_flo_unit,
     v3_to_v4_add_service,
     v4_to_v5_remove_sta_binary_sensor,
+    v5_to_v6_fix_nps_unit,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,6 +67,8 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
              multi-service support was introduced (defaults to SYR Connect).
       4 → 5: Remove stale binary_sensor 'sta' entities from the entity
              registry (the entity was migrated to the sensor platform).
+      5 → 6: Reset entity registry unit override for getNPS sensors from
+             "" to "s" (native_unit_of_measurement changed to UnitOfTime.SECONDS).
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -115,6 +118,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.debug("Applying v4->v5 migration for entry %s: removing stale sta binary_sensor", entry.entry_id)
         v4_to_v5_remove_sta_binary_sensor(hass, entry)
         hass.config_entries.async_update_entry(entry, version=5)
+
+    # Migrate v5 -> v6
+    # Integration version: getNPS native_unit_of_measurement changed from "" to "s"
+    if entry.version == 5:
+        _LOGGER.debug("Applying v5->v6 migration for entry %s: resetting getNPS unit override", entry.entry_id)
+        v5_to_v6_fix_nps_unit(hass, entry)
+        hass.config_entries.async_update_entry(entry, version=6)
 
     return True
 

@@ -20,6 +20,7 @@ from custom_components.syr_connect.migrations import (
     v2_to_v3_fix_flo_unit,
     v3_to_v4_add_service,
     v4_to_v5_remove_sta_binary_sensor,
+    v5_to_v6_fix_nps_unit,
 )
 
 
@@ -447,3 +448,207 @@ async def test_v4_to_v5_no_entries(hass: HomeAssistant) -> None:
         v4_to_v5_remove_sta_binary_sensor(hass, entry)
 
     mock_reg.async_remove.assert_not_called()
+
+
+async def test_v5_to_v6_resets_nps_unit_override_legacy_field(hass: HomeAssistant) -> None:
+    """v5_to_v6_fix_nps_unit should clear empty-string stored in legacy unit_of_measurement field."""
+    entry = MockConfigEntry(
+        version=5,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v5",
+        unique_id="xml_user@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getnps"
+    mock_entity.unique_id = "device_id_getNPS"
+    mock_entity.domain = "sensor"
+    mock_entity.unit_of_measurement = ""
+    mock_entity.options = {}
+
+    mock_other = MagicMock()
+    mock_other.entity_id = "sensor.device_getflo"
+    mock_other.unique_id = "device_id_getFLO"
+    mock_other.domain = "sensor"
+    mock_other.unit_of_measurement = "L/h"
+    mock_other.options = {}
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity, mock_other]
+
+        v5_to_v6_fix_nps_unit(hass, entry)
+
+    mock_reg.async_update_entity.assert_called_once_with(
+        "sensor.device_getnps", unit_of_measurement=None
+    )
+    mock_reg.async_update_entity_options.assert_not_called()
+
+
+async def test_v5_to_v6_resets_nps_unit_override_options_field(hass: HomeAssistant) -> None:
+    """v5_to_v6_fix_nps_unit should clear empty-string stored in sensor options (modern HA path)."""
+    entry = MockConfigEntry(
+        version=5,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v5_opts",
+        unique_id="xml_opts@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getnps"
+    mock_entity.unique_id = "device_id_getNPS"
+    mock_entity.domain = "sensor"
+    mock_entity.unit_of_measurement = None
+    mock_entity.options = {"sensor": {"unit_of_measurement": ""}}
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity]
+
+        v5_to_v6_fix_nps_unit(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()
+    mock_reg.async_update_entity_options.assert_called_once_with(
+        "sensor.device_getnps", "sensor", None
+    )
+
+
+async def test_v5_to_v6_resets_nps_suggested_unit_in_options(hass: HomeAssistant) -> None:
+    """v5_to_v6_fix_nps_unit clears suggested_unit_of_measurement in sensor.private namespace."""
+    entry = MockConfigEntry(
+        version=5,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v5_sugg",
+        unique_id="xml_sugg@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getnps"
+    mock_entity.unique_id = "device_id_getNPS"
+    mock_entity.domain = "sensor"
+    mock_entity.unit_of_measurement = None
+    mock_entity.options = {"sensor.private": {"suggested_unit_of_measurement": ""}}
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity]
+
+        v5_to_v6_fix_nps_unit(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()
+    mock_reg.async_update_entity_options.assert_called_once_with(
+        "sensor.device_getnps", "sensor.private", None
+    )
+
+
+async def test_v5_to_v6_skips_nps_with_different_unit(hass: HomeAssistant) -> None:
+    """v5_to_v6_fix_nps_unit must not touch getNPS entries that don't have empty-string stored."""
+    entry = MockConfigEntry(
+        version=5,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v5b",
+        unique_id="xml_user2@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getnps"
+    mock_entity.unique_id = "device_id_getNPS"
+    mock_entity.domain = "sensor"
+    mock_entity.unit_of_measurement = "min"
+    mock_entity.options = {}
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity]
+
+        v5_to_v6_fix_nps_unit(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()
+    mock_reg.async_update_entity_options.assert_not_called()
+
+
+async def test_v5_to_v6_skips_nps_with_no_unit_stored(hass: HomeAssistant) -> None:
+    """v5_to_v6_fix_nps_unit must not touch getNPS entries with no unit override."""
+    entry = MockConfigEntry(
+        version=5,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v5c",
+        unique_id="xml_user3@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getnps"
+    mock_entity.unique_id = "device_id_getNPS"
+    mock_entity.domain = "sensor"
+    mock_entity.unit_of_measurement = None
+    mock_entity.options = {}
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity]
+
+        v5_to_v6_fix_nps_unit(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()
+    mock_reg.async_update_entity_options.assert_not_called()
+
+
+async def test_v5_to_v6_no_entries(hass: HomeAssistant) -> None:
+    """v5_to_v6_fix_nps_unit handles an empty entity registry gracefully."""
+    entry = MockConfigEntry(
+        version=5,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v5d",
+        unique_id="xml_v5d@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = []
+
+        v5_to_v6_fix_nps_unit(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()
+    mock_reg.async_update_entity_options.assert_not_called()

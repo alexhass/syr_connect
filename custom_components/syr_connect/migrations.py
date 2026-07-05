@@ -113,3 +113,30 @@ def v4_to_v5_remove_sta_binary_sensor(hass: HomeAssistant, entry: ConfigEntry) -
     for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
         if entity_entry.unique_id.endswith("_sta"):
             ent_reg.async_remove(entity_entry.entity_id)
+
+
+def v5_to_v6_fix_nps_unit(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reset entity registry unit override for getNPS sensors (v5 → v6).
+
+    When getNPS's native_unit_of_measurement changed from "" to "s"
+    (UnitOfTime.SECONDS), existing entity registry entries may have ""
+    stored as the display unit override. Resetting the override to None
+    lets HA pick up the new native unit from the code.
+    """
+    ent_reg = er.async_get(hass)
+    for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+        if entity_entry.domain != "sensor" or not entity_entry.unique_id.endswith("_getNPS"):
+            continue
+        if entity_entry.unit_of_measurement == "":
+            ent_reg.async_update_entity(entity_entry.entity_id, unit_of_measurement=None)
+        for namespace in ("sensor.private", "sensor"):
+            ns_opts = dict(entity_entry.options.get(namespace, {}))
+            changed = False
+            for key in ("unit_of_measurement", "suggested_unit_of_measurement"):
+                if ns_opts.get(key) == "":
+                    ns_opts.pop(key)
+                    changed = True
+            if changed:
+                ent_reg.async_update_entity_options(
+                    entity_entry.entity_id, namespace, ns_opts or None
+                )
