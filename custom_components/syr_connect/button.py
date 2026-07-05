@@ -87,6 +87,7 @@ async def async_setup_entry(
             ("setALA", "Reset alarm"),
             ("setNOT", "Reset notification"),
             ("setWRN", "Reset warning"),
+            ("setDEX", "Start microleakage test"),
         ]
 
         created_commands: set[str] = set()
@@ -102,6 +103,11 @@ async def async_setup_entry(
             if command == "setALA":
                 alarm_field = "alm" if model_info.get("alarm_style_alm") else "ala"
                 get_key = f"get{alarm_field.upper()}"
+            elif command == "setDEX":
+                # No getDEX read key exists; presence is indicated by getDSV
+                # (microleakage test status), which exists on devices that support
+                # microleakage tests (Trio DFR/LS, SafeTech+).
+                get_key = "getDSV"
             else:
                 get_key = "get" + command[3:]
             if get_key not in status:
@@ -220,6 +226,21 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
 
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         try:
+            # Handle setDEX: start the microleakage test by sending True.
+            # Reject the request if getDSV=1, which means a test is already running.
+            if self._command == "setDEX":
+                status = None
+                for device in coordinator.data.get("devices", []):
+                    if device["id"] == self._device_id:
+                        status = device.get("status", {})
+                        break
+                raw_dsv = None if status is None else status.get("getDSV")
+                if str(raw_dsv).strip() == "1":
+                    _LOGGER.warning("Microleakage test already running on %s, skipping setDEX", self._device_id)
+                    return
+                await coordinator.async_set_device_value(self._device_id, self._command, "true")
+                return
+
             # Handle setSIR: initiate regeneration with the appropriate value.
             # getSIR = 1 (integer/string) → send setSIR = 0 (integer).
             # getSIR = False / "false" → send setSIR = "true" (string, lowercase).

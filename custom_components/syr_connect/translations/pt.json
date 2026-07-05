@@ -76,6 +76,9 @@
       "setala": {
         "name": "Redefinir alarme"
       },
+      "setdex": {
+        "name": "Iniciar teste de microvazamento"
+      },
       "setnot": {
         "name": "Redefinir notificação"
       },

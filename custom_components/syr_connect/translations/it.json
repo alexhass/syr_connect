@@ -76,6 +76,9 @@
       "setala": {
         "name": "Reimposta allarme"
       },
+      "setdex": {
+        "name": "Avvia test micro-perdita"
+      },
       "setnot": {
         "name": "Reimposta notifica"
       },

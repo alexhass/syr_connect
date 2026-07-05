@@ -702,6 +702,7 @@ _SYR_CONNECT_SWITCH_KNOWN_KEYS = {
 _SYR_CONNECT_BUTTON_KNOWN_KEYS = {
     "setSIR",   # Trigger manual regeneration
     "setALA",   # Reset alarm
+    "setDEX",   # Start microleakage test
     "setNOT",   # Reset notification
     "setWRN",   # Reset warning
 }

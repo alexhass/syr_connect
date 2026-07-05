@@ -76,6 +76,9 @@
       "setala": {
         "name": "Alarm resetten"
       },
+      "setdex": {
+        "name": "Microlek-test starten"
+      },
       "setnot": {
         "name": "Melding resetten"
       },

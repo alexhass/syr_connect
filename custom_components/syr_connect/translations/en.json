@@ -76,6 +76,9 @@
       "setala": {
         "name": "Reset alarm"
       },
+      "setdex": {
+        "name": "Start microleakage test"
+      },
       "setnot": {
         "name": "Reset notification"
       },

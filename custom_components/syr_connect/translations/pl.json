@@ -76,6 +76,9 @@
             "setala": {
                 "name": "Resetuj alarm"
             },
+            "setdex": {
+                "name": "Uruchom test mikroprzecieku"
+            },
             "setnot": {
                 "name": "Resetuj powiadomienie"
             },

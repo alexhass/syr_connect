@@ -76,6 +76,9 @@
       "setala": {
         "name": "Alarm zurücksetzen"
       },
+      "setdex": {
+        "name": "Mikroleckage-Test starten"
+      },
       "setnot": {
         "name": "Benachrichtigung zurücksetzen"
       },

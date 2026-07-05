@@ -934,3 +934,131 @@ async def test_button_reset_ala_sentinel_values_no_reset(hass: HomeAssistant, se
 
     coordinator.async_set_device_value.assert_not_called()
     coordinator.async_clear_device_alarm.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# setDEX – microleakage test
+# ---------------------------------------------------------------------------
+
+async def test_async_setup_entry_creates_setdex_when_getdsv_present(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """async_setup_entry creates a setDEX button when getDSV is in the device status."""
+    data = {
+        "devices": [
+            {
+                "id": "device_trio",
+                "name": "Trio DFR/LS",
+                "project_id": "project1",
+                "status": {"getDSV": "0"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert len(entities) == 1
+    assert entities[0]._command == "setDEX"
+
+
+async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """async_setup_entry does NOT create a setDEX button when getDSV is absent."""
+    data = {
+        "devices": [
+            {
+                "id": "device_no_dsv",
+                "name": "Device No DSV",
+                "project_id": "project1",
+                "status": {},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert len(entities) == 0
+
+
+async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
+    """setDEX press sends 'true' to the API when no test is running (getDSV != '1')."""
+    data = {
+        "devices": [
+            {
+                "id": "device_dex",
+                "name": "Device DEX",
+                "project_id": "project1",
+                "status": {"getDSV": "0"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_dex", "setDEX", "true")
+
+
+@pytest.mark.parametrize("dsv_value", ["1", 1])
+async def test_button_press_setdex_skips_when_test_already_running(
+    hass: HomeAssistant,
+    caplog: pytest.LogCaptureFixture,
+    dsv_value,
+) -> None:
+    """setDEX press logs a warning and is a no-op when getDSV == 1 (test already running)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_dex",
+                "name": "Device DEX",
+                "project_id": "project1",
+                "status": {"getDSV": dsv_value},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+
+    import logging
+    with caplog.at_level(logging.WARNING, logger="custom_components.syr_connect.button"):
+        await button.async_press()
+
+    coordinator.async_set_device_value.assert_not_called()
+    assert "Microleakage test already running" in caplog.text
+
+
+async def test_button_press_setdex_sends_true_when_getdsv_is_two(hass: HomeAssistant) -> None:
+    """setDEX press sends 'true' when getDSV is '2' (test finished, not running)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_dex2",
+                "name": "Device DEX2",
+                "project_id": "project1",
+                "status": {"getDSV": "2"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_dex2", "Device DEX2", "project1", "setDEX")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_dex2", "setDEX", "true")
+

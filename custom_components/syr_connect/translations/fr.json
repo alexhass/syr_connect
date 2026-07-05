@@ -76,6 +76,9 @@
       "setala": {
         "name": "Réinitialiser l'alarme"
       },
+      "setdex": {
+        "name": "Démarrer le test de microfuite"
+      },
       "setnot": {
         "name": "Réinitialiser la notification"
       },

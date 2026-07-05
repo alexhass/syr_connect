@@ -76,6 +76,9 @@
       "setala": {
         "name": "Restablecer alarma"
       },
+      "setdex": {
+        "name": "Iniciar prueba de microfugas"
+      },
       "setnot": {
         "name": "Restablecer notificación"
       },
