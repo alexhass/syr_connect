@@ -1091,6 +1091,50 @@ async def test_button_press_setdex_skips_when_test_already_running(
     assert "Microleakage test already running" in caplog.text
 
 
+async def test_button_press_setdex_sends_true_when_typ_absent(hass: HomeAssistant) -> None:
+    """setDEX falls back to boolean 'true' when getTYP is absent (TypeError branch)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_dex",
+                "name": "Device DEX",
+                "project_id": "project1",
+                "status": {"getDSV": "0"},  # no getTYP → typ=None → TypeError
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_dex", "setDEX", "true")
+
+
+async def test_button_press_setdex_sends_true_when_typ_non_numeric(hass: HomeAssistant) -> None:
+    """setDEX falls back to boolean 'true' when getTYP is non-numeric (ValueError branch)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_dex",
+                "name": "Device DEX",
+                "project_id": "project1",
+                "status": {"getDSV": "0", "getTYP": "n/a"},  # non-numeric → ValueError
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_dex", "setDEX", "true")
+
+
 async def test_button_press_setdex_sends_true_when_getdsv_is_two(hass: HomeAssistant) -> None:
     """setDEX press sends 'true' (getTYP≥100) when getDSV is '2' (test finished)."""
     data = {
