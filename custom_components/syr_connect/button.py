@@ -107,6 +107,9 @@ async def async_setup_entry(
                 # No getDEX read key exists; presence is indicated by getDSV
                 # (microleakage test status), which exists on devices that support
                 # microleakage tests (Trio DFR/LS, SafeTech+).
+                # setDEX is JSON-only: skip on XML API.
+                if not isinstance(coordinator.api, SyrConnectJsonAPI):
+                    continue
                 get_key = "getDSV"
             else:
                 get_key = "get" + command[3:]
@@ -228,6 +231,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         try:
             # Handle setDEX: start the microleakage test by sending True.
             # Reject the request if getDSV=1, which means a test is already running.
+            # Value encoding: getTYP < 100 → integer 1, otherwise → boolean "true".
             if self._command == "setDEX":
                 status = None
                 for device in coordinator.data.get("devices", []):
@@ -238,7 +242,13 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                 if str(raw_dsv).strip() == "1":
                     _LOGGER.warning("Microleakage test already running on %s, skipping setDEX", self._device_id)
                     return
-                await coordinator.async_set_device_value(self._device_id, self._command, "true")
+                # Determine value encoding from getTYP (JSON devices only).
+                typ = None if status is None else status.get("getTYP")
+                try:
+                    dex_value: int | str = 1 if int(typ) < 100 else "true"  # type: ignore[arg-type]
+                except (ValueError, TypeError):
+                    dex_value = "true"  # getTYP absent or non-numeric → boolean
+                await coordinator.async_set_device_value(self._device_id, self._command, dex_value)
                 return
 
             # Handle setSIR: initiate regeneration with the appropriate value.

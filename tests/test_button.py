@@ -945,24 +945,52 @@ async def test_async_setup_entry_creates_setdex_when_getdsv_present(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """async_setup_entry creates a setDEX button when getDSV is in the device status."""
+    """async_setup_entry creates a setDEX button on JSON API devices when getDSV is present."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
     data = {
         "devices": [
             {
                 "id": "device_trio",
                 "name": "Trio DFR/LS",
                 "project_id": "project1",
-                "status": {"getDSV": "0"},
+                "status": {"getDSV": "0", "getTYP": "215"},
             }
         ]
     }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.api.__class__ = SyrConnectJsonAPI
     entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     assert len(entities) == 1
     assert entities[0]._command == "setDEX"
+
+
+async def test_async_setup_entry_skips_setdex_on_xml_api(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """setDEX is skipped when the coordinator uses the XML API (not SyrConnectJsonAPI)."""
+    data = {
+        "devices": [
+            {
+                "id": "device_xml",
+                "name": "XML Device",
+                "project_id": "project1",
+                "status": {"getDSV": "0", "getTYP": "40"},
+            }
+        ]
+    }
+    # default MagicMock api is not SyrConnectJsonAPI → setDEX must be skipped
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert len(entities) == 0
 
 
 async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
@@ -990,14 +1018,14 @@ async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
 
 
 async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
-    """setDEX press sends 'true' to the API when no test is running (getDSV != '1')."""
+    """setDEX press sends boolean 'true' when getTYP≥100 and no test is running."""
     data = {
         "devices": [
             {
                 "id": "device_dex",
                 "name": "Device DEX",
                 "project_id": "project1",
-                "status": {"getDSV": "0"},
+                "status": {"getDSV": "0", "getTYP": "215"},
             }
         ]
     }
@@ -1009,6 +1037,28 @@ async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
     await button.async_press()
 
     coordinator.async_set_device_value.assert_called_once_with("device_dex", "setDEX", "true")
+
+
+async def test_button_press_setdex_sends_integer_when_typ_lt_100(hass: HomeAssistant) -> None:
+    """setDEX press sends integer 1 when getTYP<100 and no test is running."""
+    data = {
+        "devices": [
+            {
+                "id": "device_dex",
+                "name": "Device DEX",
+                "project_id": "project1",
+                "status": {"getDSV": "0", "getTYP": "50"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_called_once_with("device_dex", "setDEX", 1)
 
 
 @pytest.mark.parametrize("dsv_value", ["1", 1])
@@ -1042,14 +1092,14 @@ async def test_button_press_setdex_skips_when_test_already_running(
 
 
 async def test_button_press_setdex_sends_true_when_getdsv_is_two(hass: HomeAssistant) -> None:
-    """setDEX press sends 'true' when getDSV is '2' (test finished, not running)."""
+    """setDEX press sends 'true' (getTYP≥100) when getDSV is '2' (test finished)."""
     data = {
         "devices": [
             {
                 "id": "device_dex2",
                 "name": "Device DEX2",
                 "project_id": "project1",
-                "status": {"getDSV": "2"},
+                "status": {"getDSV": "2", "getTYP": "215"},
             }
         ]
     }
