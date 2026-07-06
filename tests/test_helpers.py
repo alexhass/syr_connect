@@ -1292,3 +1292,47 @@ def test_mask_ug_value_re_error_returns_original():
     payload = '<sc ug="SECRET"></sc>'
     with patch("custom_components.syr_connect.helpers.re.sub", side_effect=re.error("boom")):
         assert mask_ug_value(payload) == payload
+
+
+# ---------------------------------------------------------------------------
+# is_sensor_visible – getBAP firmware-bug suppression (lines 1077-1088)
+# ---------------------------------------------------------------------------
+
+def test_is_sensor_visible_getbap_suppressed_when_zero_and_bat_positive() -> None:
+    """getBAP=0 with getBAT>0 is suppressed (firmware exposes spurious % field)."""
+    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", 0) is False
+
+
+def test_is_sensor_visible_getbap_suppressed_when_string_zero_and_bat_positive() -> None:
+    """getBAP='0' (string) with getBAT>0 is also suppressed."""
+    assert is_sensor_visible({"getBAT": "3.7"}, "getBAP", "0") is False
+
+
+def test_is_sensor_visible_getbap_not_suppressed_when_bat_absent() -> None:
+    """getBAP=0 is visible when getBAT is not in status."""
+    assert is_sensor_visible({}, "getBAP", 0) is True
+
+
+def test_is_sensor_visible_getbap_not_suppressed_when_bat_zero() -> None:
+    """getBAP=0 is visible when getBAT==0 (device runs on USB, no real voltage)."""
+    assert is_sensor_visible({"getBAT": 0}, "getBAP", 0) is True
+
+
+def test_is_sensor_visible_getbap_not_suppressed_when_bat_non_numeric() -> None:
+    """getBAP=0 is visible when getBAT is non-numeric (ValueError branch → pass)."""
+    assert is_sensor_visible({"getBAT": "n/a"}, "getBAP", 0) is True
+
+
+def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() -> None:
+    """getBAP=None triggers the TypeError branch; bap_zero=True → suppressed when getBAT>0."""
+    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", None) is False
+
+
+def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_positive() -> None:
+    """getBAP='' triggers the ValueError branch; bap_zero=True → suppressed when getBAT>0."""
+    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", "") is False
+
+
+def test_is_sensor_visible_getbap_not_suppressed_when_nonzero_value() -> None:
+    """getBAP=50 (non-zero) → bap_zero=False → not suppressed regardless of getBAT."""
+    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", 50) is True
