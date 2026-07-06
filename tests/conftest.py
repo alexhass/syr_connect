@@ -70,6 +70,7 @@ def create_mock_coordinator():
     def _create(data: dict | None = None) -> MagicMock:
         mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
         mock_coordinator.data = data
+        mock_coordinator.api = MagicMock()  # not SyrConnectJsonAPI → XML API by default
         return mock_coordinator
 
     return _create
