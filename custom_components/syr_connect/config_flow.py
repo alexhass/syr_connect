@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections import Counter
 from typing import Any
 
 import voluptuous as vol
@@ -63,16 +64,27 @@ _STEP_REAUTH_XML_DATA_SCHEMA = vol.Schema(
 
 # Get list of models that support local JSON API (have base_path)
 # Sort by display_name to ensure first item in list matches first item shown in UI
+_LOCAL_API_MODEL_BASE = [
+    (
+        sig["name"],
+        f"{sig['manufacturer']} {sig['display_name']}",
+    )
+    for sig in MODEL_SIGNATURES
+    if sig.get("base_path") is not None
+]
+# Some distinct models share the same manufacturer + display_name (e.g. several
+# "SYR SafeTech Connect" variants), which collapse to identical dropdown entries
+# the user cannot tell apart. Disambiguate colliding labels by appending the
+# signature name, which is unique per model — so every entry stays visible and
+# selectable, and none are auto-detected away (detection uses MODEL_SIGNATURES,
+# not this list).
+_LOCAL_API_LABEL_COUNTS = Counter(label for _, label in _LOCAL_API_MODEL_BASE)
 LOCAL_API_MODELS = sorted(
     [
-        (
-            sig["name"],
-            f"{sig['manufacturer']} {sig['display_name']}",
-        )
-        for sig in MODEL_SIGNATURES
-        if sig.get("base_path") is not None
+        (name, f"{label} ({name})" if _LOCAL_API_LABEL_COUNTS[label] > 1 else label)
+        for name, label in _LOCAL_API_MODEL_BASE
     ],
-    key=lambda x: x[1].casefold(),  # Sort by display_name (case-insensitive)
+    key=lambda x: x[1].casefold(),  # Sort by label (case-insensitive)
 )
 
 # Schema for Local/JSON API configuration (host + model)

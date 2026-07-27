@@ -1,5 +1,6 @@
 """Test the SYR Connect config flow."""
 
+from collections import Counter
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -1013,9 +1014,46 @@ def test_local_api_models_labels_prefixed_with_manufacturer() -> None:
             f"Label {label!r} for model {model_name!r} does not start with manufacturer {manufacturer!r}"
         )
         display_name = sig["display_name"]
-        assert label == f"{manufacturer} {display_name}", (
-            f"Label {label!r} != '{manufacturer} {display_name}'"
+        base = f"{manufacturer} {display_name}"
+        # Labels are normally "manufacturer display_name", but colliding labels
+        # are disambiguated with a trailing " (name)" suffix.
+        name_suffix = f"{base} ({model_name})"
+        assert label in (base, name_suffix), (
+            f"Label {label!r} != {base!r} (or its name-disambiguated form)"
         )
+
+
+def test_local_api_models_labels_are_unique() -> None:
+    """Dropdown labels must be unique.
+
+    Colliding manufacturer+display_name labels are disambiguated by appending the
+    unique signature name (e.g. the several "SafeTech Connect" variants), so no
+    two entries are indistinguishable.
+    """
+    from custom_components.syr_connect.config_flow import LOCAL_API_MODELS
+
+    labels = [label for _, label in LOCAL_API_MODELS]
+    dupes = [label for label, n in Counter(labels).items() if n > 1]
+    assert not dupes, f"Duplicate dropdown labels: {dupes!r}"
+
+
+def test_duplicate_label_models_disambiguated_by_name() -> None:
+    """Models sharing a label stay visible, disambiguated by their unique name.
+
+    safetech141 and safetech145 share "SYR SafeTech Connect" and the same
+    base_path; both remain selectable in the dropdown with distinct labels that
+    embed the signature name (nothing is hidden or collapsed).
+    """
+    from custom_components.syr_connect.config_flow import LOCAL_API_MODELS
+
+    label_by_name = {name: label for name, label in LOCAL_API_MODELS}
+
+    for name in ("safetech141", "safetech145"):
+        assert name in label_by_name, f"{name!r} missing from dropdown"
+        assert name in label_by_name[name], (
+            f"Colliding label for {name!r} should embed the name: {label_by_name[name]!r}"
+        )
+    assert label_by_name["safetech141"] != label_by_name["safetech145"]
 
 
 def test_local_api_models_only_includes_models_with_base_path() -> None:

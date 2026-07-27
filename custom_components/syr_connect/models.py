@@ -533,6 +533,15 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
+        "display_name": "SafeTech V3 Connect",
+        "dk": 140,
+        "dkv": 35,
+        "manufacturer": "SYR",
+        "name": "safetechv3",
+        "ver_prefix": "Safe-Tech V3",
+    },
+    {
+        "base_path": "/safe-tec",
         "display_name": "SafeTech Connect",
         "dk": 140,
         "dkv": 38,

@@ -917,6 +917,7 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         "pontosbase",
         "safetech",
         "safetechplus",
+        "safetechv3",
         "safetechv4",
         "sanibelleakprotect",
         "sanibelsoftwaterduo",
