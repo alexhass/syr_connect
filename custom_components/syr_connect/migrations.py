@@ -140,3 +140,24 @@ def v5_to_v6_fix_nps_unit(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 ent_reg.async_update_entity_options(
                     entity_entry.entity_id, namespace, ns_opts or None
                 )
+
+
+def v6_to_v7_scope_unique_id_by_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Prefix entity unique_ids with the owning config entry ID (v6 → v7).
+
+    unique_id used to be `device_id_key` only. The same physical device
+    (serial number) can be reachable from more than one config entry (e.g.
+    a device visible via two SYR Connect accounts), which caused unique_id
+    collisions across hubs. Prepending `entry_id` (already the prefix used
+    by `build_unique_id`) keeps existing entities intact while making
+    unique_ids distinct per hub going forward.
+    """
+    ent_reg = er.async_get(hass)
+    prefix = f"{entry.entry_id}_"
+    for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
+        if entity_entry.unique_id.startswith(prefix):
+            continue
+        ent_reg.async_update_entity(
+            entity_entry.entity_id,
+            new_unique_id=f"{entry.entry_id}_{entity_entry.unique_id}",
+        )

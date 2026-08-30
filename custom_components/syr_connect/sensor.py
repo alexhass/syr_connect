@@ -40,6 +40,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
     build_device_info,
     build_entity_id,
+    build_unique_id,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -268,7 +269,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
         # Set unique ID and translation platform
         # device_id is the serial number - use it for technical entity IDs
-        self._attr_unique_id = f"{device_id}_{sensor_key}"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, sensor_key)
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
 
@@ -915,7 +916,7 @@ class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):
         self._device_name = device_name
         self._project_id = project_id
 
-        self._attr_unique_id = f"{device_id}_dst"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "dst")
         self.entity_id = build_entity_id("sensor", device_id, "dst")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 

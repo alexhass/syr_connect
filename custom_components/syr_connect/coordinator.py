@@ -43,6 +43,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching SYR Connect data."""
 
     api: SyrConnectXmlAPI | SyrConnectJsonAPI
+    # Owning config entry ID; used to scope entity unique_ids across hubs (set in __init__.py).
+    entry_id: str | None = None
 
     def __init__(
         self,

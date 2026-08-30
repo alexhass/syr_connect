@@ -28,6 +28,7 @@ from .migrations import (
     v3_to_v4_add_service,
     v4_to_v5_remove_sta_binary_sensor,
     v5_to_v6_fix_nps_unit,
+    v6_to_v7_scope_unique_id_by_entry,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,6 +70,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
              registry (the entity was migrated to the sensor platform).
       5 → 6: Reset entity registry unit override for getNPS sensors from
              "" to "s" (native_unit_of_measurement changed to UnitOfTime.SECONDS).
+      6 → 7: Prefix entity unique_ids with the owning config entry ID so the
+             same physical device reachable from multiple hubs (config
+             entries) no longer collides on a shared unique_id.
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -126,6 +130,13 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         v5_to_v6_fix_nps_unit(hass, entry)
         hass.config_entries.async_update_entry(entry, version=6)
 
+    # Migrate v6 -> v7
+    # Integration version: unique_id scoped per config entry to avoid cross-hub collisions
+    if entry.version == 6:
+        _LOGGER.debug("Applying v6->v7 migration for entry %s: scoping unique_ids by entry", entry.entry_id)
+        v6_to_v7_scope_unique_id_by_entry(hass, entry)
+        hass.config_entries.async_update_entry(entry, version=7)
+
     return True
 
 
@@ -168,6 +179,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Attach config entry to coordinator for options access
     coordinator.config_entry = entry
+    # Scope entity unique_ids to this entry so the same physical device
+    # reachable from multiple hubs doesn't collide (see build_unique_id).
+    coordinator.entry_id = entry.entry_id
 
     try:
         await coordinator.async_config_entry_first_refresh()

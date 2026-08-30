@@ -193,6 +193,29 @@ def build_entity_id(platform: str, device_id: str, key: str) -> str:
     return f"{platform}.{DOMAIN}_{device_id.lower()}_{key.lower()}"
 
 
+def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
+    """Build a unique_id scoped to the owning config entry.
+
+    The same physical device (serial number) can be reachable from more than
+    one config entry (e.g. a device visible via two SYR Connect accounts).
+    Prefixing with `entry_id` keeps unique_ids distinct per hub in that case.
+    `entry_id` is omitted when not available (e.g. legacy/test callers) to
+    preserve the historical `device_id_key` format.
+
+    Args:
+        entry_id: Owning config entry ID, or None if unavailable.
+        device_id: Device ID (serial number).
+        key: Entity key (sensor_key, command, etc.), optionally with a
+            platform-specific suffix (e.g. 'getBAR_switch').
+
+    Returns:
+        Formatted unique_id.
+    """
+    if entry_id:
+        return f"{entry_id}_{device_id}_{key}"
+    return f"{device_id}_{key}"
+
+
 def registry_cleanup(
     hass: HomeAssistant,
     coordinator_data: dict[str, Any],

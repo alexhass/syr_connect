@@ -71,6 +71,9 @@ def create_mock_coordinator():
         mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
         mock_coordinator.data = data
         mock_coordinator.api = MagicMock()  # not SyrConnectJsonAPI → XML API by default
+        # No owning config entry by default; unique_id falls back to the
+        # legacy "device_id_key" format (see helpers.build_unique_id).
+        mock_coordinator.entry_id = None
         return mock_coordinator
 
     return _create

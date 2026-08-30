@@ -62,7 +62,7 @@ rules:
   
   entity-unique-id:
     status: done
-    comment: All entities have unique_id (device_id + sensor_key)
+    comment: All entities have unique_id (entry_id + device_id + sensor_key)
   
   has-entity-name:
     status: done

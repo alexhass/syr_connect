@@ -21,7 +21,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_ICON,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, registry_cleanup
+from .helpers import build_device_info, build_entity_id, build_unique_id, registry_cleanup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,7 +109,7 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._sensor_key = sensor_key
 
         # Set unique ID and translation platform
-        self._attr_unique_id = f"{device_id}_{sensor_key}"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, sensor_key)
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
         self._attr_device_class = device_class

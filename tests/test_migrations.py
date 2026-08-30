@@ -21,6 +21,7 @@ from custom_components.syr_connect.migrations import (
     v3_to_v4_add_service,
     v4_to_v5_remove_sta_binary_sensor,
     v5_to_v6_fix_nps_unit,
+    v6_to_v7_scope_unique_id_by_entry,
 )
 
 
@@ -652,3 +653,88 @@ async def test_v5_to_v6_no_entries(hass: HomeAssistant) -> None:
 
     mock_reg.async_update_entity.assert_not_called()
     mock_reg.async_update_entity_options.assert_not_called()
+
+
+async def test_v6_to_v7_prefixes_unique_id_with_entry_id(hass: HomeAssistant) -> None:
+    """v6_to_v7_scope_unique_id_by_entry prepends entry_id to existing unique_ids."""
+    entry = MockConfigEntry(
+        version=6,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v6",
+        unique_id="xml_v6@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getbar"
+    mock_entity.unique_id = "device1_getBAR"
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity]
+
+        v6_to_v7_scope_unique_id_by_entry(hass, entry)
+
+    mock_reg.async_update_entity.assert_called_once_with(
+        "sensor.device_getbar", new_unique_id="entry_v6_device1_getBAR"
+    )
+
+
+async def test_v6_to_v7_skips_already_prefixed_unique_id(hass: HomeAssistant) -> None:
+    """v6_to_v7_scope_unique_id_by_entry is idempotent; already-prefixed entries are untouched."""
+    entry = MockConfigEntry(
+        version=6,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v6b",
+        unique_id="xml_v6b@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    mock_entity = MagicMock()
+    mock_entity.entity_id = "sensor.device_getbar"
+    mock_entity.unique_id = "entry_v6b_device1_getBAR"
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = [mock_entity]
+
+        v6_to_v7_scope_unique_id_by_entry(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()
+
+
+async def test_v6_to_v7_no_entries(hass: HomeAssistant) -> None:
+    """v6_to_v7_scope_unique_id_by_entry handles an empty entity registry gracefully."""
+    entry = MockConfigEntry(
+        version=6,
+        domain="syr_connect",
+        title="Device",
+        data={CONF_API_TYPE: API_TYPE_XML},
+        entry_id="entry_v6c",
+        unique_id="xml_v6c@example.com",
+    )
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
+        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+    ):
+        mock_reg = MagicMock()
+        mock_er_get.return_value = mock_reg
+        mock_entries.return_value = []
+
+        v6_to_v7_scope_unique_id_by_entry(hass, entry)
+
+    mock_reg.async_update_entity.assert_not_called()

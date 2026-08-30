@@ -21,7 +21,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, registry_cleanup
+from .helpers import build_device_info, build_entity_id, build_unique_id, registry_cleanup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -146,7 +146,7 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
         # Normalize to lowercase to avoid registry mismatches.
-        self._attr_unique_id = f"{device_id}_{sensor_key}_switch".lower()
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_switch").lower()
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
 

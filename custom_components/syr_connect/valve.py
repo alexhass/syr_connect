@@ -21,6 +21,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_set_ab_command,
+    build_unique_id,
     get_sensor_ab_value,
     registry_cleanup,
 )
@@ -123,7 +124,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         # Set unique ID and translation key
         self._attr_has_entity_name = True
         self._attr_translation_key = self._sensor_key.lower()
-        self._attr_unique_id = f"{device_id}_{self._sensor_key}"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, self._sensor_key)
 
         # Keep a typed reference to the coordinator to access integration-specific helpers
         self._sc_coordinator: SyrConnectDataUpdateCoordinator = coordinator

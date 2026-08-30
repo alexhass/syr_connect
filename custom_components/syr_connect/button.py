@@ -40,7 +40,7 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
-from .helpers import build_device_info, build_entity_id, registry_cleanup
+from .helpers import build_device_info, build_entity_id, build_unique_id, registry_cleanup
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -194,7 +194,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
         self._project_id = project_id
         self._command = command
 
-        self._attr_unique_id = f"{device_id}_{command}"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, command)
         # Use translation key for localized button names; let HA build the name
         self._attr_has_entity_name = True
         self._attr_translation_key = command.lower()

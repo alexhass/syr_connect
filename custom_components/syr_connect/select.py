@@ -25,6 +25,7 @@ from .exceptions import SyrConnectError
 from .helpers import (
     build_device_info,
     build_entity_id,
+    build_unique_id,
     get_sensor_rtm_value,
     is_value_true,
     registry_cleanup,
@@ -227,7 +228,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         # Keep translation key for human-friendly name, but back the select by `getRTM` key
         self._attr_translation_key = "getrtm"
         self.entity_id = build_entity_id("select", device_id, "getRTM")
-        self._attr_unique_id = f"{device_id}_getRTM_select"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getRTM_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Use same icon as the combined regeneration time sensor if available
@@ -324,7 +325,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
         self.entity_id = build_entity_id("select", device_id, sensor_key)
-        self._attr_unique_id = f"{device_id}_{sensor_key}_select"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         # Icon mapping if present
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
@@ -442,7 +443,7 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         self._attr_has_entity_name = True
         self._attr_translation_key = "getsro"
         self.entity_id = build_entity_id("select", device_id, "getSRO")
-        self._attr_unique_id = f"{device_id}_getSRO_select"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getSRO_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getSRO")
 
@@ -534,7 +535,7 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
         self.entity_id = build_entity_id("select", device_id, sensor_key)
-        self._attr_unique_id = f"{device_id}_{sensor_key}_select"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
 
@@ -625,7 +626,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         self._attr_has_entity_name = True
         self._attr_translation_key = "getprf"
         self.entity_id = build_entity_id("select", device_id, "getPRF")
-        self._attr_unique_id = f"{device_id}_getPRF_select"
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getPRF_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
         self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getPRF")
 
