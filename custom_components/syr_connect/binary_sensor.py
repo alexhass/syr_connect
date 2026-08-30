@@ -53,6 +53,7 @@ async def async_setup_entry(
     registry_cleanup(
         hass, coordinator.data, "binary_sensor",
         allowed_keys=_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        entry_id=coordinator.entry_id,
     )
 
     for device in coordinator.data.get('devices', []):

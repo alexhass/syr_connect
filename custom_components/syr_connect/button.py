@@ -73,6 +73,7 @@ async def async_setup_entry(
     registry_cleanup(
         hass, coordinator.data, "button",
         allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        entry_id=coordinator.entry_id,
     )
 
     for device in coordinator.data.get('devices', []):
@@ -142,6 +143,8 @@ async def async_setup_entry(
             registry = er.async_get(hass)
             prefix = f"button.syr_connect_{device_id.lower()}_"
             for reg_entry in list(registry.entities.values()):
+                if coordinator.entry_id is not None and reg_entry.config_entry_id != coordinator.entry_id:
+                    continue
                 if not reg_entry.entity_id.startswith(prefix):
                     continue
                 key = reg_entry.entity_id[len(prefix):]

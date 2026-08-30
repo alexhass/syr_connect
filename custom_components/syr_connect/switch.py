@@ -38,7 +38,11 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for switch platform")
         return
 
-    registry_cleanup(hass, coordinator.data, "switch", allowed_keys=_SYR_CONNECT_SWITCH_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
+    registry_cleanup(
+        hass, coordinator.data, "switch",
+        allowed_keys=_SYR_CONNECT_SWITCH_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        entry_id=coordinator.entry_id,
+    )
 
     entities = []
     devices = coordinator.data.get("devices", [])

@@ -49,7 +49,11 @@ async def async_setup_entry(
         _LOGGER.warning("No coordinator data available for valve platform")
         return
 
-    registry_cleanup(hass, coordinator.data, "valve", allowed_keys=_SYR_CONNECT_VALVE_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED)
+    registry_cleanup(
+        hass, coordinator.data, "valve",
+        allowed_keys=_SYR_CONNECT_VALVE_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        entry_id=coordinator.entry_id,
+    )
 
     entities: list[SyrConnectValve] = []
     for device in coordinator.data.get("devices", []):

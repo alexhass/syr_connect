@@ -769,6 +769,53 @@ def test_registry_cleanup_remove_called() -> None:
     registry.async_remove.assert_called_once_with(unlisted_entity_id)
 
 
+def test_registry_cleanup_entry_id_scoping_ignores_other_hub() -> None:
+    """Entities owned by a DIFFERENT config entry must not be touched (cross-hub safety).
+
+    Regression test: without entry_id scoping, one hub's cleanup pass could
+    delete another hub's entities for the same device_id (e.g. the same
+    physical device reachable from two SYR Connect accounts).
+    """
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
+    registry.entities.values.return_value = [
+        SimpleNamespace(entity_id=unlisted_entity_id, config_entry_id="other_hub"),
+    ]
+    registry.async_remove = MagicMock()
+    registry.async_get = MagicMock(return_value=None)
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": device_id}]}
+        helpers.registry_cleanup(
+            hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
+        )
+
+    registry.async_remove.assert_not_called()
+
+
+def test_registry_cleanup_entry_id_scoping_removes_own_hub() -> None:
+    """Entities owned by the MATCHING config entry are still cleaned up normally."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
+    registry.entities.values.return_value = [
+        SimpleNamespace(entity_id=unlisted_entity_id, config_entry_id="this_hub"),
+    ]
+    registry.async_remove = MagicMock()
+    registry.async_get = MagicMock(return_value=None)
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": device_id}]}
+        helpers.registry_cleanup(
+            hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
+        )
+
+    registry.async_remove.assert_called_once_with(unlisted_entity_id)
+
+
 def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
     """If registry.async_remove raises, cleanup should not propagate the exception."""
     hass = MagicMock()
@@ -830,6 +877,29 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
 
     registry.async_remove.assert_called_once_with(entity_id)
+
+
+def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> None:
+    """Conditionally hidden sensor owned by a DIFFERENT config entry must not be removed."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    entity_id = build_entity_id("sensor", device_id, "getTYP")
+    registry.entities.values.return_value = []
+    registry.async_remove = MagicMock()
+    registry.async_get = MagicMock(
+        side_effect=lambda eid: SimpleNamespace(entity_id=eid, config_entry_id="other_hub")
+        if eid == entity_id
+        else None
+    )
+
+    coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(
+            hass, coordinator, "sensor", allowed_keys={"getTYP"}, entry_id="this_hub"
+        )
+
+    registry.async_remove.assert_not_called()
 
 
 def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:

@@ -89,6 +89,7 @@ async def async_setup_entry(
         coordinator.data,
         "sensor",
         allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        entry_id=coordinator.entry_id,
     )
 
     # Registry handle used for per-group removals below
@@ -166,7 +167,11 @@ async def async_setup_entry(
                         try:
                             entity_id = build_entity_id("sensor", device_id, gk)
                             registry_entry = registry.async_get(entity_id)
-                            if registry_entry is not None and hasattr(registry_entry, "entity_id"):
+                            owned_by_this_entry = (
+                                coordinator.entry_id is None
+                                or getattr(registry_entry, "config_entry_id", None) == coordinator.entry_id
+                            )
+                            if registry_entry is not None and hasattr(registry_entry, "entity_id") and owned_by_this_entry:
                                 _LOGGER.debug("Removing sensor due to getPA=false: %s", entity_id)
                                 registry.async_remove(registry_entry.entity_id)
                         except RuntimeError:

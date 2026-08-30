@@ -5469,12 +5469,14 @@ async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) 
     )
     entry.runtime_data = coordinator
     entry.add_to_hass(hass)
+    coordinator.entry_id = entry.entry_id
 
     # Mock the entity registry with an entry that exists
     with patch("custom_components.syr_connect.sensor.er.async_get") as mock_er:
         mock_registry = MagicMock()
         mock_entry = MagicMock()
         mock_entry.entity_id = "sensor.device1_getpa1"
+        mock_entry.config_entry_id = entry.entry_id
 
         # Make async_get return the mock entry
         mock_registry.async_get = Mock(return_value=mock_entry)

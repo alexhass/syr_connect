@@ -221,6 +221,7 @@ def registry_cleanup(
     coordinator_data: dict[str, Any],
     domain: str,
     allowed_keys: set[str] | None = None,
+    entry_id: str | None = None,
 ) -> None:
     """Remove previously-registered entities from the entity registry.
 
@@ -240,6 +241,11 @@ def registry_cleanup(
         domain: Entity domain string (e.g. "sensor").
         allowed_keys: Set of permitted sensor keys. Entities whose key is not
             in this set will be removed from the entity registry.
+        entry_id: Owning config entry ID. When provided, only entities
+            registered under this entry are considered. Without it, entities
+            belonging to a *different* hub that happens to share the same
+            device_id (e.g. the same physical device visible from two hubs)
+            could be mistaken for stale entries and removed.
     """
     if allowed_keys is None:
         return
@@ -262,6 +268,8 @@ def registry_cleanup(
 
             # Remove entities whose key is no longer in the allowed set.
             for entry in list(registry.entities.values()):
+                if entry_id is not None and entry.config_entry_id != entry_id:
+                    continue
                 if not entry.entity_id.startswith(prefix):
                     continue
                 key_lower = entry.entity_id[len(prefix):]
@@ -283,7 +291,10 @@ def registry_cleanup(
                     value = status.get(key)
                     if not is_sensor_visible(status, key, value):
                         entity_id = f"{prefix}{key.lower()}"
-                        if registry.async_get(entity_id) is not None:
+                        existing = registry.async_get(entity_id)
+                        if existing is not None and (
+                            entry_id is None or existing.config_entry_id == entry_id
+                        ):
                             _LOGGER.debug(
                                 "Removing conditionally hidden sensor from registry: %s",
                                 entity_id,
