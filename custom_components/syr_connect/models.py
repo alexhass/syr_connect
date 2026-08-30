@@ -922,7 +922,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "display_name": "Conel MultiController",
+        "display_name": "CLEAR PRO MultiController",
         "dk": 1500,
         "dkv": 500,
         "manufacturer": "CONEL",
