@@ -111,6 +111,26 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     assert mock_coordinator.async_set_device_value.call_count >= 2
 
 
+async def test_switch_unique_id_preserves_entry_id_casing() -> None:
+    """unique_id must only lowercase device_id/key, never entry_id (a case-sensitive ULID).
+
+    Regression test: the v6->v7 registry migration prepends `entry_id` to the
+    existing (already lowercase) unique_id without changing its casing. If the
+    switch entity lowercased the whole string (including entry_id), the
+    computed unique_id would never match the migrated registry entry again,
+    orphaning the entity ("no longer provided by the integration").
+    """
+    from custom_components.syr_connect.switch import SyrConnectBuzSwitch
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.entry_id = "01M196XPFB9GY9Z1KZ7SATCN9C"
+    mock_coordinator.data = {"devices": [{"id": "SN123", "name": "DeviceOn", "status": {"getBUZ": "1"}}]}
+
+    sw = SyrConnectBuzSwitch(mock_coordinator, "SN123", "DeviceOn", "", "getBUZ")
+
+    assert sw._attr_unique_id == "01M196XPFB9GY9Z1KZ7SATCN9C_sn123_getbuz_switch"
+
+
 async def test_async_setup_entry_creates_entity(hass: HomeAssistant) -> None:
     """Test that switch platform creates entity when getBUZ present."""
     config_entry = ConfigEntry(

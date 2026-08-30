@@ -145,8 +145,10 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         # Set unique ID and translation platform
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
-        # Normalize to lowercase to avoid registry mismatches.
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_switch").lower()
+        # Only lowercase device_id/key, not entry_id (a case-sensitive ULID) -
+        # otherwise this would never match the entry_id casing written by the
+        # v6->v7 registry migration.
+        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id.lower(), f"{sensor_key}_switch".lower())
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
 

@@ -634,6 +634,8 @@ def test_getdbd_rounding_precision_typeerror(monkeypatch):
     data = {"devices": [{"id": "dev_x", "name": "X", "project_id": "p1", "status": {"getDBD": "10"}}]}
     # Instead of building a full coordinator, instantiate SyrConnectSensor directly with a mock coordinator
     class DummyCoord:
+        entry_id = None
+
         def __init__(self, data):
             self.data = data
 
