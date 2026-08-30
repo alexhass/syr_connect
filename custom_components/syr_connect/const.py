@@ -417,7 +417,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getPRF",   # Currently active leak protection profile index
     "getPST",   # Pressure sensor installed (1=not available, 2=available)
     # --- Filter (NeoSoft) ---
-    "getFCD",   # Filter flush interval
+    #"getFCD",   # Filter flush interval (Disabled Issue #23)
     "getFCO",   # Iron content (ppm)
     "getFFM",   # Filter type (backwash / replaceable / none)
     # --- Alarm / Thresholds (SafeFloor) ---
