@@ -532,7 +532,8 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": "Safe-Tech V4",
     },
     {
-        "base_path": "/safe-tec",
+        "base_path": None,
+        #"base_path": "/safe-tec",
         "display_name": "SafeTech Connect",
         "dk": 140,
         "dkv": 38,
@@ -561,7 +562,8 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": "PontosBase",
     },
     {
-        "base_path": "/safe-tec",
+        "base_path": None,
+        #"base_path": "/safe-tec",
         "display_name": "SafeTech Connect",
         "dk": 141,
         "dkv": 35,
@@ -580,7 +582,8 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "39",
     },
     {
-        "base_path": "/safe-tec",
+        "base_path": None,
+        #"base_path": "/safe-tec",
         "display_name": "SafeTech Connect",
         "dk": 145,
         "dkv": 35,
