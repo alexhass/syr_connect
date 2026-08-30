@@ -585,8 +585,8 @@ These settings can be set by the user.
 | getSV1 / setSV1<br>getSV2 / setSV1<br>getSV3 / setSV1 | "7"<br>"0"<br>"0"  | kg       | Salt stored in tank 1, 2 or 3 (can also be set, e.g. on refill)
 | getSS1<br>getSS2<br>getSS3                            | "1"<br>"0"<br>"0"  | weeks    | Salt in tank 1, 2 or 3 lasts for n weeks
 | getVS1<br>getVS2<br>getVS3                            | "0"<br>"0"<br>"0"  | L        | Volume threshold 1–3 (advanced configuration)
-| getBAR                                                | "4077"             | mbar     | Measured pressure (Safe-T+). Example: "4077 mbar" = 4.077 bar
-| getBAR2                                               | "0"                | mbar     | Measured pressure for second channel (Trio DFR/LS, Sanibel). Duplicate of getBAR with 2 suffix
+| getBAR                                                | "4077"             | mbar     | Measured inlet pressure (Safe-T+). Example: "4077 mbar" = 4.077 bar
+| getBAR2                                               | "3479"             | mbar     | Measured outlet pressure (Trio DFR/LS / SYR TRIO Lock Connect, Sanibel). Example: "3479 mbar" = 3.479 bar
 | getBPT                                                | "40"               | mbar?    | Back-pressure threshold (Trio DFR/LS)
 | getPRE                                                | "0"                |          | Pressure-related value (NeoSoft 2500/5000)
 | getMPO                                                | "0"                |          | Max pressure offset (Sanibel Leak Protection Module A25)

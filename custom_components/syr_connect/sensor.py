@@ -590,9 +590,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return None
                     return get_sensor_avo_value(value)
 
-                # Special handling for pressure sensor (getBAR) - Safe-T+ device
+                # Special handling for pressure sensors (getBAR / getBAR2) - Safe-T+ / SYR TRIO Lock Connect
                 # Format: "4077 mbar" - extract numeric value and convert to bar
-                if self._sensor_key == 'getBAR':
+                if self._sensor_key in ('getBAR', 'getBAR2'):
                     if value is None or value == "":
                         return None
                     try:

@@ -246,6 +246,9 @@
       "getbar": {
         "name": "Inlet pressure"
       },
+      "getbar2": {
+        "name": "Outlet pressure"
+      },
       "getbat": {
         "name": "Battery voltage"
       },

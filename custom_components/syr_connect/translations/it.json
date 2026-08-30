@@ -246,6 +246,9 @@
       "getbar": {
         "name": "Pressione di ingresso"
       },
+      "getbar2": {
+        "name": "Pressione di uscita"
+      },
       "getbat": {
         "name": "Tensione batteria"
       },

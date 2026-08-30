@@ -269,6 +269,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getWRN",   # Current warning code
     # --- Pressure ---
     "getBAR",   # Inlet pressure – mbar sensor (Safe-T+)
+    "getBAR2",  # Outlet pressure – mbar sensor (SYR TRIO Lock Connect)
     "getPRS",   # Inlet pressure – bar sensor (LEXplus10SL)
     # --- Voltage / Battery ---
     "getBAP",   # Battery level (%)
@@ -655,6 +656,7 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
 _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getBAP": SensorDeviceClass.BATTERY,
     "getBAR": SensorDeviceClass.PRESSURE,
+    "getBAR2": SensorDeviceClass.PRESSURE,
     "getBAT": SensorDeviceClass.VOLTAGE,
     "getCOF": SensorDeviceClass.WATER,
     "getHMD": SensorDeviceClass.HUMIDITY,
@@ -810,6 +812,7 @@ _SYR_CONNECT_SENSOR_ICON = {
 
     # Safe-T+ specific
     "getBAR": "mdi:gauge",
+    "getBAR2": "mdi:gauge",
     "getBAP": "mdi:battery",
     "getBAT": "mdi:battery",
     "getDBD": "mdi:gauge",
@@ -1139,6 +1142,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
     "getBAP": SensorStateClass.MEASUREMENT,        # Battery level (%)
     "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
+    "getBAR2": SensorStateClass.MEASUREMENT,       # Outlet pressure (mbar sensor), reported by SYR TRIO Lock Connect
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Temperature
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
@@ -1277,6 +1281,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # - Safe-T+
 
     "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
+    "getBAR2": UnitOfPressure.BAR,                      # Outlet pressure (mbar sensor)
     "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
     "getDBD": UnitOfPressure.BAR,                       # Leak test pressure drop
     "getNET": UnitOfElectricPotential.VOLT,             # Mains voltage
@@ -1322,6 +1327,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getAVO": 1,    # Current flow: show with 2 decimal places
     "getBAP": 0,    # Battery level (%): show as whole number by default
     "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
+    "getBAR2": 1,   # Outlet pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
     "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Temperature, e.g. 110 = 11.0°C

@@ -246,6 +246,9 @@
       "getbar": {
         "name": "Eingangsdruck"
       },
+      "getbar2": {
+        "name": "Ausgangsdruck"
+      },
       "getbat": {
         "name": "Batteriespannung"
       },

@@ -246,6 +246,9 @@
             "getbar": {
                 "name": "Ciśnienie wejściowe"
             },
+            "getbar2": {
+                "name": "Ciśnienie wyjściowe"
+            },
             "getbat": {
                 "name": "Napięcie baterii"
             },

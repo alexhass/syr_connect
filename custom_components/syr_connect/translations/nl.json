@@ -246,6 +246,9 @@
       "getbar": {
         "name": "Inlaatdruk"
       },
+      "getbar2": {
+        "name": "Uitlaatdruk"
+      },
       "getbat": {
         "name": "Batterijspanning"
       },
