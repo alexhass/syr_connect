@@ -927,7 +927,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 500,
         "manufacturer": "CONEL",
         "name": "conelmuco",
-        # TODO: Untested model.
         "srn_prefix": "500",
     },
     {

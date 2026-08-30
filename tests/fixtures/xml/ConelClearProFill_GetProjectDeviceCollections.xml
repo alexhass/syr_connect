@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <prs>
+    <pr pg="86c20352-ca9e-f111-aa91-0cc47a087b23" pn="My+Project" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="02:00:00" />
+  </prs>
+  <col>
+    <dcl dclg="87c20352-ca9e-f111-aa91-0cc47a087b23" ali="Example+Water+Fill" dkv="500" mod="0" pg="86c20352-ca9e-f111-aa91-0cc47a087b23" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+  </col>
+  <dvs>
+    <d dg="89c20352-ca9e-f111-aa91-0cc47a087b23" sn="500AAA12345" sbt="" dfw="MuCo+V.2.24" dk="1500" dclg="87c20352-ca9e-f111-aa91-0cc47a087b23" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="88c20352-ca9e-f111-aa91-0cc47a087b23" so="1" ondt="" mac="" cfw="224" dfm="3" vlv="10" bar="0" bar2="1734" tpr="18" prc="97" iwh="18" ohw="0" whu="0" crt="1" crs="1" fcs="0" lrc="168" wtr="True" />
+  </dvs>
+  <pdvs />
+  <cs v="9EFC" />
+</sc>

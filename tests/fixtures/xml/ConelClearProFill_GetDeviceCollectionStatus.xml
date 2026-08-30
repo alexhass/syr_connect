@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="87c20352-ca9e-f111-aa91-0cc47a087b23" sta="2" dst="2" ast="1" clb="1" nrdt="30.08.2026 12:48:17" nrs="0" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="89c20352-ca9e-f111-aa91-0cc47a087b23" sbt="" sta="2" dst="2" ast="1" so="1">
+      <ci f="-" b="-" m="-" />
+      <c n="getSRN" v="500AAA12345" dt="30.08.2026 12:48:17" />
+      <c n="getNOT" v="ff" />
+      <c n="getFVT" v="100" />
+      <c n="getIFL" v="False" />
+      <c n="getMFL" v="True" />
+      <c n="getRCA" v="False" />
+      <c n="getCCS" v="0" />
+      <c n="getCRS" v="1" />
+      <c n="getCRT" v="1" />
+      <c n="getCWL" v="10" />
+      <c n="getDFI" v="True" />
+      <c n="getFCS" v="0" />
+      <c n="getFMT" v="30" />
+      <c n="getHPR" v="3" />
+      <c n="getIWH" v="18" />
+      <c n="getLMD" v="180" />
+      <c n="getLMF" v="1" />
+      <c n="getLOT" v="7" />
+      <c n="getLPD" v="10" />
+      <c n="getMPR" v="4" />
+      <c n="getOHW" v="0" />
+      <c n="getTPR" v="18" />
+      <c n="getRCD" v="1" />
+      <c n="getRMN" v="5" />
+      <c n="getRMT" v="30" />
+      <c n="getWTR" v="True" />
+      <c n="getCFT" v="0" />
+      <c n="getCFV" v="0" />
+      <c n="getLFT" v="85" />
+      <c n="getLFV" v="4" />
+      <c n="getLRC" v="168" />
+      <c n="getNRT" v="194912" />
+      <c n="getPRC" v="97" />
+      <c n="getRCC" v="0" />
+      <c n="getRCN" v="2" />
+      <c n="getRVT" v="100" />
+      <c n="getSTA" v="0" />
+      <c n="getTRT" v="130" />
+      <c n="getTRV" v="9" />
+      <c n="getALM" v="ff,ab,ff" dt="30.08.2026 12:48:18" />
+      <c n="getALN" v="ff,04,ff,01,ff" />
+      <c n="getALW" v="ff,13,ff,13,ff,01,ff" />
+      <c n="getBUZ" v="True" />
+      <c n="getCDF" v="" />
+      <c n="getCNL2" v="10" />
+      <c n="getDAP" v="" />
+      <c n="getEGW" v="0.0.0.0" />
+      <c n="getEIP" v="0.0.0.0" />
+      <c n="getFSL" v="[]" />
+      <c n="getSLF" v="0" />
+      <c n="getLDF" v="" />
+      <c n="getLMW" v="" />
+      <c n="getMAC1" v="ac:a7:04:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
+      <c n="getOHF" v="" />
+      <c n="getSUP" v="1" />
+      <c n="getVLV" v="10" />
+      <c n="getWFC" v="wifi-1" />
+      <c n="getWFS" v="2" />
+      <c n="getWGW" v="192.168.178.1" />
+      <c n="getWIP" v="192.168.178.20" />
+      <c n="getYHF" v="" />
+      <c n="getALD" v="600" />
+      <c n="getAPT" v="300" />
+      <c n="getBFT" v="" />
+      <c n="getBSA" v="True" />
+      <c n="getBMA" v="585" />
+      <c n="getBMI" v="515" />
+      <c n="getCNL" v="10" />
+      <c n="getCNF" v="10" />
+      <c n="getCNF2" v="10" />
+      <c n="getCSE" v="True" />
+      <c n="getCSE2" v="False" />
+      <c n="getCURL" v="" />
+      <c n="getDFM" v="3" />
+      <c n="getEVL" v="0" />
+      <c n="getFCD" v="" />
+      <c n="getIDS" v="True" />
+      <c n="getLED" v="" />
+      <c n="getLNG" v="0" />
+      <c n="getMM" v="3" />
+      <c n="getMPO" v="0" />
+      <c n="getPSE" v="True" />
+      <c n="getPSE2" v="True" />
+      <c n="getRTC" v="" />
+      <c n="getSMF" v="2500" />
+      <c n="getSRO" v="270" />
+      <c n="getRURL" v="" />
+      <c n="getSRV" v="" />
+      <c n="getTMZ" v="4" />
+      <c n="getTSE" v="False" />
+      <c n="getTSE2" v="" />
+      <c n="getTURL" v="" />
+      <c n="getWAD" v="True" />
+      <c n="getWAH" v="False" />
+      <c n="getWNS" v="False" />
+      <c n="getWHU" v="0" />
+      <c n="getWTI" v="1800" />
+      <c n="getALA" v="ff" dt="30.08.2026 12:48:18" />
+      <c n="getAVO" v="0" />
+      <c n="getBAR" v="0" />
+      <c n="getBAR2" v="1734" />
+      <c n="getBAP" v="59" />
+      <c n="getBAT" v="601" />
+      <c n="getCEL" v="0" />
+      <c n="getCND" v="1" />
+      <c n="getCND2" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getLTV" v="4" />
+      <c n="getNET" v="500" />
+      <c n="getNPS" v="343223" />
+      <c n="getVOL" v="10" />
+      <c n="getWFR" v="96" />
+      <c n="getWRN" v="ff" />
+      <c n="getTYP" v="0" />
+      <c n="getRCE" v="{&quot;schedules&quot;:{}}" />
+      <c n="getENV" v="prod" />
+      <c n="getCFW" v="224" />
+      <c n="getSFV" v="False" />
+      <c n="getVER" v="MuCo V.2.24" />
+    </d>
+  </dvs>
+  <cs v="F889" />
+</sc>
