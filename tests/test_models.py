@@ -116,6 +116,34 @@ def test_safetechplus_detection_synthetic():
     assert result["manufacturer"] == "SYR"
 
 
+def test_safetech_v3_detection_local():
+    """SafeTech with 'Safe-Tech V3' firmware should be detected via ver_prefix.
+
+    Regression for a V3 unit (dk=140) reported over the local /safe-tec API
+    whose serial matches no srn_prefix and whose firmware is not 'Safe-Tech V4',
+    so it previously fell through to the unknown model.
+    """
+    flat = {
+        "getSRN": "219999999",
+        "getVER": "Safe-Tech V3.56",
+        "getTYP": "140",
+        "getAB": "1",
+        "getVLV": "20",
+    }
+    result = detect_model(flat)
+    assert result["name"] == "safetechv3"
+    assert result["display_name"] == "SafeTech V3 Connect"
+    assert result["base_path"] == "/safe-tec"
+    assert result["manufacturer"] == "SYR"
+
+
+def test_safetech_v4_not_shadowed_by_v3():
+    """Adding the V3 signature must not steal detection from V4 firmware."""
+    flat = {"getSRN": "987654321", "getVER": "Safe-Tech V4.08", "getTYP": "140"}
+    result = detect_model(flat)
+    assert result["name"] == "safetechv4"
+
+
 def test_lexplus10_with_display_name_and_base_path():
     """Verify display_name, base_path, and manufacturer are returned correctly."""
     flat = {"getCNA": "LEXplus10"}
