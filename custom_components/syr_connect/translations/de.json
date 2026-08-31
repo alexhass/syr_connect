@@ -414,7 +414,7 @@
         }
       },
       "getlot": {
-        "name": "Max. Ausgangsleitfähigkeit"
+        "name": "Max. Leitwert-Grenzwert"
       },
       "getlrc": {
         "name": "Restkapazität"
