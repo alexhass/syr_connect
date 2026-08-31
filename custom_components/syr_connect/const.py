@@ -488,6 +488,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     # --- Device Info ---
     "getCNA",   # Device name
     "getCNO",   # Code number / device sub-identifier
+    "getDFM",   # Device feature mode (device function type)
     "getFIR",   # Firmware model identifier
     "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
     "getLNG",   # Device language (0=Deutsch, 1=English) - other models
