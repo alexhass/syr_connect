@@ -19,6 +19,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE,
     _SYR_CONNECT_SENSOR_BINARY,
+    _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
@@ -360,9 +361,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if self._sensor_key in ('getCEL', 'getMIT', 'getMXT'):
             # Values are provided as 1/10 °C (e.g. 110 -> 11.0°C, -40 -> -4.0°C)
             value = value / 10
-        elif self._sensor_key == 'getPRS':
-            # Divide pressure by 10 to convert from "dbar" to "bar"
+        elif self._sensor_key in ('getPRS', 'getTPR'):
+            # Values are provided in 1/10 units (e.g. dbar to bar)
             value = value / 10
+        elif self._sensor_key == 'getLOT':
+            # Value is in steps of 10 µS/cm (e.g. 7 -> 70 µS/cm)
+            value = value * 10
         elif self._sensor_key == 'getVOL':
             # API provides total volume in liters; convert to cubic meters (m³)
             try:
@@ -830,6 +834,16 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 if self._sensor_key == 'getUL':
                     raw = int(status.get('getUL') or 1)
                     return _SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw)
+
+                # Special handling for getCRS sensor: map raw API values to display values (liters)
+                if self._sensor_key == 'getCRS':
+                    if value is None or value == "":
+                        return None
+                    try:
+                        raw = int(float(value))
+                    except (ValueError, TypeError):
+                        return None
+                    return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
 
                 # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
                 if self._sensor_key == 'getVOL' and value is not None:

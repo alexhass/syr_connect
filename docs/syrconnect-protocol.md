@@ -916,7 +916,7 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getCOA          | ""      |          | *unknown*
 | getCOM          | ""      |          | *unknown*
 | getCRS / setCRS | "1"     | L        | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L
-| getCRT / setCRT | "1"     |          | Water treatment: Cartridge type: 0=HVE+, 1=HWE, 2=HVE, ""=none installed
+| getCRT / setCRT | "1"     |          | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed
 | getCWL          | ""      |          | *unknown*
 | getDFI          | ""      |          | *unknown*
 | getDTX          | ""      |          | *unknown*
@@ -931,7 +931,7 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getLFV          | ""      |          | *unknown*
 | getLMD          | ""      |          | *unknown*
 | getLMF          | ""      |          | *unknown*
-| getLOT / setLOT | "8"     | 1/10 µS/cm | Water treatment: Max. output conductivity (e.g. `8` = 80 µS/cm). Range: 0=off, 10–200 µS/cm in 10 µS/cm steps
+| getLOT / setLOT | "8"     | ×10 µS/cm | Water treatment: Max. output conductivity (e.g. `8` = 80 µS/cm). Range: 0=off, 10–200 µS/cm in 10 µS/cm steps
 | getLPD          | ""      |          | *unknown*
 | getLRC          | "173"   | L        | Liter(s) Remaining Capacity — remaining softening capacity in liters (ConelClearProFill/MuCo devices)
 | getMFL          | ""      |          | *unknown*

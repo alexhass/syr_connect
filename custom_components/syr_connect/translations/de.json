@@ -270,6 +270,18 @@
       "getcof": {
         "name": "Wasserverbrauch Gesamt"
       },
+      "getcrs": {
+        "name": "Kartuschengröße"
+      },
+      "getcrt": {
+        "name": "Kartuschentyp",
+        "state": {
+          "": "Ohne",
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getcs1": {
         "name": "Restkapazität des Harzes 1"
       },
@@ -400,6 +412,12 @@
           "0": "Deutsch",
           "1": "Englisch"
         }
+      },
+      "getlot": {
+        "name": "Max. Ausgangsleitfähigkeit"
+      },
+      "getlrc": {
+        "name": "Restkapazität"
       },
       "getltv": {
         "name": "Letztes gezapftes Volumen"
@@ -690,6 +708,9 @@
       "getpr8": {
         "name": "Rückkehrzeit 8 zu Anwesend-Profil"
       },
+      "getprc": {
+        "name": "Restkapazitätsgrad"
+      },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",
         "state": {
@@ -811,6 +832,16 @@
           "true": "Aktiviert"
         }
       },
+      "getrcd": {
+        "name": "Zeitraum Füllungen",
+        "state": {
+          "": "Undefiniert",
+          "0": "Stunde",
+          "1": "Tag",
+          "2": "Woche",
+          "3": "Monat"
+        }
+      },
       "getrcp": {
         "name": "Synchronisationsintervall"
       },
@@ -848,6 +879,9 @@
           "1": "Läuft"
         }
       },
+      "getrmn": {
+        "name": "Füllzyklen"
+      },
       "getrmo": {
         "name": "Regenerationsmodus",
         "state": {
@@ -856,6 +890,9 @@
           "3": "Power",
           "4": "Automatik"
         }
+      },
+      "getrmt": {
+        "name": "Maximale Fülldauer"
       },
       "getrpd": {
         "name": "Regenerationsintervall"
@@ -874,6 +911,9 @@
       },
       "getrtm": {
         "name": "Regenerationsuhrzeit"
+      },
+      "getrvt": {
+        "name": "Maximale Füllmenge"
       },
       "getscr": {
         "name": "Service-Regenerationszyklen"
@@ -966,6 +1006,9 @@
       },
       "gettor": {
         "name": "Summe aller Regenerationen"
+      },
+      "gettpr": {
+        "name": "Solldruck"
       },
       "gettyp": {
         "name": "Gerätetyp"

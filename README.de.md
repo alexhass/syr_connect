@@ -90,6 +90,7 @@ Diese Integration funktioniert mit SYR-Wasserenth√§rtern, Leckage-Erkennungsger√
 
 Getestet und gemeldet als funktionierend:
 
+- CONEL CLEAR PRO FILL
 - CONEL CLEAR PRO SOFT
 - Sanibel Leckageschutzmodul A25
 - Sanibel Softwater UNO A25

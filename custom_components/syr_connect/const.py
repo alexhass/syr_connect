@@ -467,6 +467,17 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getWFS",   # Wi-Fi connection status (not connected / connecting / connected)
     "getWGW",   # Wi-Fi gateway
     "getWIP",   # Wi-Fi IP address
+    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
+    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",   # Max. output conductivity (raw x10 µS/cm)
+    "getLRC",   # Liter(s) remaining softening capacity
+    "getPRC",   # Percent remaining softening capacity
+    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",   # Filling processes count
+    "getRMT",   # Maximum filling duration (min)
+    "getRVT",   # Maximum filling charges
+    "getTPR",   # Target pressure (1/10 bar)
 }
 
 # Configuration sensors - settings users do not need for daily use
@@ -595,6 +606,17 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getVS2",   # Volume threshold 2 (l)
     "getVS3",   # Volume threshold 3 (l)
     "getWMP",   # Measurement interval (s)
+    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
+    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",   # Max. output conductivity (raw x10 µS/cm)
+    "getLRC",   # Liter(s) remaining softening capacity
+    "getPRC",   # Percent remaining softening capacity
+    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",   # Filling processes count
+    "getRMT",   # Maximum filling duration (min)
+    "getRVT",   # Maximum filling charges
+    "getTPR",   # Target pressure (1/10 bar)
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
@@ -669,6 +691,7 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
     "getNET": SensorDeviceClass.VOLTAGE,
     "getLAR": SensorDeviceClass.TIMESTAMP,
     "getPRS": SensorDeviceClass.PRESSURE,
+    "getTPR": SensorDeviceClass.PRESSURE,
     "getVOL": SensorDeviceClass.WATER,
 }
 
@@ -1032,6 +1055,19 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getSLF": "mdi:waves-arrow-right",
     "getSLT": "mdi:timer-outline",
     "getSLE": "mdi:timer-sand",
+
+    # Sensors exits in devices:
+    # - Conel Clear Pro Fill
+    "getCRS": "mdi:filter",
+    "getCRT": "mdi:filter-variant",
+    "getLOT": "mdi:flash",
+    "getLRC": "mdi:gauge",
+    "getPRC": "mdi:beaker",
+    "getRCD": "mdi:calendar-sync",
+    "getRMN": "mdi:counter",
+    "getRMT": "mdi:timer-outline",
+    "getRVT": "mdi:water-plus",
+    "getTPR": "mdi:gauge",
 }
 
 # Icon mapping for the virtual "dst" (device connection state) sensor.
@@ -1090,6 +1126,12 @@ _SYR_CONNECT_SENSOR_RPW_VALUE_MAP = {
     16: 4,      # Friday
     32: 5,      # Saturday
     64: 6,      # Sunday
+}
+
+# Mapping for getCRS sensor values (Cartridge size)
+# Maps raw API value (integer) -> display value in liters
+_SYR_CONNECT_SENSOR_CRS_VALUE_MAP = {
+    1: 2.5, 2: 4, 3: 7, 4: 14, 5: 30,
 }
 
 # Mapping for getSTA / status values -> Polish values
@@ -1171,6 +1213,10 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
     "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
+    "getLOT": SensorStateClass.MEASUREMENT,        # Max. output conductivity
+    "getLRC": SensorStateClass.MEASUREMENT,        # Liter(s) remaining softening capacity
+    "getPRC": SensorStateClass.MEASUREMENT,        # Percent remaining softening capacity
+    "getTPR": SensorStateClass.MEASUREMENT,        # Target pressure
     "getVOL": SensorStateClass.TOTAL_INCREASING,  # Total capacity (cumulative)
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
@@ -1316,6 +1362,16 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Self-learning phase volume (l/h)
     "getSLT": UnitOfTime.SECONDS,                       # Time in self-learning phase (seconds)
     "getSLV": UnitOfVolume.LITERS,                      # Self-learning phase volume (l)
+
+    # Sensors exits in devices:
+    # - Conel Clear Pro Fill
+
+    "getCRS": UnitOfVolume.LITERS,                      # Cartridge size (mapped to liters)
+    "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Max. output conductivity (µS/cm)
+    "getLRC": UnitOfVolume.LITERS,                      # Liter(s) remaining softening capacity
+    "getPRC": PERCENTAGE,                               # Percent remaining softening capacity
+    "getRMT": UnitOfTime.MINUTES,                       # Maximum filling duration
+    "getTPR": UnitOfPressure.BAR,                       # Target pressure
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -1413,4 +1469,16 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getPF1": 0, "getPF2": 0, "getPF3": 0, "getPF4": 0, "getPF5": 0, "getPF6": 0, "getPF7": 0, "getPF8": 0,
     "getPT1": 0, "getPT2": 0, "getPT3": 0, "getPT4": 0, "getPT5": 0, "getPT6": 0, "getPT7": 0, "getPT8": 0,
     "getPV1": 0, "getPV2": 0, "getPV3": 0, "getPV4": 0, "getPV5": 0, "getPV6": 0, "getPV7": 0, "getPV8": 0,
+
+    # Water treatment / Filling (Conel Clear Pro Fill)
+    "getCRS": 1,    # Cartridge size (liters): show with 1 decimal place (e.g., 2.5 L)
+    "getCRT": 0,    # Cartridge type: show as whole number by default
+    "getLOT": 0,    # Max. output conductivity: show as whole number by default
+    "getLRC": 0,    # Liter(s) remaining softening capacity: show as whole number by default
+    "getPRC": 0,    # Percent remaining softening capacity: show as whole number by default
+    "getRCD": 0,    # Filling processes period: show as whole number by default
+    "getRMN": 0,    # Filling processes count: show as whole number by default
+    "getRMT": 0,    # Maximum filling duration: show as whole number of minutes
+    "getRVT": 0,    # Maximum filling charges: show as whole number by default
+    "getTPR": 1,    # Target pressure: show with 1 decimal place (e.g., 1.8 bar)
 }

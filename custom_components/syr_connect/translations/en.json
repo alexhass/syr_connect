@@ -270,6 +270,18 @@
       "getcof": {
         "name": "Total water consumption"
       },
+      "getcrs": {
+        "name": "Cartridge size"
+      },
+      "getcrt": {
+        "name": "Cartridge type",
+        "state": {
+          "": "None",
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getcs1": {
         "name": "Remaining resin capacity 1"
       },
@@ -400,6 +412,12 @@
           "0": "German",
           "1": "English"
         }
+      },
+      "getlot": {
+        "name": "Max. output conductivity"
+      },
+      "getlrc": {
+        "name": "Remaining capacity"
       },
       "getltv": {
         "name": "Last dispensed volume"
@@ -690,6 +708,9 @@
       "getpr8": {
         "name": "Return time 8 to Present profile"
       },
+      "getprc": {
+        "name": "Remaining capacity level"
+      },
       "getprf": {
         "name": "Active leak protection profile",
         "state": {
@@ -811,6 +832,16 @@
           "true": "Enabled"
         }
       },
+      "getrcd": {
+        "name": "Filling processes period",
+        "state": {
+          "": "Undefined",
+          "0": "Hour",
+          "1": "Day",
+          "2": "Week",
+          "3": "Month"
+        }
+      },
       "getrcp": {
         "name": "Synchronisation interval"
       },
@@ -848,6 +879,9 @@
           "1": "Running"
         }
       },
+      "getrmn": {
+        "name": "Filling processes"
+      },
       "getrmo": {
         "name": "Regeneration mode",
         "state": {
@@ -856,6 +890,9 @@
           "3": "Power",
           "4": "Automatic"
         }
+      },
+      "getrmt": {
+        "name": "Maximum filling duration"
       },
       "getrpd": {
         "name": "Regeneration interval"
@@ -874,6 +911,9 @@
       },
       "getrtm": {
         "name": "Regeneration time"
+      },
+      "getrvt": {
+        "name": "Maximum filling charges"
       },
       "getscr": {
         "name": "Service regeneration cycles"
@@ -966,6 +1006,9 @@
       },
       "gettor": {
         "name": "Total regenerations"
+      },
+      "gettpr": {
+        "name": "Target pressure"
       },
       "gettyp": {
         "name": "Device type"

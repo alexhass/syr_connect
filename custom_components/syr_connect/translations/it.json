@@ -270,6 +270,18 @@
       "getcof": {
         "name": "Consumo totale d'acqua"
       },
+      "getcrs": {
+        "name": "Dimensione cartuccia"
+      },
+      "getcrt": {
+        "name": "Tipo di cartuccia",
+        "state": {
+          "": "Nessuno",
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getcs1": {
         "name": "Capacità residua resina 1"
       },
@@ -400,6 +412,12 @@
           "0": "Tedesco",
           "1": "Inglese"
         }
+      },
+      "getlot": {
+        "name": "Conducibilità massima in uscita"
+      },
+      "getlrc": {
+        "name": "Capacità residua"
       },
       "getltv": {
         "name": "Ultimo volume erogato"
@@ -690,6 +708,9 @@
       "getpr8": {
         "name": "Tempo di ritorno al profilo attivo 8"
       },
+      "getprc": {
+        "name": "Livello di capacità residua"
+      },
       "getprf": {
         "name": "Profilo protezione attivo",
         "state": {
@@ -811,6 +832,16 @@
           "true": "Attivato"
         }
       },
+      "getrcd": {
+        "name": "Periodo dei processi di riempimento",
+        "state": {
+          "": "Non definito",
+          "0": "Ora",
+          "1": "Giorno",
+          "2": "Settimana",
+          "3": "Mese"
+        }
+      },
       "getrcp": {
         "name": "Intervallo di sincronizzazione"
       },
@@ -848,6 +879,9 @@
           "1": "In funzione"
         }
       },
+      "getrmn": {
+        "name": "Processi di riempimento"
+      },
       "getrmo": {
         "name": "Modalità di rigenerazione",
         "state": {
@@ -856,6 +890,9 @@
           "3": "Power",
           "4": "Automatico"
         }
+      },
+      "getrmt": {
+        "name": "Durata massima di riempimento"
       },
       "getrpd": {
         "name": "Intervallo rigenerazione"
@@ -874,6 +911,9 @@
       },
       "getrtm": {
         "name": "Ora di rigenerazione"
+      },
+      "getrvt": {
+        "name": "Carica massima di riempimento"
       },
       "getscr": {
         "name": "Cicli di rigenerazione di servizio"
@@ -966,6 +1006,9 @@
       },
       "gettor": {
         "name": "Rigenerazioni totali"
+      },
+      "gettpr": {
+        "name": "Pressione target"
       },
       "gettyp": {
         "name": "Tipo di dispositivo"
