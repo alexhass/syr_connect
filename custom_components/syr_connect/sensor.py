@@ -845,6 +845,20 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         return None
                     return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
 
+                # Special handling for getCRT sensor: empty value means "no cartridge installed".
+                # HA translation keys cannot be an empty string, so map it to "none".
+                if self._sensor_key == 'getCRT':
+                    if value is None or value == "":
+                        return "none"
+                    return str(value)
+
+                # Special handling for getRCD sensor: empty value means "undefined".
+                # HA translation keys cannot be an empty string, so map it to "undefined".
+                if self._sensor_key == 'getRCD':
+                    if value is None or value == "":
+                        return "undefined"
+                    return str(value)
+
                 # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
                 if self._sensor_key == 'getVOL' and value is not None:
                     value = get_sensor_vol_value(value)

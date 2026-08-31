@@ -276,7 +276,7 @@
       "getcrt": {
         "name": "Cartridge type",
         "state": {
-          "": "None",
+          "none": "None",
           "0": "HWE",
           "1": "HVE",
           "2": "HVE+"
@@ -835,7 +835,7 @@
       "getrcd": {
         "name": "Filling processes period",
         "state": {
-          "": "Undefined",
+          "undefined": "Undefined",
           "0": "Hour",
           "1": "Day",
           "2": "Week",

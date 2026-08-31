@@ -276,7 +276,7 @@
       "getcrt": {
         "name": "Tipo di cartuccia",
         "state": {
-          "": "Nessuno",
+          "none": "Nessuno",
           "0": "HWE",
           "1": "HVE",
           "2": "HVE+"
@@ -835,7 +835,7 @@
       "getrcd": {
         "name": "Periodo dei processi di riempimento",
         "state": {
-          "": "Non definito",
+          "undefined": "Non definito",
           "0": "Ora",
           "1": "Giorno",
           "2": "Settimana",

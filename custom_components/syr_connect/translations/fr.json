@@ -276,7 +276,7 @@
       "getcrt": {
         "name": "Type de cartouche",
         "state": {
-          "": "Aucun",
+          "none": "Aucun",
           "0": "HWE",
           "1": "HVE",
           "2": "HVE+"
@@ -835,7 +835,7 @@
       "getrcd": {
         "name": "Période des cycles de remplissage",
         "state": {
-          "": "Indéfini",
+          "undefined": "Indéfini",
           "0": "Heure",
           "1": "Jour",
           "2": "Semaine",

@@ -276,7 +276,7 @@
       "getcrt": {
         "name": "Tipo de cartucho",
         "state": {
-          "": "Nenhum",
+          "none": "Nenhum",
           "0": "HWE",
           "1": "HVE",
           "2": "HVE+"
@@ -835,7 +835,7 @@
       "getrcd": {
         "name": "Período dos processos de enchimento",
         "state": {
-          "": "Indefinido",
+          "undefined": "Indefinido",
           "0": "Hora",
           "1": "Dia",
           "2": "Semana",

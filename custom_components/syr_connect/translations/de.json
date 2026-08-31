@@ -276,7 +276,7 @@
       "getcrt": {
         "name": "Kartuschentyp",
         "state": {
-          "": "Ohne",
+          "none": "Ohne",
           "0": "HWE",
           "1": "HVE",
           "2": "HVE+"
@@ -835,7 +835,7 @@
       "getrcd": {
         "name": "Zeitraum Füllungen",
         "state": {
-          "": "Undefiniert",
+          "undefined": "Undefiniert",
           "0": "Stunde",
           "1": "Tag",
           "2": "Woche",

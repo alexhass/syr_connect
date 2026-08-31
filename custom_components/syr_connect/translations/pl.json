@@ -276,7 +276,7 @@
             "getcrt": {
                 "name": "Typ wkładu",
                 "state": {
-                    "": "Brak",
+                    "none": "Brak",
                     "0": "HWE",
                     "1": "HVE",
                     "2": "HVE+"
@@ -835,7 +835,7 @@
             "getrcd": {
                 "name": "Okres procesów napełniania",
                 "state": {
-                    "": "Nieokreślony",
+                    "undefined": "Nieokreślony",
                     "0": "Godzina",
                     "1": "Dzień",
                     "2": "Tydzień",

@@ -276,7 +276,7 @@
       "getcrt": {
         "name": "Cartridgetype",
         "state": {
-          "": "Geen",
+          "none": "Geen",
           "0": "HWE",
           "1": "HVE",
           "2": "HVE+"
@@ -835,7 +835,7 @@
       "getrcd": {
         "name": "Vulperiode",
         "state": {
-          "": "Onbepaald",
+          "undefined": "Onbepaald",
           "0": "Uur",
           "1": "Dag",
           "2": "Week",
