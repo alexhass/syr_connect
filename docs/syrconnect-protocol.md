@@ -899,7 +899,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 ### MuCo devices
 
-These properties appear in MuCo devices / Conel Clear Pro Fill /Sanibel Leak Protection Module A25 (comfort-Multicontroller) devices. Their function is undocumented; they are likely related to water treatment and filling mode configuration.
+These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Protection Module A25 (comfort-Multicontroller) devices. Their function is undocumented; they are likely related to water treatment and filling mode configuration.
 
 | Property        | Example | Unit     | Description
 |-----------------|---------|----------|-------------------------------------------------------------
