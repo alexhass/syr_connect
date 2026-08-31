@@ -897,79 +897,79 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | b               | "0"                          | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL)
 | m               | "ff:ff:eb:52:ee:12"          | CI metadata attribute — MAC address of device (Safe-T+)
 
-### Sanibel Leak Protection Module A25
+### MuCo devices
 
-These properties appear only on the **Sanibel Leak Protection Module A25** (comfort-Multicontroller). Their function is undocumented; they are available only via the JSON API.
+These properties appear in MuCo devices / Conel Clear Pro Fill /Sanibel Leak Protection Module A25 (comfort-Multicontroller) devices. Their function is undocumented; they are likely related to water treatment and filling mode configuration.
 
-| Property        | Example | Description
-|-----------------|---------|-------------------------------------------------------------
-| getAPA          | ""      | *unknown*
-| getAPN          | ""      | *unknown*
-| getAPW          | ""      | *unknown*
-| getBAH          | ""      | *unknown*
-| getBAO          | ""      | *unknown*
-| getCCS          | ""      | *unknown*
-| getCFT          | ""      | *unknown*
-| getCFV          | ""      | *unknown*
-| getCNF2         | ""      | *unknown*
-| getCNL2         | ""      | *unknown*
-| getCOA          | ""      | *unknown*
-| getCOM          | ""      | *unknown*
-| getCRS          | ""      | *unknown*
-| getCRT          | ""      | *unknown*
-| getCWL          | ""      | *unknown*
-| getDFI          | ""      | *unknown*
-| getDTX          | ""      | *unknown*
-| getEMR          | ""      | *unknown*
-| getFCS          | ""      | *unknown*
-| getFMT          | ""      | *unknown*
-| getFVT          | ""      | *unknown*
-| getFWURL        | ""      | *unknown* — possibly firmware update URL
-| getHPR          | ""      | *unknown*
-| getIFL          | ""      | *unknown*
-| getLFT          | ""      | *unknown*
-| getLFV          | ""      | *unknown*
-| getLMD          | ""      | *unknown*
-| getLMF          | ""      | *unknown*
-| getLOT          | ""      | *unknown*
-| getLPD          | ""      | *unknown*
-| getLRC          | ""      | *unknown*
-| getMFL          | ""      | *unknown*
-| getMPR          | ""      | *unknown* — possibly set water pressure (excluded when empty)
-| getNMS          | ""      | *unknown*
-| getNMT          | ""      | *unknown*
-| getNPL          | ""      | *unknown*
-| getNPT          | ""      | *unknown*
-| getNRT          | ""      | *unknown*
-| getOHW          | ""      | *unknown*
-| getPBC          | ""      | *unknown*
-| getPCB          | ""      | *unknown*
-| getPPL          | ""      | *unknown*
-| getPRC          | ""      | *unknown*
-| getPRT          | ""      | *unknown*
-| getPSI          | ""      | *unknown*
-| getPVL          | ""      | *unknown*
-| getRCC          | ""      | *unknown*
-| getRCD          | ""      | *unknown*
-| getRCN          | ""      | *unknown*
-| getRMN          | ""      | *unknown*
-| getRMP          | ""      | *unknown*
-| getRMT          | ""      | *unknown*
-| getRP1          | ""      | *unknown*
-| getRP2          | ""      | *unknown*
-| getRP3          | ""      | *unknown*
-| getRPR          | ""      | *unknown*
-| getRSA          | ""      | *unknown*
-| getRSD          | ""      | *unknown*
-| getRSE          | ""      | *unknown*
-| getRSI          | ""      | *unknown*
-| getRVT          | ""      | *unknown*
-| getSSA          | ""      | *unknown*
-| getSSE          | ""      | *unknown*
-| getTPR          | ""      | *unknown*
-| getTRT          | ""      | *unknown*
-| getTRV          | ""      | *unknown*
-| getWTR          | ""      | *unknown*
+| Property        | Example | Unit     | Description
+|-----------------|---------|----------|-------------------------------------------------------------
+| getAPA          | ""      |          | *unknown*
+| getAPN          | ""      |          | *unknown*
+| getAPW          | ""      |          | *unknown*
+| getBAH          | ""      |          | *unknown*
+| getBAO          | ""      |          | *unknown*
+| getCCS          | ""      |          | *unknown*
+| getCFT          | ""      |          | *unknown*
+| getCFV          | ""      |          | *unknown*
+| getCNF2         | ""      |          | *unknown*
+| getCNL2         | ""      |          | *unknown*
+| getCOA          | ""      |          | *unknown*
+| getCOM          | ""      |          | *unknown*
+| getCRS / setCRS | "1"     | L        | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L
+| getCRT / setCRT | "1"     |          | Water treatment: Cartridge type: 0=HVE+, 1=HWE, 2=HVE, ""=none installed
+| getCWL          | ""      |          | *unknown*
+| getDFI          | ""      |          | *unknown*
+| getDTX          | ""      |          | *unknown*
+| getEMR          | ""      |          | *unknown*
+| getFCS          | ""      |          | *unknown*
+| getFMT          | ""      |          | *unknown*
+| getFVT          | ""      |          | *unknown*
+| getFWURL        | ""      |          | *unknown* — possibly firmware update URL
+| getHPR          | ""      |          | *unknown*
+| getIFL          | ""      |          | *unknown*
+| getLFT          | ""      |          | *unknown*
+| getLFV          | ""      |          | *unknown*
+| getLMD          | ""      |          | *unknown*
+| getLMF          | ""      |          | *unknown*
+| getLOT / setLOT | "8"     | 1/10 µS/cm | Water treatment: Max. output conductivity (e.g. `8` = 80 µS/cm). Range: 0=off, 10–200 µS/cm in 10 µS/cm steps
+| getLPD          | ""      |          | *unknown*
+| getLRC          | "173"   | L        | Liter(s) Remaining Capacity — remaining softening capacity in liters (ConelClearProFill/MuCo devices)
+| getMFL          | ""      |          | *unknown*
+| getMPR          | ""      |          | *unknown* — possibly set water pressure (excluded when empty)
+| getNMS          | ""      |          | *unknown*
+| getNMT          | ""      |          | *unknown*
+| getNPL          | ""      |          | *unknown*
+| getNPT          | ""      |          | *unknown*
+| getNRT          | ""      |          | *unknown*
+| getOHW          | ""      |          | *unknown*
+| getPBC          | ""      |          | *unknown*
+| getPCB          | ""      |          | *unknown*
+| getPPL          | ""      |          | *unknown*
+| getPRC          | "97"    | %        | Percent Remaining Capacity — remaining softening capacity in percent (Conel Clear Pro Fill/MuCo devices)
+| getPRT          | ""      |          | *unknown*
+| getPSI          | ""      |          | *unknown*
+| getPVL          | ""      |          | *unknown*
+| getRCC          | ""      |          | *unknown*
+| getRCD / setRCD | "1"     |          | Filling mode: Filling processes period: ""=undefined, 0=hour, 1=day, 2=week, 3=month
+| getRCN          | ""      |          | *unknown*
+| getRMN / setRMN | "5"     |          | Filling mode: Filling processes. Range: 1–10 in steps of 1
+| getRMP          | ""      |          | *unknown*
+| getRMT / setRMT | "30"    | min      | Filling mode: Maximum filling duration. Range: 1–5 min in 1 min steps, 10 min, 15 min–1 h in 15 min steps, 1 h–12 h in 0.5 h steps
+| getRP1          | ""      |          | *unknown*
+| getRP2          | ""      |          | *unknown*
+| getRP3          | ""      |          | *unknown*
+| getRPR          | ""      |          | *unknown*
+| getRSA          | ""      |          | *unknown*
+| getRSD          | ""      |          | *unknown*
+| getRSE          | ""      |          | *unknown*
+| getRSI          | ""      |          | *unknown*
+| getRVT / setRVT | "100"   | L        | Filling mode: Maximum filling charges. Range: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100
+| getSSA          | ""      |          | *unknown*
+| getSSE          | ""      |          | *unknown*
+| getTPR / setTPR | "18"    | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range: 0.5–5.0 bar in 0.1 bar steps (Conel Clear Pro Fill/MuCo devices)
+| getTRT          | ""      |          | *unknown*
+| getTRV          | ""      |          | *unknown*
+| getWTR          | ""      |          | *unknown*
 
 ## Further information
 
