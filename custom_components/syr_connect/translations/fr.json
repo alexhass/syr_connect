@@ -134,6 +134,12 @@
           "3": "Sans filtre"
         }
       },
+      "getlot": {
+        "name": "Conductivité de sortie maximale"
+      },
+      "getohw": {
+        "name": "Dureté de l'eau adoucie"
+      },
       "getprf": {
         "name": "Profil de protection contre les fuites actif",
         "state": {

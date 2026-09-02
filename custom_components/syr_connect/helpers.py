@@ -1066,6 +1066,10 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     - Special-case salt counters (getCS1/2/3): shown if the associated
         getSVx value is non-zero; otherwise they follow the normal empty
         value rules (hide when 0, "0", empty or None).
+    - getLOT (Max. output conductivity): only shown when getCRT (cartridge
+        type) is "1" (HVE) or "2" (HVE+).
+    - getOHW (Soft water hardness): only shown when getCRT (cartridge type)
+        is "0" (HWE).
     - Empty-string exclusions: keys listed in
         _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING are hidden when the
         reported value is None or a whitespace-only string.
@@ -1136,6 +1140,18 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
         if isinstance(value, int | float) and float(value) == 0:
             return False
         if isinstance(value, str) and (value.strip() == "" or value == "0"):
+            return False
+
+    # getLOT (Max. output conductivity) only applies to HVE / HVE+ cartridges (getCRT 1 or 2).
+    if key == "getLOT":
+        crt_val = status.get("getCRT")
+        if crt_val is None or str(crt_val).strip() not in ("1", "2"):
+            return False
+
+    # getOHW (Soft water hardness) only applies to HWE cartridges (getCRT 0).
+    if key == "getOHW":
+        crt_val = status.get("getCRT")
+        if crt_val is None or str(crt_val).strip() != "0":
             return False
 
     # Exclude when empty string

@@ -134,6 +134,12 @@
           "3": "Sin filtro"
         }
       },
+      "getlot": {
+        "name": "Conductividad máxima de salida"
+      },
+      "getohw": {
+        "name": "Dureza del agua blanda"
+      },
       "getprf": {
         "name": "Perfil de protección contra fugas activo",
         "state": {

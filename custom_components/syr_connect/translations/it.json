@@ -134,6 +134,12 @@
           "3": "Nessun filtro"
         }
       },
+      "getlot": {
+        "name": "Conducibilità massima in uscita"
+      },
+      "getohw": {
+        "name": "Durezza acqua addolcita"
+      },
       "getprf": {
         "name": "Profilo protezione attivo",
         "state": {

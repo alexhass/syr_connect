@@ -134,6 +134,12 @@
           "3": "No filter"
         }
       },
+      "getlot": {
+        "name": "Max. output conductivity"
+      },
+      "getohw": {
+        "name": "Soft water hardness"
+      },
       "getprf": {
         "name": "Active leak protection profile",
         "state": {

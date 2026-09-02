@@ -494,6 +494,8 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) - also represented as select entity ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",   # Max. output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getOHW",   # Soft water hardness (°dH) - only when getCRT is HWE
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",   # Filling processes count
     "getRMT",   # Maximum filling duration (min)
@@ -721,6 +723,8 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",   # Max. output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getOHW",   # Soft water hardness (°dH) - only when getCRT is HWE
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",   # Filling processes count
     "getRMT",   # Maximum filling duration (min)

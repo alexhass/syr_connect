@@ -134,6 +134,12 @@
           "3": "Ohne Filter"
         }
       },
+      "getlot": {
+        "name": "Max. Leitwert-Grenzwert"
+      },
+      "getohw": {
+        "name": "Weichwasserhärte"
+      },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",
         "state": {

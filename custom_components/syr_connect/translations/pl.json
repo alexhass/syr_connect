@@ -134,6 +134,12 @@
                     "3": "Brak filtra"
                 }
             },
+            "getlot": {
+                "name": "Maks. przewodność wyjściowa"
+            },
+            "getohw": {
+                "name": "Twardość wody zmiękczonej"
+            },
             "getprf": {
                 "name": "Aktywny profil ochrony przed wyciekiem",
                 "state": {

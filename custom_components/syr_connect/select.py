@@ -6,8 +6,9 @@ from typing import Any, cast
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -234,9 +235,10 @@ async def async_setup_entry(
                 rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRMO", rmo_map))
 
-    # --- CONEL CLEAR PRO FILL: water treatment / filling mode configuration ---
-    # setLOT (max. output conductivity) and setOHW (soft water hardness) are deliberately
-    # left out for now, since they are only applicable for specific cartridge types.
+    # --- MuCo devices: water treatment / filling mode configuration ---
+    # getLOT and getOHW are mutually exclusive depending on cartridge type and are handled
+    # separately below (_async_setup_muco_conditional_selects), which adds/removes whichever
+    # one currently applies instead of creating both and showing the other as unavailable.
     for device in coordinator.data.get("devices", []):
         device_id = device.get("id")
         device_name = device.get("name", device_id)
@@ -321,6 +323,76 @@ async def async_setup_entry(
         async_add_entities(entities)
     else:
         _LOGGER.debug("No select entities to add")
+
+    _async_setup_muco_conditional_selects(hass, entry, coordinator, async_add_entities)
+
+
+def _async_setup_muco_conditional_selects(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinator: SyrConnectDataUpdateCoordinator,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Dynamically add/remove the getLOT/getOHW select depending on the cartridge type.
+
+    getLOT (HVE/HVE+) and getOHW (HWE) are mutually exclusive: only one ever applies for a
+    given cartridge type (getCRT). Instead of creating both and showing the inapplicable one
+    as permanently greyed-out "unavailable", only the currently-relevant entity is added; the
+    other is removed from the entity registry. Re-evaluated on every coordinator update, so
+    switching getCRT (which optimistically updates coordinator.data immediately) swaps the
+    visible entity right away, without requiring an integration reload.
+    """
+    # Per-device set of currently added keys ("getLOT" / "getOHW")
+    live_keys: dict[str, set[str]] = {}
+
+    def _wanted_key(status: dict[str, Any]) -> str | None:
+        crt = str(status.get("getCRT") or "").strip()
+        if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
+            return "getLOT"
+        if crt == "0" and status.get("getOHW") not in (None, ""):
+            return "getOHW"
+        return None
+
+    def _build_entity(device_id: str, device_name: str, key: str) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
+        if key == "getLOT":
+            lot_map = {f"{raw * 10} µS/cm": raw for raw in range(0, 21)}
+            return SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getLOT", lot_map)
+        return SyrConnectNumericSelect(coordinator, device_id, device_name, "getOHW", 0, 12, 1)
+
+    @callback
+    def _sync() -> None:
+        new_entities: list[SyrConnectDiscreteSelect | SyrConnectNumericSelect] = []
+        registry = er.async_get(hass)
+        for device in coordinator.data.get("devices", []):
+            device_id = device.get("id")
+            if not device_id:
+                continue
+            device_name = device.get("name", device_id)
+            status = device.get("status", {})
+            current = live_keys.setdefault(device_id, set())
+            wanted = _wanted_key(status)
+            wanted_set = {wanted} if wanted else set()
+
+            for key in current - wanted_set:
+                entity_id = build_entity_id("select", device_id, key)
+                existing = registry.async_get(entity_id)
+                if existing is not None and (
+                    coordinator.entry_id is None or existing.config_entry_id == coordinator.entry_id
+                ):
+                    _LOGGER.debug("Removing conditionally hidden select from registry: %s", entity_id)
+                    registry.async_remove(entity_id)
+                current.discard(key)
+
+            for key in wanted_set - current:
+                new_entities.append(_build_entity(device_id, device_name, key))
+                current.add(key)
+
+        if new_entities:
+            _LOGGER.debug("Adding %d conditional MuCo select(s)", len(new_entities))
+            async_add_entities(new_entities)
+
+    _sync()
+    entry.async_on_unload(coordinator.async_add_listener(_sync))
 
 
 class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):

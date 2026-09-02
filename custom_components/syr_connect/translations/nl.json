@@ -134,6 +134,12 @@
           "3": "Geen filter"
         }
       },
+      "getlot": {
+        "name": "Max. uitgaande geleidbaarheid"
+      },
+      "getohw": {
+        "name": "Zachtwaterhardheid"
+      },
       "getprf": {
         "name": "Actief lekbeschermingsprofiel",
         "state": {

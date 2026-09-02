@@ -134,6 +134,12 @@
           "3": "Sem filtro"
         }
       },
+      "getlot": {
+        "name": "Condutividade máxima de saída"
+      },
+      "getohw": {
+        "name": "Dureza da água amaciada"
+      },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",
         "state": {
