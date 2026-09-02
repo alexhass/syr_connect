@@ -533,6 +533,105 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     assert len(entities) >= 1
 
 
+async def test_async_setup_entry_creates_muco_config_selects(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """async_setup_entry creates all MuCo/CONEL config selects when present in status."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getCRS": "3",
+                    "getCRT": "1",
+                    "getRCD": "2",
+                    "getRMN": "5",
+                    "getRMT": "30",
+                    "getRVT": "100",
+                    "getTPR": "18",
+                    "getLOT": "7",
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert {"getCRS", "getCRT", "getRCD", "getRMN", "getRMT", "getRVT", "getTPR", "getLOT"} <= keys
+
+
+async def test_muco_conditional_select_creates_ohw_for_hwe_cartridge(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """getCRT=0 (HWE) creates the getOHW select and not getLOT."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getCRT": "0", "getOHW": "5"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert "getOHW" in keys
+    assert "getLOT" not in keys
+
+
+async def test_muco_conditional_select_switches_live_on_crt_change(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Changing getCRT live re-evaluates the conditional select without a reload."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getCRT": "0", "getOHW": "5"},
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.entry_id = None
+    entities, async_add_entities = mock_add_entities()
+
+    fake_existing_entry = Mock(config_entry_id=None)
+    fake_registry = MagicMock()
+    fake_registry.async_get.return_value = fake_existing_entry
+
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=fake_registry):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert "getOHW" in {getattr(e, "_sensor_key", None) for e in entities}
+
+    # Capture the listener registered for live re-sync
+    listener = mock_coordinator.async_add_listener.call_args.args[0]
+
+    # Switch cartridge type to HVE (getLOT applies instead of getOHW)
+    mock_coordinator.data["devices"][0]["status"] = {"getCRT": "1", "getLOT": "7"}
+    entities.clear()
+    fake_registry.async_remove.reset_mock()
+
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=fake_registry):
+        listener()
+
+    removed_entity_id = fake_registry.async_remove.call_args.args[0]
+    assert removed_entity_id.endswith("_getohw")
+    assert "getLOT" in {getattr(e, "_sensor_key", None) for e in entities}
+
+
 async def test_numeric_select_options_include_unit(hass: HomeAssistant) -> None:
     """Ensure numeric select options include the configured unit label."""
     data = {
