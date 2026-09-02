@@ -363,30 +363,34 @@ def _async_setup_muco_conditional_selects(
     @callback
     def _sync() -> None:
         new_entities: list[SyrConnectDiscreteSelect | SyrConnectNumericSelect] = []
-        registry = er.async_get(hass)
-        for device in coordinator.data.get("devices", []):
-            device_id = device.get("id")
-            if not device_id:
-                continue
-            device_name = device.get("name", device_id)
-            status = device.get("status", {})
-            current = live_keys.setdefault(device_id, set())
-            wanted = _wanted_key(status)
-            wanted_set = {wanted} if wanted else set()
+        try:
+            registry = er.async_get(hass)
+            for device in coordinator.data.get("devices", []):
+                device_id = device.get("id")
+                if not device_id:
+                    continue
+                device_name = device.get("name", device_id)
+                status = device.get("status", {})
+                current = live_keys.setdefault(device_id, set())
+                wanted = _wanted_key(status)
+                wanted_set = {wanted} if wanted else set()
 
-            for key in current - wanted_set:
-                entity_id = build_entity_id("select", device_id, key)
-                existing = registry.async_get(entity_id)
-                if existing is not None and (
-                    coordinator.entry_id is None or existing.config_entry_id == coordinator.entry_id
-                ):
-                    _LOGGER.debug("Removing conditionally hidden select from registry: %s", entity_id)
-                    registry.async_remove(entity_id)
-                current.discard(key)
+                for key in current - wanted_set:
+                    entity_id = build_entity_id("select", device_id, key)
+                    existing = registry.async_get(entity_id)
+                    if existing is not None and (
+                        coordinator.entry_id is None or existing.config_entry_id == coordinator.entry_id
+                    ):
+                        _LOGGER.debug("Removing conditionally hidden select from registry: %s", entity_id)
+                        registry.async_remove(entity_id)
+                    current.discard(key)
 
-            for key in wanted_set - current:
-                new_entities.append(_build_entity(device_id, device_name, key))
-                current.add(key)
+                for key in wanted_set - current:
+                    new_entities.append(_build_entity(device_id, device_name, key))
+                    current.add(key)
+        except Exception:
+            _LOGGER.exception("Failed to sync conditional MuCo select(s)")
+            return
 
         if new_entities:
             _LOGGER.debug("Adding %d conditional MuCo select(s)", len(new_entities))
