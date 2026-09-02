@@ -31,7 +31,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up switch entities for getBUZ."""
+    """Set up boolean switch entities (e.g. getBUZ, getDFI)."""
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
 
     if not coordinator.data:
@@ -53,21 +53,18 @@ async def async_setup_entry(
         project_id = device.get("project_id", "")
         status = device.get("status", {})
         _LOGGER.debug("Checking device: id=%s, name=%s, status_keys=%s", device_id, device_name, list(status.keys()))
-        if "getBUZ" in status:
-            _LOGGER.debug("getBUZ found in status for device %s. Creating SyrConnectBuzSwitch.", device_id)
-            _LOGGER.debug(
-                "getBUZ raw value for device %s: %r (type=%s)",
-                device_id,
-                status.get("getBUZ"),
-                type(status.get("getBUZ")).__name__,
-            )
+        for sensor_key in sorted(_SYR_CONNECT_SWITCH_KNOWN_KEYS):
+            if sensor_key not in status:
+                _LOGGER.debug("%s not found in status for device %s.", sensor_key, device_id)
+                continue
+            _LOGGER.debug("%s found in status for device %s. Creating SyrConnectBooleanSwitch.", sensor_key, device_id)
             try:
-                entity = SyrConnectBuzSwitch(
+                entity = SyrConnectBooleanSwitch(
                     coordinator,
                     device_id,
                     device_name,
                     project_id,
-                    "getBUZ",
+                    sensor_key,
                 )
                 # If a registry entry already exists for this unique_id,
                 # prefer the registry's entity_id to avoid creating a new
@@ -89,15 +86,13 @@ async def async_setup_entry(
 
                 entities.append(entity)
                 _LOGGER.debug(
-                    "Appended SyrConnectBuzSwitch for device %s (entity_id=%s, unique_id=%s)",
+                    "Appended SyrConnectBooleanSwitch for device %s (entity_id=%s, unique_id=%s)",
                     device_id,
                     getattr(entity, "entity_id", None),
                     getattr(entity, "_attr_unique_id", None),
                 )
             except Exception as err:
-                _LOGGER.error("Failed to instantiate SyrConnectBuzSwitch for device %s: %s", device_id, err)
-        else:
-            _LOGGER.debug("getBUZ not found in status for device %s.", device_id)
+                _LOGGER.error("Failed to instantiate SyrConnectBooleanSwitch for device %s: %s", device_id, err)
     if entities:
         async_add_entities(entities)
         try:
@@ -123,11 +118,11 @@ async def async_setup_entry(
         except Exception:
             _LOGGER.exception("Failed to verify entity registry for created switch entities")
     else:
-        _LOGGER.debug("No getBUZ switch entities found for any device.")
+        _LOGGER.debug("No boolean switch entities found for any device.")
 
 
-class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
-    """Switch entity for getBUZ (buzzer on/off)."""
+class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
+    """Generic switch entity for boolean get<KEY>/set<KEY> settings (e.g. getBUZ, getDFI)."""
 
     def __init__(
         self,
@@ -138,7 +133,7 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         sensor_key: str,
     ) -> None:
         """Initialize the switch."""
-        _LOGGER.debug("Initializing SyrConnectBuzSwitch: device_id=%s, name=%s, sensor_key=%s", device_id, device_name, sensor_key)
+        _LOGGER.debug("Initializing SyrConnectBooleanSwitch: device_id=%s, name=%s, sensor_key=%s", device_id, device_name, sensor_key)
         super().__init__(coordinator)
 
         self._device_id = device_id
@@ -163,7 +158,7 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         # Build device info so the entity is linked to its device in the UI
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
-        # Set entity category if getBUZ is a config entity
+        # Set entity category if this key is a config entity
         if sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
@@ -179,12 +174,12 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
-        """Return True if buzzer is on."""
+        """Return True if the setting is enabled."""
         device = next((d for d in self.coordinator.data.get("devices", []) if d["id"] == self._device_id), None)
         if not device:
             return None
         status = device.get("status", {})
-        value = status.get("getBUZ")
+        value = status.get(self._sensor_key)
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
@@ -194,16 +189,16 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
         return None
 
     async def async_turn_on(self, **kwargs):
-        """Turn the buzzer on."""
-        await self._set_buz(True)
+        """Turn the setting on."""
+        await self._set_value(True)
 
     async def async_turn_off(self, **kwargs):
-        """Turn the buzzer off."""
-        await self._set_buz(False)
+        """Turn the setting off."""
+        await self._set_value(False)
 
-    async def _set_buz(self, state: bool) -> None:
-        """Set the buzzer state via API."""
-        # Mirror the exact type of the current getBUZ getter value so the setter
+    async def _set_value(self, state: bool) -> None:
+        """Set the boolean value via API."""
+        # Mirror the exact type of the current getter value so the setter
         # uses the same format the device expects.
         device = next(
             (d for d in self.coordinator.data.get("devices", []) if d["id"] == self._device_id),
@@ -219,11 +214,13 @@ class SyrConnectBuzSwitch(CoordinatorEntity, SwitchEntity):
             value = "1" if state else "0"
         else:
             value = "True" if state else "False"
+        # key for setting: remove leading 'get' and prefix with 'set'
+        set_key = f"set{self._sensor_key[3:]}"
         try:
             # Use coordinator.async_set_device_value so the DCLG is resolved correctly
             # `CoordinatorEntity.coordinator` is typed as DataUpdateCoordinator in the base
             # class; cast to our concrete coordinator type so mypy recognizes the method.
-            await cast(SyrConnectDataUpdateCoordinator, self.coordinator).async_set_device_value(self._device_id, "setBUZ", value)
+            await cast(SyrConnectDataUpdateCoordinator, self.coordinator).async_set_device_value(self._device_id, set_key, value)
         except Exception as err:
-            _LOGGER.error("Failed to set getBUZ for device %s: %s", self._device_id, err)
+            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
         await self.coordinator.async_request_refresh()

@@ -96,6 +96,17 @@
       }
     },
     "select": {
+      "getcrs": {
+        "name": "Cartridge size"
+      },
+      "getcrt": {
+        "name": "Cartridge type",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getfcd": {
         "name": "Filter backwash interval",
         "state": {
@@ -129,6 +140,18 @@
           "2": "Absent"
         }
       },
+      "getrcd": {
+        "name": "Filling processes period",
+        "state": {
+          "0": "Hour",
+          "1": "Day",
+          "2": "Week",
+          "3": "Month"
+        }
+      },
+      "getrmn": {
+        "name": "Filling processes"
+      },
       "getrmo": {
         "name": "Regeneration mode",
         "state": {
@@ -138,11 +161,17 @@
           "4": "Automatic"
         }
       },
+      "getrmt": {
+        "name": "Maximum filling duration"
+      },
       "getrpd": {
         "name": "Regeneration interval"
       },
       "getrtm": {
         "name": "Regeneration time"
+      },
+      "getrvt": {
+        "name": "Maximum filling charges"
       },
       "getsro": {
         "name": "Display orientation",
@@ -161,6 +190,9 @@
       },
       "getsv3": {
         "name": "Salt container volume 3"
+      },
+      "gettpr": {
+        "name": "Target pressure"
       }
     },
     "sensor": {
@@ -1095,6 +1127,13 @@
         "state": {
           "false": "Disabled",
           "true": "Enabled"
+        }
+      },
+      "getdfi": {
+        "name": "Filling mode",
+        "state": {
+          "false": "Inactive",
+          "true": "Active"
         }
       }
     },

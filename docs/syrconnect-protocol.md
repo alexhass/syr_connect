@@ -916,7 +916,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getCOA          | ""      |          | *unknown*
 | getCOM          | ""      |          | *unknown*
 | getCWL          | ""      |          | *unknown*
-| getDFI          | ""      |          | *unknown*
 | getDTX          | ""      |          | *unknown*
 | getEMR          | ""      |          | *unknown*
 | getFCS          | ""      |          | *unknown*
@@ -968,6 +967,7 @@ These properties are documented on MuCo devices that expose water treatment (car
 |-----------------|---------|----------|-------------------------------------------------------------
 | getCRS / setCRS | "1"     | L        | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L
 | getCRT / setCRT | "1"     |          | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed
+| getDFI / setDFI | "True"  |          | Filling mode: True=Enabled / False=Disabled
 | getLOT / setLOT | "8"     | ×10 µS/cm | Water treatment: Max. output conductivity (e.g. `8` = 80 µS/cm). Range in SYR GUI: 0=off, 10–200 µS/cm in 10 µS/cm steps. Only visible when cartridge type is HVE or HVE+.
 | getLRC          | "173"   | L        | Liter(s) Remaining Capacity — remaining softening capacity in liters
 | getOHW / setOHW | "0"     | °dH      | Water treatment: Soft water hardness. Default=0, Range in SYR GUI: 0–12 °dH, Only visible when cartridge type is HWE.

@@ -96,6 +96,17 @@
       }
     },
     "select": {
+      "getcrs": {
+        "name": "Tamaño del cartucho"
+      },
+      "getcrt": {
+        "name": "Tipo de cartucho",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getfcd": {
         "name": "Intervalo de retrolavado del filtro",
         "state": {
@@ -129,6 +140,18 @@
           "2": "Ausente"
         }
       },
+      "getrcd": {
+        "name": "Periodo de procesos de llenado",
+        "state": {
+          "0": "Hora",
+          "1": "Día",
+          "2": "Semana",
+          "3": "Mes"
+        }
+      },
+      "getrmn": {
+        "name": "Procesos de llenado"
+      },
       "getrmo": {
         "name": "Modo de regeneración",
         "state": {
@@ -138,11 +161,17 @@
           "4": "Automático"
         }
       },
+      "getrmt": {
+        "name": "Duración máxima de llenado"
+      },
       "getrpd": {
         "name": "Intervalo de regeneración"
       },
       "getrtm": {
         "name": "Hora de regeneración"
+      },
+      "getrvt": {
+        "name": "Carga máxima de llenado"
       },
       "getsro": {
         "name": "Orientación de la pantalla",
@@ -161,6 +190,9 @@
       },
       "getsv3": {
         "name": "Cantidad de sal depósito 3"
+      },
+      "gettpr": {
+        "name": "Presión objetivo"
       }
     },
     "sensor": {
@@ -1095,6 +1127,13 @@
         "state": {
           "false": "Desactivado",
           "true": "Activado"
+        }
+      },
+      "getdfi": {
+        "name": "Modo de llenado",
+        "state": {
+          "false": "Inactivo",
+          "true": "Activo"
         }
       }
     },

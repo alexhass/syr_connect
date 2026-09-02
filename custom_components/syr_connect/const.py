@@ -490,6 +490,15 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
     "getFCD",   # Filter change
     "getFFM",   # Filter fouling level
+    # --- Water treatment / Filling (Conel Clear Pro Fill) - also represented as select entity ---
+    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",   # Filling processes count
+    "getRMT",   # Maximum filling duration (min)
+    "getRVT",   # Maximum filling charges
+    "getTPR",   # Target pressure (1/10 bar)
+    "getDFI",   # Filling mode enabled flag - also represented as switch entity
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
@@ -707,6 +716,14 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     "getRPD",   # Regeneration interval (days)
     "getFFM",   # Filter type (1..3)
     "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
+    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
+    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",   # Filling processes count
+    "getRMT",   # Maximum filling duration (min)
+    "getRVT",   # Maximum filling charges
+    "getTPR",   # Target pressure (1/10 bar)
 }
 
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
@@ -722,6 +739,7 @@ _SYR_CONNECT_VALVE_KNOWN_KEYS = {
 # Known keys for the switch platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_SWITCH_KNOWN_KEYS = {
     "getBUZ",   # Buzzer on/off
+    "getDFI",   # Filling mode enabled flag (Conel Clear Pro Fill)
 }
 
 # Known keys for the button platform — used by registry_cleanup to remove stale entries.
@@ -1060,6 +1078,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # - Conel Clear Pro Fill
     "getCRS": "mdi:filter",
     "getCRT": "mdi:filter-variant",
+    "getDFI": "mdi:water-sync",
     "getLOT": "mdi:flash",
     "getLRC": "mdi:gauge",
     "getPRC": "mdi:beaker",

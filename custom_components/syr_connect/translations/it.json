@@ -96,6 +96,17 @@
       }
     },
     "select": {
+      "getcrs": {
+        "name": "Dimensione cartuccia"
+      },
+      "getcrt": {
+        "name": "Tipo di cartuccia",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getfcd": {
         "name": "Intervallo di controlavaggio del filtro",
         "state": {
@@ -129,6 +140,18 @@
           "2": "Assente"
         }
       },
+      "getrcd": {
+        "name": "Periodo dei processi di riempimento",
+        "state": {
+          "0": "Ora",
+          "1": "Giorno",
+          "2": "Settimana",
+          "3": "Mese"
+        }
+      },
+      "getrmn": {
+        "name": "Processi di riempimento"
+      },
       "getrmo": {
         "name": "Modalità di rigenerazione",
         "state": {
@@ -138,11 +161,17 @@
           "4": "Automatico"
         }
       },
+      "getrmt": {
+        "name": "Durata massima di riempimento"
+      },
       "getrpd": {
         "name": "Intervallo di rigenerazione"
       },
       "getrtm": {
         "name": "Ora di rigenerazione"
+      },
+      "getrvt": {
+        "name": "Carica massima di riempimento"
       },
       "getsro": {
         "name": "Orientamento del display",
@@ -161,6 +190,9 @@
       },
       "getsv3": {
         "name": "Quantità sale contenitore 3"
+      },
+      "gettpr": {
+        "name": "Pressione target"
       }
     },
     "sensor": {
@@ -1095,6 +1127,13 @@
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
+        }
+      },
+      "getdfi": {
+        "name": "Modalità di riempimento",
+        "state": {
+          "false": "Inattivo",
+          "true": "Attivo"
         }
       }
     },

@@ -96,6 +96,17 @@
             }
         },
         "select": {
+            "getcrs": {
+                "name": "Rozmiar wkładu"
+            },
+            "getcrt": {
+                "name": "Typ wkładu",
+                "state": {
+                    "0": "HWE",
+                    "1": "HVE",
+                    "2": "HVE+"
+                }
+            },
             "getfcd": {
                 "name": "Interwał płukania zwrotnego filtra",
                 "state": {
@@ -129,6 +140,18 @@
                     "2": "Nieobecny"
                 }
             },
+            "getrcd": {
+                "name": "Okres procesów napełniania",
+                "state": {
+                    "0": "Godzina",
+                    "1": "Dzień",
+                    "2": "Tydzień",
+                    "3": "Miesiąc"
+                }
+            },
+            "getrmn": {
+                "name": "Procesy napełniania"
+            },
             "getrmo": {
                 "name": "Tryb regeneracji",
                 "state": {
@@ -138,11 +161,17 @@
                     "4": "Automatyczny"
                 }
             },
+            "getrmt": {
+                "name": "Maksymalny czas napełniania"
+            },
             "getrpd": {
                 "name": "Interwał regeneracji"
             },
             "getrtm": {
                 "name": "Czas regeneracji"
+            },
+            "getrvt": {
+                "name": "Maksymalne napełnienie"
             },
             "getsro": {
                 "name": "Orientacja wyświetlacza",
@@ -161,6 +190,9 @@
             },
             "getsv3": {
                 "name": "Objętość pojemnika na sól 3"
+            },
+            "gettpr": {
+                "name": "Ciśnienie docelowe"
             }
         },
         "sensor": {
@@ -1095,6 +1127,13 @@
                 "state": {
                     "false": "Wyłączony",
                     "true": "Włączony"
+                }
+            },
+            "getdfi": {
+                "name": "Tryb napełniania",
+                "state": {
+                    "false": "Nieaktywny",
+                    "true": "Aktywny"
                 }
             }
         },

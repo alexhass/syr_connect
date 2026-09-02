@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_CONFIG,
+    _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
@@ -48,6 +49,36 @@ def _build_time_options(step_minutes: int = 15) -> list[str]:
             options.append(f"{h:02d}:{m:02d}")
             m += step_minutes
     return options
+
+
+def _format_scaled(value: int, scale: int) -> str:
+    """Format a raw device value for display, dividing by `scale` when != 1."""
+    if scale == 1:
+        return str(int(value))
+    return f"{value / scale:.1f}"
+
+
+def _build_rmt_minute_options() -> list[int]:
+    """Build the documented non-uniform minute steps for getRMT (see docs/syrconnect-protocol.md).
+
+    Steps in minutes: 1-5 (step 1), 10, 15-60 (step 15), 60-720 (step 30).
+    """
+    values = {1, 2, 3, 4, 5, 10}
+    values.update(range(15, 61, 15))
+    values.update(range(60, 721, 30))
+    return sorted(values)
+
+
+def _build_rvt_liter_options() -> list[int]:
+    """Build the documented non-uniform liter steps for getRVT (see docs/syrconnect-protocol.md).
+
+    0=off, 10-100 in steps of 10, 100-1000 in steps of 50, 1000-9900 in steps of 100.
+    """
+    values = {0}
+    values.update(range(10, 101, 10))
+    values.update(range(100, 1001, 50))
+    values.update(range(1000, 9901, 100))
+    return sorted(values)
 
 
 async def async_setup_entry(
@@ -203,6 +234,88 @@ async def async_setup_entry(
                 rmo_map = {"1": 1, "2": 2, "3": 3, "4": 4}
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRMO", rmo_map))
 
+    # --- CONEL CLEAR PRO FILL: water treatment / filling mode configuration ---
+    # setLOT (max. output conductivity) and setOHW (soft water hardness) are deliberately
+    # left out for now, since they are only applicable for specific cartridge types.
+    for device in coordinator.data.get("devices", []):
+        device_id = device.get("id")
+        device_name = device.get("name", device_id)
+        status = device.get("status", {})
+
+        # Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
+        # _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
+        crs_value = status.get("getCRS")
+        if crs_value is not None and crs_value != "":
+            try:
+                int(float(crs_value))
+            except (ValueError, TypeError):
+                pass
+            else:
+                crs_map = {f"{v:g} L": k for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getCRS", crs_map))
+
+        # Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
+        if "getCRT" in status:
+            crt_map = {"0": 0, "1": 1, "2": 2}
+            entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getCRT", crt_map))
+
+        # Filling processes period (getRCD): 0=hour, 1=day, 2=week, 3=month (empty value = undefined)
+        if "getRCD" in status:
+            rcd_map = {"0": 0, "1": 1, "2": 2, "3": 3}
+            entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRCD", rcd_map))
+
+        # Filling processes count (getRMN): 1-10 in steps of 1
+        rmn_value = status.get("getRMN")
+        if rmn_value is not None and rmn_value != "":
+            try:
+                float(rmn_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, "getRMN", 1, 10, 1))
+
+        # Maximum filling duration (getRMT): non-uniform minute steps (see docs/syrconnect-protocol.md)
+        rmt_value = status.get("getRMT")
+        if rmt_value is not None and rmt_value != "":
+            try:
+                float(rmt_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                rmt_options = _build_rmt_minute_options()
+                rmt_sel = SyrConnectNumericSelect(
+                    coordinator, device_id, device_name, "getRMT", rmt_options[0], rmt_options[-1], 1
+                )
+                rmt_sel._options = [f"{v} min" for v in rmt_options]
+                entities.append(rmt_sel)
+
+        # Maximum filling charges (getRVT): non-uniform liter steps (see docs/syrconnect-protocol.md)
+        rvt_value = status.get("getRVT")
+        if rvt_value is not None and rvt_value != "":
+            try:
+                float(rvt_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                rvt_options = _build_rvt_liter_options()
+                rvt_sel = SyrConnectNumericSelect(
+                    coordinator, device_id, device_name, "getRVT", rvt_options[0], rvt_options[-1], 1
+                )
+                rvt_sel._options = [f"{v} L" for v in rvt_options]
+                entities.append(rvt_sel)
+
+        # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)
+        tpr_value = status.get("getTPR")
+        if tpr_value is not None and tpr_value != "":
+            try:
+                float(tpr_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                entities.append(
+                    SyrConnectNumericSelect(coordinator, device_id, device_name, "getTPR", 5, 50, 1, scale=10)
+                )
+
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
         async_add_entities(entities)
@@ -320,11 +433,15 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         min_value: int,
         max_value: int,
         step: int = 1,
+        scale: int = 1,
     ) -> None:
         super().__init__(coordinator)
         self._device_id = device_id
         self._device_name = device_name
         self._sensor_key = sensor_key
+        # Raw device values are divided by `scale` for display and multiplied back when writing
+        # (e.g. getTPR is stored as 1/10 bar, so scale=10 shows "1.8 bar" for the raw value 18).
+        self._scale = scale
 
         self._attr_has_entity_name = True
         self._attr_translation_key = sensor_key.lower()
@@ -351,10 +468,11 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         opts: list[str] = []
         v = min_value
         while v <= max_value:
+            label = _format_scaled(v, self._scale)
             if unit_label:
-                opts.append(f"{int(v)} {unit_label}")
+                opts.append(f"{label} {unit_label}")
             else:
-                opts.append(str(int(v)))
+                opts.append(label)
             v += step
         self._options = opts
 
@@ -384,11 +502,12 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                 return None
             try:
                 num = int(float(val))
-                # Return the option that starts with the numeric value (preserves unit if present)
+                # Return the option that starts with the scaled display value (preserves unit if present)
+                label = _format_scaled(num, self._scale)
                 for opt in self._options:
-                    if opt.startswith(f"{num}"):
+                    if opt.startswith(label):
                         return opt
-                return str(num)
+                return label
             except (ValueError, TypeError, AttributeError):
                 return None
         return None
@@ -397,7 +516,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         try:
             # Option may include a unit suffix (e.g., '2 days'), so parse first token
             token = str(option).split()[0]
-            val = int(token)
+            val = int(round(float(token) * self._scale))
         except Exception as err:
             _LOGGER.error("Invalid option for %s: %s", self._sensor_key, err)
             return

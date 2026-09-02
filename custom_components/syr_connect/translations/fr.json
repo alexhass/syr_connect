@@ -96,6 +96,17 @@
       }
     },
     "select": {
+      "getcrs": {
+        "name": "Taille de la cartouche"
+      },
+      "getcrt": {
+        "name": "Type de cartouche",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getfcd": {
         "name": "Intervalle de contre‑lavage du filtre",
         "state": {
@@ -129,6 +140,18 @@
           "2": "Absent"
         }
       },
+      "getrcd": {
+        "name": "Période des cycles de remplissage",
+        "state": {
+          "0": "Heure",
+          "1": "Jour",
+          "2": "Semaine",
+          "3": "Mois"
+        }
+      },
+      "getrmn": {
+        "name": "Cycles de remplissage"
+      },
       "getrmo": {
         "name": "Mode de régénération",
         "state": {
@@ -138,11 +161,17 @@
           "4": "Automatique"
         }
       },
+      "getrmt": {
+        "name": "Durée maximale de remplissage"
+      },
       "getrpd": {
         "name": "Intervalle de régénération"
       },
       "getrtm": {
         "name": "Heure de régénération"
+      },
+      "getrvt": {
+        "name": "Charge maximale de remplissage"
       },
       "getsro": {
         "name": "Orientation de l'affichage",
@@ -161,6 +190,9 @@
       },
       "getsv3": {
         "name": "Quantité de sel réservoir 3"
+      },
+      "gettpr": {
+        "name": "Pression cible"
       }
     },
     "sensor": {
@@ -1095,6 +1127,13 @@
         "state": {
           "false": "Désactivé",
           "true": "Activé"
+        }
+      },
+      "getdfi": {
+        "name": "Mode de remplissage",
+        "state": {
+          "false": "Inactif",
+          "true": "Actif"
         }
       }
     },

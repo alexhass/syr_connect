@@ -96,6 +96,17 @@
       }
     },
     "select": {
+      "getcrs": {
+        "name": "Cartridgegrootte"
+      },
+      "getcrt": {
+        "name": "Cartridgetype",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+"
+        }
+      },
       "getfcd": {
         "name": "Filterterugspoel-interval",
         "state": {
@@ -129,6 +140,18 @@
           "2": "Afwezig"
         }
       },
+      "getrcd": {
+        "name": "Vulperiode",
+        "state": {
+          "0": "Uur",
+          "1": "Dag",
+          "2": "Week",
+          "3": "Maand"
+        }
+      },
+      "getrmn": {
+        "name": "Vulprocessen"
+      },
       "getrmo": {
         "name": "Regeneratiemodus",
         "state": {
@@ -138,11 +161,17 @@
           "4": "Automatisch"
         }
       },
+      "getrmt": {
+        "name": "Maximale vulduur"
+      },
       "getrpd": {
         "name": "Regeneratie-interval"
       },
       "getrtm": {
         "name": "Regeneratietijd"
+      },
+      "getrvt": {
+        "name": "Maximale vullading"
       },
       "getsro": {
         "name": "Displayoriëntatie",
@@ -161,6 +190,9 @@
       },
       "getsv3": {
         "name": "Zoutcontainervolume 3"
+      },
+      "gettpr": {
+        "name": "Streefdruk"
       }
     },
     "sensor": {
@@ -1095,6 +1127,13 @@
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
+        }
+      },
+      "getdfi": {
+        "name": "Vulmodus",
+        "state": {
+          "false": "Inactief",
+          "true": "Actief"
         }
       }
     },
