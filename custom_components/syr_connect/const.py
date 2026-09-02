@@ -1371,6 +1371,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getLRC": UnitOfVolume.LITERS,                      # Liter(s) remaining softening capacity
     "getPRC": PERCENTAGE,                               # Percent remaining softening capacity
     "getRMT": UnitOfTime.MINUTES,                       # Maximum filling duration
+    "getRVT": UnitOfVolume.LITERS,                      # Maximum filling charges
     "getTPR": UnitOfPressure.BAR,                       # Target pressure
 }
 
