@@ -104,7 +104,8 @@
         "state": {
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Aucun"
         }
       },
       "getfcd": {
@@ -146,7 +147,8 @@
           "0": "Heure",
           "1": "Jour",
           "2": "Semaine",
-          "3": "Mois"
+          "3": "Mois",
+          "undefined": "Indéfini"
         }
       },
       "getrmn": {
@@ -308,10 +310,10 @@
       "getcrt": {
         "name": "Type de cartouche",
         "state": {
-          "none": "Aucun",
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Aucun"
         }
       },
       "getcs1": {
@@ -496,6 +498,9 @@
       },
       "getnps": {
         "name": "Sans impulsions de turbine depuis"
+      },
+      "getohw": {
+        "name": "Dureté de l'eau adoucie"
       },
       "getowh": {
         "name": "Dureté de l'eau adoucie"
@@ -867,11 +872,11 @@
       "getrcd": {
         "name": "Période des cycles de remplissage",
         "state": {
-          "undefined": "Indéfini",
           "0": "Heure",
           "1": "Jour",
           "2": "Semaine",
-          "3": "Mois"
+          "3": "Mois",
+          "undefined": "Indéfini"
         }
       },
       "getrcp": {

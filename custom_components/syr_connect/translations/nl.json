@@ -104,7 +104,8 @@
         "state": {
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Geen"
         }
       },
       "getfcd": {
@@ -146,7 +147,8 @@
           "0": "Uur",
           "1": "Dag",
           "2": "Week",
-          "3": "Maand"
+          "3": "Maand",
+          "undefined": "Onbepaald"
         }
       },
       "getrmn": {
@@ -308,10 +310,10 @@
       "getcrt": {
         "name": "Cartridgetype",
         "state": {
-          "none": "Geen",
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Geen"
         }
       },
       "getcs1": {
@@ -496,6 +498,9 @@
       },
       "getnps": {
         "name": "Geen turbine-impulsen sinds"
+      },
+      "getohw": {
+        "name": "Zachtwaterhardheid"
       },
       "getowh": {
         "name": "Uitgaande waterhardheid"
@@ -867,11 +872,11 @@
       "getrcd": {
         "name": "Vulperiode",
         "state": {
-          "undefined": "Onbepaald",
           "0": "Uur",
           "1": "Dag",
           "2": "Week",
-          "3": "Maand"
+          "3": "Maand",
+          "undefined": "Onbepaald"
         }
       },
       "getrcp": {

@@ -104,7 +104,8 @@
         "state": {
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Nessuno"
         }
       },
       "getfcd": {
@@ -146,7 +147,8 @@
           "0": "Ora",
           "1": "Giorno",
           "2": "Settimana",
-          "3": "Mese"
+          "3": "Mese",
+          "undefined": "Non definito"
         }
       },
       "getrmn": {
@@ -308,10 +310,10 @@
       "getcrt": {
         "name": "Tipo di cartuccia",
         "state": {
-          "none": "Nessuno",
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Nessuno"
         }
       },
       "getcs1": {
@@ -496,6 +498,9 @@
       },
       "getnps": {
         "name": "Nessun impulso di turbina da"
+      },
+      "getohw": {
+        "name": "Durezza acqua addolcita"
       },
       "getowh": {
         "name": "Durezza acqua in uscita"
@@ -867,11 +872,11 @@
       "getrcd": {
         "name": "Periodo dei processi di riempimento",
         "state": {
-          "undefined": "Non definito",
           "0": "Ora",
           "1": "Giorno",
           "2": "Settimana",
-          "3": "Mese"
+          "3": "Mese",
+          "undefined": "Non definito"
         }
       },
       "getrcp": {

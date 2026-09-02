@@ -256,12 +256,12 @@ async def async_setup_entry(
 
         # Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
         if "getCRT" in status:
-            crt_map = {"0": 0, "1": 1, "2": 2}
+            crt_map = {"none": None, "0": 0, "1": 1, "2": 2}
             entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getCRT", crt_map))
 
         # Filling processes period (getRCD): 0=hour, 1=day, 2=week, 3=month (empty value = undefined)
         if "getRCD" in status:
-            rcd_map = {"0": 0, "1": 1, "2": 2, "3": 3}
+            rcd_map = {"undefined": None, "0": 0, "1": 1, "2": 2, "3": 3}
             entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRCD", rcd_map))
 
         # Filling processes count (getRMN): 1-10 in steps of 1
@@ -647,7 +647,7 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         device_id: str,
         device_name: str,
         sensor_key: str,
-        options_map: dict[str, int],
+        options_map: dict[str, int | None],
     ) -> None:
         super().__init__(coordinator)
         self._device_id = device_id
@@ -692,6 +692,11 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
             status = dev.get("status", {})
             val = status.get(self._sensor_key)
             if val is None or val == "":
+                # Some option maps include a sentinel entry (value=None, e.g. "undefined")
+                # representing this empty raw state instead of falling back to unknown.
+                for opt, mapped in self._options_map.items():
+                    if mapped is None:
+                        return opt
                 return None
             try:
                 num = int(float(val))
@@ -708,6 +713,9 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Invalid option for %s: %s", self._sensor_key, option)
             return
         val = self._options_map[option]
+        if val is None:
+            _LOGGER.error("Option %s for %s has no underlying raw value and cannot be selected", option, self._sensor_key)
+            return
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
         set_key = f"set{self._sensor_key[3:]}"
         try:

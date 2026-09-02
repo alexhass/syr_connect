@@ -104,7 +104,8 @@
         "state": {
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Ohne"
         }
       },
       "getfcd": {
@@ -146,7 +147,8 @@
           "0": "Stunde",
           "1": "Tag",
           "2": "Woche",
-          "3": "Monat"
+          "3": "Monat",
+          "undefined": "Undefiniert"
         }
       },
       "getrmn": {
@@ -308,10 +310,10 @@
       "getcrt": {
         "name": "Kartuschentyp",
         "state": {
-          "none": "Ohne",
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Ohne"
         }
       },
       "getcs1": {
@@ -496,6 +498,9 @@
       },
       "getnps": {
         "name": "Keine Turbinenimpulse seit"
+      },
+      "getohw": {
+        "name": "Weichwasserhärte"
       },
       "getowh": {
         "name": "Weichwasserhärte"
@@ -867,11 +872,11 @@
       "getrcd": {
         "name": "Zeitraum Füllungen",
         "state": {
-          "undefined": "Undefiniert",
           "0": "Stunde",
           "1": "Tag",
           "2": "Woche",
-          "3": "Monat"
+          "3": "Monat",
+          "undefined": "Undefiniert"
         }
       },
       "getrcp": {

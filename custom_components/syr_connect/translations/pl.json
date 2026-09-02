@@ -104,7 +104,8 @@
                 "state": {
                     "0": "HWE",
                     "1": "HVE",
-                    "2": "HVE+"
+                    "2": "HVE+",
+                    "none": "Brak"
                 }
             },
             "getfcd": {
@@ -146,7 +147,8 @@
                     "0": "Godzina",
                     "1": "Dzień",
                     "2": "Tydzień",
-                    "3": "Miesiąc"
+                    "3": "Miesiąc",
+                    "undefined": "Nieokreślony"
                 }
             },
             "getrmn": {
@@ -308,10 +310,10 @@
             "getcrt": {
                 "name": "Typ wkładu",
                 "state": {
-                    "none": "Brak",
                     "0": "HWE",
                     "1": "HVE",
-                    "2": "HVE+"
+                    "2": "HVE+",
+                    "none": "Brak"
                 }
             },
             "getcs1": {
@@ -496,6 +498,9 @@
             },
             "getnps": {
                 "name": "Brak impulsów turbiny od"
+            },
+            "getohw": {
+                "name": "Twardość wody zmiękczonej"
             },
             "getowh": {
                 "name": "Twardość wody wyjściowej"
@@ -867,11 +872,11 @@
             "getrcd": {
                 "name": "Okres procesów napełniania",
                 "state": {
-                    "undefined": "Nieokreślony",
                     "0": "Godzina",
                     "1": "Dzień",
                     "2": "Tydzień",
-                    "3": "Miesiąc"
+                    "3": "Miesiąc",
+                    "undefined": "Nieokreślony"
                 }
             },
             "getrcp": {

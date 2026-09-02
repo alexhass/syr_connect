@@ -104,7 +104,8 @@
         "state": {
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "None"
         }
       },
       "getfcd": {
@@ -146,7 +147,8 @@
           "0": "Hour",
           "1": "Day",
           "2": "Week",
-          "3": "Month"
+          "3": "Month",
+          "undefined": "Undefined"
         }
       },
       "getrmn": {
@@ -308,10 +310,10 @@
       "getcrt": {
         "name": "Cartridge type",
         "state": {
-          "none": "None",
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "None"
         }
       },
       "getcs1": {
@@ -496,6 +498,9 @@
       },
       "getnps": {
         "name": "No turbine pulses since"
+      },
+      "getohw": {
+        "name": "Soft water hardness"
       },
       "getowh": {
         "name": "Output water hardness"
@@ -867,11 +872,11 @@
       "getrcd": {
         "name": "Filling processes period",
         "state": {
-          "undefined": "Undefined",
           "0": "Hour",
           "1": "Day",
           "2": "Week",
-          "3": "Month"
+          "3": "Month",
+          "undefined": "Undefined"
         }
       },
       "getrcp": {

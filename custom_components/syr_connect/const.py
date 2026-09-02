@@ -472,6 +472,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
     "getLOT",   # Max. output conductivity (raw x10 µS/cm)
     "getLRC",   # Liter(s) remaining softening capacity
+    "getOHW",   # Soft water hardness (°dH)
     "getPRC",   # Percent remaining softening capacity
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",   # Filling processes count
@@ -620,6 +621,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
     "getLOT",   # Max. output conductivity (raw x10 µS/cm)
     "getLRC",   # Liter(s) remaining softening capacity
+    "getOHW",   # Soft water hardness (°dH)
     "getPRC",   # Percent remaining softening capacity
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",   # Filling processes count
@@ -1081,6 +1083,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getDFI": "mdi:water-sync",
     "getLOT": "mdi:flash",
     "getLRC": "mdi:gauge",
+    "getOHW": "mdi:water-percent",
     "getPRC": "mdi:beaker",
     "getRCD": "mdi:calendar-sync",
     "getRMN": "mdi:counter",
@@ -1234,6 +1237,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
     "getLOT": SensorStateClass.MEASUREMENT,        # Max. output conductivity
     "getLRC": SensorStateClass.MEASUREMENT,        # Liter(s) remaining softening capacity
+    "getOHW": SensorStateClass.MEASUREMENT,        # Soft water hardness
     "getPRC": SensorStateClass.MEASUREMENT,        # Percent remaining softening capacity
     "getTPR": SensorStateClass.MEASUREMENT,        # Target pressure
     "getVOL": SensorStateClass.TOTAL_INCREASING,  # Total capacity (cumulative)
@@ -1388,6 +1392,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getCRS": UnitOfVolume.LITERS,                      # Cartridge size (mapped to liters)
     "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Max. output conductivity (µS/cm)
     "getLRC": UnitOfVolume.LITERS,                      # Liter(s) remaining softening capacity
+    "getOHW": "°dH",                                    # Soft water hardness
     "getPRC": PERCENTAGE,                               # Percent remaining softening capacity
     "getRMT": UnitOfTime.MINUTES,                       # Maximum filling duration
     "getRVT": UnitOfVolume.LITERS,                      # Maximum filling charges
@@ -1495,6 +1500,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getCRT": 0,    # Cartridge type: show as whole number by default
     "getLOT": 0,    # Max. output conductivity: show as whole number by default
     "getLRC": 0,    # Liter(s) remaining softening capacity: show as whole number by default
+    "getOHW": 0,    # Soft water hardness: show as whole number by default
     "getPRC": 0,    # Percent remaining softening capacity: show as whole number by default
     "getRCD": 0,    # Filling processes period: show as whole number by default
     "getRMN": 0,    # Filling processes count: show as whole number by default

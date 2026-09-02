@@ -104,7 +104,8 @@
         "state": {
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Nenhum"
         }
       },
       "getfcd": {
@@ -146,7 +147,8 @@
           "0": "Hora",
           "1": "Dia",
           "2": "Semana",
-          "3": "Mês"
+          "3": "Mês",
+          "undefined": "Indefinido"
         }
       },
       "getrmn": {
@@ -308,10 +310,10 @@
       "getcrt": {
         "name": "Tipo de cartucho",
         "state": {
-          "none": "Nenhum",
           "0": "HWE",
           "1": "HVE",
-          "2": "HVE+"
+          "2": "HVE+",
+          "none": "Nenhum"
         }
       },
       "getcs1": {
@@ -496,6 +498,9 @@
       },
       "getnps": {
         "name": "Sem impulsos de turbina desde"
+      },
+      "getohw": {
+        "name": "Dureza da água amaciada"
       },
       "getowh": {
         "name": "Dureza da água de saída"
@@ -867,11 +872,11 @@
       "getrcd": {
         "name": "Período dos processos de enchimento",
         "state": {
-          "undefined": "Indefinido",
           "0": "Hora",
           "1": "Dia",
           "2": "Semana",
-          "3": "Mês"
+          "3": "Mês",
+          "undefined": "Indefinido"
         }
       },
       "getrcp": {
