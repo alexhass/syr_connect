@@ -915,8 +915,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getCNL2         | ""      |          | *unknown*
 | getCOA          | ""      |          | *unknown*
 | getCOM          | ""      |          | *unknown*
-| getCRS / setCRS | "1"     | L        | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L
-| getCRT / setCRT | "1"     |          | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed
 | getCWL          | ""      |          | *unknown*
 | getDFI          | ""      |          | *unknown*
 | getDTX          | ""      |          | *unknown*
@@ -931,9 +929,7 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getLFV          | ""      |          | *unknown*
 | getLMD          | ""      |          | *unknown*
 | getLMF          | ""      |          | *unknown*
-| getLOT / setLOT | "8"     | ×10 µS/cm | Water treatment: Max. output conductivity (e.g. `8` = 80 µS/cm). Range: 0=off, 10–200 µS/cm in 10 µS/cm steps
 | getLPD          | ""      |          | *unknown*
-| getLRC          | "173"   | L        | Liter(s) Remaining Capacity — remaining softening capacity in liters (ConelClearProFill/MuCo devices)
 | getMFL          | ""      |          | *unknown*
 | getMPR          | ""      |          | *unknown* — possibly set water pressure (excluded when empty)
 | getNMS          | ""      |          | *unknown*
@@ -945,16 +941,12 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getPBC          | ""      |          | *unknown*
 | getPCB          | ""      |          | *unknown*
 | getPPL          | ""      |          | *unknown*
-| getPRC          | "97"    | %        | Percent Remaining Capacity — remaining softening capacity in percent (Conel Clear Pro Fill/MuCo devices)
 | getPRT          | ""      |          | *unknown*
 | getPSI          | ""      |          | *unknown*
 | getPVL          | ""      |          | *unknown*
 | getRCC          | ""      |          | *unknown*
-| getRCD / setRCD | "1"     |          | Filling mode: Filling processes period: ""=undefined, 0=hour, 1=day, 2=week, 3=month
 | getRCN          | ""      |          | *unknown*
-| getRMN / setRMN | "5"     |          | Filling mode: Filling processes. Range: 1–10 in steps of 1
 | getRMP          | ""      |          | *unknown*
-| getRMT / setRMT | "30"    | min      | Filling mode: Maximum filling duration. Range: 1–5 min in 1 min steps, 10 min, 15 min–1 h in 15 min steps, 1 h–12 h in 0.5 h steps
 | getRP1          | ""      |          | *unknown*
 | getRP2          | ""      |          | *unknown*
 | getRP3          | ""      |          | *unknown*
@@ -963,13 +955,28 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getRSD          | ""      |          | *unknown*
 | getRSE          | ""      |          | *unknown*
 | getRSI          | ""      |          | *unknown*
-| getRVT / setRVT | "100"   | L        | Filling mode: Maximum filling charges. Range: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100
 | getSSA          | ""      |          | *unknown*
 | getSSE          | ""      |          | *unknown*
-| getTPR / setTPR | "18"    | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range: 0.5–5.0 bar in 0.1 bar steps (Conel Clear Pro Fill/MuCo devices)
 | getTRT          | ""      |          | *unknown*
 | getTRV          | ""      |          | *unknown*
 | getWTR          | ""      |          | *unknown*
+
+#### CONEL CLEAR PRO FILL
+
+These properties are documented on MuCo devices that expose water treatment (cartridge) and filling mode configuration, confirmed on Conel Clear Pro Fill.
+
+| Property        | Example | Unit     | Description
+|-----------------|---------|----------|-------------------------------------------------------------
+| getCRS / setCRS | "1"     | L        | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L
+| getCRT / setCRT | "1"     |          | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed
+| getLOT / setLOT | "8"     | ×10 µS/cm | Water treatment: Max. output conductivity (e.g. `8` = 80 µS/cm). Range in SYR GUI: 0=off, 10–200 µS/cm in 10 µS/cm steps
+| getLRC          | "173"   | L        | Liter(s) Remaining Capacity — remaining softening capacity in liters
+| getPRC          | "97"    | %        | Percent Remaining Capacity — remaining softening capacity in percent
+| getRCD / setRCD | "1"     |          | Filling mode: Filling processes period: ""=undefined, 0=hour, 1=day, 2=week, 3=month
+| getRMN / setRMN | "5"     |          | Filling mode: Filling processes. Range in SYR GUI: 1–10 in steps of 1
+| getRMT / setRMT | "30"    | min      | Filling mode: Maximum filling duration. Range in SYR GUI: 1–5 min in 1 min steps, 10 min, 15 min–1 h in 15 min steps, 1 h–12 h in 0.5 h steps
+| getRVT / setRVT | "100"   | L        | Filling mode: Maximum filling charges. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100
+| getTPR / setTPR | "18"    | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps
 
 ## Further information
 
