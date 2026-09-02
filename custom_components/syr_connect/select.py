@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import Any, cast
 
 from homeassistant.components.select import SelectEntity
@@ -719,7 +720,7 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         device_id: str,
         device_name: str,
         sensor_key: str,
-        options_map: dict[str, int | None],
+        options_map: Mapping[str, int | None],
     ) -> None:
         super().__init__(coordinator)
         self._device_id = device_id
