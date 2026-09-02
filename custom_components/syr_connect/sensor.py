@@ -4,12 +4,13 @@ from __future__ import annotations
 import logging
 import re
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from babel.dates import format_datetime
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -208,6 +209,12 @@ async def async_setup_entry(
             if key in handled_keys:
                 continue
 
+            # getLOT/getOHW are mutually exclusive depending on getCRT and are handled
+            # dynamically below (_async_setup_muco_conditional_sensors) so the applicable
+            # one can be added/removed live without an integration reload.
+            if key in ("getLOT", "getOHW"):
+                continue
+
             # Centralized visibility check
             if not is_sensor_visible(status, key, value):
                 continue
@@ -252,6 +259,70 @@ async def async_setup_entry(
 
     _LOGGER.debug("Adding %d sensor(s) total", len(entities))
     async_add_entities(entities)
+
+    _async_setup_muco_conditional_sensors(hass, entry, coordinator, async_add_entities)
+
+
+def _async_setup_muco_conditional_sensors(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinator: SyrConnectDataUpdateCoordinator,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Dynamically add/remove the getLOT/getOHW sensor depending on the cartridge type.
+
+    Mirrors _async_setup_muco_conditional_selects in select.py: getLOT (HVE/HVE+) and
+    getOHW (HWE) are mutually exclusive based on getCRT. registry_cleanup() only runs
+    once at setup, so without this listener the inapplicable diagnostic sensor would
+    stay registered and show as permanently greyed-out "unavailable" after the user
+    changes the cartridge type live (e.g. via the getCRT select), instead of being
+    removed. Re-evaluated on every coordinator update.
+    """
+    live_keys: dict[str, set[str]] = {}
+
+    def _wanted_key(status: dict[str, Any]) -> str | None:
+        crt = str(status.get("getCRT") or "").strip()
+        if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
+            return "getLOT"
+        if crt == "0" and status.get("getOHW") not in (None, ""):
+            return "getOHW"
+        return None
+
+    @callback
+    def _sync() -> None:
+        new_entities: list[SyrConnectSensor] = []
+        registry = er.async_get(hass)
+        for device in coordinator.data.get("devices", []):
+            device_id = device.get("id")
+            if not device_id:
+                continue
+            device_name = device.get("name", device_id)
+            project_id = device.get("project_id")
+            status = device.get("status", {})
+            current = live_keys.setdefault(device_id, set())
+            wanted = _wanted_key(status)
+            wanted_set = {wanted} if wanted else set()
+
+            for key in current - wanted_set:
+                entity_id = build_entity_id("sensor", device_id, key)
+                existing = registry.async_get(entity_id)
+                if existing is not None and (
+                    coordinator.entry_id is None or existing.config_entry_id == coordinator.entry_id
+                ):
+                    _LOGGER.debug("Removing conditionally hidden sensor from registry: %s", entity_id)
+                    registry.async_remove(entity_id)
+                current.discard(key)
+
+            for key in wanted_set - current:
+                new_entities.append(SyrConnectSensor(coordinator, device_id, device_name, project_id, key))
+                current.add(key)
+
+        if new_entities:
+            _LOGGER.debug("Adding %d conditional MuCo sensor(s)", len(new_entities))
+            async_add_entities(new_entities)
+
+    _sync()
+    entry.async_on_unload(coordinator.async_add_listener(_sync))
 
 
 class SyrConnectSensor(CoordinatorEntity, SensorEntity):

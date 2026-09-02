@@ -254,10 +254,13 @@ def registry_cleanup(
         allowed_lower = {k.lower() for k in allowed_keys}
 
         # Build the set of conditionally visible sensor keys once, outside the device loop.
+        # getLOT/getOHW are added explicitly since their visibility depends on getCRT
+        # (cross-key rule in is_sensor_visible), not on their own value being empty.
         _conditional_keys = (
             _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
             | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING
             | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS
+            | {"getLOT", "getOHW"}
         ) - _SYR_CONNECT_SENSOR_EXCLUDED
 
         for device in (coordinator_data or {}).get("devices", []):
