@@ -1240,7 +1240,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getOHW": SensorStateClass.MEASUREMENT,        # Soft water hardness
     "getPRC": SensorStateClass.MEASUREMENT,        # Percent remaining softening capacity
     "getTPR": SensorStateClass.MEASUREMENT,        # Target pressure
-    "getVOL": SensorStateClass.TOTAL_INCREASING,  # Total capacity (cumulative)
+    "getVOL": SensorStateClass.TOTAL_INCREASING,   # Total capacity (cumulative)
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
     "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
     "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
