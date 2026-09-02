@@ -802,6 +802,103 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
     assert t1.native_value == 1.5
 
 
+def test_getlot_conversion(create_mock_coordinator):
+    """getLOT is provided in steps of 10 µS/cm and must be multiplied by 10."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_lot",
+                "name": "Device LOT",
+                "project_id": "p1",
+                "status": {"getLOT": "7"},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    lot = SyrConnectSensor(coord, "dev_lot", "Device LOT", "p1", "getLOT")
+    assert lot.native_value == 70
+
+
+@pytest.mark.parametrize(
+    ("raw_value", "expected"),
+    [
+        ("2", 4),
+        (None, None),
+        ("", None),
+        ("abc", None),
+    ],
+)
+def test_getcrs_value_mapping(create_mock_coordinator, raw_value, expected):
+    """getCRS maps raw cartridge size codes to liters, with None/empty/invalid handled."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_crs",
+                "name": "Device CRS",
+                "project_id": "p1",
+                "status": {"getCRS": raw_value},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    crs = SyrConnectSensor(coord, "dev_crs", "Device CRS", "p1", "getCRS")
+    assert crs.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("raw_value", "expected"),
+    [
+        ("1", "1"),
+        (None, "none"),
+        ("", "none"),
+    ],
+)
+def test_getcrt_value_mapping(create_mock_coordinator, raw_value, expected):
+    """getCRT returns 'none' for missing/empty values, otherwise the raw value as string."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_crt",
+                "name": "Device CRT",
+                "project_id": "p1",
+                "status": {"getCRT": raw_value},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    crt = SyrConnectSensor(coord, "dev_crt", "Device CRT", "p1", "getCRT")
+    assert crt.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("raw_value", "expected"),
+    [
+        ("1", "1"),
+        (None, "undefined"),
+        ("", "undefined"),
+    ],
+)
+def test_getrcd_value_mapping(create_mock_coordinator, raw_value, expected):
+    """getRCD returns 'undefined' for missing/empty values, otherwise the raw value as string."""
+    data = {
+        "devices": [
+            {
+                "id": "dev_rcd",
+                "name": "Device RCD",
+                "project_id": "p1",
+                "status": {"getRCD": raw_value},
+            }
+        ]
+    }
+    coord = create_mock_coordinator(data)
+
+    rcd = SyrConnectSensor(coord, "dev_rcd", "Device RCD", "p1", "getRCD")
+    assert rcd.native_value == expected
+
+
 async def test_async_setup_entry_handles_status_get_exception(hass: HomeAssistant) -> None:
     """Ensure async_setup_entry does not crash when status.get raises."""
     class BadStatus:

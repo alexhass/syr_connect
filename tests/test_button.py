@@ -495,6 +495,47 @@ async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
     mock_registry.async_remove.assert_not_called()
 
 
+async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Cleanup loop skips registry entries owned by a different config entry (line 147 continue)."""
+    from unittest.mock import MagicMock, patch
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {},  # getSIR is absent — button must not be created
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.entry_id = "this_entry"
+    entities, async_add_entities = mock_add_entities()
+
+    # Entity_id prefix matches this device, but it belongs to a different config entry
+    stale_entity_id = "button.syr_connect_device1_setsir"
+
+    class FakeEntry:
+        def __init__(self, eid: str, config_entry_id: str) -> None:
+            self.entity_id = eid
+            self.config_entry_id = config_entry_id
+
+    mock_registry = MagicMock()
+    mock_registry.async_remove = MagicMock()
+    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id, "other_entry")}
+
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # The entry belongs to a different config entry, so it must be skipped, not removed
+    mock_registry.async_remove.assert_not_called()
+
+
 async def test_async_setup_entry_registry_cleanup_exception_is_caught(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator,
