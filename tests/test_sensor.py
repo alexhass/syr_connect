@@ -9407,6 +9407,50 @@ async def test_muco_conditional_sensor_switches_live_on_crt_change(
     assert "getLOT" in {getattr(e, "_sensor_key", None) for e in entities}
 
 
+# Line 299 — devices without an "id" must be skipped by the MuCo conditional sensor sync.
+async def test_muco_conditional_sensor_skips_device_without_id(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """The conditional MuCo sensor sync skips devices without an id."""
+    data = {
+        "devices": [
+            {"name": "No ID Device", "project_id": "project1", "status": {}},
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert entities == []
+
+
+# Lines 320-322 — the MuCo conditional sensor sync must swallow registry errors.
+async def test_muco_conditional_sensor_sync_registry_exception(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """The conditional MuCo sensor sync logs and returns on registry errors."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getCRT": "0", "getOHW": "5"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    with patch("homeassistant.helpers.entity_registry.async_get", side_effect=RuntimeError("boom")):
+        # Should not raise despite the registry accessor failing.
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # No conditional MuCo sensor could be added since the registry sync failed.
+    assert "getOHW" not in {getattr(e, "_sensor_key", None) for e in entities}
+
+
 async def test_connection_state_sensor_device_not_found(hass: HomeAssistant) -> None:
     """native_value returns None when device is not in coordinator data."""
     data = {"devices": [{"id": "other_device", "name": "Other", "project_id": "project1", "status": {}}]}

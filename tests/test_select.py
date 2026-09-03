@@ -2649,6 +2649,86 @@ async def test_rmo_select_current_option_all_modes(hass: HomeAssistant) -> None:
         assert select.current_option == mode
 
 
+# Lines 254-255, 275-276, 285-286, 300-301, 315-316 — invalid (non-numeric) MuCo config
+# values must be silently skipped instead of creating a select entity.
+async def test_async_setup_entry_skips_invalid_muco_numeric_values(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Non-numeric getCRS/getRMN/getRMT/getRVT/getTPR values must not create selects."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getCRS": "invalid",
+                    "getRMN": "invalid",
+                    "getRMT": "invalid",
+                    "getRVT": "invalid",
+                    "getTPR": "invalid",
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert not ({"getCRS", "getRMN", "getRMT", "getRVT", "getTPR"} & keys)
+
+
+# Line 371 — devices without an "id" must be skipped by the MuCo conditional sync.
+async def test_muco_conditional_select_skips_device_without_id(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """The conditional MuCo select sync skips devices without an id."""
+    data = {
+        "devices": [
+            {"name": "No ID Device", "project_id": "project1", "status": {}},
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert entities == []
+
+
+# Line 776 — current_option returns the sentinel option (mapped value None) when the
+# raw status value is empty and the mapping defines such a sentinel (e.g. "none"/"undefined").
+async def test_discrete_select_current_option_returns_none_sentinel(hass: HomeAssistant) -> None:
+    """current_option returns the sentinel option when the raw value is empty."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getCRT": ""}}]}
+    coordinator = _build_coordinator(hass, data)
+    crt_map = {"none": None, "0": 0, "1": 1, "2": 2}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getCRT", crt_map)
+
+    assert select.current_option == "none"
+
+
+# Lines 794-795 — selecting a sentinel option (mapped value None) must be rejected without
+# calling the coordinator, since there is no underlying raw value to send.
+async def test_discrete_select_async_select_option_rejects_none_value(hass: HomeAssistant) -> None:
+    """async_select_option logs and returns for options mapped to None."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getCRT": "1"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    crt_map = {"none": None, "0": 0, "1": 1, "2": 2}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getCRT", crt_map)
+
+    await select.async_select_option("none")
+
+    coordinator.async_set_device_value.assert_not_called()
+
+
 async def test_rmo_select_current_option_none_when_invalid(hass: HomeAssistant) -> None:
     """Test RMO select current_option is None when value cannot be converted to int."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "invalid"}}]}
