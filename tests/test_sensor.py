@@ -9408,13 +9408,15 @@ async def test_muco_conditional_sensor_switches_live_on_crt_change(
 
 
 # Line 299 — devices without an "id" must be skipped by the MuCo conditional sensor sync.
+# Note: the main setup loop above indexes device['id']/['name']/['project_id'] directly,
+# so the id key must be present (but falsy) rather than omitted.
 async def test_muco_conditional_sensor_skips_device_without_id(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
 ) -> None:
     """The conditional MuCo sensor sync skips devices without an id."""
     data = {
         "devices": [
-            {"name": "No ID Device", "project_id": "project1", "status": {}},
+            {"id": "", "name": "No ID Device", "project_id": "project1", "status": {}},
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
@@ -9423,6 +9425,18 @@ async def test_muco_conditional_sensor_skips_device_without_id(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     assert entities == []
+
+
+class _FakeRegistry:
+    """Minimal registry stand-in so registry_cleanup()/the main setup loop no-op cleanly."""
+
+    entities: dict = {}
+
+    def async_get(self, entity_id):
+        return None
+
+    def async_remove(self, entity_id):
+        return None
 
 
 # Lines 320-322 — the MuCo conditional sensor sync must swallow registry errors.
@@ -9443,7 +9457,13 @@ async def test_muco_conditional_sensor_sync_registry_exception(
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
-    with patch("homeassistant.helpers.entity_registry.async_get", side_effect=RuntimeError("boom")):
+    # er.async_get() is called 3 times during setup: once in registry_cleanup(), once in
+    # the main sensor loop, and once inside the MuCo conditional sync - only the last
+    # one should fail, to isolate the except branch under test.
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get",
+        side_effect=[_FakeRegistry(), _FakeRegistry(), RuntimeError("boom")],
+    ):
         # Should not raise despite the registry accessor failing.
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
