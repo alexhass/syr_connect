@@ -924,6 +924,17 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
     {
         "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 3},
+        "base_path": "/trio",
+        "display_name": "CLEAR PRO FILL",
+        "dk": 1500,
+        "dkv": 500,
+        "manufacturer": "CONEL",
+        "name": "conelclearprofill",
+        "srn_prefix": "500",
+    },
+    {
+        "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "CLEAR PRO MultiController",
         "dk": 1500,
@@ -1011,17 +1022,22 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
         If no signature matches, returns the ``UNKNOWN_MODEL`` dict.
 
     Detection priority (highest to lowest):
-    1. Serial number prefix (srn_prefix):
+    1. Serial number prefix/contains combined with attrs_equals:
+        Signatures that define both 'srn_prefix'/'srn_contains' and 'attrs_equals' are checked
+        first, so a more specific variant is not shadowed by a generic srn-only signature that
+        shares the same prefix (attrs_equals is matched against the flattened status attributes,
+        e.g. 'getDFM', not against the signature's own 'dk'/'dkv' metadata fields).
+    2. Serial number prefix (srn_prefix):
         If a signature defines 'srn_prefix', and the serial number (getSRN) starts with srn_prefix + 'AAA', this model is selected immediately.
-    2. Serial number contains (srn_contains):
+    3. Serial number contains (srn_contains):
         If a signature defines 'srn_contains' and it is found in the serial number, this model is selected.
-    3. getCNA exact match (cna_equals):
+    4. getCNA exact match (cna_equals):
         If a signature defines 'cna_equals' and getCNA matches, this model is selected.
-    4. Attribute match (attrs_equals):
+    5. Attribute match (attrs_equals):
         If a signature defines 'attrs_equals' and all specified attributes match, this model is selected.
-    5. v_keys fingerprint:
+    6. v_keys fingerprint:
         If a signature defines 'v_keys', at least 'v_keys_required' of those keys must be present in the flattened response. If version or attribute constraints are also specified, they must match as well.
-    6. Version prefix/contains:
+    7. Version prefix/contains:
         If a signature defines 'ver_prefix' or 'ver_contains', and getVER matches, this model is selected.
 
     If no signature matches, returns the unknown model structure.
@@ -1076,8 +1092,13 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
     # Step 1: Check all serial number prefix/contains matches first (highest priority)
     # If a model signature defines 'srn_prefix' or 'srn_contains' and the serial number matches,
     # return this model immediately. This ensures serial number detection always wins over other methods.
+    # Signatures that also define 'attrs_equals' are more specific and are checked first, so a
+    # generic srn-only signature does not shadow a more specific variant sharing the same prefix.
     for sig in MODEL_SIGNATURES:
-        if (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
+        if sig.get("attrs_equals") and (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig) and attrs_match(sig):
+            return _sig_to_result(sig, "srn_equals+attrs_equals")
+    for sig in MODEL_SIGNATURES:
+        if not sig.get("attrs_equals") and (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
             return _sig_to_result(sig, "srn_equals")
 
     # Step 2: Check all getCNA (model name) exact matches
