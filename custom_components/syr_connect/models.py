@@ -55,10 +55,6 @@ UNKNOWN_MODEL: dict[str, Any] = {
 # - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
 #                                   command (setALM) rather than by a clrALM command.
 #
-# Per-model entity allowlists (which getX/setX keys become entities for a specific
-# model) are NOT stored here. When a model needs a narrower, positive allowlist than
-# the global const.py lists, add a `devices/<name>.py` file (matching this signature's
-# `name`) that defines e.g. `SENSOR_KNOWN_KEYS`. See `helpers.get_model_known_keys()`.
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     {
