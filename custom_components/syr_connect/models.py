@@ -54,7 +54,6 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #                                   `attrs_equals` constraints before returning a match.
 # - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
 #                                   command (setALM) rather than by a clrALM command.
-#
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     {
