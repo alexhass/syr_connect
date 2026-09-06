@@ -22,9 +22,11 @@ from .helpers import (
     build_entity_id,
     build_set_ab_command,
     build_unique_id,
+    get_model_known_keys,
     get_sensor_ab_value,
     registry_cleanup,
 )
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,9 +64,11 @@ async def async_setup_entry(
         # Per-device status dictionary from the coordinator payload
         status = device.get("status", {})
         # Create a valve entity only when the device exposes `getAB` (the
-        # actual valve control key). `getVLV` is a read-only status sensor
-        # and is handled exclusively by the sensor platform.
-        ab_value = status.get("getAB")
+        # actual valve control key) AND the model's allowlist permits it.
+        # `getVLV` is a read-only status sensor and is handled exclusively
+        # by the sensor platform.
+        known_valve_keys = get_model_known_keys(detect_model(status), "valve", _SYR_CONNECT_VALVE_KNOWN_KEYS)
+        ab_value = status.get("getAB") if "getAB" in known_valve_keys else None
         create = False
         # If `getAB` looks like a control value (numeric 1/2 or boolean),
         # treat the device as a valve that can be controlled.

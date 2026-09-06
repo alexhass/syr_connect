@@ -1,6 +1,7 @@
 """Helper functions for SYR Connect integration."""
 from __future__ import annotations
 
+import importlib
 import ipaddress
 import logging
 import re
@@ -216,6 +217,48 @@ def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
     return f"{device_id}_{key}"
 
 
+def get_model_known_keys(model_info: dict[str, Any], platform: str, global_known_keys: set[str]) -> set[str]:
+    """Return the known-keys allowlist for a platform, scoped to the detected model.
+
+    Looks for an optional `devices/<name>.py` module (matching the detected
+    model's `device_file`, or its `name` when `device_file` is not set - see
+    `models.MODEL_SIGNATURES`) and, if it defines a `<PLATFORM>_KNOWN_KEYS`
+    set (e.g. `SENSOR_KNOWN_KEYS`), uses that as a POSITIVE, device-specific
+    allowlist instead of `global_known_keys`. `device_file` lets multiple
+    model signatures that are largely identical (e.g. rebranded variants of
+    the same hardware) share a single override file instead of duplicating
+    near-identical content per model `name`.
+    This is deliberately an allowlist, not an exclusion list — the global
+    const.py lists cover ~90 different models, and new/unexpected keys can
+    show up in any device's API response at any time, so only explicitly
+    confirmed keys are trusted per device. Falls back to `global_known_keys`
+    unchanged when no override file exists for the model, or it doesn't
+    define this platform's set at all (an explicit empty set is honored as
+    "no entities of this platform for this model", not a fallback trigger).
+
+    Args:
+        model_info: Result of `models.detect_model()`.
+        platform: Entity domain string (e.g. "sensor", "select", "switch").
+        global_known_keys: The platform's full/default allowlist.
+
+    Returns:
+        The effective allowlist to use for this device.
+    """
+    name = model_info.get("device_file") or model_info.get("name")
+    if not name:
+        return global_known_keys
+    try:
+        device_module = importlib.import_module(f".devices.{name}", __package__)
+    except ModuleNotFoundError:
+        return global_known_keys
+    device_keys = getattr(device_module, f"{platform.upper()}_KNOWN_KEYS", None)
+    # None means "not defined" -> fall back. An explicit empty set is a valid
+    # override meaning "this model has none of this platform's entities".
+    if device_keys is None:
+        return global_known_keys
+    return set(device_keys)
+
+
 def registry_cleanup(
     hass: HomeAssistant,
     coordinator_data: dict[str, Any],
@@ -251,7 +294,6 @@ def registry_cleanup(
         return
     try:
         registry = er.async_get(hass)
-        allowed_lower = {k.lower() for k in allowed_keys}
 
         # Build the set of conditionally visible sensor keys once, outside the device loop.
         # getLOT/getOHW are added explicitly since their visibility depends on getCRT
@@ -268,6 +310,13 @@ def registry_cleanup(
             if not device_id:
                 continue
             prefix = f"{domain}.{DOMAIN}_{device_id.lower()}_"
+
+            # Scope the allowlist to the detected model (falls back to allowed_keys
+            # unchanged for models that haven't opted into per-model key lists).
+            status = device.get("status", {})
+            model_info = detect_model(status)
+            device_allowed_keys = get_model_known_keys(model_info, domain, allowed_keys)
+            allowed_lower = {k.lower() for k in device_allowed_keys}
 
             # Remove entities whose key is no longer in the allowed set.
             for entry in list(registry.entities.values()):
@@ -289,7 +338,6 @@ def registry_cleanup(
 
             # Remove conditionally hidden sensor entities based on current device status.
             if domain == "sensor":
-                status = device.get("status", {})
                 for key in _conditional_keys:
                     value = status.get(key)
                     if not is_sensor_visible(status, key, value):

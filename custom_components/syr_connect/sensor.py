@@ -43,6 +43,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_unique_id,
+    get_model_known_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -58,6 +59,7 @@ from .helpers import (
     is_value_true,
     registry_cleanup,
 )
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -107,6 +109,11 @@ async def async_setup_entry(
         project_id = device['project_id']
         status = device.get('status', {})
 
+        # Scope the sensor allowlist to the detected model (falls back to the
+        # global allowlist for models that haven't opted into per-model key lists).
+        model_info = detect_model(status)
+        known_sensor_keys = get_model_known_keys(model_info, "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS)
+
         _LOGGER.debug("Device %s (%s) has %d status values", device_name, device_id, len(status))
 
         # Only create the connection state sensor when the API provides a "dst" value
@@ -145,10 +152,14 @@ async def async_setup_entry(
 
             try:
                 if is_value_true(pa_val):
-                    # Create entities for group keys — only if the key is actually present in status.
+                    # Create entities for group keys — only if the key is actually present in
+                    # status AND allowed for this model (per-model allowlist takes precedence).
                     for gk in group_keys:
                         # Avoid duplicates when iterating over status later
                         handled_keys.add(gk)
+                        if gk not in known_sensor_keys:
+                            _LOGGER.debug("Skipping PA group sensor (not in allowlist): device=%s key=%s", device_id, gk)
+                            continue
                         if gk not in status:
                             _LOGGER.debug("Skipping PA group sensor (not in status): device=%s key=%s", device_id, gk)
                             continue
@@ -188,7 +199,7 @@ async def async_setup_entry(
             # Allowlist check: the definitive list of keys this integration handles.
             # Anything not listed here is ignored unconditionally, regardless of
             # what other checks follow. This takes precedence over all other logic.
-            if key not in _SYR_CONNECT_SENSOR_KNOWN_KEYS:
+            if key not in known_sensor_keys:
                 _LOGGER.debug("Skipping unknown sensor key %s (not in allowlist)", key)
                 continue
 

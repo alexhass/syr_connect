@@ -29,6 +29,12 @@ UNKNOWN_MODEL: dict[str, Any] = {
 # - `attrs_equals`:                 dict of `getX` -> value pairs that must all match
 # - `base_path`:                    json api local access base path for the model or None if not applicable
 # - `cna_equals`:                   exact match against `getCNA` value (if present)
+# - `device_file`:                  name of a `devices/<name>.py` override file to use for this model's
+#                                   per-platform entity allowlists (see `helpers.get_model_known_keys()`).
+#                                   Optional; defaults to this signature's own `name`. Set this when
+#                                   several signatures are rebranded variants of the same underlying
+#                                   hardware (e.g. the dk=1500-1506 MultiController family) so they can
+#                                   share one override file instead of duplicating near-identical content.
 # - `dk`:                           cloud API deviceKind – the integer `dk` attribute in GetProjectDeviceCollections XML
 # - `dkv`:                          cloud API deviceKindVersion – the integer `dkv` attribute in GetProjectDeviceCollections XML;
 #                                   for Azure-connected devices this also equals the numeric SRN prefix of newer production units.
@@ -49,6 +55,10 @@ UNKNOWN_MODEL: dict[str, Any] = {
 # - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
 #                                   command (setALM) rather than by a clrALM command.
 #
+# Per-model entity allowlists (which getX/setX keys become entities for a specific
+# model) are NOT stored here. When a model needs a narrower, positive allowlist than
+# the global const.py lists, add a `devices/<name>.py` file (matching this signature's
+# `name`) that defines e.g. `SENSOR_KNOWN_KEYS`. See `helpers.get_model_known_keys()`.
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     {
@@ -926,6 +936,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_clear_via_set": True,
         "attrs_equals": {"getDFM": 3},
         "base_path": "/trio",
+        "device_file": "muco_dfm3",
         "display_name": "CLEAR PRO FILL",
         "dk": 1500,
         "dkv": 500,
@@ -945,12 +956,24 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 1},
         "base_path": "/trio",
+        "device_file": "muco_dfm1",
         "display_name": "Leak Protection Module A25",
         "dk": 1501,
         "dkv": 501,
         "manufacturer": "Sanibel",
         "name": "sanibelleakprotect",
+        "srn_prefix": "501",
+    },
+    {
+        "alarm_clear_via_set": True,
+        "base_path": "/trio",
+        "display_name": "Sanibel MultiController",
+        "dk": 1501,
+        "dkv": 501,
+        "manufacturer": "Sanibel",
+        "name": "sanibelmuco",
         "srn_prefix": "501",
     },
     {

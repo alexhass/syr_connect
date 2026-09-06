@@ -40,7 +40,7 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
-from .helpers import build_device_info, build_entity_id, build_unique_id, registry_cleanup
+from .helpers import build_device_info, build_entity_id, build_unique_id, get_model_known_keys, registry_cleanup
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,7 +95,14 @@ async def async_setup_entry(
 
         model_info = detect_model(status)
 
+        # Scope to the detected model (falls back to the global allowlist for
+        # models that haven't opted into per-model key lists).
+        known_button_keys = get_model_known_keys(model_info, "button", _SYR_CONNECT_BUTTON_KNOWN_KEYS)
+
         for command, _name in action_buttons:
+            if command not in known_button_keys:
+                continue
+
             # Derive the corresponding "getXYZ" key from the command name
             # (e.g. 'setNOT' -> 'getNOT') and skip if it's not present
             # in the device status.

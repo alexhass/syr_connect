@@ -29,6 +29,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_unique_id,
+    get_model_known_keys,
     get_sensor_rtm_value,
     is_value_true,
     registry_cleanup,
@@ -107,10 +108,11 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
+        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
         # Create regeneration time select when `getRTM` is present (it may contain a combined HH:MM
         # string when `getRTH` is not provided, or act as minutes when `getRTH` is present).
         rtm = status.get("getRTM")
-        if rtm is None or rtm == "":
+        if "getRTM" not in known_select_keys or rtm is None or rtm == "":
             continue
         entities.append(SyrConnectRegenerationSelect(coordinator, device_id, device_name))
 
@@ -119,6 +121,9 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
+        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+        if "getPRF" not in known_select_keys:
+            continue
         # if any getPAx is truthy (e.g. "true" or "1"), create profile select
         has_profile = False
         for i in range(1, 9):
@@ -134,8 +139,9 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
+        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
         sro_value = status.get("getSRO")
-        if sro_value is None or sro_value == "":
+        if "getSRO" not in known_select_keys or sro_value is None or sro_value == "":
             continue
         try:
             # accept numeric-like values (e.g., "90" or "90.0")
@@ -245,10 +251,14 @@ async def async_setup_entry(
         device_name = device.get("name", device_id)
         status = device.get("status", {})
 
+        # Scope to the detected model (falls back to the global allowlist for
+        # models that haven't opted into per-model key lists).
+        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+
         # Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
         # _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
         crs_value = status.get("getCRS")
-        if crs_value is not None and crs_value != "":
+        if "getCRS" in known_select_keys and crs_value is not None and crs_value != "":
             try:
                 int(float(crs_value))
             except (ValueError, TypeError):
@@ -258,18 +268,18 @@ async def async_setup_entry(
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getCRS", crs_map))
 
         # Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
-        if "getCRT" in status:
+        if "getCRT" in known_select_keys and "getCRT" in status:
             crt_map = {"none": None, "0": 0, "1": 1, "2": 2}
             entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getCRT", crt_map))
 
         # Filling processes period (getRCD): 0=hour, 1=day, 2=week, 3=month (empty value = undefined)
-        if "getRCD" in status:
+        if "getRCD" in known_select_keys and "getRCD" in status:
             rcd_map = {"undefined": None, "0": 0, "1": 1, "2": 2, "3": 3}
             entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRCD", rcd_map))
 
         # Filling processes count (getRMN): 1-10 in steps of 1
         rmn_value = status.get("getRMN")
-        if rmn_value is not None and rmn_value != "":
+        if "getRMN" in known_select_keys and rmn_value is not None and rmn_value != "":
             try:
                 float(rmn_value)
             except (ValueError, TypeError):
@@ -279,7 +289,7 @@ async def async_setup_entry(
 
         # Maximum filling duration (getRMT): non-uniform minute steps (see docs/syrconnect-protocol.md)
         rmt_value = status.get("getRMT")
-        if rmt_value is not None and rmt_value != "":
+        if "getRMT" in known_select_keys and rmt_value is not None and rmt_value != "":
             try:
                 float(rmt_value)
             except (ValueError, TypeError):
@@ -294,7 +304,7 @@ async def async_setup_entry(
 
         # Maximum filling charges (getRVT): non-uniform liter steps (see docs/syrconnect-protocol.md)
         rvt_value = status.get("getRVT")
-        if rvt_value is not None and rvt_value != "":
+        if "getRVT" in known_select_keys and rvt_value is not None and rvt_value != "":
             try:
                 float(rvt_value)
             except (ValueError, TypeError):
@@ -309,7 +319,7 @@ async def async_setup_entry(
 
         # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)
         tpr_value = status.get("getTPR")
-        if tpr_value is not None and tpr_value != "":
+        if "getTPR" in known_select_keys and tpr_value is not None and tpr_value != "":
             try:
                 float(tpr_value)
             except (ValueError, TypeError):

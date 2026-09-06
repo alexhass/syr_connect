@@ -21,7 +21,8 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, build_unique_id, registry_cleanup
+from .helpers import build_device_info, build_entity_id, build_unique_id, get_model_known_keys, registry_cleanup
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +54,12 @@ async def async_setup_entry(
         project_id = device.get("project_id", "")
         status = device.get("status", {})
         _LOGGER.debug("Checking device: id=%s, name=%s, status_keys=%s", device_id, device_name, list(status.keys()))
-        for sensor_key in sorted(_SYR_CONNECT_SWITCH_KNOWN_KEYS):
+
+        # Scope to the detected model (falls back to the global allowlist for
+        # models that haven't opted into per-model key lists).
+        known_switch_keys = get_model_known_keys(detect_model(status), "switch", _SYR_CONNECT_SWITCH_KNOWN_KEYS)
+
+        for sensor_key in sorted(known_switch_keys):
             if sensor_key not in status:
                 _LOGGER.debug("%s not found in status for device %s.", sensor_key, device_id)
                 continue
