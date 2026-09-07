@@ -11,4 +11,6 @@ global allowlists in const.py, so the entities created for a device are
 limited to keys explicitly confirmed for that model rather than the union of
 every model's keys. Models without a file here keep using the global
 const.py allowlists unchanged.
+
+See const.py's `_SYR_CONNECT_<PLATFORM>_KNOWN_KEYS` for the global fallback allowlists these override.
 """
