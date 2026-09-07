@@ -650,11 +650,13 @@ def test_manufacturer_hansgrohe_pontosbase():
 
 def test_manufacturer_sanibel_via_srn_prefix():
     """Sanibel devices detected by srn_prefix should return manufacturer 'Sanibel'."""
-    for srn, expected_name in [
-        ("501AAA00001", "sanibelleakprotect"),
-        ("207AAA00001", "sanibelsoftwateruno"),
+    for srn, extra_attrs, expected_name in [
+        # sanibelleakprotect additionally requires getDFM==1 to win over the
+        # generic sanibelmuco fallback signature sharing the same srn_prefix.
+        ("501AAA00001", {"getDFM": 1}, "sanibelleakprotect"),
+        ("207AAA00001", {}, "sanibelsoftwateruno"),
     ]:
-        result = detect_model({"getSRN": srn})
+        result = detect_model({"getSRN": srn, **extra_attrs})
         assert result["manufacturer"] == "Sanibel", f"Expected Sanibel for SRN {srn}, got {result['manufacturer']}"
         assert result["name"] == expected_name
 
