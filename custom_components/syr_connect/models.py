@@ -488,6 +488,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     {
         "base_path": None,
+        "device_file": "safefloor",
         "display_name": "SafeFloor Connect",
         "dk": 120,
         "dkv": 34,
@@ -498,6 +499,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "device_file": "safefloor",
         "display_name": "MultiSafe Floor Leak Sensor",
         "dk": 120,
         "dkv": 43,
@@ -508,6 +510,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "device_file": "safefloor",
         "display_name": "SafeFloor Connect",
         "dk": 122,
         "dkv": 34,
