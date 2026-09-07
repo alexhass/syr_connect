@@ -132,6 +132,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L10",
+        "device_file": "lex",
         "display_name": "i-LEX 10 Connect",
         "dk": 40,
         "dkv": 16,
@@ -145,6 +146,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L12",
+        "device_file": "lex",
         "display_name": "i-LEX 12 Connect",
         "dk": 40,
         "dkv": 16,
@@ -158,6 +160,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L15",
+        "device_file": "lex",
         "display_name": "i-LEX 15 Connect",
         "dk": 40,
         "dkv": 16,
@@ -171,6 +174,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L20",
+        "device_file": "lex",
         "display_name": "i-LEX 20 Connect",
         "dk": 40,
         "dkv": 16,
@@ -184,6 +188,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L25",
+        "device_file": "lex",
         "display_name": "i-LEX 25 Connect",
         "dk": 40,
         "dkv": 16,
@@ -197,6 +202,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L30",
+        "device_file": "lex",
         "display_name": "i-LEX 30 Connect",
         "dk": 40,
         "dkv": 16,
@@ -210,6 +216,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L40",
+        "device_file": "lex",
         "display_name": "i-LEX 40 Connect",
         "dk": 40,
         "dkv": 16,
@@ -223,6 +230,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L50",
+        "device_file": "lex",
         "display_name": "i-LEX 50 Connect",
         "dk": 40,
         "dkv": 16,
@@ -236,6 +244,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L60",
+        "device_file": "lex",
         "display_name": "i-LEX 60 Connect",
         "dk": 40,
         "dkv": 16,
@@ -249,6 +258,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L70",
+        "device_file": "lex",
         "display_name": "i-LEX 70 Connect",
         "dk": 40,
         "dkv": 16,
@@ -262,6 +272,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L80",
+        "device_file": "lex",
         "display_name": "i-LEX 80 Connect",
         "dk": 40,
         "dkv": 16,
@@ -275,6 +286,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L90",
+        "device_file": "lex",
         "display_name": "i-LEX 90 Connect",
         "dk": 40,
         "dkv": 16,
@@ -288,6 +300,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "L100",
+        "device_file": "lex",
         "display_name": "i-LEX 100 Connect",
         "dk": 40,
         "dkv": 16,
@@ -301,6 +314,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX10",
+        "device_file": "lex",
         "display_name": "LEX 10 Connect",
         "dk": 40,
         "dkv": 16,
@@ -315,6 +329,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX20",
+        "device_file": "lex",
         "display_name": "LEX 20 Connect",
         "dk": 40,
         "dkv": 16,
@@ -329,6 +344,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX30",
+        "device_file": "lex",
         "display_name": "LEX 30 Connect",
         "dk": 40,
         "dkv": 16,
@@ -343,6 +359,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX40",
+        "device_file": "lex",
         "display_name": "LEX 40 Connect",
         "dk": 40,
         "dkv": 16,
@@ -356,6 +373,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX60",
+        "device_file": "lex",
         "display_name": "LEX 60 Connect",
         "dk": 40,
         "dkv": 16,
@@ -369,6 +387,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX80",
+        "device_file": "lex",
         "display_name": "LEX 80 Connect",
         "dk": 40,
         "dkv": 16,
@@ -382,6 +401,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEX100",
+        "device_file": "lex",
         "display_name": "LEX 100 Connect",
         "dk": 40,
         "dkv": 16,
@@ -435,6 +455,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEXplus10",
+        "device_file": "lexplus10s",
         "display_name": "LEX Plus 10 Connect",
         "dk": 80,
         "dkv": 25,
@@ -449,6 +470,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEXplus10S",
+        "device_file": "lexplus10s",
         "display_name": "LEX Plus 10 S Connect",
         "dk": 80,
         "dkv": 25,
@@ -463,6 +485,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_style_alm": True,
         "base_path": None,
         "cna_equals": "LEXplus10SL",
+        "device_file": "lexplus10sl",
         "display_name": "LEX Plus 10 SL Connect",
         "dk": 80,
         "dkv": 25,
@@ -680,6 +703,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
+        "device_file": "trio",
         "display_name": "Trio DFR/LS Connect",
         "dk": 1113,
         "dkv": 113,
@@ -691,6 +715,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── NeoSoft platform (dk=1200–1222) ──────────────────────────────────────────
     {
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "NeoSoft Connect",
         "dk": 1200,
         "dkv": 200,
@@ -702,6 +727,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "NeoSoft 2500 Connect",
         "dk": 1206,
         "dkv": 206,
@@ -714,6 +740,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "NeoSoft 5000 Connect",
         "dk": 1206,
         "dkv": 206,
@@ -729,6 +756,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Softwater UNO A25",
         "dk": 1207,
         "dkv": 207,
@@ -741,6 +769,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "concept Single Softening System",
         "dk": 1208,
         "dkv": 208,
@@ -754,6 +783,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Optima Single Softening System",
         "dk": 1209,
         "dkv": 209,
@@ -767,6 +797,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "concept 200 Double Softening System",
         "dk": 1210,
         "dkv": 210,
@@ -780,6 +811,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Optima T2.2 Double Softening System",
         "dk": 1211,
         "dkv": 211,
@@ -793,6 +825,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Softwater DUO A25",
         "dk": 1212,
         "dkv": 212,
@@ -806,6 +839,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Optima Double Softening System",
         "dk": 1213,
         "dkv": 213,
@@ -819,6 +853,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "CLEAR PRO SOFT TWIN",
         "dk": 1214,
         "dkv": 214,
@@ -831,6 +866,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "CLEAR PRO SOFT",
         "dk": 1215,
         "dkv": 215,
@@ -843,6 +879,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "concept Double Softening System",
         "dk": 1216,
         "dkv": 216,
@@ -856,6 +893,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Ditech Double Softening System",
         "dk": 1217,
         "dkv": 217,
@@ -869,6 +907,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "TAKE Double Softening System",
         "dk": 1218,
         "dkv": 218,
@@ -882,6 +921,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "Ditech Single Softening System",
         "dk": 1219,
         "dkv": 219,
@@ -895,6 +935,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "TAKE Single Softening System",
         "dk": 1220,
         "dkv": 220,
@@ -908,6 +949,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "NeoSoft Lock Connect II",
         "dk": 1221,
         "dkv": 221,
@@ -920,6 +962,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
+        "device_file": "neosoft",
         "display_name": "NeoSoft Lock Connect I",
         "dk": 1222,
         "dkv": 222,
@@ -944,6 +987,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "500",
     },
     {
+        # Fallback signature for any other CONEL MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "CLEAR PRO MultiController",
@@ -966,6 +1010,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "501",
     },
     {
+        # Fallback signature for any other Sanibel MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "Sanibel MultiController",
@@ -976,6 +1021,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "501",
     },
     {
+        # Fallback signature for any other Ditech MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "Ditech Multicontroller",
@@ -987,6 +1033,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "502",
     },
     {
+        # Fallback signature for any other TAKE MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "TAKE Multicontroller",
@@ -998,6 +1045,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "503",
     },
     {
+        # Fallback signature for any other concept MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "concept Multicontroller",
@@ -1009,6 +1057,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "504",
     },
     {
+        # Fallback signature for any other Optima MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
         "display_name": "Optima Multicontroller",
@@ -1020,9 +1069,10 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "505",
     },
     {
+        # Fallback signature for any other SYR MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
-        "display_name": "Syr Multicontroller",
+        "display_name": "SYR Multicontroller",
         "dk": 1506,
         "dkv": 506,
         "manufacturer": "SYR",

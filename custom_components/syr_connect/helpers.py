@@ -990,6 +990,7 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         "concept200duo",
         "concept200replacementfilter",
         "conceptmuco",
+        "conelclearprofill",
         "conelclearprosoft",
         "conelclearprosofttwin",
         "conelmuco",
@@ -1006,6 +1007,7 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         "sanibelleakprotect",
         "sanibelsoftwaterduo",
         "sanibelsoftwateruno",
+        "sanibelmuco",
         "syrmuco",
         "trio",
     ):

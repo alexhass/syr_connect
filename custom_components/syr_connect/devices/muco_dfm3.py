@@ -5,7 +5,7 @@ are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.
 
 Deliberately NOT included, pending confirmation on a real device:
-- getALD, getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
+- getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to a filling
   controller.
 - getDBD, getDRP, getDSV, getDTT: labeled "(Trio DFR/LS)" microleakage-test
@@ -37,6 +37,8 @@ SENSOR_KNOWN_KEYS = {
     "getBAR2",
     # --- Voltage / Battery ---
     "getBAP", "getBAT", "getNET",
+    # --- Alarm Duration ---
+    "getALD",
     # --- Water Quality ---
     "getCND", "getIWH", "getOHW", "getWHU",
     # --- Water Consumption & Volume ---
