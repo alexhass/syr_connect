@@ -566,7 +566,7 @@ These settings can be set by the user.
 | getMXH / setMXH | "95"         | %         | Maximum huminity, Values: 100=Off, 5-100% (5% steps)                                          |
 | getMIT / setMIT | "-40"        | 1/10      | Minium temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
 | getMXT / setMXT | "490"        | 1/10      | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
-| getRCP / setRCP | "43200"      | s         | Settings synchronisation interval, shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
+| getRCP / setRCP | "43200"      | s         | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
 | getWMP / setWMP | "3600"       | s         | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
 
 ### Measurements
