@@ -1452,6 +1452,42 @@ def test_get_model_known_keys_safetplus_device_override() -> None:
     assert helpers.get_model_known_keys({"name": "safetplus"}, "select", global_keys) == set()
 
 
+def test_get_model_known_keys_lex_device_override() -> None:
+    """The lex model (shared by all l10-l100/lex10-lex100 signatures) resolves
+    its own devices/lex.py override file."""
+    from custom_components.syr_connect.devices import lex
+
+    global_keys = {"getBAR"}
+    result = helpers.get_model_known_keys({"name": "lex"}, "sensor", global_keys)
+    assert result == lex.SENSOR_KNOWN_KEYS
+    # No buzzer/valve on this model - explicit empty-set overrides honored.
+    assert helpers.get_model_known_keys({"name": "lex"}, "switch", global_keys) == set()
+    assert helpers.get_model_known_keys({"name": "lex"}, "valve", global_keys) == set()
+
+
+def test_get_model_known_keys_safefloor_device_override() -> None:
+    """The safefloor model resolves its own devices/safefloor.py override file."""
+    from custom_components.syr_connect.devices import safefloor
+
+    global_keys = {"getBAR"}
+    result = helpers.get_model_known_keys({"name": "safefloor"}, "sensor", global_keys)
+    assert result == safefloor.SENSOR_KNOWN_KEYS
+    # A standalone sensor has no select/valve entities - empty-set override honored.
+    assert helpers.get_model_known_keys({"name": "safefloor"}, "select", global_keys) == set()
+    assert helpers.get_model_known_keys({"name": "safefloor"}, "valve", global_keys) == set()
+
+
+def test_get_model_known_keys_trio_device_override() -> None:
+    """The trio model (Trio DFR/LS) resolves its own devices/trio.py override file."""
+    from custom_components.syr_connect.devices import trio
+
+    global_keys = {"getBAR"}
+    result = helpers.get_model_known_keys({"name": "trio"}, "sensor", global_keys)
+    assert result == trio.SENSOR_KNOWN_KEYS
+    assert "getDSV" in result
+    assert "getSLF" in result
+
+
 def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_positive() -> None:
     """getBAP='' triggers the ValueError branch; bap_zero=True → suppressed when getBAT>0."""
     assert is_sensor_visible({"getBAT": 4.5}, "getBAP", "") is False
