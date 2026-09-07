@@ -1398,6 +1398,60 @@ def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() 
     assert is_sensor_visible({"getBAT": 4.5}, "getBAP", None) is False
 
 
+# ---------------------------------------------------------------------------
+# get_model_known_keys – per-model devices/<name>.py override resolution
+# ---------------------------------------------------------------------------
+
+def test_get_model_known_keys_falls_back_when_name_missing() -> None:
+    """No 'device_file'/'name' on model_info returns the global allowlist unchanged (line 249)."""
+    global_keys = {"getBAR", "getVOL"}
+    assert helpers.get_model_known_keys({}, "sensor", global_keys) == global_keys
+
+
+def test_get_model_known_keys_uses_device_override_when_defined() -> None:
+    """A model with a matching devices/<name>.py file that defines the platform's
+    allowlist uses it verbatim instead of the global set (lines 254, 257-259)."""
+    from custom_components.syr_connect.devices import muco_dfm3
+
+    global_keys = {"getBAR", "getVOL"}
+    result = helpers.get_model_known_keys({"name": "muco_dfm3"}, "sensor", global_keys)
+    assert result == muco_dfm3.SENSOR_KNOWN_KEYS
+    assert result != global_keys
+
+
+def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
+    """A matching devices/<name>.py file that does NOT define this platform's allowlist
+    falls back to the global set (line 258)."""
+    global_keys = {"getBUZ"}
+    # muco_dfm3.py defines SENSOR/SELECT/SWITCH/BUTTON/VALVE_KNOWN_KEYS but not
+    # BINARY_SENSOR_KNOWN_KEYS.
+    result = helpers.get_model_known_keys({"name": "muco_dfm3"}, "binary_sensor", global_keys)
+    assert result == global_keys
+
+
+def test_get_model_known_keys_uses_device_file_over_name() -> None:
+    """The 'device_file' field takes priority over 'name' when both are present."""
+    from custom_components.syr_connect.devices import muco_dfm1
+
+    global_keys = {"getBAR"}
+    result = helpers.get_model_known_keys(
+        {"name": "sanibelleakprotect", "device_file": "muco_dfm1"}, "sensor", global_keys
+    )
+    assert result == muco_dfm1.SENSOR_KNOWN_KEYS
+
+
+def test_get_model_known_keys_safetplus_device_override() -> None:
+    """The safetplus model resolves its own devices/safetplus.py override file."""
+    from custom_components.syr_connect.devices import safetplus
+
+    global_keys = {"getBAR"}
+    result = helpers.get_model_known_keys({"name": "safetplus"}, "sensor", global_keys)
+    assert result == safetplus.SENSOR_KNOWN_KEYS
+    # Explicit empty-set override (no select-worthy keys) must be honored, not
+    # treated as "not defined".
+    assert helpers.get_model_known_keys({"name": "safetplus"}, "select", global_keys) == set()
+
+
 def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_positive() -> None:
     """getBAP='' triggers the ValueError branch; bap_zero=True → suppressed when getBAT>0."""
     assert is_sensor_visible({"getBAT": 4.5}, "getBAP", "") is False

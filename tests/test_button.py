@@ -1058,6 +1058,36 @@ async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
     assert len(entities) == 0
 
 
+async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """A command not in the detected model's per-model BUTTON_KNOWN_KEYS override is
+    skipped before any getXYZ presence check (covers the model-allowlist continue).
+
+    The muco_dfm3 override (conelclearprofill, getDFM==3) deliberately excludes
+    setSIR and setDEX - both must be skipped even though this device has no
+    regeneration/microleakage-test hardware anyway.
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device_clearprofill",
+                "name": "Clear Pro Fill",
+                "project_id": "project1",
+                "status": {"getSRN": "500AAA00001", "getDFM": 3},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert len(entities) == 0
+
+
 async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
     """setDEX press sends boolean 'true' when getTYP≥100 and no test is running."""
     data = {

@@ -245,6 +245,39 @@ async def test_async_setup_entry_no_prf_when_all_pa_false(hass: HomeAssistant, c
     assert len(prf_entities) == 0
 
 
+async def test_async_setup_entry_skips_prf_excluded_by_model_allowlist(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """No PRF select is created when the detected model's per-model
+    SELECT_KNOWN_KEYS override excludes getPRF, even though getPA1 is true.
+
+    The muco_dfm3 override (conelclearprofill, getDFM==3) deliberately excludes
+    getPRF (no leak-protection profiles on a filling controller).
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device_clearprofill",
+                "name": "Clear Pro Fill",
+                "project_id": "project1",
+                "status": {
+                    "getSRN": "500AAA00001",
+                    "getDFM": 3,
+                    "getPA1": "true",
+                    "getPRF": "1",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    prf_entities = [e for e in entities if isinstance(e, SyrConnectPrfSelect)]
+    assert len(prf_entities) == 0
+
+
 async def test_regeneration_select_missing_data(hass: HomeAssistant) -> None:
     """Test regeneration select when RTH/RTM missing."""
     data = {

@@ -8304,6 +8304,40 @@ async def test_getpa_is_true_bool_false(hass: HomeAssistant) -> None:
     assert "getPV2" not in sensor_keys
 
 
+async def test_getpa_group_key_excluded_by_model_allowlist(hass: HomeAssistant) -> None:
+    """PA-group sensors are skipped when the detected model's per-model
+    SENSOR_KNOWN_KEYS override excludes them, even though getPAx is true.
+
+    The muco_dfm3 override (conelclearprofill, getDFM==3) deliberately excludes
+    the whole leak-protection-profile family (getPA1-8/getPV1-8/etc.).
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSRN": "500AAA00001",
+                    "getDFM": 3,
+                    "getPA1": "true",
+                    "getPV1": "200",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+
+    mock_add_entities = Mock()
+    await async_setup_entry(hass, entry, mock_add_entities)
+
+    entities = mock_add_entities.call_args[0][0]
+    sensor_keys = [e._sensor_key for e in entities]
+    assert "getPA1" not in sensor_keys
+    assert "getPV1" not in sensor_keys
+
+
 async def test_getpa_is_true_numeric_int(hass: HomeAssistant) -> None:
     """Test _is_true helper with numeric int != 0."""
     data = {
