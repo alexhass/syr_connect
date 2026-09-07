@@ -58,6 +58,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     {
         "base_path": None,
+        "device_file": "safetplus",
         "display_name": "Safe-T+ Connect",
         "dk": 1,
         "dkv": 6,
