@@ -11,8 +11,9 @@ fixture, e.g. getPN1="Anwesend"/getPN2="Abwesend") and getAB/getVLV are kept
 since this model genuinely controls a shutoff valve.
 
 Deliberately NOT included, pending confirmation on a real device:
-- getALD, getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
+- getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to this model.
+  getALD is the one exception (see SENSOR_KNOWN_KEYS below).
 - getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCD, getRMN, getRMT,
   getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
   feature in const.py - belongs to the muco_dfm3 filling-controller variant, not
@@ -50,6 +51,8 @@ SENSOR_KNOWN_KEYS = {
     "getLTV", "getVOL",
     # --- Device Status ---
     "getDFM", "getSTA",
+    # --- Alarm Duration ---
+    "getALD",
     # --- Leak Protection (deactivation timer, tied to the profiles below) ---
     "getTMP",
     # --- Leak Protection Profiles 1-8 (core feature of this model) ---
