@@ -459,6 +459,12 @@
       "getle": {
         "name": "Leckageschutz - Stufe Anwesend"
       },
+      "getlft": {
+        "name": "Letzte Nachfülldauer"
+      },
+      "getlfv": {
+        "name": "Letztes nachgefülltes Volumen"
+      },
       "getlng": {
         "name": "Gerätesprache",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Netzspannung"
       },
+      "getnms": {
+        "name": "Keine Ventilbewegung seit"
+      },
+      "getnmt": {
+        "name": "Zeit bis Ventilselbsttest aktiv wird"
+      },
       "getnor": {
         "name": "Regenerationen im Normalbetrieb"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "Keine Turbinenimpulse seit"
+      },
+      "getnpt": {
+        "name": "Zeit bis Alarm Durchflusssensor aktiv wird"
+      },
+      "getnrt": {
+        "name": "Keine Nachfüllung seit"
       },
       "getohw": {
         "name": "Weichwasserhärte"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Solldruck"
+      },
+      "gettrt": {
+        "name": "Kumulative Nachfüllzeit"
+      },
+      "gettrv": {
+        "name": "Kumulatives nachgefülltes Volumen"
       },
       "gettyp": {
         "name": "Gerätetyp"

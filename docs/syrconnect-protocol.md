@@ -922,18 +922,12 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getFWURL        | ""      |          | *unknown* — possibly firmware update URL
 | getHPR          | ""      |          | *unknown*
 | getIFL          | ""      |          | *unknown*
-| getLFT          | ""      |          | *unknown*
-| getLFV          | ""      |          | *unknown*
 | getLMD          | ""      |          | *unknown*
 | getLMF          | ""      |          | *unknown*
 | getLPD          | ""      |          | *unknown*
 | getMFL          | ""      |          | *unknown*
 | getMPR          | ""      |          | *unknown* — possibly set water pressure (excluded when empty)
-| getNMS          | ""      |          | *unknown*
-| getNMT          | ""      |          | *unknown*
 | getNPL          | ""      |          | *unknown*
-| getNPT          | ""      |          | *unknown*
-| getNRT          | ""      |          | *unknown*
 | getPBC          | ""      |          | *unknown*
 | getPCB          | ""      |          | *unknown*
 | getPPL          | ""      |          | *unknown*
@@ -946,11 +940,9 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getRP3          | ""      |          | *unknown*
 | getRPR          | ""      |          | *unknown*
 | getRSI          | ""      |          | *unknown*
-| getTRT          | ""      |          | *unknown*
-| getTRV          | ""      |          | *unknown*
 | getWTR          | ""      |          | *unknown*
 
-#### CONEL CLEAR PRO FILL
+#### Filling the Heating System
 
 These properties are documented on MuCo devices that expose water treatment (cartridge) and filling mode configuration, confirmed on Conel Clear Pro Fill.
 
@@ -993,6 +985,72 @@ Model: Syr RSA (dkv=506, getDFM=4).
 | getRSE / setRSE | "30"    | days | Backwash reminder interval. Value range: 1–365
 | getSSA / setSSA | "1"     |      | Enable/disable automatic backwash: 0=Disabled, 1=Enabled
 | getSSE / setSSE | "1"     |      | Enable/disable backwash reminder: 0=Disabled, 1=Enabled
+
+### Sensors & Status Values
+
+#### Commands
+
+Models: TRIO Lock Connect (dkv=506, getDFM=5), SafeTech Lock Connect (dkv=506,
+getDFM=1), AC 3200 Connect (dkv=506, getDFM=2), AC 3228 Connect (dkv=506,
+getDFM=3). The following table lists the official validity matrix (which
+commands are available per model) alongside the confirmed descriptions.
+
+| Property | Type | Description | Value range | GET | SET |
+|----------|------|--------------------------------------------------------------|-------------|-----|-----|
+| AVO      | int  | Current withdrawal volume in ml                               | -           | ✓   | X   |
+| BAR      | int  | Inlet pressure in mbar                                        | 0–16000     | ✓   | X   |
+| BAR2     | int  | Outlet pressure in mbar                                       | 0–16000     | ✓   | X   |
+| BAT      | int  | Battery voltage in 1/100 V                                    | 0–1000      | ✓   | X   |
+| BUZ      | bool | Buzzer on/off on alarm                                        | true/false  | ✓   | ✓   |
+| CEL      | int  | Temperature in °C                                             | 0–1000      | ✓   | X   |
+| CND      | int  | Conductivity in µS/cm                                         | 0–5000      | ✓   | X   |
+| FLO      | int  | Current flow rate in l/h                                      | 0–5000      | ✓   | X   |
+| LFT      | int  | Last refill duration in s                                     | -           | ✓   | X   |
+| LFV      | int  | Last refilled volume in liters                                | -           | ✓   | X   |
+| LTV      | int  | Last tapped volume in liters                                  | -           | ✓   | X   |
+| NMT      | int  | Time in days until valve self-test becomes active             | 1–61        | ✓   | ✓   |
+| NPT      | int  | Time in days until alarm A8 ("flow sensor fault") becomes active | 1–365    | ✓   | ✓   |
+| NMS      | long | No valve movement since, in s                                 | -           | ✓   | X   |
+| NPS      | long | No turbine pulses since, in s                                 | -           | ✓   | X   |
+| NRT      | int  | No refill since, in s                                         | -           | ✓   | X   |
+| SRN      | string | Serial number of the device                                 | -           | ✓   | X   |
+| TRT      | int  | Cumulative refill time in s                                   | -           | ✓   | X   |
+| TRV      | int  | Cumulative refilled volume in liters                          | -           | ✓   | X   |
+| VER      | string | Firmware version of the device                              | -           | ✓   | X   |
+| VOL      | int  | Cumulative volume in liters                                   | -           | ✓   | X   |
+| VPS1     | int  | No turbine pulses on control head 1 since, in s               | -           | ✓   | X   |
+| VPS2     | int  | No turbine pulses on control head 2 since, in s               | -           | ✓   | X   |
+
+#### Per-model validity (✓ = available, X = not available):
+
+| Property | TRIO Lock | SafeTech Lock | AC 3200 | AC 3228 | RSA |
+|----------|-----------|---------------|---------|---------|-----|
+| AVO      | ✓ | ✓ | X | X | X |
+| BAR      | X | X | X | ✓ | X |
+| BAR2     | ✓ | X | ✓ | ✓ | X |
+| BAT      | ✓ | ✓ | ✓ | ✓ | ✓ |
+| BUZ      | ✓ | ✓ | ✓ | ✓ | ✓ |
+| CEL      | X | X | X | X | X |
+| CND      | X | X | ✓ | ✓ | X |
+| FLO      | ✓ | ✓ | ✓ | ✓ | X |
+| LFT      | X | X | ✓ | ✓ | X |
+| LFV      | X | X | ✓ | ✓ | X |
+| LTV      | ✓ | ✓ | X | X | X |
+| NMT      | ✓ | ✓ | X | X | X |
+| NPT      | ✓ | ✓ | X | X | X |
+| NMS      | ✓ | ✓ | X | X | X |
+| NPS      | ✓ | ✓ | X | X | X |
+| NRT      | X | X | ✓ | ✓ | X |
+| SRN      | ✓ | ✓ | ✓ | ✓ | ✓ |
+| TRT      | X | X | ✓ | ✓ | X |
+| TRV      | X | X | ✓ | ✓ | X |
+| VER      | ✓ | ✓ | ✓ | ✓ | ✓ |
+| VOL      | ✓ | ✓ | X | X | X |
+| VPS1     | X | X | X | X | X |
+| VPS2     | X | X | X | X | X |
+
+Two properties from the same matrix (CFT, CFV — available on AC 3200/AC 3228)
+still have no confirmed description and remain undocumented.
 
 ## Further information
 

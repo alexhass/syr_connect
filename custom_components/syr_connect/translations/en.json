@@ -459,6 +459,12 @@
       "getle": {
         "name": "Leakage protection - Present level"
       },
+      "getlft": {
+        "name": "Last refill duration"
+      },
+      "getlfv": {
+        "name": "Last refilled volume"
+      },
       "getlng": {
         "name": "Device language",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Mains voltage"
       },
+      "getnms": {
+        "name": "No valve movement since"
+      },
+      "getnmt": {
+        "name": "Time until valve self-test becomes active"
+      },
       "getnor": {
         "name": "Regenerations (normal operation)"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "No turbine pulses since"
+      },
+      "getnpt": {
+        "name": "Time until flow sensor fault alarm becomes active"
+      },
+      "getnrt": {
+        "name": "No refill since"
       },
       "getohw": {
         "name": "Soft water hardness"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Target pressure"
+      },
+      "gettrt": {
+        "name": "Cumulative refill time"
+      },
+      "gettrv": {
+        "name": "Cumulative refilled volume"
       },
       "gettyp": {
         "name": "Device type"

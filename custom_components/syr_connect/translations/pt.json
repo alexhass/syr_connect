@@ -459,6 +459,12 @@
       "getle": {
         "name": "Proteção contra vazamento - Nível presente"
       },
+      "getlft": {
+        "name": "Duração do último reabastecimento"
+      },
+      "getlfv": {
+        "name": "Último volume reabastecido"
+      },
       "getlng": {
         "name": "Idioma do dispositivo",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Tensão da rede elétrica"
       },
+      "getnms": {
+        "name": "Sem movimento da válvula desde"
+      },
+      "getnmt": {
+        "name": "Tempo até o autoteste da válvula"
+      },
       "getnor": {
         "name": "Regenerações (operação normal)"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "Sem impulsos de turbina desde"
+      },
+      "getnpt": {
+        "name": "Tempo até o alarme do sensor de fluxo"
+      },
+      "getnrt": {
+        "name": "Sem reabastecimento desde"
       },
       "getohw": {
         "name": "Dureza da água amaciada"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Pressão alvo"
+      },
+      "gettrt": {
+        "name": "Tempo cumulativo de reabastecimento"
+      },
+      "gettrv": {
+        "name": "Volume cumulativo reabastecido"
       },
       "gettyp": {
         "name": "Tipo de dispositivo"

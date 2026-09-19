@@ -1,15 +1,17 @@
-"""Entity allowlist override for the muco_dfm4 model (SYR RSA Connect, dkv=506, getDFM=4).
+"""Entity allowlist override for the muco_dfm4 model (SYR RSA Connect,
+dkv=506, getDFM=4, automatic-backwash "Rückspülautomatik" role).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.
 
-NOTE: no real-device or fixture capture exists for this dkv=506/getDFM=4
-variant yet - this file is derived purely from the user-supplied command
-table for the "Rückspülautomatik" (automatic backwash, RSA) feature
-(getCOA/getCOM/getRSA/getRSD/getRSE/getSSA/getSSE) plus the same baseline
-connectivity/alarm/device-info/Wi-Fi keys shared by the other muco_dfm*
-device files. Verify against a real device before relying on this.
+No real-device or fixture capture exists for this variant yet - the keys
+below are taken from the official command table and validity matrix in
+docs/syrconnect-protocol.md, which confirm getBAT/getBUZ/getSRN/getVER plus
+the automatic-backwash feature (getCOA/getCOM/getRSA/getRSD/getRSE/getSSA/
+getSSE), and the same baseline connectivity/alarm/device-info/Wi-Fi keys
+shared by the other muco_dfm*.py device files. Verify against a real device
+before relying on this.
 
 Deliberately NOT included, pending confirmation on a real device:
 - Leak-protection-profile family (getPA-PW1-8, getPRF), water treatment /
@@ -28,6 +30,8 @@ SENSOR_KNOWN_KEYS = {
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
     # --- Device Status ---
     "getDFM",
+    # --- Voltage / Battery ---
+    "getBAT",
     # --- Automatic Backwash (RSA) ---
     "getCOA", "getCOM", "getRSA", "getRSD", "getRSE",
     # --- Device Info & Diagnostics ---
@@ -42,7 +46,7 @@ SENSOR_KNOWN_KEYS = {
 SELECT_KNOWN_KEYS: set[str] = set()
 
 SWITCH_KNOWN_KEYS = {
-    "getSSA", "getSSE",
+    "getBUZ", "getSSA", "getSSE",
 }
 
 BUTTON_KNOWN_KEYS = {
@@ -51,5 +55,3 @@ BUTTON_KNOWN_KEYS = {
 
 # No shutoff valve on this model - it only automates backwash scheduling.
 VALVE_KNOWN_KEYS: set[str] = set()
-
-BINARY_SENSOR_KNOWN_KEYS: set[str] = set()

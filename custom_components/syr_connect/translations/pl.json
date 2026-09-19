@@ -459,6 +459,12 @@
             "getle": {
                 "name": "Ochrona przed wyciekiem – poziom Obecny"
             },
+            "getlft": {
+                "name": "Czas ostatniego uzupełnienia"
+            },
+            "getlfv": {
+                "name": "Ostatnia uzupełniona objętość"
+            },
             "getlng": {
                 "name": "Język urządzenia",
                 "state": {
@@ -502,6 +508,12 @@
             "getnet": {
                 "name": "Napięcie sieciowe"
             },
+            "getnms": {
+                "name": "Brak ruchu zaworu od"
+            },
+            "getnmt": {
+                "name": "Czas do autotestu zaworu"
+            },
             "getnor": {
                 "name": "Regeneracje (normalna praca)"
             },
@@ -517,6 +529,12 @@
             },
             "getnps": {
                 "name": "Brak impulsów turbiny od"
+            },
+            "getnpt": {
+                "name": "Czas do alarmu czujnika przepływu"
+            },
+            "getnrt": {
+                "name": "Brak uzupełnienia od"
             },
             "getohw": {
                 "name": "Twardość wody zmiękczonej"
@@ -1084,6 +1102,12 @@
             },
             "gettpr": {
                 "name": "Ciśnienie docelowe"
+            },
+            "gettrt": {
+                "name": "Skumulowany czas uzupełniania"
+            },
+            "gettrv": {
+                "name": "Skumulowana uzupełniona objętość"
             },
             "gettyp": {
                 "name": "Typ urządzenia"

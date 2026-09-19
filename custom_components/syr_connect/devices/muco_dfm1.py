@@ -1,4 +1,7 @@
-"""Entity allowlist override for the muco_dfm1 model (e.g. Leak Protection Module A25).
+"""Entity allowlist override for the muco_dfm1 model (getDFM=1): covers both
+the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
+(dkv=506) products, which share this device_file since both are the
+"Leckageschutz" (leak protection) role of the MultiController firmware.
 
 Derived from tests/fixtures/json/SanibelLeakProtectionModuleA25_get_all.json.
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
@@ -8,7 +11,9 @@ cover every supported model at once.
 Unlike the muco_dfm3 (filling controller) variant, the leak-protection-profile
 keys ARE the core feature here (populated with real distinct values in the
 fixture, e.g. getPN1="Anwesend"/getPN2="Abwesend") and getAB/getVLV are kept
-since this model genuinely controls a shutoff valve.
+since this model genuinely controls a shutoff valve. getNMT/getNPT/getNMS are
+included for the SafeTech Lock Connect variant, per the official validity
+matrix (docs/syrconnect-protocol.md).
 
 Deliberately NOT included, pending confirmation on a real device:
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
@@ -74,6 +79,8 @@ SENSOR_KNOWN_KEYS = {
     "getEGW", "getEIP", "getLNG", "getMAC1", "getMAC2", "getSRN", "getVER",
     # --- Wi-Fi ---
     "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
+    # --- Lock / Connection Centre (SafeTech Lock Connect) ---
+    "getNMS", "getNMT", "getNPT",
 }
 
 SELECT_KNOWN_KEYS = {

@@ -1071,6 +1071,32 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 1},
+        "base_path": "/trio",
+        "device_file": "muco_dfm1",
+        "display_name": "SafeTech Lock Connect",
+        "dk": 1506,
+        "dkv": 506,
+        "manufacturer": "SYR",
+        "name": "syrsafetechlockconnect",
+        # TODO: Untested model.
+        "srn_prefix": "506",
+    },
+    {
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 2},
+        "base_path": "/trio",
+        "device_file": "muco_dfm2",
+        "display_name": "AC 3200 Connect",
+        "dk": 1506,
+        "dkv": 506,
+        "manufacturer": "SYR",
+        "name": "syrac3200connect",
+        # TODO: Untested model.
+        "srn_prefix": "506",
+    },
+    {
+        "alarm_clear_via_set": True,
         "attrs_equals": {"getDFM": 3},
         "base_path": "/trio",
         "device_file": "muco_dfm3",
@@ -1092,6 +1118,19 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 506,
         "manufacturer": "SYR",
         "name": "syrrsaconnect",
+        # TODO: Untested model.
+        "srn_prefix": "506",
+    },
+    {
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 5},
+        "base_path": "/trio",
+        "device_file": "muco_dfm5",
+        "display_name": "TRIO Lock Connect",
+        "dk": 1506,
+        "dkv": 506,
+        "manufacturer": "SYR",
+        "name": "syrtriolockconnect",
         # TODO: Untested model.
         "srn_prefix": "506",
     },

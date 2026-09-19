@@ -1,4 +1,5 @@
-"""Entity allowlist override for the muco_dfm3 model (e.g. Conel Clear Pro Fill).
+"""Entity allowlist override for the muco_dfm3 model (e.g. Conel Clear Pro
+Fill, AC 3228 Connect - getDFM=3, filling-controller role).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
@@ -17,10 +18,11 @@ Deliberately NOT included, pending confirmation on a real device:
 - getPA1-8, getPB1-8, getPF1-8, getPM1-8, getPN1-8, getPR1-8, getPT1-8,
   getPV1-8, getPW1-8, getPRF: leak-protection profiles (LEXplus10SL feature),
   not applicable to this filling controller.
-
-Deliberately removed on request despite being present in the fixture and the
-global allowlist (confirmed not applicable to this device):
-- getAB, getBAR, getCEL, getNPS, getRCP, getSTA, getTMP.
+- getAB, getCEL, getNPS, getRCP, getSTA, getTMP: present in the fixture and
+  the global allowlist, but not applicable to this device.
+- getCFT, getCFV: marked ✓ in the official validity matrix (AC 3228), but
+  their meaning is still undocumented (see the "Unknown" sections in
+  docs/syrconnect-protocol.md) - left out until confirmed.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_KNOWN_KEYS below.
@@ -34,7 +36,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
     # --- Pressure ---
-    "getBAR2",
+    "getBAR", "getBAR2",
     # --- Voltage / Battery ---
     "getBAP", "getBAT", "getNET",
     # --- Alarm Duration ---
@@ -56,6 +58,8 @@ SENSOR_KNOWN_KEYS = {
     # --- Water treatment / Filling ---
     "getCRS", "getCRT", "getLOT", "getLRC", "getPRC", "getRCC", "getRCD", "getRCN", "getRMN", "getRMT",
     "getRVT", "getTPR",
+    # --- Lock / Connection Centre ---
+    "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
 }
 
 # getRTM, getPRF, getSV1-3, getRPD, getRMO deliberately excluded: this is a filling

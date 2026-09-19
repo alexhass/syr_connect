@@ -443,6 +443,15 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getRSA",   # Backwash interval (days)
     "getRSD",   # Backwash duration (s)
     "getRSE",   # Backwash reminder interval (days)
+    # --- Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228) ---
+    "getLFT",   # Last refill duration (s)
+    "getLFV",   # Last refilled volume (l)
+    "getNMS",   # No valve movement since (s)
+    "getNMT",   # Time until valve self-test becomes active (days)
+    "getNPT",   # Time until alarm A8 "flow sensor fault" becomes active (days)
+    "getNRT",   # No refill since (s)
+    "getTRT",   # Cumulative refill time (s)
+    "getTRV",   # Cumulative refilled volume (l)
     # --- Display ---
     "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
     # --- Device Info & Diagnostics ---
@@ -637,6 +646,15 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getRSA",   # Backwash interval (days)
     "getRSD",   # Backwash duration (s)
     "getRSE",   # Backwash reminder interval (days)
+    # --- Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228) ---
+    "getLFT",   # Last refill duration (s)
+    "getLFV",   # Last refilled volume (l)
+    "getNMS",   # No valve movement since (s)
+    "getNMT",   # Time until valve self-test becomes active (days)
+    "getNPT",   # Time until alarm A8 "flow sensor fault" becomes active (days)
+    "getNRT",   # No refill since (s)
+    "getTRT",   # Cumulative refill time (s)
+    "getTRV",   # Cumulative refilled volume (l)
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
@@ -938,6 +956,15 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getRSE": "mdi:calendar-clock",
     "getSSA": "mdi:autorenew",
     "getSSE": "mdi:bell-outline",
+    # Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228)
+    "getLFT": "mdi:timer-outline",
+    "getLFV": "mdi:water-plus",
+    "getNMS": "mdi:valve",
+    "getNMT": "mdi:calendar-clock",
+    "getNPT": "mdi:calendar-alert",
+    "getNRT": "mdi:water-off",
+    "getTRT": "mdi:timer-outline",
+    "getTRV": "mdi:water-plus",
     # System & Status
     "getALA": "mdi:bell-outline",           # Current alarm code
     "getWRN": "mdi:alert-outline",          # Current warning code
@@ -1281,6 +1308,8 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
     "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
+    "getTRT": SensorStateClass.TOTAL_INCREASING,   # Cumulative refill time
+    "getTRV": SensorStateClass.TOTAL_INCREASING,   # Cumulative refilled volume
     "getLOT": SensorStateClass.MEASUREMENT,        # Max. output conductivity
     "getLRC": SensorStateClass.MEASUREMENT,        # Liter(s) remaining softening capacity
     "getOHW": SensorStateClass.MEASUREMENT,        # Soft water hardness
@@ -1331,6 +1360,14 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getRSA": UnitOfTime.DAYS,                              # Backwash interval (RSA)
     "getRSD": UnitOfTime.SECONDS,                           # Backwash duration (RSA)
     "getRSE": UnitOfTime.DAYS,                              # Backwash reminder interval (RSA)
+    "getLFT": UnitOfTime.SECONDS,                           # Last refill duration
+    "getLFV": UnitOfVolume.LITERS,                          # Last refilled volume
+    "getNMS": UnitOfTime.SECONDS,                           # No valve movement since
+    "getNMT": UnitOfTime.DAYS,                              # Time until valve self-test becomes active
+    "getNPT": UnitOfTime.DAYS,                              # Time until alarm A8 becomes active
+    "getNRT": UnitOfTime.SECONDS,                           # No refill since
+    "getTRT": UnitOfTime.SECONDS,                           # Cumulative refill time
+    "getTRV": UnitOfVolume.LITERS,                          # Cumulative refilled volume
     "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
     "getPRS": UnitOfPressure.BAR,                           # Pressure
     "getSV1": UnitOfMass.KILOGRAMS,                         # Salt container amount 1
@@ -1518,6 +1555,14 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRSA": 0,    # Backwash interval: show as whole days by default
     "getRSD": 0,    # Backwash duration: show as whole seconds by default
     "getRSE": 0,    # Backwash reminder interval: show as whole days by default
+    "getLFT": 0,    # Last refill duration: show as whole number of seconds
+    "getLFV": 0,    # Last refilled volume: show as whole number by default
+    "getNMS": 0,    # No valve movement since: show as whole number of seconds
+    "getNMT": 0,    # Time until valve self-test becomes active: show as whole days by default
+    "getNPT": 0,    # Time until alarm A8 becomes active: show as whole days by default
+    "getNRT": 0,    # No refill since: show as whole number of seconds
+    "getTRT": 0,    # Cumulative refill time: show as whole number of seconds
+    "getTRV": 0,    # Cumulative refilled volume: show as whole number by default
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
     "getRG3": 0,    # Regeneration 3: show as whole number by default

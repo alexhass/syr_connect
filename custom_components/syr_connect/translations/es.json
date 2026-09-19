@@ -459,6 +459,12 @@
       "getle": {
         "name": "Protección contra fugas - Nivel presente"
       },
+      "getlft": {
+        "name": "Duración del último rellenado"
+      },
+      "getlfv": {
+        "name": "Último volumen rellenado"
+      },
       "getlng": {
         "name": "Idioma del dispositivo",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Tensión de red"
       },
+      "getnms": {
+        "name": "Sin movimiento de válvula desde"
+      },
+      "getnmt": {
+        "name": "Tiempo hasta autoprueba de válvula"
+      },
       "getnor": {
         "name": "Regeneraciones en funcionamiento normal"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "Sin impulsos de turbina desde"
+      },
+      "getnpt": {
+        "name": "Tiempo hasta alarma de sensor de caudal"
+      },
+      "getnrt": {
+        "name": "Sin rellenado desde"
       },
       "getohw": {
         "name": "Dureza del agua blanda"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Presión objetivo"
+      },
+      "gettrt": {
+        "name": "Tiempo acumulado de rellenado"
+      },
+      "gettrv": {
+        "name": "Volumen acumulado rellenado"
       },
       "gettyp": {
         "name": "Tipo de dispositivo"

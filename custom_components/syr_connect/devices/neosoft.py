@@ -20,10 +20,18 @@ valve (no getAB/getVLV) and NO battery (no getBAT/getBAP).
 Deliberately NOT included:
 - getALD: 600 in JSON but empty ("") in XML - inconsistent, and 600 is the
   same generic value seen across several unrelated device families.
-- getBAR, getCEL, getCND, getNPS: empty ("") in the XML fixture.
+- getNPS: empty ("") in the XML fixture.
 - getRE2, getSS2, getSV2, getVPS2 (second-tank keys): not present in this
   single-tank fixture - only relevant for genuinely dual-tank rebrands
   (e.g. the "*duo" signatures); not confirmed here, pending a real fixture.
+  The validity matrix marks getVPS2 as ✓ for NeoSoft 5000, but it stays
+  excluded until a real dual-tank fixture confirms it.
+
+getBAR/getCEL/getCND are included below: the official validity matrix marks
+them X for NeoSoft 2500 but ✓ for NeoSoft 5000, and since both models share
+this one device_file, they must be included here - the empty-value
+exclusion sets in const.py already hide them gracefully on NeoSoft 2500
+where they are blank.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_KNOWN_KEYS below.
@@ -36,8 +44,10 @@ SENSOR_KNOWN_KEYS = {
     "getAVO", "getFLO",
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
+    # --- Pressure ---
+    "getBAR",
     # --- Water Quality ---
-    "getIWH", "getOWH", "getWHU",
+    "getCEL", "getCND", "getIWH", "getOWH", "getWHU",
     # --- Water Consumption & Volume ---
     "getLTV", "getVOL",
     # --- Salt / Reserve Capacity ---

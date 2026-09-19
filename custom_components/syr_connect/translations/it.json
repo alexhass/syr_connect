@@ -459,6 +459,12 @@
       "getle": {
         "name": "Protezione perdite - Livello presente"
       },
+      "getlft": {
+        "name": "Durata ultimo riempimento"
+      },
+      "getlfv": {
+        "name": "Ultimo volume riempito"
+      },
       "getlng": {
         "name": "Lingua del dispositivo",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Tensione di rete"
       },
+      "getnms": {
+        "name": "Nessun movimento valvola da"
+      },
+      "getnmt": {
+        "name": "Tempo al test automatico valvola"
+      },
       "getnor": {
         "name": "Rigenerazioni (normale)"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "Nessun impulso di turbina da"
+      },
+      "getnpt": {
+        "name": "Tempo all'allarme sensore di flusso"
+      },
+      "getnrt": {
+        "name": "Nessun riempimento da"
       },
       "getohw": {
         "name": "Durezza acqua addolcita"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Pressione target"
+      },
+      "gettrt": {
+        "name": "Tempo di riempimento cumulativo"
+      },
+      "gettrv": {
+        "name": "Volume di riempimento cumulativo"
       },
       "gettyp": {
         "name": "Tipo di dispositivo"

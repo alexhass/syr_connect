@@ -459,6 +459,12 @@
       "getle": {
         "name": "Protection contre les fuites - Niveau présent"
       },
+      "getlft": {
+        "name": "Durée du dernier remplissage"
+      },
+      "getlfv": {
+        "name": "Dernier volume rempli"
+      },
       "getlng": {
         "name": "Langue de l'appareil",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Tension secteur"
       },
+      "getnms": {
+        "name": "Aucun mouvement de vanne depuis"
+      },
+      "getnmt": {
+        "name": "Temps avant autotest de la vanne"
+      },
       "getnor": {
         "name": "Régénérations en fonctionnement normal"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "Sans impulsions de turbine depuis"
+      },
+      "getnpt": {
+        "name": "Temps avant alarme capteur de débit"
+      },
+      "getnrt": {
+        "name": "Aucun remplissage depuis"
       },
       "getohw": {
         "name": "Dureté de l'eau adoucie"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Pression cible"
+      },
+      "gettrt": {
+        "name": "Temps de remplissage cumulé"
+      },
+      "gettrv": {
+        "name": "Volume de remplissage cumulé"
       },
       "gettyp": {
         "name": "Type d'appareil"

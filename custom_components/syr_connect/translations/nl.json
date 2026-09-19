@@ -459,6 +459,12 @@
       "getle": {
         "name": "Lekbescherming - Aanwezigheidsniveau"
       },
+      "getlft": {
+        "name": "Laatste vulduur"
+      },
+      "getlfv": {
+        "name": "Laatst gevuld volume"
+      },
       "getlng": {
         "name": "Apparaattaal",
         "state": {
@@ -502,6 +508,12 @@
       "getnet": {
         "name": "Netspanning"
       },
+      "getnms": {
+        "name": "Geen klepbeweging sinds"
+      },
+      "getnmt": {
+        "name": "Tijd tot klepzelftest"
+      },
       "getnor": {
         "name": "Regeneraties (normaal bedrijf)"
       },
@@ -517,6 +529,12 @@
       },
       "getnps": {
         "name": "Geen turbine-impulsen sinds"
+      },
+      "getnpt": {
+        "name": "Tijd tot alarm doorstroomsensor"
+      },
+      "getnrt": {
+        "name": "Geen vulling sinds"
       },
       "getohw": {
         "name": "Zachtwaterhardheid"
@@ -1084,6 +1102,12 @@
       },
       "gettpr": {
         "name": "Streefdruk"
+      },
+      "gettrt": {
+        "name": "Cumulatieve vultijd"
+      },
+      "gettrv": {
+        "name": "Cumulatief gevuld volume"
       },
       "gettyp": {
         "name": "Apparaattype"
