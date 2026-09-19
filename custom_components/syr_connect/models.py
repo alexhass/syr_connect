@@ -1112,7 +1112,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "attrs_equals": {"getDFM": 3},
         "base_path": "/trio",
         "device_file": "muco_dfm3",
-        "display_name": "BLACKLANE AC All-in-One 3228 Connect",
+        "display_name": "AC All-in-One 3228 Connect",
         "dk": 1506,
         "dkv": 506,
         "manufacturer": "SYR",

@@ -1,10 +1,10 @@
 """Helper functions for SYR Connect integration."""
 from __future__ import annotations
 
-import importlib
 import ipaddress
 import logging
 import re
+from types import ModuleType
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -31,9 +31,41 @@ from .const import (
     CONF_API_TYPE,
     DOMAIN,
 )
+from .devices import (
+    lex,
+    lexplus10s,
+    lexplus10sl,
+    muco_dfm1,
+    muco_dfm2,
+    muco_dfm3,
+    muco_dfm4,
+    muco_dfm5,
+    neosoft,
+    safefloor,
+    safetplus,
+    trio,
+)
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
+
+# Statically imported above (instead of importlib.import_module()'d on demand in
+# get_model_known_keys()) so module resolution happens at integration load time
+# rather than via a blocking import call from inside the event loop.
+_DEVICE_MODULES: dict[str, ModuleType] = {
+    "lex": lex,
+    "lexplus10s": lexplus10s,
+    "lexplus10sl": lexplus10sl,
+    "muco_dfm1": muco_dfm1,
+    "muco_dfm2": muco_dfm2,
+    "muco_dfm3": muco_dfm3,
+    "muco_dfm4": muco_dfm4,
+    "muco_dfm5": muco_dfm5,
+    "neosoft": neosoft,
+    "safefloor": safefloor,
+    "safetplus": safetplus,
+    "trio": trio,
+}
 
 
 def is_value_true(val: object) -> bool:
@@ -247,9 +279,8 @@ def get_model_known_keys(model_info: dict[str, Any], platform: str, global_known
     name = model_info.get("device_file") or model_info.get("name")
     if not name:
         return global_known_keys
-    try:
-        device_module = importlib.import_module(f".devices.{name}", __package__)
-    except ModuleNotFoundError:
+    device_module = _DEVICE_MODULES.get(name)
+    if device_module is None:
         return global_known_keys
     device_keys = getattr(device_module, f"{platform.upper()}_KNOWN_KEYS", None)
     # None means "not defined" -> fall back. An explicit empty set is a valid
