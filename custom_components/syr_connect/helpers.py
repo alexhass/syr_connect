@@ -1008,7 +1008,12 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         "sanibelsoftwaterduo",
         "sanibelsoftwateruno",
         "sanibelmuco",
+        "syrac3200connect",
+        "syrlac3228connect",
         "syrmuco",
+        "syrrsaconnect",
+        "syrsafetechlockconnect",
+        "syrtriolockconnect",
         "trio",
     ):
         mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)

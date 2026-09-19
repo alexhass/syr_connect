@@ -502,7 +502,71 @@ Some further data about the device
 | getSTA          | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie"        |        | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
 | getDEN          | "1"                              |        | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
 | getNOT          | ""                               |        | Current notification code (e.g. `new_software_available`, `annual_maintenance`). |
+| getWRN          | ""                               |        | Current warning code (non-critical, e.g. `power_outage`, `salt_supply_low`). Translated to human-readable warning strings. |
 | getALH          | "2026-02-07 17:41:10:A0..."      |        | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel) |
+
+#### Alarm codes (getALA) — NeoSoft / MuCo / Trio family
+
+Applies to NeoSoft, Trio DFR/LS, MuCo/Lock/RSA family devices (Conel/Sanibel/Optima/Concept/Ditech MuCo, Syr SafeTech-Lock/AC 3200/AC 3228/RSA/Trio-Lock). SafeTech+ uses a different code scheme (see below).
+
+| Code | Meaning (official)                          | Translation key                          |
+|------|----------------------------------------------|-------------------------------------------|
+| 0D   | Salzvorrat leer                               | `alarm_salt_supply_empty`                 |
+| 0E   | Ventilposition                                | `alarm_valve_position`                    |
+| 15   | Volumenleckage Heizungsbefüllung              | `alarm_heating_fill_volume_leak`          |
+| 16   | Zeitleckage Heizungsbefüllung                 | `alarm_heating_fill_time_leak`            |
+| 17   | Füllzyklen überschritten                      | `alarm_fill_cycles_exceeded`              |
+| 18   | Kartusche erschöpft (Kartuschenkapazität)     | `alarm_cartridge_exhausted_capacity`      |
+| 19   | Kartusche erschöpft (Leitwertanstieg)         | `alarm_cartridge_exhausted_conductivity`  |
+| 1A   | Solldruck kann nicht erreicht werden          | `alarm_target_pressure_unreachable`       |
+| A1   | Endschalter                                   | `alarm_end_switch`                        |
+| A2   | Motorstrom                                    | `alarm_motor_current_exceeded`            |
+| A3   | Volumenleckage                                | `alarm_leakage_volume_reached`            |
+| A4   | Zeitleckage                                   | `alarm_leakage_time_reached`              |
+| A5   | Durchflussleckage                             | `alarm_max_flow_rate_reached`              |
+| A6   | Mikroleckageverdacht                          | `alarm_microleakage_detected`             |
+| A7   | Bodensensorleckage                            | `alarm_external_sensor_leakage_radio`     |
+| A8   | Störung Durchflusssensor                      | `alarm_flow_sensor_fault`                 |
+| A9   | Störung Drucksensor                           | `alarm_pressure_sensor_faulty`            |
+| AA   | Störung Temperatursensor                      | `alarm_temperature_sensor_faulty`         |
+| AB   | Störung Leitwertsensor                        | `fault_conductance_sensor`                |
+| AC   | Störung Leitwertsensor                        | `fault_conductance_sensor`                |
+| AD   | Erhöhte Wasserhärte                           | `alarm_increased_water_hardness`          |
+| AE   | *(no information available)*                  | `error_no_information`                    |
+| FF   | Kein Alarm                                    | `no_alarm`                                |
+
+#### Warning codes (getWRN) — NeoSoft / MuCo / Trio family
+
+Non-critical warnings, same device family as the alarm codes above.
+
+| Code | Meaning (official)                          | Translation key                          |
+|------|----------------------------------------------|-------------------------------------------|
+| 01   | Stromunterbrechung                            | `power_outage`                            |
+| 02   | Salzvorrat geht zur Neige                     | `salt_supply_low`                         |
+| 07   | Leckagewarnung                                | `leak_warning`                            |
+| 08   | Batterien erschöpft                           | `battery_low`                             |
+| 09   | Erstbefüllung                                 | `initial_filling`                         |
+| 0A   | Leckagewarnung Volumen                        | `leak_warning_volume`                     |
+| 0B   | Leckagewarnung Zeit                           | `leak_warning_time`                       |
+| 10   | Kartusche annähernd erschöpft                | `cartridge_almost_exhausted`              |
+| 11   | Leckagewarnung Zeit                           | `leak_warning_time`                       |
+| 13   | Keine Batterien eingelegt                     | `no_batteries_detected`                   |
+| 14   | Ausgangsdruck zu hoch                         | `outlet_pressure_too_high`                |
+| A6   | Mikroleckageverdacht                          | `microleakage_suspected`                  |
+| FF   | Kein Warnung                                  | `no_warning`                              |
+
+#### Notification codes (getNOT)
+
+| Code | Meaning (official)                          | Translation key                          |
+|------|----------------------------------------------|-------------------------------------------|
+| 01   | Neues Software Update Verfügbar!              | `new_software_available`                  |
+| 02   | Halbjährliche Wartung                         | `bi_annual_maintenance`                   |
+| 03   | Jährliche Wartung                             | `annual_maintenance`                      |
+| 04   | Neues Software Update installiert!            | `new_software_installed`                  |
+| 07   | Erinnerung Filterwartung                      | `filter_maintenance_reminder`             |
+| 08   | Erinnerung Filterservice                      | `filter_service_reminder`                 |
+| 09   | Druckgesteuerte Rückspülerinnerung            | `backwash_reminder_pressure`              |
+| FF   | Kein Notification                             | `no_notification`                         |
 
 ### Network
 
