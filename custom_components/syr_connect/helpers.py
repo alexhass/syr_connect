@@ -9,6 +9,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 
@@ -288,6 +289,46 @@ def get_model_known_keys(model_info: dict[str, Any], platform: str, global_known
     if device_keys is None:
         return global_known_keys
     return set(device_keys)
+
+
+def cleanup_removed_devices(
+    hass: HomeAssistant,
+    coordinator_data: dict[str, Any],
+    entry_id: str,
+) -> None:
+    """Detach HA devices for this entry that no longer exist in the SYR Connect account.
+
+    If a device is deleted from the account (e.g. by another user of the same
+    hub) it simply stops appearing in `coordinator_data["devices"]`, but
+    nothing else ever notices - the device (and all its entities) would
+    otherwise stay in Home Assistant forever. This compares the device
+    registry entries owned by `entry_id` against the serial numbers
+    currently returned by the coordinator and detaches any that disappeared.
+
+    Detaching only this `entry_id` (rather than a hard delete) is important
+    because the same physical device can be shared across config entries
+    (e.g. visible via two SYR Connect accounts); Home Assistant only fully
+    removes the device - cascading its entities - once no config entry
+    references it anymore.
+
+    Args:
+        hass: Home Assistant instance.
+        coordinator_data: Coordinator .data mapping containing devices.
+        entry_id: Owning config entry ID.
+    """
+    try:
+        current_ids = {d["id"] for d in (coordinator_data or {}).get("devices", []) if d.get("id")}
+        device_registry = dr.async_get(hass)
+        for device_entry in dr.async_entries_for_config_entry(device_registry, entry_id):
+            device_id = next(
+                (identifier for domain, identifier in device_entry.identifiers if domain == DOMAIN),
+                None,
+            )
+            if device_id is not None and device_id not in current_ids:
+                _LOGGER.debug("Removing stale device from registry: %s", device_id)
+                device_registry.async_update_device(device_entry.id, remove_config_entry_id=entry_id)
+    except Exception:
+        _LOGGER.exception("Failed to cleanup removed devices from registry")
 
 
 def registry_cleanup(

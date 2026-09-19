@@ -21,7 +21,7 @@ from .const import (
     CONF_HOST,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import get_default_scan_interval_for_entry
+from .helpers import cleanup_removed_devices, get_default_scan_interval_for_entry
 from .migrations import (
     v1_to_v2_update_kwargs,
     v2_to_v3_fix_flo_unit,
@@ -193,6 +193,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady(f"Unable to connect to SYR Connect: {err}") from err
 
     entry.runtime_data = coordinator
+
+    # Detach devices that were removed from the account (e.g. by another user
+    # of the same hub) so they don't linger in HA forever alongside their entities.
+    cleanup_removed_devices(hass, coordinator.data, entry.entry_id)
 
     # Register listener for options changes (scan_interval updates)
     entry.async_on_unload(entry.add_update_listener(async_options_update_listener))
