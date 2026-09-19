@@ -975,11 +975,12 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
     {
+        # CLEARPFSA
         "alarm_clear_via_set": True,
         "attrs_equals": {"getDFM": 3},
         "base_path": "/trio",
         "device_file": "muco_dfm3",
-        "display_name": "CLEAR PRO FILL",
+        "display_name": "Filling Station CLEAR PRO FILL All-in-One",
         "dk": 1500,
         "dkv": 500,
         "manufacturer": "CONEL",
