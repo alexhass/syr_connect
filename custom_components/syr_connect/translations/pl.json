@@ -135,7 +135,7 @@
         }
       },
       "getlot": {
-        "name": "Maks. przewodność wyjściowa"
+        "name": "Maksymalna przewodność wyjściowa"
       },
       "getohw": {
         "name": "Twardość wody zmiękczonej"
@@ -481,7 +481,7 @@
         }
       },
       "getlot": {
-        "name": "Maks. przewodność wyjściowa"
+        "name": "Maksymalna przewodność wyjściowa"
       },
       "getlrc": {
         "name": "Pozostała pojemność"

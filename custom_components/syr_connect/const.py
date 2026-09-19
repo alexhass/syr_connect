@@ -500,7 +500,7 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Max. output conductivity (raw x10 µS/cm)
+    "getLOT",   # Maximum output conductivity (raw x10 µS/cm)
     "getLRC",   # Liter(s) remaining softening capacity
     "getOHW",   # Soft water hardness (°dH)
     "getPRC",   # Percent remaining softening capacity
@@ -526,7 +526,7 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) - also represented as select entity ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Max. output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getLOT",   # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
     "getOHW",   # Soft water hardness (°dH) - only when getCRT is HWE
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",   # Filling processes count
@@ -672,7 +672,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Max. output conductivity (raw x10 µS/cm)
+    "getLOT",   # Maximum output conductivity (raw x10 µS/cm)
     "getLRC",   # Liter(s) remaining softening capacity
     "getOHW",   # Soft water hardness (°dH)
     "getPRC",   # Percent remaining softening capacity
@@ -776,7 +776,7 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Max. output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getLOT",   # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
     "getOHW",   # Soft water hardness (°dH) - only when getCRT is HWE
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",   # Filling processes count
@@ -1324,7 +1324,7 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
     "getTRT": SensorStateClass.TOTAL_INCREASING,   # Cumulative refill time
     "getTRV": SensorStateClass.TOTAL_INCREASING,   # Cumulative refilled volume
-    "getLOT": SensorStateClass.MEASUREMENT,        # Max. output conductivity
+    "getLOT": SensorStateClass.MEASUREMENT,        # Maximum output conductivity
     "getLRC": SensorStateClass.MEASUREMENT,        # Liter(s) remaining softening capacity
     "getOHW": SensorStateClass.MEASUREMENT,        # Soft water hardness
     "getPRC": SensorStateClass.MEASUREMENT,        # Percent remaining softening capacity
@@ -1492,7 +1492,7 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # - Conel Clear Pro Fill
 
     "getCRS": UnitOfVolume.LITERS,                      # Cartridge size (mapped to liters)
-    "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Max. output conductivity (µS/cm)
+    "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Maximum output conductivity (µS/cm)
     "getLRC": UnitOfVolume.LITERS,                      # Liter(s) remaining softening capacity
     "getOHW": "°dH",                                    # Soft water hardness
     "getPRC": PERCENTAGE,                               # Percent remaining softening capacity
@@ -1614,7 +1614,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     # Water treatment / Filling (Conel Clear Pro Fill)
     "getCRS": 1,    # Cartridge size (liters): show with 1 decimal place (e.g., 2.5 L)
     "getCRT": 0,    # Cartridge type: show as whole number by default
-    "getLOT": 0,    # Max. output conductivity: show as whole number by default
+    "getLOT": 0,    # Maximum output conductivity: show as whole number by default
     "getLRC": 0,    # Liter(s) remaining softening capacity: show as whole number by default
     "getOHW": 0,    # Soft water hardness: show as whole number by default
     "getPRC": 0,    # Percent remaining softening capacity: show as whole number by default

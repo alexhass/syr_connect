@@ -135,7 +135,7 @@
         }
       },
       "getlot": {
-        "name": "Max. output conductivity"
+        "name": "Maximum output conductivity"
       },
       "getohw": {
         "name": "Soft water hardness"
@@ -481,7 +481,7 @@
         }
       },
       "getlot": {
-        "name": "Max. output conductivity"
+        "name": "Maximum output conductivity"
       },
       "getlrc": {
         "name": "Remaining capacity"

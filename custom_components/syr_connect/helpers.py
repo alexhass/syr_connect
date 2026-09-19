@@ -1124,7 +1124,7 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     - Special-case salt counters (getCS1/2/3): shown if the associated
         getSVx value is non-zero; otherwise they follow the normal empty
         value rules (hide when 0, "0", empty or None).
-    - getLOT (Max. output conductivity): only shown when getCRT (cartridge
+    - getLOT (Maximum output conductivity): only shown when getCRT (cartridge
         type) is "1" (HVE) or "2" (HVE+).
     - getOHW (Soft water hardness): only shown when getCRT (cartridge type)
         is "0" (HWE).
@@ -1200,7 +1200,7 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
         if isinstance(value, str) and (value.strip() == "" or value == "0"):
             return False
 
-    # getLOT (Max. output conductivity) only applies to HVE / HVE+ cartridges (getCRT 1 or 2).
+    # getLOT (Maximum output conductivity) only applies to HVE / HVE+ cartridges (getCRT 1 or 2).
     if key == "getLOT":
         crt_val = status.get("getCRT")
         if crt_val is None or str(crt_val).strip() not in ("1", "2"):

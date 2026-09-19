@@ -135,7 +135,7 @@
         }
       },
       "getlot": {
-        "name": "Max. uitgaande geleidbaarheid"
+        "name": "Maximale uitgaande geleidbaarheid"
       },
       "getohw": {
         "name": "Zachtwaterhardheid"
@@ -481,7 +481,7 @@
         }
       },
       "getlot": {
-        "name": "Max. uitgaande geleidbaarheid"
+        "name": "Maximale uitgaande geleidbaarheid"
       },
       "getlrc": {
         "name": "Resterende capaciteit"

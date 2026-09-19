@@ -135,7 +135,7 @@
         }
       },
       "getlot": {
-        "name": "Max. Leitwert-Grenzwert"
+        "name": "Maximale Ausgangsleitfähigkeit"
       },
       "getohw": {
         "name": "Weichwasserhärte"
@@ -481,7 +481,7 @@
         }
       },
       "getlot": {
-        "name": "Max. Leitwert-Grenzwert"
+        "name": "Maximale Ausgangsleitfähigkeit"
       },
       "getlrc": {
         "name": "Restkapazität"
