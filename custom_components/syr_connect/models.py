@@ -1011,6 +1011,18 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "501",
     },
     {
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 5},
+        "base_path": "/trio",
+        "device_file": "muco_dfm4",
+        "display_name": "Automatic Backwash System RSA A25",
+        "dk": 1501,
+        "dkv": 501,
+        "manufacturer": "Sanibel",
+        "name": "sanibelrsa",
+        "srn_prefix": "501",
+    },
+    {
         # Fallback signature for any other Sanibel MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
