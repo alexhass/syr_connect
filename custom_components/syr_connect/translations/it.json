@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Periodo di monitoraggio dei cicli di riempimento",
+        "name": "Periodo di riempimento",
         "state": {
           "0": "Ora",
           "1": "Giorno",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Numero massimo di cicli di riempimento per periodo"
+        "name": "Numero massimo di cicli di riempimento"
       },
       "getrmo": {
         "name": "Modalità di rigenerazione",
@@ -918,10 +918,10 @@
         }
       },
       "getrcc": {
-        "name": "Cicli di riempimento (periodo attuale)"
+        "name": "Numero di cicli di riempimento"
       },
       "getrcd": {
-        "name": "Periodo di monitoraggio dei cicli di riempimento",
+        "name": "Periodo di riempimento",
         "state": {
           "0": "Ora",
           "1": "Giorno",
@@ -971,7 +971,7 @@
         }
       },
       "getrmn": {
-        "name": "Numero massimo di cicli di riempimento per periodo"
+        "name": "Numero massimo di cicli di riempimento"
       },
       "getrmo": {
         "name": "Modalità di rigenerazione",
@@ -1115,10 +1115,10 @@
         "name": "Pressione target"
       },
       "gettrt": {
-        "name": "Tempo di riempimento cumulativo"
+        "name": "Tempo totale di riempimento"
       },
       "gettrv": {
-        "name": "Volume di riempimento cumulativo"
+        "name": "Volume totale di riempimento"
       },
       "gettyp": {
         "name": "Tipo di dispositivo"

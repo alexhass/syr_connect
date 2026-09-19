@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Période de surveillance des cycles de remplissage",
+        "name": "Période de remplissage",
         "state": {
           "0": "Heure",
           "1": "Jour",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Nombre maximal de cycles de remplissage par période"
+        "name": "Nombre maximal de cycles de remplissage"
       },
       "getrmo": {
         "name": "Mode de régénération",
@@ -918,10 +918,10 @@
         }
       },
       "getrcc": {
-        "name": "Cycles de remplissage (période actuelle)"
+        "name": "Nombre de cycles de remplissage"
       },
       "getrcd": {
-        "name": "Période de surveillance des cycles de remplissage",
+        "name": "Période de remplissage",
         "state": {
           "0": "Heure",
           "1": "Jour",
@@ -971,7 +971,7 @@
         }
       },
       "getrmn": {
-        "name": "Nombre maximal de cycles de remplissage par période"
+        "name": "Nombre maximal de cycles de remplissage"
       },
       "getrmo": {
         "name": "Mode de régénération",
@@ -1115,10 +1115,10 @@
         "name": "Pression cible"
       },
       "gettrt": {
-        "name": "Temps de remplissage cumulé"
+        "name": "Temps total de remplissage"
       },
       "gettrv": {
-        "name": "Volume de remplissage cumulé"
+        "name": "Volume total de remplissage"
       },
       "gettyp": {
         "name": "Type d'appareil"

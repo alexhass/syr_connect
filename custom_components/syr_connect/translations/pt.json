@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Período de monitoramento dos ciclos de enchimento",
+        "name": "Período de enchimento",
         "state": {
           "0": "Hora",
           "1": "Dia",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Número máximo de ciclos de enchimento por período"
+        "name": "Número máximo de ciclos de enchimento"
       },
       "getrmo": {
         "name": "Modo de regeneração",
@@ -918,10 +918,10 @@
         }
       },
       "getrcc": {
-        "name": "Ciclos de enchimento (período atual)"
+        "name": "Número de ciclos de enchimento"
       },
       "getrcd": {
-        "name": "Período de monitoramento dos ciclos de enchimento",
+        "name": "Período de enchimento",
         "state": {
           "0": "Hora",
           "1": "Dia",
@@ -971,7 +971,7 @@
         }
       },
       "getrmn": {
-        "name": "Número máximo de ciclos de enchimento por período"
+        "name": "Número máximo de ciclos de enchimento"
       },
       "getrmo": {
         "name": "Modo de regeneração",
@@ -1115,10 +1115,10 @@
         "name": "Pressão alvo"
       },
       "gettrt": {
-        "name": "Tempo cumulativo de reabastecimento"
+        "name": "Tempo total de reabastecimento"
       },
       "gettrv": {
-        "name": "Volume cumulativo reabastecido"
+        "name": "Volume total reabastecido"
       },
       "gettyp": {
         "name": "Tipo de dispositivo"

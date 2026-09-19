@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Okres monitorowania cykli napełniania",
+        "name": "Okres napełniania",
         "state": {
           "0": "Godzina",
           "1": "Dzień",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Maksymalna liczba cykli napełniania na okres"
+        "name": "Maksymalna liczba cykli napełniania"
       },
       "getrmo": {
         "name": "Tryb regeneracji",
@@ -918,10 +918,10 @@
         }
       },
       "getrcc": {
-        "name": "Cykle napełniania (bieżący okres)"
+        "name": "Liczba cykli napełniania"
       },
       "getrcd": {
-        "name": "Okres monitorowania cykli napełniania",
+        "name": "Okres napełniania",
         "state": {
           "0": "Godzina",
           "1": "Dzień",
@@ -971,7 +971,7 @@
         }
       },
       "getrmn": {
-        "name": "Maksymalna liczba cykli napełniania na okres"
+        "name": "Maksymalna liczba cykli napełniania"
       },
       "getrmo": {
         "name": "Tryb regeneracji",
@@ -1115,10 +1115,10 @@
         "name": "Ciśnienie docelowe"
       },
       "gettrt": {
-        "name": "Skumulowany czas uzupełniania"
+        "name": "Całkowity czas uzupełniania"
       },
       "gettrv": {
-        "name": "Skumulowana uzupełniona objętość"
+        "name": "Całkowita uzupełniona objętość"
       },
       "gettyp": {
         "name": "Typ urządzenia"

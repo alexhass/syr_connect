@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Periode van de vulcyclusbewaking",
+        "name": "Vulperiode",
         "state": {
           "0": "Uur",
           "1": "Dag",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Maximaal aantal vulcycli per periode"
+        "name": "Maximaal aantal vulcycli"
       },
       "getrmo": {
         "name": "Regeneratiemodus",
@@ -918,10 +918,10 @@
         }
       },
       "getrcc": {
-        "name": "Vulcycli (huidige periode)"
+        "name": "Aantal vulcycli"
       },
       "getrcd": {
-        "name": "Periode van de vulcyclusbewaking",
+        "name": "Vulperiode",
         "state": {
           "0": "Uur",
           "1": "Dag",
@@ -971,7 +971,7 @@
         }
       },
       "getrmn": {
-        "name": "Maximaal aantal vulcycli per periode"
+        "name": "Maximaal aantal vulcycli"
       },
       "getrmo": {
         "name": "Regeneratiemodus",
@@ -1115,10 +1115,10 @@
         "name": "Streefdruk"
       },
       "gettrt": {
-        "name": "Cumulatieve vultijd"
+        "name": "Totale vultijd"
       },
       "gettrv": {
-        "name": "Cumulatief gevuld volume"
+        "name": "Totaal gevuld volume"
       },
       "gettyp": {
         "name": "Apparaattype"

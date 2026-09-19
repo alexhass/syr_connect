@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Periodendauer der Füllzyklenüberwachung",
+        "name": "Zeitraum Füllungen",
         "state": {
           "0": "Stunde",
           "1": "Tag",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Maximale Anzahl der Füllzyklen pro Periode"
+        "name": "Maximale Anzahl der Füllzyklen"
       },
       "getrmo": {
         "name": "Regenerationsmodus",
@@ -918,10 +918,10 @@
         }
       },
       "getrcc": {
-        "name": "Füllzyklen (aktuelle Periode)"
+        "name": "Anzahl der Füllzyklen"
       },
       "getrcd": {
-        "name": "Periodendauer der Füllzyklenüberwachung",
+        "name": "Zeitraum Füllungen",
         "state": {
           "0": "Stunde",
           "1": "Tag",
@@ -971,7 +971,7 @@
         }
       },
       "getrmn": {
-        "name": "Maximale Anzahl der Füllzyklen pro Periode"
+        "name": "Maximale Anzahl der Füllzyklen"
       },
       "getrmo": {
         "name": "Regenerationsmodus",
@@ -1115,10 +1115,10 @@
         "name": "Solldruck"
       },
       "gettrt": {
-        "name": "Kumulative Nachfüllzeit"
+        "name": "Gesamte Nachfüllzeit"
       },
       "gettrv": {
-        "name": "Kumulatives nachgefülltes Volumen"
+        "name": "Gesamtes Nachfüllvolumen"
       },
       "gettyp": {
         "name": "Gerätetyp"
