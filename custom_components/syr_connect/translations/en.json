@@ -307,8 +307,14 @@
       "getcno": {
         "name": "Code number"
       },
+      "getcoa": {
+        "name": "Automatic backwash counter"
+      },
       "getcof": {
         "name": "Total water consumption"
+      },
+      "getcom": {
+        "name": "Manual backwash counter"
       },
       "getcrs": {
         "name": "Cartridge size"
@@ -959,6 +965,15 @@
           "0": "Not specified"
         }
       },
+      "getrsa": {
+        "name": "Backwash interval"
+      },
+      "getrsd": {
+        "name": "Backwash duration"
+      },
+      "getrse": {
+        "name": "Backwash reminder interval"
+      },
       "getrth": {
         "name": "Regeneration time (hour)"
       },
@@ -1159,6 +1174,20 @@
       },
       "getdfi": {
         "name": "Filling mode",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
+      },
+      "getssa": {
+        "name": "Automatic backwash",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
+      },
+      "getsse": {
+        "name": "Backwash reminder",
         "state": {
           "false": "Disabled",
           "true": "Enabled"

@@ -437,6 +437,12 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getVS1",   # Volume threshold 1 (l)
     "getVS2",   # Volume threshold 2 (l)
     "getVS3",   # Volume threshold 3 (l)
+    # --- Automatic Backwash (RSA) ---
+    "getCOA",   # Counter of automatic backwashes
+    "getCOM",   # Counter of manual backwashes
+    "getRSA",   # Backwash interval (days)
+    "getRSD",   # Backwash duration (s)
+    "getRSE",   # Backwash reminder interval (days)
     # --- Display ---
     "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
     # --- Device Info & Diagnostics ---
@@ -505,6 +511,9 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     "getRVT",   # Maximum filling charges
     "getTPR",   # Target pressure (1/10 bar)
     "getDFI",   # Filling mode enabled flag - also represented as switch entity
+    # --- Automatic Backwash (RSA) - also represented as switch entity ---
+    "getSSA",   # Automatic backwash enabled flag
+    "getSSE",   # Backwash reminder enabled flag
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
@@ -622,6 +631,12 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getVS2",   # Volume threshold 2 (l)
     "getVS3",   # Volume threshold 3 (l)
     "getWMP",   # Measurement interval (s)
+    # --- Automatic Backwash (RSA) ---
+    "getCOA",   # Counter of automatic backwashes
+    "getCOM",   # Counter of manual backwashes
+    "getRSA",   # Backwash interval (days)
+    "getRSD",   # Backwash duration (s)
+    "getRSE",   # Backwash reminder interval (days)
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
@@ -752,6 +767,8 @@ _SYR_CONNECT_VALVE_KNOWN_KEYS = {
 _SYR_CONNECT_SWITCH_KNOWN_KEYS = {
     "getBUZ",   # Buzzer on/off
     "getDFI",   # Filling mode enabled flag (Conel Clear Pro Fill)
+    "getSSA",   # Automatic backwash enabled flag (RSA)
+    "getSSE",   # Backwash reminder enabled flag (RSA)
 }
 
 # Known keys for the button platform — used by registry_cleanup to remove stale entries.
@@ -913,6 +930,14 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getSRE": "mdi:autorenew",
     "getTOR": "mdi:counter",
     "nrdt": "mdi:calendar-clock",
+    # Automatic Backwash (RSA)
+    "getCOA": "mdi:counter",
+    "getCOM": "mdi:counter",
+    "getRSA": "mdi:calendar-clock",
+    "getRSD": "mdi:timer-outline",
+    "getRSE": "mdi:calendar-clock",
+    "getSSA": "mdi:autorenew",
+    "getSSE": "mdi:bell-outline",
     # System & Status
     "getALA": "mdi:bell-outline",           # Current alarm code
     "getWRN": "mdi:alert-outline",          # Current warning code
@@ -1229,7 +1254,9 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getBAR2": SensorStateClass.MEASUREMENT,       # Outlet pressure (mbar sensor), reported by SYR TRIO Lock Connect
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Temperature
+    "getCOA": SensorStateClass.TOTAL_INCREASING,   # Counter of automatic backwashes
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
+    "getCOM": SensorStateClass.TOTAL_INCREASING,   # Counter of manual backwashes
     "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
     "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
     "getHMD": SensorStateClass.MEASUREMENT,        # Ambient humidity
@@ -1301,6 +1328,9 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
     "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
+    "getRSA": UnitOfTime.DAYS,                              # Backwash interval (RSA)
+    "getRSD": UnitOfTime.SECONDS,                           # Backwash duration (RSA)
+    "getRSE": UnitOfTime.DAYS,                              # Backwash reminder interval (RSA)
     "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
     "getPRS": UnitOfPressure.BAR,                           # Pressure
     "getSV1": UnitOfMass.KILOGRAMS,                         # Salt container amount 1
@@ -1483,6 +1513,11 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRE1": 0,    # Reserve capacity bottle 1: show as whole number by default
     "getRE2": 0,    # Reserve capacity bottle 2: show as whole number by default
     "getRES": 0,    # Remaining capacity: show as whole number by default
+    "getCOA": 0,    # Counter of automatic backwashes: show as whole number by default
+    "getCOM": 0,    # Counter of manual backwashes: show as whole number by default
+    "getRSA": 0,    # Backwash interval: show as whole days by default
+    "getRSD": 0,    # Backwash duration: show as whole seconds by default
+    "getRSE": 0,    # Backwash reminder interval: show as whole days by default
     "getRG1": 0,    # Regeneration 1: show as whole number by default
     "getRG2": 0,    # Regeneration 2: show as whole number by default
     "getRG3": 0,    # Regeneration 3: show as whole number by default

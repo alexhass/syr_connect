@@ -307,8 +307,14 @@
       "getcno": {
         "name": "Numero di codice"
       },
+      "getcoa": {
+        "name": "Contatore controlavaggi automatici"
+      },
       "getcof": {
         "name": "Consumo totale d'acqua"
+      },
+      "getcom": {
+        "name": "Contatore controlavaggi manuali"
       },
       "getcrs": {
         "name": "Dimensione cartuccia"
@@ -959,6 +965,15 @@
           "0": "Non specificato"
         }
       },
+      "getrsa": {
+        "name": "Intervallo di controlavaggio"
+      },
+      "getrsd": {
+        "name": "Durata del controlavaggio"
+      },
+      "getrse": {
+        "name": "Intervallo promemoria controlavaggio"
+      },
       "getrth": {
         "name": "Ora rigenerazione (ore)"
       },
@@ -1159,6 +1174,20 @@
       },
       "getdfi": {
         "name": "Modalità di riempimento",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getssa": {
+        "name": "Controlavaggio automatico",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
+      "getsse": {
+        "name": "Promemoria controlavaggio",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"

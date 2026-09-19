@@ -307,8 +307,14 @@
       "getcno": {
         "name": "Numéro de code"
       },
+      "getcoa": {
+        "name": "Compteur de rinçages inverses automatiques"
+      },
       "getcof": {
         "name": "Consommation d'eau totale"
+      },
+      "getcom": {
+        "name": "Compteur de rinçages inverses manuels"
       },
       "getcrs": {
         "name": "Taille de la cartouche"
@@ -959,6 +965,15 @@
           "0": "Non défini"
         }
       },
+      "getrsa": {
+        "name": "Intervalle de rinçage inverse"
+      },
+      "getrsd": {
+        "name": "Durée du rinçage inverse"
+      },
+      "getrse": {
+        "name": "Intervalle de rappel de rinçage inverse"
+      },
       "getrth": {
         "name": "Heure de régénération (Heure)"
       },
@@ -1159,6 +1174,20 @@
       },
       "getdfi": {
         "name": "Mode de remplissage",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getssa": {
+        "name": "Rinçage inverse automatique",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
+      "getsse": {
+        "name": "Rappel de rinçage inverse",
         "state": {
           "false": "Désactivé",
           "true": "Activé"

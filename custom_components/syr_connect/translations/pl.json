@@ -307,8 +307,14 @@
             "getcno": {
                 "name": "Numer kodu"
             },
+            "getcoa": {
+                "name": "Licznik automatycznych płukań zwrotnych"
+            },
             "getcof": {
                 "name": "Całkowite zużycie wody"
+            },
+            "getcom": {
+                "name": "Licznik ręcznych płukań zwrotnych"
             },
             "getcrs": {
                 "name": "Rozmiar wkładu"
@@ -959,6 +965,15 @@
                     "0": "Nie określono"
                 }
             },
+            "getrsa": {
+                "name": "Interwał płukania zwrotnego"
+            },
+            "getrsd": {
+                "name": "Czas trwania płukania zwrotnego"
+            },
+            "getrse": {
+                "name": "Interwał przypomnienia o płukaniu zwrotnym"
+            },
             "getrth": {
                 "name": "Czas regeneracji (godzina)"
             },
@@ -1159,6 +1174,20 @@
             },
             "getdfi": {
                 "name": "Tryb napełniania",
+                "state": {
+                    "false": "Wyłączony",
+                    "true": "Włączony"
+                }
+            },
+            "getssa": {
+                "name": "Automatyczne płukanie zwrotne",
+                "state": {
+                    "false": "Wyłączony",
+                    "true": "Włączony"
+                }
+            },
+            "getsse": {
+                "name": "Przypomnienie o płukaniu zwrotnym",
                 "state": {
                     "false": "Wyłączony",
                     "true": "Włączony"

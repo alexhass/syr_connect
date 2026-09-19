@@ -1083,6 +1083,19 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "506",
     },
     {
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 4},
+        "base_path": "/trio",
+        "device_file": "muco_dfm4",
+        "display_name": "SYR RSA Connect",
+        "dk": 1506,
+        "dkv": 506,
+        "manufacturer": "SYR",
+        "name": "syrrsaconnect",
+        # TODO: Untested model.
+        "srn_prefix": "506",
+    },
+    {
         # Fallback signature for any other SYR MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",

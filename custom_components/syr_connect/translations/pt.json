@@ -307,8 +307,14 @@
       "getcno": {
         "name": "Número de código"
       },
+      "getcoa": {
+        "name": "Contador de retrolavagens automáticas"
+      },
       "getcof": {
         "name": "Consumo total de água"
+      },
+      "getcom": {
+        "name": "Contador de retrolavagens manuais"
       },
       "getcrs": {
         "name": "Tamanho do cartucho"
@@ -959,6 +965,15 @@
           "0": "Não definido"
         }
       },
+      "getrsa": {
+        "name": "Intervalo de retrolavagem"
+      },
+      "getrsd": {
+        "name": "Duração da retrolavagem"
+      },
+      "getrse": {
+        "name": "Intervalo de lembrete de retrolavagem"
+      },
       "getrth": {
         "name": "Hora da regeneração (hora)"
       },
@@ -1159,6 +1174,20 @@
       },
       "getdfi": {
         "name": "Modo de enchimento",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getssa": {
+        "name": "Retrolavagem automática",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativado"
+        }
+      },
+      "getsse": {
+        "name": "Lembrete de retrolavagem",
         "state": {
           "false": "Desativado",
           "true": "Ativado"

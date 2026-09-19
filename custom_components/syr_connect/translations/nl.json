@@ -307,8 +307,14 @@
       "getcno": {
         "name": "Codenummer"
       },
+      "getcoa": {
+        "name": "Teller automatische terugspoelingen"
+      },
       "getcof": {
         "name": "Totaal waterverbruik"
+      },
+      "getcom": {
+        "name": "Teller handmatige terugspoelingen"
       },
       "getcrs": {
         "name": "Cartridgegrootte"
@@ -959,6 +965,15 @@
           "0": "Niet opgegeven"
         }
       },
+      "getrsa": {
+        "name": "Terugspoelinterval"
+      },
+      "getrsd": {
+        "name": "Terugspoelduur"
+      },
+      "getrse": {
+        "name": "Terugspoelherinneringsinterval"
+      },
       "getrth": {
         "name": "Regeneratietijd (uur)"
       },
@@ -1159,6 +1174,20 @@
       },
       "getdfi": {
         "name": "Vulmodus",
+        "state": {
+          "false": "Uitgeschakeld",
+          "true": "Ingeschakeld"
+        }
+      },
+      "getssa": {
+        "name": "Automatische terugspoeling",
+        "state": {
+          "false": "Uitgeschakeld",
+          "true": "Ingeschakeld"
+        }
+      },
+      "getsse": {
+        "name": "Terugspoelherinnering",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"

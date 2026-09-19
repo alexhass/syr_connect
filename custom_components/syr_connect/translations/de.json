@@ -307,8 +307,14 @@
       "getcno": {
         "name": "Codenummer"
       },
+      "getcoa": {
+        "name": "Zähler automatische Rückspülungen"
+      },
       "getcof": {
         "name": "Wasserverbrauch Gesamt"
+      },
+      "getcom": {
+        "name": "Zähler manuelle Rückspülungen"
       },
       "getcrs": {
         "name": "Kartuschengröße"
@@ -959,6 +965,15 @@
           "0": "Nicht festgelegt"
         }
       },
+      "getrsa": {
+        "name": "Rückspülintervall"
+      },
+      "getrsd": {
+        "name": "Rückspüldauer"
+      },
+      "getrse": {
+        "name": "Rückspülerinnerungsintervall"
+      },
       "getrth": {
         "name": "Stunden der Regeneration"
       },
@@ -1159,6 +1174,20 @@
       },
       "getdfi": {
         "name": "Füllmodus",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getssa": {
+        "name": "Automatische Rückspülung",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
+      "getsse": {
+        "name": "Rückspülerinnerung",
         "state": {
           "false": "Deaktiviert",
           "true": "Aktiviert"
