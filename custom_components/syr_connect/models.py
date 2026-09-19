@@ -980,7 +980,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "attrs_equals": {"getDFM": 3},
         "base_path": "/trio",
         "device_file": "muco_dfm3",
-        "display_name": "Filling Station CLEAR PRO FILL All-in-One",
+        "display_name": "CLEAR PRO FILL All-in-One",
         "dk": 1500,
         "dkv": 500,
         "manufacturer": "CONEL",
