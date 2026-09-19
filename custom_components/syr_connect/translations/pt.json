@@ -356,6 +356,13 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdma": {
+        "name": "Modo de alarme de microvazamento",
+        "state": {
+          "1": "Aviso",
+          "2": "Alarme"
+        }
+      },
       "getdrp": {
         "name": "Intervalo do teste de microvazamento",
         "state": {

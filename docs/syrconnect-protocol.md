@@ -732,6 +732,7 @@ Available on Trio DFR/LS and SafeTech+.
 | getDRP / setDRP | "1"          |        | Microleakage test interval: 1 = daily, 2 = weekly, 3 = monthly            |
 | getDSV          | "0"          |        | Microleakage test status (read-only): 0 = not active, 1 = active, 2 = aborted due to pressure drop, 3 = skipped  |
 | getDTT / setDTT | "00:00"      |        | Time of day when the microleakage test is executed (format `HH:MM`)       |
+| getDMA / setDMA | "1"          |        | Sets whether a warning or an alarm becomes active after a microleakage is detected: 1 = Warning, 2 = Alarm (Trio DFR/LS, SafeTech +, TRIO Lock, SafeTech Lock) |
 
 ### Unknown leakage protection
 
@@ -739,7 +740,6 @@ These properties are only available on devices that contain leakage protection, 
 
 | Property        | Example      | Unit   | Description
 |-----------------|--------------|--------|-------------------------------------------------------
-| getDMA          | "1"          |        | *unknown*
 | getAVO          | "0mL"        | mL     | Current water flow in "mL". Syr Apps shows value in "L"
 | getBSA          | "0"          |        | *unknown*
 | getDBD          | "10"         | 1/10 bar | Pressure drop leak test in dbar

@@ -11,6 +11,7 @@ only a SINGLE leak-protection profile (no getPA1-8/getPRF numbered-profile
 family) - it uses the plain getLE/getT1/getT2/getUL/getTMP keys instead.
 It also has no Wi-Fi module (no getWFC/getWFR/getWFS/getEGW/getEIP/getMAC1/
 getMAC2/getAPT in the fixture) and no getFLO/getNOT/getWRN/getDSV/getDTT.
+getDMA (microleakage alarm mode) is present with a real value and included.
 
 Deliberately NOT included, pending confirmation on a real device:
 - getDST, getDTC, getDBT, getDCM, getDOM, getDPL: present in the fixture but
@@ -40,7 +41,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Water Consumption & Volume ---
     "getVOL",
     # --- Microleakage Test ---
-    "getDBD", "getDRP", "getNPS",
+    "getDBD", "getDMA", "getDRP", "getNPS",
     # --- Leak Protection (single profile only, no numbered profile family) ---
     "getLE", "getT1", "getT2", "getTMP", "getUL",
     # --- Device Info & Diagnostics ---

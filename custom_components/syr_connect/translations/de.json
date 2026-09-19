@@ -356,6 +356,13 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdma": {
+        "name": "Mikroleckage-Alarmmodus",
+        "state": {
+          "1": "Warnung",
+          "2": "Alarm"
+        }
+      },
       "getdrp": {
         "name": "Mikroleckage-Test Intervall",
         "state": {

@@ -10,7 +10,7 @@ cover every supported model at once.
 
 Unlike every other device file so far, this model IS the genuine home of the
 "(Trio DFR/LS)"-tagged const.py keys: the full microleakage-test group
-(getDBD/getDRP/getDSV/getDTT/getNPS) and self-learning-phase group
+(getDBD/getDMA/getDRP/getDSV/getDTT/getNPS) and self-learning-phase group
 (getSLE/getSLF/getSLP/getSLT/getSLV) are both included outright - getDSV=3 in
 both fixtures, and getSLT/getSLV are non-zero (612/116) in both, proving the
 self-learning phase was genuinely active, not a constant-0 stub. getNPS also
@@ -46,7 +46,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Self-Learning Phase (genuinely active in both fixtures) ---
     "getSLE", "getSLF", "getSLP", "getSLT", "getSLV",
     # --- Microleakage Test (genuinely active in both fixtures) ---
-    "getDBD", "getDRP", "getDSV", "getDTT", "getNPS",
+    "getDBD", "getDMA", "getDRP", "getDSV", "getDTT", "getNPS",
     # --- Leak Protection (deactivation timer, tied to the profiles below) ---
     "getTMP",
     # --- Leak Protection Profiles 1-8 (core feature of this model) ---

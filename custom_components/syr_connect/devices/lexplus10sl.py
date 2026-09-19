@@ -9,7 +9,7 @@ leak-protection-profile family (getPA-PW1-8/getPRF, all populated with real
 distinct values, e.g. getPN1="Anwesend"/getPN3="Neues Profil") PLUS a
 self-learning phase that is genuinely active (getSLF=1818, getSLT=732,
 getSLV=169 - all non-zero) PLUS partial microleakage-test config
-(getDBD/getDRP/getNPS=3713, all real).
+(getDBD/getDMA/getDRP/getNPS=3713, all real).
 
 NOTE: unlike its lexplus10/lexplus10s siblings, this fixture reports getALA
 (not getALM) for the current alarm code, even though this signature has
@@ -18,7 +18,7 @@ presence to gate the setALA button) - this may be worth revisiting in
 models.py separately; not changed here since it's outside this file's scope.
 
 Deliberately NOT included:
-- getDSV, getDTT: not present in this fixture, unlike getDBD/getDRP/getNPS
+- getDSV, getDTT: not present in this fixture, unlike getDBD/getDMA/getDRP/getNPS
   (present with real values) - the microleakage-test config keys are there,
   but the two status/result keys are missing from this capture.
 - getT2, getTMP is kept but getT1/getLE/getUL are absent: only getT2 appears
@@ -61,7 +61,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Self-Learning Phase (genuinely active in the fixture) ---
     "getSLE", "getSLF", "getSLP", "getSLT", "getSLV",
     # --- Microleakage Test (config keys confirmed, no status/result keys yet) ---
-    "getDBD", "getDRP", "getNPS",
+    "getDBD", "getDMA", "getDRP", "getNPS",
     # --- Leak Protection (deactivation timer, tied to the profiles below) ---
     "getTMP",
     # --- Leak Protection Profiles 1-8 (core feature of this model) ---

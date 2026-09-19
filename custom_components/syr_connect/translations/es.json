@@ -356,6 +356,13 @@
       "getdgw": {
         "name": "Puerta de enlace"
       },
+      "getdma": {
+        "name": "Modo de alarma de microfugas",
+        "state": {
+          "1": "Advertencia",
+          "2": "Alarma"
+        }
+      },
       "getdrp": {
         "name": "Intervalo de prueba de microfugas",
         "state": {

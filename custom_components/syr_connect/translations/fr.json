@@ -356,6 +356,13 @@
       "getdgw": {
         "name": "Passerelle"
       },
+      "getdma": {
+        "name": "Mode d'alarme de micro-fuite",
+        "state": {
+          "1": "Avertissement",
+          "2": "Alarme"
+        }
+      },
       "getdrp": {
         "name": "Intervalle du test de micro-fuite",
         "state": {

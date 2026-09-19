@@ -356,6 +356,13 @@
             "getdgw": {
                 "name": "Brama sieciowa"
             },
+            "getdma": {
+                "name": "Tryb alarmu mikroprzecieku",
+                "state": {
+                    "1": "Ostrzeżenie",
+                    "2": "Alarm"
+                }
+            },
             "getdrp": {
                 "name": "Interwał testu mikroprzecieku",
                 "state": {

@@ -356,6 +356,13 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdma": {
+        "name": "Modalità allarme microperdite",
+        "state": {
+          "1": "Avviso",
+          "2": "Allarme"
+        }
+      },
       "getdrp": {
         "name": "Intervallo test microperdite",
         "state": {

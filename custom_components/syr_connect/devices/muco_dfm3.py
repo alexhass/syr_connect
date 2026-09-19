@@ -8,8 +8,8 @@ Deliberately NOT included, pending confirmation on a real device:
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to a filling
   controller.
-- getDBD, getDRP, getDSV, getDTT: labeled "(Trio DFR/LS)" microleakage-test
-  feature in const.py - a different product family.
+- getDBD, getDMA, getDRP, getDSV, getDTT: labeled "(Trio DFR/LS, SafeTech)"
+  microleakage-test feature in const.py - a different product family.
 - getSLE, getSLF, getSLP, getSLT, getSLV: labeled "(Trio DFR/LS)"
   self-learning-phase feature in const.py; also reported as constant 0 stub
   values in the fixture.

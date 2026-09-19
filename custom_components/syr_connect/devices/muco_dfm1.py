@@ -22,9 +22,9 @@ Deliberately NOT included, pending confirmation on a real device:
 - getBAR: labeled "(Safe-T+)" in const.py, unrelated product; 0 in fixture.
 - getCEL: temperature reading with no clear tie to leak protection; 0 in fixture.
 - getRCP: generic cloud sync interval, not tied to any specific feature here.
-- getDBD, getDRP, getDTT, getNPS: labeled "(Trio DFR/LS)" microleakage-test
-  feature in const.py - a different product family. getDSV is the one
-  exception (see BUTTON_KNOWN_KEYS below).
+- getDBD, getDMA, getDRP, getDTT, getNPS: labeled "(Trio DFR/LS, SafeTech)"
+  microleakage-test feature in const.py - a different product family. getDSV
+  is the one exception (see BUTTON_KNOWN_KEYS below).
 - getSLE, getSLP, getSLT, getSLV: labeled "(Trio DFR/LS)" self-learning-phase
   feature in const.py; reported as constant 0 in the fixture. getSLF is the
   one exception (reported as a real non-zero value, 3500) but left out here

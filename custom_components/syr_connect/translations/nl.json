@@ -356,6 +356,13 @@
       "getdgw": {
         "name": "Gateway"
       },
+      "getdma": {
+        "name": "Microlek-alarmmodus",
+        "state": {
+          "1": "Waarschuwing",
+          "2": "Alarm"
+        }
+      },
       "getdrp": {
         "name": "Microlek-test interval",
         "state": {

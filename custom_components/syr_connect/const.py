@@ -329,8 +329,9 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getSLP",   # Duration of self-learning phase
     "getSLT",   # Elapsed time in self-learning phase (s)
     "getSLV",   # Volume accumulated in self-learning phase (l)
-    # --- Microleakage Test (Trio DFR/LS) ---
+    # --- Microleakage Test (Trio DFR/LS, SafeTech) ---
     "getDBD",   # Microleakage test pressure drop
+    "getDMA",   # Microleakage alarm mode (1=Warning, 2=Alarm)
     "getDRP",   # Microleakage test interval (daily / weekly / monthly)
     "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
     "getDTT",   # Microleakage test duration / time
@@ -579,6 +580,7 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getSLV",   # Volume accumulated in self-learning phase (l)
     # --- Microleakage Technical ---
     "getDBD",   # Microleakage test pressure drop
+    "getDMA",   # Microleakage alarm mode (1=Warning, 2=Alarm)
     "getDRP",   # Microleakage test interval (daily / weekly / monthly)
     "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
     "getDTT",   # Microleakage test duration / time
@@ -1071,6 +1073,7 @@ _SYR_CONNECT_SENSOR_ICON = {
     # Sensors exits in devices:
     # - Trio DFR/LS
 
+    "getDMA": "mdi:alert-circle-outline",
     "getDRP": "mdi:calendar-clock",
     "getDSV": "mdi:water-check",
     "getDTT": "mdi:clock-outline",
@@ -1425,6 +1428,7 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
     "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
     "getDFM": 0,    # Device feature mode: show as whole number by default
+    "getDMA": 0,    # Microleakage alarm mode: show as whole number by default
     "getDRP": 0,    # Microleakage test interval: show as whole number by default
     "getDSV": 0,    # Microleakage test: show as whole number by default
     "getDWF": 0,    # Expected daily water consumption: show as whole number by default
