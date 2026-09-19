@@ -1154,8 +1154,8 @@
             "getdfi": {
                 "name": "Tryb napełniania",
                 "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
+                    "false": "Wyłączony",
+                    "true": "Włączony"
                 }
             }
         },

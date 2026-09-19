@@ -1154,8 +1154,8 @@
       "getdfi": {
         "name": "Mode de remplissage",
         "state": {
-          "false": "Inactif",
-          "true": "Actif"
+          "false": "Désactivé",
+          "true": "Activé"
         }
       }
     },

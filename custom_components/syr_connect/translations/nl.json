@@ -1154,8 +1154,8 @@
       "getdfi": {
         "name": "Vulmodus",
         "state": {
-          "false": "Inactief",
-          "true": "Actief"
+          "false": "Uitgeschakeld",
+          "true": "Ingeschakeld"
         }
       }
     },

@@ -1154,8 +1154,8 @@
       "getdfi": {
         "name": "Filling mode",
         "state": {
-          "false": "Inactive",
-          "true": "Active"
+          "false": "Disabled",
+          "true": "Enabled"
         }
       }
     },
