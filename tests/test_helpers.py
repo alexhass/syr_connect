@@ -74,6 +74,52 @@ def test_registry_cleanup_handles_exception():
         helpers.registry_cleanup(hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys={"getPRS"})
 
 
+def test_cleanup_removed_devices_detaches_stale_device() -> None:
+    """A registry device whose id no longer appears in coordinator data is detached."""
+    hass = MagicMock()
+    device_registry = MagicMock()
+    stale_entry = SimpleNamespace(id="registry_entry_id", identifiers={(helpers.DOMAIN, "STALE_DEV")})
+
+    with (
+        patch("custom_components.syr_connect.helpers.dr.async_get", return_value=device_registry),
+        patch(
+            "custom_components.syr_connect.helpers.dr.async_entries_for_config_entry",
+            return_value=[stale_entry],
+        ),
+    ):
+        helpers.cleanup_removed_devices(hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1")
+
+    device_registry.async_update_device.assert_called_once_with(
+        "registry_entry_id", remove_config_entry_id="entry1"
+    )
+
+
+def test_cleanup_removed_devices_keeps_current_device() -> None:
+    """A registry device still present in coordinator data must not be detached."""
+    hass = MagicMock()
+    device_registry = MagicMock()
+    current_entry = SimpleNamespace(id="registry_entry_id", identifiers={(helpers.DOMAIN, "CURRENT_DEV")})
+
+    with (
+        patch("custom_components.syr_connect.helpers.dr.async_get", return_value=device_registry),
+        patch(
+            "custom_components.syr_connect.helpers.dr.async_entries_for_config_entry",
+            return_value=[current_entry],
+        ),
+    ):
+        helpers.cleanup_removed_devices(hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1")
+
+    device_registry.async_update_device.assert_not_called()
+
+
+def test_cleanup_removed_devices_handles_exception() -> None:
+    """Any error while scanning/detaching devices must not propagate."""
+    hass = MagicMock()
+    with patch("custom_components.syr_connect.helpers.dr.async_get", side_effect=RuntimeError("boom")):
+        # Should not raise
+        helpers.cleanup_removed_devices(hass, {"devices": []}, "entry1")
+
+
 def test_get_current_mac_priorities_additional():
     # Primary IP -> getMAC
     s = {"getIPA": "192.168.1.2", "getMAC": "AA:BB:CC"}
