@@ -1109,7 +1109,7 @@
         "name": "Protección contra fugas desactivada"
       },
       "gettor": {
-        "name": "Total de regeneraciones"
+        "name": "Regeneraciones (total)"
       },
       "gettpr": {
         "name": "Presión objetivo"

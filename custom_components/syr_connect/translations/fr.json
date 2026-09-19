@@ -1109,7 +1109,7 @@
         "name": "Protection contre les fuites désactivée"
       },
       "gettor": {
-        "name": "Total des régénérations"
+        "name": "Régénérations (total)"
       },
       "gettpr": {
         "name": "Pression cible"

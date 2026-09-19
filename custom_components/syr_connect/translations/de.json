@@ -1109,7 +1109,7 @@
         "name": "Leckageschutz deaktiviert"
       },
       "gettor": {
-        "name": "Summe aller Regenerationen"
+        "name": "Regenerationen (gesamt)"
       },
       "gettpr": {
         "name": "Solldruck"

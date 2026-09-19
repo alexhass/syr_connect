@@ -1109,7 +1109,7 @@
         "name": "Leakage protection deactivated"
       },
       "gettor": {
-        "name": "Total regenerations"
+        "name": "Regenerations (total)"
       },
       "gettpr": {
         "name": "Target pressure"

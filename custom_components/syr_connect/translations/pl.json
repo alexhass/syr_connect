@@ -1109,7 +1109,7 @@
         "name": "Ochrona przed wyciekiem dezaktywowana"
       },
       "gettor": {
-        "name": "Łączna liczba regeneracji"
+        "name": "Regeneracje (łącznie)"
       },
       "gettpr": {
         "name": "Ciśnienie docelowe"

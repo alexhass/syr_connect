@@ -1109,7 +1109,7 @@
         "name": "Proteção contra vazamento desativada"
       },
       "gettor": {
-        "name": "Total de regenerações"
+        "name": "Regenerações (total)"
       },
       "gettpr": {
         "name": "Pressão alvo"
