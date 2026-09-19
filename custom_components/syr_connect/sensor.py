@@ -880,7 +880,11 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                 # NOTE: Translation placeholders are not supported for entity state strings in the frontend (they are only
                 # available for entity names / labels). See: https://github.com/home-assistant/frontend/issues/29064
                 if self._sensor_key == 'getSTA':
-                    raw = str(status.get('getSTA') or "")
+                    # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer
+                    # (0=Standby); "or ''" would wrongly discard a genuine 0, so check
+                    # for None explicitly instead.
+                    raw_sta = status.get('getSTA')
+                    raw = str(raw_sta) if raw_sta is not None else ""
                     _LOGGER.debug("getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw)
 
                     # Try known patterns and map to internal translation keys.

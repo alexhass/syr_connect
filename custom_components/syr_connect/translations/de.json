@@ -1027,13 +1027,17 @@
       "getsta": {
         "name": "Status",
         "state": {
+          "status_automatic_filling": "Automatische Befüllung",
           "status_backwash": "Rückspülung",
           "status_fast_rinse": "Schnelles Spülen",
           "status_filling": "Befüllen",
           "status_inactive": "Inaktiv",
+          "status_initial_filling": "Erstbefüllung",
+          "status_manual_filling": "Manuelle Befüllung",
           "status_refill_salt": "Bitte Salz nachfüllen",
           "status_regenerant_rinse": "Spülen mit Regeneriermittel",
-          "status_slow_rinse": "Langsames Spülen"
+          "status_slow_rinse": "Langsames Spülen",
+          "status_standby": "Standby"
         }
       },
       "getsv1": {

@@ -1174,6 +1174,12 @@ _SYR_CONNECT_SENSOR_STA_VALUE_MAP = {
     "Płukanie szybkie": "status_fast_rinse",
     "Napełnianie": "status_filling",
     "": "status_inactive",
+    # Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report getSTA
+    # as a plain integer code instead of a status message string.
+    "0": "status_standby",
+    "1": "status_initial_filling",
+    "2": "status_automatic_filling",
+    "3": "status_manual_filling",
 }
 
 # Mapping for getT1, getT2 sensor values (Time leakage)

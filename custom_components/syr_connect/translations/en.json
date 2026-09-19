@@ -1027,13 +1027,17 @@
       "getsta": {
         "name": "Status",
         "state": {
+          "status_automatic_filling": "Automatic filling",
           "status_backwash": "Backwash",
           "status_fast_rinse": "Fast rinse",
           "status_filling": "Filling",
           "status_inactive": "Inactive",
+          "status_initial_filling": "Initial filling",
+          "status_manual_filling": "Manual filling",
           "status_refill_salt": "Please refill salt",
           "status_regenerant_rinse": "Regenerant rinse",
-          "status_slow_rinse": "Slow rinse"
+          "status_slow_rinse": "Slow rinse",
+          "status_standby": "Standby"
         }
       },
       "getsv1": {

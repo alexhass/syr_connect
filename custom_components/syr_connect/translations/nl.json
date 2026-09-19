@@ -1027,13 +1027,17 @@
       "getsta": {
         "name": "Status",
         "state": {
+          "status_automatic_filling": "Automatisch vullen",
           "status_backwash": "Terugspoeling",
           "status_fast_rinse": "Snel spoelen",
           "status_filling": "Vullen",
           "status_inactive": "Inactief",
+          "status_initial_filling": "Eerste vulling",
+          "status_manual_filling": "Handmatig vullen",
           "status_refill_salt": "Vul zout bij",
           "status_regenerant_rinse": "Regenerant spoelen",
-          "status_slow_rinse": "Langzaam spoelen"
+          "status_slow_rinse": "Langzaam spoelen",
+          "status_standby": "Stand-by"
         }
       },
       "getsv1": {

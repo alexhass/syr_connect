@@ -1027,13 +1027,17 @@
       "getsta": {
         "name": "Status",
         "state": {
+          "status_automatic_filling": "Enchimento automático",
           "status_backwash": "Retrolavagem",
           "status_fast_rinse": "Enxágue rápido",
           "status_filling": "Enchimento",
           "status_inactive": "Inativo",
+          "status_initial_filling": "Enchimento inicial",
+          "status_manual_filling": "Enchimento manual",
           "status_refill_salt": "Por favor, reabasteça o sal",
           "status_regenerant_rinse": "Enxágue com regenerante",
-          "status_slow_rinse": "Enxágue lento"
+          "status_slow_rinse": "Enxágue lento",
+          "status_standby": "Espera"
         }
       },
       "getsv1": {

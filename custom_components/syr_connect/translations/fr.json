@@ -1027,13 +1027,17 @@
       "getsta": {
         "name": "Statut",
         "state": {
+          "status_automatic_filling": "Remplissage automatique",
           "status_backwash": "Rinçage inverse",
           "status_fast_rinse": "Rinçage rapide",
           "status_filling": "Remplissage",
           "status_inactive": "Inactif",
+          "status_initial_filling": "Remplissage initial",
+          "status_manual_filling": "Remplissage manuel",
           "status_refill_salt": "Veuillez ajouter du sel",
           "status_regenerant_rinse": "Rinçage régénérant",
-          "status_slow_rinse": "Rinçage lent"
+          "status_slow_rinse": "Rinçage lent",
+          "status_standby": "Veille"
         }
       },
       "getsv1": {

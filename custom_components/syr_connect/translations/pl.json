@@ -1027,13 +1027,17 @@
             "getsta": {
                 "name": "Status",
                 "state": {
+                    "status_automatic_filling": "Automatyczne napełnianie",
                     "status_backwash": "Płukanie zwrotne",
                     "status_fast_rinse": "Szybkie płukanie",
                     "status_filling": "Napełnianie",
                     "status_inactive": "Nieaktywny",
+                    "status_initial_filling": "Pierwsze napełnienie",
+                    "status_manual_filling": "Ręczne napełnianie",
                     "status_refill_salt": "Proszę uzupełnić sól",
                     "status_regenerant_rinse": "Płukanie czynnikiem regenerującym",
-                    "status_slow_rinse": "Powolne płukanie"
+                    "status_slow_rinse": "Powolne płukanie",
+                    "status_standby": "Czuwanie"
                 }
             },
             "getsv1": {

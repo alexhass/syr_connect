@@ -1027,13 +1027,17 @@
       "getsta": {
         "name": "Estado",
         "state": {
+          "status_automatic_filling": "Llenado automático",
           "status_backwash": "Retrolavado",
           "status_fast_rinse": "Enjuague rápido",
           "status_filling": "Llenado",
           "status_inactive": "Inactivo",
+          "status_initial_filling": "Llenado inicial",
+          "status_manual_filling": "Llenado manual",
           "status_refill_salt": "Por favor, reponga la sal",
           "status_regenerant_rinse": "Enjuague con regenerante",
-          "status_slow_rinse": "Enjuague lento"
+          "status_slow_rinse": "Enjuague lento",
+          "status_standby": "Espera"
         }
       },
       "getsv1": {
