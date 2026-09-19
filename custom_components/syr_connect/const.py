@@ -475,7 +475,9 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getLRC",   # Liter(s) remaining softening capacity
     "getOHW",   # Soft water hardness (°dH)
     "getPRC",   # Percent remaining softening capacity
+    "getRCC",   # Number of filling cycles in the current period (AC 3200, AC 3228)
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRCN",   # Counter of all refills (AC 3200, AC 3228)
     "getRMN",   # Filling processes count
     "getRMT",   # Maximum filling duration (min)
     "getRVT",   # Maximum filling charges
@@ -627,7 +629,9 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getLRC",   # Liter(s) remaining softening capacity
     "getOHW",   # Soft water hardness (°dH)
     "getPRC",   # Percent remaining softening capacity
+    "getRCC",   # Number of filling cycles in the current period (AC 3200, AC 3228)
     "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRCN",   # Counter of all refills (AC 3200, AC 3228)
     "getRMN",   # Filling processes count
     "getRMT",   # Maximum filling duration (min)
     "getRVT",   # Maximum filling charges
@@ -1093,6 +1097,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getOHW": "mdi:water-percent",
     "getPRC": "mdi:beaker",
     "getRCD": "mdi:calendar-sync",
+    "getRCC": "mdi:counter",
+    "getRCN": "mdi:counter",
     "getRMN": "mdi:counter",
     "getRMT": "mdi:timer-outline",
     "getRVT": "mdi:water-plus",
@@ -1252,6 +1258,8 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getLRC": SensorStateClass.MEASUREMENT,        # Liter(s) remaining softening capacity
     "getOHW": SensorStateClass.MEASUREMENT,        # Soft water hardness
     "getPRC": SensorStateClass.MEASUREMENT,        # Percent remaining softening capacity
+    "getRCC": SensorStateClass.MEASUREMENT,        # Number of filling cycles in the current period
+    "getRCN": SensorStateClass.TOTAL_INCREASING,   # Counter of all refills
     "getTPR": SensorStateClass.MEASUREMENT,        # Target pressure
     "getVOL": SensorStateClass.TOTAL_INCREASING,   # Total capacity (cumulative)
     "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
@@ -1517,6 +1525,8 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getOHW": 0,    # Soft water hardness: show as whole number by default
     "getPRC": 0,    # Percent remaining softening capacity: show as whole number by default
     "getRCD": 0,    # Filling processes period: show as whole number by default
+    "getRCC": 0,    # Number of filling cycles in the current period: show as whole number by default
+    "getRCN": 0,    # Counter of all refills: show as whole number by default
     "getRMN": 0,    # Filling processes count: show as whole number by default
     "getRMT": 0,    # Maximum filling duration: show as whole number of minutes
     "getRVT": 0,    # Maximum filling charges: show as whole number by default

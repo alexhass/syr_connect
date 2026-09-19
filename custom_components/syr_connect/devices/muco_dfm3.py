@@ -54,7 +54,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Wi-Fi ---
     "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
     # --- Water treatment / Filling ---
-    "getCRS", "getCRT", "getLOT", "getLRC", "getPRC", "getRCD", "getRMN", "getRMT",
+    "getCRS", "getCRT", "getLOT", "getLRC", "getPRC", "getRCC", "getRCD", "getRCN", "getRMN", "getRMT",
     "getRVT", "getTPR",
 }
 

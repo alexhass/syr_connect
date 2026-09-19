@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Vulperiode",
+        "name": "Periode van de vulcyclusbewaking",
         "state": {
           "0": "Uur",
           "1": "Dag",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Vulprocessen"
+        "name": "Maximaal aantal vulcycli per periode"
       },
       "getrmo": {
         "name": "Regeneratiemodus",
@@ -882,8 +882,11 @@
           "true": "Ingeschakeld"
         }
       },
+      "getrcc": {
+        "name": "Vulcycli (huidige periode)"
+      },
       "getrcd": {
-        "name": "Vulperiode",
+        "name": "Periode van de vulcyclusbewaking",
         "state": {
           "0": "Uur",
           "1": "Dag",
@@ -891,6 +894,9 @@
           "3": "Maand",
           "undefined": "Onbepaald"
         }
+      },
+      "getrcn": {
+        "name": "Totaal aantal bijvullingen"
       },
       "getrcp": {
         "name": "Synchronisatie-interval"
@@ -930,7 +936,7 @@
         }
       },
       "getrmn": {
-        "name": "Vulprocessen"
+        "name": "Maximaal aantal vulcycli per periode"
       },
       "getrmo": {
         "name": "Regeneratiemodus",

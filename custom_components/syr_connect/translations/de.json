@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Zeitraum Füllungen",
+        "name": "Periodendauer der Füllzyklenüberwachung",
         "state": {
           "0": "Stunde",
           "1": "Tag",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Füllzyklen"
+        "name": "Maximale Anzahl der Füllzyklen pro Periode"
       },
       "getrmo": {
         "name": "Regenerationsmodus",
@@ -882,8 +882,11 @@
           "true": "Aktiviert"
         }
       },
+      "getrcc": {
+        "name": "Füllzyklen (aktuelle Periode)"
+      },
       "getrcd": {
-        "name": "Zeitraum Füllungen",
+        "name": "Periodendauer der Füllzyklenüberwachung",
         "state": {
           "0": "Stunde",
           "1": "Tag",
@@ -891,6 +894,9 @@
           "3": "Monat",
           "undefined": "Undefiniert"
         }
+      },
+      "getrcn": {
+        "name": "Gesamtzahl Nachfüllungen"
       },
       "getrcp": {
         "name": "Synchronisationsintervall"
@@ -930,7 +936,7 @@
         }
       },
       "getrmn": {
-        "name": "Füllzyklen"
+        "name": "Maximale Anzahl der Füllzyklen pro Periode"
       },
       "getrmo": {
         "name": "Regenerationsmodus",

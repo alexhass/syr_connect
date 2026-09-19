@@ -148,7 +148,7 @@
         }
       },
       "getrcd": {
-        "name": "Filling processes period",
+        "name": "Filling cycle monitoring period",
         "state": {
           "0": "Hour",
           "1": "Day",
@@ -158,7 +158,7 @@
         }
       },
       "getrmn": {
-        "name": "Filling processes"
+        "name": "Maximum filling cycles per period"
       },
       "getrmo": {
         "name": "Regeneration mode",
@@ -882,8 +882,11 @@
           "true": "Enabled"
         }
       },
+      "getrcc": {
+        "name": "Filling cycles (current period)"
+      },
       "getrcd": {
-        "name": "Filling processes period",
+        "name": "Filling cycle monitoring period",
         "state": {
           "0": "Hour",
           "1": "Day",
@@ -891,6 +894,9 @@
           "3": "Month",
           "undefined": "Undefined"
         }
+      },
+      "getrcn": {
+        "name": "Total refill count"
       },
       "getrcp": {
         "name": "Synchronisation interval"
@@ -930,7 +936,7 @@
         }
       },
       "getrmn": {
-        "name": "Filling processes"
+        "name": "Maximum filling cycles per period"
       },
       "getrmo": {
         "name": "Regeneration mode",

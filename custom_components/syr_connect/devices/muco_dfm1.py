@@ -14,8 +14,8 @@ Deliberately NOT included, pending confirmation on a real device:
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to this model.
   getALD is the one exception (see SENSOR_KNOWN_KEYS below).
-- getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCD, getRMN, getRMT,
-  getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
+- getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCC, getRCD, getRCN, getRMN,
+  getRMT, getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
   feature in const.py - belongs to the muco_dfm3 filling-controller variant, not
   this leak-protection variant, despite being present (shared firmware).
 - getSRV: labeled "(Trio DFR/LS)" in const.py and empty ("") in the fixture.

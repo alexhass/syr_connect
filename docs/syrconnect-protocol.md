@@ -942,8 +942,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getPRT          | ""      |          | *unknown*
 | getPSI          | ""      |          | *unknown*
 | getPVL          | ""      |          | *unknown*
-| getRCC          | ""      |          | *unknown*
-| getRCN          | ""      |          | *unknown*
 | getRMP          | ""      |          | *unknown*
 | getRP1          | ""      |          | *unknown*
 | getRP2          | ""      |          | *unknown*
@@ -977,6 +975,17 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getRMT / setRMT | "30"    | min      | Leak Protection: Maximum filling duration. Values: 0-720, Range in SYR GUI: 1–5 min in 1 min steps, 10 min, 15 min–1 h in 15 min steps, 1 h–12 h in 0.5 h steps
 | getRVT / setRVT | "100"   | L        | Leak Protection: Maximum filling charges. Values 0-9900. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100
 | getTPR / setTPR | "18"    | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps
+
+#### Filling cycles
+
+Models: Syr AC 3200, Syr AC 3228.
+
+| Property        | Example | Unit | Description
+|-----------------|---------|------|-------------------------------------------------------------
+| getRCC          | "3"     |      | Number of filling cycles in the current period
+| getRCD / setRCD | "1"     |      | Period duration of filling cycle monitoring: 0=hour, 1=day, 2=week, 3=month
+| getRCN          | "42"    |      | Counter of all refills
+| getRMN / setRMN | "5"     |      | Maximum number of filling cycles per period. Value range: 1–10
 
 ## Further information
 
