@@ -1070,6 +1070,19 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "505",
     },
     {
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 3},
+        "base_path": "/trio",
+        "device_file": "muco_dfm3",
+        "display_name": "BLACKLANE AC All-in-One 3228 Connect",
+        "dk": 1506,
+        "dkv": 506,
+        "manufacturer": "SYR",
+        "name": "syrlac3228connect",
+        # TODO: Untested model.
+        "srn_prefix": "506",
+    },
+    {
         # Fallback signature for any other SYR MultiControllers
         "alarm_clear_via_set": True,
         "base_path": "/trio",
