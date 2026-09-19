@@ -445,7 +445,7 @@
         "name": "Luchtvochtigheid"
       },
       "getinr": {
-        "name": "Onvolledige regeneraties"
+        "name": "Regeneraties (onvolledig)"
       },
       "getipa": {
         "name": "IP-adres"

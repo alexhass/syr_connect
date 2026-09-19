@@ -445,7 +445,7 @@
         "name": "Humidité"
       },
       "getinr": {
-        "name": "Régénérations incomplètes"
+        "name": "Régénérations (incomplètes)"
       },
       "getipa": {
         "name": "Adresse IP"
@@ -523,7 +523,7 @@
         "name": "Temps avant autotest de la vanne"
       },
       "getnor": {
-        "name": "Régénérations en fonctionnement normal"
+        "name": "Régénérations (fonctionnement normal)"
       },
       "getnot": {
         "name": "Notification",

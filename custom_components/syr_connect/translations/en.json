@@ -445,7 +445,7 @@
         "name": "Humidity"
       },
       "getinr": {
-        "name": "Incomplete regenerations"
+        "name": "Regenerations (incomplete)"
       },
       "getipa": {
         "name": "IP address"
@@ -523,7 +523,7 @@
         "name": "Time until valve self-test becomes active"
       },
       "getnor": {
-        "name": "Regenerations (normal operation)"
+        "name": "Regenerations (normal)"
       },
       "getnot": {
         "name": "Notification",

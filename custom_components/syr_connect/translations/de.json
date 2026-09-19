@@ -445,7 +445,7 @@
         "name": "Luftfeuchtigkeit"
       },
       "getinr": {
-        "name": "Unvollständige Regenerationen"
+        "name": "Regenerationen (unvollständig)"
       },
       "getipa": {
         "name": "IP-Adresse"
@@ -523,7 +523,7 @@
         "name": "Zeit bis Ventilselbsttest aktiv wird"
       },
       "getnor": {
-        "name": "Regenerationen im Normalbetrieb"
+        "name": "Regenerationen (Normalbetrieb)"
       },
       "getnot": {
         "name": "Benachrichtigung",

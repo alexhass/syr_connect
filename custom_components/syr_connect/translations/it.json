@@ -445,7 +445,7 @@
         "name": "Umidità"
       },
       "getinr": {
-        "name": "Rigenerazioni incomplete"
+        "name": "Rigenerazioni (incomplete)"
       },
       "getipa": {
         "name": "Indirizzo IP"

@@ -445,7 +445,7 @@
         "name": "Humidade"
       },
       "getinr": {
-        "name": "Regenerações incompletas"
+        "name": "Regenerações (incompletas)"
       },
       "getipa": {
         "name": "Endereço IP"
@@ -523,7 +523,7 @@
         "name": "Tempo até o autoteste da válvula"
       },
       "getnor": {
-        "name": "Regenerações (operação normal)"
+        "name": "Regenerações (funcionamento normal)"
       },
       "getnot": {
         "name": "Notificação",
