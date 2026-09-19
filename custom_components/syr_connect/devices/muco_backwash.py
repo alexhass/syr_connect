@@ -1,4 +1,4 @@
-"""Entity allowlist override for the muco_dfm4 model (SYR RSA Connect,
+"""Entity allowlist override for the muco_backwash model (SYR RSA Connect,
 dkv=506, getDFM=4, automatic-backwash "Rückspülautomatik" role).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
@@ -10,14 +10,14 @@ below are taken from the official command table and validity matrix in
 docs/syrconnect-protocol.md, which confirm getBAT/getBUZ/getSRN/getVER plus
 the automatic-backwash feature (getCOA/getCOM/getRSA/getRSD/getRSE/getSSA/
 getSSE), and the same baseline connectivity/alarm/device-info/Wi-Fi keys
-shared by the other muco_dfm*.py device files. Verify against a real device
+shared by the other muco_*.py device files. Verify against a real device
 before relying on this.
 
 Deliberately NOT included, pending confirmation on a real device:
 - Leak-protection-profile family (getPA-PW1-8, getPRF), water treatment /
   filling family (getCRS/getCRT/getRCD/getRMN/etc.), and valve control
   (getAB/getVLV): none of these are part of the automatic-backwash feature
-  set and belong to the other muco_dfm1/muco_dfm3 variants instead.
+  set and belong to the other muco_leakprotect/muco_filling variants instead.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_KNOWN_KEYS below.

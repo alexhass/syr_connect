@@ -8308,7 +8308,7 @@ async def test_getpa_group_key_excluded_by_model_allowlist(hass: HomeAssistant) 
     """PA-group sensors are skipped when the detected model's per-model
     SENSOR_KNOWN_KEYS override excludes them, even though getPAx is true.
 
-    The muco_dfm3 override (conelclearprofill, getDFM==3) deliberately excludes
+    The muco_filling override (conelclearprofill, getDFM==3) deliberately excludes
     the whole leak-protection-profile family (getPA1-8/getPV1-8/etc.).
     """
     data = {

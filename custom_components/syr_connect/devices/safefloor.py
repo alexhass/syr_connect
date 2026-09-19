@@ -8,7 +8,7 @@ cover every supported model at once.
 
 Unlike every other device file so far, this model IS the genuine home of the
 "(SafeFloor)"-tagged const.py keys (getALD, getHMD, getMIH, getMXH, getMIT,
-getMXT) that muco_dfm1/muco_dfm3 excluded as "a different product" - it is a
+getMXT) that muco_leakprotect/muco_filling excluded as "a different product" - it is a
 standalone humidity/temperature/leak sensor with no valve, no flow, no
 buzzer, and no leak-protection-profile family.
 

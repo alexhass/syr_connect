@@ -1066,7 +1066,7 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
     """A command not in the detected model's per-model BUTTON_KNOWN_KEYS override is
     skipped before any getXYZ presence check (covers the model-allowlist continue).
 
-    The muco_dfm3 override (conelclearprofill, getDFM==3) deliberately excludes
+    The muco_filling override (conelclearprofill, getDFM==3) deliberately excludes
     setSIR and setDEX - both must be skipped even though this device has no
     regeneration/microleakage-test hardware anyway.
     """

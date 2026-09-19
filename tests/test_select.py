@@ -251,7 +251,7 @@ async def test_async_setup_entry_skips_prf_excluded_by_model_allowlist(
     """No PRF select is created when the detected model's per-model
     SELECT_KNOWN_KEYS override excludes getPRF, even though getPA1 is true.
 
-    The muco_dfm3 override (conelclearprofill, getDFM==3) deliberately excludes
+    The muco_filling override (conelclearprofill, getDFM==3) deliberately excludes
     getPRF (no leak-protection profiles on a filling controller).
     """
     data = {

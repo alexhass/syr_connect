@@ -1,4 +1,4 @@
-"""Entity allowlist override for the muco_dfm3 model (e.g. Conel Clear Pro
+"""Entity allowlist override for the muco_filling model (e.g. Conel Clear Pro
 Fill, AC 3228 Connect - getDFM=3, filling-controller role).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model

@@ -1,5 +1,5 @@
-"""Entity allowlist override for the muco_dfm2 model (SYR AC 3200 Connect,
-dkv=506, getDFM=2, "Connection centre"/"Anschlusscenter" role).
+"""Entity allowlist override for the muco_connectioncentre model (SYR AC 3200
+Connect, dkv=506, getDFM=2, "Connection centre"/"Anschlusscenter" role).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
@@ -9,7 +9,7 @@ No real-device or fixture capture exists for this variant yet - the keys
 below are taken from the official validity matrix in
 docs/syrconnect-protocol.md, which confirms getBAR2/getBAT/getBUZ/getCND/
 getFLO/getSRN/getVER are available, plus the same baseline
-connectivity/alarm/device-info/Wi-Fi keys shared by the other muco_dfm*.py
+connectivity/alarm/device-info/Wi-Fi keys shared by the other muco_*.py
 device files. Verify against a real device before relying on this.
 
 Deliberately NOT included, pending confirmation on a real device:

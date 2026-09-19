@@ -16,7 +16,7 @@ both fixtures, and getSLT/getSLV are non-zero (612/116) in both, proving the
 self-learning phase was genuinely active, not a constant-0 stub. getNPS also
 differs between the two fixtures (612 vs 6466), confirming it's a live value.
 getPA1-8/etc. (leak-protection profiles) and getAB/getVLV (valve control) are
-kept for the same reason as the muco_dfm1/safetplus leak-protection variants.
+kept for the same reason as the muco_leakprotect/safetplus leak-protection variants.
 
 Deliberately NOT included:
 - getBAR, getBAR2, getCEL, getCND: null/empty in both fixtures.

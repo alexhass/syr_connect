@@ -1,5 +1,5 @@
-"""Entity allowlist override for the muco_dfm1 model (getDFM=1): covers both
-the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
+"""Entity allowlist override for the muco_leakprotect model (getDFM=1 role):
+covers both the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
 (dkv=506) products, which share this device_file since both are the
 "Leckageschutz" (leak protection) role of the MultiController firmware.
 
@@ -8,7 +8,7 @@ This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.
 
-Unlike the muco_dfm3 (filling controller) variant, the leak-protection-profile
+Unlike the muco_filling (filling controller) variant, the leak-protection-profile
 keys ARE the core feature here (populated with real distinct values in the
 fixture, e.g. getPN1="Anwesend"/getPN2="Abwesend") and getAB/getVLV are kept
 since this model genuinely controls a shutoff valve. getNMT/getNPT/getNMS are
@@ -21,7 +21,7 @@ Deliberately NOT included, pending confirmation on a real device:
   getALD is the one exception (see SENSOR_KNOWN_KEYS below).
 - getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCC, getRCD, getRCN, getRMN,
   getRMT, getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
-  feature in const.py - belongs to the muco_dfm3 filling-controller variant, not
+  feature in const.py - belongs to the muco_filling filling-controller variant, not
   this leak-protection variant, despite being present (shared firmware).
 - getSRV: labeled "(Trio DFR/LS)" in const.py and empty ("") in the fixture.
 - getBAR: labeled "(Safe-T+)" in const.py, unrelated product; 0 in fixture.
@@ -88,13 +88,13 @@ SELECT_KNOWN_KEYS = {
 }
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - belongs to the
-# muco_dfm3 variant, not this leak-protection variant.
+# muco_filling variant, not this leak-protection variant.
 SWITCH_KNOWN_KEYS = {
     "getBUZ",
 }
 
 # setSIR (no regeneration) deliberately excluded. setDEX (microleakage test) is
-# tentatively included: unlike the muco_dfm3 fixture, getDSV is non-zero (3) here and
+# tentatively included: unlike the muco_filling fixture, getDSV is non-zero (3) here and
 # a microleakage test is thematically consistent with a leak-protection module -
 # verify against a real device before relying on this.
 BUTTON_KNOWN_KEYS = {

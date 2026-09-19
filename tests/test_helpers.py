@@ -1411,11 +1411,11 @@ def test_get_model_known_keys_falls_back_when_name_missing() -> None:
 def test_get_model_known_keys_uses_device_override_when_defined() -> None:
     """A model with a matching devices/<name>.py file that defines the platform's
     allowlist uses it verbatim instead of the global set (lines 254, 257-259)."""
-    from custom_components.syr_connect.devices import muco_dfm3
+    from custom_components.syr_connect.devices import muco_filling
 
     global_keys = {"getBAR", "getVOL"}
-    result = helpers.get_model_known_keys({"name": "muco_dfm3"}, "sensor", global_keys)
-    assert result == muco_dfm3.SENSOR_KNOWN_KEYS
+    result = helpers.get_model_known_keys({"name": "muco_filling"}, "sensor", global_keys)
+    assert result == muco_filling.SENSOR_KNOWN_KEYS
     assert result != global_keys
 
 
@@ -1423,21 +1423,21 @@ def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
     """A matching devices/<name>.py file that does NOT define this platform's allowlist
     falls back to the global set (line 258)."""
     global_keys = {"getBUZ"}
-    # muco_dfm3.py defines SENSOR/SELECT/SWITCH/BUTTON/VALVE_KNOWN_KEYS but not
+    # muco_filling.py defines SENSOR/SELECT/SWITCH/BUTTON/VALVE_KNOWN_KEYS but not
     # BINARY_SENSOR_KNOWN_KEYS.
-    result = helpers.get_model_known_keys({"name": "muco_dfm3"}, "binary_sensor", global_keys)
+    result = helpers.get_model_known_keys({"name": "muco_filling"}, "binary_sensor", global_keys)
     assert result == global_keys
 
 
 def test_get_model_known_keys_uses_device_file_over_name() -> None:
     """The 'device_file' field takes priority over 'name' when both are present."""
-    from custom_components.syr_connect.devices import muco_dfm1
+    from custom_components.syr_connect.devices import muco_leakprotect
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys(
-        {"name": "sanibelleakprotect", "device_file": "muco_dfm1"}, "sensor", global_keys
+        {"name": "sanibelleakprotect", "device_file": "muco_leakprotect"}, "sensor", global_keys
     )
-    assert result == muco_dfm1.SENSOR_KNOWN_KEYS
+    assert result == muco_leakprotect.SENSOR_KNOWN_KEYS
 
 
 def test_get_model_known_keys_safetplus_device_override() -> None:
