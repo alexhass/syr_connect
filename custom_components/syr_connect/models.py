@@ -975,7 +975,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
     {
-        # CLEARPFSA
+        # CLEARPFSA - Filling Station
         "alarm_clear_via_set": True,
         "attrs_equals": {"getDFM": 3},
         "base_path": "/trio",
