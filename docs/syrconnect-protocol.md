@@ -974,8 +974,8 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getPRC          | "97"    | %        | Percent Remaining Capacity — remaining softening capacity in percent
 | getRCD / setRCD | "1"     |          | Filling mode: Filling processes period: ""=undefined, 0=hour, 1=day, 2=week, 3=month
 | getRMN / setRMN | "5"     |          | Filling mode: Filling processes. Range in SYR GUI: 1–10 in steps of 1
-| getRMT / setRMT | "30"    | min      | Filling mode: Maximum filling duration. Range in SYR GUI: 1–5 min in 1 min steps, 10 min, 15 min–1 h in 15 min steps, 1 h–12 h in 0.5 h steps
-| getRVT / setRVT | "100"   | L        | Filling mode: Maximum filling charges. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100
+| getRMT / setRMT | "30"    | min      | Leak Protection: Maximum filling duration. Values: 0-720, Range in SYR GUI: 1–5 min in 1 min steps, 10 min, 15 min–1 h in 15 min steps, 1 h–12 h in 0.5 h steps
+| getRVT / setRVT | "100"   | L        | Leak Protection: Maximum filling charges. Values 0-9900. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100
 | getTPR / setTPR | "18"    | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps
 
 ## Further information
