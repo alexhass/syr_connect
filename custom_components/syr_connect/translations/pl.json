@@ -1,1272 +1,1272 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "To centrum jest już skonfigurowane",
-            "reauth_failed": "Ponowne uwierzytelnienie nie powiodło się. Spróbuj ponownie.",
-            "reauth_successful": "Ponowne uwierzytelnienie zakończone sukcesem",
-            "reconfigure_failed": "Rekonfiguracja nie powiodła się. Spróbuj ponownie.",
-            "reconfigure_successful": "Rekonfiguracja zakończona sukcesem"
-        },
-        "error": {
-            "cannot_connect": "Nie można połączyć się z usługą. Sprawdź połączenie internetowe i spróbuj ponownie.",
-            "cannot_connect_local": "Nie można połączyć się z lokalnym urządzeniem. Sprawdź, czy adres IP urządzenia jest poprawny i czy urządzenie jest włączone oraz podłączone do sieci lokalnej.",
-            "host_invalid": "Nieprawidłowy host. Podaj prawidłowy adres IP lub nazwę hosta (bez spacji, bez numeru portu).",
-            "host_no_port": "Host nie może zawierać numeru portu. Podaj tylko adres IP lub nazwę hosta.",
-            "invalid_auth": "Nieprawidłowa nazwa użytkownika lub hasło. Sprawdź swoje dane logowania.",
-            "unknown": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."
-        },
-        "step": {
-            "api_json": {
-                "data": {
-                    "host": "Nazwa hosta lub adres IP",
-                    "model": "Model urządzenia"
-                },
-                "description": "Podaj model i nazwę hosta/IP do dostępu lokalnego",
-                "title": "SYR Connect (lokalnie)"
-            },
-            "api_xml": {
-                "data": {
-                    "password": "Hasło",
-                    "service": "Usługa",
-                    "username": "Nazwa użytkownika"
-                },
-                "description": "Podaj dane logowania do aplikacji mobilnej, aby uzyskać dostęp przez chmurę",
-                "title": "SYR Connect (Cloud)"
-            },
-            "reauth_confirm": {
-                "data": {
-                    "password": "Hasło",
-                    "username": "Nazwa użytkownika"
-                },
-                "description": "Dane logowania dla {username} są już nieważne. Podaj nowe dane logowania.",
-                "title": "Ponowne uwierzytelnienie SYR Connect"
-            },
-            "reconfigure": {
-                "data": {
-                    "host": "Nazwa hosta lub adres IP",
-                    "model": "Model urządzenia",
-                    "password": "Hasło",
-                    "service": "Usługa",
-                    "username": "Nazwa użytkownika"
-                },
-                "description": "Zaktualizuj ustawienia.",
-                "title": "Rekonfiguruj SYR Connect"
-            },
-            "user": {
-                "description": "Wybierz sposób połączenia z urządzeniem SYR:\n\n- **Dostęp przez chmurę**: Użyj danych logowania do aplikacji mobilnej, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego.\n\n- **Dostęp lokalny**: Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
-                "menu_options": {
-                    "api_json": "Dostęp lokalny",
-                    "api_xml": "Dostęp przez chmurę"
-                },
-                "title": "SYR Connect"
-            }
-        }
+  "config": {
+    "abort": {
+      "already_configured": "To centrum jest już skonfigurowane",
+      "reauth_failed": "Ponowne uwierzytelnienie nie powiodło się. Spróbuj ponownie.",
+      "reauth_successful": "Ponowne uwierzytelnienie zakończone sukcesem",
+      "reconfigure_failed": "Rekonfiguracja nie powiodła się. Spróbuj ponownie.",
+      "reconfigure_successful": "Rekonfiguracja zakończona sukcesem"
     },
-    "entity": {
-        "binary_sensor": {
-            "getbuz": {
-                "name": "Buzzer przy alarmie",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            }
-        },
-        "button": {
-            "setala": {
-                "name": "Resetuj alarm"
-            },
-            "setdex": {
-                "name": "Uruchom test mikroprzecieku"
-            },
-            "setnot": {
-                "name": "Resetuj powiadomienie"
-            },
-            "setrst": {
-                "name": "Zresetuj urządzenie"
-            },
-            "setsir": {
-                "name": "Regeneruj teraz"
-            },
-            "setsmr": {
-                "name": "Regeneracja wielokrotna"
-            },
-            "setwrn": {
-                "name": "Resetuj ostrzeżenie"
-            }
-        },
-        "select": {
-            "getcrs": {
-                "name": "Rozmiar wkładu"
-            },
-            "getcrt": {
-                "name": "Typ wkładu",
-                "state": {
-                    "0": "HWE",
-                    "1": "HVE",
-                    "2": "HVE+",
-                    "none": "Brak"
-                }
-            },
-            "getfcd": {
-                "name": "Interwał płukania zwrotnego filtra",
-                "state": {
-                    "10368000": "4 miesiące",
-                    "12960000": "5 miesięcy",
-                    "15552000": "6 miesięcy",
-                    "18144000": "7 miesięcy",
-                    "20736000": "8 miesięcy",
-                    "23328000": "9 miesięcy",
-                    "2592000": "1 miesiąc",
-                    "25920000": "10 miesięcy",
-                    "28512000": "11 miesięcy",
-                    "31104000": "12 miesięcy",
-                    "5184000": "2 miesiące",
-                    "7776000": "3 miesiące"
-                }
-            },
-            "getffm": {
-                "name": "Typ filtra",
-                "state": {
-                    "0": "Nieznany",
-                    "1": "Filtr z płukaniem zwrotnym",
-                    "2": "Filtr wymienny",
-                    "3": "Brak filtra"
-                }
-            },
-            "getlot": {
-                "name": "Maks. przewodność wyjściowa"
-            },
-            "getohw": {
-                "name": "Twardość wody zmiękczonej"
-            },
-            "getprf": {
-                "name": "Aktywny profil ochrony przed wyciekiem",
-                "state": {
-                    "1": "Obecny",
-                    "2": "Nieobecny"
-                }
-            },
-            "getrcd": {
-                "name": "Okres monitorowania cykli napełniania",
-                "state": {
-                    "0": "Godzina",
-                    "1": "Dzień",
-                    "2": "Tydzień",
-                    "3": "Miesiąc",
-                    "undefined": "Nieokreślony"
-                }
-            },
-            "getrmn": {
-                "name": "Maksymalna liczba cykli napełniania na okres"
-            },
-            "getrmo": {
-                "name": "Tryb regeneracji",
-                "state": {
-                    "1": "Standard",
-                    "2": "ECO",
-                    "3": "Moc",
-                    "4": "Automatyczny"
-                }
-            },
-            "getrmt": {
-                "name": "Maksymalny czas napełniania"
-            },
-            "getrpd": {
-                "name": "Interwał regeneracji"
-            },
-            "getrtm": {
-                "name": "Czas regeneracji"
-            },
-            "getrvt": {
-                "name": "Maksymalne napełnienie"
-            },
-            "getsro": {
-                "name": "Orientacja wyświetlacza",
-                "state": {
-                    "0": "Domyślna",
-                    "180": "180°",
-                    "270": "270°",
-                    "90": "90°"
-                }
-            },
-            "getsv1": {
-                "name": "Objętość pojemnika na sól 1"
-            },
-            "getsv2": {
-                "name": "Objętość pojemnika na sól 2"
-            },
-            "getsv3": {
-                "name": "Objętość pojemnika na sól 3"
-            },
-            "gettpr": {
-                "name": "Ciśnienie docelowe"
-            }
-        },
-        "sensor": {
-            "dst": {
-                "name": "Łączność urządzenia",
-                "state": {
-                    "0": "Nigdy nie było online",
-                    "1": "Offline",
-                    "2": "Online",
-                    "3": "Czuwanie"
-                }
-            },
-            "getab": {
-                "name": "Zawór odcinający",
-                "state": {
-                    "false": "Otwarty",
-                    "true": "Zamknięty"
-                }
-            },
-            "getala": {
-                "name": "Alarm",
-                "state": {
-                    "alarm_battery_low": "Bateria rozładowana",
-                    "alarm_battery_weak": "Słaba bateria!",
-                    "alarm_cartridge_exhausted_capacity": "Wkład wyczerpany (pojemność)",
-                    "alarm_cartridge_exhausted_conductivity": "Wkład wyczerpany (przewodność)",
-                    "alarm_end_switch": "Wyłącznik krańcowy",
-                    "alarm_external_sensor_leakage_cable": "Zewnętrzny czujnik przecieku (kabel)",
-                    "alarm_external_sensor_leakage_radio": "Zewnętrzny czujnik przecieku (radio)",
-                    "alarm_fill_cycles_exceeded": "Przekroczono liczbę cykli napełniania!",
-                    "alarm_flow_sensor_fault": "Usterka czujnika przepływu!",
-                    "alarm_heating_fill_time_leak": "Wyciek czasu napełniania ogrzewania!",
-                    "alarm_heating_fill_volume_leak": "Wyciek objętości napełniania ogrzewania!",
-                    "alarm_increased_water_hardness": "Zwiększona twardość wody",
-                    "alarm_leakage_time_reached": "Osiągnięto czas wycieku!",
-                    "alarm_leakage_volume_reached": "Osiągnięto objętość wycieku!",
-                    "alarm_max_flow_rate_reached": "Osiągnięto maksymalny przepływ!",
-                    "alarm_microleakage_detected": "Wykryto mikroprzeciek!",
-                    "alarm_motor_current_exceeded": "Przekroczono próg prądu silnika!",
-                    "alarm_pressure_sensor_faulty": "Czujnik ciśnienia uszkodzony!",
-                    "alarm_safefloor_communication": "Błąd połączenia sieciowego",
-                    "alarm_safefloor_flood": "Wykryto przeciek przy czujniku podłogowym",
-                    "alarm_safefloor_high_humidity": "Przekroczono próg wysokiej wilgotności",
-                    "alarm_safefloor_high_temperature": "Przekroczono próg wysokiej temperatury",
-                    "alarm_safefloor_low_humidity": "Przekroczono próg niskiej wilgotności",
-                    "alarm_safefloor_low_temperature": "Przekroczono próg niskiej temperatury",
-                    "alarm_safefloor_weather": "Błąd czujnika temperatury",
-                    "alarm_safet_absence_leakage_detected": "Wykryto wyciek w trybie nieobecności. Przekroczono objętość",
-                    "alarm_safet_flow_leakage_detected": "Wykryto wyciek przepływu: przepływ objętościowy > 3500 l/h",
-                    "alarm_safet_flow_time_exceeded": "Przekroczono kryterium czasu przepływu.",
-                    "alarm_safet_leakage_volume_reached": "Wykryto wyciek w trybie obecności. Przekroczono objętość",
-                    "alarm_safet_microleakage_detected": "Wykryto mikroprzeciek. Przekroczono wartość graniczną",
-                    "alarm_safet_turbine_no_signal": "Brak sygnału turbiny",
-                    "alarm_safet_valve_cannot_be_operated": "Zawór nie może być obsługiwany",
-                    "alarm_salt_supply_empty": "Brak soli",
-                    "alarm_target_pressure_unreachable": "Nie można osiągnąć ciśnienia docelowego!",
-                    "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
-                    "alarm_turbine_blocked": "Turbina zablokowana!",
-                    "alarm_valve_position": "Pozycja zaworu",
-                    "error_no_information": "Błąd: brak dostępnych informacji",
-                    "fault_conductance_sensor": "Czujnik przewodności uszkodzony!",
-                    "no_alarm": "Brak alarmu"
-                }
-            },
-            "getald": {
-                "name": "Czas trwania alarmu"
-            },
-            "getalm": {
-                "name": "Ostatnie alarmy",
-                "state": {
-                    "low_salt": "Mało soli",
-                    "no_alarm": "Brak alarmu",
-                    "no_salt": "Brak soli"
-                }
-            },
-            "getaln": {
-                "name": "Ostatnie powiadomienia"
-            },
-            "getalw": {
-                "name": "Ostatnie ostrzeżenia"
-            },
-            "getapt": {
-                "name": "Limit czasu punktu dostępowego"
-            },
-            "getavo": {
-                "name": "Aktualny przepływ"
-            },
-            "getbap": {
-                "name": "Poziom baterii"
-            },
-            "getbar": {
-                "name": "Ciśnienie wejściowe"
-            },
-            "getbar2": {
-                "name": "Ciśnienie wyjściowe"
-            },
-            "getbat": {
-                "name": "Napięcie baterii"
-            },
-            "getcde": {
-                "name": "Kod konfiguracji"
-            },
-            "getcel": {
-                "name": "Temperatura"
-            },
-            "getcna": {
-                "name": "Nazwa urządzenia"
-            },
-            "getcnd": {
-                "name": "Przewodność"
-            },
-            "getcno": {
-                "name": "Numer kodu"
-            },
-            "getcoa": {
-                "name": "Licznik automatycznych płukań zwrotnych"
-            },
-            "getcof": {
-                "name": "Całkowite zużycie wody"
-            },
-            "getcom": {
-                "name": "Licznik ręcznych płukań zwrotnych"
-            },
-            "getcrs": {
-                "name": "Rozmiar wkładu"
-            },
-            "getcrt": {
-                "name": "Typ wkładu",
-                "state": {
-                    "0": "HWE",
-                    "1": "HVE",
-                    "2": "HVE+",
-                    "none": "Brak"
-                }
-            },
-            "getcs1": {
-                "name": "Pozostała pojemność żywicy 1"
-            },
-            "getcs2": {
-                "name": "Pozostała pojemność żywicy 2"
-            },
-            "getcs3": {
-                "name": "Pozostała pojemność żywicy 3"
-            },
-            "getcyn": {
-                "name": "Licznik cykli regeneracji"
-            },
-            "getcyt": {
-                "name": "Czas cyklu regeneracji"
-            },
-            "getdbd": {
-                "name": "Spadek ciśnienia testu mikroprzecieku"
-            },
-            "getden": {
-                "name": "Urządzenie włączone"
-            },
-            "getdfm": {
-                "name": "Funkcje urządzenia",
-                "state": {
-                    "1": "Ochrona przed przeciekiem",
-                    "2": "Centrum połączeń",
-                    "3": "All-in-One",
-                    "4": "Automatyczne płukanie wsteczne (RSA)",
-                    "5": "Filtr z płukaniem wstecznym z reduktorem ciśnienia (DM) + Ochrona przed przeciekiem (LS)"
-                }
-            },
-            "getdgw": {
-                "name": "Brama sieciowa"
-            },
-            "getdma": {
-                "name": "Tryb alarmu mikroprzecieku",
-                "state": {
-                    "1": "Ostrzeżenie",
-                    "2": "Alarm"
-                }
-            },
-            "getdrp": {
-                "name": "Interwał testu mikroprzecieku",
-                "state": {
-                    "1": "Codziennie",
-                    "2": "Co tydzień",
-                    "3": "Co miesiąc"
-                }
-            },
-            "getdsv": {
-                "name": "Test mikroprzecieku",
-                "state": {
-                    "0": "Nieaktywny",
-                    "1": "Aktywny",
-                    "2": "Przerwany – spadek ciśnienia",
-                    "3": "Pominięty"
-                }
-            },
-            "getdtt": {
-                "name": "Czas testu mikroprzecieku"
-            },
-            "getdwf": {
-                "name": "Oczekiwane dzienne zużycie wody"
-            },
-            "getegw": {
-                "name": "Brama sieciowa (LAN)"
-            },
-            "geteip": {
-                "name": "Adres IP (LAN)"
-            },
-            "getfcd": {
-                "name": "Interwał płukania zwrotnego filtra",
-                "state": {
-                    "10368000": "4 miesiące",
-                    "12960000": "5 miesięcy",
-                    "15552000": "6 miesięcy",
-                    "18144000": "7 miesięcy",
-                    "20736000": "8 miesięcy",
-                    "23328000": "9 miesięcy",
-                    "2592000": "1 miesiąc",
-                    "25920000": "10 miesięcy",
-                    "28512000": "11 miesięcy",
-                    "31104000": "12 miesięcy",
-                    "5184000": "2 miesiące",
-                    "7776000": "3 miesiące"
-                }
-            },
-            "getfco": {
-                "name": "Zawartość żelaza"
-            },
-            "getffm": {
-                "name": "Typ filtra",
-                "state": {
-                    "0": "Nieznany",
-                    "1": "Filtr z płukaniem zwrotnym",
-                    "2": "Filtr wymienny",
-                    "3": "Brak filtra"
-                }
-            },
-            "getfir": {
-                "name": "Model oprogramowania"
-            },
-            "getflo": {
-                "name": "Przepływ wody"
-            },
-            "gethmd": {
-                "name": "Wilgotność"
-            },
-            "getinr": {
-                "name": "Niekompletne regeneracje"
-            },
-            "getipa": {
-                "name": "Adres IP"
-            },
-            "getiwh": {
-                "name": "Twardość wody wejściowej"
-            },
-            "getlan": {
-                "name": "Język urządzenia",
-                "state": {
-                    "0": "Angielski",
-                    "1": "Niemiecki",
-                    "3": "Hiszpański"
-                }
-            },
-            "getlar": {
-                "name": "Ostatnia regeneracja"
-            },
-            "getle": {
-                "name": "Ochrona przed wyciekiem – poziom Obecny"
-            },
-            "getlft": {
-                "name": "Czas ostatniego uzupełnienia"
-            },
-            "getlfv": {
-                "name": "Ostatnia uzupełniona objętość"
-            },
-            "getlng": {
-                "name": "Język urządzenia",
-                "state": {
-                    "0": "Niemiecki",
-                    "1": "Angielski"
-                }
-            },
-            "getlot": {
-                "name": "Maks. przewodność wyjściowa"
-            },
-            "getlrc": {
-                "name": "Pozostała pojemność"
-            },
-            "getltv": {
-                "name": "Ostatnio wydana objętość"
-            },
-            "getmac": {
-                "name": "Adres MAC"
-            },
-            "getmac1": {
-                "name": "Adres MAC (Wi‑Fi)"
-            },
-            "getmac2": {
-                "name": "Adres MAC (LAN)"
-            },
-            "getman": {
-                "name": "Producent"
-            },
-            "getmih": {
-                "name": "Minimalna wilgotność"
-            },
-            "getmit": {
-                "name": "Minimalna temperatura"
-            },
-            "getmxh": {
-                "name": "Maksymalna wilgotność"
-            },
-            "getmxt": {
-                "name": "Maksymalna temperatura"
-            },
-            "getnet": {
-                "name": "Napięcie sieciowe"
-            },
-            "getnms": {
-                "name": "Brak ruchu zaworu od"
-            },
-            "getnmt": {
-                "name": "Czas do autotestu zaworu"
-            },
-            "getnor": {
-                "name": "Regeneracje (normalna praca)"
-            },
-            "getnot": {
-                "name": "Powiadomienie",
-                "state": {
-                    "annual_maintenance": "Coroczna konserwacja",
-                    "backwash_reminder_pressure": "Przypomnienie o płukaniu wstecznym sterowanym ciśnieniem",
-                    "bi_annual_maintenance": "Półroczna konserwacja",
-                    "filter_maintenance_reminder": "Przypomnienie o konserwacji filtra",
-                    "filter_service_reminder": "Przypomnienie o serwisie filtra",
-                    "new_software_available": "Dostępna nowa aktualizacja oprogramowania!",
-                    "new_software_installed": "Zainstalowano nową aktualizację oprogramowania!",
-                    "no_notification": "Brak"
-                }
-            },
-            "getnps": {
-                "name": "Brak impulsów turbiny od"
-            },
-            "getnpt": {
-                "name": "Czas do alarmu czujnika przepływu"
-            },
-            "getnrt": {
-                "name": "Brak uzupełnienia od"
-            },
-            "getohw": {
-                "name": "Twardość wody zmiękczonej"
-            },
-            "getowh": {
-                "name": "Twardość wody wyjściowej"
-            },
-            "getpa1": {
-                "name": "Profil ochrony przed wyciekiem 1",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa2": {
-                "name": "Profil ochrony przed wyciekiem 2",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa3": {
-                "name": "Profil ochrony przed wyciekiem 3",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa4": {
-                "name": "Profil ochrony przed wyciekiem 4",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa5": {
-                "name": "Profil ochrony przed wyciekiem 5",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa6": {
-                "name": "Profil ochrony przed wyciekiem 6",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa7": {
-                "name": "Profil ochrony przed wyciekiem 7",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpa8": {
-                "name": "Profil ochrony przed wyciekiem 8",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb1": {
-                "name": "Profil buzzera 1",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb2": {
-                "name": "Profil buzzera 2",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb3": {
-                "name": "Profil buzzera 3",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb4": {
-                "name": "Profil buzzera 4",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb5": {
-                "name": "Profil buzzera 5",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb6": {
-                "name": "Profil buzzera 6",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb7": {
-                "name": "Profil buzzera 7",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpb8": {
-                "name": "Profil buzzera 8",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpf1": {
-                "name": "Próg przepływu wycieku 1"
-            },
-            "getpf2": {
-                "name": "Próg przepływu wycieku 2"
-            },
-            "getpf3": {
-                "name": "Próg przepływu wycieku 3"
-            },
-            "getpf4": {
-                "name": "Próg przepływu wycieku 4"
-            },
-            "getpf5": {
-                "name": "Próg przepływu wycieku 5"
-            },
-            "getpf6": {
-                "name": "Próg przepływu wycieku 6"
-            },
-            "getpf7": {
-                "name": "Próg przepływu wycieku 7"
-            },
-            "getpf8": {
-                "name": "Próg przepływu wycieku 8"
-            },
-            "getpm1": {
-                "name": "Profil testu mikroprzecieku 1",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm2": {
-                "name": "Profil testu mikroprzecieku 2",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm3": {
-                "name": "Profil testu mikroprzecieku 3",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm4": {
-                "name": "Profil testu mikroprzecieku 4",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm5": {
-                "name": "Profil testu mikroprzecieku 5",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm6": {
-                "name": "Profil testu mikroprzecieku 6",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm7": {
-                "name": "Profil testu mikroprzecieku 7",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpm8": {
-                "name": "Profil testu mikroprzecieku 8",
-                "state": {
-                    "false": "Nieaktywny",
-                    "true": "Aktywny"
-                }
-            },
-            "getpn1": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 1"
-            },
-            "getpn2": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 2"
-            },
-            "getpn3": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 3"
-            },
-            "getpn4": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 4"
-            },
-            "getpn5": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 5"
-            },
-            "getpn6": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 6"
-            },
-            "getpn7": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 7"
-            },
-            "getpn8": {
-                "name": "Nazwa profilu ochrony przed wyciekiem 8"
-            },
-            "getpr1": {
-                "name": "Czas powrotu 1 do profilu Obecny"
-            },
-            "getpr2": {
-                "name": "Czas powrotu 2 do profilu Obecny"
-            },
-            "getpr3": {
-                "name": "Czas powrotu 3 do profilu Obecny"
-            },
-            "getpr4": {
-                "name": "Czas powrotu 4 do profilu Obecny"
-            },
-            "getpr5": {
-                "name": "Czas powrotu 5 do profilu Obecny"
-            },
-            "getpr6": {
-                "name": "Czas powrotu 6 do profilu Obecny"
-            },
-            "getpr7": {
-                "name": "Czas powrotu 7 do profilu Obecny"
-            },
-            "getpr8": {
-                "name": "Czas powrotu 8 do profilu Obecny"
-            },
-            "getprc": {
-                "name": "Poziom pozostałej pojemności"
-            },
-            "getprf": {
-                "name": "Aktywny profil ochrony przed wyciekiem",
-                "state": {
-                    "1": "Obecny",
-                    "2": "Nieobecny"
-                }
-            },
-            "getprs": {
-                "name": "Ciśnienie wejściowe"
-            },
-            "getpst": {
-                "name": "Czujnik ciśnienia",
-                "state": {
-                    "1": "Niedostępny",
-                    "2": "Dostępny"
-                }
-            },
-            "getpt1": {
-                "name": "Czas ochrony przed wyciekiem 1"
-            },
-            "getpt2": {
-                "name": "Czas ochrony przed wyciekiem 2"
-            },
-            "getpt3": {
-                "name": "Czas ochrony przed wyciekiem 3"
-            },
-            "getpt4": {
-                "name": "Czas ochrony przed wyciekiem 4"
-            },
-            "getpt5": {
-                "name": "Czas ochrony przed wyciekiem 5"
-            },
-            "getpt6": {
-                "name": "Czas ochrony przed wyciekiem 6"
-            },
-            "getpt7": {
-                "name": "Czas ochrony przed wyciekiem 7"
-            },
-            "getpt8": {
-                "name": "Czas ochrony przed wyciekiem 8"
-            },
-            "getpv1": {
-                "name": "Próg objętości wycieku 1"
-            },
-            "getpv2": {
-                "name": "Próg objętości wycieku 2"
-            },
-            "getpv3": {
-                "name": "Próg objętości wycieku 3"
-            },
-            "getpv4": {
-                "name": "Próg objętości wycieku 4"
-            },
-            "getpv5": {
-                "name": "Próg objętości wycieku 5"
-            },
-            "getpv6": {
-                "name": "Próg objętości wycieku 6"
-            },
-            "getpv7": {
-                "name": "Próg objętości wycieku 7"
-            },
-            "getpv8": {
-                "name": "Próg objętości wycieku 8"
-            },
-            "getpw1": {
-                "name": "Profil ostrzeżenia o wycieku 1",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw2": {
-                "name": "Profil ostrzeżenia o wycieku 2",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw3": {
-                "name": "Profil ostrzeżenia o wycieku 3",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw4": {
-                "name": "Profil ostrzeżenia o wycieku 4",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw5": {
-                "name": "Profil ostrzeżenia o wycieku 5",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw6": {
-                "name": "Profil ostrzeżenia o wycieku 6",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw7": {
-                "name": "Profil ostrzeżenia o wycieku 7",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getpw8": {
-                "name": "Profil ostrzeżenia o wycieku 8",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getrcc": {
-                "name": "Cykle napełniania (bieżący okres)"
-            },
-            "getrcd": {
-                "name": "Okres monitorowania cykli napełniania",
-                "state": {
-                    "0": "Godzina",
-                    "1": "Dzień",
-                    "2": "Tydzień",
-                    "3": "Miesiąc",
-                    "undefined": "Nieokreślony"
-                }
-            },
-            "getrcn": {
-                "name": "Licznik wszystkich uzupełnień"
-            },
-            "getrcp": {
-                "name": "Interwał synchronizacji"
-            },
-            "getrdo": {
-                "name": "Dozowanie soli"
-            },
-            "getre1": {
-                "name": "Pojemność rezerwowa butelki 1"
-            },
-            "getre2": {
-                "name": "Pojemność rezerwowa butelki 2"
-            },
-            "getres": {
-                "name": "Pozostała pojemność"
-            },
-            "getrg1": {
-                "name": "Status regeneracji",
-                "state": {
-                    "0": "Brak regeneracji",
-                    "1": "Zbiornik 1 w regeneracji",
-                    "2": "Zbiornik 2 w regeneracji"
-                }
-            },
-            "getrg2": {
-                "name": "Regeneracja zbiornik 2",
-                "state": {
-                    "0": "Nieaktywna",
-                    "1": "Uruchomiona"
-                }
-            },
-            "getrg3": {
-                "name": "Regeneracja zbiornik 3",
-                "state": {
-                    "0": "Nieaktywna",
-                    "1": "Uruchomiona"
-                }
-            },
-            "getrmn": {
-                "name": "Maksymalna liczba cykli napełniania na okres"
-            },
-            "getrmo": {
-                "name": "Tryb regeneracji",
-                "state": {
-                    "1": "Standard",
-                    "2": "ECO",
-                    "3": "Moc",
-                    "4": "Automatyczny"
-                }
-            },
-            "getrmt": {
-                "name": "Maksymalny czas napełniania"
-            },
-            "getrpd": {
-                "name": "Interwał regeneracji"
-            },
-            "getrpw": {
-                "name": "Dni regeneracji",
-                "state": {
-                    "0": "Nie określono"
-                }
-            },
-            "getrsa": {
-                "name": "Interwał płukania zwrotnego"
-            },
-            "getrsd": {
-                "name": "Czas trwania płukania zwrotnego"
-            },
-            "getrse": {
-                "name": "Interwał przypomnienia o płukaniu zwrotnym"
-            },
-            "getrth": {
-                "name": "Czas regeneracji (godzina)"
-            },
-            "getrti": {
-                "name": "Całkowity czas trwania cyklu regeneracji"
-            },
-            "getrtm": {
-                "name": "Czas regeneracji"
-            },
-            "getrvt": {
-                "name": "Maksymalne napełnienie"
-            },
-            "getscr": {
-                "name": "Cykle regeneracji serwisowej"
-            },
-            "getsir": {
-                "name": "Natychmiastowa regeneracja",
-                "state": {
-                    "0": "Uruchom natychmiast",
-                    "1": "Nie uruchamiaj"
-                }
-            },
-            "getsle": {
-                "name": "Pozostały czas fazy samouczenia"
-            },
-            "getslf": {
-                "name": "Przepływ w fazie samouczenia"
-            },
-            "getslp": {
-                "name": "Czas trwania fazy samouczenia"
-            },
-            "getslt": {
-                "name": "Czas w fazie samouczenia"
-            },
-            "getslv": {
-                "name": "Objętość w fazie samouczenia"
-            },
-            "getsre": {
-                "name": "Regeneracja aktywna",
-                "state": {
-                    "0": "Nie działa",
-                    "1": "Działa"
-                }
-            },
-            "getsrh": {
-                "name": "Następna półroczna konserwacja"
-            },
-            "getsrn": {
-                "name": "Numer seryjny"
-            },
-            "getsro": {
-                "name": "Orientacja wyświetlacza",
-                "state": {
-                    "0": "Domyślna",
-                    "180": "180°",
-                    "270": "270°",
-                    "90": "90°"
-                }
-            },
-            "getsrv": {
-                "name": "Następna coroczna konserwacja"
-            },
-            "getss1": {
-                "name": "Stan pojemnika na sól 1"
-            },
-            "getss2": {
-                "name": "Stan pojemnika na sól 2"
-            },
-            "getss3": {
-                "name": "Stan pojemnika na sól 3"
-            },
-            "getsta": {
-                "name": "Status",
-                "state": {
-                    "status_automatic_filling": "Automatyczne napełnianie",
-                    "status_backwash": "Płukanie zwrotne",
-                    "status_fast_rinse": "Szybkie płukanie",
-                    "status_filling": "Napełnianie",
-                    "status_inactive": "Nieaktywny",
-                    "status_initial_filling": "Pierwsze napełnienie",
-                    "status_manual_filling": "Ręczne napełnianie",
-                    "status_refill_salt": "Proszę uzupełnić sól",
-                    "status_regenerant_rinse": "Płukanie czynnikiem regenerującym",
-                    "status_slow_rinse": "Powolne płukanie",
-                    "status_standby": "Czuwanie"
-                }
-            },
-            "getsv1": {
-                "name": "Objętość pojemnika na sól 1"
-            },
-            "getsv2": {
-                "name": "Objętość pojemnika na sól 2"
-            },
-            "getsv3": {
-                "name": "Objętość pojemnika na sól 3"
-            },
-            "gett1": {
-                "name": "Czas wycieku 1"
-            },
-            "gett2": {
-                "name": "Czas wycieku 2"
-            },
-            "gettmp": {
-                "name": "Ochrona przed wyciekiem dezaktywowana"
-            },
-            "gettor": {
-                "name": "Łączna liczba regeneracji"
-            },
-            "gettpr": {
-                "name": "Ciśnienie docelowe"
-            },
-            "gettrt": {
-                "name": "Skumulowany czas uzupełniania"
-            },
-            "gettrv": {
-                "name": "Skumulowana uzupełniona objętość"
-            },
-            "gettyp": {
-                "name": "Typ urządzenia"
-            },
-            "getul": {
-                "name": "Ochrona przed wyciekiem – poziom Nieobecny"
-            },
-            "getver": {
-                "name": "Wersja oprogramowania"
-            },
-            "getvlv": {
-                "name": "Status zaworu",
-                "state": {
-                    "10": "Zamknięty",
-                    "11": "Zamykanie",
-                    "20": "Otwarty",
-                    "21": "Otwieranie"
-                }
-            },
-            "getvol": {
-                "name": "Całkowita objętość"
-            },
-            "getvps1": {
-                "name": "Brak impulsów turbiny na głowicy sterującej 1 od"
-            },
-            "getvps2": {
-                "name": "Brak impulsów turbiny na głowicy sterującej 2 od"
-            },
-            "getvs1": {
-                "name": "Próg objętości 1"
-            },
-            "getvs2": {
-                "name": "Próg objętości 2"
-            },
-            "getvs3": {
-                "name": "Próg objętości 3"
-            },
-            "getwfc": {
-                "name": "SSID Wi-Fi"
-            },
-            "getwfl": {
-                "name": "Dostępne sieci"
-            },
-            "getwfr": {
-                "name": "Siła sygnału Wi-Fi"
-            },
-            "getwfs": {
-                "name": "Status połączenia Wi-Fi",
-                "state": {
-                    "0": "Niepodłączony",
-                    "1": "Łączenie",
-                    "2": "Połączony"
-                }
-            },
-            "getwgw": {
-                "name": "Brama sieciowa (Wi‑Fi)"
-            },
-            "getwhu": {
-                "name": "Jednostka twardości wody"
-            },
-            "getwip": {
-                "name": "Adres IP (Wi‑Fi)"
-            },
-            "getwmp": {
-                "name": "Interwał pomiarowy"
-            },
-            "getwrn": {
-                "name": "Ostrzeżenie",
-                "state": {
-                    "battery_low": "Niski poziom baterii",
-                    "cartridge_almost_exhausted": "Wkład prawie wyczerpany",
-                    "initial_filling": "Pierwsze napełnianie",
-                    "leak_warning": "Ostrzeżenie o wycieku",
-                    "leak_warning_time": "Czas ostrzeżenia o wycieku",
-                    "leak_warning_volume": "Objętość wycieku",
-                    "microleakage_suspected": "Podejrzenie mikroprzecieku",
-                    "no_batteries_detected": "Nie wykryto baterii",
-                    "no_warning": "Brak ostrzeżenia",
-                    "outlet_pressure_too_high": "Zbyt wysokie ciśnienie wyjściowe",
-                    "power_outage": "Przerwa w zasilaniu",
-                    "salt_supply_low": "Niski poziom soli"
-                }
-            }
-        },
-        "switch": {
-            "getbuz": {
-                "name": "Buzzer przy alarmie",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getdfi": {
-                "name": "Tryb napełniania",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getssa": {
-                "name": "Automatyczne płukanie zwrotne",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            },
-            "getsse": {
-                "name": "Przypomnienie o płukaniu zwrotnym",
-                "state": {
-                    "false": "Wyłączony",
-                    "true": "Włączony"
-                }
-            }
-        },
-        "valve": {
-            "getab": {
-                "name": "Zawór odcinający",
-                "state": {
-                    "false": "Otwarty",
-                    "true": "Zamknięty"
-                }
-            },
-            "getvlv": {
-                "name": "Status zaworu",
-                "state": {
-                    "10": "Zamknięty",
-                    "11": "Zamykanie",
-                    "20": "Otwarty",
-                    "21": "Otwieranie"
-                }
-            }
-        }
+    "error": {
+      "cannot_connect": "Nie można połączyć się z usługą. Sprawdź połączenie internetowe i spróbuj ponownie.",
+      "cannot_connect_local": "Nie można połączyć się z lokalnym urządzeniem. Sprawdź, czy adres IP urządzenia jest poprawny i czy urządzenie jest włączone oraz podłączone do sieci lokalnej.",
+      "host_invalid": "Nieprawidłowy host. Podaj prawidłowy adres IP lub nazwę hosta (bez spacji, bez numeru portu).",
+      "host_no_port": "Host nie może zawierać numeru portu. Podaj tylko adres IP lub nazwę hosta.",
+      "invalid_auth": "Nieprawidłowa nazwa użytkownika lub hasło. Sprawdź swoje dane logowania.",
+      "unknown": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."
     },
-    "issues": {
-        "device_offline": {
-            "description": "Urządzenie SYR Connect \"{device_name}\" jest obecnie offline i nie można się z nim połączyć. Sprawdź:\n\n- Zasilanie urządzenia\n- Połączenie sieciowe\n- Status usługi chmurowej SYR Connect\n\nUrządzenie połączy się automatycznie po powrocie do trybu online.",
-            "title": "Urządzenie offline: {device_name}"
-        }
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "scan_interval": "Interwał aktualizacji"
-                },
-                "description": "Określa czas między wywołaniami API.",
-                "title": "Opcje SYR Connect"
-            }
-        }
+    "step": {
+      "api_json": {
+        "data": {
+          "host": "Nazwa hosta lub adres IP",
+          "model": "Model urządzenia"
+        },
+        "description": "Podaj model i nazwę hosta/IP do dostępu lokalnego",
+        "title": "SYR Connect (lokalnie)"
+      },
+      "api_xml": {
+        "data": {
+          "password": "Hasło",
+          "service": "Usługa",
+          "username": "Nazwa użytkownika"
+        },
+        "description": "Podaj dane logowania do aplikacji mobilnej, aby uzyskać dostęp przez chmurę",
+        "title": "SYR Connect (Cloud)"
+      },
+      "reauth_confirm": {
+        "data": {
+          "password": "Hasło",
+          "username": "Nazwa użytkownika"
+        },
+        "description": "Dane logowania dla {username} są już nieważne. Podaj nowe dane logowania.",
+        "title": "Ponowne uwierzytelnienie SYR Connect"
+      },
+      "reconfigure": {
+        "data": {
+          "host": "Nazwa hosta lub adres IP",
+          "model": "Model urządzenia",
+          "password": "Hasło",
+          "service": "Usługa",
+          "username": "Nazwa użytkownika"
+        },
+        "description": "Zaktualizuj ustawienia.",
+        "title": "Rekonfiguruj SYR Connect"
+      },
+      "user": {
+        "description": "Wybierz sposób połączenia z urządzeniem SYR:\n\n- **Dostęp przez chmurę**: Użyj danych logowania do aplikacji mobilnej, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego.\n\n- **Dostęp lokalny**: Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
+        "menu_options": {
+          "api_json": "Dostęp lokalny",
+          "api_xml": "Dostęp przez chmurę"
+        },
+        "title": "SYR Connect"
+      }
     }
+  },
+  "entity": {
+    "binary_sensor": {
+      "getbuz": {
+        "name": "Buzzer przy alarmie",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      }
+    },
+    "button": {
+      "setala": {
+        "name": "Resetuj alarm"
+      },
+      "setdex": {
+        "name": "Uruchom test mikroprzecieku"
+      },
+      "setnot": {
+        "name": "Resetuj powiadomienie"
+      },
+      "setrst": {
+        "name": "Zresetuj urządzenie"
+      },
+      "setsir": {
+        "name": "Regeneruj teraz"
+      },
+      "setsmr": {
+        "name": "Regeneracja wielokrotna"
+      },
+      "setwrn": {
+        "name": "Resetuj ostrzeżenie"
+      }
+    },
+    "select": {
+      "getcrs": {
+        "name": "Rozmiar wkładu"
+      },
+      "getcrt": {
+        "name": "Typ wkładu",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+",
+          "none": "Brak"
+        }
+      },
+      "getfcd": {
+        "name": "Interwał płukania zwrotnego filtra",
+        "state": {
+          "10368000": "4 miesiące",
+          "12960000": "5 miesięcy",
+          "15552000": "6 miesięcy",
+          "18144000": "7 miesięcy",
+          "20736000": "8 miesięcy",
+          "23328000": "9 miesięcy",
+          "2592000": "1 miesiąc",
+          "25920000": "10 miesięcy",
+          "28512000": "11 miesięcy",
+          "31104000": "12 miesięcy",
+          "5184000": "2 miesiące",
+          "7776000": "3 miesiące"
+        }
+      },
+      "getffm": {
+        "name": "Typ filtra",
+        "state": {
+          "0": "Nieznany",
+          "1": "Filtr z płukaniem zwrotnym",
+          "2": "Filtr wymienny",
+          "3": "Brak filtra"
+        }
+      },
+      "getlot": {
+        "name": "Maks. przewodność wyjściowa"
+      },
+      "getohw": {
+        "name": "Twardość wody zmiękczonej"
+      },
+      "getprf": {
+        "name": "Aktywny profil ochrony przed wyciekiem",
+        "state": {
+          "1": "Obecny",
+          "2": "Nieobecny"
+        }
+      },
+      "getrcd": {
+        "name": "Okres monitorowania cykli napełniania",
+        "state": {
+          "0": "Godzina",
+          "1": "Dzień",
+          "2": "Tydzień",
+          "3": "Miesiąc",
+          "undefined": "Nieokreślony"
+        }
+      },
+      "getrmn": {
+        "name": "Maksymalna liczba cykli napełniania na okres"
+      },
+      "getrmo": {
+        "name": "Tryb regeneracji",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Moc",
+          "4": "Automatyczny"
+        }
+      },
+      "getrmt": {
+        "name": "Maksymalny czas napełniania"
+      },
+      "getrpd": {
+        "name": "Interwał regeneracji"
+      },
+      "getrtm": {
+        "name": "Czas regeneracji"
+      },
+      "getrvt": {
+        "name": "Maksymalne napełnienie"
+      },
+      "getsro": {
+        "name": "Orientacja wyświetlacza",
+        "state": {
+          "0": "Domyślna",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
+      },
+      "getsv1": {
+        "name": "Objętość pojemnika na sól 1"
+      },
+      "getsv2": {
+        "name": "Objętość pojemnika na sól 2"
+      },
+      "getsv3": {
+        "name": "Objętość pojemnika na sól 3"
+      },
+      "gettpr": {
+        "name": "Ciśnienie docelowe"
+      }
+    },
+    "sensor": {
+      "dst": {
+        "name": "Łączność urządzenia",
+        "state": {
+          "0": "Nigdy nie było online",
+          "1": "Offline",
+          "2": "Online",
+          "3": "Czuwanie"
+        }
+      },
+      "getab": {
+        "name": "Zawór odcinający",
+        "state": {
+          "false": "Otwarty",
+          "true": "Zamknięty"
+        }
+      },
+      "getala": {
+        "name": "Alarm",
+        "state": {
+          "alarm_battery_low": "Bateria rozładowana",
+          "alarm_battery_weak": "Słaba bateria!",
+          "alarm_cartridge_exhausted_capacity": "Wkład wyczerpany (pojemność)",
+          "alarm_cartridge_exhausted_conductivity": "Wkład wyczerpany (przewodność)",
+          "alarm_end_switch": "Wyłącznik krańcowy",
+          "alarm_external_sensor_leakage_cable": "Zewnętrzny czujnik przecieku (kabel)",
+          "alarm_external_sensor_leakage_radio": "Zewnętrzny czujnik przecieku (radio)",
+          "alarm_fill_cycles_exceeded": "Przekroczono liczbę cykli napełniania!",
+          "alarm_flow_sensor_fault": "Usterka czujnika przepływu!",
+          "alarm_heating_fill_time_leak": "Wyciek czasu napełniania ogrzewania!",
+          "alarm_heating_fill_volume_leak": "Wyciek objętości napełniania ogrzewania!",
+          "alarm_increased_water_hardness": "Zwiększona twardość wody",
+          "alarm_leakage_time_reached": "Osiągnięto czas wycieku!",
+          "alarm_leakage_volume_reached": "Osiągnięto objętość wycieku!",
+          "alarm_max_flow_rate_reached": "Osiągnięto maksymalny przepływ!",
+          "alarm_microleakage_detected": "Wykryto mikroprzeciek!",
+          "alarm_motor_current_exceeded": "Przekroczono próg prądu silnika!",
+          "alarm_pressure_sensor_faulty": "Czujnik ciśnienia uszkodzony!",
+          "alarm_safefloor_communication": "Błąd połączenia sieciowego",
+          "alarm_safefloor_flood": "Wykryto przeciek przy czujniku podłogowym",
+          "alarm_safefloor_high_humidity": "Przekroczono próg wysokiej wilgotności",
+          "alarm_safefloor_high_temperature": "Przekroczono próg wysokiej temperatury",
+          "alarm_safefloor_low_humidity": "Przekroczono próg niskiej wilgotności",
+          "alarm_safefloor_low_temperature": "Przekroczono próg niskiej temperatury",
+          "alarm_safefloor_weather": "Błąd czujnika temperatury",
+          "alarm_safet_absence_leakage_detected": "Wykryto wyciek w trybie nieobecności. Przekroczono objętość",
+          "alarm_safet_flow_leakage_detected": "Wykryto wyciek przepływu: przepływ objętościowy > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Przekroczono kryterium czasu przepływu.",
+          "alarm_safet_leakage_volume_reached": "Wykryto wyciek w trybie obecności. Przekroczono objętość",
+          "alarm_safet_microleakage_detected": "Wykryto mikroprzeciek. Przekroczono wartość graniczną",
+          "alarm_safet_turbine_no_signal": "Brak sygnału turbiny",
+          "alarm_safet_valve_cannot_be_operated": "Zawór nie może być obsługiwany",
+          "alarm_salt_supply_empty": "Brak soli",
+          "alarm_target_pressure_unreachable": "Nie można osiągnąć ciśnienia docelowego!",
+          "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
+          "alarm_turbine_blocked": "Turbina zablokowana!",
+          "alarm_valve_position": "Pozycja zaworu",
+          "error_no_information": "Błąd: brak dostępnych informacji",
+          "fault_conductance_sensor": "Czujnik przewodności uszkodzony!",
+          "no_alarm": "Brak alarmu"
+        }
+      },
+      "getald": {
+        "name": "Czas trwania alarmu"
+      },
+      "getalm": {
+        "name": "Ostatnie alarmy",
+        "state": {
+          "low_salt": "Mało soli",
+          "no_alarm": "Brak alarmu",
+          "no_salt": "Brak soli"
+        }
+      },
+      "getaln": {
+        "name": "Ostatnie powiadomienia"
+      },
+      "getalw": {
+        "name": "Ostatnie ostrzeżenia"
+      },
+      "getapt": {
+        "name": "Limit czasu punktu dostępowego"
+      },
+      "getavo": {
+        "name": "Aktualny przepływ"
+      },
+      "getbap": {
+        "name": "Poziom baterii"
+      },
+      "getbar": {
+        "name": "Ciśnienie wejściowe"
+      },
+      "getbar2": {
+        "name": "Ciśnienie wyjściowe"
+      },
+      "getbat": {
+        "name": "Napięcie baterii"
+      },
+      "getcde": {
+        "name": "Kod konfiguracji"
+      },
+      "getcel": {
+        "name": "Temperatura"
+      },
+      "getcna": {
+        "name": "Nazwa urządzenia"
+      },
+      "getcnd": {
+        "name": "Przewodność"
+      },
+      "getcno": {
+        "name": "Numer kodu"
+      },
+      "getcoa": {
+        "name": "Licznik automatycznych płukań zwrotnych"
+      },
+      "getcof": {
+        "name": "Całkowite zużycie wody"
+      },
+      "getcom": {
+        "name": "Licznik ręcznych płukań zwrotnych"
+      },
+      "getcrs": {
+        "name": "Rozmiar wkładu"
+      },
+      "getcrt": {
+        "name": "Typ wkładu",
+        "state": {
+          "0": "HWE",
+          "1": "HVE",
+          "2": "HVE+",
+          "none": "Brak"
+        }
+      },
+      "getcs1": {
+        "name": "Pozostała pojemność żywicy 1"
+      },
+      "getcs2": {
+        "name": "Pozostała pojemność żywicy 2"
+      },
+      "getcs3": {
+        "name": "Pozostała pojemność żywicy 3"
+      },
+      "getcyn": {
+        "name": "Licznik cykli regeneracji"
+      },
+      "getcyt": {
+        "name": "Czas cyklu regeneracji"
+      },
+      "getdbd": {
+        "name": "Spadek ciśnienia testu mikroprzecieku"
+      },
+      "getden": {
+        "name": "Urządzenie włączone"
+      },
+      "getdfm": {
+        "name": "Funkcje urządzenia",
+        "state": {
+          "1": "Ochrona przed przeciekiem",
+          "2": "Centrum połączeń",
+          "3": "All-in-One",
+          "4": "Automatyczne płukanie wsteczne (RSA)",
+          "5": "Filtr z płukaniem wstecznym z reduktorem ciśnienia (DM) + Ochrona przed przeciekiem (LS)"
+        }
+      },
+      "getdgw": {
+        "name": "Brama sieciowa"
+      },
+      "getdma": {
+        "name": "Tryb alarmu mikroprzecieku",
+        "state": {
+          "1": "Ostrzeżenie",
+          "2": "Alarm"
+        }
+      },
+      "getdrp": {
+        "name": "Interwał testu mikroprzecieku",
+        "state": {
+          "1": "Codziennie",
+          "2": "Co tydzień",
+          "3": "Co miesiąc"
+        }
+      },
+      "getdsv": {
+        "name": "Test mikroprzecieku",
+        "state": {
+          "0": "Nieaktywny",
+          "1": "Aktywny",
+          "2": "Przerwany – spadek ciśnienia",
+          "3": "Pominięty"
+        }
+      },
+      "getdtt": {
+        "name": "Czas testu mikroprzecieku"
+      },
+      "getdwf": {
+        "name": "Oczekiwane dzienne zużycie wody"
+      },
+      "getegw": {
+        "name": "Brama sieciowa (LAN)"
+      },
+      "geteip": {
+        "name": "Adres IP (LAN)"
+      },
+      "getfcd": {
+        "name": "Interwał płukania zwrotnego filtra",
+        "state": {
+          "10368000": "4 miesiące",
+          "12960000": "5 miesięcy",
+          "15552000": "6 miesięcy",
+          "18144000": "7 miesięcy",
+          "20736000": "8 miesięcy",
+          "23328000": "9 miesięcy",
+          "2592000": "1 miesiąc",
+          "25920000": "10 miesięcy",
+          "28512000": "11 miesięcy",
+          "31104000": "12 miesięcy",
+          "5184000": "2 miesiące",
+          "7776000": "3 miesiące"
+        }
+      },
+      "getfco": {
+        "name": "Zawartość żelaza"
+      },
+      "getffm": {
+        "name": "Typ filtra",
+        "state": {
+          "0": "Nieznany",
+          "1": "Filtr z płukaniem zwrotnym",
+          "2": "Filtr wymienny",
+          "3": "Brak filtra"
+        }
+      },
+      "getfir": {
+        "name": "Model oprogramowania"
+      },
+      "getflo": {
+        "name": "Przepływ wody"
+      },
+      "gethmd": {
+        "name": "Wilgotność"
+      },
+      "getinr": {
+        "name": "Niekompletne regeneracje"
+      },
+      "getipa": {
+        "name": "Adres IP"
+      },
+      "getiwh": {
+        "name": "Twardość wody wejściowej"
+      },
+      "getlan": {
+        "name": "Język urządzenia",
+        "state": {
+          "0": "Angielski",
+          "1": "Niemiecki",
+          "3": "Hiszpański"
+        }
+      },
+      "getlar": {
+        "name": "Ostatnia regeneracja"
+      },
+      "getle": {
+        "name": "Ochrona przed wyciekiem – poziom Obecny"
+      },
+      "getlft": {
+        "name": "Czas ostatniego uzupełnienia"
+      },
+      "getlfv": {
+        "name": "Ostatnia uzupełniona objętość"
+      },
+      "getlng": {
+        "name": "Język urządzenia",
+        "state": {
+          "0": "Niemiecki",
+          "1": "Angielski"
+        }
+      },
+      "getlot": {
+        "name": "Maks. przewodność wyjściowa"
+      },
+      "getlrc": {
+        "name": "Pozostała pojemność"
+      },
+      "getltv": {
+        "name": "Ostatnio wydana objętość"
+      },
+      "getmac": {
+        "name": "Adres MAC"
+      },
+      "getmac1": {
+        "name": "Adres MAC (Wi‑Fi)"
+      },
+      "getmac2": {
+        "name": "Adres MAC (LAN)"
+      },
+      "getman": {
+        "name": "Producent"
+      },
+      "getmih": {
+        "name": "Minimalna wilgotność"
+      },
+      "getmit": {
+        "name": "Minimalna temperatura"
+      },
+      "getmxh": {
+        "name": "Maksymalna wilgotność"
+      },
+      "getmxt": {
+        "name": "Maksymalna temperatura"
+      },
+      "getnet": {
+        "name": "Napięcie sieciowe"
+      },
+      "getnms": {
+        "name": "Brak ruchu zaworu od"
+      },
+      "getnmt": {
+        "name": "Czas do autotestu zaworu"
+      },
+      "getnor": {
+        "name": "Regeneracje (normalna praca)"
+      },
+      "getnot": {
+        "name": "Powiadomienie",
+        "state": {
+          "annual_maintenance": "Coroczna konserwacja",
+          "backwash_reminder_pressure": "Przypomnienie o płukaniu wstecznym sterowanym ciśnieniem",
+          "bi_annual_maintenance": "Półroczna konserwacja",
+          "filter_maintenance_reminder": "Przypomnienie o konserwacji filtra",
+          "filter_service_reminder": "Przypomnienie o serwisie filtra",
+          "new_software_available": "Dostępna nowa aktualizacja oprogramowania!",
+          "new_software_installed": "Zainstalowano nową aktualizację oprogramowania!",
+          "no_notification": "Brak"
+        }
+      },
+      "getnps": {
+        "name": "Brak impulsów turbiny od"
+      },
+      "getnpt": {
+        "name": "Czas do alarmu czujnika przepływu"
+      },
+      "getnrt": {
+        "name": "Brak uzupełnienia od"
+      },
+      "getohw": {
+        "name": "Twardość wody zmiękczonej"
+      },
+      "getowh": {
+        "name": "Twardość wody wyjściowej"
+      },
+      "getpa1": {
+        "name": "Profil ochrony przed wyciekiem 1",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa2": {
+        "name": "Profil ochrony przed wyciekiem 2",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa3": {
+        "name": "Profil ochrony przed wyciekiem 3",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa4": {
+        "name": "Profil ochrony przed wyciekiem 4",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa5": {
+        "name": "Profil ochrony przed wyciekiem 5",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa6": {
+        "name": "Profil ochrony przed wyciekiem 6",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa7": {
+        "name": "Profil ochrony przed wyciekiem 7",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpa8": {
+        "name": "Profil ochrony przed wyciekiem 8",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb1": {
+        "name": "Profil buzzera 1",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb2": {
+        "name": "Profil buzzera 2",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb3": {
+        "name": "Profil buzzera 3",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb4": {
+        "name": "Profil buzzera 4",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb5": {
+        "name": "Profil buzzera 5",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb6": {
+        "name": "Profil buzzera 6",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb7": {
+        "name": "Profil buzzera 7",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpb8": {
+        "name": "Profil buzzera 8",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpf1": {
+        "name": "Próg przepływu wycieku 1"
+      },
+      "getpf2": {
+        "name": "Próg przepływu wycieku 2"
+      },
+      "getpf3": {
+        "name": "Próg przepływu wycieku 3"
+      },
+      "getpf4": {
+        "name": "Próg przepływu wycieku 4"
+      },
+      "getpf5": {
+        "name": "Próg przepływu wycieku 5"
+      },
+      "getpf6": {
+        "name": "Próg przepływu wycieku 6"
+      },
+      "getpf7": {
+        "name": "Próg przepływu wycieku 7"
+      },
+      "getpf8": {
+        "name": "Próg przepływu wycieku 8"
+      },
+      "getpm1": {
+        "name": "Profil testu mikroprzecieku 1",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm2": {
+        "name": "Profil testu mikroprzecieku 2",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm3": {
+        "name": "Profil testu mikroprzecieku 3",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm4": {
+        "name": "Profil testu mikroprzecieku 4",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm5": {
+        "name": "Profil testu mikroprzecieku 5",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm6": {
+        "name": "Profil testu mikroprzecieku 6",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm7": {
+        "name": "Profil testu mikroprzecieku 7",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpm8": {
+        "name": "Profil testu mikroprzecieku 8",
+        "state": {
+          "false": "Nieaktywny",
+          "true": "Aktywny"
+        }
+      },
+      "getpn1": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 1"
+      },
+      "getpn2": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 2"
+      },
+      "getpn3": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 3"
+      },
+      "getpn4": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 4"
+      },
+      "getpn5": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 5"
+      },
+      "getpn6": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 6"
+      },
+      "getpn7": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 7"
+      },
+      "getpn8": {
+        "name": "Nazwa profilu ochrony przed wyciekiem 8"
+      },
+      "getpr1": {
+        "name": "Czas powrotu 1 do profilu Obecny"
+      },
+      "getpr2": {
+        "name": "Czas powrotu 2 do profilu Obecny"
+      },
+      "getpr3": {
+        "name": "Czas powrotu 3 do profilu Obecny"
+      },
+      "getpr4": {
+        "name": "Czas powrotu 4 do profilu Obecny"
+      },
+      "getpr5": {
+        "name": "Czas powrotu 5 do profilu Obecny"
+      },
+      "getpr6": {
+        "name": "Czas powrotu 6 do profilu Obecny"
+      },
+      "getpr7": {
+        "name": "Czas powrotu 7 do profilu Obecny"
+      },
+      "getpr8": {
+        "name": "Czas powrotu 8 do profilu Obecny"
+      },
+      "getprc": {
+        "name": "Poziom pozostałej pojemności"
+      },
+      "getprf": {
+        "name": "Aktywny profil ochrony przed wyciekiem",
+        "state": {
+          "1": "Obecny",
+          "2": "Nieobecny"
+        }
+      },
+      "getprs": {
+        "name": "Ciśnienie wejściowe"
+      },
+      "getpst": {
+        "name": "Czujnik ciśnienia",
+        "state": {
+          "1": "Niedostępny",
+          "2": "Dostępny"
+        }
+      },
+      "getpt1": {
+        "name": "Czas ochrony przed wyciekiem 1"
+      },
+      "getpt2": {
+        "name": "Czas ochrony przed wyciekiem 2"
+      },
+      "getpt3": {
+        "name": "Czas ochrony przed wyciekiem 3"
+      },
+      "getpt4": {
+        "name": "Czas ochrony przed wyciekiem 4"
+      },
+      "getpt5": {
+        "name": "Czas ochrony przed wyciekiem 5"
+      },
+      "getpt6": {
+        "name": "Czas ochrony przed wyciekiem 6"
+      },
+      "getpt7": {
+        "name": "Czas ochrony przed wyciekiem 7"
+      },
+      "getpt8": {
+        "name": "Czas ochrony przed wyciekiem 8"
+      },
+      "getpv1": {
+        "name": "Próg objętości wycieku 1"
+      },
+      "getpv2": {
+        "name": "Próg objętości wycieku 2"
+      },
+      "getpv3": {
+        "name": "Próg objętości wycieku 3"
+      },
+      "getpv4": {
+        "name": "Próg objętości wycieku 4"
+      },
+      "getpv5": {
+        "name": "Próg objętości wycieku 5"
+      },
+      "getpv6": {
+        "name": "Próg objętości wycieku 6"
+      },
+      "getpv7": {
+        "name": "Próg objętości wycieku 7"
+      },
+      "getpv8": {
+        "name": "Próg objętości wycieku 8"
+      },
+      "getpw1": {
+        "name": "Profil ostrzeżenia o wycieku 1",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw2": {
+        "name": "Profil ostrzeżenia o wycieku 2",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw3": {
+        "name": "Profil ostrzeżenia o wycieku 3",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw4": {
+        "name": "Profil ostrzeżenia o wycieku 4",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw5": {
+        "name": "Profil ostrzeżenia o wycieku 5",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw6": {
+        "name": "Profil ostrzeżenia o wycieku 6",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw7": {
+        "name": "Profil ostrzeżenia o wycieku 7",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getpw8": {
+        "name": "Profil ostrzeżenia o wycieku 8",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getrcc": {
+        "name": "Cykle napełniania (bieżący okres)"
+      },
+      "getrcd": {
+        "name": "Okres monitorowania cykli napełniania",
+        "state": {
+          "0": "Godzina",
+          "1": "Dzień",
+          "2": "Tydzień",
+          "3": "Miesiąc",
+          "undefined": "Nieokreślony"
+        }
+      },
+      "getrcn": {
+        "name": "Licznik wszystkich uzupełnień"
+      },
+      "getrcp": {
+        "name": "Interwał synchronizacji"
+      },
+      "getrdo": {
+        "name": "Dozowanie soli"
+      },
+      "getre1": {
+        "name": "Pojemność rezerwowa butelki 1"
+      },
+      "getre2": {
+        "name": "Pojemność rezerwowa butelki 2"
+      },
+      "getres": {
+        "name": "Pozostała pojemność"
+      },
+      "getrg1": {
+        "name": "Status regeneracji",
+        "state": {
+          "0": "Brak regeneracji",
+          "1": "Zbiornik 1 w regeneracji",
+          "2": "Zbiornik 2 w regeneracji"
+        }
+      },
+      "getrg2": {
+        "name": "Regeneracja zbiornik 2",
+        "state": {
+          "0": "Nieaktywna",
+          "1": "Uruchomiona"
+        }
+      },
+      "getrg3": {
+        "name": "Regeneracja zbiornik 3",
+        "state": {
+          "0": "Nieaktywna",
+          "1": "Uruchomiona"
+        }
+      },
+      "getrmn": {
+        "name": "Maksymalna liczba cykli napełniania na okres"
+      },
+      "getrmo": {
+        "name": "Tryb regeneracji",
+        "state": {
+          "1": "Standard",
+          "2": "ECO",
+          "3": "Moc",
+          "4": "Automatyczny"
+        }
+      },
+      "getrmt": {
+        "name": "Maksymalny czas napełniania"
+      },
+      "getrpd": {
+        "name": "Interwał regeneracji"
+      },
+      "getrpw": {
+        "name": "Dni regeneracji",
+        "state": {
+          "0": "Nie określono"
+        }
+      },
+      "getrsa": {
+        "name": "Interwał płukania zwrotnego"
+      },
+      "getrsd": {
+        "name": "Czas trwania płukania zwrotnego"
+      },
+      "getrse": {
+        "name": "Interwał przypomnienia o płukaniu zwrotnym"
+      },
+      "getrth": {
+        "name": "Czas regeneracji (godzina)"
+      },
+      "getrti": {
+        "name": "Całkowity czas trwania cyklu regeneracji"
+      },
+      "getrtm": {
+        "name": "Czas regeneracji"
+      },
+      "getrvt": {
+        "name": "Maksymalne napełnienie"
+      },
+      "getscr": {
+        "name": "Cykle regeneracji serwisowej"
+      },
+      "getsir": {
+        "name": "Natychmiastowa regeneracja",
+        "state": {
+          "0": "Uruchom natychmiast",
+          "1": "Nie uruchamiaj"
+        }
+      },
+      "getsle": {
+        "name": "Pozostały czas fazy samouczenia"
+      },
+      "getslf": {
+        "name": "Przepływ w fazie samouczenia"
+      },
+      "getslp": {
+        "name": "Czas trwania fazy samouczenia"
+      },
+      "getslt": {
+        "name": "Czas w fazie samouczenia"
+      },
+      "getslv": {
+        "name": "Objętość w fazie samouczenia"
+      },
+      "getsre": {
+        "name": "Regeneracja aktywna",
+        "state": {
+          "0": "Nie działa",
+          "1": "Działa"
+        }
+      },
+      "getsrh": {
+        "name": "Następna półroczna konserwacja"
+      },
+      "getsrn": {
+        "name": "Numer seryjny"
+      },
+      "getsro": {
+        "name": "Orientacja wyświetlacza",
+        "state": {
+          "0": "Domyślna",
+          "180": "180°",
+          "270": "270°",
+          "90": "90°"
+        }
+      },
+      "getsrv": {
+        "name": "Następna coroczna konserwacja"
+      },
+      "getss1": {
+        "name": "Stan pojemnika na sól 1"
+      },
+      "getss2": {
+        "name": "Stan pojemnika na sól 2"
+      },
+      "getss3": {
+        "name": "Stan pojemnika na sól 3"
+      },
+      "getsta": {
+        "name": "Status",
+        "state": {
+          "status_automatic_filling": "Automatyczne napełnianie",
+          "status_backwash": "Płukanie zwrotne",
+          "status_fast_rinse": "Szybkie płukanie",
+          "status_filling": "Napełnianie",
+          "status_inactive": "Nieaktywny",
+          "status_initial_filling": "Pierwsze napełnienie",
+          "status_manual_filling": "Ręczne napełnianie",
+          "status_refill_salt": "Proszę uzupełnić sól",
+          "status_regenerant_rinse": "Płukanie czynnikiem regenerującym",
+          "status_slow_rinse": "Powolne płukanie",
+          "status_standby": "Czuwanie"
+        }
+      },
+      "getsv1": {
+        "name": "Objętość pojemnika na sól 1"
+      },
+      "getsv2": {
+        "name": "Objętość pojemnika na sól 2"
+      },
+      "getsv3": {
+        "name": "Objętość pojemnika na sól 3"
+      },
+      "gett1": {
+        "name": "Czas wycieku 1"
+      },
+      "gett2": {
+        "name": "Czas wycieku 2"
+      },
+      "gettmp": {
+        "name": "Ochrona przed wyciekiem dezaktywowana"
+      },
+      "gettor": {
+        "name": "Łączna liczba regeneracji"
+      },
+      "gettpr": {
+        "name": "Ciśnienie docelowe"
+      },
+      "gettrt": {
+        "name": "Skumulowany czas uzupełniania"
+      },
+      "gettrv": {
+        "name": "Skumulowana uzupełniona objętość"
+      },
+      "gettyp": {
+        "name": "Typ urządzenia"
+      },
+      "getul": {
+        "name": "Ochrona przed wyciekiem – poziom Nieobecny"
+      },
+      "getver": {
+        "name": "Wersja oprogramowania"
+      },
+      "getvlv": {
+        "name": "Status zaworu",
+        "state": {
+          "10": "Zamknięty",
+          "11": "Zamykanie",
+          "20": "Otwarty",
+          "21": "Otwieranie"
+        }
+      },
+      "getvol": {
+        "name": "Całkowita objętość"
+      },
+      "getvps1": {
+        "name": "Brak impulsów turbiny na głowicy sterującej 1 od"
+      },
+      "getvps2": {
+        "name": "Brak impulsów turbiny na głowicy sterującej 2 od"
+      },
+      "getvs1": {
+        "name": "Próg objętości 1"
+      },
+      "getvs2": {
+        "name": "Próg objętości 2"
+      },
+      "getvs3": {
+        "name": "Próg objętości 3"
+      },
+      "getwfc": {
+        "name": "SSID Wi-Fi"
+      },
+      "getwfl": {
+        "name": "Dostępne sieci"
+      },
+      "getwfr": {
+        "name": "Siła sygnału Wi-Fi"
+      },
+      "getwfs": {
+        "name": "Status połączenia Wi-Fi",
+        "state": {
+          "0": "Niepodłączony",
+          "1": "Łączenie",
+          "2": "Połączony"
+        }
+      },
+      "getwgw": {
+        "name": "Brama sieciowa (Wi‑Fi)"
+      },
+      "getwhu": {
+        "name": "Jednostka twardości wody"
+      },
+      "getwip": {
+        "name": "Adres IP (Wi‑Fi)"
+      },
+      "getwmp": {
+        "name": "Interwał pomiarowy"
+      },
+      "getwrn": {
+        "name": "Ostrzeżenie",
+        "state": {
+          "battery_low": "Niski poziom baterii",
+          "cartridge_almost_exhausted": "Wkład prawie wyczerpany",
+          "initial_filling": "Pierwsze napełnianie",
+          "leak_warning": "Ostrzeżenie o wycieku",
+          "leak_warning_time": "Czas ostrzeżenia o wycieku",
+          "leak_warning_volume": "Objętość wycieku",
+          "microleakage_suspected": "Podejrzenie mikroprzecieku",
+          "no_batteries_detected": "Nie wykryto baterii",
+          "no_warning": "Brak ostrzeżenia",
+          "outlet_pressure_too_high": "Zbyt wysokie ciśnienie wyjściowe",
+          "power_outage": "Przerwa w zasilaniu",
+          "salt_supply_low": "Niski poziom soli"
+        }
+      }
+    },
+    "switch": {
+      "getbuz": {
+        "name": "Buzzer przy alarmie",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getdfi": {
+        "name": "Tryb napełniania",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getssa": {
+        "name": "Automatyczne płukanie zwrotne",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
+      "getsse": {
+        "name": "Przypomnienie o płukaniu zwrotnym",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      }
+    },
+    "valve": {
+      "getab": {
+        "name": "Zawór odcinający",
+        "state": {
+          "false": "Otwarty",
+          "true": "Zamknięty"
+        }
+      },
+      "getvlv": {
+        "name": "Status zaworu",
+        "state": {
+          "10": "Zamknięty",
+          "11": "Zamykanie",
+          "20": "Otwarty",
+          "21": "Otwieranie"
+        }
+      }
+    }
+  },
+  "issues": {
+    "device_offline": {
+      "description": "Urządzenie SYR Connect \"{device_name}\" jest obecnie offline i nie można się z nim połączyć. Sprawdź:\n\n- Zasilanie urządzenia\n- Połączenie sieciowe\n- Status usługi chmurowej SYR Connect\n\nUrządzenie połączy się automatycznie po powrocie do trybu online.",
+      "title": "Urządzenie offline: {device_name}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Interwał aktualizacji"
+        },
+        "description": "Określa czas między wywołaniami API.",
+        "title": "Opcje SYR Connect"
+      }
+    }
+  }
 }
