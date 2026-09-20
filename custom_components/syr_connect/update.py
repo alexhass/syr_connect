@@ -98,9 +98,12 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         self._attr_has_entity_name = True
         self._attr_translation_key = "getnot_update"
         # Without UpdateEntityFeature.INSTALL, HA defaults entity_category to
-        # DIAGNOSTIC - which the Settings > Updates overview excludes. Force it
-        # back to None (primary entity) so a pending update is still surfaced there.
+        # DIAGNOSTIC - which the Settings > Updates overview excludes. None keeps
+        # it surfaced there (confirmed via live testing).
         self._attr_entity_category = None
+        # Hidden by default on the device page - this entity is only meant to be
+        # seen via Settings > Updates, not mixed in with the device's controls.
+        self._attr_entity_registry_visible_default = False
 
         self.entity_id = build_entity_id("update", device_id, "getNOT")
         # build_device_info() already replaces a bare-serial device name with

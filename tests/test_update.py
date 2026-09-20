@@ -172,3 +172,14 @@ def test_update_entity_category_is_not_diagnostic() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN11", "Dev11", "")
 
     assert entity.entity_category is None
+
+
+def test_update_entity_hidden_by_default() -> None:
+    """The entity is hidden from the device page by default (Updates overview only)."""
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]}
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12", "")
+
+    assert entity._attr_entity_registry_visible_default is False
+
