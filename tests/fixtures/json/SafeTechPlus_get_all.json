@@ -151,7 +151,7 @@
     "getVTO": false,
     "getWAD": true,
     "getWAH": false,
-    "getWFC": "my-ssid",
+    "getWFC": "syr-safetechplus-wifi1",
     "getWFR": 100,
     "getWFS": 2,
     "getWGW": "192.168.178.1",

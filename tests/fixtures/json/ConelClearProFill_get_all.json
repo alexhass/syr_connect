@@ -235,7 +235,7 @@
     "getVTO": false,
     "getWAD": true,
     "getWAH": false,
-    "getWFC": "wifi-1",
+    "getWFC": "conel-clearprofill-wifi1",
     "getWFR": 92,
     "getWFS": 2,
     "getWGW": "192.168.178.1",

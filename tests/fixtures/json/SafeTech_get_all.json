@@ -156,19 +156,19 @@
     "getWFL": [
         {
             "Signal": -63,
-            "SSID": "wifi"
+            "SSID": "syr-safetech-wifi1"
         },
         {
             "Signal": -63,
-            "SSID": "wifi2"
+            "SSID": "syr-safetech-wifi2"
         },
         {
             "Signal": -63,
-            "SSID": "wifi3"
+            "SSID": "syr-safetech-wifi3"
         },
         {
             "Signal": -63,
-            "SSID": "wifi4"
+            "SSID": "syr-safetech-wifi4"
         }
     ],
     "getWFR": 100,

@@ -87,15 +87,15 @@
     "getWFC": "",
     "getWFL": [
         {
-            "SSID": "wifi1",
+            "SSID": "sanibel-softwater-uno-a25-wifi1",
             "Signal": -73
         },
         {
-            "SSID": "wifi2",
+            "SSID": "sanibel-softwater-uno-a25-wifi2",
             "Signal": -84
         },
         {
-            "SSID": "wifi3",
+            "SSID": "sanibel-softwater-uno-a25-wifi3",
             "Signal": -84
         }
     ],
