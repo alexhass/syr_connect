@@ -6,6 +6,7 @@ import logging
 
 from homeassistant.components.update import UpdateDeviceClass, UpdateEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -97,13 +98,7 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id.lower(), "getNOT_update".lower())
         self._attr_has_entity_name = True
         self._attr_translation_key = "getnot_update"
-        # Without UpdateEntityFeature.INSTALL, HA defaults entity_category to
-        # DIAGNOSTIC - which the Settings > Updates overview excludes. None keeps
-        # it surfaced there (confirmed via live testing).
-        self._attr_entity_category = None
-        # Hidden by default on the device page - this entity is only meant to be
-        # seen via Settings > Updates, not mixed in with the device's controls.
-        self._attr_entity_registry_visible_default = False
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         self.entity_id = build_entity_id("update", device_id, "getNOT")
         # build_device_info() already replaces a bare-serial device name with

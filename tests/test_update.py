@@ -111,8 +111,8 @@ def test_update_entity_update_available_no_installed_version() -> None:
     assert entity.latest_version is not None
 
 
-def test_update_entity_title_uses_detected_model() -> None:
-    """title shows the detected model's display name, not the raw serial number."""
+def test_update_entity_naming_uses_translation_key() -> None:
+    """The entity uses has_entity_name + translation_key, not a custom title/name."""
     device = {
         "id": "500AAA12345",
         "name": "500AAA12345",
@@ -123,7 +123,8 @@ def test_update_entity_title_uses_detected_model() -> None:
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "500AAA12345", "500AAA12345", "")
 
-    assert entity.title == "CLEAR PRO FILL All-in-One"
+    assert entity._attr_has_entity_name is True
+    assert entity._attr_translation_key == "getnot_update"
 
 
 def test_update_entity_no_install_feature_supported() -> None:
@@ -164,22 +165,14 @@ def test_update_entity_unique_id_has_update_suffix() -> None:
     assert entity._attr_unique_id == "entry123_sn8_getnot_update"
 
 
-def test_update_entity_category_is_not_diagnostic() -> None:
-    """entity_category must be None (not the DIAGNOSTIC default) to show in Settings > Updates."""
+def test_update_entity_category_is_diagnostic() -> None:
+    """entity_category is DIAGNOSTIC so it doesn't show under the device page's Controls section."""
+    from homeassistant.const import EntityCategory
+
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN11", "name": "Dev11", "status": {"getNOT": "01"}}]}
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN11", "Dev11", "")
 
-    assert entity.entity_category is None
-
-
-def test_update_entity_hidden_by_default() -> None:
-    """The entity is hidden from the device page by default (Updates overview only)."""
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]}
-
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12", "")
-
-    assert entity._attr_entity_registry_visible_default is False
+    assert entity.entity_category is EntityCategory.DIAGNOSTIC
 
