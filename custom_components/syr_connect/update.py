@@ -114,16 +114,6 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         return {}
 
     @property
-    def entity_picture(self) -> str | None:
-        """Return None so the frontend renders the standard update icon.
-
-        UpdateEntity otherwise defaults to the integration's brand logo image,
-        which renders larger/inconsistent with the other icons in the
-        Diagnostics list.
-        """
-        return None
-
-    @property
     def available(self) -> bool:
         """Return if entity is available."""
         if not self.coordinator.last_update_success:

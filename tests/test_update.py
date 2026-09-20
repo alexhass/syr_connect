@@ -87,17 +87,6 @@ def test_update_entity_no_update_pending() -> None:
     assert entity.latest_version == "MuCo V.2.14"
 
 
-def test_update_entity_picture_is_none() -> None:
-    """entity_picture is None so the frontend uses the standard icon, not the brand logo."""
-    device = {"id": "SN10", "name": "Dev10", "status": {"getNOT": "FF"}}
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [device]}
-
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN10", "Dev10", "")
-
-    assert entity.entity_picture is None
-
-
 def test_update_entity_update_available() -> None:
     """latest_version differs from installed_version when getNOT == '01'."""
     device = {"id": "SN4", "name": "Dev4", "status": {"getNOT": "01", "getVER": "MuCo V.2.14"}}
