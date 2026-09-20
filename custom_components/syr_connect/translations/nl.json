@@ -1233,6 +1233,11 @@
         }
       }
     },
+    "update": {
+      "getnot_update": {
+        "name": "Firmware-update"
+      }
+    },
     "valve": {
       "getab": {
         "name": "Klep afsluiting",

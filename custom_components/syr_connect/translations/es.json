@@ -1233,6 +1233,11 @@
         }
       }
     },
+    "update": {
+      "getnot_update": {
+        "name": "Actualización de firmware"
+      }
+    },
     "valve": {
       "getab": {
         "name": "Cierre de válvula",

@@ -812,6 +812,11 @@ _SYR_CONNECT_BUTTON_KNOWN_KEYS = {
     "setWRN",   # Reset warning
 }
 
+# Known keys for the update platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_UPDATE_KNOWN_KEYS = {
+    "getNOT",   # Notification code; "01" == new_software_available
+}
+
 # Sensors to always exclude — parameters returned by the API that must not be
 # exposed as sensor entities. Only keys that also appear in
 # _SYR_CONNECT_SENSOR_KNOWN_KEYS need to be listed here; all others are already

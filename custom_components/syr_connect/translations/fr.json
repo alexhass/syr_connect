@@ -1233,6 +1233,11 @@
         }
       }
     },
+    "update": {
+      "getnot_update": {
+        "name": "Mise à jour du micrologiciel"
+      }
+    },
     "valve": {
       "getab": {
         "name": "Coupure de vanne",
