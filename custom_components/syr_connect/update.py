@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
-from homeassistant.components.update import UpdateDeviceClass, UpdateEntity
+from homeassistant.components.update import UpdateDeviceClass, UpdateEntity, UpdateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import _SYR_CONNECT_UPDATE_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .exceptions import SyrConnectError
 from .helpers import (
     build_device_info,
     build_entity_id,
@@ -69,15 +72,16 @@ async def async_setup_entry(
 class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
     """Firmware update indicator derived from getNOT == "01" (new_software_available).
 
-    The SYR Connect API does not expose the actual target firmware version, nor a
-    documented command to trigger an install remotely - so `latest_version` uses a
-    placeholder string instead of a real version when an update is signalled, and
-    no UpdateEntityFeature is set (no install button). Once the install command is
-    known, add UpdateEntityFeature.INSTALL to _attr_supported_features and
-    implement async_install() here.
+    The SYR Connect API does not expose the actual target firmware version, so
+    `latest_version` uses a placeholder string instead of a real version when an
+    update is signalled. Installing is supported via setUPG, a write-only command
+    shared identically by 8 device base classes (SafeTech, SafeFloor, LEX Plus,
+    All-in-One+, MultiController, HygBox, Dosing Pump, Trio LS); it is always sent
+    with an empty value (see docs/syrconnect-protocol.md).
     """
 
     _attr_device_class = UpdateDeviceClass.FIRMWARE
+    _attr_supported_features = UpdateEntityFeature.INSTALL
 
     def __init__(
         self,
@@ -145,3 +149,11 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         if mapped == "new_software_available":
             return f"{installed} (update available)" if installed else "update available"
         return installed
+
+    async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
+        """Trigger a firmware update by sending setUPG (always with an empty value)."""
+        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        try:
+            await coordinator.async_set_device_value(self._device_id, "setUPG", "")
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+            raise HomeAssistantError(f"Failed to trigger firmware update: {err}") from err

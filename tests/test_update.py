@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.update import SyrConnectFirmwareUpdate, async_setup_entry
@@ -127,8 +129,8 @@ def test_update_entity_naming_uses_translation_key() -> None:
     assert entity._attr_translation_key == "getnot_update"
 
 
-def test_update_entity_no_install_feature_supported() -> None:
-    """No install command is known yet, so UpdateEntityFeature.INSTALL must not be set."""
+def test_update_entity_install_feature_supported() -> None:
+    """UpdateEntityFeature.INSTALL is set now that setUPG is known to trigger an update."""
     from homeassistant.components.update import UpdateEntityFeature
 
     device = {"id": "SN6", "name": "Dev6", "status": {"getNOT": "FF"}}
@@ -137,7 +139,32 @@ def test_update_entity_no_install_feature_supported() -> None:
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
 
-    assert UpdateEntityFeature.INSTALL not in entity.supported_features
+    assert UpdateEntityFeature.INSTALL in entity.supported_features
+
+
+async def test_update_entity_async_install_sends_empty_setupg() -> None:
+    """async_install() sends setUPG with an empty value."""
+    device = {"id": "SN6", "name": "Dev6", "status": {"getNOT": "01"}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    mock_coordinator.async_set_device_value = AsyncMock()
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
+    await entity.async_install(version=None, backup=False)
+
+    mock_coordinator.async_set_device_value.assert_called_once_with("SN6", "setUPG", "")
+
+
+async def test_update_entity_async_install_wraps_errors() -> None:
+    """async_install() wraps failures from the coordinator in HomeAssistantError."""
+    device = {"id": "SN6", "name": "Dev6", "status": {"getNOT": "01"}}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    mock_coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("boom"))
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
+    with pytest.raises(HomeAssistantError):
+        await entity.async_install(version=None, backup=False)
 
 
 def test_update_entity_available_property() -> None:
