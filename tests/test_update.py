@@ -154,6 +154,27 @@ def test_update_entity_available_property() -> None:
     assert entity.available is False
 
 
+def test_get_status_returns_empty_dict_when_device_missing() -> None:
+    """_get_status returns {} when the device is no longer in coordinator.data."""
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": []}
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN_MISSING", "DevMissing", "")
+
+    assert entity._get_status() == {}
+
+
+def test_available_defaults_true_when_device_missing() -> None:
+    """available defaults to True when the device is no longer in coordinator.data."""
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": []}
+    mock_coordinator.last_update_success = True
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN_MISSING", "DevMissing", "")
+
+    assert entity.available is True
+
+
 def test_update_entity_unique_id_has_update_suffix() -> None:
     """unique_id gets a '_update' suffix to avoid colliding with the getNOT sensor."""
     mock_coordinator = MagicMock()
