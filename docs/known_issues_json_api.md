@@ -161,6 +161,7 @@ Actual (expected) device response:
 - Treat device responses as potentially non-conformant and normalize as needed (coerce numeric/boolean/string differences).
 - Accept missing or incorrect `Content-Type` headers when parsing JSON.
 - Treat 404 from the ADM login endpoint as "login not required." Do not fail the setup.
+- Always send `get` and `set` commands lowercase only.
 - Use case-insensitive matching for `set` response keys.
 - Treat 404 from other endpoints as "no such command". (Trio defect)
 
