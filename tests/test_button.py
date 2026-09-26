@@ -1088,6 +1088,61 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
     assert len(entities) == 0
 
 
+async def test_async_setup_entry_creates_setala_for_lexplus10sl_with_getala(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """LEXplus10SL (alarm_style_alm=False) reports getALA, not getALM - regression
+    test for a bug where models.py wrongly had alarm_style_alm=True for this
+    model, making async_setup_entry look for getALM (absent) and never create
+    the setALA button at all.
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device_lexplus10sl",
+                "name": "LEX Plus 10 SL",
+                "project_id": "project1",
+                "status": {"getCNA": "LEXplus10SL", "getALA": "0"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert any(e._command == "setALA" for e in entities)
+
+
+async def test_async_setup_entry_skips_setala_for_lexplus10s_without_getalm(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """LEXplus10S (alarm_style_alm=True) looks for getALM - having only getALA in
+    status (no getALM) must NOT create the setALA button, proving the gate
+    actually distinguishes between the two model styles.
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device_lexplus10s",
+                "name": "LEX Plus 10 S",
+                "project_id": "project1",
+                "status": {"getCNA": "LEXplus10S", "getALA": "0"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert not any(e._command == "setALA" for e in entities)
+
+
 async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
     """setDEX press sends boolean 'true' when getTYP≥100 and no test is running."""
     data = {

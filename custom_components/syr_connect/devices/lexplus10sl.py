@@ -12,10 +12,9 @@ getSLV=169 - all non-zero) PLUS partial microleakage-test config
 (getDBD/getDMA/getDRP/getNPS=3713, all real).
 
 NOTE: unlike its lexplus10/lexplus10s siblings, this fixture reports getALA
-(not getALM) for the current alarm code, even though this signature has
-"alarm_style_alm": True in models.py (which makes button.py check for getALM
-presence to gate the setALA button) - this may be worth revisiting in
-models.py separately; not changed here since it's outside this file's scope.
+(not getALM) for the current alarm code; models.py sets "alarm_style_alm":
+False for this signature (sbt=7) accordingly, so button.py gates setALA on
+getALA presence here.
 
 Deliberately NOT included:
 - getDSV, getDTT: not present in this fixture, unlike getDBD/getDMA/getDRP/getNPS

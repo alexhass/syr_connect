@@ -482,7 +482,9 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
     {
-        "alarm_style_alm": True,
+        # False (getALA), unlike its lexplus10/lexplus10s siblings: this
+        # fixture reports getALA, not getALM, as the current alarm code.
+        "alarm_style_alm": False,
         "base_path": None,
         "cna_equals": "LEXplus10SL",
         "device_file": "lexplus10sl",
