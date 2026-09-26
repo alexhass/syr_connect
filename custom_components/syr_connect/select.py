@@ -187,9 +187,12 @@ async def async_setup_entry(
         status = device.get("status", {})
         # Salt amount selects (max depends on device model; skip for models without salt containers)
         model_info = detect_model(status)
+        known_select_keys = get_model_known_keys(model_info, "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
         max_capacity = model_info.get("maximum_salt_volume")
         if max_capacity is not None:
             for sv_key in ("getSV1", "getSV2", "getSV3"):
+                if sv_key not in known_select_keys:
+                    continue
                 sv_value = status.get(sv_key)
                 if sv_value is None or sv_value == "":
                     continue

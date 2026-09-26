@@ -17,6 +17,11 @@ and it does have Wi-Fi (getWFC/getWFL/getWFR/getWFS/getWGW/getWIP) instead of
 the LAN-only getDGW/getIPA/getMAC used by the lex family. It has NO shutoff
 valve (no getAB/getVLV) and NO battery (no getBAT/getBAP).
 
+Unlike models where getSV1 is a manually-configured salt refill amount, this
+platform has a built-in salt level sensor - getSV1 is read-only telemetry
+here, so it stays sensor-only (SENSOR_KNOWN_KEYS) and is deliberately left
+out of SELECT_KNOWN_KEYS to avoid exposing a control nobody should use.
+
 Deliberately NOT included:
 - getALD: 600 in JSON but empty ("") in XML - inconsistent, and 600 is the
   same generic value seen across several unrelated device families.
@@ -66,8 +71,9 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
+# getSV1 excluded - built-in salt level sensor, not a manual setting (see module docstring).
 SELECT_KNOWN_KEYS = {
-    "getRPD", "getRMO", "getRTM", "getSV1",
+    "getRPD", "getRMO", "getRTM",
 }
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - no filling

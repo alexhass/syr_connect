@@ -1290,6 +1290,34 @@ async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, crea
     assert len(sv1_entities) == 0
 
 
+async def test_async_setup_entry_skips_getsv1_select_for_neosoft(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """NeoSoft has a built-in salt level sensor, so getSV1 must stay read-only:
+    no select entity even though maximum_salt_volume is set for this model.
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getSRN": "206AAA00001",
+                    "getSV1": "5",
+                },
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
+    assert len(sv1_entities) == 0
+
+
 async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> None:
     """Test numeric select handles exception when converting unit to string."""
     data = {
