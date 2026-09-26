@@ -16,6 +16,11 @@ included for the SafeTech Lock Connect variant, per the official validity
 matrix (docs/syrconnect-protocol.md).
 
 Deliberately NOT included, pending confirmation on a real device:
+- getBAR2, getCND: present with a value of 0 in the A25 fixture, but a zero
+  reading doesn't prove genuine hardware support - the official "Per-model
+  validity" matrix (docs/syrconnect-protocol.md) explicitly marks both as X
+  (not available) for the SafeTech Lock Connect variant sharing this file,
+  which takes precedence over the A25 fixture's zero values.
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to this model.
   getALD is the one exception (see SENSOR_KNOWN_KEYS below).
@@ -46,12 +51,10 @@ SENSOR_KNOWN_KEYS = {
     "getAB", "getAVO", "getFLO", "getVLV",
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
-    # --- Pressure ---
-    "getBAR2",
     # --- Voltage / Battery ---
     "getBAP", "getBAT", "getNET",
     # --- Water Quality ---
-    "getCND", "getIWH", "getWHU",
+    "getIWH", "getWHU",
     # --- Water Consumption & Volume ---
     "getLTV", "getVOL",
     # --- Device Status ---

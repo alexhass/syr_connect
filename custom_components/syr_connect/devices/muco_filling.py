@@ -6,6 +6,12 @@ are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.
 
 Deliberately NOT included, pending confirmation on a real device:
+- getAVO, getLTV, getVOL: present in the fixture (getLTV/getVOL even with
+  non-zero values), but the official "Per-model validity" matrix
+  (docs/syrconnect-protocol.md) explicitly marks all three as X (not
+  available) for the AC 3228 Connect variant sharing this file, which takes
+  precedence over a fixture reading from a different product (Conel Clear
+  Pro Fill).
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to a filling
   controller.
@@ -32,7 +38,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
-    "getAVO", "getFLO", "getVLV",
+    "getFLO", "getVLV",
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
     # --- Pressure ---
@@ -43,8 +49,6 @@ SENSOR_KNOWN_KEYS = {
     "getALD",
     # --- Water Quality ---
     "getCND", "getIWH", "getOHW", "getWHU",
-    # --- Water Consumption & Volume ---
-    "getLTV", "getVOL",
     # --- Device Status ---
     "getDFM",
     # --- Filter ---

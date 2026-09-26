@@ -26,17 +26,17 @@ Deliberately NOT included:
 - getALD: 600 in JSON but empty ("") in XML - inconsistent, and 600 is the
   same generic value seen across several unrelated device families.
 - getNPS: empty ("") in the XML fixture.
+- getBAR, getCEL, getCND: empty ("") in the XML fixture and absent from the
+  JSON fixture entirely - no real value in either capture. A prior version
+  of this docstring cited "the official validity matrix" marking these ✓
+  for NeoSoft 5000, but docs/syrconnect-protocol.md has no such matrix for
+  NeoSoft models (its only "Per-model validity" matrix covers the unrelated
+  TRIO Lock/SafeTech Lock/AC 3200/AC 3228/RSA family) - that citation was
+  unverifiable, so these stay excluded until a real, non-empty capture
+  confirms them.
 - getRE2, getSS2, getSV2, getVPS2 (second-tank keys): not present in this
   single-tank fixture - only relevant for genuinely dual-tank rebrands
   (e.g. the "*duo" signatures); not confirmed here, pending a real fixture.
-  The validity matrix marks getVPS2 as ✓ for NeoSoft 5000, but it stays
-  excluded until a real dual-tank fixture confirms it.
-
-getBAR/getCEL/getCND are included below: the official validity matrix marks
-them X for NeoSoft 2500 but ✓ for NeoSoft 5000, and since both models share
-this one device_file, they must be included here - the empty-value
-exclusion sets in const.py already hide them gracefully on NeoSoft 2500
-where they are blank.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_KNOWN_KEYS below.
@@ -49,10 +49,8 @@ SENSOR_KNOWN_KEYS = {
     "getAVO", "getFLO",
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
-    # --- Pressure ---
-    "getBAR",
     # --- Water Quality ---
-    "getCEL", "getCND", "getIWH", "getOWH", "getWHU",
+    "getIWH", "getOWH", "getWHU",
     # --- Water Consumption & Volume ---
     "getLTV", "getVOL",
     # --- Salt / Reserve Capacity ---
