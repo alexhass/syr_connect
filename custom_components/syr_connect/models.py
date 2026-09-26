@@ -961,7 +961,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft_single",
+        "device_file": "neosoft_duo",
         "display_name": "NeoSoft Lock Connect II",
         "dk": 1221,
         "dkv": 221,
