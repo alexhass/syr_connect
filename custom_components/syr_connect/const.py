@@ -179,6 +179,7 @@ _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
 # These are used to map device-specific alarm codes to internal translation keys.
 _SYR_CONNECT_SENSOR_ALA_CODES_LEX = {
     "0": "no_alarm",
+    "13": "alarm_salt_supply_empty",
 }
 
 _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT = {
