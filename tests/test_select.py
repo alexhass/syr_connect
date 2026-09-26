@@ -1358,8 +1358,12 @@ async def test_async_setup_entry_creates_triolock_selects_from_real_fixture(
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
+    # SyrConnectPrfSelect/SyrConnectRotationSelect don't set `_sensor_key` (unlike
+    # SyrConnectNumericSelect), so identify them by type instead.
+    assert any(isinstance(e, SyrConnectPrfSelect) for e in entities)
+    assert any(isinstance(e, SyrConnectRotationSelect) for e in entities)
     keys = {getattr(e, "_sensor_key", None) for e in entities}
-    assert {"getPRF", "getSRO", "getFFM"} <= keys
+    assert "getFFM" in keys
 
 
 async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> None:
