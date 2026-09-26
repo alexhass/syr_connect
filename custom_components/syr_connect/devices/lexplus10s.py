@@ -5,7 +5,7 @@ via "device_file": "lexplus10s" - no distinct fixture exists for the plain
 differing only in maximum_salt_volume-style metadata already handled
 elsewhere - pending confirmation if a real "LEX Plus 10" fixture ever exists.
 
-Derived from tests/fixtures/xml/LEXplus10S_GetDeviceCollectionStatus.xml (no
+Derived from tests/fixtures/xml/SyrLEXplus10S_GetDeviceCollectionStatus.xml (no
 JSON fixture exists for this model). Unlike the LEXplus10SL sibling, this
 model has NO shutoff valve (no getAB/getVLV) and NO buzzer (no getBUZ), and
 NO leak-protection-profile/microleakage-test family - it is a conventional

@@ -20,7 +20,7 @@ def test_lexplus10_detection_synthetic():
 
 
 def test_lexplus10s_detection():
-    xml = _load_xml("LEXplus10S_GetDeviceCollectionStatus.xml")
+    xml = _load_xml("SyrLEXplus10S_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
@@ -29,7 +29,7 @@ def test_lexplus10s_detection():
 
 
 def test_lexplus10sl_detection():
-    xml = _load_xml("LEXplus10SL_GetDeviceCollectionStatus.xml")
+    xml = _load_xml("SyrLEXplus10SL_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
@@ -38,7 +38,7 @@ def test_lexplus10sl_detection():
 
 
 def test_neosoft2500_detection():
-    xml = _load_xml("NeoSoft2500_GetDeviceCollectionStatus.xml")
+    xml = _load_xml("SyrNeoSoft2500_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
@@ -47,7 +47,7 @@ def test_neosoft2500_detection():
 
 
 def test_neosoft5000_detection():
-    xml = _load_xml("NeoSoft5000_GetDeviceCollectionStatus.xml")
+    xml = _load_xml("SyrNeoSoft5000_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
@@ -68,7 +68,7 @@ def test_syrtriolockconnect_detection():
 
 
 def test_trio_dfrls_detection():
-    xml = _load_xml("TrioDFRLS_GetDeviceCollectionStatus.xml")
+    xml = _load_xml("SyrTrioDFRLS_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
@@ -77,7 +77,7 @@ def test_trio_dfrls_detection():
 
 
 def test_safetplus_detection():
-    xml = _load_xml("SafeTPlus_GetDeviceCollectionStatus.xml")
+    xml = _load_xml("SyrSafeTPlus_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
@@ -703,7 +703,7 @@ def test_manufacturer_via_xml_fixtures():
     expected = [
         ("SanibelLeakProtectionModuleA25_GetDeviceCollectionStatus.xml", "sanibelleakprotect", "Sanibel"),
         ("SanibelSoftwaterUNOA25_GetDeviceCollectionStatus.xml", "sanibelsoftwateruno", "Sanibel"),
-        ("SafeTechPlus_GetDeviceCollectionStatus.xml", "safetechplus", "SYR"),
+        ("SyrSafeTechPlus_GetDeviceCollectionStatus.xml", "safetechplus", "SYR"),
     ]
     for filename, expected_name, expected_manufacturer in expected:
         xml = (fixture_dir_xml / filename).read_text(encoding="utf-8")
@@ -729,9 +729,9 @@ def test_manufacturer_via_json_fixture_pontosbase():
 
 
 def test_safetech_detection_via_json_fixture():
-    """Verify SafeTech Connect is detected from the SafeTech_get_all.json fixture."""
+    """Verify SafeTech Connect is detected from the SyrSafeTech_get_all.json fixture."""
     import json
-    fixture_path = Path(__file__).parent / "fixtures/json/SafeTech_get_all.json"
+    fixture_path = Path(__file__).parent / "fixtures/json/SyrSafeTech_get_all.json"
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
     flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
     result = detect_model(flat)

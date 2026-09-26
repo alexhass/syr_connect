@@ -1,7 +1,7 @@
 """Entity allowlist override for the lexplus10sl model (LEX Plus 10 SL Connect,
 dk=80/dkv=25, sbt=7).
 
-Derived from tests/fixtures/xml/LEXplus10SL_GetDeviceCollectionStatus.xml (no
+Derived from tests/fixtures/xml/SyrLEXplus10SL_GetDeviceCollectionStatus.xml (no
 JSON fixture exists for this model). Unlike the plain "lex"/lexplus10s
 siblings, this is the flagship hybrid model: a full column softener (resin/
 salt/regeneration) PLUS a shutoff valve (getAB/getVLV) PLUS the full 8-slot

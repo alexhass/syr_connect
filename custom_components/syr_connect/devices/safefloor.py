@@ -1,6 +1,6 @@
 """Entity allowlist override for the safefloor model (SafeFloor Connect, dk=120/dkv=34).
 
-Derived from tests/fixtures/xml/SafeFloor_GetDeviceCollectionStatus.xml (this
+Derived from tests/fixtures/xml/SyrSafeFloor_GetDeviceCollectionStatus.xml (this
 model has no JSON API fixture - it is only reachable via the XML API).
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to

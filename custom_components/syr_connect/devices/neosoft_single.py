@@ -5,12 +5,12 @@ single-tank rebrand-only sibling signature in this dk range via
 5000) use the sibling neosoft_duo.py instead - see that file for the
 second-tank keys (getRE2/getSS2/getSV2/getVPS2) this file deliberately omits.
 
-Derived from BOTH tests/fixtures/json/NeoSoft2500_get_all.json (JSON API) and
-tests/fixtures/xml/NeoSoft2500_GetDeviceCollectionStatus.xml (XML API) - the
+Derived from BOTH tests/fixtures/json/SyrNeoSoft2500_get_all.json (JSON API) and
+tests/fixtures/xml/SyrNeoSoft2500_GetDeviceCollectionStatus.xml (XML API) - the
 two agree on every key below, and several differ in value between the two
 captures (e.g. getLAR, getLTV, getRE1, getRPD, getSS1, getSV1, getVOL,
 getVPS1), confirming they are genuinely live rather than stubs.
-(NeoSoft5000_GetDeviceCollectionStatus.xml is explicitly marked in its own
+(SyrNeoSoft5000_GetDeviceCollectionStatus.xml is explicitly marked in its own
 XML comment as "Just for model tests. We need a test machine to verify" - a
 synthetic capture for model-detection unit tests only, NOT used here.)
 

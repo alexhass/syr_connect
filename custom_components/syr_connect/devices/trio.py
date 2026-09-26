@@ -1,8 +1,8 @@
 """Entity allowlist override for the trio model (Trio DFR/LS Connect, dk=1113/dkv=113).
 
-Derived from BOTH tests/fixtures/json/TrioDFRLS_get_all.json (JSON API) and
-tests/fixtures/xml/TrioDFRLS_GetDeviceCollectionStatus.xml (XML API) - the two
-agree on every key discussed below. (TrioDFRLS_GetDeviceCollectionStatus_Bug1.xml
+Derived from BOTH tests/fixtures/json/SyrTrioDFRLS_get_all.json (JSON API) and
+tests/fixtures/xml/SyrTrioDFRLS_GetDeviceCollectionStatus.xml (XML API) - the two
+agree on every key discussed below. (SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml
 is a minimal bug-repro capture with only 4 keys and was not used for derivation.)
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to

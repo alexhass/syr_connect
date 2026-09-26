@@ -1,6 +1,6 @@
 """Entity allowlist override for the safetplus model (Safe-T+ Connect, dk=1/dkv=6).
 
-Derived from tests/fixtures/xml/SafeTPlus_GetDeviceCollectionStatus.xml (this
+Derived from tests/fixtures/xml/SyrSafeTPlus_GetDeviceCollectionStatus.xml (this
 model has no JSON API fixture - it is only reachable via the XML API).
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to

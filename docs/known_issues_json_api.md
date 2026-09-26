@@ -99,7 +99,7 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
   - Use "1/0" for older devices when sending set commands
   - Use "true/false" for newer devices when sending set commands
 - Evidence / references:
-  - Fixtures: [tests/fixtures/json/SafeTech_get_all.json](tests/fixtures/json/SafeTech_get_all.json), [tests/fixtures/json/NeoSoft2500_get_all.json](tests/fixtures/json/NeoSoft2500_get_all.json)
+  - Fixtures: [tests/fixtures/json/SyrSafeTech_get_all.json](tests/fixtures/json/SyrSafeTech_get_all.json), [tests/fixtures/json/SyrNeoSoft2500_get_all.json](tests/fixtures/json/SyrNeoSoft2500_get_all.json)
 
 ### 6. API error code inconsistencies (HTTP 404)
 
@@ -189,4 +189,4 @@ curl -i "http://localhost:5333/trio/get/XYZ"
 - Official API documentation: https://iotsyrpublicapi.z1.web.core.windows.net/
 - Client code: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 - Tests: [tests/test_api_json.py](tests/test_api_json.py)
-- Fixtures: [tests/fixtures/json/SafeTech_get_all.json](tests/fixtures/json/SafeTech_get_all.json), [tests/fixtures/json/NeoSoft2500_get_all.json](tests/fixtures/json/NeoSoft2500_get_all.json)
+- Fixtures: [tests/fixtures/json/SyrSafeTech_get_all.json](tests/fixtures/json/SyrSafeTech_get_all.json), [tests/fixtures/json/SyrNeoSoft2500_get_all.json](tests/fixtures/json/SyrNeoSoft2500_get_all.json)
