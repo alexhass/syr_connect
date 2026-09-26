@@ -1,6 +1,8 @@
 """Entity allowlist override for the muco_filling model (e.g. Conel Clear Pro
 Fill, AC 3228 Connect - getDFM=3, filling-controller role).
 
+Model type: Filling the Heating System
+
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.

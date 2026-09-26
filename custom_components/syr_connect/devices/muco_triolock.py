@@ -1,5 +1,7 @@
 """Entity allowlist override for the muco_triolock model (SYR TRIO Lock Connect, dkv=506, getDFM=5).
 
+Model type: Backwash filter with pressure reducer (DM) + leak protection (LS)
+
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.

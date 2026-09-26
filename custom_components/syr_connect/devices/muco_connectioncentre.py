@@ -1,6 +1,8 @@
 """Entity allowlist override for the muco_connectioncentre model (SYR AC 3200
 Connect, dkv=506, getDFM=2, "Connection centre"/"Anschlusscenter" role).
 
+Model type: Connection Centre / "Anschlusscenter"
+
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists in const.py which have to
 cover every supported model at once.

@@ -1,5 +1,8 @@
-"""Entity allowlist override for the muco_leakprotect model (getDFM=1 role):
-covers both the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
+"""Entity allowlist override for the muco_leakprotect model (getDFM=1 role).
+
+Model type: Leak protection (LS)
+
+Covers both the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
 (dkv=506) products, which share this device_file since both are the
 "Leckageschutz" (leak protection) role of the MultiController firmware.
 
