@@ -1155,7 +1155,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 506,
         "manufacturer": "SYR",
         "name": "syrtriolockconnect",
-        # TODO: Untested model.
         "srn_prefix": "506",
     },
     {

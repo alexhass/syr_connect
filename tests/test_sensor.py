@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pytest
@@ -16,6 +17,7 @@ from custom_components.syr_connect.const import (
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
     SyrConnectConnectionStateSensor,
     SyrConnectSensor,
@@ -9510,5 +9512,21 @@ async def test_connection_state_sensor_device_not_found(hass: HomeAssistant) -> 
     data = {"devices": [{"id": "other_device", "name": "Other", "project_id": "project1", "status": {}}]}
     sensor = _build_connection_state_sensor(hass, data)
     assert sensor.native_value is None
+
+
+async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """SYR TRIO Lock Connect (muco_triolock) real fixture creates the newly-confirmed sensors."""
+    xml = (Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml").read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert {"getAB", "getVLV", "getDBD", "getDMA", "getDRP", "getDSV", "getDTT", "getPA1", "getPRF"} <= keys
 
 

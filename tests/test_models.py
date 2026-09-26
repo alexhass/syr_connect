@@ -55,6 +55,18 @@ def test_neosoft5000_detection():
     assert detect_model(flat)["manufacturer"] == "SYR"
 
 
+def test_syrtriolockconnect_detection():
+    """SYR TRIO Lock Connect (dkv=506, getDFM=5) detected via real fixture."""
+    xml = _load_xml("SyrTrioLock_GetDeviceCollectionStatus.xml")
+    parser = ResponseParser()
+    flat = parser.parse_device_status_response(xml)
+    assert flat is not None
+    result = detect_model(flat)
+    assert result["name"] == "syrtriolockconnect"
+    assert result["device_file"] == "muco_triolock"
+    assert result["manufacturer"] == "SYR"
+
+
 def test_trio_dfrls_detection():
     xml = _load_xml("TrioDFRLS_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()

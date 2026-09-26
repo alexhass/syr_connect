@@ -1,6 +1,7 @@
 """Tests for select platform."""
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -11,6 +12,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import detect_model
+from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
     SyrConnectNumericSelect,
@@ -1341,6 +1343,22 @@ async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands
 
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     assert len(sv1_entities) == 0
+
+
+async def test_async_setup_entry_creates_triolock_selects_from_real_fixture(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """SYR TRIO Lock Connect (muco_triolock) real fixture creates getPRF/getSRO/getFFM selects."""
+    xml = (Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml").read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert {"getPRF", "getSRO", "getFFM"} <= keys
 
 
 async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> None:

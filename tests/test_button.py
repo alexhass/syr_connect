@@ -1,6 +1,7 @@
 """Tests for button platform."""
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -10,6 +11,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.response_parser import ResponseParser
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -1056,6 +1058,26 @@ async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     assert len(entities) == 0
+
+
+async def test_async_setup_entry_creates_setdex_for_triolock_real_fixture(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """SYR TRIO Lock Connect (muco_triolock) real fixture creates setDEX on the JSON API."""
+    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+
+    xml = (Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml").read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.api.__class__ = SyrConnectJsonAPI
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert any(e._command == "setDEX" for e in entities)
 
 
 async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
