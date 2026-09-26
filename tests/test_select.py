@@ -10,6 +10,7 @@ from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
     SyrConnectNumericSelect,
@@ -1290,22 +1291,46 @@ async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, crea
     assert len(sv1_entities) == 0
 
 
-async def test_async_setup_entry_skips_getsv1_select_for_neosoft(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+@pytest.mark.parametrize(
+    ("srn_prefix", "expected_name"),
+    [
+        ("206", "neosoft2500"),
+        ("207", "sanibelsoftwateruno"),
+        ("208", "conceptsingle"),
+        ("209", "optimasingle"),
+        ("210", "concept200duo"),
+        ("211", "optimat22duo"),
+        ("212", "sanibelsoftwaterduo"),
+        ("213", "optimaduo"),
+        ("214", "conelclearprosofttwin"),
+        ("215", "conelclearprosoft"),
+        ("216", "conceptduo"),
+        ("217", "ditechduo"),
+        ("218", "takeduo"),
+        ("219", "ditechsingle"),
+        ("220", "takesingle"),
+    ],
+)
+async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, srn_prefix, expected_name
 ) -> None:
-    """NeoSoft has a built-in salt level sensor, so getSV1 must stay read-only:
-    no select entity even though maximum_salt_volume is set for this model.
+    """All rebrand-only siblings sharing device_file "neosoft" (CONEL/Sanibel/
+    Concept/Optima/Ditech/TAKE) are the same NeoSoft-platform hardware with the
+    same built-in salt level sensor, so none of them get a getSV1 select.
     """
+    status = {
+        "getSRN": f"{srn_prefix}AAA00001",
+        "getSV1": "5",
+    }
+    assert detect_model(status)["name"] == expected_name
+
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "status": {
-                    "getSRN": "206AAA00001",
-                    "getSV1": "5",
-                },
+                "status": status,
             }
         ]
     }
@@ -2169,7 +2194,21 @@ async def test_async_setup_entry_creates_rpd_select_for_model_with_max_rpd(
 async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
 ) -> None:
-    """Test async_setup_entry creates SV1 select when model is detected via SRN prefix."""
+    """Test async_setup_entry creates SV1 select when model is detected via SRN prefix.
+
+    Uses a synthetic signature (no `device_file`) instead of a real srn_prefix
+    from models.py, so this stays independent of per-model SELECT_KNOWN_KEYS
+    overrides in devices/*.py (e.g. neosoft.py deliberately excludes getSV1).
+    """
+    test_sig = [
+        {
+            "display_name": "Test Model",
+            "base_path": "test",
+            "name": "testmodel",
+            "srn_prefix": "999",
+            "maximum_salt_volume": 25,
+        }
+    ]
     data = {
         "devices": [
             {
@@ -2177,7 +2216,7 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
-                    "getSRN": "214AAA0001",  # matches srn_prefix for a CONEL model in signatures
+                    "getSRN": "999AAA0001",
                     "getSV1": "5",
                 },
             }
@@ -2186,7 +2225,8 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     sv1_entities = [e for e in entities if hasattr(e, '_sensor_key') and e._sensor_key == 'getSV1']
     assert len(sv1_entities) == 1
