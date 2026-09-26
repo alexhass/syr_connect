@@ -1088,8 +1088,11 @@ Model: Syr RSA (dkv=506, getDFM=4).
 
 Models: TRIO Lock Connect (dkv=506, getDFM=5), SafeTech Lock Connect (dkv=506,
 getDFM=1), AC 3200 Connect (dkv=506, getDFM=2), AC 3228 Connect (dkv=506,
-getDFM=3). The following table lists the official validity matrix (which
-commands are available per model) alongside the confirmed descriptions.
+getDFM=3), RSA Connect (dkv=506, getDFM=4), Trio DFR/LS Connect (dkv=113),
+SafeTech+ Connect (dkv=39/112 - NOT the same as Safe-T+ Connect dkv=6), NeoSoft
+2500 Connect (dkv=206), NeoSoft 5000 Connect (dkv=206, ver_prefix "NSS"). The
+following table lists the official validity matrix (which commands are
+available per model) alongside the confirmed descriptions.
 
 | Property | Type | Description | Value range | GET | SET |
 |----------|------|--------------------------------------------------------------|-------------|-----|-----|
@@ -1099,6 +1102,8 @@ commands are available per model) alongside the confirmed descriptions.
 | BAT      | int  | Battery voltage in 1/100 V                                    | 0–1000      | ✓   | X   |
 | BUZ      | bool | Buzzer on/off on alarm                                        | true/false  | ✓   | ✓   |
 | CEL      | int  | Temperature in °C                                             | 0–1000      | ✓   | X   |
+| CFT      | ?    | *unknown - meaning not confirmed*                             | -           | ✓   | ?   |
+| CFV      | ?    | *unknown - meaning not confirmed*                             | -           | ✓   | ?   |
 | CND      | int  | Conductivity in µS/cm                                         | 0–5000      | ✓   | X   |
 | FLO      | int  | Current flow rate in l/h                                      | 0–5000      | ✓   | X   |
 | LFT      | int  | Last refill duration in s                                     | -           | ✓   | X   |
@@ -1119,34 +1124,36 @@ commands are available per model) alongside the confirmed descriptions.
 
 #### Per-model validity (✓ = available, X = not available):
 
-| Property | TRIO Lock | SafeTech Lock | AC 3200 | AC 3228 | RSA |
-|----------|-----------|---------------|---------|---------|-----|
-| AVO      | ✓ | ✓ | X | X | X |
-| BAR      | X | X | X | ✓ | X |
-| BAR2     | ✓ | X | ✓ | ✓ | X |
-| BAT      | ✓ | ✓ | ✓ | ✓ | ✓ |
-| BUZ      | ✓ | ✓ | ✓ | ✓ | ✓ |
-| CEL      | X | X | X | X | X |
-| CND      | X | X | ✓ | ✓ | X |
-| FLO      | ✓ | ✓ | ✓ | ✓ | X |
-| LFT      | X | X | ✓ | ✓ | X |
-| LFV      | X | X | ✓ | ✓ | X |
-| LTV      | ✓ | ✓ | X | X | X |
-| NMT      | ✓ | ✓ | X | X | X |
-| NPT      | ✓ | ✓ | X | X | X |
-| NMS      | ✓ | ✓ | X | X | X |
-| NPS      | ✓ | ✓ | X | X | X |
-| NRT      | X | X | ✓ | ✓ | X |
-| SRN      | ✓ | ✓ | ✓ | ✓ | ✓ |
-| TRT      | X | X | ✓ | ✓ | X |
-| TRV      | X | X | ✓ | ✓ | X |
-| VER      | ✓ | ✓ | ✓ | ✓ | ✓ |
-| VOL      | ✓ | ✓ | X | X | X |
-| VPS1     | X | X | X | X | X |
-| VPS2     | X | X | X | X | X |
+| Property | TRIO Lock | SafeTech Lock | AC 3200 | AC 3228 | RSA | TrioDFR LS | SafeTech+ | NeoSoft 2500 | NeoSoft 5000 |
+|----------|-----------|---------------|---------|---------|-----|------------|-----------|--------------|--------------|
+| AVO      | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
+| BAR      | X | X | X | ✓ | X | X | X | X | ✓ |
+| BAR2     | ✓ | X | ✓ | ✓ | X | X | ✓ | X | X |
+| BAT      | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | X | X |
+| BUZ      | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| CEL      | X | X | X | X | X | X | ✓ | X | ✓ |
+| CFT      | X | X | ✓ | ✓ | X | X | X | X | X |
+| CFV      | X | X | ✓ | ✓ | X | X | X | X | X |
+| CND      | X | X | ✓ | ✓ | X | X | ✓ | X | ✓ |
+| FLO      | ✓ | ✓ | ✓ | ✓ | X | ✓ | ✓ | ✓ | ✓ |
+| LFT      | X | X | ✓ | ✓ | X | X | X | X | X |
+| LFV      | X | X | ✓ | ✓ | X | X | X | X | X |
+| LTV      | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
+| NMT      | ✓ | ✓ | X | X | X | X | X | X | X |
+| NPT      | ✓ | ✓ | X | X | X | X | X | X | X |
+| NMS      | ✓ | ✓ | X | X | X | X | X | X | X |
+| NPS      | ✓ | ✓ | X | X | X | ✓ | ✓ | X | X |
+| NRT      | X | X | ✓ | ✓ | X | X | X | X | X |
+| SRN      | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| TRT      | X | X | ✓ | ✓ | X | X | X | X | X |
+| TRV      | X | X | ✓ | ✓ | X | X | X | X | X |
+| VER      | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| VOL      | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
+| VPS1     | X | X | X | X | X | X | X | ✓ | ✓ |
+| VPS2     | X | X | X | X | X | X | X | X | ✓ |
 
-Two properties from the same matrix (CFT, CFV — available on AC 3200/AC 3228)
-still have no confirmed description and remain undocumented.
+CFT/CFV still have no confirmed description (type/value range/meaning
+unknown) despite now having full per-model availability data.
 
 ## Further information
 

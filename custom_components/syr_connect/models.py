@@ -727,7 +727,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── NeoSoft platform (dk=1200–1222) ──────────────────────────────────────────
     {
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "NeoSoft Connect",
         "dk": 1200,
         "dkv": 200,
@@ -739,7 +739,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "NeoSoft 2500 Connect",
         "dk": 1206,
         "dkv": 206,
@@ -752,7 +752,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "NeoSoft 5000 Connect",
         "dk": 1206,
         "dkv": 206,
@@ -768,7 +768,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "Softwater UNO A25",
         "dk": 1207,
         "dkv": 207,
@@ -781,7 +781,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "concept Single Softening System",
         "dk": 1208,
         "dkv": 208,
@@ -795,7 +795,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "Optima Single Softening System",
         "dk": 1209,
         "dkv": 209,
@@ -809,7 +809,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "concept 200 Double Softening System",
         "dk": 1210,
         "dkv": 210,
@@ -823,7 +823,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "Optima T2.2 Double Softening System",
         "dk": 1211,
         "dkv": 211,
@@ -837,7 +837,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "Softwater DUO A25",
         "dk": 1212,
         "dkv": 212,
@@ -851,7 +851,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "Optima Double Softening System",
         "dk": 1213,
         "dkv": 213,
@@ -865,7 +865,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "CLEAR PRO SOFT TWIN",
         "dk": 1214,
         "dkv": 214,
@@ -878,7 +878,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "CLEAR PRO SOFT",
         "dk": 1215,
         "dkv": 215,
@@ -891,7 +891,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "concept Double Softening System",
         "dk": 1216,
         "dkv": 216,
@@ -905,7 +905,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "Ditech Double Softening System",
         "dk": 1217,
         "dkv": 217,
@@ -919,7 +919,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_duo",
         "display_name": "TAKE Double Softening System",
         "dk": 1218,
         "dkv": 218,
@@ -933,7 +933,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "Ditech Single Softening System",
         "dk": 1219,
         "dkv": 219,
@@ -947,7 +947,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "TAKE Single Softening System",
         "dk": 1220,
         "dkv": 220,
@@ -961,7 +961,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "NeoSoft Lock Connect II",
         "dk": 1221,
         "dkv": 221,
@@ -974,7 +974,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
-        "device_file": "neosoft",
+        "device_file": "neosoft_single",
         "display_name": "NeoSoft Lock Connect I",
         "dk": 1222,
         "dkv": 222,

@@ -1,6 +1,9 @@
-"""Entity allowlist override for the neosoft model family (NeoSoft platform,
-dk=1200-1222 - shared by "neosoft"/"neosoft2500"/"neosoft5000" and every
-rebrand-only sibling signature in this dk range via "device_file": "neosoft").
+"""Entity allowlist override for the neosoft_single model family (single-tank
+NeoSoft platform, dk=1200-1222 - shared by "neosoft"/"neosoft2500" and every
+single-tank rebrand-only sibling signature in this dk range via
+"device_file": "neosoft_single"). Dual-tank rebrands ("*duo"/"twin"/NeoSoft
+5000) use the sibling neosoft_duo.py instead - see that file for the
+second-tank keys (getRE2/getSS2/getSV2/getVPS2) this file deliberately omits.
 
 Derived from BOTH tests/fixtures/json/NeoSoft2500_get_all.json (JSON API) and
 tests/fixtures/xml/NeoSoft2500_GetDeviceCollectionStatus.xml (XML API) - the
@@ -25,18 +28,13 @@ out of SELECT_KNOWN_KEYS to avoid exposing a control nobody should use.
 Deliberately NOT included:
 - getALD: 600 in JSON but empty ("") in XML - inconsistent, and 600 is the
   same generic value seen across several unrelated device families.
-- getNPS: empty ("") in the XML fixture.
+- getNPS: empty ("") in the XML fixture. Also confirmed X (not available)
+  for NeoSoft 2500 by the official "Per-model validity" matrix in
+  docs/syrconnect-protocol.md.
 - getBAR, getCEL, getCND: empty ("") in the XML fixture and absent from the
-  JSON fixture entirely - no real value in either capture. A prior version
-  of this docstring cited "the official validity matrix" marking these ✓
-  for NeoSoft 5000, but docs/syrconnect-protocol.md has no such matrix for
-  NeoSoft models (its only "Per-model validity" matrix covers the unrelated
-  TRIO Lock/SafeTech Lock/AC 3200/AC 3228/RSA family) - that citation was
-  unverifiable, so these stay excluded until a real, non-empty capture
-  confirms them.
-- getRE2, getSS2, getSV2, getVPS2 (second-tank keys): not present in this
-  single-tank fixture - only relevant for genuinely dual-tank rebrands
-  (e.g. the "*duo" signatures); not confirmed here, pending a real fixture.
+  JSON fixture entirely. The official "Per-model validity" matrix confirms
+  X (not available) for NeoSoft 2500 specifically (✓ for NeoSoft 5000 -
+  see neosoft_duo.py, which correctly includes them).
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_KNOWN_KEYS below.

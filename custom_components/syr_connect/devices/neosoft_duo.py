@@ -3,25 +3,28 @@ NeoSoft platform rebrands: NeoSoft 5000 and every "*duo"/"twin" sibling
 signature in dk=1200-1222 via "device_file": "neosoft_duo"). Single-tank
 rebrands use the sibling neosoft_single.py instead.
 
-Currently IDENTICAL to neosoft_single.py's confirmed keys - no genuine
-real-device evidence exists yet for any second-tank key. The only available
-capture with dual-tank data, tests/fixtures/xml/NeoSoft5000_GetDeviceCollectionStatus.xml,
-is explicitly marked in its own XML comment as "Just for model tests. We
-need a test machine to verify" (used only to satisfy the getRE1+getRE2
-v_keys fingerprint required for model detection), so it is NOT treated as
-proof of any key's real-world behavior:
-- getRE2: has a real-looking, distinct non-zero value (999 vs getRE1=773)
-  in that synthetic fixture, but since the fixture itself is unverified,
-  this alone isn't sufficient evidence per the stricter standard applied
-  elsewhere in this codebase (see neosoft_single.py's getBAR/getCEL/getCND
-  history) - pending a real dual-tank capture.
-- getSS2, getSV2: not present at all, even in the synthetic fixture.
-- getVPS2: present but empty ("") in the synthetic fixture - no evidence.
+getBAR/getCEL/getCND/getVPS2 are confirmed ✓ (available) for NeoSoft 5000
+specifically by the now-complete "Per-model validity" matrix in
+docs/syrconnect-protocol.md (X for NeoSoft 2500, hence neosoft_single.py
+correctly excludes them) - included below on that authority, overriding the
+earlier decision to exclude them pending fixture confirmation.
 
-If a real dual-tank device capture confirms any of getRE2/getSS2/getSV2/
-getVPS2 (or getRG2, the tank-2 regeneration-running flag already in
-const.py's global allowlist) with a genuine non-empty value, move it into
-SENSOR_KNOWN_KEYS below.
+No genuine real-device evidence exists yet for the remaining second-tank
+keys (getRE2/getSS2/getSV2), which aren't covered by the matrix at all. The
+only available capture with dual-tank data,
+tests/fixtures/xml/NeoSoft5000_GetDeviceCollectionStatus.xml, is explicitly
+marked in its own XML comment as "Just for model tests. We need a test
+machine to verify" (used only to satisfy the getRE1+getRE2 v_keys
+fingerprint required for model detection), so it is NOT treated as proof:
+- getRE2: has a real-looking, distinct non-zero value (999 vs getRE1=773)
+  in that synthetic fixture, but the fixture itself is unverified - pending
+  a real dual-tank capture.
+- getSS2, getSV2: not present at all, even in the synthetic fixture.
+
+If a real dual-tank device capture confirms getRE2/getSS2/getSV2 (or getRG2,
+the tank-2 regeneration-running flag already in const.py's global
+allowlist) with a genuine non-empty value, move it into SENSOR_KNOWN_KEYS
+below.
 """
 
 SENSOR_KNOWN_KEYS = {
@@ -31,8 +34,10 @@ SENSOR_KNOWN_KEYS = {
     "getAVO", "getFLO",
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
+    # --- Pressure ---
+    "getBAR",
     # --- Water Quality ---
-    "getIWH", "getOWH", "getWHU",
+    "getCEL", "getCND", "getIWH", "getOWH", "getWHU",
     # --- Water Consumption & Volume ---
     "getLTV", "getVOL",
     # --- Salt / Reserve Capacity ---
@@ -43,7 +48,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Maintenance ---
     "getSRH", "getSRV",
     # --- Turbine / Pulse Monitoring ---
-    "getVPS1",
+    "getVPS1", "getVPS2",
     # --- Device Info & Diagnostics ---
     "getMAC1", "getMAC2", "getSRN", "getTYP", "getVER",
     # --- Wi-Fi ---

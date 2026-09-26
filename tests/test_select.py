@@ -1316,9 +1316,10 @@ async def test_async_setup_entry_model_from_type_field(hass: HomeAssistant, crea
 async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, srn_prefix, expected_name
 ) -> None:
-    """All rebrand-only siblings sharing device_file "neosoft" (CONEL/Sanibel/
-    Concept/Optima/Ditech/TAKE) are the same NeoSoft-platform hardware with the
-    same built-in salt level sensor, so none of them get a getSV1 select.
+    """All rebrand-only siblings sharing device_file "neosoft_single"/"neosoft_duo"
+    (CONEL/Sanibel/Concept/Optima/Ditech/TAKE) are the same NeoSoft-platform
+    hardware with the same built-in salt level sensor, so none of them get a
+    getSV1 select.
     """
     status = {
         "getSRN": f"{srn_prefix}AAA00001",
