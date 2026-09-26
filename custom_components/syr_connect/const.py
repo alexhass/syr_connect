@@ -179,7 +179,27 @@ _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
 # These are used to map device-specific alarm codes to internal translation keys.
 _SYR_CONNECT_SENSOR_ALA_CODES_LEX = {
     "0": "no_alarm",
-    "13": "alarm_salt_supply_empty",
+    "LOWSALT": "alarm_salt_supply_empty",
+    "NOSALT": "alarm_salt_supply_empty",
+    "1": "alarm_salt_supply_empty",
+    "2": "alarm_chlor_generator_fault",
+    "3": "alarm_valve_malfunction",
+    "4": "alarm_pressure_too_low",
+    "5": "alarm_pressure_too_high",
+    "6": "alarm_brine_level_low",
+    "7": "alarm_brine_level_high",
+    "11": "alarm_end_switch",
+    "12": "alarm_no_network_connection",
+    "13": "alarm_leakage_volume_reached",
+    "14": "alarm_leakage_time_reached",
+    "15": "alarm_max_flow_rate_reached",
+    "16": "alarm_microleakage_detected",
+    "17": "alarm_external_sensor_leakage_radio",
+    "18": "alarm_turbine_blocked",
+    "19": "alarm_pressure_sensor_faulty",
+    "20": "alarm_temperature_sensor_faulty",
+    "21": "fault_conductance_sensor",
+    "23": "alarm_leakage_volume_approaching",
 }
 
 _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT = {

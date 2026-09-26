@@ -536,6 +536,37 @@ Applies to NeoSoft, Trio DFR/LS, MuCo/Lock/RSA family devices (Conel/Sanibel/Opt
 | AE   | *(no information available)*                  | `error_no_information`                    |
 | FF   | Kein Alarm                                    | `no_alarm`                                |
 
+#### Alarm codes (getALA) — LEX family
+
+Applies to L10-L100, LEX10-100, LEXplus10/10S/10SL. All numeric codes are hex-parsed (single-digit codes 1-7 decode to themselves, two-digit codes 11-23 decode to 17-35); `lowsalt`/`nosalt` are also reported as literal text instead of a numeric code on some firmware versions. Any unmatched code (including `0`) is treated as no alarm.
+
+| Code            | Match type   | Decoded (dec) | Enum (official)          | Title (official English string)          | Translation key                          |
+|-----------------|--------------|----------------|---------------------------|-------------------------------------------|-------------------------------------------|
+| 0               | Hex-parse    | 0              | – (null)                  | no alarm                                   | `no_alarm`                                |
+| lowsalt (text)  | String literal | –            | lowSalt                   | Lack of salt – Please refill salt          | `alarm_salt_supply_empty`                 |
+| nosalt (text)   | String literal | –            | noSalt2                   | Lack of salt – Please refill salt          | `alarm_salt_supply_empty`                 |
+| 1               | Hex-parse    | 1              | noSalt                     | Lack of salt – Please refill salt          | `alarm_salt_supply_empty`                 |
+| 2               | Hex-parse    | 2              | chlorGenerator             | Malfunction chlor generator                | `alarm_chlor_generator_fault`             |
+| 3               | Hex-parse    | 3              | valveMalfunction           | Valve mechanism defect                     | `alarm_valve_malfunction`                 |
+| 4               | Hex-parse    | 4              | pressureTooLow             | Inlet pressure too low                     | `alarm_pressure_too_low`                  |
+| 5               | Hex-parse    | 5              | pressureTooHigh            | Inlet pressure too high                    | `alarm_pressure_too_high`                 |
+| 6               | Hex-parse    | 6              | brineLevelLow              | Filling level in salt container too low    | `alarm_brine_level_low`                   |
+| 7               | Hex-parse    | 7              | brineLevelHigh             | Filling level in salt container too high   | `alarm_brine_level_high`                  |
+| 11              | Hex-parse    | 17             | endSwitch                  | Malfunction shutoff                        | `alarm_end_switch`                        |
+| 12              | Hex-parse    | 18             | noNetworkConnection        | Malfunction network                        | `alarm_no_network_connection`             |
+| 13              | Hex-parse    | 19             | volumeLeakage              | Volume leakage suspected                   | `alarm_leakage_volume_reached`            |
+| 14              | Hex-parse    | 20             | timeLeakage                | Time leakage suspected                     | `alarm_leakage_time_reached`              |
+| 15              | Hex-parse    | 21             | maxFlowLeakage             | Flow volume leakage suspected              | `alarm_max_flow_rate_reached`             |
+| 16              | Hex-parse    | 22             | microLeakage               | Micro leakage suspected                    | `alarm_microleakage_detected`             |
+| 17              | Hex-parse    | 23             | externalSensorLeakage      | Floor sensor leakage                       | `alarm_external_sensor_leakage_radio`     |
+| 18              | Hex-parse    | 24             | turbineBlocked             | Malfunction flow rate sensor               | `alarm_turbine_blocked`                   |
+| 19              | Hex-parse    | 25             | pressureSensorError        | Malfunction pressure sensor                | `alarm_pressure_sensor_faulty`            |
+| 20              | Hex-parse    | 32             | temperatureSensorError     | Malfunction temperature sensor             | `alarm_temperature_sensor_faulty`         |
+| 21              | Hex-parse    | 33             | conductivitySensorError    | Malfunction conductivity sensor            | `fault_conductance_sensor`                |
+| 23              | Hex-parse    | 35             | volumeLeakageApproaching   | Warning volume leakage                     | `alarm_leakage_volume_approaching`        |
+| other unmatched | Hex-parse    | –              | – (null)                  | no alarm (fallback)                        | `no_alarm`                                |
+| anything else   | –                          | no alarm                                   | `no_alarm`                                |
+
 #### Warning codes (getWRN) — NeoSoft / MuCo / Trio family
 
 Non-critical warnings, same device family as the alarm codes above.
