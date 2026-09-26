@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <prs>
+    <pr pg="2931ba6d-29b0-f111-8013-be3af2b6059f" pn="My+Project" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="02:00:00" />
+  </prs>
+  <col>
+    <dcl dclg="2a31ba6d-29b0-f111-8013-be3af2b6059f" ali="Example+Leakage+Protection+System" dkv="506" mod="0" pg="2931ba6d-29b0-f111-8013-be3af2b6059f" ag="" aif="" pclg="" so="1" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+    <dcl dclg="a0769538-63b0-f111-8013-be3af2b6059f" ali="Example+Floor+Sensor" dkv="34" mod="0" pg="2931ba6d-29b0-f111-8013-be3af2b6059f" ag="9422377a-ab15-453d-a6ef-8291cb6128b2" aif="" pclg="2a31ba6d-29b0-f111-8013-be3af2b6059f" so="1" sta="6" dst="3" ast="1" clb="1" nrdt="" />
+  </col>
+  <dvs>
+    <d dg="2f31ba6d-29b0-f111-8013-be3af2b6059f" sn="506AAA12345" sbt="" dfw="MuCo+V.2.24" dk="1506" dclg="2a31ba6d-29b0-f111-8013-be3af2b6059f" aid="1" bus="0" sta="2" dst="2" ast="1" dcg="2b31ba6d-29b0-f111-8013-be3af2b6059f" so="1" ondt="" mac="" cfw="224" dfm="5" apn="Anwesend" apv="70" vlv="20" wh="0" fcm="" ffm="1" />
+    <d dg="a4769538-63b0-f111-8013-be3af2b6059f" sn="123456789" sbt="" dfw="Syr+Floorsensor+2.23" dk="120" dclg="a0769538-63b0-f111-8013-be3af2b6059f" aid="1" bus="1" sta="6" dst="3" ast="1" dcg="a2769538-63b0-f111-8013-be3af2b6059f" so="1" ondt="" mac="0c:73:eb:XX:XX:XZ" wtd="0" tm="19" hmd="42" bat="100" />
+  </dvs>
+  <pdvs>
+    <pdvi dg="a4769538-63b0-f111-8013-be3af2b6059f" sdclg="a0769538-63b0-f111-8013-be3af2b6059f" sdsn="123456789" pdclg="2a31ba6d-29b0-f111-8013-be3af2b6059f" pdsn="506AAA12345" />
+    <pdvi dg="2f31ba6d-29b0-f111-8013-be3af2b6059f" sdclg="2a31ba6d-29b0-f111-8013-be3af2b6059f" sdsn="506AAA12345" pdclg="a0769538-63b0-f111-8013-be3af2b6059f" pdsn="123456789" />
+  </pdvs>
+  <ars>
+    <a ag="9422377a-ab15-453d-a6ef-8291cb6128b2" ali="Basement" atid="1" pclg="" com="" fna="" sna="" pho="" fax="" cph="" sms="" eml="" url="" aif="" />
+  </ars>
+  <cs v="1B4AE" />
+</sc>
