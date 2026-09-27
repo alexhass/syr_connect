@@ -559,6 +559,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
     {
         "base_path": "/trio",
+        "device_file": "safetech",
         "display_name": "SafeTech Connect",
         "dk": 140,
         "dkv": 35,
@@ -570,6 +571,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
+        "device_file": "safetech",
         "display_name": "SafeTech V3 Connect",
         "dk": 140,
         "dkv": 35,
@@ -580,6 +582,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
+        "device_file": "safetech",
         "display_name": "SafeTech V4 Connect",
         "dk": 140,
         "dkv": 35,
@@ -590,6 +593,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         #"base_path": "/safe-tec",
+        "device_file": "safetech",
         "display_name": "SafeTech Connect",
         "dk": 140,
         "dkv": 38,
@@ -600,6 +604,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": "/safe-tec",
+        "device_file": "safetech",
         "display_name": "MultiSafe Leak Detector Control Valve",
         "dk": 140,
         "dkv": 42,
@@ -620,6 +625,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         #"base_path": "/safe-tec",
+        "device_file": "safetech",
         "display_name": "SafeTech Connect",
         "dk": 141,
         "dkv": 35,
@@ -629,6 +635,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "device_file": "safetechplus",
         "display_name": "SafeTech+ Connect",
         "dk": 142,
         "dkv": 39,
@@ -640,6 +647,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "base_path": None,
         #"base_path": "/safe-tec",
+        "device_file": "safetech",
         "display_name": "SafeTech Connect",
         "dk": 145,
         "dkv": 35,
@@ -717,6 +725,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
+        "device_file": "safetechplus",
         "display_name": "SafeTech Plus Connect",
         "dk": 1112,
         "dkv": 112,

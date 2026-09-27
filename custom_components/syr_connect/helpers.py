@@ -44,6 +44,8 @@ from .devices import (
     neosoft_duo,
     neosoft_single,
     safefloor,
+    safetech,
+    safetechplus,
     safetplus,
     trio,
 )
@@ -66,6 +68,8 @@ _DEVICE_MODULES: dict[str, ModuleType] = {
     "neosoft_single": neosoft_single,
     "neosoft_duo": neosoft_duo,
     "safefloor": safefloor,
+    "safetech": safetech,
+    "safetechplus": safetechplus,
     "safetplus": safetplus,
     "trio": trio,
 }

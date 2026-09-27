@@ -1498,6 +1498,49 @@ def test_get_model_known_keys_safetplus_device_override() -> None:
     assert helpers.get_model_known_keys({"name": "safetplus"}, "select", global_keys) == set()
 
 
+def test_get_model_known_keys_safetech_device_override() -> None:
+    """SafeTech and SafeTech+ models use their distinct allowlists."""
+    from custom_components.syr_connect.devices import safetech, safetechplus
+    from custom_components.syr_connect.models import MODEL_SIGNATURES
+
+    safetech_names = {
+        "safetech",
+        "safetechv3",
+        "safetechv4",
+        "safetechpolygonvatro",
+        "safetechrwc",
+        "safetech141",
+        "safetech145",
+    }
+    safetechplus_names = {"safetechpluswifi", "safetechplus"}
+    model_names = safetech_names | safetechplus_names
+    signatures = {
+        signature["name"]: signature
+        for signature in MODEL_SIGNATURES
+        if signature["name"] in model_names
+    }
+
+    assert set(signatures) == model_names
+    global_keys = {"getBAR", "getBAR2"}
+    assert "getBAR" in safetech.SENSOR_KNOWN_KEYS
+    assert "getBAR2" not in safetech.SENSOR_KNOWN_KEYS
+    assert "getBAR" not in safetechplus.SENSOR_KNOWN_KEYS
+    assert "getBAR2" in safetechplus.SENSOR_KNOWN_KEYS
+    for names, module, device_file in (
+        (safetech_names, safetech, "safetech"),
+        (safetechplus_names, safetechplus, "safetechplus"),
+    ):
+        for name in names:
+            signature = signatures[name]
+            assert signature.get("device_file") == device_file
+            assert helpers.get_model_known_keys(signature, "sensor", global_keys) == module.SENSOR_KNOWN_KEYS
+        assert helpers.get_model_known_keys(signatures[next(iter(names))], "select", global_keys) == module.SELECT_KNOWN_KEYS
+        assert helpers.get_model_known_keys(signatures[next(iter(names))], "button", global_keys) == module.BUTTON_KNOWN_KEYS
+
+    assert "getBAR" in safetech.SENSOR_KNOWN_KEYS
+    assert "getBAR" not in safetechplus.SENSOR_KNOWN_KEYS
+
+
 def test_get_model_known_keys_lex_device_override() -> None:
     """The lex model (shared by all l10-l100/lex10-lex100 signatures) resolves
     its own devices/lex.py override file."""
