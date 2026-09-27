@@ -684,8 +684,9 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 44,
         "manufacturer": "SYR",
         "name": "dosingpump",
-        # TODO: Untested model.
-        "srn_prefix": "44",
+        # TODO: Untested model. 
+        # Unverified serial prefix from documentation, missing infix 'AAA' and match condition.
+        "srn_prefix": "2031",
     },
 
     # ── Trio LS platform (dk=1100–1113) ──────────────────────────────────────────
