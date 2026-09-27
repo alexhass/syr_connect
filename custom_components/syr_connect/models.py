@@ -684,7 +684,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 44,
         "manufacturer": "SYR",
         "name": "dosingpump",
-        # TODO: Untested model. 
+        # TODO: Untested model.
         # Unverified serial prefix from documentation, missing infix 'AAA' and match condition.
         "srn_prefix": "2031",
     },
