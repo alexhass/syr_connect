@@ -155,7 +155,7 @@
       <c n="getVTO" v="0" />
       <c n="getWAD" v="1" />
       <c n="getWAH" v="0" />
-      <c n="getWFC" v="wifi-1" />
+      <c n="getWFC" v="syr-safetech-v4-wifi1" />
       <c n="getWFR" v="96" />
       <c n="getWGW" v="192.168.178.1" />
       <c n="getWIP" v="192.168.178.20" />

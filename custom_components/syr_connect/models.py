@@ -27,6 +27,10 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #
 # Signature fields summary:
 # - `attrs_equals`:                 dict of `getX` -> value pairs that must all match
+# - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
+#                                   command (setALM) rather than by a clrALM command.
+# - `alarm_style_alm`:              if True, alarm commands use ALM variants (getALM/setALM/clrALM)
+#                                   instead of ALA variants (getALA/setALA/clrALA)
 # - `base_path`:                    json api local access base path for the model or None if not applicable
 # - `cna_equals`:                   exact match against `getCNA` value (if present)
 # - `device_file`:                  name of a `devices/<name>.py` override file to use for this model's
@@ -35,10 +39,16 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #                                   several signatures are rebranded variants of the same underlying
 #                                   hardware (e.g. the dk=1500-1506 MultiController family) so they can
 #                                   share one override file instead of duplicating near-identical content.
+# - `display_name`:                 human-readable model label used for `DeviceInfo.model` and
+#                                   the local model selector.
 # - `dk`:                           cloud API deviceKind – the integer `dk` attribute in GetProjectDeviceCollections XML
 # - `dkv`:                          cloud API deviceKindVersion – the integer `dkv` attribute in GetProjectDeviceCollections XML;
 #                                   for Azure-connected devices this also equals the numeric SRN prefix of newer production units.
-# - `manufacturer`:                 name of the device manufacturer
+# - `manufacturer`:                 human-readable name of the device manufacturer
+# - `maximum_regeneration_interval`: maximum number of days between regenerations; `None` means no regeneration interval
+# - `maximum_salt_volume`:          maximum salt tank volume; `None` means no salt container.
+# - `name`:                         stable machine-readable model identifier returned by `detect_model()`
+#                                   (e.g. "lexplus10s"); also the default `device_file` value.
 # - `sbt`:                          cloud API device subtype – the integer `sbt` attribute in GetProjectDeviceCollections XML;
 #                                   only set when the subtype uniquely identifies this model within its dk/dkv family.
 # - `srn_prefix`:                   prefix that `getSRN` must start with
@@ -52,8 +62,6 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #                                   present in the flattened response for the signature to match. When
 #                                   `v_keys` are defined, the code also enforces any `ver_*` or
 #                                   `attrs_equals` constraints before returning a match.
-# - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
-#                                   command (setALM) rather than by a clrALM command.
 MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     {
@@ -70,6 +78,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
     {
         "base_path": None,
+        "device_file": "safetplus",
         "display_name": "Safe-T Master",
         "dk": 2,
         "dkv": 2,
@@ -79,6 +88,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "device_file": "safetplus",
         "display_name": "Safe-T Slave",
         "dk": 3,
         "dkv": 3,
@@ -88,6 +98,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "device_file": "safetplus",
         "display_name": "Safe-T Slave",
         "dk": 4,
         "dkv": 4,
@@ -97,6 +108,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
+        "device_file": "safetplus",
         "display_name": "Safe-T Communication Module",
         "dk": 5,
         "dkv": 12,
@@ -1137,7 +1149,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "attrs_equals": {"getDFM": 4},
         "base_path": "/trio",
         "device_file": "muco_backwash",
-        "display_name": "SYR RSA Connect",
+        "display_name": "RSA Connect",
         "dk": 1506,
         "dkv": 506,
         "manufacturer": "SYR",

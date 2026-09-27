@@ -25,7 +25,7 @@
       <c n="getSLT" v="612" />
       <c n="getSLV" v="116" />
       <c n="getVLV" v="20" />
-      <c n="getWFC" v="my-ssid" />
+      <c n="getWFC" v="syr-trio-wifi1" />
       <c n="getWFS" v="2" />
       <c n="getWGW" v="192.168.178.1" />
       <c n="getWIP" v="192.168.178.20" />

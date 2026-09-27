@@ -28,7 +28,7 @@
       <c n="getSRE" v="0" />
       <c n="getVRE1" v="" />
       <c n="getVRE2" v="" />
-      <c n="getWFC" v="my-ssid" />
+      <c n="getWFC" v="syr-neosoft2500-wifi1" />
       <c n="getWFS" v="2" />
       <c n="getWGW" v="192.168.178.1" />
       <c n="getWIP" v="192.168.178.20" />

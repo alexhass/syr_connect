@@ -37,7 +37,7 @@
       <c n="getSFV" v="0" />
       <c n="getTYP" v="120" />
       <c n="getWAR" v="600" />
-      <c n="getWFC" v="wifi-1" />
+      <c n="getWFC" v="syr-safefloor-wifi1" />
       <c n="getWFR" v="0" />
       <c n="getWFS" v="2" />
       <c n="getWGW" v="192.168.178.1" />
