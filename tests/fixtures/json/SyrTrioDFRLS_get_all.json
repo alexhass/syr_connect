@@ -155,7 +155,7 @@
     "getWFR": 100,
     "getWFS": 2,
     "getWGW": "192.168.178.1",
-    "getWIP": "192.168.178.100",
+    "getWIP": "192.168.178.20",
     "getWNS": false,
     "getWRN": "ff",
     "getWTI": 1750
