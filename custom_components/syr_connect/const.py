@@ -312,7 +312,9 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getNET",   # Mains (AC) voltage (V)
     # --- Water Quality ---
     "getCEL",   # Temperature (°C)
+    "getCFT",   # Current filling duration (s)
     "getCND",   # Water conductivity (µS/cm)
+    "getCFV",   # Current filling volume (l)
     "getHMD",   # Ambient humidity (%)
     "getIWH",   # Incoming (raw) water hardness
     "getOWH",   # Outgoing (softened) water hardness
@@ -997,6 +999,8 @@ _SYR_CONNECT_SENSOR_ICON = {
     "getSSA": "mdi:autorenew",
     "getSSE": "mdi:bell-outline",
     # Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228)
+    "getCFT": "mdi:timer-outline",
+    "getCFV": "mdi:water-plus",
     "getLFT": "mdi:timer-outline",
     "getLFV": "mdi:water-plus",
     "getNMS": "mdi:valve",
@@ -1321,6 +1325,8 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
     "getBAR2": SensorStateClass.MEASUREMENT,       # Outlet pressure (mbar sensor), reported by SYR TRIO Lock Connect
     "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
     "getCEL": SensorStateClass.MEASUREMENT,        # Temperature
+    "getCFT": SensorStateClass.MEASUREMENT,        # Current filling duration
+    "getCFV": SensorStateClass.MEASUREMENT,        # Current filling volume
     "getCOA": SensorStateClass.TOTAL_INCREASING,   # Counter of automatic backwashes
     "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
     "getCOM": SensorStateClass.TOTAL_INCREASING,   # Counter of manual backwashes
@@ -1400,6 +1406,8 @@ _SYR_CONNECT_SENSOR_UNIT = {
     "getRSA": UnitOfTime.DAYS,                              # Backwash interval (RSA)
     "getRSD": UnitOfTime.SECONDS,                           # Backwash duration (RSA)
     "getRSE": UnitOfTime.DAYS,                              # Backwash reminder interval (RSA)
+    "getCFT": UnitOfTime.SECONDS,                           # Current filling duration
+    "getCFV": UnitOfVolume.LITERS,                          # Current filling volume
     "getLFT": UnitOfTime.SECONDS,                           # Last refill duration
     "getLFV": UnitOfVolume.LITERS,                          # Last refilled volume
     "getNMS": UnitOfTime.SECONDS,                           # No valve movement since
@@ -1541,6 +1549,8 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
     "getBAT": 2,    # Battery voltage: show with 2 decimal places
     "getCEL": 1,    # Temperature, e.g. 110 = 11.0°C
+    "getCFT": 0,    # Current filling duration: whole seconds
+    "getCFV": 0,    # Current filling volume: whole liters
     "getCFO": 0,    # Cycle flow offset: show as whole number by default
     "getCND": 0,    # Conductivity in µS/cm: show as whole number by default
     "getCOF": 0,    # Total water consumption counter: show as whole number by default

@@ -28,9 +28,9 @@ Deliberately NOT included, pending confirmation on a real device:
   not applicable to this filling controller.
 - getAB, getCEL, getNPS, getRCP, getSTA, getTMP: present in the fixture and
   the global allowlist, but not applicable to this device.
-- getCFT, getCFV: marked ✓ in the official validity matrix (AC 3228), but
-  their meaning is still undocumented (see the "Unknown" sections in
-  docs/syrconnect-protocol.md) - left out until confirmed.
+- getCFT, getCFV: current filling duration (s) and current filling volume
+  (l), respectively; available for this model according to the validity
+  matrix.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_KNOWN_KEYS below.
@@ -65,7 +65,7 @@ SENSOR_KNOWN_KEYS = {
     "getCRS", "getCRT", "getLOT", "getLRC", "getPRC", "getRCC", "getRCD", "getRCN", "getRMN", "getRMT",
     "getRVT", "getTPR",
     # --- Lock / Connection Centre ---
-    "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
+    "getCFT", "getCFV", "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
 }
 
 # getRTM, getPRF, getSV1-3, getRPD, getRMO deliberately excluded: this is a filling

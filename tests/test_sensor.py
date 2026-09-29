@@ -7,13 +7,15 @@ from pathlib import Path
 from unittest.mock import MagicMock, Mock, PropertyMock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime, UnitOfVolume
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
+    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_STATE_CLASS,
+    _SYR_CONNECT_SENSOR_UNIT,
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -45,6 +47,15 @@ def _build_entry(coordinator: SyrConnectDataUpdateCoordinator) -> MockConfigEntr
     entry = MockConfigEntry(domain="syr_connect", data={})
     entry.runtime_data = coordinator
     return entry
+
+
+def test_filling_status_sensor_metadata() -> None:
+    """CFT and CFV expose their documented units as measurements."""
+    assert {"getCFT", "getCFV"} <= _SYR_CONNECT_SENSOR_KNOWN_KEYS
+    assert _SYR_CONNECT_SENSOR_UNIT["getCFT"] == UnitOfTime.SECONDS
+    assert _SYR_CONNECT_SENSOR_UNIT["getCFV"] == UnitOfVolume.LITERS
+    assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCFT"] == "measurement"
+    assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCFV"] == "measurement"
 
 
 async def test_sensor_setup(hass: HomeAssistant) -> None:

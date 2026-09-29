@@ -1463,6 +1463,13 @@ def test_get_model_known_keys_uses_device_override_when_defined() -> None:
     result = helpers.get_model_known_keys({"name": "muco_filling"}, "sensor", global_keys)
     assert result == muco_filling.SENSOR_KNOWN_KEYS
     assert result != global_keys
+    assert {"getCFT", "getCFV"} <= result
+
+    from custom_components.syr_connect.devices import muco_connectioncentre
+
+    result = helpers.get_model_known_keys({"name": "muco_connectioncentre"}, "sensor", global_keys)
+    assert result == muco_connectioncentre.SENSOR_KNOWN_KEYS
+    assert {"getCFT", "getCFV"} <= result
 
 
 def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:

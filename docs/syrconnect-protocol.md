@@ -1005,8 +1005,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getBAH          | ""      |          | *unknown*
 | getBAO          | ""      |          | *unknown*
 | getCCS          | ""      |          | *unknown*
-| getCFT          | ""      |          | *unknown*
-| getCFV          | ""      |          | *unknown*
 | getCNF2         | ""      |          | *unknown*
 | getCNL2         | ""      |          | *unknown*
 | getCWL          | ""      |          | *unknown*
@@ -1102,8 +1100,8 @@ available per model) alongside the confirmed descriptions.
 | BAT      | int  | Battery voltage in 1/100 V                                    | 0–1000      | ✓   | X   |
 | BUZ      | bool | Buzzer on/off on alarm                                        | true/false  | ✓   | ✓   |
 | CEL      | int  | Temperature in °C                                             | 0–1000      | ✓   | X   |
-| CFT      | ?    | *unknown - meaning not confirmed*                             | -           | ✓   | ?   |
-| CFV      | ?    | *unknown - meaning not confirmed*                             | -           | ✓   | ?   |
+| CFT      | int  | Current filling duration in s                                 | -           | ✓   | X   |
+| CFV      | int  | Current filling volume in liters                              | -           | ✓   | X   |
 | CND      | int  | Conductivity in µS/cm                                         | 0–5000      | ✓   | X   |
 | FLO      | int  | Current flow rate in l/h                                      | 0–5000      | ✓   | X   |
 | LFT      | int  | Last refill duration in s                                     | -           | ✓   | X   |
@@ -1152,8 +1150,6 @@ available per model) alongside the confirmed descriptions.
 | VPS1     | X | X | X | X | X | X | X | ✓ | ✓ |
 | VPS2     | X | X | X | X | X | X | X | X | ✓ |
 
-CFT/CFV still have no confirmed description (type/value range/meaning
-unknown) despite now having full per-model availability data.
 
 ## Further information
 

@@ -314,6 +314,12 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcft": {
+        "name": "Aktualny czas napełniania"
+      },
+      "getcfv": {
+        "name": "Aktualna objętość napełniania"
+      },
       "getcna": {
         "name": "Nazwa urządzenia"
       },

@@ -314,6 +314,12 @@
       "getcel": {
         "name": "Temperatuur"
       },
+      "getcft": {
+        "name": "Huidige vulduur"
+      },
+      "getcfv": {
+        "name": "Huidig vulvolume"
+      },
       "getcna": {
         "name": "Apparaatnaam"
       },

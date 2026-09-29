@@ -314,6 +314,12 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcft": {
+        "name": "Duración actual del llenado"
+      },
+      "getcfv": {
+        "name": "Volumen actual del llenado"
+      },
       "getcna": {
         "name": "Nombre del dispositivo"
       },

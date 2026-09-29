@@ -17,9 +17,9 @@ device files. Verify against a real device before relying on this.
 Deliberately NOT included, pending confirmation on a real device:
 - getAVO, getBAR, getCEL, getLTV, getVOL, getVPS1, getVPS2: marked X (not
   available) for this model in the validity matrix.
-- getCFT, getCFV: marked ✓ in the validity matrix, but their meaning is
-  still undocumented (see the "Unknown" sections in
-  docs/syrconnect-protocol.md) - left out until confirmed.
+- getCFT, getCFV: current filling duration (s) and current filling volume
+  (l), respectively; available for this model according to the validity
+  matrix.
 - Leak-protection-profile family (getPA-PW1-8, getPRF) and valve control
   (getAB/getVLV): this is a "Connection centre" role (getDFM=2 =
   "Anschlusscenter"/"Connection centre"), not a leak-protection variant.
@@ -48,7 +48,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Wi-Fi ---
     "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
     # --- Lock / Connection Centre ---
-    "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
+    "getCFT", "getCFV", "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
 }
 
 SELECT_KNOWN_KEYS: set[str] = set()

@@ -314,6 +314,12 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcft": {
+        "name": "Duração atual do enchimento"
+      },
+      "getcfv": {
+        "name": "Volume atual do enchimento"
+      },
       "getcna": {
         "name": "Nome do dispositivo"
       },
