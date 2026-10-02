@@ -290,6 +290,21 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 2. **Device Discovery**: Retrieves all projects and devices associated with your account
 3. **Status Updates**: For each device, fetches current status including all sensor values
 4. **Entity Updates**: Updates all Home Assistant entities with the latest values
+5. **SafeFloor Measurement History**: After each new upload of a SafeFloor sensor, imports its individual measurements as statistics (see below)
+
+### SafeFloor Measurement History
+
+SafeFloor sensors run on batteries: they measure temperature and humidity regularly (e.g. every 6 hours) but upload to the cloud only every few days (upload interval configurable in the SYR app). The sensor entities therefore only show the latest measurement and jump at each upload.
+
+After each upload (and once a day as a safety net) the integration additionally fetches the individual measurements of the last 6 days from the cloud and stores them with their real measurement time as long-term statistics:
+
+- `syr_connect:<serial number>_temperature` (°C)
+- `syr_connect:<serial number>_humidity` (%)
+
+Each measurement becomes one value; nothing is interpolated. Long-term statistics have an hourly resolution, so the measurement time is rounded down to the full hour. Show them with a **Statistics graph** card or any other card that supports statistics.
+
+- Cloud API only (the local API has no history); the Home Assistant recorder must be enabled.
+- The cloud provides the last 6 days only. With an upload interval longer than 6 days, older measurements of an upload are lost.
 
 ### Local API Update Process
 

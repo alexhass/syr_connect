@@ -1197,7 +1197,7 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
 
 - An unknown `dclg` returns `<sc><msg v="An error has occurred." hl="Error" mtid="1" /></sc>`.
 - Only the last 6 days are returned. With an upload interval (`getRCP`) above 6 days the older measurements of an upload can not be retrieved with `rtyp="4"`.
-- The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload, plus one follow-up 75 minutes later), after a restart and at least once a day, and writes them into the hourly long-term statistics of the `getCEL` and `getHMD` sensors (step curve, only hours already compiled by the recorder; see README).
+- The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload), after a restart and at least once a day, and imports them as external statistics `syr_connect:<serial>_temperature` / `syr_connect:<serial>_humidity` (one row per measured hour, see README). The sensor entities themselves keep showing the last uploaded value.
 
 ## Further information
 
