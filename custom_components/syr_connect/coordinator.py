@@ -206,7 +206,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Failures are logged and retried later, they never fail the regular update.
             if self._api_type == API_TYPE_XML:
                 for device in all_devices:
-                    if device.get("dk") in _SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS and device.get("status"):
+                    if (
+                        isinstance(device, dict)
+                        and device.get("dk") in _SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS
+                        and device.get("status")
+                    ):
                         await self._async_update_safefloor_history(device)
 
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
