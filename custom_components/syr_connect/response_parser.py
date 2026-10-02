@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import logging
+import math
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import unquote_plus
 
@@ -361,6 +363,54 @@ class ResponseParser:
             return {}
 
         return self._flatten_attributes(parsed['sc'])
+
+    @staticmethod
+    def parse_safefloor_statistics_response(xml_response: str) -> list[tuple[datetime, float]]:
+        """Parse a SafeFloor statistics (GetSafeFloorStatistics) response.
+
+        Expected structure (report type 4 = raw measurements)::
+
+            <sc><col><dcl dclg="..."><sh ... unit="°C"><sths>
+              <sth dt="2026-09-28 14:45:27" v="15.8"/> ...
+            </sths></sh></dcl></col></sc>
+
+        The timestamps are UTC. Entries without a valid timestamp or value are skipped.
+
+        Args:
+            xml_response: XML response string
+
+        Returns:
+            List of (timestamp, value) tuples sorted by timestamp; empty if the
+            response contains no measurements
+
+        Raises:
+            ValueError: If the XML is invalid or the API returned an error message
+        """
+        try:
+            root = etree.fromstring(xml_response)
+        except etree.ParseError as err:
+            raise ValueError(f"Invalid XML response: {err}") from err
+
+        msg = root.find("msg")
+        if msg is not None:
+            raise ValueError(f"SafeFloor statistics API returned message: {msg.get('v') or msg.attrib}")
+
+        measurements: list[tuple[datetime, float]] = []
+        for sth in root.iter("sth"):
+            raw_dt = (sth.get("dt") or "").strip()
+            raw_value = (sth.get("v") or "").strip().replace(",", ".")
+            try:
+                timestamp = datetime.strptime(raw_dt, "%Y-%m-%d %H:%M:%S").replace(tzinfo=UTC)
+                value = float(raw_value)
+                if not math.isfinite(value):
+                    raise ValueError("not a finite number")
+            except ValueError:
+                _LOGGER.debug("Skipping SafeFloor measurement with invalid data: dt=%r v=%r", raw_dt, raw_value)
+                continue
+            measurements.append((timestamp, value))
+
+        measurements.sort()
+        return measurements
 
     @staticmethod
     def _flatten_attributes(data: dict | list, prefix: str = "") -> dict[str, Any]:
