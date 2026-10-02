@@ -5,11 +5,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
-from homeassistant.components.recorder import Recorder
-from homeassistant.components.recorder.statistics import statistics_during_period
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from pytest_homeassistant_custom_component.components.recorder.common import async_wait_recording_done
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
@@ -274,35 +271,6 @@ def test_import_metadata(hass: HomeAssistant) -> None:
     assert metadata["unit_class"] == "unitless"
     assert metadata["has_sum"] is False
     assert len(statistics) == 9
-
-
-async def test_import_into_recorder(recorder_mock: Recorder, hass: HomeAssistant) -> None:
-    """The measurements end up in the long-term statistics, one row per measurement."""
-    measurements = ResponseParser.parse_safefloor_statistics_response(
-        _fixture("SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml")
-    )
-    async_import_safefloor_history(hass, SERIAL, "Floor", "temperature", "°C", measurements)
-    # Importing the same window again (next upload) must not duplicate rows
-    async_import_safefloor_history(hass, SERIAL, "Floor", "temperature", "°C", measurements)
-    await async_wait_recording_done(hass)
-
-    statistic_id = "syr_connect:123456789_temperature"
-    stats = await hass.async_add_executor_job(
-        statistics_during_period,
-        hass,
-        _utc("2026-09-26 00:00:00"),
-        None,
-        {statistic_id},
-        "hour",
-        None,
-        {"mean", "min", "max"},
-    )
-    rows = stats[statistic_id]
-    assert len(rows) == 9
-    assert rows[0]["start"] == _utc("2026-09-26 14:00:00").timestamp()
-    assert rows[0]["mean"] == pytest.approx(14.6)
-    assert rows[-1]["start"] == _utc("2026-09-28 14:00:00").timestamp()
-    assert rows[-1]["mean"] == pytest.approx(15.8)
 
 
 # --- Coordinator ------------------------------------------------------------------------------

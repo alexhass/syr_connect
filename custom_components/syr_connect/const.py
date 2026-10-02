@@ -53,7 +53,7 @@ _SYR_CONNECT_API_XML_SAFEFLOOR_GET_STATISTICS_URL = "WebServices/SyrControlWebSe
 # seconds (e.g. measure every 6 h, upload every 4 days). The status response only carries the
 # latest measurement; report type 4 returns the raw measurements of the last 6 days with their
 # timestamps (UTC). They are imported as external statistics after every new upload.
-_SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS = (120, 122)
+_SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS: frozenset[int] = frozenset({120, 122})
 _SYR_CONNECT_SAFEFLOOR_HISTORY_REPORT_TYPE = 4  # 1=week, 2=month, 3=year (aggregated), 4=raw measurements
 # Statistic key -> (measurement type "t", unit sent in the request and used for the statistic)
 _SYR_CONNECT_SAFEFLOOR_HISTORY_SERIES: dict[str, tuple[int, str]] = {
