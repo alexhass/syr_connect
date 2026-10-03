@@ -8,6 +8,7 @@ Cloud API workflow:
 2. Get device list for a project -> returns devices with DCLG IDs
 3. Get/Set device status using DCLG ID -> returns/updates device parameters
 4. Get statistics (water/salt consumption) -> returns historical data
+5. Get SafeFloor measurement history (temperature/humidity) -> raw measurements
 
 Security features:
 - Request checksums using dual-key HMAC (prevents tampering)
@@ -37,6 +38,7 @@ from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
     _SYR_CONNECT_API_XML_LOGIN_URL,
+    _SYR_CONNECT_API_XML_SAFEFLOOR_GET_STATISTICS_URL,
     _SYR_CONNECT_CLIENT_APP_NAME,
     _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
@@ -49,6 +51,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
     _SYR_CONNECT_CLIENT_USER_AGENT,
+    _SYR_CONNECT_SAFEFLOOR_HISTORY_REPORT_TYPE,
     _SYR_CONNECT_SESSION_TIMEOUT_MINUTES,
 )
 from .encryption import SyrEncryption
@@ -120,6 +123,7 @@ class SyrConnectXmlAPI:
         self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
         self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
         self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
+        self._safefloor_get_statistics_url = _base + _SYR_CONNECT_API_XML_SAFEFLOOR_GET_STATISTICS_URL
 
         # Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
         _app_version = (
@@ -510,3 +514,55 @@ class SyrConnectXmlAPI:
         except Exception as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
             raise
+
+    async def get_safefloor_history(
+        self,
+        device_id: str,
+        measurement_type: int,
+        unit: str,
+    ) -> list[tuple[datetime, float]]:
+        """Fetch the raw measurements of a SafeFloor sensor (last 6 days).
+
+        SafeFloor sensors measure every getWMP seconds but upload to the cloud
+        only every getRCP seconds. The status response carries the latest
+        measurement only; this endpoint returns all measurements the cloud
+        still holds (report type 4: the last 6 days) with their timestamps.
+
+        Args:
+            device_id: Device collection group ID (DCLG)
+            measurement_type: 1 = temperature, 2 = humidity
+            unit: Unit of the measurement ("°C" or "%"), required by the API
+
+        Returns:
+            List of (timestamp in UTC, value) tuples sorted by timestamp
+
+        Raises:
+            SyrConnectAuthError: If session expired and re-login fails
+            SyrConnectConnectionError: If network/HTTP errors occur
+            ValueError: If the response is invalid or reports an error
+        """
+        await self._ensure_session()
+
+        _LOGGER.debug("Getting SafeFloor history (t=%s) for device: %s", measurement_type, device_id)
+
+        payload = self.payload_builder.build_safefloor_statistics_payload(
+            self.session_data,
+            device_id,
+            measurement_type,
+            unit,
+            _SYR_CONNECT_SAFEFLOOR_HISTORY_REPORT_TYPE,
+        )
+        _LOGGER.debug("SafeFloor statistics payload: %s", mask_ug_value(payload))
+
+        try:
+            xml_response = await self.http_client.post(
+                self._safefloor_get_statistics_url,
+                {"xml": payload},
+            )
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise SyrConnectConnectionError(f"Failed to get SafeFloor history: {err}") from err
+        _LOGGER.debug("SafeFloor statistics XML response: %s", xml_response)
+
+        measurements = self.response_parser.parse_safefloor_statistics_response(xml_response)
+        _LOGGER.debug("SafeFloor history (t=%s) parsed: %d measurement(s)", measurement_type, len(measurements))
+        return measurements
