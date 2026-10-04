@@ -271,6 +271,18 @@ Die Integration pollt die Geräte-API in regelmäßigen Abständen (Standard: 60
 2. **Geräte-Erkennung**: Ruft alle Projekte und Geräte ab, die mit deinem Konto verknüpft sind
 3. **Status-Updates**: Holt für jedes Gerät die aktuellen Statuswerte
 4. **Entitäts-Updates**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
+5. **SafeFloor-Messverlauf**: Schreibt nach jedem neuen Upload eines SafeFloor-Sensors dessen einzelne Messungen in die Langzeitstatistik seiner Temperatur- und Feuchte-Sensoren (siehe unten)
+
+### SafeFloor-Messverlauf
+
+SafeFloor-Sensoren laufen mit Batterie: Sie messen Temperatur und Feuchte regelmäßig (z. B. alle 6 Stunden), laden aber nur alle paar Tage in die Cloud hoch (Upload-Intervall in der SYR-App einstellbar). Die Sensor-Entitäten zeigen deshalb nur die jeweils letzte Messung und springen bei jedem Upload.
+
+Nach jedem Upload holt die Integration zusätzlich die einzelnen Messungen der letzten 6 Tage aus der Cloud und schreibt sie in die Langzeitstatistik des Temperatur- und des Feuchte-Sensors. Jede Messung gilt bis zur nächsten. So bekommt jede Stunde den Wert, der zu dieser Zeit wirklich gemessen wurde, statt der flachen Linie. Die Langzeitstatistik hat eine Auflösung von einer Stunde. Eine Stunde mit neuer Messung bekommt den zeitgewichteten Mittelwert sowie Minimum und Maximum. Es wird nichts interpoliert. Die korrigierten Werte erscheinen in der Karte **Statistikdiagramm**, im Verlaufsdiagramm für Zeiträume älter als `purge_keep_days` des Recorders und in jeder anderen Karte, die Langzeitstatistiken nutzt.
+
+- Überschrieben werden nur Stunden, die Home Assistant schon zusammengefasst hat. Die Integration legt nie eine Zeile an. So gibt es keinen Konflikt mit dem Recorder, der jede Stunde einmal nach ihrem Ende zusammenfasst. Die Stunde des Uploads korrigiert ein zweiter Abruf etwa 75 Minuten später. Ohne neue Uploads wird der Verlauf einmal täglich erneut abgerufen.
+- Der jüngere Zustandsverlauf (Verlaufsdiagramm der letzten Tage) und die 5-Minuten-Statistik lassen sich nachträglich nicht ändern und zeigen weiter die flache Linie und den Sprung.
+- Nur Cloud-API (die lokale API hat keinen Verlauf); der Recorder von Home Assistant muss aktiv sein.
+- Die Cloud liefert nur die letzten 6 Tage. Bei einem Upload-Intervall über 6 Tagen gehen ältere Messungen eines Uploads verloren.
 
 ### Lokale API Aktualisierungsprozess
 

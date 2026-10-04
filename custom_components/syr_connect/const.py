@@ -45,6 +45,29 @@ _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL = "WebServices/SyrControlWebServiceTest
 _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
 _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
 _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+_SYR_CONNECT_API_XML_SAFEFLOOR_GET_STATISTICS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetSafeFloorStatistics"
+
+# SafeFloor measurement history (GetSafeFloorStatistics)
+#
+# SafeFloor sensors measure every getWMP seconds but upload to the cloud only every getRCP
+# seconds (e.g. measure every 6 h, upload every 4 days). The status response only carries the
+# latest measurement; report type 4 returns the raw measurements of the last 6 days with their
+# timestamps (UTC). After every new upload they are written into the long-term statistics of
+# the temperature and humidity sensors (see safefloor_history.py).
+_SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS: frozenset[int] = frozenset({120, 122})
+_SYR_CONNECT_SAFEFLOOR_HISTORY_REPORT_TYPE = 4  # 1=week, 2=month, 3=year (aggregated), 4=raw measurements
+# Sensor key -> (measurement type "t", unit sent in the request)
+_SYR_CONNECT_SAFEFLOOR_HISTORY_SERIES: dict[str, tuple[int, str]] = {
+    "getCEL": (1, UnitOfTemperature.CELSIUS),
+    "getHMD": (2, PERCENTAGE),
+}
+# Fetch again this long after a new upload: the recorder compiles the hour of the upload
+# (sensor state jumps) only after it has ended, then it can be corrected
+_SYR_CONNECT_SAFEFLOOR_HISTORY_FOLLOW_UP_MINUTES = 75
+# Fetch again after this time even without a new upload (safety net, the cloud keeps 6 days)
+_SYR_CONNECT_SAFEFLOOR_HISTORY_REFRESH_HOURS = 24
+# Wait this long before retrying after a failed fetch
+_SYR_CONNECT_SAFEFLOOR_HISTORY_RETRY_MINUTES = 30
 
 # Encryption keys (from original adapter) - internal
 _SYR_CONNECT_CLIENT_ENCRYPTION_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"

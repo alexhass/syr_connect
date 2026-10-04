@@ -9,18 +9,23 @@ from datetime import timedelta
 from typing import Any
 
 import aiohttp
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.util import dt as dt_util
+from sqlalchemy.exc import SQLAlchemyError
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_SERVICES,
+    _SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS,
+    _SYR_CONNECT_SAFEFLOOR_HISTORY_SERIES,
     _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -32,9 +37,10 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-from .helpers import get_default_scan_interval_for_entry, get_sensor_iwh_value
+from .helpers import build_unique_id, get_default_scan_interval_for_entry, get_sensor_iwh_value
 from .models import MODEL_SIGNATURES, detect_model
 from .repairs import create_issue, delete_issue
+from .safefloor_history import SafeFloorHistoryState, async_write_safefloor_history
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,6 +135,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session
 
+        # SafeFloor measurement history fetch state, keyed by device ID (serial number)
+        self._safefloor_history: dict[str, SafeFloorHistoryState] = {}
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
 
@@ -194,6 +203,17 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         continue
                     if device_result:
                         all_devices.append(device_result)
+
+            # SafeFloor sensors upload several measurements at once; import them as statistics.
+            # Failures are logged and retried later, they never fail the regular update.
+            if self._api_type == API_TYPE_XML:
+                for device in all_devices:
+                    if (
+                        isinstance(device, dict)
+                        and device.get("dk") in _SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS
+                        and device.get("status")
+                    ):
+                        await self._async_update_safefloor_history(device)
 
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {
@@ -304,6 +324,50 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             )
 
             return device
+
+    async def _async_update_safefloor_history(self, device: dict[str, Any]) -> None:
+        """Write the measurement history of a SafeFloor sensor into its sensor statistics.
+
+        The timestamp of getSRN changes with every upload of the sensor, so the
+        history is fetched once per upload (plus one follow-up), whatever upload
+        interval (getRCP) the user has configured. See safefloor_history.py for details.
+
+        Args:
+            device: Device dictionary including its status
+        """
+        if isinstance(self.api, SyrConnectJsonAPI) or "recorder" not in self.hass.config.components:
+            return
+
+        device_id = device["id"]
+        upload_marker = device["status"].get("getSRN_dt")
+        state = self._safefloor_history.setdefault(device_id, SafeFloorHistoryState())
+        now = dt_util.utcnow()
+        if not state.is_due(upload_marker, now):
+            return
+
+        entity_registry = er.async_get(self.hass)
+        dclg = device.get("dclg", device_id)
+        try:
+            for sensor_key, (measurement_type, unit) in _SYR_CONNECT_SAFEFLOOR_HISTORY_SERIES.items():
+                entity_id = entity_registry.async_get_entity_id(
+                    Platform.SENSOR, DOMAIN, build_unique_id(self.entry_id, device_id, sensor_key)
+                )
+                if entity_id is None:
+                    continue
+                measurements = await self.api.get_safefloor_history(dclg, measurement_type, unit)
+                newest = await async_write_safefloor_history(self.hass, entity_id, unit, measurements)
+                _LOGGER.debug(
+                    "Device %s: %d %s measurement(s) written into %s up to %s",
+                    device_id, len(measurements), sensor_key, entity_id, newest,
+                )
+        except (
+            SyrConnectAuthError, SyrConnectConnectionError, ValueError, HomeAssistantError, SQLAlchemyError
+        ) as err:
+            state.mark_failed(now)
+            _LOGGER.warning("Device %s: failed to import SafeFloor measurement history: %s", device_id, err)
+            return
+
+        state.mark_imported(upload_marker, now)
 
     def _get_device_dclg_from_srn(self, device_id: str) -> str | None:
         """Return the DCLG (Device Collection Group UUID) for the given device serial number.

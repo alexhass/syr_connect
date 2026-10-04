@@ -271,6 +271,18 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 2. **Device Discovery**: Retrieves all projects and devices associated with your account
 3. **Status Updates**: For each device, fetches current status including all sensor values
 4. **Entity Updates**: Updates all Home Assistant entities with the latest values
+5. **SafeFloor Measurement History**: After each new upload of a SafeFloor sensor, writes its individual measurements into the long-term statistics of its temperature and humidity sensors (see below)
+
+### SafeFloor Measurement History
+
+SafeFloor sensors run on batteries: they measure temperature and humidity regularly (e.g. every 6 hours) but upload to the cloud only every few days (upload interval configurable in the SYR app). The sensor entities therefore only show the latest measurement and jump at each upload.
+
+After each upload the integration additionally fetches the individual measurements of the last 6 days from the cloud and writes them into the long-term statistics of the temperature and humidity sensor. Each measurement is valid until the next one, so every hour gets the value that was really measured at that time instead of the flat line. Long-term statistics have an hourly resolution; an hour with a new measurement gets the time-weighted mean, min and max. Nothing is interpolated. The corrected values show up in the **Statistics graph** card, in the history graph for periods older than the recorder's `purge_keep_days`, and in every other card that uses long-term statistics.
+
+- Only hours that Home Assistant has already compiled are overwritten; the integration never adds a row. This avoids any conflict with the recorder, which compiles each hour once after it has ended. The hour of the upload is corrected by a second fetch about 75 minutes later; without new uploads the history is fetched again once a day.
+- The recent state history (history graph of the last days) and the 5-minute statistics can not be changed afterwards and still show the flat line and the jump.
+- Cloud API only (the local API has no history); the Home Assistant recorder must be enabled.
+- The cloud provides the last 6 days only. With an upload interval longer than 6 days, older measurements of an upload are lost.
 
 ### Local API Update Process
 
