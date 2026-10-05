@@ -99,6 +99,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 # setSIR (no regeneration) deliberately excluded. setDEX (microleakage test) is
 # tentatively included: unlike the muco_filling fixture, getDSV is non-zero (3) here and
 # a microleakage test is thematically consistent with a leak-protection module -

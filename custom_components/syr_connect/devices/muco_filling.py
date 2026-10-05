@@ -79,6 +79,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ", "getDFI",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 # setSIR (no regeneration) and setDEX (Trio DFR/LS microleakage test, not applicable
 # despite getDSV being present in the fixture) deliberately excluded.
 BUTTON_KNOWN_KEYS = {

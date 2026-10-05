@@ -51,6 +51,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ", "getSSA", "getSSE",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 BUTTON_KNOWN_KEYS = {
     "setALA", "setNOT", "setWRN",
 }

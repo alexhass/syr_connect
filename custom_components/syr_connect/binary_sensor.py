@@ -21,7 +21,14 @@ from .const import (
     _SYR_CONNECT_SENSOR_ICON,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, build_unique_id, registry_cleanup
+from .helpers import (
+    build_device_info,
+    build_entity_id,
+    build_unique_id,
+    get_model_known_keys,
+    registry_cleanup,
+)
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,10 +68,13 @@ async def async_setup_entry(
         device_name = device['name']
         project_id = device['project_id']
         status = device.get('status', {})
+        known_binary_keys = get_model_known_keys(
+            detect_model(status), "binary_sensor", _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS
+        )
 
         # Create binary sensors for boolean status values
         for sensor_key, device_class in _SYR_CONNECT_SENSOR_BINARY.items():
-            if sensor_key in status and sensor_key not in _SYR_CONNECT_SENSOR_EXCLUDED:
+            if sensor_key in known_binary_keys and sensor_key in status and sensor_key not in _SYR_CONNECT_SENSOR_EXCLUDED:
                 entities.append(
                     SyrConnectBinarySensor(
                         coordinator,

@@ -89,6 +89,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 # setDEX (microleakage test) gated on getDSV presence, matching muco_leakprotect.
 BUTTON_KNOWN_KEYS = {
     "setALA", "setNOT", "setWRN", "setDEX",

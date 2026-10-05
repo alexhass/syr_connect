@@ -67,6 +67,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 # setDEX excluded - no microleakage-test hardware on this model.
 BUTTON_KNOWN_KEYS = {
     "setSIR", "setALA", "setNOT", "setWRN",

@@ -76,6 +76,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 # setSIR (regeneration) deliberately excluded - no softener/regeneration hardware
 # on this model (getSIR is present in the fixture but no other regeneration/salt
 # keys accompany it). setDEX (microleakage test) included - getDSV=3 (non-zero)

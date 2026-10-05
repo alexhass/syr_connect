@@ -50,6 +50,7 @@ SELECT_KNOWN_KEYS = {
 
 # No buzzer/switch on this model.
 SWITCH_KNOWN_KEYS: set[str] = set()
+BINARY_SENSOR_KNOWN_KEYS: set[str] = set()
 
 # setSIR (regeneration) and setDEX (microleakage test) excluded - not applicable
 # to a standalone sensor. setNOT/setWRN excluded - no getNOT/getWRN in the

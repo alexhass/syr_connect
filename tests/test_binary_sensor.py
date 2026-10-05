@@ -5,12 +5,14 @@ from unittest.mock import MagicMock, Mock, patch
 
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+import pytest
 
 from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
     async_setup_entry,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.helpers import _DEVICE_MODULES
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -122,6 +124,37 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
 
     # getBUZ is in _SYR_CONNECT_SENSOR_BINARY and is not excluded — one binary sensor total.
     assert len(entities) == 1
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        {"getVER": "Syr Floorsensor 2.23", "getBUZ": "0"},
+        {"getCNA": "LEXplus10SL", "getBUZ": ""},
+    ],
+    ids=["safefloor", "lexplus10sl"],
+)
+async def test_async_setup_entry_skips_models_without_buzzer(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, status: dict
+) -> None:
+    """Models whose device file declares no buzzer get no getBUZ binary sensor, even if the key is present."""
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert entities == []
+
+
+def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
+    """Every device file that exposes getBUZ as a switch also lists it for the binary sensor, and vice versa."""
+    for name, module in _DEVICE_MODULES.items():
+        switch_keys = getattr(module, "SWITCH_KNOWN_KEYS", None)
+        binary_keys = getattr(module, "BINARY_SENSOR_KNOWN_KEYS", None)
+        if switch_keys is None:
+            continue
+        assert ("getBUZ" in switch_keys) == ("getBUZ" in (binary_keys or set())), name
 
 
 async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:

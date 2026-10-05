@@ -56,6 +56,10 @@ SWITCH_KNOWN_KEYS = {
     "getBUZ",
 }
 
+BINARY_SENSOR_KNOWN_KEYS = {
+    "getBUZ",
+}
+
 # setSIR (regeneration) and setDEX (microleakage test, no getDSV present)
 # deliberately excluded. setNOT/setWRN excluded - no getNOT/getWRN in the
 # fixture for this model.
