@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
@@ -32,12 +33,6 @@ from .const import (
 from .exceptions import CannotConnectError, HostInvalidError, InvalidAuthError
 from .helpers import get_default_scan_interval_for_entry, is_valid_host
 from .models import MODEL_SIGNATURES
-
-try:
-    # Home Assistant 2026.9+ serializes flow schemas with probatio; older releases use voluptuous.
-    import probatio as vol
-except ImportError:
-    import voluptuous as vol  # type: ignore[no-redef]
 
 _LOGGER = logging.getLogger(__name__)
 
