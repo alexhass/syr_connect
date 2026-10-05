@@ -3076,6 +3076,26 @@ async def test_async_setup_entry_skips_invalid_safefloor_threshold_values(
     assert not ({"getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP"} & keys)
 
 
+async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Garbage (non-numeric) SafeFloor threshold values must not create select entities."""
+    status = {key: "n/a" for key in _SAFEFLOOR_STATUS if key != "getVER"}
+    status["getVER"] = _SAFEFLOOR_STATUS["getVER"]
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert not ({"getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP"} & keys)
+
+
 async def test_mih_mxh_select_current_option(hass: HomeAssistant) -> None:
     """getMIH/getMXH current_option reflects the raw percentage value, including the Off boundary."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIH": "0", "getMXH": "100"}}]}
@@ -3239,6 +3259,20 @@ async def test_async_setup_entry_creates_hardness_selects_for_lex(
     assert by_key["getOWH"].options[-1] == "100 °dH"
     assert by_key["getIWH"].current_option == "20 °dH"
     assert by_key["getOWH"].current_option == "2 °dH"
+
+
+async def test_async_setup_entry_skips_non_numeric_hardness_values(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Non-numeric getIWH/getOWH values must not create hardness selects."""
+    status = {"getCNA": "L10", "getIWH": "n/a", "getOWH": "n/a", "getWHU": "0"}
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert not [e for e in entities if isinstance(e, SyrConnectHardnessSelect)]
 
 
 async def test_hardness_select_sends_set_command(hass: HomeAssistant) -> None:

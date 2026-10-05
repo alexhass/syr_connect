@@ -1476,10 +1476,11 @@ def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
     """A matching devices/<name>.py file that does NOT define this platform's allowlist
     falls back to the global set (line 258)."""
     global_keys = {"getBUZ"}
-    # muco_filling.py defines SENSOR/SELECT/SWITCH/BUTTON/VALVE_KNOWN_KEYS but not
-    # BINARY_SENSOR_KNOWN_KEYS.
-    result = helpers.get_model_known_keys({"name": "muco_filling"}, "binary_sensor", global_keys)
-    assert result == global_keys
+    # A device module that defines no <PLATFORM>_KNOWN_KEYS at all (every real device file defines
+    # all of them), so the global set is returned unchanged.
+    with patch.dict(helpers._DEVICE_MODULES, {"no_platform_sets": SimpleNamespace()}):
+        result = helpers.get_model_known_keys({"name": "no_platform_sets"}, "binary_sensor", global_keys)
+    assert result is global_keys
 
 
 def test_get_model_known_keys_uses_device_file_over_name() -> None:
