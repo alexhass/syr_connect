@@ -73,6 +73,14 @@ def _build_rmt_minute_options() -> list[int]:
     return sorted(values)
 
 
+def _build_ald_second_options() -> list[int]:
+    """Build the documented GUI step list for getALD (see docs/syrconnect-protocol.md).
+
+    Seconds: 1, 5, 10, 20, 30, then 1-10 minutes (60-600) in steps of 60.
+    """
+    return [1, 5, 10, 20, 30, *range(60, 601, 60)]
+
+
 def _build_rvt_liter_options() -> list[int]:
     """Build the documented non-uniform liter steps for getRVT (see docs/syrconnect-protocol.md).
 
@@ -282,7 +290,8 @@ async def async_setup_entry(
             except (ValueError, TypeError):
                 pass
             else:
-                crs_map = {f"{v:g} L": k for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()}
+                crs_unit = _SYR_CONNECT_SENSOR_UNIT["getCRS"]
+                crs_map = {f"{v:g} {crs_unit}": k for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()}
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getCRS", crs_map))
 
         # Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
@@ -317,7 +326,8 @@ async def async_setup_entry(
                 rmt_sel = SyrConnectNumericSelect(
                     coordinator, device_id, device_name, "getRMT", rmt_options[0], rmt_options[-1], 1
                 )
-                rmt_sel._options = [f"{v} min" for v in rmt_options]
+                rmt_unit = _SYR_CONNECT_SENSOR_UNIT["getRMT"]
+                rmt_sel._options = [f"{v} {rmt_unit}" for v in rmt_options]
                 entities.append(rmt_sel)
 
         # Maximum filling charges (getRVT): non-uniform liter steps (see docs/syrconnect-protocol.md)
@@ -332,7 +342,8 @@ async def async_setup_entry(
                 rvt_sel = SyrConnectNumericSelect(
                     coordinator, device_id, device_name, "getRVT", rvt_options[0], rvt_options[-1], 1
                 )
-                rvt_sel._options = [f"{v} L" for v in rvt_options]
+                rvt_unit = _SYR_CONNECT_SENSOR_UNIT["getRVT"]
+                rvt_sel._options = [f"{v} {rvt_unit}" for v in rvt_options]
                 entities.append(rvt_sel)
 
         # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)
@@ -404,9 +415,7 @@ async def async_setup_entry(
                 mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"off": 700}
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMXT", mxt_map))
 
-        # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md):
-        # 1/5/10/20/30s, then 1-10 minutes.
-        # Display labels come from the select.getald translation "state" map.
+        # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md).
         ald_value = status.get("getALD")
         if "getALD" in known_select_keys and ald_value is not None and ald_value != "":
             try:
@@ -414,10 +423,13 @@ async def async_setup_entry(
             except (ValueError, TypeError):
                 pass
             else:
-                ald_map = {"1": 1, "5": 5, "10": 10, "20": 20, "30": 30} | {
-                    str(m * 60): m * 60 for m in range(1, 11)
-                }
-                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getALD", ald_map))
+                ald_options = _build_ald_second_options()
+                ald_sel = SyrConnectNumericSelect(
+                    coordinator, device_id, device_name, "getALD", ald_options[0], ald_options[-1], 1
+                )
+                ald_unit = _SYR_CONNECT_SENSOR_UNIT["getALD"]
+                ald_sel._options = [f"{v} {ald_unit}" for v in ald_options]
+                entities.append(ald_sel)
 
         # Measurement interval (getWMP) and settings synchronisation interval (getRCP): non-uniform
         # duration steps as documented in docs/syrconnect-protocol.md. Options are raw seconds;
@@ -487,7 +499,8 @@ def _async_setup_muco_conditional_selects(
 
     def _build_entity(device_id: str, device_name: str, key: str) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
         if key == "getLOT":
-            lot_map = {f"{raw * 10} µS/cm": raw for raw in range(0, 21)}
+            lot_unit = _SYR_CONNECT_SENSOR_UNIT["getLOT"]
+            lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(0, 21)}
             return SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getLOT", lot_map)
         return SyrConnectNumericSelect(coordinator, device_id, device_name, "getOHW", 0, 12, 1)
 

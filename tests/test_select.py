@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -3090,17 +3090,34 @@ async def test_mih_mxh_select_current_option(hass: HomeAssistant) -> None:
     assert mxh.current_option == "100"
 
 
-async def test_ald_select_current_option_and_selection(hass: HomeAssistant) -> None:
-    """getALD current_option reflects seconds (raw value), and selecting an option sends setALD."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getALD": "10"}}]}
-    coordinator = _build_coordinator(hass, data)
+async def test_ald_select_current_option_and_selection(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """getALD shows the documented steps in HA seconds; selecting an option sends setALD."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getVER": "Syr Floorsensor 2.23", "getALD": "10"},
+            }
+        ]
+    }
+    mock_config_entry, coordinator = create_mock_entry_with_coordinator(data)
     coordinator.async_set_device_value = AsyncMock()
-    ald_map = {"1": 1, "5": 5, "10": 10, "20": 20, "30": 30} | {str(m * 60): m * 60 for m in range(1, 11)}
-    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getALD", ald_map)
+    entities, async_add_entities = mock_add_entities()
 
-    assert select.current_option == "10"
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    await select.async_select_option("120")
+    select = next(e for e in entities if getattr(e, "_sensor_key", None) == "getALD")
+    assert select.options == [
+        "1 s", "5 s", "10 s", "20 s", "30 s",
+        "60 s", "120 s", "180 s", "240 s", "300 s", "360 s", "420 s", "480 s", "540 s", "600 s",
+    ]
+    assert select.current_option == "10 s"
+
+    await select.async_select_option("120 s")
 
     coordinator.async_set_device_value.assert_called_once_with("device1", "setALD", 120)
 
@@ -3154,6 +3171,49 @@ async def test_rcp_wmp_select_current_option(hass: HomeAssistant) -> None:
 
     assert rcp.current_option == "43200"
     assert wmp.current_option == "3600"
+
+
+async def test_rmt_select_options_use_ha_minutes_unit(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """getRMT options carry Home Assistant's minute unit, and selecting one writes the plain number."""
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": {"getRMT": "30"}}]}
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.async_set_device_value = AsyncMock()
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmt = next(e for e in entities if getattr(e, "_sensor_key", None) == "getRMT")
+    assert UnitOfTime.MINUTES == "min"
+    assert rmt.options[0] == "1 min"
+    assert all(opt.endswith(f" {UnitOfTime.MINUTES}") for opt in rmt.options)
+    assert rmt.current_option == "30 min"
+
+    await rmt.async_select_option("45 min")
+
+    mock_coordinator.async_set_device_value.assert_called_once_with("device1", "setRMT", 45)
+
+
+async def test_muco_select_option_units_come_from_central_unit_map(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Unit text of getCRS/getRVT/getLOT options comes from _SYR_CONNECT_SENSOR_UNIT, not hard-coded strings."""
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_UNIT
+
+    status = {"getCRS": "3", "getCRT": "1", "getRVT": "100", "getLOT": "7"}
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    by_key = {e._sensor_key: e for e in entities if hasattr(e, "_sensor_key")}
+    for key, value in {"getCRS": "7", "getRVT": "100", "getLOT": "70"}.items():
+        unit = _SYR_CONNECT_SENSOR_UNIT[key]
+        assert by_key[key].options, key
+        assert all(opt.endswith(f" {unit}") for opt in by_key[key].options), key
+        assert by_key[key].current_option == f"{value} {unit}", key
 
 
 # --- Water hardness (getIWH/getOWH) selects: plain LEX family only ---
