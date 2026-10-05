@@ -104,6 +104,7 @@ Tested and reported as working:
 - SYR SafeTech Connect
 - SYR SafeTech plus Connect
 - SYR TRIO DFR/LS Connect 2425
+- SYR TRIO Lock Connect
 - SYR Oceanic i-LEX / Limex iQ Single (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
 
 Other devices are also of interest, but may need to be integrated or at least tested (please report):
@@ -117,6 +118,8 @@ Other devices are also of interest, but may need to be integrated or at least te
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Softwater DUO A25
+- SYR AC 3200 Connect
+- SYR AC All-in-One 3228 Connect
 - SYR HygBox Connect
 - SYR IT 3000 Pendulum system
 - SYR LEX 1500 Connect Duplex
@@ -124,6 +127,8 @@ Other devices are also of interest, but may need to be integrated or at least te
 - SYR LEX 1500 Connect Triple
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
+- SYR RSA Connect
+- SYR SafeTech Lock Connect
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 - TAKE Single Water Softener
 - TAKE Twin Water Softener
@@ -189,6 +194,12 @@ The integration provides comprehensive monitoring of your devices:
 - Remaining and elapsed self-learning time
 - Flow rate and accumulated volume during self-learning
 
+#### Floor Leak Sensor (SafeFloor)
+
+- Current humidity and temperature
+- Battery level (%)
+- Alarm status
+
 #### Filter (NeoSoft)
 
 - Filter backwash countdown
@@ -229,8 +240,11 @@ The integration provides comprehensive monitoring of your devices:
 - **Salt Amount**: Configure salt quantity in containers (varies by model, up to 3 containers)
 - **Regeneration Interval**: Set how often regeneration occurs (model dependent: 1–4 days)
 - **Display Rotation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display)
-- **Filter Backwash Interval**: Configure filter backwash frequency (for NeoSoft devices with filter)
 - **Filter Type**: Select the installed filter type (for NeoSoft devices)
+- **Regeneration Mode**: Select Standard / ECO / Power / Automatic (for devices that support it)
+- **Input / Output Water Hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l)
+- **Water Treatment and Filling** (MuCo-based devices): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure
+- **Floor Leak Sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronisation interval
 
 #### Valve Control
 
@@ -286,6 +300,7 @@ If a device becomes unavailable (e.g., offline or communication error), its enti
 - **Cloud Dependency**: The cloud API requires an active internet connection and functioning SYR Connect cloud service
 - **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting when using cloud API
 - **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
+- **Filter Backwash Interval**: The select for this setting is temporarily disabled because the device resets the value after writing it; the current value is still shown as a sensor
 - **Local API Support**: Only some newer device models (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) provide a local JSON API. Most other models, including all LEXplus variants, require cloud API access
 
 ## Use Cases & Examples
