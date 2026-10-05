@@ -137,6 +137,10 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 
 **Hinweis**: Wenn ein Gerät in deinem SYR Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
 
+### Nicht unterstützte Geräte
+
+- Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`).
+
 ### Unterstützte Funktionen
 
 #### Sensoren

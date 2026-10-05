@@ -137,6 +137,10 @@ Other devices are also of interest, but may need to be integrated or at least te
 
 **Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
 
+### Unsupported Devices
+
+- Oceanic Limex SMART COMPACT/MINI/MAXI devices. These devices use a different cloud portal (`i-lexconnect.com`) instead of the SYR Connect cloud service.
+
 ### Supported Functionality
 
 #### Sensors
