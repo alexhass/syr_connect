@@ -3108,14 +3108,14 @@ async def test_mit_mxt_select_off_sentinel_current_option(hass: HomeAssistant) -
     """getMIT/getMXT expose a dedicated 'Off' sentinel option outside the normal stepped range."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIT": "-400", "getMXT": "700"}}]}
     coordinator = _build_coordinator(hass, data)
-    mit_map = {"-400": -400} | {str(d * 10): d * 10 for d in range(-30, 50)}
-    mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"700": 700}
+    mit_map = {"off": -400} | {(f"minus_{-d * 10}" if d < 0 else str(d * 10)): d * 10 for d in range(-30, 50)}
+    mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"off": 700}
 
     mit = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMIT", mit_map)
     mxt = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMXT", mxt_map)
 
-    assert mit.current_option == "-400"
-    assert mxt.current_option == "700"
+    assert mit.current_option == "off"
+    assert mxt.current_option == "off"
 
 
 async def test_mit_select_normal_value_current_option_and_selection(hass: HomeAssistant) -> None:
@@ -3123,12 +3123,12 @@ async def test_mit_select_normal_value_current_option_and_selection(hass: HomeAs
     data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIT": "0"}}]}
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
-    mit_map = {"-400": -400} | {str(d * 10): d * 10 for d in range(-30, 50)}
+    mit_map = {"off": -400} | {(f"minus_{-d * 10}" if d < 0 else str(d * 10)): d * 10 for d in range(-30, 50)}
     select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMIT", mit_map)
 
     assert select.current_option == "0"
 
-    await select.async_select_option("-400")
+    await select.async_select_option("off")
 
     coordinator.async_set_device_value.assert_called_once_with("device1", "setMIT", -400)
 

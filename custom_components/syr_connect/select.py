@@ -374,7 +374,8 @@ async def async_setup_entry(
             except (ValueError, TypeError):
                 pass
             else:
-                mit_map = {"-400": -400} | {str(d * 10): d * 10 for d in range(-30, 50)}
+                # Option keys must match hassfest's [a-z0-9-_]+ (no leading hyphen), so negatives use "minus_".
+                mit_map = {"off": -400} | {(f"minus_{-d * 10}" if d < 0 else str(d * 10)): d * 10 for d in range(-30, 50)}
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMIT", mit_map))
 
         mxt_value = status.get("getMXT")
@@ -385,7 +386,7 @@ async def async_setup_entry(
                 pass
             else:
                 # "Off" (700) is numerically above the 1-50 °C range, so it sorts last.
-                mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"700": 700}
+                mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"off": 700}
                 entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMXT", mxt_map))
 
         # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md):
