@@ -1,5 +1,7 @@
 """Test the SYR Connect config flow."""
 
+import importlib
+import sys
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -7,8 +9,10 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import config_validation as cv
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.syr_connect import config_flow
 from custom_components.syr_connect.config_flow import validate_input_json
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
@@ -2227,3 +2231,56 @@ async def test_form_api_json_invalid_auth_error(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "invalid_auth"}
+
+
+@pytest.fixture
+def restore_config_flow():
+    """Reload config_flow after a test that changed which schema library it imports."""
+    yield
+    importlib.reload(config_flow)
+
+
+@pytest.mark.usefixtures("restore_config_flow")
+def test_config_flow_prefers_probatio_when_available() -> None:
+    """HA 2026.9+ serializes flow schemas with probatio, so config_flow must build them with it."""
+    probatio = pytest.importorskip("probatio")
+
+    module = importlib.reload(config_flow)
+
+    assert module.vol is probatio
+
+
+@pytest.mark.usefixtures("restore_config_flow")
+def test_config_flow_falls_back_to_voluptuous_without_probatio() -> None:
+    """Older HA releases don't ship probatio, so config_flow must fall back to voluptuous."""
+    voluptuous = pytest.importorskip("voluptuous")
+
+    with patch.dict(sys.modules, {"probatio": None}):
+        module = importlib.reload(config_flow)
+
+    assert module.vol is voluptuous
+    assert isinstance(module.STEP_LOCAL_JSON_DATA_SCHEMA, voluptuous.Schema)
+
+
+def test_flow_schemas_serialize_with_installed_home_assistant() -> None:
+    """Module-level flow schemas can be serialized the same way HA's flow view does for the frontend."""
+    try:
+        import probatio
+    except ImportError:
+        import voluptuous_serialize
+
+        def serialize(schema):
+            return voluptuous_serialize.convert(schema, custom_serializer=cv.custom_serializer)
+    else:
+
+        def serialize(schema):
+            return probatio.to_field_list(schema, custom_serializer=cv.custom_serializer)
+
+    for schema in (
+        config_flow.STEP_CLOUD_XML_DATA_SCHEMA,
+        config_flow._STEP_REAUTH_XML_DATA_SCHEMA,
+        config_flow.STEP_LOCAL_JSON_DATA_SCHEMA,
+    ):
+        fields = serialize(schema)
+        assert fields
+        assert all("name" in field for field in fields)
