@@ -980,7 +980,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 
 | Attribute       | Example                      | Description
 |-----------------|------------------------------|-------------------------------------------------
-| getSRN_dt       | "2022-01-01 00:00:00"        | Serial number timestamp
+| getSRN_dt       | "28.09.2026 14:55:43"        | Time of the last upload of the device to the cloud (UTC). Changes with every upload of battery-powered SafeFloor sensors and is used to detect new SafeFloor measurement history.
 | getALM_acd      | ""                           | Active alarm acknowledged timestamp
 | getALM_dt       | ""                           | Active alarm occurrence timestamp
 | getALM_ih       | ""                           | Active alarm inhibit flag
@@ -1150,6 +1150,56 @@ available per model) alongside the confirmed descriptions.
 | VPS1     | X | X | X | X | X | X | X | ✓ | ✓ |
 | VPS2     | X | X | X | X | X | X | X | X | ✓ |
 
+
+## SafeFloor measurement history (GetSafeFloorStatistics)
+
+SafeFloor sensors are battery powered. They measure temperature and humidity every `getWMP` seconds (e.g. 21600 = 6 h) but connect to the cloud only every `getRCP` seconds (e.g. 345600 = 4 days, configurable in the app from 1 hour to 2 weeks; shorter intervals cost battery). `GetDeviceCollectionStatus` therefore only returns the latest measurement (`getCEL`, `getHMD`). The measurements in between are available from the cloud web service `GetSafeFloorStatistics`:
+
+- URL: `<api_base_url>WebServices/SyrControlWebServiceTest2.asmx/GetSafeFloorStatistics` (form parameter `xml`, same session and checksum as `GetDeviceCollectionStatus`)
+- Request:
+
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <sc>
+    <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+    <us ug="{session}"/>
+    <col><dcl dclg="{dclg}"><sh t="1" rtyp="4" lg="de" rg="DE" unit="°C"/></dcl></col>
+    <cs v="{checksum}"/>
+  </sc>
+  ```
+
+| Attribute | Values | Description
+|-----------|--------|-------------------------------------------------
+| t         | 1, 2   | Measurement: 1 = temperature, 2 = humidity
+| unit      | "°C", "%" | **Required.** Without `unit` the response is an empty `<col />`
+| rtyp      | 1–4    | Report type: 1 = week (6-hour buckets), 2 = month (per day), 3 = year (per week), 4 = raw measurements with timestamps
+| lg, rg    | "de", "DE" | Language and region
+| sd, ed    |        | Ignored in requests. The response contains the window used: `sd` = now − 6 days, `ed` = end of today (both in server local time)
+
+- Response for `rtyp="4"` (raw measurements of the last 6 days, timestamps in UTC):
+
+  ```xml
+  <sc>
+    <col>
+      <dcl dclg="{dclg}">
+        <sh sd="2026-09-26 14:16:24" ed="2026-10-02 23:59:59" t="1" rtyp="4" lg="de" rg="DE" min="14.6" max="15.8" avg="15.1" unit="°C">
+          <sths>
+            <sth dt="2026-09-26 14:45:27" v="14.6" />
+            <sth dt="2026-09-26 20:45:27" v="14.9" />
+            ...
+            <sth dt="2026-09-28 14:45:27" v="15.8" />
+          </sths>
+        </sh>
+      </dcl>
+    </col>
+    <cs v="86A2" />
+  </sc>
+  ```
+
+- An unknown `dclg` returns `<sc><msg v="An error has occurred." hl="Error" mtid="1" /></sc>`.
+- Only the last 6 days are returned. With an upload interval (`getRCP`) above 6 days the older measurements of an upload can not be retrieved with `rtyp="4"`.
+- The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload, plus one follow-up 75 minutes later), after a restart and at least once a day, and writes them into the hourly long-term statistics of the `getCEL` and `getHMD` sensors (step curve, only hours already compiled by the recorder; see README).
+- Request format first seen in the ioBroker adapter [TA2k/ioBroker.syrconnectapp](https://github.com/TA2k/ioBroker.syrconnectapp); report type 4, the unit requirement and the 6-day window were found by testing a SafeFloor Connect on the CONEL CLEAR PRO cloud.
 
 ## Further information
 
