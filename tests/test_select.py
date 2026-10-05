@@ -15,6 +15,7 @@ from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
+    SyrConnectHardnessSelect,
     SyrConnectNumericSelect,
     SyrConnectPrfSelect,
     SyrConnectRegenerationSelect,
@@ -3153,3 +3154,156 @@ async def test_rcp_wmp_select_current_option(hass: HomeAssistant) -> None:
 
     assert rcp.current_option == "43200"
     assert wmp.current_option == "3600"
+
+
+# --- Water hardness (getIWH/getOWH) selects: plain LEX family only ---
+
+
+async def test_async_setup_entry_creates_hardness_selects_for_lex(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """The plain LEX family (here i-LEX 10) gets raw/outlet water hardness selects."""
+    status = {"getCNA": "L10", "getIWH": "20", "getOWH": "2", "getWHU": "0"}
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    by_key = {e._sensor_key: e for e in entities if getattr(e, "_sensor_key", None) in ("getIWH", "getOWH")}
+    assert set(by_key) == {"getIWH", "getOWH"}
+    assert all(isinstance(e, SyrConnectHardnessSelect) for e in by_key.values())
+    assert by_key["getIWH"].options[0] == "1 °dH"
+    assert by_key["getIWH"].options[-1] == "100 °dH"
+    assert by_key["getOWH"].options[0] == "0 °dH"
+    assert by_key["getOWH"].options[-1] == "100 °dH"
+    assert by_key["getIWH"].current_option == "20 °dH"
+    assert by_key["getOWH"].current_option == "2 °dH"
+
+
+async def test_hardness_select_sends_set_command(hass: HomeAssistant) -> None:
+    """Selecting a hardness option sends setIWH/setOWH with the plain number, without the unit."""
+    data = {
+        "devices": [{"id": "device1", "name": "Device 1", "status": {"getIWH": "20", "getOWH": "2", "getWHU": "1"}}]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    iwh = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getIWH", 1, 100, 1)
+    owh = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getOWH", 0, 100, 1)
+    await iwh.async_select_option("36 °fH")
+    await owh.async_select_option("0 °fH")
+
+    coordinator.async_set_device_value.assert_any_call("device1", "setIWH", 36)
+    coordinator.async_set_device_value.assert_any_call("device1", "setOWH", 0)
+
+
+@pytest.mark.parametrize(
+    ("whu", "unit"),
+    [("0", "°dH"), ("1", "°fH"), ("2", "ppm"), ("3", "mmol/l")],
+)
+async def test_hardness_select_unit_follows_whu(hass: HomeAssistant, whu: str, unit: str) -> None:
+    """The unit suffix of options and current_option follows the device's getWHU setting."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getIWH": "36", "getWHU": whu}}]}
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getIWH", 1, 100, 1)
+
+    assert select.options[0] == f"1 {unit}"
+    assert select.current_option == f"36 {unit}"
+    assert select.current_option in select.options
+
+
+@pytest.mark.parametrize("whu", [None, "", "invalid", "9"])
+async def test_hardness_select_without_known_unit_shows_plain_numbers(hass: HomeAssistant, whu: str | None) -> None:
+    """A missing, empty, invalid or unknown getWHU leaves the options without a unit suffix."""
+    status = {"getIWH": "36"}
+    if whu is not None:
+        status["getWHU"] = whu
+    coordinator = _build_coordinator(hass, {"devices": [{"id": "device1", "name": "Device 1", "status": status}]})
+    select = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getIWH", 1, 100, 1)
+
+    assert select.options[0] == "1"
+    assert select.current_option == "36"
+
+
+async def test_hardness_select_unit_updates_when_whu_changes(hass: HomeAssistant) -> None:
+    """Changing getWHU on the device is reflected immediately, without recreating the entity."""
+    status = {"getIWH": "20", "getWHU": "0"}
+    coordinator = _build_coordinator(hass, {"devices": [{"id": "device1", "name": "Device 1", "status": status}]})
+    select = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getIWH", 1, 100, 1)
+    assert select.current_option == "20 °dH"
+
+    status["getWHU"] = "1"
+
+    assert select.current_option == "20 °fH"
+    assert select.options[0] == "1 °fH"
+
+
+async def test_hardness_select_unit_when_device_missing(hass: HomeAssistant) -> None:
+    """A device that vanished from the coordinator data yields plain options and no current option."""
+    coordinator = _build_coordinator(hass, {"devices": [{"id": "other", "name": "Other", "status": {}}]})
+    select = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getIWH", 1, 100, 1)
+
+    assert select.options[0] == "1"
+    assert select.current_option is None
+
+
+async def test_hardness_select_current_option_prefers_exact_match(hass: HomeAssistant) -> None:
+    """Values like 1, 10 and 100 must not resolve to a longer option that merely starts with them."""
+    for raw in ("1", "10", "100"):
+        data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getIWH": raw, "getWHU": "0"}}]}
+        coordinator = _build_coordinator(hass, data)
+        select = SyrConnectHardnessSelect(coordinator, "device1", "Device 1", "getIWH", 1, 100, 1)
+        assert select.current_option == f"{raw} °dH"
+
+
+@pytest.mark.parametrize(
+    "cna",
+    [
+        "LEXplus10",
+        "LEXplus10S",
+        "LEXplus10SL",
+        "NeoSoft2500",
+    ],
+)
+async def test_async_setup_entry_skips_hardness_selects_for_other_models(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, cna: str
+) -> None:
+    """LEX Plus (and other) models keep getIWH/getOWH as sensors only."""
+    status = {"getCNA": cna, "getIWH": "20", "getOWH": "2", "getWHU": "0"}
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert not ({"getIWH", "getOWH"} & keys)
+
+
+async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_device_file(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """A model without a device file falls back to the global allowlist, which must not expose these keys."""
+    test_sig = [{"display_name": "Test Model", "base_path": "test", "name": "testmodel", "srn_prefix": "999"}]
+    status = {
+        "getSRN": "999AAA0001",
+        "getIWH": "20",
+        "getOWH": "2",
+        "getALD": "600",
+        "getMIH": "5",
+        "getMXH": "95",
+        "getMIT": "-40",
+        "getMXT": "490",
+        "getRCP": "43200",
+        "getWMP": "3600",
+    }
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert not keys & {"getIWH", "getOWH", "getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP"}

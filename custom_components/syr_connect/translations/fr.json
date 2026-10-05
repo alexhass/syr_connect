@@ -154,6 +154,9 @@
           "3": "Sans filtre"
         }
       },
+      "getiwh": {
+        "name": "Dureté de l'eau brute"
+      },
       "getlot": {
         "name": "Conductivité de sortie maximale"
       },
@@ -350,6 +353,9 @@
         }
       },
       "getohw": {
+        "name": "Dureté de l'eau adoucie"
+      },
+      "getowh": {
         "name": "Dureté de l'eau adoucie"
       },
       "getprf": {

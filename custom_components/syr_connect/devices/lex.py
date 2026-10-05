@@ -64,7 +64,7 @@ SENSOR_KNOWN_KEYS = {
 }
 
 SELECT_KNOWN_KEYS = {
-    "getRPD", "getRTM", "getSV1", "getSV2", "getSV3",
+    "getIWH", "getOWH", "getRPD", "getRTM", "getSV1", "getSV2", "getSV3",
 }
 
 # No buzzer on this model.

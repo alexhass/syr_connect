@@ -22,6 +22,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
+    _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
@@ -217,6 +218,20 @@ async def async_setup_entry(
                     )
             except (ValueError, TypeError):
                 pass
+
+        # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX family only
+        # (see docs/syrconnect-protocol.md). The unit suffix follows the device's getWHU setting.
+        for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
+            hardness_value = status.get(hardness_key)
+            if hardness_key not in known_select_keys or hardness_value is None or hardness_value == "":
+                continue
+            try:
+                float(hardness_value)
+            except (ValueError, TypeError):
+                continue
+            entities.append(
+                SyrConnectHardnessSelect(coordinator, device_id, device_name, hardness_key, hardness_min, 100, 1)
+            )
 
         # Add getFFM select (filter type) if present: expose raw numeric keys so frontend translates the state
         ffm_value = status.get("getFFM")
@@ -738,6 +753,34 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             if device.get("id") == self._device_id:
                 return device.get("available", True)
         return True
+
+
+class SyrConnectHardnessSelect(SyrConnectNumericSelect):
+    """Water hardness select (`getIWH`/`getOWH`) with the unit taken from the live `getWHU` setting."""
+
+    def _unit_label(self) -> str:
+        for dev in self.coordinator.data.get("devices", []):
+            if dev.get("id") != self._device_id:
+                continue
+            try:
+                whu = int(float(dev.get("status", {}).get("getWHU")))
+            except (ValueError, TypeError):
+                return ""
+            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
+        return ""
+
+    @property
+    def options(self) -> list[str]:
+        unit = self._unit_label()
+        return [f"{opt} {unit}" if unit else opt for opt in self._options]
+
+    @property
+    def current_option(self) -> str | None:
+        value = super().current_option
+        if value is None:
+            return None
+        unit = self._unit_label()
+        return f"{value} {unit}" if unit else value
 
 
 class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):

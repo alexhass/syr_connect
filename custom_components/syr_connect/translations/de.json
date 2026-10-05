@@ -154,6 +154,9 @@
           "3": "Ohne Filter"
         }
       },
+      "getiwh": {
+        "name": "Rohwasserhärte"
+      },
       "getlot": {
         "name": "Maximale Ausgangsleitfähigkeit"
       },
@@ -351,6 +354,9 @@
       },
       "getohw": {
         "name": "Weichwasserhärte"
+      },
+      "getowh": {
+        "name": "Ausgangshärte"
       },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",

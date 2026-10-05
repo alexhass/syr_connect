@@ -154,6 +154,9 @@
           "3": "Geen filter"
         }
       },
+      "getiwh": {
+        "name": "Inkomende waterhardheid"
+      },
       "getlot": {
         "name": "Maximale uitgaande geleidbaarheid"
       },
@@ -351,6 +354,9 @@
       },
       "getohw": {
         "name": "Zachtwaterhardheid"
+      },
+      "getowh": {
+        "name": "Uitgaande waterhardheid"
       },
       "getprf": {
         "name": "Actief lekbeschermingsprofiel",
