@@ -560,6 +560,14 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     # --- Automatic Backwash (RSA) - also represented as switch entity ---
     "getSSA",   # Automatic backwash enabled flag
     "getSSE",   # Backwash reminder enabled flag
+    # --- SafeFloor Thresholds / Intervals - also represented as select entity ---
+    "getALD",   # Duration of alarm (s)
+    "getMIH",   # Minimum humidity threshold (%)
+    "getMXH",   # Maximum humidity threshold (%)
+    "getMIT",   # Minimum temperature threshold (1/10 °C)
+    "getMXT",   # Maximum temperature threshold (1/10 °C)
+    "getRCP",   # Synchronisation interval (s)
+    "getWMP",   # Measurement interval (s)
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
@@ -806,6 +814,14 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     "getRMT",   # Maximum filling duration (min)
     "getRVT",   # Maximum filling charges
     "getTPR",   # Target pressure (1/10 bar)
+    # --- SafeFloor Thresholds / Intervals ---
+    "getALD",   # Duration of alarm (s)
+    "getMIH",   # Minimum humidity threshold (%)
+    "getMXH",   # Maximum humidity threshold (%)
+    "getMIT",   # Minimum temperature threshold (1/10 °C)
+    "getMXT",   # Maximum temperature threshold (1/10 °C)
+    "getRCP",   # Synchronisation interval (s)
+    "getWMP",   # Measurement interval (s)
 }
 
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.

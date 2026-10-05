@@ -1568,8 +1568,10 @@ def test_get_model_known_keys_safefloor_device_override() -> None:
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys({"name": "safefloor"}, "sensor", global_keys)
     assert result == safefloor.SENSOR_KNOWN_KEYS
-    # A standalone sensor has no select/valve entities - empty-set override honored.
-    assert helpers.get_model_known_keys({"name": "safefloor"}, "select", global_keys) == set()
+    # This model has no display rotation, filling, or salt config selects, but its
+    # alarm/humidity/temperature thresholds and sync/measurement intervals are
+    # user-adjustable settings represented as select entities.
+    assert helpers.get_model_known_keys({"name": "safefloor"}, "select", global_keys) == safefloor.SELECT_KNOWN_KEYS
     assert helpers.get_model_known_keys({"name": "safefloor"}, "valve", global_keys) == set()
 
 

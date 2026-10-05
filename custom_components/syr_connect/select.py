@@ -332,6 +332,108 @@ async def async_setup_entry(
                     SyrConnectNumericSelect(coordinator, device_id, device_name, "getTPR", 5, 50, 1, scale=10)
                 )
 
+    # --- SafeFloor: alarm/humidity/temperature thresholds and sync/measurement intervals ---
+    for device in coordinator.data.get("devices", []):
+        device_id = device.get("id")
+        device_name = device.get("name", device_id)
+        status = device.get("status", {})
+        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+
+        # Minimum/maximum humidity thresholds (getMIH/getMXH): the lower/upper boundary of the
+        # 5%-stepped range doubles as "Off" (0=Off for MIH, 100=Off for MXH, per
+        # docs/syrconnect-protocol.md) - no separate raw sentinel value is needed, unlike
+        # getMIT/getMXT below. Options are raw values; display labels (including the "Off" text
+        # for that boundary) come from the select.getmih/getmxh translation "state" maps.
+        mih_value = status.get("getMIH")
+        if "getMIH" in known_select_keys and mih_value is not None and mih_value != "":
+            try:
+                float(mih_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                mih_map = {str(v): v for v in range(0, 96, 5)}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMIH", mih_map))
+
+        mxh_value = status.get("getMXH")
+        if "getMXH" in known_select_keys and mxh_value is not None and mxh_value != "":
+            try:
+                float(mxh_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                mxh_map = {str(v): v for v in range(5, 101, 5)}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMXH", mxh_map))
+
+        # Minimum/maximum temperature thresholds (getMIT/getMXT): raw 1/10 °C with a dedicated
+        # "Off" sentinel outside the normal stepped range (see docs/syrconnect-protocol.md).
+        # Display labels come from the select.getmit/getmxt translation "state" maps.
+        mit_value = status.get("getMIT")
+        if "getMIT" in known_select_keys and mit_value is not None and mit_value != "":
+            try:
+                float(mit_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                mit_map = {"-400": -400} | {str(d * 10): d * 10 for d in range(-30, 50)}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMIT", mit_map))
+
+        mxt_value = status.get("getMXT")
+        if "getMXT" in known_select_keys and mxt_value is not None and mxt_value != "":
+            try:
+                float(mxt_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                # "Off" (700) is numerically above the 1-50 °C range, so it sorts last.
+                mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"700": 700}
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getMXT", mxt_map))
+
+        # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md):
+        # 1/5/10/20/30s, then 1-10 minutes.
+        # Display labels come from the select.getald translation "state" map.
+        ald_value = status.get("getALD")
+        if "getALD" in known_select_keys and ald_value is not None and ald_value != "":
+            try:
+                float(ald_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                ald_map = {"1": 1, "5": 5, "10": 10, "20": 20, "30": 30} | {
+                    str(m * 60): m * 60 for m in range(1, 11)
+                }
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getALD", ald_map))
+
+        # Measurement interval (getWMP) and settings synchronisation interval (getRCP): non-uniform
+        # duration steps as documented in docs/syrconnect-protocol.md. Options are raw seconds;
+        # display labels come from the select.getwmp/getrcp translation "state" maps.
+        wmp_value = status.get("getWMP")
+        if "getWMP" in known_select_keys and wmp_value is not None and wmp_value != "":
+            try:
+                float(wmp_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                wmp_map = {
+                    "60": 60, "600": 600, "900": 900, "1800": 1800,
+                    "3600": 3600, "7200": 7200, "10800": 10800, "21600": 21600, "43200": 43200,
+                }
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getWMP", wmp_map))
+
+        rcp_value = status.get("getRCP")
+        if "getRCP" in known_select_keys and rcp_value is not None and rcp_value != "":
+            try:
+                float(rcp_value)
+            except (ValueError, TypeError):
+                pass
+            else:
+                rcp_map = {
+                    "3600": 3600, "7200": 7200, "10800": 10800, "21600": 21600, "43200": 43200,
+                    "86400": 86400, "172800": 172800, "259200": 259200, "345600": 345600,
+                    "432000": 432000, "518400": 518400, "604800": 604800, "691200": 691200,
+                    "777600": 777600, "1209600": 1209600,
+                }
+                entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getRCP", rcp_map))
+
     if entities:
         _LOGGER.debug("Adding %d select(s) total", len(entities))
         async_add_entities(entities)

@@ -41,9 +41,12 @@ SENSOR_KNOWN_KEYS = {
     "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
 }
 
-# No select-worthy keys for this model (no display rotation, no
-# regeneration/filling/salt configuration, no leak-protection profiles).
-SELECT_KNOWN_KEYS: set[str] = set()
+# No display rotation, no regeneration/filling/salt configuration, no
+# leak-protection profiles - but the alarm/humidity/temperature thresholds and
+# sync/measurement intervals are user-adjustable settings on this model.
+SELECT_KNOWN_KEYS = {
+    "getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP",
+}
 
 # No buzzer/switch on this model.
 SWITCH_KNOWN_KEYS: set[str] = set()

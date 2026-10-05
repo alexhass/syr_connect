@@ -3016,3 +3016,140 @@ def test_prf_select_disabled_by_default_when_in_set(hass):
         select = SyrConnectPrfSelect(coordinator, "dev1", "D1")
 
     assert select._attr_entity_registry_enabled_default is False
+
+
+# --- SafeFloor: alarm/humidity/temperature thresholds and sync/measurement intervals ---
+
+_SAFEFLOOR_STATUS = {
+    "getVER": "Syr Floorsensor 2.23",
+    "getALD": "20",
+    "getMIH": "0",
+    "getMXH": "100",
+    "getMIT": "0",
+    "getMXT": "500",
+    "getRCP": "43200",
+    "getWMP": "3600",
+}
+
+
+async def test_async_setup_entry_creates_safefloor_threshold_selects(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """async_setup_entry creates all 7 SafeFloor threshold/interval selects when present in status."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": dict(_SAFEFLOOR_STATUS),
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert {"getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP"} <= keys
+
+
+async def test_async_setup_entry_skips_invalid_safefloor_threshold_values(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Non-numeric/empty SafeFloor threshold values must not create select entities."""
+    status = {key: "" for key in _SAFEFLOOR_STATUS if key != "getVER"}
+    status["getVER"] = _SAFEFLOOR_STATUS["getVER"]
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert not ({"getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP"} & keys)
+
+
+async def test_mih_mxh_select_current_option(hass: HomeAssistant) -> None:
+    """getMIH/getMXH current_option reflects the raw percentage value, including the Off boundary."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIH": "0", "getMXH": "100"}}]}
+    coordinator = _build_coordinator(hass, data)
+
+    mih_map = {str(v): v for v in range(0, 96, 5)}
+    mxh_map = {str(v): v for v in range(5, 101, 5)}
+    mih = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMIH", mih_map)
+    mxh = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMXH", mxh_map)
+
+    assert mih.current_option == "0"
+    assert mxh.current_option == "100"
+
+
+async def test_ald_select_current_option_and_selection(hass: HomeAssistant) -> None:
+    """getALD current_option reflects seconds (raw value), and selecting an option sends setALD."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getALD": "10"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    ald_map = {"1": 1, "5": 5, "10": 10, "20": 20, "30": 30} | {str(m * 60): m * 60 for m in range(1, 11)}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getALD", ald_map)
+
+    assert select.current_option == "10"
+
+    await select.async_select_option("120")
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setALD", 120)
+
+
+async def test_mit_mxt_select_off_sentinel_current_option(hass: HomeAssistant) -> None:
+    """getMIT/getMXT expose a dedicated 'Off' sentinel option outside the normal stepped range."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIT": "-400", "getMXT": "700"}}]}
+    coordinator = _build_coordinator(hass, data)
+    mit_map = {"-400": -400} | {str(d * 10): d * 10 for d in range(-30, 50)}
+    mxt_map = {str(d * 10): d * 10 for d in range(1, 51)} | {"700": 700}
+
+    mit = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMIT", mit_map)
+    mxt = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMXT", mxt_map)
+
+    assert mit.current_option == "-400"
+    assert mxt.current_option == "700"
+
+
+async def test_mit_select_normal_value_current_option_and_selection(hass: HomeAssistant) -> None:
+    """getMIT current_option reflects a normal in-range degree value, and selecting 'Off' sends -400."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIT": "0"}}]}
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+    mit_map = {"-400": -400} | {str(d * 10): d * 10 for d in range(-30, 50)}
+    select = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getMIT", mit_map)
+
+    assert select.current_option == "0"
+
+    await select.async_select_option("-400")
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setMIT", -400)
+
+
+async def test_rcp_wmp_select_current_option(hass: HomeAssistant) -> None:
+    """getRCP/getWMP current_option resolves the matching raw seconds value."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getRCP": "43200", "getWMP": "3600"}}]}
+    coordinator = _build_coordinator(hass, data)
+    rcp_map = {
+        "3600": 3600, "7200": 7200, "10800": 10800, "21600": 21600, "43200": 43200,
+        "86400": 86400, "172800": 172800, "259200": 259200, "345600": 345600,
+        "432000": 432000, "518400": 518400, "604800": 604800, "691200": 691200,
+        "777600": 777600, "1209600": 1209600,
+    }
+    wmp_map = {
+        "60": 60, "600": 600, "900": 900, "1800": 1800,
+        "3600": 3600, "7200": 7200, "10800": 10800, "21600": 21600, "43200": 43200,
+    }
+
+    rcp = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getRCP", rcp_map)
+    wmp = SyrConnectDiscreteSelect(coordinator, "device1", "Device 1", "getWMP", wmp_map)
+
+    assert rcp.current_option == "43200"
+    assert wmp.current_option == "3600"

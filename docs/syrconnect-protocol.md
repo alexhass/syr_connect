@@ -639,7 +639,7 @@ These settings can be set by the user.
 
 | Property        | Example      | Unit      | Description                                                                                   |
 |-----------------|--------------|-----------|---------------------------------------------------------------------------------------------- |
-| getALD / setALD | "20"         | s         | Duration of alarm in seconds (Neosoft, SafeFloor)                                             |
+| getALD / setALD | "20"         | s         | Duration of alarm in seconds (Neosoft, SafeFloor), GUI Settings: 1s/5s/10s/20s/30s/1m/2m/3m till 10m |
 | getIWH / setIWH | "14"         | °dH / °fH | Raw water hardness (of the untreated water), can be set from 1-100 °dH                        |
 | getOWH / setOWH | "7"          | °dh / °fH | Soft water hardness (that the treated water should have), can be set from 0-100 °dH           |
 | getWHU / setWHU | "0"          |           | Water hardness unit: 0 = °dH, 1 = °fH, 2 = ppm, 3 = mmol/l                                    |
