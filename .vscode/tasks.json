@@ -16,6 +16,25 @@
       "problemMatcher": []
     },
     {
+      "label": "Pytest (WSL)",
+      "type": "process",
+      "command": "${env:WINDIR}\\System32\\wsl.exe",
+      "args": [
+        "--distribution",
+        "Ubuntu",
+        "--exec",
+        "bash",
+        "-lc",
+        "workspace_path=\"$(wslpath -u '${workspaceFolder}')\" && cd \"$workspace_path\" && \"$HOME/.venvs/syr_connect/bin/python\" -m pytest --timeout=10 tests"
+      ],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Pytest (changed tests only)",
       "type": "shell",
       "command": "${command:python.interpreterPath} -m pytest --timeout=10 --picked",
