@@ -316,7 +316,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     # depending on the device firmware.
                     raw = status.get(get_key) if status is not None else None
                     # Sentinel values that indicate no active alarm (see module docstring).
-                    if raw is None or str(raw).strip().lower() in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+                    if raw is None or str(raw).strip().upper() in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
                         raise HomeAssistantError(
                             f"No reset required for {get_key} on {self._device_id}"
                         )
@@ -347,7 +347,7 @@ class SyrConnectButton(CoordinatorEntity, ButtonEntity):
                     raw = status.get(get_key)
 
                 # Sentinel values that indicate no active notification / warning.
-                if raw is None or str(raw).strip().lower() in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+                if raw is None or str(raw).strip().upper() in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
                     raise HomeAssistantError(
                         f"No reset required for {get_key} on {self._device_id}"
                     )

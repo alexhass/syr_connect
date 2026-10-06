@@ -91,6 +91,7 @@ This integration works with SYR water softeners and leakage detection devices an
 Tested and reported as working:
 
 - CONEL CLEAR PRO FILL
+- CONEL CLEAR PRO LEAKAGE PROTECTION
 - CONEL CLEAR PRO SOFT
 - Sanibel Leak Protection Module A25
 - Sanibel Softwater UNO A25

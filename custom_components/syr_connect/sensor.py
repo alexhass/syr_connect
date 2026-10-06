@@ -670,7 +670,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     except (ValueError, KeyError, AttributeError, TypeError):
                         ala_mapped = None
 
-                    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str)
+                    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
 
                     mapped = ala_mapped or std_mapped
                     # Set translation key when available so frontend translates the state

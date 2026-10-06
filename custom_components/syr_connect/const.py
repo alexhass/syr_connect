@@ -150,13 +150,13 @@ _SYR_CONNECT_API_SERVICES: dict[str, dict] = {
 # Keep as a separate named constant to avoid hard-coded strings scattered across the codebase.
 _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
 
-# Values that mean "no alarm present" (case-insensitive, after strip()).
+# Values that mean "no alarm present" (compared after strip().upper()).
 _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM = {
     "",
     "0",
     "00",
-    "ff",
-    "a0x0000",
+    "FF",
+    "A0X0000",
     "255"
 }
 
@@ -202,7 +202,7 @@ _SYR_CONNECT_SENSOR_ALA_CODES_LEX = {
     "23": "alarm_leakage_volume_approaching",
 }
 
-_SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT = {
+_SYR_CONNECT_SENSOR_ALA_CODES_GENERIC = {
     "0D": "alarm_salt_supply_empty",
     "0E": "alarm_valve_position",
     "15": "alarm_heating_fill_volume_leak",
@@ -243,12 +243,22 @@ _SYR_CONNECT_SENSOR_ALA_CODES_SAFET = {
     "AB": "alarm_battery_weak",
     "AE": "error_no_information",
     "FF": "no_alarm",
-    "LowBat": "alarm_battery_low",
-    "WeakBat": "alarm_battery_weak",
+    "LOWBAT": "alarm_battery_low",
+    "WEAKBAT": "alarm_battery_weak",
+}
+
+# Model-specific alarm code families, keyed by a signature's `device_file` (see models.py), or by its
+# `name` when it has no `device_file`. Every model not listed here uses _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC.
+_SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL = {
+    "lex": _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
+    "lexplus10s": _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
+    "lexplus10sl": _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
+    "safefloor": _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR,
+    "safetplus": _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
 }
 
 # Notification code mappings
-_SYR_CONNECT_SENSOR_NOT_CODES = {
+_SYR_CONNECT_SENSOR_NOT_CODES_GENERIC = {
     "01": "new_software_available",
     "02": "bi_annual_maintenance",
     "03": "annual_maintenance",
@@ -261,7 +271,7 @@ _SYR_CONNECT_SENSOR_NOT_CODES = {
 }
 
 # Warning code mappings
-_SYR_CONNECT_SENSOR_WRN_CODES = {
+_SYR_CONNECT_SENSOR_WRN_CODES_GENERIC = {
     "01": "power_outage",
     "02": "salt_supply_low",
     "07": "leak_warning",
@@ -1222,14 +1232,14 @@ _SYR_CONNECT_SENSOR_DST_ICON_MAP = {
 }
 
 # Mapping for getALM sensor values
-# Maps raw API value -> internal key
+# Maps raw API value (compared after strip().upper()) -> internal key
 # API values observed:
 # - "NoSalt"  -> device reports salt empty <= 2kg
 # - "LowSalt" -> device reports low salt <= 4kg
 # - ""        -> no alarm >= 5kg
 _SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
-    "NoSalt": "no_salt",
-    "LowSalt": "low_salt",
+    "NOSALT": "no_salt",
+    "LOWSALT": "low_salt",
     "": "no_alarm",
 }
 

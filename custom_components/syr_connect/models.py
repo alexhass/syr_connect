@@ -524,6 +524,12 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     {
+        # dk=120/dkv=34 is shared by multiple vendors.
+        # Destinction can only made via _SYR_CONNECT_API_SERVICES (not implemented).
+        #
+        # Example vendor names:
+        # - CONEL CLEAR PRO Bodensensor
+        # - SYR SafeFloor Connect
         "base_path": None,
         "device_file": "safefloor",
         "display_name": "SafeFloor Connect",
@@ -1009,6 +1015,19 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
     {
+        # CLEARPNLS - Retrofit Leakage Protection
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 1},
+        "base_path": "/trio",
+        "device_file": "muco_leakprotect",
+        "display_name": "CLEAR PRO CONEL RETROFIT LEAKAGE PROTECTION",
+        "dk": 1500,
+        "dkv": 500,
+        "manufacturer": "CONEL",
+        "name": "conelclearproleakprotection",
+        "srn_prefix": "500",
+    },
+    {
         # CLEARPFSA - Filling Station
         "alarm_clear_via_set": True,
         "attrs_equals": {"getDFM": 3},
@@ -1019,6 +1038,20 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 500,
         "manufacturer": "CONEL",
         "name": "conelclearprofill",
+        "srn_prefix": "500",
+    },
+    {
+        # CLEARPMCK - MultiControl-Kit / Backwash System
+        # TODO: Untested model.
+        "alarm_clear_via_set": True,
+        "attrs_equals": {"getDFM": 5},
+        "base_path": "/trio",
+        "device_file": "muco_backwash",
+        "display_name": "CLEAR PRO MULTICONTROL-KIT",
+        "dk": 1500,
+        "dkv": 500,
+        "manufacturer": "CONEL",
+        "name": "conelclearprobackwash",
         "srn_prefix": "500",
     },
     {

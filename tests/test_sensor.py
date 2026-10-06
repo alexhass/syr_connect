@@ -8690,13 +8690,13 @@ def test_whu_invalid_sets_none(create_mock_coordinator) -> None:
     assert sensor._attr_native_unit_of_measurement is None
 
 
-def test_getala_returns_raw_for_unknown_model(create_mock_coordinator) -> None:
-    """When model is unknown getALA should return the raw code unchanged."""
+def test_getala_uses_generic_codes_for_unknown_model(create_mock_coordinator) -> None:
+    """When model is unknown getALA is mapped with the generic alarm codes."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getALA": "A5"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getALA")
 
-    assert sensor.native_value == "A5"
+    assert sensor.native_value == "alarm_max_flow_rate_reached"
 
 
 async def test_icon_getab_no_status(hass: HomeAssistant) -> None:

@@ -17,16 +17,14 @@ from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
-    _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
-    _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT,
-    _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR,
-    _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
+    _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL,
+    _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
-    _SYR_CONNECT_SENSOR_NOT_CODES,
-    _SYR_CONNECT_SENSOR_WRN_CODES,
+    _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
+    _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -49,7 +47,7 @@ from .devices import (
     safetplus,
     trio,
 )
-from .models import detect_model
+from .models import MODEL_SIGNATURES, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1012,95 +1010,23 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
 
     # Detect model from status (expect flattened attributes)
     try:
-        model = detect_model(status or {}).get("name")
+        model_info = detect_model(status or {})
     except (ValueError, KeyError, AttributeError, TypeError) as err:
         _LOGGER.debug("Failed to detect model for ALA mapping: %s", err)
-        model = None
-
-    # If model is unknown or not detected, do NOT attempt any matching.
-    # Return the raw code unchanged so the caller can present it 1:1.
-    if not model or (isinstance(model, str) and str(model).strip().lower().startswith("unknown")):
         return (None, code)
 
-    # Select mapping based on detected model. Only attempt mapping for the
-    # explicitly-detected model family; do NOT attempt cross-family fallbacks.
-    if model in (
-        "l10",
-        "l12",
-        "l15",
-        "l20",
-        "l25",
-        "l30",
-        "l40",
-        "l50",
-        "l60",
-        "l70",
-        "l80",
-        "l90",
-        "l100",
-        "lex10",
-        "lex20",
-        "lex30",
-        "lex40",
-        "lex60",
-        "lex80",
-        "lex100",
-        "lexplus10",
-        "lexplus10s",
-        "lexplus10sl",
-    ):
-        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_LEX.get(code_upper)
-        return (mapped, code) if mapped is not None else (None, code)
+    # Model-specific families take precedence; every other model (including unknown ones) uses the generic codes.
+    model = str(model_info.get("name") or "")
+    codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(model_info.get("device_file") or model)
+    if codes is None:
+        # Callers may pass a bare {"name": ...}; resolve its device_file from the signature.
+        signature = next((s for s in MODEL_SIGNATURES if s["name"] == model), None)
+        codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get((signature or {}).get("device_file") or model)
+    if codes is None:
+        codes = _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC
 
-    if model in (
-        "safefloor",
-    ):
-        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR.get(code_upper)
-        return (mapped, code) if mapped is not None else (None, code)
-
-    if model in (
-        "safetplus",
-    ):
-        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_SAFET.get(code_upper)
-        return (mapped, code) if mapped is not None else (None, code)
-
-    if model in (
-        "concept200duo",
-        "concept200replacementfilter",
-        "conceptmuco",
-        "conelclearprofill",
-        "conelclearprosoft",
-        "conelclearprosofttwin",
-        "conelmuco",
-        "ditechmuco",
-        "neosoft2500",
-        "neosoft5000",
-        "optimamuco",
-        "optimat22duo",
-        "optimatreplacementfilter",
-        "pontosbase",
-        "safetech",
-        "safetechplus",
-        "safetechv3",
-        "safetechv4",
-        "sanibelleakprotect",
-        "sanibelsoftwaterduo",
-        "sanibelsoftwateruno",
-        "sanibelmuco",
-        "syrac3200connect",
-        "syrlac3228connect",
-        "syrmuco",
-        "syrrsaconnect",
-        "syrsafetechlockconnect",
-        "syrtriolockconnect",
-        "trio",
-    ):
-        mapped = _SYR_CONNECT_SENSOR_ALA_CODES_NEOSOFT.get(code_upper)
-        return (mapped, code) if mapped is not None else (None, code)
-
-    # If we reach here, model was something else (not recognized). Do not
-    # attempt any mapping — return raw code unchanged.
-    return (None, code)
+    mapped = codes.get(code_upper)
+    return (mapped, code) if mapped is not None else (None, code)
 
 
 def get_sensor_not_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
@@ -1119,7 +1045,7 @@ def get_sensor_not_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
 
     code = str(raw_code)
     code_upper = code.strip().upper()
-    mapped = _SYR_CONNECT_SENSOR_NOT_CODES.get(code_upper)
+    mapped = _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC.get(code_upper)
     return (mapped, code) if mapped is not None else (None, code)
 
 
@@ -1139,7 +1065,7 @@ def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
 
     code = str(raw_code)
     code_upper = code.strip().upper()
-    mapped = _SYR_CONNECT_SENSOR_WRN_CODES.get(code_upper)
+    mapped = _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC.get(code_upper)
     return (mapped, code) if mapped is not None else (None, code)
 
 

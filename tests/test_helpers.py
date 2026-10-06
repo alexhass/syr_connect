@@ -199,8 +199,8 @@ def test_get_sensor_maps_and_visibility_additional():
     status = {"getCNA": "LEXplus10"}
     assert helpers.get_sensor_ala_map(status, "0")[0] == "no_alarm"
 
-    # Unknown model returns None mapping and raw code
-    assert helpers.get_sensor_ala_map({}, "A5")[0] is None
+    # Unknown model falls back to the generic alarm codes
+    assert helpers.get_sensor_ala_map({}, "A5")[0] == "alarm_max_flow_rate_reached"
 
     # Visibility rules
     status = {"getPA1": "true", "getPV1": "5"}
@@ -733,9 +733,9 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     mapped3, raw3 = get_sensor_ala_map(status_safet, "A1")
     assert mapped3 == "alarm_safet_valve_cannot_be_operated" and raw3 == "A1"
 
-    # ALA: unknown model -> returns (None, raw)
+    # ALA: unknown model -> generic codes
     mapped4, raw4 = get_sensor_ala_map({}, "A5")
-    assert mapped4 is None and raw4 == "A5"
+    assert mapped4 == "alarm_max_flow_rate_reached" and raw4 == "A5"
 
     # NOT mapping
     mapped_not, raw_not = get_sensor_not_map({}, "01")
@@ -1069,6 +1069,41 @@ def test_get_sensor_ala_map_safefloor_known_codes() -> None:
         assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
 
 
+def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
+    """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safetplus"}):
+        assert get_sensor_ala_map({}, "LowBat") == ("alarm_battery_low", "LowBat")
+        assert get_sensor_ala_map({}, "weakbat") == ("alarm_battery_weak", "weakbat")
+
+    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "neosoft2500"}):
+        assert get_sensor_ala_map({}, "a1")[0] == "alarm_end_switch"
+
+
+def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
+    """Every signature using a MuCo/NeoSoft/SafeTech/Trio/LEX/Safe-T+ device_file gets a mapping."""
+    from custom_components.syr_connect.models import MODEL_SIGNATURES
+
+    families = ("muco_", "neosoft_", "safetech", "trio", "lex", "safetplus")
+    checked = 0
+    for signature in MODEL_SIGNATURES:
+        device_file = signature.get("device_file") or ""
+        if not device_file.startswith(families):
+            continue
+        code = "0" if device_file.startswith("lex") else "FF"
+        with patch("custom_components.syr_connect.helpers.detect_model", return_value=dict(signature)):
+            mapped, _raw = get_sensor_ala_map({}, code)
+        assert mapped == "no_alarm", signature["name"]
+        checked += 1
+    assert checked > 40
+
+
+def test_get_sensor_ala_map_models_without_device_file() -> None:
+    """Models that have no device_file are mapped by their name."""
+    for name in ("conelmuco", "takemuco", "triols", "pontosbase", "syrmuco"):
+        with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": name}):
+            assert get_sensor_ala_map({}, "A1")[0] == "alarm_end_switch", name
+
+
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
     # unmapped code
     mapped_not, raw_not = get_sensor_not_map({}, "ZZ")
@@ -1241,14 +1276,13 @@ def test_get_sensor_ab_value_unexpected_exception() -> None:
 
 
 def test_get_sensor_ala_map_unrecognized_known_model() -> None:
-    """Unrecognized model (not in any family) returns (None, code) (line 665)."""
-    # Patch detect_model to return a recognized non-unknown model name not in any family
+    """A model without its own alarm code family uses the generic codes."""
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
         return_value={"name": "futuredevice2100"},
     ):
         mapped, raw = get_sensor_ala_map({"getSRN": "X"}, "FF")
-    assert mapped is None
+    assert mapped == "no_alarm"
     assert raw == "FF"
 
 

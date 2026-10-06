@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="633d4c60-11e0-f011-aa8c-0cc47a087b23" sta="2" dst="2" ast="1" clb="1" nrdt="06.10.2026 10:08:39" nrs="0" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="653d4c60-11e0-f011-aa8c-0cc47a087b23" sbt="" sta="2" dst="2" ast="1" so="1">
+      <ci f="-" b="-" m="-" />
+      <c n="getSRN" v="500AAA123456" dt="06.10.2026 10:08:39" />
+      <c n="getALA" v="ff" dt="25.09.2026 05:12:14" />
+      <c n="getNOT" v="ff" />
+      <c n="getWRN" v="ff" />
+      <c n="getALM" v="ff,a4,ff,a4,ff,a4,ff,a3" dt="06.10.2026 10:08:41" />
+      <c n="getDAP" v="" />
+      <c n="getDAV" v="" />
+      <c n="getDTR" v="[8,8,8,8,6,6,10,0]" />
+      <c n="getDSV" v="3" />
+      <c n="getEGW" v="0.0.0.0" />
+      <c n="getEIP" v="0.0.0.0" />
+      <c n="getMAC1" v="f0:f5:bd:XX:XX:XX" />
+      <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
+      <c n="getPRN" v="3" />
+      <c n="getSLF" v="3500" />
+      <c n="getSLT" v="44171" />
+      <c n="getSLV" v="550" />
+      <c n="getSUP" v="1" />
+      <c n="getVLV" v="20" />
+      <c n="getWFC" v="conel-clearproleakprotection-wifi1" />
+      <c n="getWFS" v="2" />
+      <c n="getWGW" v="192.168.178.1" />
+      <c n="getWIP" v="192.168.178.20" />
+      <c n="getCFW" v="224" />
+      <c n="getHWV" v="0000000000" />
+      <c n="getSFV" v="False" />
+      <c n="get71" v="False" />
+      <c n="getAB" v="False" />
+      <c n="getALD" v="600" />
+      <c n="getAFW" v="0" />
+      <c n="getAPT" v="300" />
+      <c n="getBMI" v="515" />
+      <c n="getBMA" v="585" />
+      <c n="getBSA" v="True" />
+      <c n="getBUZ" v="True" />
+      <c n="getCSE" v="False" />
+      <c n="getCSE2" v="False" />
+      <c n="getCURL" v="iot-syrconnect.azure-devices.net" />
+      <c n="getDBD" v="10" />
+      <c n="getDBT" v="15" />
+      <c n="getDCM" v="3" />
+      <c n="getDFM" v="1" />
+      <c n="getDMA" v="1" />
+      <c n="getDMO" v="" />
+      <c n="getDOM" v="60" />
+      <c n="getDPL" v="10" />
+      <c n="getDRP" v="2" />
+      <c n="getDST" v="180" />
+      <c n="getDTC" v="3" />
+      <c n="getDTT" v="04:00" />
+      <c n="getEVL" v="0" />
+      <c n="getFCD" v="7776000" />
+      <c n="getFCM" v="" />
+      <c n="getFFM" v="1" />
+      <c n="getLNG" v="0" />
+      <c n="getLOCK" v="False" />
+      <c n="getLWT" v="90" />
+      <c n="getMM" v="3" />
+      <c n="getMPO" v="0" />
+      <c n="getPRF" v="5" />
+      <c n="getPSE" v="False" />
+      <c n="getPSE2" v="False" />
+      <c n="getRTC" v="" />
+      <c n="getRURL" v="https://storageiotsyr.blob.core.windows.net/muco/container.v214" />
+      <c n="getSLO" v="10" />
+      <c n="getSLE" v="0" />
+      <c n="getSLP" v="0" m="21" sd="24.08.2026 12:56:47" ed="14.09.2026 12:56:33" />
+      <c n="getSMF" v="3500" />
+      <c n="getSRO" v="0" />
+      <c n="getT2" v="1" />
+      <c n="getTMP" v="0" />
+      <c n="getTSE" v="False" />
+      <c n="getTURL" v="http://storageiotsyr.blob.core.windows.net/muco/container.rescue" />
+      <c n="getWAD" v="True" />
+      <c n="getWAH" v="False" />
+      <c n="getWTI" v="1800" />
+      <c n="getENV" v="prod" />
+      <c n="getAVO" v="0" />
+      <c n="getBAP" v="59" />
+      <c n="getBAR" v="0" />
+      <c n="getBAR2" v="0" />
+      <c n="getBAT" v="602" />
+      <c n="getCEL" v="0" />
+      <c n="getCND" v="0" />
+      <c n="getCND2" v="0" />
+      <c n="getFLO" v="0" />
+      <c n="getLTV" v="2" />
+      <c n="getNET" v="500" />
+      <c n="getNPS" v="2643" />
+      <c n="getVOL" v="92426" />
+      <c n="getWFR" v="62" />
+      <c n="getPA1" v="True" />
+      <c n="getPA2" v="True" />
+      <c n="getPA3" v="False" />
+      <c n="getPA4" v="False" />
+      <c n="getPA5" v="True" />
+      <c n="getPA6" v="False" />
+      <c n="getPA7" v="False" />
+      <c n="getPA8" v="False" />
+      <c n="getPB1" v="True" />
+      <c n="getPB2" v="True" />
+      <c n="getPB3" v="False" />
+      <c n="getPB4" v="False" />
+      <c n="getPB5" v="False" />
+      <c n="getPB6" v="False" />
+      <c n="getPB7" v="False" />
+      <c n="getPB8" v="False" />
+      <c n="getPF1" v="3000" />
+      <c n="getPF2" v="3000" />
+      <c n="getPF3" v="2500" />
+      <c n="getPF4" v="0" />
+      <c n="getPF5" v="3000" />
+      <c n="getPF6" v="0" />
+      <c n="getPF7" v="0" />
+      <c n="getPF8" v="0" />
+      <c n="getPM1" v="True" />
+      <c n="getPM2" v="True" />
+      <c n="getPM3" v="True" />
+      <c n="getPM4" v="False" />
+      <c n="getPM5" v="True" />
+      <c n="getPM6" v="False" />
+      <c n="getPM7" v="False" />
+      <c n="getPM8" v="False" />
+      <c n="getPN1" v="Anwesend" />
+      <c n="getPN2" v="Abwesend" />
+      <c n="getPN3" v="Unterwegs" />
+      <c n="getPN4" v="Neues Profil" />
+      <c n="getPN5" v="Sommer" />
+      <c n="getPN6" v="" />
+      <c n="getPN7" v="" />
+      <c n="getPN8" v="" />
+      <c n="getPR1" v="0" />
+      <c n="getPR2" v="1" />
+      <c n="getPR3" v="0" />
+      <c n="getPR4" v="0" />
+      <c n="getPR5" v="720" />
+      <c n="getPR6" v="0" />
+      <c n="getPR7" v="0" />
+      <c n="getPR8" v="0" />
+      <c n="getPT1" v="480" />
+      <c n="getPT2" v="30" />
+      <c n="getPT3" v="30" />
+      <c n="getPT4" v="0" />
+      <c n="getPT5" v="700" />
+      <c n="getPT6" v="0" />
+      <c n="getPT7" v="0" />
+      <c n="getPT8" v="0" />
+      <c n="getPV1" v="200" />
+      <c n="getPV2" v="10" />
+      <c n="getPV3" v="10" />
+      <c n="getPV4" v="0" />
+      <c n="getPV5" v="500" />
+      <c n="getPV6" v="0" />
+      <c n="getPV7" v="0" />
+      <c n="getPV8" v="0" />
+      <c n="getPW1" v="True" />
+      <c n="getPW2" v="False" />
+      <c n="getPW3" v="False" />
+      <c n="getPW4" v="False" />
+      <c n="getPW5" v="False" />
+      <c n="getPW6" v="False" />
+      <c n="getPW7" v="False" />
+      <c n="getPW8" v="False" />
+      <c n="getTYP" v="0" />
+      <c n="getRCE" v="{&quot;schedules&quot;:{&quot;0&quot;:{&quot;time&quot;:[&quot;00:00&quot;],&quot;wd&quot;:[],&quot;d&quot;:[],&quot;m&quot;:[],&quot;action&quot;:100,&quot;active&quot;:false,&quot;name&quot;:&quot;Schedule 1&quot;}}}" />
+      <c n="getVER" v="MuCo V.2.24" />
+    </d>
+  </dvs>
+  <cs v="20662" />
+</sc>

@@ -455,7 +455,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             field = "alm" if alarm_style_alm else "ala"
             get_key = f"get{field.upper()}"
             raw = status.get(get_key)
-            if raw is not None and str(raw).strip().lower() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+            if raw is not None and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
                 if alarm_clear_via_set:
                     clear_prefix = (f"set{field.upper()}", "FF")
                 else:
