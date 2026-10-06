@@ -1020,7 +1020,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "attrs_equals": {"getDFM": 1},
         "base_path": "/trio",
         "device_file": "muco_leakprotect",
-        "display_name": "CLEAR PRO CONEL RETROFIT LEAKAGE PROTECTION",
+        "display_name": "CLEAR PRO RETROFIT LEAKAGE PROTECTION",
         "dk": 1500,
         "dkv": 500,
         "manufacturer": "CONEL",
