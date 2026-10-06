@@ -5367,164 +5367,147 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
         sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM1")
         assert sensor.native_value is None
 
-    async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> None:
-        """Exhaustive-ish test for getALA, getNOT and getWRN with many input variants."""
-        truthy = {"true", "True", "TRUE", "on", "ON", "yes", "1", 1}
-        falsy = {"false", "False", "FALSE", "off", "OFF", "no", "0", 0}
 
-        variants = [
-            None,
-            "",
-            "   ",
-            "true",
-            "off",
-            "1",
-            "0",
-            1,
-            0,
-            True,
-            False,
-            "UnknownValue",
-            "CompletelyUnknown",
-            123,
+async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> None:
+    """Blank getALA codes give None; other codes give a string (mapped key or the raw value)."""
+    unmapped = {"true", "off", "UnknownValue", "CompletelyUnknown", 123}
+    variants = [None, "", "   ", "1", "0", 1, 0, True, False, *unmapped]
+
+    for key in ("getALA", "getNOT", "getWRN"):
+        for raw in variants:
+            data = {"devices": [{"id": "d_ex", "name": "Device", "project_id": "p", "status": {key: raw}}]}
+            coord = _build_coordinator(hass, data)
+            s = SyrConnectSensor(coord, "d_ex", "Device", "p", key)
+
+            val = s.native_value
+
+            # getNOT/getWRN map an empty code to their "none" key, so only None and getALA blanks give None.
+            if raw is None or (key == "getALA" and isinstance(raw, str) and raw.strip() == ""):
+                assert val is None, f"Key {key} raw={raw!r} -> got {val!r}, expected None"
+            else:
+                assert isinstance(val, str), f"Key {key} raw={raw!r} -> got {val!r}"
+                if raw in unmapped:
+                    assert val == str(raw), f"Key {key} raw={raw!r} -> got {val!r}"
+
+
+async def test_sensor_getala_not_and_wrn_various_values(hass: HomeAssistant) -> None:
+    """Test getALA, getNOT and getWRN sensors handle None/empty/unmapped values."""
+    for key in ("getALA", "getNOT", "getWRN"):
+        for raw in (None, "", "UnknownValue", "1"):
+            data = {
+                "devices": [
+                    {
+                        "id": "device1",
+                        "name": "Device 1",
+                        "project_id": "project1",
+                        "status": {key: raw},
+                    }
+                ]
+            }
+            coordinator = _build_coordinator(hass, data)
+            sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", key)
+
+            # Ensure we exercise the parsing/mapping logic and return a stable type
+            val = sensor.native_value
+            assert (val is None) or isinstance(val, str)
+
+
+async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
+    """Sanity check: mapped values produce a (possibly different) string, unmapped fall back gracefully."""
+    # Mapped example (most integrations return string mapping); we don't assert exact mapping
+    data_mapped = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getALA": ""}}]}
+    coord_m = _build_coordinator(hass, data_mapped)
+    s_m = SyrConnectSensor(coord_m, "d1", "Device", "p", "getALA")
+    assert (s_m.native_value is None) or isinstance(s_m.native_value, str)
+
+    # Unmapped raw value should be returned or handled
+    data_unmapped = {
+        "devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getALA": "CompletelyUnknown"}}]
+    }
+    coord_u = _build_coordinator(hass, data_unmapped)
+    s_u = SyrConnectSensor(coord_u, "d2", "Device", "p", "getALA")
+    assert s_u.native_value is not None
+
+
+# Tests merged from test_getcof_water_consumption.py
+def test_getcof_has_water_device_class():
+    """Test that getCOF sensor has device_class=water for Energy Dashboard."""
+    assert "getCOF" in _SYR_CONNECT_SENSOR_DEVICE_CLASS
+    from homeassistant.components.sensor import SensorDeviceClass
+
+    assert _SYR_CONNECT_SENSOR_DEVICE_CLASS["getCOF"] == SensorDeviceClass.WATER
+
+
+def test_getcof_has_total_increasing_state_class():
+    """Test that getCOF sensor has state_class=total_increasing for statistics."""
+    assert "getCOF" in _SYR_CONNECT_SENSOR_STATE_CLASS
+    assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCOF"] == "total_increasing"
+
+
+def test_getcof_returns_correct_value():
+    """Test that getCOF sensor returns the correct water consumption value."""
+    # Create mock coordinator with test data
+    mock_coordinator = Mock()
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "210836887",
+                "name": "Test Device",
+                "status": {
+                    "getCOF": 888518,  # Water consumption in liters
+                },
+            }
         ]
+    }
 
-        for key in ("getALA", "getNOT", "getWRN"):
-            for raw in variants:
-                data = {"devices": [{"id": "d_ex", "name": "Device", "project_id": "p", "status": {key: raw}}]}
-                coord = _build_coordinator(hass, data)
-                s = SyrConnectSensor(coord, "d_ex", "Device", "p", key)
+    # Create sensor instance
+    sensor = SyrConnectSensor(
+        coordinator=mock_coordinator,
+        device_id="210836887",
+        device_name="Test Device",
+        project_id="test-project",
+        sensor_key="getCOF",
+    )
 
-                val = s.native_value
+    # Test that native_value returns getCOF value
+    assert sensor.native_value == 888518
 
-                # Determine expected semantics: empty/None -> None; truthy -> "true"; falsy -> "false"; else -> str(raw)
-                if raw is None or (isinstance(raw, str) and raw.strip() == ""):
-                    expected = None
-                else:
-                    # normalize by string or numeric truthiness
-                    if raw in truthy:
-                        expected = "true"
-                    elif raw in falsy:
-                        expected = "false"
-                    else:
-                        expected = str(raw)
 
-                assert (val is None and expected is None) or (val == expected), (
-                    f"Key {key} raw={raw!r} -> got {val!r}, expected {expected!r}"
-                )
+def test_getcof_handles_string_values():
+    """Test that getCOF sensor correctly converts string values to float."""
+    mock_coordinator = Mock()
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "210836887",
+                "name": "Test Device",
+                "status": {
+                    "getCOF": "888518",  # String value
+                },
+            }
+        ]
+    }
 
-    async def test_sensor_getala_not_and_wrn_various_values(hass: HomeAssistant) -> None:
-        """Test getALA, getNOT and getWRN sensors handle None/empty/unmapped values."""
-        for key in ("getALA", "getNOT", "getWRN"):
-            for raw in (None, "", "UnknownValue", "1"):
-                data = {
-                    "devices": [
-                        {
-                            "id": "device1",
-                            "name": "Device 1",
-                            "project_id": "project1",
-                            "status": {key: raw},
-                        }
-                    ]
-                }
-                coordinator = _build_coordinator(hass, data)
-                sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", key)
+    sensor = SyrConnectSensor(
+        coordinator=mock_coordinator,
+        device_id="210836887",
+        device_name="Test Device",
+        project_id="test-project",
+        sensor_key="getCOF",
+    )
 
-                # Ensure we exercise the parsing/mapping logic and return a stable type
-                val = sensor.native_value
-                assert (val is None) or isinstance(val, str)
+    # Should convert string to number (accept int or float)
+    assert float(sensor.native_value) == 888518.0
+    assert isinstance(sensor.native_value, int | float)
 
-    async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
-        """Sanity check: mapped values produce a (possibly different) string, unmapped fall back gracefully."""
-        # Mapped example (most integrations return string mapping); we don't assert exact mapping
-        data_mapped = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getALA": ""}}]}
-        coord_m = _build_coordinator(hass, data_mapped)
-        s_m = SyrConnectSensor(coord_m, "d1", "Device", "p", "getALA")
-        assert (s_m.native_value is None) or isinstance(s_m.native_value, str)
 
-        # Unmapped raw value should be returned or handled
-        data_unmapped = {
-            "devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getALA": "CompletelyUnknown"}}]
-        }
-        coord_u = _build_coordinator(hass, data_unmapped)
-        s_u = SyrConnectSensor(coord_u, "d2", "Device", "p", "getALA")
-        assert s_u.native_value is not None
+def test_getcof_not_excluded():
+    """Test that getCOF is not in the excluded sensors list."""
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_EXCLUDED,
+    )
 
-    # Tests merged from test_getcof_water_consumption.py
-    def test_getcof_has_water_device_class():
-        """Test that getCOF sensor has device_class=water for Energy Dashboard."""
-        assert "getCOF" in _SYR_CONNECT_SENSOR_DEVICE_CLASS
-        from homeassistant.components.sensor import SensorDeviceClass
-
-        assert _SYR_CONNECT_SENSOR_DEVICE_CLASS["getCOF"] == SensorDeviceClass.WATER
-
-    def test_getcof_has_total_increasing_state_class():
-        """Test that getCOF sensor has state_class=total_increasing for statistics."""
-        assert "getCOF" in _SYR_CONNECT_SENSOR_STATE_CLASS
-        assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCOF"] == "total_increasing"
-
-    def test_getcof_returns_correct_value():
-        """Test that getCOF sensor returns the correct water consumption value."""
-        # Create mock coordinator with test data
-        mock_coordinator = Mock()
-        mock_coordinator.data = {
-            "devices": [
-                {
-                    "id": "210836887",
-                    "name": "Test Device",
-                    "status": {
-                        "getCOF": 888518,  # Water consumption in liters
-                    },
-                }
-            ]
-        }
-
-        # Create sensor instance
-        sensor = SyrConnectSensor(
-            coordinator=mock_coordinator,
-            device_id="210836887",
-            device_name="Test Device",
-            project_id="test-project",
-            sensor_key="getCOF",
-        )
-
-        # Test that native_value returns getCOF value
-        assert sensor.native_value == 888518
-
-    def test_getcof_handles_string_values():
-        """Test that getCOF sensor correctly converts string values to float."""
-        mock_coordinator = Mock()
-        mock_coordinator.data = {
-            "devices": [
-                {
-                    "id": "210836887",
-                    "name": "Test Device",
-                    "status": {
-                        "getCOF": "888518",  # String value
-                    },
-                }
-            ]
-        }
-
-        sensor = SyrConnectSensor(
-            coordinator=mock_coordinator,
-            device_id="210836887",
-            device_name="Test Device",
-            project_id="test-project",
-            sensor_key="getCOF",
-        )
-
-        # Should convert string to number (accept int or float)
-        assert float(sensor.native_value) == 888518.0
-        assert isinstance(sensor.native_value, int | float)
-
-    def test_getcof_not_excluded():
-        """Test that getCOF is not in the excluded sensors list."""
-        from custom_components.syr_connect.const import (
-            _SYR_CONNECT_SENSOR_EXCLUDED,
-        )
-
-        assert "getCOF" not in _SYR_CONNECT_SENSOR_EXCLUDED
+    assert "getCOF" not in _SYR_CONNECT_SENSOR_EXCLUDED
 
 
 async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) -> None:

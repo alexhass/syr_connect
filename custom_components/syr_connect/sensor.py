@@ -654,7 +654,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             return mapped
                         # If model was unknown or no mapping found, return raw value 1:1
                         sval = str(raw_code)
-                        return sval if sval != "" else None
+                        return sval if sval.strip() != "" else None
                     except (ValueError, KeyError, AttributeError, TypeError):
                         return None
 
@@ -794,7 +794,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             self._attr_translation_key = mapped
                             return mapped
                         sval = str(raw_code)
-                        return sval if sval != "" else None
+                        return sval if sval.strip() != "" else None
                     except (ValueError, KeyError, AttributeError, TypeError):
                         return None
 
@@ -975,7 +975,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                             self._attr_translation_key = mapped
                             return mapped
                         sval = str(raw_code)
-                        return sval if sval != "" else None
+                        return sval if sval.strip() != "" else None
                     except (ValueError, KeyError, AttributeError, TypeError):
                         return None
 
