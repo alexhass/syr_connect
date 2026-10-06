@@ -52,7 +52,8 @@ _SYR_CONNECT_API_XML_SAFEFLOOR_GET_STATISTICS_URL = "WebServices/SyrControlWebSe
 # SafeFloor sensors measure every getWMP seconds but upload to the cloud only every getRCP
 # seconds (e.g. measure every 6 h, upload every 4 days). The status response only carries the
 # latest measurement; report type 4 returns the raw measurements of the last 6 days with their
-# timestamps (UTC). They are imported as external statistics after every new upload.
+# timestamps (UTC). They are imported as external statistics syr_connect:<serial>_<key> after
+# every new upload; why not into the sensor entities is explained in safefloor_history.py.
 _SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS: frozenset[int] = frozenset({120, 122})
 _SYR_CONNECT_SAFEFLOOR_HISTORY_REPORT_TYPE = 4  # 1=week, 2=month, 3=year (aggregated), 4=raw measurements
 # Statistic key -> (measurement type "t", unit sent in the request and used for the statistic)

@@ -289,22 +289,39 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 2. **Device Discovery**: Retrieves all projects and devices associated with your account
 3. **Status Updates**: For each device, fetches current status including all sensor values
 4. **Entity Updates**: Updates all Home Assistant entities with the latest values
-5. **SafeFloor Measurement History**: After each new upload of a SafeFloor sensor, imports its individual measurements as statistics (see below)
+5. **SafeFloor Measurement History**: After each new upload of a SafeFloor sensor, stores its individual measurements as long-term statistics (see below)
 
 ### SafeFloor Measurement History
 
-SafeFloor sensors run on batteries: they measure temperature and humidity regularly (e.g. every 6 hours) but upload to the cloud only every few days (upload interval configurable in the SYR app). The sensor entities therefore only show the latest measurement and jump at each upload.
+SafeFloor floor sensors run on batteries. They measure temperature and humidity regularly (**Measurement interval**, e.g. 6 hours) but connect to the cloud only every few days (**Synchronisation interval**, e.g. 4 days). Home Assistant receives new values only with each upload, so the history of the temperature and humidity sensors shows a flat line for days and then a jump. This is expected: Home Assistant can not change the past states of an entity.
 
-After each upload (and once a day as a safety net) the integration additionally fetches the individual measurements of the last 6 days from the cloud and stores them with their real measurement time as long-term statistics:
+The real curve is stored separately. After each upload (and once a day as a safety net) the integration fetches the individual measurements of the last 6 days from the cloud and stores them with their real measurement time as long-term statistics:
 
-- `syr_connect:<serial number>_temperature` (°C)
-- `syr_connect:<serial number>_humidity` (%)
+- `syr_connect:<serial number>_temperature` (°C), named "<device name> temperature history"
+- `syr_connect:<serial number>_humidity` (%), named "<device name> humidity history"
 
-Each measurement becomes one value; nothing is interpolated. Long-term statistics have an hourly resolution, so the measurement time is rounded down to the full hour. Show them with a **Statistics graph** card or any other card that supports statistics.
+These are **external statistics, not additional sensors**: they have no state and do not show up in the entity list or in automations. External statistics are the way Home Assistant provides for integrations to add values with a past timestamp (Opower or Tibber, for example, use them the same way). The sensor entities and their data are not modified. Use the sensor entities for the current value and for automations, and the statistics for the curve.
+
+To show the curve, add a **Statistics graph** card and select the statistics (search for "history"), or in YAML:
+
+```yaml
+type: statistics-graph
+title: Floor sensor
+chart_type: line
+period: hour
+days_to_show: 14
+stat_types:
+  - mean
+entities:
+  - syr_connect:123456789_temperature
+  - syr_connect:123456789_humidity
+```
+
+Every measurement is valid until the next one, so each hour gets the time-weighted mean of the measured values, like the statistics of a normal sensor. The curve ends at the last uploaded measurement and continues with the next upload. Nothing is interpolated.
 
 - Cloud API only (the local API has no history); the Home Assistant recorder must be enabled.
-- The cloud provides the last 6 days only. With an upload interval longer than 6 days, older measurements of an upload are lost.
-
+- The cloud provides the last 6 days only. Keep the synchronisation interval at 6 days or less, otherwise older measurements of an upload are lost. A shorter interval shows new values sooner but costs battery.
+- The statistics stay in the database when the sensor is removed. They can be deleted in the **Statistics** tab of the developer tools.
 ### Local API Update Process
 
 1. **Status Updates**: Directly fetches device status from the local endpoint

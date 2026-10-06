@@ -202,7 +202,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     if device_result:
                         all_devices.append(device_result)
 
-            # SafeFloor sensors upload several measurements at once; import them as statistics.
+            # SafeFloor sensors upload several measurements at once. Their history is stored as
+            # external statistics, the only supported way to add values with a past timestamp;
+            # the sensor entities stay unchanged (see safefloor_history.py for the reasons).
             # Failures are logged and retried later, they never fail the regular update.
             if self._api_type == API_TYPE_XML:
                 for device in all_devices:
