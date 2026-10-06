@@ -53,7 +53,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Resin Capacity ---
     "getCS1", "getCS2", "getCS3",
     # --- Salt ---
-    "getRDO", "getRES", "getSS1", "getSS2", "getSS3", "getSV1", "getSV2", "getSV3",
+    "getRDO", "getRES", "getSS1", "getSV1",
     # --- Regeneration ---
     "getCYN", "getCYT", "getINR", "getLAR", "getNOR", "getRG1", "getRPD", "getRPW",
     "getRTH", "getRTI", "getRTM", "getSCR", "getTOR",
@@ -87,7 +87,7 @@ SENSOR_KNOWN_KEYS = {
 }
 
 SELECT_KNOWN_KEYS = {
-    "getRPD", "getRTM", "getSV1", "getSV2", "getSV3", "getPRF",
+    "getRPD", "getRTM", "getSV1", "getPRF",
 }
 
 # getBUZ present but empty in the fixture - no confirmed buzzer on this model.
