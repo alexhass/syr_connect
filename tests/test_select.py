@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -25,7 +26,8 @@ from custom_components.syr_connect.select import (
 )
 
 
-def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+def _build_coordinator(hass: HomeAssistant, data: dict) -> Any:
+    """Build a real coordinator; typed Any because tests replace its methods with mocks."""
     config_data = {
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
@@ -1322,7 +1324,7 @@ async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands
     hardware with the same built-in salt level sensor, so none of them get a
     getSV1 select.
     """
-    status = {
+    status: dict[str, object] = {
         "getSRN": f"{srn_prefix}AAA00001",
         "getSV1": "5",
     }
@@ -1986,7 +1988,7 @@ async def test_prf_select_async_select_option_with_none_pa(hass: HomeAssistant) 
     coordinator.async_set_device_value.assert_not_called()
 
 
-def _build_coordinator_local(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+def _build_coordinator_local(hass: HomeAssistant, data: dict) -> Any:
     """Local helper to build a coordinator for the appended tests."""
     config_data = {
         CONF_USERNAME: "test@example.com",
