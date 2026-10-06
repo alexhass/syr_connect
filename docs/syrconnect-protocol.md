@@ -1169,9 +1169,9 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
 
 | Attribute | Values | Description |
 | --- | --- | --- |
-| t | 1, 2 | Measurement: 1 = temperature, 2 = humidity |
+| t | 1, 2 | Measurement:<br>1 = temperature<br>2 = humidity |
 | unit | "°C", "%" | **Required.** Without `unit` the response is an empty `<col />` |
-| rtyp | 1–4 | Report type: 1 = week (6-hour buckets), 2 = month (per day), 3 = year (per week), 4 = raw measurements with timestamps |
+| rtyp | 1–4 | Report type:<br>1 = week (6-hour buckets)<br>2 = month (per day)<br>3 = year (per week)<br>4 = raw measurements with timestamps |
 | lg, rg | "de", "DE" | Language and region |
 | sd, ed | | Ignored in requests. The response contains the window used: `sd` = now − 6 days, `ed` = end of today (both in server local time) |
 
@@ -1198,7 +1198,6 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
 - An unknown `dclg` returns `<sc><msg v="An error has occurred." hl="Error" mtid="1" /></sc>`.
 - Only the last 6 days are returned. With an upload interval (`getRCP`) above 6 days the older measurements of an upload can not be retrieved with `rtyp="4"`.
 - The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload, plus one follow-up 75 minutes later), after a restart and at least once a day, and writes them into the hourly long-term statistics of the `getCEL` and `getHMD` sensors (step curve, only hours already compiled by the recorder; see README).
-- Request format first seen in the ioBroker adapter [TA2k/ioBroker.syrconnectapp](https://github.com/TA2k/ioBroker.syrconnectapp); report type 4, the unit requirement and the 6-day window were found by testing a SafeFloor Connect on the CONEL CLEAR PRO cloud.
 
 ## Further information
 
