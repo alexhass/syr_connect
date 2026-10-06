@@ -280,7 +280,7 @@ def test_get_sensor_avo_value() -> None:
     assert get_sensor_avo_value(100.5) == 0.1005
 
     # Test None input
-    assert get_sensor_avo_value(None) is None
+    assert get_sensor_avo_value(None) is None  # type: ignore[arg-type]
 
     # Test fallback: extract number at start and convert to L
     assert get_sensor_avo_value("1655") == 1.655
@@ -420,7 +420,7 @@ def test_get_sensor_bat_value_variants() -> None:
 
     # Empty or invalid -> None
     assert get_sensor_bat_value("") is None
-    assert get_sensor_bat_value(None) is None
+    assert get_sensor_bat_value(None) is None  # type: ignore[arg-type]
     assert get_sensor_bat_value("not-a-number") is None
 
 
@@ -575,7 +575,7 @@ def test_get_sensor_net_value_empty_string() -> None:
 
 def test_get_sensor_net_value_none() -> None:
     """None input returns None."""
-    assert get_sensor_net_value(None) is None
+    assert get_sensor_net_value(None) is None  # type: ignore[arg-type]
 
 
 def test_get_sensor_net_value_invalid_string() -> None:
@@ -585,7 +585,7 @@ def test_get_sensor_net_value_invalid_string() -> None:
 
 def test_get_sensor_net_value_non_str_non_numeric() -> None:
     """Non-string, non-numeric types return None."""
-    assert get_sensor_net_value([1, 2, 3]) is None
+    assert get_sensor_net_value([1, 2, 3]) is None  # type: ignore[arg-type]
 
 
 def test_get_sensor_net_value_adc_format_no_v_token() -> None:
@@ -1037,7 +1037,7 @@ def test_get_default_scan_interval_entry_getattr_raises() -> None:
             raise AttributeError("no data")
 
     be = BadEntry()
-    assert helpers.get_default_scan_interval_for_entry(be) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+    assert helpers.get_default_scan_interval_for_entry(be) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT  # type: ignore[arg-type]
 
 
 def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
@@ -1165,7 +1165,7 @@ def test_get_current_mac_eip_fallback_when_wfs_unparsable() -> None:
 
 def test_get_sensor_bat_value_non_str_non_numeric_returns_none() -> None:
     """Non-string, non-numeric types should return None."""
-    assert get_sensor_bat_value([1, 2, 3]) is None
+    assert get_sensor_bat_value([1, 2, 3]) is None  # type: ignore[arg-type]
 
 
 def test_get_sensor_ab_value_unexpected_type_returns_none() -> None:
@@ -1199,8 +1199,8 @@ def test_get_current_mac_wip_present_wfs_none() -> None:
 
 def test_get_sensor_avo_value_non_string_non_numeric_returns_none() -> None:
     """Non-string, non-numeric types return None from get_sensor_avo_value (line 286)."""
-    assert get_sensor_avo_value([1, 2]) is None
-    assert get_sensor_avo_value({"v": 1}) is None
+    assert get_sensor_avo_value([1, 2]) is None  # type: ignore[arg-type]
+    assert get_sensor_avo_value({"v": 1}) is None  # type: ignore[arg-type]
 
 
 def test_get_sensor_net_value_numeric_type_error() -> None:
@@ -1257,8 +1257,8 @@ def test_get_sensor_rtm_combined_mode_exception_in_parse() -> None:
 def test_set_sensor_rtm_value_empty_option_returns_empty() -> None:
     """set_sensor_rtm_value returns [] for empty/non-string option (line 521)."""
     assert helpers.set_sensor_rtm_value({}, "") == []
-    assert helpers.set_sensor_rtm_value({}, None) == []
-    assert helpers.set_sensor_rtm_value({}, 123) == []
+    assert helpers.set_sensor_rtm_value({}, None) == []  # type: ignore[arg-type]
+    assert helpers.set_sensor_rtm_value({}, 123) == []  # type: ignore[arg-type]
 
 
 def test_get_sensor_ab_value_unexpected_exception() -> None:

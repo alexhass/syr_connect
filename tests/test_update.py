@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from time import monotonic
+from types import MappingProxyType
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -32,7 +33,7 @@ def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:
         source="user",
         entry_id=entry_id,
         unique_id=f"unique_{entry_id}",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -184,7 +185,7 @@ async def test_update_entity_in_progress_until_getnot_04() -> None:
     mock_coordinator.async_set_device_value = AsyncMock()
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN9", "Dev9", "")
-    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign]
+    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
     assert entity.in_progress is False
     assert UpdateEntityFeature.PROGRESS in entity.supported_features
 
@@ -207,7 +208,7 @@ async def test_update_entity_in_progress_times_out() -> None:
     mock_coordinator.async_set_device_value = AsyncMock()
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12", "")
-    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign]
+    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
 
     with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0):
         await entity.async_install(version=None, backup=False)
@@ -229,7 +230,7 @@ def test_update_entity_not_in_progress_without_install() -> None:
     mock_coordinator.data = {"devices": [{"id": "SN10", "name": "Dev10", "status": {"getNOT": "01"}}]}
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN10", "Dev10", "")
-    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign]
+    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
     entity._handle_coordinator_update()
 
     assert entity.in_progress is False

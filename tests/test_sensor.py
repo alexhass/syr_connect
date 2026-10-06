@@ -253,8 +253,7 @@ async def test_sensor_regeneration_weekdays_all(hass: HomeAssistant) -> None:
 
     # Should return comma-separated weekday names
     assert sensor.native_value is not None
-    assert "," in sensor.native_value
-
+    assert "," in str(sensor.native_value)
 
 async def test_sensor_regeneration_weekdays_zero(hass: HomeAssistant) -> None:
     """Test regeneration permitted weekdays with mask 0 (getRPW)."""
@@ -564,7 +563,7 @@ async def test_sensor_string_value_non_numeric(hass: HomeAssistant) -> None:
 async def test_sensor_setup_no_data(hass: HomeAssistant) -> None:
     """Test sensor setup with no coordinator data."""
     coordinator = _build_coordinator(hass, {})
-    coordinator.data = None
+    coordinator.data = None  # type: ignore[assignment]
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
@@ -1434,7 +1433,7 @@ async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
         await async_setup_entry(
             hass,
             mock_entry,
-            lambda ents: entities.extend(ents),
+            lambda ents: entities.extend(ents),  # type: ignore[arg-type]
         )
 
         # Sensor should be created when value is non-zero
@@ -2152,7 +2151,7 @@ async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     added = []
-    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
     # group keys like getPV1 should be created
     assert any(getattr(e, "_sensor_key", None) == "getPV1" for e in added)
 
@@ -2181,7 +2180,7 @@ async def test_async_setup_entry_getpa_group_false_removes_registry(hass: HomeAs
         registry = DummyRegistry()
         with patch("custom_components.syr_connect.sensor.er.async_get", return_value=registry):
             added = []
-            await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+            await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
             # If registry.async_remove was called it should have set removed=True
             assert registry.removed is True
 
@@ -2218,7 +2217,7 @@ async def test_getpa_group_true_creates_group_entities(hass: HomeAssistant) -> N
     entry.add_to_hass(hass)
 
     added: list = []
-    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
 
     # group keys for idx=1 should include getPA1, getPV1, getPT1, getPF1, getPN1, getPM1, getPW1, getPB1, getPR1
     group_expected = {"getPA1", "getPV1", "getPT1", "getPF1", "getPN1", "getPM1", "getPW1", "getPB1", "getPR1"}
@@ -2267,7 +2266,7 @@ async def test_getpa_group_false_removes_registry_entries(hass: HomeAssistant) -
 
     with patch("custom_components.syr_connect.sensor.er.async_get", return_value=dummy):
         added = []
-        await async_setup_entry(hass, entry, lambda ents: added.extend(ents))
+        await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
 
     # Ensure at least one removal was performed for group sensor
     assert len(dummy.removed) > 0
@@ -3200,7 +3199,7 @@ async def test_sensor_rpw_hass_config_no_language(hass: HomeAssistant) -> None:
     # Should handle missing language attribute gracefully
     value = sensor.native_value
     assert value is not None
-    assert "," in value
+    assert "," in str(value)
 
 
 async def test_sensor_rpw_mask_specific_bit(hass: HomeAssistant) -> None:
@@ -3223,7 +3222,7 @@ async def test_sensor_rpw_mask_specific_bit(hass: HomeAssistant) -> None:
     # Should return Sunday
     value = sensor.native_value
     assert value is not None
-    assert len(value) > 0
+    assert len(str(value)) > 0
 
 
 async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
@@ -3362,7 +3361,7 @@ async def test_sensor_icon_alarm_mapped_other_value(hass: HomeAssistant) -> None
 async def test_sensor_setup_no_coordinator_data(hass: HomeAssistant) -> None:
     """Test sensor setup with no coordinator data."""
     coordinator = _build_coordinator(hass, {})
-    coordinator.async_set_updated_data(None)
+    coordinator.async_set_updated_data(None)  # type: ignore[arg-type]
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
@@ -4408,7 +4407,7 @@ async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
         "status": {"getTYP": "120"},
     }
     for bat_pct in ["95", "85", "75", "65", "55", "45", "35", "25", "15", "5", "0"]:
-        data = {"devices": [{**base_data, "status": {**base_data["status"], "getBAT": bat_pct}}]}
+        data = {"devices": [{**base_data, "status": {**base_data["status"], "getBAT": bat_pct}}]}  # type: ignore[dict-item]
         coordinator = _build_coordinator(hass, data)
         bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
         assert bat.device_class == SensorDeviceClass.BATTERY
@@ -4974,7 +4973,7 @@ async def test_async_setup_entry_getpa_group_creation(hass: HomeAssistant) -> No
     entry.add_to_hass(hass)
 
     entities_collected = []
-    await async_setup_entry(hass, entry, lambda ents: entities_collected.extend(ents))
+    await async_setup_entry(hass, entry, lambda ents: entities_collected.extend(ents))  # type: ignore[arg-type]
 
     # Should include at least one group sensor like getPN1
     keys = [getattr(e, "_sensor_key", None) for e in entities_collected]
@@ -4989,9 +4988,9 @@ def test_icon_attribute_exists_in_dict() -> None:
         pass
 
     sensor = MockSensorEntity()
-    sensor._attr_icon = "mdi:water-percent"
+    sensor._attr_icon = "mdi:water-percent"  # type: ignore[attr-defined]
 
-    base_icon_old = sensor._attr_icon
+    base_icon_old = sensor._attr_icon  # type: ignore[attr-defined]
     assert base_icon_old == "mdi:water-percent"
 
     base_icon_new = getattr(sensor, "_attr_icon", None)
@@ -7258,7 +7257,7 @@ async def test_sensor_native_value_rpw_exception_in_loop(hass: HomeAssistant) ->
         value = sensor.native_value
         # Should fallback to strftime and return weekday names
         assert value is not None
-        assert "Mon" in value or "Mo" in value  # Depends on system locale
+        assert "Mon" in str(value) or "Mo" in str(value)  # Depends on system locale
 
 
 async def test_sensor_native_value_rpw_hass_config_exception(hass: HomeAssistant) -> None:
@@ -8777,7 +8776,7 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
     assert avo.native_value is None
 
     vol = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
-    assert abs(float(vol.native_value) - 6.53) < 0.001
+    assert abs(float(vol.native_value) - 6.53) < 0.001  # type: ignore[arg-type]
 
     # end
 
