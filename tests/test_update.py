@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from time import monotonic
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -15,6 +16,7 @@ from homeassistant.exceptions import HomeAssistantError
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.update import (
     INSTALL_TIMEOUT_SECONDS,
+    NEW_VERSION_PLACEHOLDER,
     SyrConnectFirmwareUpdate,
     async_setup_entry,
 )
@@ -103,7 +105,7 @@ def test_update_entity_update_available() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN4", "Dev4", "")
 
     assert entity.installed_version == "MuCo V.2.14"
-    assert entity.latest_version != entity.installed_version
+    assert entity.latest_version == NEW_VERSION_PLACEHOLDER
 
 
 def test_update_entity_update_available_no_installed_version() -> None:
@@ -115,7 +117,7 @@ def test_update_entity_update_available_no_installed_version() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN5", "Dev5", "")
 
     assert entity.installed_version is None
-    assert entity.latest_version is not None
+    assert entity.latest_version == NEW_VERSION_PLACEHOLDER
 
 
 def test_update_entity_naming_uses_translation_key() -> None:
@@ -231,6 +233,20 @@ def test_update_entity_not_in_progress_without_install() -> None:
     entity._handle_coordinator_update()
 
     assert entity.in_progress is False
+
+
+def test_update_entity_available_while_installing_even_if_device_offline() -> None:
+    """The device is offline while flashing; the entity must stay available during install."""
+    device = {"id": "SN13", "name": "Dev13", "status": {"getNOT": "01"}, "available": False}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    mock_coordinator.last_update_success = False
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN13", "Dev13", "")
+    assert entity.available is False
+
+    entity._install_started = monotonic()
+    assert entity.available is True
 
 
 def test_update_entity_available_property() -> None:

@@ -32,6 +32,9 @@ _LOGGER = logging.getLogger(__name__)
 # Give up showing progress if getNOT never switches to "04".
 INSTALL_TIMEOUT_SECONDS = 600
 
+# Shown as "latest version" because the API never reports the real new version number.
+NEW_VERSION_PLACEHOLDER = "New version available"
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -128,6 +131,9 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
+        # The device goes offline while flashing; stay available so the progress bar remains visible.
+        if self.in_progress:
+            return True
         if not self.coordinator.last_update_success:
             return False
         for device in self.coordinator.data.get("devices", []):
@@ -146,17 +152,16 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         """Return the latest available firmware version.
 
         The API only ever reports a notification code (getNOT), never the actual
-        new version number. When getNOT signals "new_software_available", return a
-        placeholder that differs from installed_version so the entity reports an
-        update as available; otherwise report the installed version unchanged
-        (no update pending).
+        new version number. When getNOT signals "new_software_available", return
+        NEW_VERSION_PLACEHOLDER (never equal to installed_version) so the entity
+        reports an update as available; otherwise report the installed version
+        unchanged (no update pending).
         """
         status = self._get_status()
-        installed = self.installed_version
         mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
         if mapped == "new_software_available":
-            return f"{installed} (update available)" if installed else "update available"
-        return installed
+            return NEW_VERSION_PLACEHOLDER
+        return self.installed_version
 
     def _install_timed_out(self) -> bool:
         return self._install_started is not None and monotonic() - self._install_started >= INSTALL_TIMEOUT_SECONDS
@@ -172,7 +177,9 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         if self._install_started is not None:
             status = self._get_status()
             mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
+            _LOGGER.debug("Firmware update %s in progress, getNOT=%s", self._device_id, status.get("getNOT"))
             if mapped == "new_software_installed":
+                _LOGGER.debug("Firmware update %s finished (getNOT=04)", self._device_id)
                 self._install_started = None
             elif self._install_timed_out():
                 _LOGGER.warning(
@@ -186,6 +193,7 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         """Trigger a firmware update by sending setUPG (always with an empty value)."""
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        _LOGGER.debug("Triggering firmware update for %s (getNOT=%s)", self._device_id, self._get_status().get("getNOT"))
         self._install_started = monotonic()
         try:
             await coordinator.async_set_device_value(self._device_id, "setUPG", "")
