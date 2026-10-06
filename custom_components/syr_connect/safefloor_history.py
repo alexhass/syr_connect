@@ -47,18 +47,17 @@ README section "SafeFloor Measurement History".
 
 How the rows are built
 ----------------------
-Long-term statistics have an hourly resolution. Every measurement is valid until
-the next one (step curve), and every hour from the first to the last measurement
-gets the time-weighted mean and the min/max of the values valid in it - the same
-way the recorder compiles the statistics of a sensor entity from its states.
-Nothing is interpolated or extrapolated: hours before the first and after the
-last measurement are left out and follow with the next upload. Importing the
-same 6-day window again overwrites the same rows.
+Long-term statistics have an hourly resolution. Every hour from the first to the
+last measurement gets a row: an hour that contains measurements gets their mean,
+min and max (one measurement: its value), an hour without a measurement takes
+over the row of the hour before exactly. Nothing is interpolated or
+extrapolated: hours after the last measurement are left out and follow with the
+next upload. Importing the same 6-day window again overwrites the same rows.
 """
 from __future__ import annotations
 
 import logging
-from bisect import bisect_right
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -129,47 +128,28 @@ def safefloor_statistic_id(serial_number: str, key: str) -> str:
 
 
 def hourly_statistics(measurements: list[tuple[datetime, float]]) -> list[StatisticData]:
-    """Return one row per hour from the first to the last measurement (step curve).
+    """Return one row per hour from the first to the last measurement.
 
-    Every measurement is valid until the next one, the last one until the end of
-    its hour. A row holds the time-weighted mean and the min/max of the values
-    valid during that hour. Every hour needs a row: the statistics graph card
-    draws a gap between rows that do not follow each other, so one row per
-    measurement (e.g. every 6 hours) would only be shown as short dashes.
-
-    The hour of the first measurement is skipped unless the measurement is at the
-    full hour, because the value before it is not known.
+    An hour that contains measurements gets their mean, min and max. An hour
+    without a measurement takes over the row of the hour before exactly. Every
+    hour needs a row: the statistics graph card draws a gap between rows that do
+    not follow each other, so one row per measurement (e.g. every 6 hours) would
+    only be shown as short dashes.
     """
-    points = sorted(measurements)
-    if not points:
+    hours: dict[datetime, list[float]] = defaultdict(list)
+    for timestamp, value in measurements:
+        hours[timestamp.replace(minute=0, second=0, microsecond=0)].append(value)
+    if not hours:
         return []
-    times = [timestamp for timestamp, _ in points]
-    start = times[0].replace(minute=0, second=0, microsecond=0)
-    if start < times[0]:
-        start += _HOUR
-    last_hour = times[-1].replace(minute=0, second=0, microsecond=0)
     result: list[StatisticData] = []
+    start, last_hour = min(hours), max(hours)
+    mean = low = high = 0.0
     while start <= last_hour:
-        end = start + _HOUR
-        # Measurement valid at the start of the hour, then all measurements within the hour
-        index = bisect_right(times, start) - 1
-        weighted_sum = 0.0
-        values: list[float] = []
-        while index < len(points) and times[index] < end:
-            segment_start = max(times[index], start)
-            segment_end = min(times[index + 1], end) if index + 1 < len(points) else end
-            weighted_sum += points[index][1] * (segment_end - segment_start).total_seconds()
-            values.append(points[index][1])
-            index += 1
-        result.append(
-            StatisticData(
-                start=start,
-                mean=weighted_sum / _HOUR.total_seconds(),
-                min=min(values),
-                max=max(values),
-            )
-        )
-        start = end
+        if values := hours.get(start):
+            mean, low, high = sum(values) / len(values), min(values), max(values)
+        # An hour without a measurement takes over the values of the hour before exactly
+        result.append(StatisticData(start=start, mean=mean, min=low, max=high))
+        start += _HOUR
     return result
 
 

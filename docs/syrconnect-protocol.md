@@ -1198,7 +1198,7 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
 
 - An unknown `dclg` returns `<sc><msg v="An error has occurred." hl="Error" mtid="1" /></sc>`.
 - Only the last 6 days are returned. With an upload interval (`getRCP`) above 6 days the older measurements of an upload can not be retrieved with `rtyp="4"`.
-- The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload), after a restart and at least once a day, and imports them as external statistics `syr_connect:<serial>_temperature` / `syr_connect:<serial>_humidity` (step curve with one row per hour, see README). The sensor entities themselves keep showing the last uploaded value.
+- The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload), after a restart and at least once a day, and imports them as external statistics `syr_connect:<serial>_temperature` / `syr_connect:<serial>_humidity` (one row per hour: the measured value, hours without a measurement take over the hour before; see README). The sensor entities themselves keep showing the last uploaded value.
 - Request format first seen in the ioBroker adapter [TA2k/ioBroker.syrconnectapp](https://github.com/TA2k/ioBroker.syrconnectapp); report type 4, the unit requirement and the 6-day window were found by testing a SafeFloor Connect on the CONEL CLEAR PRO cloud.
 
 ## Further information
