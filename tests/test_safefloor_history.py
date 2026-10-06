@@ -231,35 +231,33 @@ def _row(start: str, mean: float, low: float, high: float) -> dict:
     return {"start": _utc(start), "mean": pytest.approx(mean), "min": low, "max": high}
 
 
-def test_hourly_statistics_step_curve() -> None:
-    """Every hour from the first to the last measurement gets a row, each measurement is valid until the next."""
+def test_hourly_statistics_takes_over_the_hour_before() -> None:
+    """Every hour from the first to the last measurement gets a row; hours without a measurement repeat the hour before."""
     rows = hourly_statistics([(_utc("2026-09-26 14:45:27"), 14.6), (_utc("2026-09-26 20:45:27"), 14.9)])
-    # 14:00 started before the first measurement, 20:00 is the hour of the last one
-    assert [row["start"].hour for row in rows] == list(range(15, 21))
-    assert rows[0] == _row("2026-09-26 15:00:00", 14.6, 14.6, 14.6)
-    assert rows[4] == _row("2026-09-26 19:00:00", 14.6, 14.6, 14.6)
-    # 20:00-20:45:27 still 14.6, then 14.9 until the end of the hour (time-weighted mean)
-    assert rows[5] == _row("2026-09-26 20:00:00", (2727 * 14.6 + 873 * 14.9) / 3600, 14.6, 14.9)
+    assert [row["start"].hour for row in rows] == list(range(14, 21))
+    assert rows[0] == _row("2026-09-26 14:00:00", 14.6, 14.6, 14.6)
+    assert rows[5] == _row("2026-09-26 19:00:00", 14.6, 14.6, 14.6)
+    # The hour of the second measurement gets exactly the measured value, nothing is mixed
+    assert rows[6] == _row("2026-09-26 20:00:00", 14.9, 14.9, 14.9)
 
 
 def test_hourly_statistics_several_measurements_within_an_hour() -> None:
-    """Short measurement intervals: all measurements of an hour count with their duration."""
+    """Short measurement intervals: measurements of the same hour are combined, the next hour repeats the row."""
     rows = hourly_statistics([
-        (_utc("2026-09-26 14:30:00"), 16.0),
-        (_utc("2026-09-26 13:50:00"), 12.0),
-        (_utc("2026-09-26 14:00:00"), 14.0),
+        (_utc("2026-09-26 16:10:00"), 18.0),
+        (_utc("2026-09-26 14:35:00"), 16.0),
+        (_utc("2026-09-26 14:05:00"), 14.0),
     ])
-    assert rows == [_row("2026-09-26 14:00:00", 15.0, 14.0, 16.0)]
+    assert rows == [
+        _row("2026-09-26 14:00:00", 15.0, 14.0, 16.0),
+        _row("2026-09-26 15:00:00", 15.0, 14.0, 16.0),
+        _row("2026-09-26 16:00:00", 18.0, 18.0, 18.0),
+    ]
 
 
-def test_hourly_statistics_first_measurement_at_full_hour() -> None:
-    """A measurement at the full hour is known for the whole hour."""
-    assert hourly_statistics([(_utc("2026-09-26 14:00:00"), 14.0)]) == [_row("2026-09-26 14:00:00", 14.0, 14.0, 14.0)]
-
-
-def test_hourly_statistics_without_complete_hour() -> None:
-    """A single measurement within an hour gives no row yet; no measurements, no rows."""
-    assert hourly_statistics([(_utc("2026-09-26 14:45:27"), 14.6)]) == []
+def test_hourly_statistics_single_and_no_measurement() -> None:
+    """One measurement gives one row; no measurements, no rows."""
+    assert hourly_statistics([(_utc("2026-09-26 14:45:27"), 14.6)]) == [_row("2026-09-26 14:00:00", 14.6, 14.6, 14.6)]
     assert hourly_statistics([]) == []
 
 
@@ -276,7 +274,7 @@ def test_import_metadata(hass: HomeAssistant) -> None:
         _fixture("SyrSafeFloor_GetSafeFloorStatistics_Humidity.xml")
     )
     with patch("custom_components.syr_connect.safefloor_history.async_add_external_statistics") as mock_add:
-        assert async_import_safefloor_history(hass, SERIAL, "Floor", "humidity", "%", measurements) == 48
+        assert async_import_safefloor_history(hass, SERIAL, "Floor", "humidity", "%", measurements) == 49
 
     _, metadata, statistics = mock_add.call_args.args
     assert metadata["statistic_id"] == "syr_connect:123456789_humidity"
@@ -286,9 +284,9 @@ def test_import_metadata(hass: HomeAssistant) -> None:
     assert metadata["unit_class"] == "unitless"
     assert metadata["has_sum"] is False
     assert metadata["mean_type"] == StatisticMeanType.ARITHMETIC
-    # 26.09. 15:00 (first complete hour) to 28.09. 14:00 (hour of the last measurement)
-    assert len(statistics) == 48
-    assert statistics[0]["start"] == _utc("2026-09-26 15:00:00")
+    # 26.09. 14:00 (hour of the first measurement) to 28.09. 14:00 (hour of the last measurement)
+    assert len(statistics) == 49
+    assert statistics[0]["start"] == _utc("2026-09-26 14:00:00")
     assert statistics[-1]["start"] == _utc("2026-09-28 14:00:00")
 
 

@@ -318,7 +318,7 @@ entities:
   - syr_connect:123456789_humidity
 ```
 
-Every measurement is valid until the next one, so each hour gets the time-weighted mean of the measured values, like the statistics of a normal sensor. The curve ends at the last uploaded measurement and continues with the next upload. Nothing is interpolated.
+An hour with a measurement gets the measured value, an hour without a measurement takes over the value of the hour before. The curve ends at the last uploaded measurement and continues with the next upload. Nothing is interpolated.
 
 - Cloud API only (the local API has no history); the Home Assistant recorder must be enabled.
 - The cloud provides the last 6 days only. Keep the synchronisation interval at 6 days or less, otherwise older measurements of an upload are lost. A shorter interval shows new values sooner but costs battery.

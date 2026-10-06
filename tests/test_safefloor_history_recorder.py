@@ -45,7 +45,7 @@ async def _hourly_means(hass: HomeAssistant, statistic_id: str, start: datetime)
 
 
 async def test_import_into_recorder(recorder_mock: Recorder, hass: HomeAssistant) -> None:
-    """The measurements end up in the long-term statistics as a continuous step curve."""
+    """The measurements end up in the long-term statistics, one row for every hour without gaps."""
     measurements = ResponseParser.parse_safefloor_statistics_response(
         (FIXTURES / "SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml").read_text(encoding="utf-8")
     )
@@ -55,12 +55,13 @@ async def test_import_into_recorder(recorder_mock: Recorder, hass: HomeAssistant
     await async_wait_recording_done(hass)
 
     rows = await _hourly_means(hass, STATISTIC_ID, _utc("2026-09-26 00:00:00"))
-    # One row for every hour, no gaps: 26.09. 15:00 to 28.09. 14:00
-    assert len(rows) == 48
-    assert rows[0] == ("26. 15:00", 14.6)
-    assert rows[5] == ("26. 20:00", round((2727 * 14.6 + 873 * 14.9) / 3600, 3))
-    assert rows[6] == ("26. 21:00", 14.9)
-    assert rows[-1] == ("28. 14:00", round((2727 * 15.5 + 873 * 15.8) / 3600, 3))
+    # One row for every hour, no gaps: 26.09. 14:00 to 28.09. 14:00
+    assert len(rows) == 49
+    assert rows[0] == ("26. 14:00", 14.6)
+    # Hours without a measurement take over the hour before, the next measurement hour has its value
+    assert rows[5] == ("26. 19:00", 14.6)
+    assert rows[6] == ("26. 20:00", 14.9)
+    assert rows[-1] == ("28. 14:00", 15.8)
 
 
 async def test_import_does_not_interfere_with_the_recorder(
@@ -100,6 +101,6 @@ async def test_import_does_not_interfere_with_the_recorder(
     assert await _hourly_means(hass, STATISTIC_ID, start) == [
         ("02. 09:00", 16.0),
         ("02. 10:00", 16.0),
-        ("02. 11:00", round((600 * 16.0 + 3000 * 18.0) / 3600, 3)),
+        ("02. 11:00", 18.0),
     ]
     assert DUPLICATE_WARNING not in caplog.text
