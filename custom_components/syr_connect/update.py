@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import logging
+from time import monotonic
 from typing import Any, cast
 
 from homeassistant.components.update import UpdateDeviceClass, UpdateEntity, UpdateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -27,6 +28,9 @@ from .helpers import (
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
+
+# Give up showing progress if getNOT never switches to "04".
+INSTALL_TIMEOUT_SECONDS = 600
 
 
 async def async_setup_entry(
@@ -78,10 +82,13 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
     shared identically by 8 device base classes (SafeTech, SafeFloor, LEX Plus,
     All-in-One+, MultiController, HygBox, Dosing Pump, Trio LS); it is always sent
     with an empty value (see docs/syrconnect-protocol.md).
+
+    After install is triggered, `in_progress` stays True until getNOT switches to
+    "04" (new_software_installed) or INSTALL_TIMEOUT_SECONDS have passed.
     """
 
     _attr_device_class = UpdateDeviceClass.FIRMWARE
-    _attr_supported_features = UpdateEntityFeature.INSTALL
+    _attr_supported_features = UpdateEntityFeature.INSTALL | UpdateEntityFeature.PROGRESS
 
     def __init__(
         self,
@@ -96,6 +103,7 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         self._device_id = device_id
         self._device_name = device_name
         self._project_id = project_id
+        self._install_started: float | None = None
 
         # "_update" suffix keeps this apart from the existing getNOT sensor's
         # unique_id, mirroring switch.py's "_switch" suffix convention.
@@ -150,10 +158,37 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
             return f"{installed} (update available)" if installed else "update available"
         return installed
 
+    def _install_timed_out(self) -> bool:
+        return self._install_started is not None and monotonic() - self._install_started >= INSTALL_TIMEOUT_SECONDS
+
+    @property
+    def in_progress(self) -> bool:
+        """Return True from install trigger until getNOT reports "04" or the timeout expires."""
+        return self._install_started is not None and not self._install_timed_out()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Finish the progress state on getNOT == "04" (new_software_installed) or timeout."""
+        if self._install_started is not None:
+            status = self._get_status()
+            mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
+            if mapped == "new_software_installed":
+                self._install_started = None
+            elif self._install_timed_out():
+                _LOGGER.warning(
+                    "Firmware update for %s did not report completion (getNOT=04) within %d s",
+                    self._device_id,
+                    INSTALL_TIMEOUT_SECONDS,
+                )
+                self._install_started = None
+        super()._handle_coordinator_update()
+
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         """Trigger a firmware update by sending setUPG (always with an empty value)."""
         coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        self._install_started = monotonic()
         try:
             await coordinator.async_set_device_value(self._device_id, "setUPG", "")
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+            self._install_started = None
             raise HomeAssistantError(f"Failed to trigger firmware update: {err}") from err

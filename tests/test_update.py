@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import logging
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from homeassistant.components.update import UpdateEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.update import SyrConnectFirmwareUpdate, async_setup_entry
+from custom_components.syr_connect.update import (
+    INSTALL_TIMEOUT_SECONDS,
+    SyrConnectFirmwareUpdate,
+    async_setup_entry,
+)
 
 
 def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:
@@ -165,6 +170,67 @@ async def test_update_entity_async_install_wraps_errors() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
     with pytest.raises(HomeAssistantError):
         await entity.async_install(version=None, backup=False)
+
+    assert entity.in_progress is False
+
+
+async def test_update_entity_in_progress_until_getnot_04() -> None:
+    """in_progress is True after install until getNOT switches to '04'."""
+    status = {"getNOT": "01", "getVER": "MuCo V.2.14"}
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [{"id": "SN9", "name": "Dev9", "status": status}]}
+    mock_coordinator.async_set_device_value = AsyncMock()
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN9", "Dev9", "")
+    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign]
+    assert entity.in_progress is False
+    assert UpdateEntityFeature.PROGRESS in entity.supported_features
+
+    await entity.async_install(version=None, backup=False)
+    assert entity.in_progress is True
+
+    # Still installing: getNOT stays at "01".
+    entity._handle_coordinator_update()
+    assert entity.in_progress is True
+
+    status["getNOT"] = "04"
+    entity._handle_coordinator_update()
+    assert entity.in_progress is False
+
+
+async def test_update_entity_in_progress_times_out() -> None:
+    """in_progress ends after INSTALL_TIMEOUT_SECONDS even if getNOT never reaches '04'."""
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]}
+    mock_coordinator.async_set_device_value = AsyncMock()
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12", "")
+    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign]
+
+    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0):
+        await entity.async_install(version=None, backup=False)
+        assert entity.in_progress is True
+
+    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + INSTALL_TIMEOUT_SECONDS - 1):
+        assert entity.in_progress is True
+
+    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + INSTALL_TIMEOUT_SECONDS):
+        assert entity.in_progress is False
+        entity._handle_coordinator_update()
+
+    assert entity._install_started is None
+
+
+def test_update_entity_not_in_progress_without_install() -> None:
+    """getNOT == '01' alone does not show progress; only a triggered install does."""
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [{"id": "SN10", "name": "Dev10", "status": {"getNOT": "01"}}]}
+
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN10", "Dev10", "")
+    entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign]
+    entity._handle_coordinator_update()
+
+    assert entity.in_progress is False
 
 
 def test_update_entity_available_property() -> None:
