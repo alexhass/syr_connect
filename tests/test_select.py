@@ -736,7 +736,7 @@ async def test_async_setup_entry_zero_sv_values_always_shown(hass: HomeAssistant
                     "getSV1": "0",  # Zero value should still be shown
                     "getSV2": "0",  # Zero value should also be shown
                     "getSV3": "5",  # Non-zero should be created
-                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume set
+                    "getCNA": "L10",  # model with maximum_salt_volume set and SV2/SV3 keys
                 },
             }
         ]
@@ -1061,7 +1061,7 @@ async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant, creat
                 "status": {
                     "getSV1": "",  # Empty value should be skipped
                     "getSV2": "5",
-                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume set
+                    "getCNA": "L10",  # model with maximum_salt_volume set and SV2/SV3 keys
                 },
             }
         ]
@@ -1410,7 +1410,7 @@ async def test_async_setup_entry_multiple_sv_keys(hass: HomeAssistant, create_mo
                     "getSV1": "5",
                     "getSV2": "10",
                     "getSV3": "15",
-                    "getCNA": "LEXplus10S",  # model with maximum_salt_volume set
+                    "getCNA": "L10",  # model with maximum_salt_volume set and SV2/SV3 keys
                 },
             }
         ]
