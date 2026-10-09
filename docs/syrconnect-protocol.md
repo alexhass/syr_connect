@@ -991,7 +991,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | getALA_m | "A5" | Last alarm message codes |
 | f | "0" | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL) |
 | b | "0" | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL) |
-| m | "ff:ff:eb:52:ee:12" | CI metadata attribute — MAC address of device (Safe-T+) |
+| m | "ff:ff:eb:XX:XX:XY" | CI metadata attribute — MAC address of device (Safe-T+) |
 
 ### MuCo devices
 
