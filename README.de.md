@@ -140,8 +140,8 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 
 ### Nicht unterstützte Geräte
 
-- Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um ein umbenanntes SaoCal-Gerät.
-- Husty SaoCal-Geräte. Siehe https://github.com/trafopowielacz/husty_integration_home_assistant
+- Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um ein umbenanntes Husty SaoCal-Gerät.
+- Husty SaoCal-Geräte. Siehe [husty_integration_home_assistant](https://github.com/trafopowielacz/husty_integration_home_assistant)
 
 ### Unterstützte Funktionen
 
