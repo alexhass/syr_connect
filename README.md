@@ -291,7 +291,40 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 2. **Device Discovery**: Retrieves all projects and devices associated with your account
 3. **Status Updates**: For each device, fetches current status including all sensor values
 4. **Entity Updates**: Updates all Home Assistant entities with the latest values
+5. **SafeFloor Measurement History**: After each new upload of a SafeFloor sensor, stores its individual measurements as long-term statistics (see below)
 
+### SafeFloor Measurement History
+
+SafeFloor floor sensors run on batteries. They measure temperature and humidity regularly (**Measurement interval**, e.g. 6 hours) but connect to the cloud only every few days (**Synchronisation interval**, e.g. 4 days). Home Assistant receives new values only with each upload, so the history of the temperature and humidity sensors shows a flat line for days and then a jump. This is expected: Home Assistant can not change the past states of an entity.
+
+The real curve is stored separately. Once per new upload the integration fetches the individual measurements of the last 6 days from the cloud and stores them with their real measurement time as long-term statistics:
+
+- `syr_connect:<serial number>_temperature` (°C), named "<device name> temperature history"
+- `syr_connect:<serial number>_humidity` (%), named "<device name> humidity history"
+
+These are **external statistics, not additional sensors**: they have no state and do not show up in the entity list or in automations. External statistics are the way Home Assistant provides for integrations to add values with a past timestamp (Opower or Tibber, for example, use them the same way). The sensor entities and their data are not modified. Use the sensor entities for the current value and for automations, and the statistics for the curve.
+
+To show the curve, add a **Statistics graph** card and select the statistics (search for "history"), or in YAML:
+
+```yaml
+type: statistics-graph
+title: Floor sensor
+chart_type: line
+period: hour
+days_to_show: 14
+stat_types:
+  - mean
+entities:
+  - syr_connect:123456789_temperature
+  - syr_connect:123456789_humidity
+```
+
+An hour with a measurement gets the measured value, an hour without a measurement takes over the value of the hour before. The curve ends at the last uploaded measurement and continues with the next upload. Nothing is interpolated.
+
+- Cloud API only (the local API has no history); the Home Assistant recorder must be enabled.
+- Few cloud requests: a new upload is recognised by the upload timestamp in the regular status, without an extra request. Each new upload costs 2 requests (temperature and humidity). Nothing is fetched on a schedule or again after a restart of Home Assistant. A failed fetch is retried after 3 hours, then the delay doubles up to 24 hours.
+- The cloud provides the last 6 days only. Keep the synchronisation interval at 6 days or less, otherwise older measurements of an upload are lost. A shorter interval shows new values sooner but costs battery.
+- The statistics stay in the database when the sensor is removed. They can be deleted in the **Statistics** tab of the developer tools.
 ### Local API Update Process
 
 1. **Status Updates**: Directly fetches device status from the local endpoint

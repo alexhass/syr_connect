@@ -213,6 +213,41 @@ class PayloadBuilder:
         payload = base_payload.replace('></dcl>', f'>{stat_payload}</dcl>')
         return self._add_checksum(payload)
 
+    def build_safefloor_statistics_payload(
+        self,
+        session_id: str,
+        device_id: str,
+        measurement_type: int,
+        unit: str,
+        report_type: int,
+    ) -> str:
+        """Build SafeFloor statistics (GetSafeFloorStatistics) XML payload with checksum.
+
+        Args:
+            session_id: Active session ID
+            device_id: Device ID to query (UUID)
+            measurement_type: 1 = temperature, 2 = humidity
+            unit: Unit of the measurement ("°C" or "%"). Required by the API,
+                without it the response is empty.
+            report_type: 1 = week, 2 = month, 3 = year (aggregated),
+                4 = raw measurements of the last 6 days
+
+        Returns:
+            XML string with checksum
+        """
+        lang, reg = self._compute_locale_lang_reg()
+        payload = (
+            f'<?xml version="1.0" encoding="utf-8"?><sc>'
+            f'<si v="{escape(self.app_version)}"/>'
+            f'<us ug="{escape(session_id)}"/>'
+            f'<col><dcl dclg="{escape(device_id)}">'
+            f'<sh t="{int(measurement_type)}" rtyp="{int(report_type)}" lg="{escape(lang)}" rg="{escape(reg)}" '
+            f'unit="{escape(unit)}"/>'
+            f'</dcl></col>'
+            f'</sc>'
+        )
+        return self._add_checksum(payload)
+
     def _add_checksum(self, payload: str) -> str:
         """Add checksum to XML payload.
 
