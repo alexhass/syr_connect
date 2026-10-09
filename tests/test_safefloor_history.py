@@ -8,23 +8,31 @@ import pytest
 from homeassistant.components.recorder.models import StatisticMeanType
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.syr_connect import async_remove_entry
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
-from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.exceptions import SyrConnectConnectionError
-from custom_components.syr_connect.payload_builder import PayloadBuilder
-from custom_components.syr_connect.response_parser import ResponseParser
-from custom_components.syr_connect.safefloor_history import (
+from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.coordinator import (
     SafeFloorHistoryState,
+    SyrConnectDataUpdateCoordinator,
     async_import_safefloor_history,
     hourly_statistics,
     safefloor_statistic_id,
 )
+from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+from custom_components.syr_connect.payload_builder import PayloadBuilder
+from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURES = Path(__file__).parent / "fixtures/xml"
 DCLG = "7605aa61-73b8-ef11-800c-be3af2b6059f"
 SERIAL = "123456789"
+ENTRY_ID = "entry1"
+STORE_KEY = f"syr_connect.safefloor_history.{ENTRY_ID}"
+UPLOAD_1 = "28.09.2026 14:55:43"
+UPLOAD_2 = "02.10.2026 14:55:40"
+UPLOAD_3 = "06.10.2026 14:55:38"
 
 
 def _fixture(name: str) -> str:
@@ -190,32 +198,48 @@ async def test_api_get_safefloor_history_relogin(api_client: SyrConnectXmlAPI) -
 # --- Fetch state ------------------------------------------------------------------------------
 
 
-def test_history_state_is_due() -> None:
-    """Fetch on first run, on a new upload and after 24 h; wait 30 min after a failure."""
+def test_history_state_once_per_upload() -> None:
+    """Every upload is fetched once; the same upload never again, there is no fetch on a schedule."""
     now = datetime(2026, 10, 2, 12, 0, tzinfo=UTC)
     state = SafeFloorHistoryState()
-    assert state.is_due("28.09.2026 14:55:43", now)
+    assert state.is_due(UPLOAD_1, now)
 
-    state.mark_imported("28.09.2026 14:55:43", now)
-    assert not state.is_due("28.09.2026 14:55:43", now + timedelta(hours=23))
-    assert state.is_due("28.09.2026 14:55:43", now + timedelta(hours=24))
-    assert state.is_due("02.10.2026 14:55:40", now + timedelta(minutes=1))
-
-    state.mark_failed(now)
-    assert not state.is_due("02.10.2026 14:55:40", now + timedelta(minutes=29))
-    assert state.is_due("02.10.2026 14:55:40", now + timedelta(minutes=30))
-
-    state.mark_imported("02.10.2026 14:55:40", now + timedelta(minutes=30))
-    assert state.retry_at is None
+    state.mark_imported(UPLOAD_1)
+    assert not state.is_due(UPLOAD_1, now + timedelta(days=30))
+    assert state.is_due(UPLOAD_2, now)
 
 
-def test_history_state_without_upload_marker() -> None:
-    """Without getSRN timestamp the history is fetched once a day."""
+def test_history_state_retry_delays() -> None:
+    """A failed fetch is retried after 3 h, then the delay doubles up to 24 h; a new upload starts over."""
     now = datetime(2026, 10, 2, 12, 0, tzinfo=UTC)
-    state = SafeFloorHistoryState()
-    state.mark_imported(None, now)
-    assert not state.is_due(None, now + timedelta(hours=12))
-    assert state.is_due(None, now + timedelta(hours=24))
+    state = SafeFloorHistoryState(upload_marker=UPLOAD_1)
+    attempt = now
+    delays = []
+    for _ in range(6):
+        state.mark_failed(UPLOAD_2, attempt)
+        assert state.retry_at is not None
+        delays.append(state.retry_at - attempt)
+        assert not state.is_due(UPLOAD_2, state.retry_at - timedelta(seconds=1))
+        assert state.is_due(UPLOAD_2, state.retry_at)
+        attempt = state.retry_at
+    assert delays == [timedelta(hours=hours) for hours in (3, 6, 12, 24, 24, 24)]
+
+    # A new upload is fetched at once and starts with the first delay again
+    assert state.is_due(UPLOAD_3, now)
+    state.mark_failed(UPLOAD_3, attempt)
+    assert state.failures == 1
+    assert state.retry_at == attempt + timedelta(hours=3)
+
+    state.mark_imported(UPLOAD_3)
+    assert state == SafeFloorHistoryState(upload_marker=UPLOAD_3)
+
+
+def test_history_state_store_roundtrip() -> None:
+    """The state survives the store (restart of Home Assistant)."""
+    state = SafeFloorHistoryState(UPLOAD_1, UPLOAD_2, 2, datetime(2026, 10, 2, 18, 0, tzinfo=UTC))
+    assert SafeFloorHistoryState.from_dict(state.as_dict()) == state
+    assert SafeFloorHistoryState.from_dict(SafeFloorHistoryState().as_dict()) == SafeFloorHistoryState()
+    assert SafeFloorHistoryState.from_dict({}) == SafeFloorHistoryState()
 
 
 # --- Statistics -------------------------------------------------------------------------------
@@ -263,7 +287,7 @@ def test_hourly_statistics_single_and_no_measurement() -> None:
 
 def test_import_without_measurements(hass: HomeAssistant) -> None:
     """Nothing is imported without measurements."""
-    with patch("custom_components.syr_connect.safefloor_history.async_add_external_statistics") as mock_add:
+    with patch("custom_components.syr_connect.coordinator.async_add_external_statistics") as mock_add:
         assert async_import_safefloor_history(hass, SERIAL, "Floor", "temperature", "°C", []) == 0
     mock_add.assert_not_called()
 
@@ -273,7 +297,7 @@ def test_import_metadata(hass: HomeAssistant) -> None:
     measurements = ResponseParser.parse_safefloor_statistics_response(
         _fixture("SyrSafeFloor_GetSafeFloorStatistics_Humidity.xml")
     )
-    with patch("custom_components.syr_connect.safefloor_history.async_add_external_statistics") as mock_add:
+    with patch("custom_components.syr_connect.coordinator.async_add_external_statistics") as mock_add:
         assert async_import_safefloor_history(hass, SERIAL, "Floor", "humidity", "%", measurements) == 49
 
     _, metadata, statistics = mock_add.call_args.args
@@ -320,19 +344,23 @@ async def _create_coordinator(
             60,
         )
     coordinator.config_entry = entry
+    coordinator.entry_id = ENTRY_ID
     return coordinator, mock_api
 
 
+def _stored(upload: str | None = None, failed: str | None = None, failures: int = 0, retry_at=None) -> dict:
+    return {"upload_marker": upload, "failed_marker": failed, "failures": failures, "retry_at": retry_at}
+
+
 async def test_coordinator_imports_history_once_per_upload(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, hass_storage: dict, setup_in_progress_config_entry
 ) -> None:
-    """History is fetched on the first update and again only after a new upload."""
+    """History is fetched once per upload, also not again after a restart of Home Assistant."""
     hass.config.components.add("recorder")
     measurements = [(_utc("2026-09-28 14:45:27"), 15.8)]
     history = AsyncMock(return_value=measurements)
-    status = _status("28.09.2026 14:55:43")
     coordinator, mock_api = await _create_coordinator(
-        hass, setup_in_progress_config_entry, _safefloor_device(), status, history
+        hass, setup_in_progress_config_entry, _safefloor_device(), _status(UPLOAD_1), history
     )
 
     with patch("custom_components.syr_connect.coordinator.async_import_safefloor_history", return_value=1) as mock_import:
@@ -343,26 +371,36 @@ async def test_coordinator_imports_history_once_per_upload(
             (SERIAL, "Floor", "temperature", "°C"),
             (SERIAL, "Floor", "humidity", "%"),
         ]
+        assert hass_storage[STORE_KEY]["data"] == {SERIAL: _stored(UPLOAD_1)}
 
         # Same upload -> nothing to do
         await coordinator.async_refresh()
         assert history.await_count == 2
 
+        # Restart: the stored upload is not fetched again
+        restarted_history = AsyncMock(return_value=measurements)
+        restarted, restarted_api = await _create_coordinator(
+            hass, setup_in_progress_config_entry, _safefloor_device(), _status(UPLOAD_1), restarted_history
+        )
+        await restarted.async_config_entry_first_refresh()
+        restarted_history.assert_not_awaited()
+
         # New upload -> fetch again
-        mock_api.get_device_status.return_value = _status("02.10.2026 14:55:40")
-        await coordinator.async_refresh()
-        assert history.await_count == 4
-        assert coordinator.last_update_success
+        restarted_api.get_device_status.return_value = _status(UPLOAD_2)
+        await restarted.async_refresh()
+        assert restarted_history.await_count == 2
+        assert restarted.last_update_success
+        assert hass_storage[STORE_KEY]["data"] == {SERIAL: _stored(UPLOAD_2)}
 
 
 async def test_coordinator_history_failure_does_not_fail_update(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, hass_storage: dict, setup_in_progress_config_entry
 ) -> None:
-    """A failing history fetch is logged, retried later and keeps the regular update working."""
+    """A failing history fetch is logged, retried after 3 h (also after a restart) and keeps the update working."""
     hass.config.components.add("recorder")
     history = AsyncMock(side_effect=SyrConnectConnectionError("cloud down"))
     coordinator, _ = await _create_coordinator(
-        hass, setup_in_progress_config_entry, _safefloor_device(), _status("28.09.2026 14:55:43"), history
+        hass, setup_in_progress_config_entry, _safefloor_device(), _status(UPLOAD_1), history
     )
 
     with patch("custom_components.syr_connect.coordinator.async_import_safefloor_history") as mock_import:
@@ -371,19 +409,61 @@ async def test_coordinator_history_failure_does_not_fail_update(
         assert coordinator.data["devices"][0]["status"]["getCEL"] == "158"
         assert history.await_count == 1
         mock_import.assert_not_called()
+        state = coordinator._safefloor_history[SERIAL]
+        assert state.failures == 1
+        assert state.retry_at is not None
+        assert timedelta(hours=2, minutes=59) < state.retry_at - datetime.now(UTC) <= timedelta(hours=3)
+        assert hass_storage[STORE_KEY]["data"] == {SERIAL: _stored(None, UPLOAD_1, 1, state.retry_at.isoformat())}
 
         # Within the retry delay nothing is fetched
         await coordinator.async_refresh()
         assert history.await_count == 1
 
+        # Restart: the retry delay is kept
+        restarted_history = AsyncMock(return_value=[])
+        restarted, _ = await _create_coordinator(
+            hass, setup_in_progress_config_entry, _safefloor_device(), _status(UPLOAD_1), restarted_history
+        )
+        await restarted.async_config_entry_first_refresh()
+        restarted_history.assert_not_awaited()
+
         # After the retry delay it is fetched again
-        state = coordinator._safefloor_history[SERIAL]
-        state.retry_at = datetime.now(UTC) - timedelta(seconds=1)
-        history.side_effect = None
-        history.return_value = []
-        await coordinator.async_refresh()
-        assert history.await_count == 3
-        assert state.retry_at is None
+        restarted_state = restarted._safefloor_history[SERIAL]
+        restarted_state.retry_at = datetime.now(UTC) - timedelta(seconds=1)
+        await restarted.async_refresh()
+        assert restarted_history.await_count == 2
+        assert restarted_state == SafeFloorHistoryState(upload_marker=UPLOAD_1)
+        assert hass_storage[STORE_KEY]["data"] == {SERIAL: _stored(UPLOAD_1)}
+
+
+async def test_coordinator_history_without_upload_timestamp(
+    hass: HomeAssistant, hass_storage: dict, setup_in_progress_config_entry, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Without getSRN timestamp a new upload can not be detected: nothing is fetched, a warning is logged once."""
+    hass.config.components.add("recorder")
+    history = AsyncMock(return_value=[])
+    status = _status(UPLOAD_1)
+    del status["getSRN_dt"]
+    coordinator, _ = await _create_coordinator(
+        hass, setup_in_progress_config_entry, _safefloor_device(), status, history
+    )
+
+    await coordinator.async_config_entry_first_refresh()
+    await coordinator.async_refresh()
+
+    history.assert_not_awaited()
+    assert caplog.text.count("no upload timestamp (getSRN)") == 1
+    assert STORE_KEY not in hass_storage
+
+
+async def test_remove_entry_deletes_history_store(hass: HomeAssistant, hass_storage: dict) -> None:
+    """Removing the config entry deletes its stored fetch state."""
+    hass_storage[STORE_KEY] = {"version": 1, "minor_version": 1, "key": STORE_KEY, "data": {SERIAL: _stored(UPLOAD_1)}}
+    entry = MockConfigEntry(domain=DOMAIN, entry_id=ENTRY_ID, data={})
+
+    await async_remove_entry(hass, entry)
+
+    assert STORE_KEY not in hass_storage
 
 
 @pytest.mark.parametrize(
@@ -399,7 +479,7 @@ async def test_coordinator_skips_history(
         hass.config.components.add("recorder")
     history = AsyncMock(return_value=[])
     coordinator, _ = await _create_coordinator(
-        hass, setup_in_progress_config_entry, _safefloor_device(dk), _status("28.09.2026 14:55:43"), history
+        hass, setup_in_progress_config_entry, _safefloor_device(dk), _status(UPLOAD_1), history
     )
 
     await coordinator.async_config_entry_first_refresh()
@@ -414,7 +494,7 @@ async def test_coordinator_history_skipped_for_json_api(hass: HomeAssistant) -> 
     coordinator.hass = hass
     coordinator.api = MagicMock(spec=SyrConnectJsonAPI)
     coordinator._safefloor_history = {}
-    device = _safefloor_device() | {"status": _status("28.09.2026 14:55:43")}
+    device = _safefloor_device() | {"status": _status(UPLOAD_1)}
 
     await SyrConnectDataUpdateCoordinator._async_update_safefloor_history(coordinator, device)
 

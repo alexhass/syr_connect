@@ -14,8 +14,8 @@ from pytest_homeassistant_custom_component.components.recorder.common import (
     do_adhoc_statistics,
 )
 
+from custom_components.syr_connect.coordinator import async_import_safefloor_history
 from custom_components.syr_connect.response_parser import ResponseParser
-from custom_components.syr_connect.safefloor_history import async_import_safefloor_history
 
 FIXTURES = Path(__file__).parent / "fixtures/xml"
 SERIAL = "123456789"

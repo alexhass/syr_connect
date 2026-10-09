@@ -5,25 +5,39 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
-from datetime import timedelta
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any
 
 import aiohttp
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
+from homeassistant.components.recorder.models import (
+    StatisticData,
+    StatisticMeanType,
+    StatisticMetaData,
+)
+from homeassistant.components.recorder.statistics import async_add_external_statistics
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, PERCENTAGE, UnitOfTemperature
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
 from homeassistant.util import dt as dt_util
+from homeassistant.util import slugify
+from homeassistant.util.unit_conversion import TemperatureConverter, UnitlessRatioConverter
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_SERVICES,
     _SYR_CONNECT_SAFEFLOOR_DEVICE_KINDS,
+    _SYR_CONNECT_SAFEFLOOR_HISTORY_RETRY_FIRST_HOURS,
+    _SYR_CONNECT_SAFEFLOOR_HISTORY_RETRY_MAX_HOURS,
     _SYR_CONNECT_SAFEFLOOR_HISTORY_SERIES,
+    _SYR_CONNECT_SAFEFLOOR_HISTORY_STORE_VERSION,
     _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -38,7 +52,6 @@ from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import get_default_scan_interval_for_entry, get_sensor_iwh_value
 from .models import MODEL_SIGNATURES, detect_model
 from .repairs import create_issue, delete_issue
-from .safefloor_history import SafeFloorHistoryState, async_import_safefloor_history
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -133,8 +146,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session
 
-        # SafeFloor measurement history fetch state, keyed by device ID (serial number)
+        # SafeFloor measurement history fetch state, keyed by device ID (serial number). It is
+        # kept in a store (loaded on first use), so a restart does not fetch an upload again.
         self._safefloor_history: dict[str, SafeFloorHistoryState] = {}
+        self._safefloor_history_store: Store[dict[str, dict[str, Any]]] | None = None
+        # Devices without upload timestamp, logged once
+        self._safefloor_history_no_marker: set[str] = set()
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
@@ -202,10 +219,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     if device_result:
                         all_devices.append(device_result)
 
-            # SafeFloor sensors upload several measurements at once. Their history is stored as
-            # external statistics, the only supported way to add values with a past timestamp;
-            # the sensor entities stay unchanged (see safefloor_history.py for the reasons).
-            # Failures are logged and retried later, they never fail the regular update.
+            # SafeFloor sensors upload several measurements at once. Their history is fetched once
+            # per new upload and stored as external statistics; the sensor entities stay unchanged
+            # (see the SafeFloor section at the end of this module). Failures are logged and
+            # retried later, they never fail the regular update.
             if self._api_type == API_TYPE_XML:
                 for device in all_devices:
                     if (
@@ -326,11 +343,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             return device
 
     async def _async_update_safefloor_history(self, device: dict[str, Any]) -> None:
-        """Import the measurement history of a SafeFloor sensor when it uploaded new data.
+        """Import the measurement history of a SafeFloor sensor once per new upload.
 
-        The timestamp of getSRN changes with every upload of the sensor, so the
-        history is fetched once per upload, whatever upload interval (getRCP) the
-        user has configured. See safefloor_history.py for details.
+        The timestamp of getSRN changes with every upload of the sensor and comes with the
+        regular status, so a new upload is detected without an extra request. Nothing is
+        fetched on a schedule, after a restart or without a new upload; a failed fetch is
+        retried with a growing delay. See the SafeFloor section at the end of this module.
 
         Args:
             device: Device dictionary including its status
@@ -340,6 +358,17 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         device_id = device["id"]
         upload_marker = device["status"].get("getSRN_dt")
+        if not upload_marker:
+            # Without the upload timestamp a new upload can not be detected: do not fetch blindly
+            if device_id not in self._safefloor_history_no_marker:
+                self._safefloor_history_no_marker.add(device_id)
+                _LOGGER.warning(
+                    "Device %s: no upload timestamp (getSRN), SafeFloor measurement history is not fetched",
+                    device_id,
+                )
+            return
+
+        store = await self._async_safefloor_history_store()
         state = self._safefloor_history.setdefault(device_id, SafeFloorHistoryState())
         now = dt_util.utcnow()
         if not state.is_due(upload_marker, now):
@@ -357,11 +386,24 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     device_id, len(measurements), key, rows,
                 )
         except (SyrConnectAuthError, SyrConnectConnectionError, ValueError, HomeAssistantError) as err:
-            state.mark_failed(now)
-            _LOGGER.warning("Device %s: failed to import SafeFloor measurement history: %s", device_id, err)
-            return
+            state.mark_failed(upload_marker, now)
+            _LOGGER.warning(
+                "Device %s: failed to import SafeFloor measurement history, next attempt at %s: %s",
+                device_id, state.retry_at, err,
+            )
+        else:
+            state.mark_imported(upload_marker)
 
-        state.mark_imported(upload_marker, now)
+        await store.async_save({dev_id: dev_state.as_dict() for dev_id, dev_state in self._safefloor_history.items()})
+
+    async def _async_safefloor_history_store(self) -> Store[dict[str, dict[str, Any]]]:
+        """Return the store of the SafeFloor fetch state, loading the state on first use."""
+        if self._safefloor_history_store is None:
+            store = safefloor_history_store(self.hass, self.entry_id)
+            for device_id, data in (await store.async_load() or {}).items():
+                self._safefloor_history[device_id] = SafeFloorHistoryState.from_dict(data)
+            self._safefloor_history_store = store
+        return self._safefloor_history_store
 
     def _get_device_dclg_from_srn(self, device_id: str) -> str | None:
         """Return the DCLG (Device Collection Group UUID) for the given device serial number.
@@ -589,3 +631,184 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 "Valve open with alarm clear failed for device %s, re-raising", device_id
             )
             raise
+
+
+# --- SafeFloor measurement history -------------------------------------------------------------
+#
+# SafeFloor Connect sensors are battery powered. They measure every getWMP seconds (e.g. every
+# 3 hours) but upload to the cloud only every getRCP seconds (configurable, e.g. every 4 days).
+# The regular status only carries the latest measurement, so the temperature and humidity
+# sensor entities stay flat for days and then jump. GetSafeFloorStatistics (report type 4)
+# returns the raw measurements of the last 6 days with their timestamps.
+#
+# When the history is fetched
+#   The timestamp of getSRN changes with every upload and comes with the regular status, so a new
+#   upload is detected without an extra request. The history is fetched once per new upload
+#   (one request per series: temperature and humidity), whatever upload interval the user has
+#   configured. The last imported upload is kept in a store, so a restart of Home Assistant does
+#   not fetch it again. A failed fetch is retried after 3 hours, then the delay doubles up to
+#   24 hours; a new upload starts over. There is no fetch on a schedule.
+#
+# Why external statistics
+#   async_add_external_statistics is the supported Home Assistant API for values with a past
+#   timestamp (home-assistant/architecture discussion #559); core integrations whose data arrives
+#   late from a cloud use it the same way (e.g. opower, tibber, suez_water). The state history of
+#   an entity can not be changed. The long-term statistics of the sensor entities belong to the
+#   recorder: it compiles every hour exactly once, and a row written there before makes that
+#   compile run fail, so the hour is lost for all sensors. External statistics
+#   (syr_connect:<serial>_<key>, source syr_connect) are never compiled by the recorder and can
+#   be written at any time. They are no entities; the sensor entities stay unchanged.
+#
+# How the rows are built
+#   Long-term statistics have an hourly resolution. Every hour from the first to the last
+#   measurement gets a row: an hour with measurements gets their mean, min and max, an hour
+#   without a measurement takes over the row of the hour before exactly. Nothing is interpolated;
+#   hours after the last measurement follow with the next upload. Importing the same 6-day window
+#   again overwrites the same rows.
+
+_HOUR = timedelta(hours=1)
+
+# Unit -> unit class used by the recorder for unit conversion
+_SAFEFLOOR_UNIT_CLASSES: dict[str, str | None] = {
+    UnitOfTemperature.CELSIUS: TemperatureConverter.UNIT_CLASS,
+    PERCENTAGE: UnitlessRatioConverter.UNIT_CLASS,
+}
+
+
+@dataclass
+class SafeFloorHistoryState:
+    """Fetch state of the measurement history of one SafeFloor device."""
+
+    upload_marker: str | None = None  # getSRN timestamp of the last imported upload
+    failed_marker: str | None = None  # getSRN timestamp of the upload whose fetch failed
+    failures: int = 0  # failed fetches of that upload in a row
+    retry_at: datetime | None = None
+
+    def is_due(self, upload_marker: str, now: datetime) -> bool:
+        """Return True if the history of this upload should be fetched now."""
+        if upload_marker == self.upload_marker:
+            return False
+        if upload_marker == self.failed_marker and self.retry_at is not None:
+            return now >= self.retry_at
+        return True
+
+    def mark_imported(self, upload_marker: str) -> None:
+        """Remember a successful import."""
+        self.upload_marker = upload_marker
+        self.failed_marker = None
+        self.failures = 0
+        self.retry_at = None
+
+    def mark_failed(self, upload_marker: str, now: datetime) -> None:
+        """Delay the next attempt: first delay, then doubled up to the maximum; a new upload starts over."""
+        if upload_marker != self.failed_marker:
+            self.failed_marker = upload_marker
+            self.failures = 0
+        self.failures += 1
+        hours = min(
+            _SYR_CONNECT_SAFEFLOOR_HISTORY_RETRY_FIRST_HOURS * 2 ** min(self.failures - 1, 10),
+            _SYR_CONNECT_SAFEFLOOR_HISTORY_RETRY_MAX_HOURS,
+        )
+        self.retry_at = now + timedelta(hours=hours)
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return the state for the store."""
+        return {
+            "upload_marker": self.upload_marker,
+            "failed_marker": self.failed_marker,
+            "failures": self.failures,
+            "retry_at": self.retry_at.isoformat() if self.retry_at else None,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> SafeFloorHistoryState:
+        """Return the state read from the store."""
+        retry_at = data.get("retry_at")
+        return cls(
+            upload_marker=data.get("upload_marker"),
+            failed_marker=data.get("failed_marker"),
+            failures=data.get("failures") or 0,
+            retry_at=dt_util.parse_datetime(retry_at) if isinstance(retry_at, str) else None,
+        )
+
+
+def safefloor_history_store(hass: HomeAssistant, entry_id: str | None) -> Store[dict[str, dict[str, Any]]]:
+    """Return the store with the SafeFloor fetch state of a config entry."""
+    return Store(hass, _SYR_CONNECT_SAFEFLOOR_HISTORY_STORE_VERSION, f"{DOMAIN}.safefloor_history.{entry_id}")
+
+
+def safefloor_statistic_id(serial_number: str, key: str) -> str:
+    """Return the external statistic ID of a SafeFloor measurement series."""
+    return f"{DOMAIN}:{slugify(serial_number)}_{key}"
+
+
+def hourly_statistics(measurements: list[tuple[datetime, float]]) -> list[StatisticData]:
+    """Return one row per hour from the first to the last measurement.
+
+    An hour that contains measurements gets their mean, min and max (one measurement:
+    its value). An hour without a measurement takes over the row of the hour before
+    exactly. Every hour needs a row: the statistics graph card draws a gap between rows
+    that do not follow each other, so one row per measurement would only show short dashes.
+    """
+    hours: dict[datetime, list[float]] = defaultdict(list)
+    for timestamp, value in measurements:
+        hours[timestamp.replace(minute=0, second=0, microsecond=0)].append(value)
+    if not hours:
+        return []
+    result: list[StatisticData] = []
+    start, last_hour = min(hours), max(hours)
+    mean = low = high = 0.0
+    while start <= last_hour:
+        if values := hours.get(start):
+            mean, low, high = sum(values) / len(values), min(values), max(values)
+        # An hour without a measurement takes over the values of the hour before exactly
+        result.append(StatisticData(start=start, mean=mean, min=low, max=high))
+        start += _HOUR
+    return result
+
+
+@callback
+def async_import_safefloor_history(
+    hass: HomeAssistant,
+    serial_number: str,
+    device_name: str,
+    key: str,
+    unit: str,
+    measurements: list[tuple[datetime, float]],
+) -> int:
+    """Import SafeFloor measurements as external statistics.
+
+    Rows that already exist are overwritten, so importing the same window again is harmless.
+
+    Returns:
+        Number of imported hourly rows
+    """
+    statistics = hourly_statistics(measurements)
+    if not statistics:
+        return 0
+    # mean_type and unit_class are set explicitly: without them Home Assistant logs a
+    # warning and refuses the import from 2026.11 on.
+    metadata = StatisticMetaData(
+        mean_type=StatisticMeanType.ARITHMETIC,
+        has_sum=False,
+        # "history" marks the series as measurement history, not as a second sensor
+        name=f"{device_name} {key} history",
+        source=DOMAIN,
+        statistic_id=safefloor_statistic_id(serial_number, key),
+        unit_class=_SAFEFLOOR_UNIT_CLASSES.get(unit),
+        unit_of_measurement=unit,
+    )
+    async_add_external_statistics(hass, metadata, statistics)
+    _LOGGER.debug(
+        "Imported %d hourly row(s) into %s (%s to %s)",
+        len(statistics),
+        metadata["statistic_id"],
+        statistics[0]["start"].isoformat(),
+        statistics[-1]["start"].isoformat(),
+    )
+    return len(statistics)
+
+
+async def async_remove_safefloor_history_store(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete the stored SafeFloor fetch state of a removed config entry."""
+    await safefloor_history_store(hass, entry_id).async_remove()

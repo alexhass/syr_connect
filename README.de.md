@@ -296,7 +296,7 @@ Die Integration pollt die Geräte-API in regelmäßigen Abständen (Standard: 60
 
 SafeFloor-Bodensensoren laufen mit Batterie. Sie messen Temperatur und Feuchte regelmäßig (**Messintervall**, z. B. 6 Stunden), verbinden sich aber nur alle paar Tage mit der Cloud (**Synchronisationsintervall**, z. B. 4 Tage). Home Assistant bekommt neue Werte nur mit jedem Upload, deshalb zeigt der Verlauf der Temperatur- und Feuchtesensoren tagelang eine flache Linie und dann einen Sprung. Das ist so zu erwarten: Home Assistant kann vergangene Zustände einer Entität nicht ändern.
 
-Die echte Kurve wird getrennt gespeichert. Nach jedem Upload (und einmal täglich zur Sicherheit) holt die Integration die einzelnen Messungen der letzten 6 Tage aus der Cloud und speichert sie mit ihrem echten Messzeitpunkt als Langzeitstatistik:
+Die echte Kurve wird getrennt gespeichert. Einmal je neuem Upload holt die Integration die einzelnen Messungen der letzten 6 Tage aus der Cloud und speichert sie mit ihrem echten Messzeitpunkt als Langzeitstatistik:
 
 - `syr_connect:<Seriennummer>_temperature` (°C), Name „<Gerätename> temperature history“
 - `syr_connect:<Seriennummer>_humidity` (%), Name „<Gerätename> humidity history“
@@ -321,6 +321,7 @@ entities:
 Eine Stunde mit Messung bekommt den Messwert, eine Stunde ohne Messung übernimmt den Wert der Stunde davor. Die Kurve endet bei der zuletzt hochgeladenen Messung und geht mit dem nächsten Upload weiter. Es wird nichts interpoliert.
 
 - Nur Cloud-API (die lokale API hat keinen Verlauf); der Recorder von Home Assistant muss aktiv sein.
+- Wenige Cloud-Anfragen: Einen neuen Upload erkennt die Integration am Upload-Zeitstempel im normalen Status, ohne zusätzliche Anfrage. Jeder neue Upload kostet 2 Anfragen (Temperatur und Feuchte). Es wird nichts nach Zeitplan und nach einem Neustart von Home Assistant nichts erneut abgerufen. Ein fehlgeschlagener Abruf wird nach 3 Stunden wiederholt, danach verdoppelt sich der Abstand bis höchstens 24 Stunden.
 - Die Cloud liefert nur die letzten 6 Tage. Das Synchronisationsintervall daher bei höchstens 6 Tagen lassen, sonst gehen ältere Messungen eines Uploads verloren. Ein kürzeres Intervall zeigt neue Werte früher, kostet aber Batterie.
 - Die Statistiken bleiben in der Datenbank, wenn der Sensor entfernt wird. Löschen kann man sie im Reiter **Statistiken** der Entwicklerwerkzeuge.
 ### Lokale API Aktualisierungsprozess

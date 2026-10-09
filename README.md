@@ -296,7 +296,7 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 
 SafeFloor floor sensors run on batteries. They measure temperature and humidity regularly (**Measurement interval**, e.g. 6 hours) but connect to the cloud only every few days (**Synchronisation interval**, e.g. 4 days). Home Assistant receives new values only with each upload, so the history of the temperature and humidity sensors shows a flat line for days and then a jump. This is expected: Home Assistant can not change the past states of an entity.
 
-The real curve is stored separately. After each upload (and once a day as a safety net) the integration fetches the individual measurements of the last 6 days from the cloud and stores them with their real measurement time as long-term statistics:
+The real curve is stored separately. Once per new upload the integration fetches the individual measurements of the last 6 days from the cloud and stores them with their real measurement time as long-term statistics:
 
 - `syr_connect:<serial number>_temperature` (°C), named "<device name> temperature history"
 - `syr_connect:<serial number>_humidity` (%), named "<device name> humidity history"
@@ -321,6 +321,7 @@ entities:
 An hour with a measurement gets the measured value, an hour without a measurement takes over the value of the hour before. The curve ends at the last uploaded measurement and continues with the next upload. Nothing is interpolated.
 
 - Cloud API only (the local API has no history); the Home Assistant recorder must be enabled.
+- Few cloud requests: a new upload is recognised by the upload timestamp in the regular status, without an extra request. Each new upload costs 2 requests (temperature and humidity). Nothing is fetched on a schedule or again after a restart of Home Assistant. A failed fetch is retried after 3 hours, then the delay doubles up to 24 hours.
 - The cloud provides the last 6 days only. Keep the synchronisation interval at 6 days or less, otherwise older measurements of an upload are lost. A shorter interval shows new values sooner but costs battery.
 - The statistics stay in the database when the sensor is removed. They can be deleted in the **Statistics** tab of the developer tools.
 ### Local API Update Process
