@@ -87,7 +87,7 @@ SENSOR_KNOWN_KEYS = {
 }
 
 SELECT_KNOWN_KEYS = {
-    "getRPD", "getRTM", "getSV1", "getPRF",
+    "getIWH", "getOWH","getRPD", "getRTM", "getSV1", "getPRF",
 }
 
 # getBUZ present but empty in the fixture - no confirmed buzzer on this model.
