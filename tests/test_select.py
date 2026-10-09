@@ -3359,13 +3359,28 @@ async def test_hardness_select_current_option_prefers_exact_match(hass: HomeAssi
         "LEXplus10",
         "LEXplus10S",
         "LEXplus10SL",
-        "NeoSoft2500",
     ],
 )
-async def test_async_setup_entry_skips_hardness_selects_for_other_models(
+async def test_async_setup_entry_creates_hardness_selects_for_lex_plus(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, cna: str
 ) -> None:
-    """LEX Plus (and other) models keep getIWH/getOWH as sensors only."""
+    """LEX Plus models also get raw/outlet water hardness selects."""
+    status = {"getCNA": cna, "getIWH": "20", "getOWH": "2", "getWHU": "0"}
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    hardness = {e._sensor_key for e in entities if isinstance(e, SyrConnectHardnessSelect)}
+    assert hardness == {"getIWH", "getOWH"}
+
+
+async def test_async_setup_entry_skips_hardness_selects_for_other_models(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+) -> None:
+    """Models without getIWH/getOWH in their select allowlist keep them as sensors only."""
+    cna = "NeoSoft2500"
     status = {"getCNA": cna, "getIWH": "20", "getOWH": "2", "getWHU": "0"}
     data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
