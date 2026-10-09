@@ -754,12 +754,15 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 
     # ── NeoSoft platform (dk=1200–1222) ──────────────────────────────────────────
     {
+        "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "device_file": "neosoft_single",
         "display_name": "NeoSoft Connect",
         "dk": 1200,
         "dkv": 200,
         "manufacturer": "SYR",
+        "maximum_regeneration_interval": 3,
+        "maximum_salt_volume": 40,
         "name": "neosoft",
         # TODO: Untested model.
         "srn_prefix": "200",
