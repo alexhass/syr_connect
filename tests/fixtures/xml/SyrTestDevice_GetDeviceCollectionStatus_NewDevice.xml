@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="ce5d50f2-1084-4908-9eee-30384380e364" sta="1" dst="0" ast="1" clb="1" nrdt="" nrs="10" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="7483c554-adae-4fd3-9578-8ce33ba67ed8" sbt="0" sta="1" dst="0" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
+      <c n="getSRN" v="123456789" />
+    </d>
+  </dvs>
+  <cs v="2830" />
+</sc>
