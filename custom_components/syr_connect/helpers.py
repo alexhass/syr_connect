@@ -688,6 +688,8 @@ def is_valid_host(host: str) -> bool:
     """Return True if *host* is a valid IPv4, IPv6 or hostname (no port).
 
     - Accepts IPv4 and IPv6 addresses using the stdlib ipaddress module
+      (checked first, so an IPv6 literal such as ``fe80::1`` is not mistaken
+      for ``host:port``)
     - Rejects explicit host:port strings
     - Allows DNS hostnames that meet length and label rules
 
@@ -701,16 +703,17 @@ def is_valid_host(host: str) -> bool:
     if re.search(r"\s", host):
         return False
 
-    # Reject explicit host:port
-    if re.match(r"^.+:\d+$", host):
-        return False
-
-    # Try IP address (IPv4/IPv6)
+    # Try IP address (IPv4/IPv6) first: "fe80::1" would otherwise match the
+    # host:port pattern below.
     try:
         ipaddress.ip_address(host)
         return True
     except Exception:
         pass
+
+    # Reject explicit host:port
+    if re.match(r"^.+:\d+$", host):
+        return False
 
     # Hostname validation: length and label rules
     hostname_pattern = r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"

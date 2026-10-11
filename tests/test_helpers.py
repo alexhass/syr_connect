@@ -5,6 +5,8 @@ import re
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from custom_components.syr_connect import helpers
 from custom_components.syr_connect.const import API_TYPE_JSON
 from custom_components.syr_connect.helpers import (
@@ -22,6 +24,7 @@ from custom_components.syr_connect.helpers import (
     get_sensor_vol_value,
     get_sensor_wrn_map,
     is_sensor_visible,
+    is_valid_host,
     mask_ug_value,
 )
 
@@ -1629,3 +1632,32 @@ def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_pos
 def test_is_sensor_visible_getbap_not_suppressed_when_nonzero_value() -> None:
     """getBAP=50 (non-zero) → bap_zero=False → not suppressed regardless of getBAT."""
     assert is_sensor_visible({"getBAT": 4.5}, "getBAP", 50) is True
+
+
+@pytest.mark.parametrize(
+    "host",
+    [
+        "192.168.1.5",
+        "syr.local",
+        "my-device",
+        # IPv6 literals, including ones ending in a decimal group that used to be
+        # mistaken for "host:port"
+        "fe80::1",
+        "::1",
+        "2001:db8::5",
+        "2001:db8::1:5",
+        "fd00::abcd",
+    ],
+)
+def test_is_valid_host_accepts(host: str) -> None:
+    """IPv4, IPv6 and hostnames without a port are valid."""
+    assert is_valid_host(host) is True
+
+
+@pytest.mark.parametrize(
+    "host",
+    ["", "   ", "host:80", "192.168.1.5:5333", "[fe80::1]", "bad host", "-bad.local", "a..b"],
+)
+def test_is_valid_host_rejects(host: str) -> None:
+    """Empty values, whitespace, explicit ports and malformed names are invalid."""
+    assert is_valid_host(host) is False

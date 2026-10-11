@@ -77,6 +77,33 @@ def test_build_base_url_with_explicit_base_url() -> None:
     assert result == "http://test:5333/api/"
 
 
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("192.168.1.100", "http://192.168.1.100:5333/api/v1/"),
+        ("syr.local", "http://syr.local:5333/api/v1/"),
+        ("fe80::1", "http://[fe80::1]:5333/api/v1/"),
+        ("2001:db8::5", "http://[2001:db8::5]:5333/api/v1/"),
+        ("fd00::abcd", "http://[fd00::abcd]:5333/api/v1/"),
+    ],
+)
+def test_build_base_url_brackets_ipv6_host(host: str, expected: str) -> None:
+    """IPv6 literals are bracketed; IPv4 and hostnames are left untouched."""
+    client = SyrConnectJsonAPI(MagicMock(), host=host, base_path="/api/v1/")
+    assert client._build_base_url() == expected
+
+
+def test_construct_url_with_ipv6_host_is_parseable() -> None:
+    """The final request URL keeps host and port apart for IPv6 devices."""
+    client = SyrConnectJsonAPI(MagicMock(), host="fe80::1", base_path="/api/v1")
+
+    url = client._construct_encoded_url("get", "all")
+
+    assert url.host == "fe80::1"
+    assert url.port == 5333
+    assert url.path == "/api/v1/get/all"
+
+
 def test_build_base_url_without_ip_or_base_path() -> None:
     """Test _build_base_url returns None when host or base_path missing."""
     sess = MagicMock()

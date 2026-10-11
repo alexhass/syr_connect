@@ -20,6 +20,7 @@ XML API client so it can be integrated into the coordinator later.
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -47,6 +48,21 @@ _SYR_CONNECT_DEFAULT_API_TIMEOUT = 10
 
 # JSON API endpoint paths
 _SYR_CONNECT_JSON_ENDPOINT_GET_ALL = "/get/all"
+
+
+def _format_host_for_url(host: str) -> str:
+    """Return *host* in a form usable inside a URL authority.
+
+    IPv6 literals must be enclosed in brackets (RFC 3986); without them the
+    port separator is ambiguous and the URL cannot be parsed.
+    IPv4 addresses and hostnames are returned unchanged.
+    """
+    try:
+        if ipaddress.ip_address(host).version == 6:
+            return f"[{host}]"
+    except ValueError:
+        pass
+    return host
 
 
 class SyrConnectJsonAPI:
@@ -132,7 +148,8 @@ class SyrConnectJsonAPI:
             _LOGGER.error("JSON API: Cannot build base URL - host=%r, base_path=%r", self._host, self._base_path)
             return None
 
-        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{self._host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
+        host = _format_host_for_url(self._host)
+        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
         _LOGGER.debug(
             "JSON API: Built base URL from host and base_path: %s (host=%r, port=%s, base_path=%r)",
             result,
