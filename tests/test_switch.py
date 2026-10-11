@@ -324,7 +324,6 @@ def test_is_on_with_int_and_float_values() -> None:
 @pytest.mark.asyncio
 async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> None:
     """If API raises during set, the switch should still request a refresh and swallow the error."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_ICON
     from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
 
     device = {"id": "SN300", "name": "DeviceErr", "status": {"getBUZ": "0"}}
@@ -339,9 +338,8 @@ async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> Non
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN300", "DeviceErr", "", "getBUZ")
 
-    # Icon should be set according to const mapping
-    expected_icon = _SYR_CONNECT_SENSOR_ICON.get("getBUZ")
-    assert sw._attr_icon == expected_icon
+    # Icon comes from icons.json via the translation key, not from the entity
+    assert sw.icon is None
 
     # Calling turn_on should not raise despite API exception
     await sw.async_turn_on()

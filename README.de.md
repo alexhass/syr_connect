@@ -151,7 +151,7 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 
 #### Wasserqualität & Kapazität
 
-- Überwachung Ein-/Ausgangswasserhärte
+- Überwachung Roh-/Weichwasserhärte
 - Wasserleitfähigkeit (µS/cm)
 - Wassertemperatur (°C)
 - Verbleibende Enthärtekapazität
@@ -248,7 +248,7 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 - **Display-Rotation**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display)
 - **Filtertyp**: Installierten Filtertyp auswählen (für NeoSoft-Geräte)
 - **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen)
-- **Roh-/Ausgangswasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, ppm oder mmol/l)
+- **Roh-/Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, ppm oder mmol/l)
 - **Wasseraufbereitung und Befüllung** (MuCo-basierte Geräte): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck
 - **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur ("Aus" deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen
 

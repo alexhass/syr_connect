@@ -16,7 +16,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import (
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SWITCH_KNOWN_KEYS,
     DOMAIN,
 )
@@ -159,7 +158,6 @@ class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
 
         # Override the entity_id to use technical name (serial number) with domain prefix
         self.entity_id = build_entity_id("switch", device_id, sensor_key)
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
 
         # Build device info so the entity is linked to its device in the UI
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)

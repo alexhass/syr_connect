@@ -138,7 +138,7 @@
         }
       },
       "getiwh": {
-        "name": "Inkomende waterhardheid"
+        "name": "Ruwwaterhardheid"
       },
       "getlot": {
         "name": "Maximale uitgaande geleidbaarheid"
@@ -339,7 +339,7 @@
         "name": "Zachtwaterhardheid"
       },
       "getowh": {
-        "name": "Uitgaande waterhardheid"
+        "name": "Zachtwaterhardheid"
       },
       "getprf": {
         "name": "Actief lekbeschermingsprofiel",
@@ -700,7 +700,7 @@
         "name": "IP-adres"
       },
       "getiwh": {
-        "name": "Inkomende waterhardheid"
+        "name": "Ruwwaterhardheid"
       },
       "getlan": {
         "name": "Apparaattaal",
@@ -800,7 +800,7 @@
         "name": "Zachtwaterhardheid"
       },
       "getowh": {
-        "name": "Uitgaande waterhardheid"
+        "name": "Zachtwaterhardheid"
       },
       "getpa1": {
         "name": "Lekbeschermingsprofiel 1",

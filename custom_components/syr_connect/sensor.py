@@ -24,9 +24,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_DEVICE_CLASS,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
-    _SYR_CONNECT_SENSOR_DST_ICON_MAP,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
@@ -403,13 +401,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         if sensor_key in _SYR_CONNECT_SENSOR_STATE_CLASS:
             self._attr_state_class = _SYR_CONNECT_SENSOR_STATE_CLASS[sensor_key]
 
-        # Set icon if available
-        if sensor_key in _SYR_CONNECT_SENSOR_ICON:
-            self._attr_icon = _SYR_CONNECT_SENSOR_ICON[sensor_key]
-
-        # Store base icon for state-based icon changes
-        self._base_icon = getattr(self, '_attr_icon', None)
-
         # Disable sensors by default based on configuration
         # Also disable sensors that are represented by control entities so they
         # are available if users explicitly enable them, but do not clutter the UI.
@@ -474,128 +465,22 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def icon(self) -> str | None:
-        """Return the icon to use in the frontend, if any.
+        """Return the getBAT icon; all other icons and state icons come from icons.json.
 
-        Icons change dynamically based on sensor state for certain sensors:
-        - Alarm: alert icon when alarm active, bell icon when inactive
-        - Regeneration: autorenew icon when active, timer icon when inactive
-        - Salt stock: full/half/empty cup based on level
-        - Remaining capacity: gauge-empty/low/full based on percentage
+        In percentage mode the BATTERY device class provides the icon, in voltage mode a
+        dead battery (0 V) is flagged.
         """
-        # Dynamic icon for valve shut-off (getAB) - use boolean parsing
-        if self._sensor_key == "getAB":
-            # Read raw status for this device and parse as boolean
-            raw_status = None
-            for device in self.coordinator.data.get('devices', []):
-                if device['id'] == self._device_id:
-                    raw_status = device.get('status', {})
-                    break
-            ab = get_sensor_ab_value(raw_status or {})
-            if ab is None:
-                return self._base_icon
-            # True -> closed, False -> open
-            return "mdi:valve-closed" if ab else "mdi:valve-open"
+        if self._sensor_key != "getBAT" or self._attr_device_class == SensorDeviceClass.BATTERY:
+            return None
 
-        # Dynamic icon for alarm sensor (getALA):
-        # Rule: only 'no_alarm' is considered non-alarm; everything else is an alarm.
-        if self._sensor_key == "getALA":
-            raw_status = None
-            for device in self.coordinator.data.get('devices', []):
-                if device['id'] == self._device_id:
-                    raw_status = device.get('status', {})
-                    break
-
-            raw = (raw_status or {}).get('getALA')
-            mapped = None
+        val = self.native_value
+        if val is not None:
             try:
-                mapped, _ = get_sensor_ala_map(raw_status or {}, raw)
-            except (ValueError, KeyError, AttributeError, TypeError):
-                mapped = None
-
-            if mapped == "no_alarm" or raw is None or (isinstance(raw, str) and str(raw).strip() == ""):
-                return "mdi:bell-outline"
-            return "mdi:bell-alert-outline"
-
-        # Dynamic icon for battery (getBAT)
-        # In percentage mode device_class=BATTERY is set, so HA's frontend handles icons
-        # automatically - returning None delegates icon rendering to the frontend.
-        # In voltage mode: only override when voltage is 0 (dead battery alert).
-        if self._sensor_key == "getBAT":
-            if self._attr_device_class == SensorDeviceClass.BATTERY:
-                return None
-            val = self.native_value
-            if val is not None:
-                try:
-                    if float(str(val).strip()) == 0:
-                        # Dead battery alert
-                        return "mdi:battery-alert-variant-outline"
-                except (TypeError, ValueError):
-                    pass
-
-        # Dynamic icon for pressure sensor availability (getPST)
-        if self._sensor_key == "getPST":
-            try:
-                val = self.native_value
-                # native_value may be numeric or string; normalize to int when possible
-                if val is None:
-                    return self._base_icon
-                try:
-                    if isinstance(val, datetime):
-                        ival = int(val.timestamp())
-                    else:
-                        ival = int(float(val))
-                except (TypeError, ValueError):
-                    ival = 1
-                # Values:
-                # 1 -> Not available
-                # 2 -> Available
-                if ival == 2:
-                    return "mdi:check-circle"
-                if ival == 1:
-                    return "mdi:close-circle"
-            except (ValueError, TypeError):
+                if float(str(val).strip()) == 0:
+                    return "mdi:battery-alert-variant-outline"
+            except (TypeError, ValueError):
                 pass
-
-        # Dynamic icon for regeneration relay sensors (getRG1/getRG2/getRG3)
-        if self._sensor_key in ("getRG1", "getRG2", "getRG3"):
-            try:
-                val = self.native_value
-                if val is None:
-                    return self._base_icon
-                try:
-                    if isinstance(val, datetime):
-                        ival = int(val.timestamp())
-                    else:
-                        ival = int(float(val))
-                except (TypeError, ValueError):
-                    sval = str(val).lower()
-                    if sval in ("1", "true", "on", "active"):
-                        ival = 1
-                    else:
-                        ival = 0
-                # 1 -> open valve icon, 0 -> closed valve icon
-                return "mdi:valve" if ival == 1 else "mdi:valve-closed"
-            except (ValueError, TypeError, AttributeError):
-                pass
-
-        # Dynamic icon for valve status (getVLV)
-        if self._sensor_key == "getVLV":
-            val = self.native_value
-            if val is None:
-                return self._base_icon
-            # Values: 10=closed, 11=closing, 20=open, 21=opening
-            if str(val) == "10":
-                return "mdi:valve-closed"
-            elif str(val) == "11":
-                return "mdi:valve"  # closing in progress
-            elif str(val) == "20":
-                return "mdi:valve-open"
-            elif str(val) == "21":
-                return "mdi:valve"  # opening in progress
-            return self._base_icon
-
-        # Return base icon for all other sensors
-        return self._base_icon
+        return "mdi:battery"
 
     @property
     def native_value(self) -> str | int | float | datetime | None:
@@ -1042,16 +927,6 @@ class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "dst")
         self.entity_id = build_entity_id("sensor", device_id, "dst")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-
-    @property
-    def icon(self) -> str:
-        """Return MDI icon based on current connection state value."""
-        val = self.native_value
-        if val is not None:
-            icon = _SYR_CONNECT_SENSOR_DST_ICON_MAP.get(str(val))
-            if icon:
-                return icon
-        return "mdi:network-outline"
 
     @property
     def native_value(self) -> str | None:

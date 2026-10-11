@@ -18,7 +18,6 @@ from .const import (
     _SYR_CONNECT_SENSOR_BINARY,
     _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_ICON,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import (
@@ -131,10 +130,6 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         # Set entity category for diagnostic sensors
         if sensor_key in _SYR_CONNECT_SENSOR_DIAGNOSTIC:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
-
-        # Set icon if available
-        if sensor_key in _SYR_CONNECT_SENSOR_ICON:
-            self._attr_icon = _SYR_CONNECT_SENSOR_ICON[sensor_key]
 
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)

@@ -138,7 +138,7 @@
         }
       },
       "getiwh": {
-        "name": "Twardość wody wejściowej"
+        "name": "Twardość wody surowej"
       },
       "getlot": {
         "name": "Maksymalna przewodność wyjściowa"
@@ -339,7 +339,7 @@
         "name": "Twardość wody zmiękczonej"
       },
       "getowh": {
-        "name": "Twardość wody wyjściowej"
+        "name": "Twardość wody zmiękczonej"
       },
       "getprf": {
         "name": "Aktywny profil ochrony przed wyciekiem",
@@ -700,7 +700,7 @@
         "name": "Adres IP"
       },
       "getiwh": {
-        "name": "Twardość wody wejściowej"
+        "name": "Twardość wody surowej"
       },
       "getlan": {
         "name": "Język urządzenia",
@@ -800,7 +800,7 @@
         "name": "Twardość wody zmiękczonej"
       },
       "getowh": {
-        "name": "Twardość wody wyjściowej"
+        "name": "Twardość wody zmiękczonej"
       },
       "getpa1": {
         "name": "Profil ochrony przed wyciekiem 1",

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, PropertyMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime, UnitOfVolume
@@ -339,44 +339,6 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
     assert sensor.native_value in ("low_salt", "LowSalt")
 
 
-async def test_sensor_icon_dynamic(hass: HomeAssistant) -> None:
-    """Test dynamic icon for getPST sensor when available."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "2",  # Available
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    assert sensor.icon == "mdi:check-circle"
-
-
-async def test_sensor_icon_unavailable(hass: HomeAssistant) -> None:
-    """Test dynamic icon for getPST sensor when unavailable."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "1",  # Not available
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    assert sensor.icon == "mdi:close-circle"
 
 
 async def test_sensor_excluded_cs_with_salt(hass: HomeAssistant) -> None:
@@ -744,8 +706,6 @@ def test_extra_getrtm_and_getab_icon_and_getpm_boolean(create_mock_coordinator):
     ab = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getAB")
     # native_value returns 'true'/'false' strings
     assert ab.native_value == "true"
-    # Icon should reflect closed valve for True
-    assert ab.icon == "mdi:valve-closed"
 
     pm1 = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getPM1")
     assert pm1.native_value == "true"
@@ -980,32 +940,6 @@ async def test_getsro_and_getffm_creation_rules(hass: HomeAssistant) -> None:
     assert any(e._sensor_key == "getFFM" for e in d2)
 
 
-def test_sensor_icon_rg_and_vlv(create_mock_coordinator):
-    """Test dynamic icons for getRG1 and getVLV."""
-    data = {
-        "devices": [
-            {
-                "id": "dev_i",
-                "name": "Device I",
-                "project_id": "p1",
-                "status": {"getRG1": "1", "getVLV": "10"},
-            }
-        ]
-    }
-    coord = create_mock_coordinator(data)
-
-    rg1 = SyrConnectSensor(coord, "dev_i", "Device I", "p1", "getRG1")
-    assert rg1.icon == "mdi:valve"
-
-    vlv = SyrConnectSensor(coord, "dev_i", "Device I", "p1", "getVLV")
-    assert vlv.icon == "mdi:valve-closed"
-
-    # Test other VLV states
-    coord2 = create_mock_coordinator(
-        {"devices": [{"id": "dev_j", "name": "Device J", "project_id": "p1", "status": {"getVLV": "20"}}]}
-    )
-    vlv2 = SyrConnectSensor(coord2, "dev_j", "Device J", "p1", "getVLV")
-    assert vlv2.icon == "mdi:valve-open"
 
 
 async def test_sensor_missing_device(hass: HomeAssistant) -> None:
@@ -1228,28 +1162,6 @@ async def test_sensor_icon_exception_handling(hass: HomeAssistant) -> None:
     # Should return base icon without crashing
     icon = sensor.icon
     assert icon is not None or icon is None  # Just verify it doesn't crash
-
-
-async def test_sensor_icon_datetime_conversion(hass: HomeAssistant) -> None:
-    """Test icon property with datetime value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "2",  # Value 2 = Available for pressure sensor
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return check-circle icon for value 2 (Available)
-    icon = sensor.icon
-    assert icon == "mdi:check-circle"
 
 
 async def test_sensor_alarm_none_value(hass: HomeAssistant) -> None:
@@ -1900,178 +1812,6 @@ async def test_sensor_getcs_int_zero(hass: HomeAssistant) -> None:
     assert len(cs1_sensors) == 0
 
 
-async def test_sensor_icon_alarm_no_salt(hass: HomeAssistant) -> None:
-    """Test alarm icon when alarm is NoSalt."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "NoSalt",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
-
-    # getALM uses a static icon
-    assert sensor.icon == "mdi:bell-plus-outline"
-
-
-async def test_sensor_icon_alarm_inactive(hass: HomeAssistant) -> None:
-    """Test alarm icon when alarm is inactive."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
-
-    # getALM uses a static icon
-    assert sensor.icon == "mdi:bell-plus-outline"
-
-
-async def test_sensor_icon_regeneration_active(hass: HomeAssistant) -> None:
-    """Test regeneration icon when regeneration is active."""
-    # getSRE is excluded, so test with a numeric sensor that has icon logic
-    # Use getRG1 (valve) instead which has similar icon logic
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # getRG1 = 1 (valve open) should show valve icon
-    assert sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_regeneration_inactive(hass: HomeAssistant) -> None:
-    """Test regeneration icon when regeneration is inactive."""
-    # Use getRG2 (valve) with value 0
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG2": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
-
-    # getRG2 = 0 (valve closed) should show closed valve icon
-    assert sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_valve_open(hass: HomeAssistant) -> None:
-    """Test valve icon when valve is open (getRG1=1)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Open valve (value 1) should show valve icon
-    assert sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_valve_closed(hass: HomeAssistant) -> None:
-    """Test valve icon when valve is closed (getRG2=0)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG2": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
-
-    # Closed valve (value 0) should show closed valve icon
-    assert sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_valve_string_active(hass: HomeAssistant) -> None:
-    """Test valve icon with string 'active' value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG3": "active",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG3")
-
-    # String 'active' should show open valve icon
-    assert sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_valve_none_value(hass: HomeAssistant) -> None:
-    """Test valve icon when value is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # None value should return base icon
-    icon = sensor.icon
-    assert icon is not None or icon is None
-
-
 async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     """Test entity registry cleanup handles exceptions gracefully."""
 
@@ -2106,42 +1846,6 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
 
 
 # Focused tests for uncovered branches in sensor icon and setup logic
-def test_icon_getvlv_variants(create_mock_coordinator):
-    vals = {
-        "10": "mdi:valve-closed",
-        "11": "mdi:valve",
-        "20": "mdi:valve-open",
-        "21": "mdi:valve",
-        "99": None,
-    }
-    for raw, expected in vals.items():
-        data = {"devices": [{"id": "d1", "name": "D1", "project_id": "p1", "status": {"getVLV": raw}}]}
-        coord = create_mock_coordinator(data)
-        s = SyrConnectSensor(coord, "d1", "D1", "p1", "getVLV")
-        if expected is None:
-            assert s.icon == s._base_icon
-        else:
-            assert s.icon == expected
-
-
-def test_icon_getpst_values(create_mock_coordinator):
-    data2 = {"devices": [{"id": "d2", "name": "D2", "project_id": "p1", "status": {"getPST": "2"}}]}
-    coord2 = create_mock_coordinator(data2)
-    s2 = SyrConnectSensor(coord2, "d2", "D2", "p1", "getPST")
-    assert s2.icon == "mdi:check-circle"
-
-    data1 = {"devices": [{"id": "d3", "name": "D3", "project_id": "p1", "status": {"getPST": "1"}}]}
-    coord1 = create_mock_coordinator(data1)
-    s1 = SyrConnectSensor(coord1, "d3", "D3", "p1", "getPST")
-    assert s1.icon == "mdi:close-circle"
-
-    data_invalid = {"devices": [{"id": "d4", "name": "D4", "project_id": "p1", "status": {"getPST": "x"}}]}
-    coord_invalid = create_mock_coordinator(data_invalid)
-    sinv = SyrConnectSensor(coord_invalid, "d4", "D4", "p1", "getPST")
-    # invalid falls back to base icon or handled gracefully
-    assert sinv.icon == sinv._base_icon or sinv.icon in ("mdi:close-circle", "mdi:check-circle")
-
-
 def test_icon_battery_zero(create_mock_coordinator):
     data = {"devices": [{"id": "d7", "name": "D7", "project_id": "p1", "status": {"getBAT": "0"}}]}
     coord = create_mock_coordinator(data)
@@ -2585,240 +2289,6 @@ async def test_sensor_exclude_when_zero_string_value(hass: HomeAssistant) -> Non
     assert len(cs1_entities) == 0
 
 
-async def test_sensor_icon_getpst_value_2(hass: HomeAssistant) -> None:
-    """Test getPST sensor icon when value is 2 (available)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "2",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return check-circle icon for value 2
-    assert sensor.icon == "mdi:check-circle"
-
-
-async def test_sensor_icon_getpst_value_1(hass: HomeAssistant) -> None:
-    """Test getPST sensor icon when value is 1 (not available)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return close-circle icon for value 1
-    assert sensor.icon == "mdi:close-circle"
-
-
-async def test_sensor_icon_getpst_none_value(hass: HomeAssistant) -> None:
-    """Test getPST sensor icon when value is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return base icon when value is None
-    assert sensor.icon == sensor._base_icon
-
-
-async def test_sensor_icon_getpst_datetime_value(hass: HomeAssistant) -> None:
-    """Test getPST sensor icon with datetime value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "1704067200",  # Timestamp
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should convert timestamp and check value
-    icon = sensor.icon
-    assert icon is not None
-
-
-async def test_sensor_icon_getpst_invalid_conversion(hass: HomeAssistant) -> None:
-    """Test getPST sensor icon with value that can't be converted."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should default to ival=1 and return close-circle
-    assert sensor.icon is not None
-
-
-async def test_sensor_icon_getrg_valve_open(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon when valve is open (value 1)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should return valve icon for value 1
-    assert sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_getrg_valve_closed(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon when valve is closed (value 0)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should return valve-closed icon for value 0
-    assert sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_getrg_none_value(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon when value is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should return base icon when value is None
-    assert sensor.icon == sensor._base_icon
-
-
-async def test_sensor_icon_getrg_datetime_value(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon with datetime value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG2": "1704067200",  # Timestamp (non-zero)
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
-
-    # Timestamp converts to large int (not 1), so should return closed valve
-    assert sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_getrg_string_active_value(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon with string active values."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG3": "true",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG3")
-
-    # Should recognize "true" as active
-    assert sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_getrg_exception_handling(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon handles exceptions gracefully."""
-    # Use invalid data that will cause exception during icon calculation
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": None,  # None value should be handled gracefully
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should handle None and return base icon
-    icon = sensor.icon
-    assert icon is not None
-
-
 async def test_sensor_rpw_mask_invalid_int_conversion(hass: HomeAssistant) -> None:
     """Test getRPW sensor with value that can't be converted to int."""
     data = {
@@ -3013,27 +2483,6 @@ async def test_sensor_string_sensor_none_value(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_icon_alarm_low_salt(hass: HomeAssistant) -> None:
-    """Test alarm sensor icon when low salt."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "LowSalt",  # low_salt value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
-
-    # getALM uses a static icon
-    assert sensor.icon == "mdi:bell-plus-outline"
-
-
 async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
     """Test sensor setup skips values that are not int/float/str."""
     data = {
@@ -3137,70 +2586,6 @@ async def test_sensor_setup_binary_key_in_known_keys_not_created(hass: HomeAssis
     entities = add_entities.call_args.args[0] if add_entities.called else []
     assert not any(e._sensor_key == "getFAKE" for e in entities)
     assert any(e._sensor_key == "getRES" for e in entities)
-
-
-async def test_sensor_icon_getpst_other_value(hass: HomeAssistant) -> None:
-    """Test getPST sensor icon with value other than 1 or 2."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": 99,  # Other value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return base icon for other values
-    icon = sensor.icon
-    assert icon is not None
-
-
-async def test_sensor_icon_getrg_string_inactive_value(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon with string inactive value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "off",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should return closed valve for 'off'
-    assert sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_getrg_string_on_value(hass: HomeAssistant) -> None:
-    """Test getRG sensor icon with string 'on' value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "on",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should return open valve for 'on'
-    assert sensor.icon == "mdi:valve"
 
 
 async def test_sensor_rpw_hass_config_no_language(hass: HomeAssistant) -> None:
@@ -3359,27 +2744,6 @@ async def test_sensor_whu_none_value_returns_none(hass: HomeAssistant) -> None:
 
     # Should return None
     assert sensor.native_value is None
-
-
-async def test_sensor_icon_alarm_mapped_other_value(hass: HomeAssistant) -> None:
-    """Test alarm icon with value that maps but is not low_salt or no_salt."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "",  # Empty string maps to 'no_alarm'
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
-
-    # getALM uses a static icon
-    assert sensor.icon == "mdi:bell-plus-outline"
 
 
 async def test_sensor_setup_no_coordinator_data(hass: HomeAssistant) -> None:
@@ -3689,159 +3053,6 @@ async def test_sensor_whu_unit_not_found(hass: HomeAssistant) -> None:
     assert sensor._attr_native_unit_of_measurement is None
 
 
-async def test_getsre_icon_true_and_false(hass: HomeAssistant) -> None:
-    """Test getRG icon with datetime value."""
-    dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": dt.timestamp(),
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Timestamp > 0 should return valve icon
-    icon = sensor.icon
-    assert icon in ("mdi:valve", "mdi:valve-closed")
-
-
-async def test_sensor_icon_rg_with_string_conversion(hass: HomeAssistant) -> None:
-    """Test getRG icon with string that converts to true."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG2": "true",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
-
-    # Should convert to 1 and return valve icon
-    assert sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_rg_with_exception(hass: HomeAssistant) -> None:
-    """Test getRG icon handles exception gracefully."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG3": "value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG3")
-
-    # Should return base icon when exception occurs
-    icon = sensor.icon
-    assert icon is not None
-
-
-async def test_sensor_icon_pst_value_2(hass: HomeAssistant) -> None:
-    """Test getPST icon with value 2 (available)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": 2,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return check-circle icon
-    assert sensor.icon == "mdi:check-circle"
-
-
-async def test_sensor_icon_pst_value_1(hass: HomeAssistant) -> None:
-    """Test getPST icon with value 1 (not available)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": 1,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return close-circle icon
-    assert sensor.icon == "mdi:close-circle"
-
-
-async def test_sensor_icon_pst_with_datetime(hass: HomeAssistant) -> None:
-    """Test getPST icon with datetime value."""
-    dt = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": dt.timestamp(),
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should convert timestamp and return icon
-    icon = sensor.icon
-    assert icon in ("mdi:check-circle", "mdi:close-circle")
-
-
-async def test_sensor_icon_pst_with_exception(hass: HomeAssistant) -> None:
-    """Test getPST icon handles exception gracefully."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return base icon when exception occurs
-    icon = sensor.icon
-    assert icon is not None
-
-
 async def test_sensor_rtm_value_error(hass: HomeAssistant) -> None:
     """Test getRTM with ValueError on conversion."""
     data = {
@@ -4032,68 +3243,6 @@ async def test_sensor_value_not_in_status(hass: HomeAssistant) -> None:
 
     # Should return None when key not in status
     assert sensor.native_value is None
-
-
-async def test_sensor_icon_alarm_raw_value_not_found(hass: HomeAssistant) -> None:
-    """Test getALM icon when device not found in coordinator data."""
-    data = {
-        "devices": [
-            {
-                "id": "other_device",
-                "name": "Other Device",
-                "project_id": "project1",
-                "status": {"getALM": "LowSalt"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
-
-    # Should return base icon when device not found
-    icon = sensor.icon
-    assert icon is not None
-
-
-async def test_sensor_icon_rg_none_value(hass: HomeAssistant) -> None:
-    """Test getRG icon with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Should return base icon
-    assert sensor.icon == sensor._base_icon
-
-
-async def test_sensor_icon_pst_none_value(hass: HomeAssistant) -> None:
-    """Test getPST icon with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # Should return base icon
-    assert sensor.icon == sensor._base_icon
 
 
 async def test_sensor_whu_int_value(hass: HomeAssistant) -> None:
@@ -4764,213 +3913,6 @@ async def test_sensor_getul_mapped_string_key(hass: HomeAssistant) -> None:
     assert sensor.native_value == 10
 
 
-async def test_sensor_icon_getab_open_value(hass: HomeAssistant) -> None:
-    """Test getAB sensor icon when valve is open (value=1)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-    assert ab_sensor.icon == "mdi:valve-open"
-
-
-async def test_sensor_icon_getab_closed_value(hass: HomeAssistant) -> None:
-    """Test getAB sensor icon when valve is closed (value=2)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": "2",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-    assert ab_sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_getab_none_value(hass: HomeAssistant) -> None:
-    """Test getAB sensor icon with None value returns base icon."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-    # Should return base icon (from const.py)
-    assert ab_sensor.icon == ab_sensor._base_icon
-
-
-async def test_sensor_icon_getab_unknown_value(hass: HomeAssistant) -> None:
-    """Test getAB sensor icon with unknown value returns base icon."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": "5",  # Unknown value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    ab_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-    assert ab_sensor.icon == ab_sensor._base_icon
-
-
-async def test_sensor_icon_getvlv_closed_value(hass: HomeAssistant) -> None:
-    """Test getVLV sensor icon when valve is closed (value=10)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "10",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-    assert vlv_sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_getvlv_closing_value(hass: HomeAssistant) -> None:
-    """Test getVLV sensor icon when valve is closing (value=11)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "11",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-    assert vlv_sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_getvlv_open_value(hass: HomeAssistant) -> None:
-    """Test getVLV sensor icon when valve is open (value=20)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "20",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-    assert vlv_sensor.icon == "mdi:valve-open"
-
-
-async def test_sensor_icon_getvlv_opening_value(hass: HomeAssistant) -> None:
-    """Test getVLV sensor icon when valve is opening (value=21)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "21",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-    assert vlv_sensor.icon == "mdi:valve"
-
-
-async def test_sensor_icon_getvlv_none_value(hass: HomeAssistant) -> None:
-    """Test getVLV sensor icon with None value returns base icon."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-    assert vlv_sensor.icon == vlv_sensor._base_icon
-
-
-async def test_vlv_value_mappings(hass: HomeAssistant) -> None:
-    """Test getVLV specific mappings to icons."""
-    mapping = {
-        "10": "mdi:valve-closed",
-        "11": "mdi:valve",
-        "20": "mdi:valve-open",
-        "21": "mdi:valve",
-    }
-    for val, expected in mapping.items():
-        data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getVLV": val}}]}
-        coord = _build_coordinator(hass, data)
-        sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getVLV")
-        assert sensor.icon == expected
-
-
-async def test_rg_datetime_icon_branch(hass: HomeAssistant) -> None:
-    """If native_value is a datetime with timestamp 1, icon should map to open valve."""
-    # Ensure computed native value is None so the cached datetime is used
-    data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getRG1": None}}]}
-    coord = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getRG1")
-    # Force last native value to a datetime with timestamp == 1
-    sensor._last_native_value = datetime.fromtimestamp(1, UTC)
-    assert sensor.icon == "mdi:valve"
-
-
 async def test_getvol_conversion_to_m3(hass: HomeAssistant) -> None:
     """getVOL string values should be converted to cubic meters (divide by 1000)."""
     data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getVOL": "6530"}}]}
@@ -5002,81 +3944,6 @@ async def test_async_setup_entry_getpa_group_creation(hass: HomeAssistant) -> No
     # Should include at least one group sensor like getPN1
     keys = [getattr(e, "_sensor_key", None) for e in entities_collected]
     assert "getPN1" in keys or "getPV1" in keys or "getPF1" in keys
-
-
-# Tests merged from test_sensor_icon_fix.py
-def test_icon_attribute_exists_in_dict() -> None:
-    """Test sensor initialization when icon is defined in _SYR_CONNECT_SENSOR_ICON."""
-
-    class MockSensorEntity:
-        pass
-
-    sensor = MockSensorEntity()
-    sensor._attr_icon = "mdi:water-percent"  # type: ignore[attr-defined]
-
-    base_icon_old = sensor._attr_icon  # type: ignore[attr-defined]
-    assert base_icon_old == "mdi:water-percent"
-
-    base_icon_new = getattr(sensor, "_attr_icon", None)
-    assert base_icon_new == "mdi:water-percent"
-
-
-def test_icon_attribute_missing_old_approach_fails() -> None:
-    """Test that old approach fails when icon is not defined."""
-
-    class MockSensorEntity:
-        pass
-
-    sensor = MockSensorEntity()
-    try:
-        _ = sensor._attr_icon  # type: ignore[attr-defined]
-        raised = False
-    except AttributeError:
-        raised = True
-
-    assert raised is True
-
-
-def test_icon_attribute_missing_new_approach_works() -> None:
-    """Test that new approach works when icon is not defined."""
-
-    class MockSensorEntity:
-        pass
-
-    sensor = MockSensorEntity()
-    base_icon = getattr(sensor, "_attr_icon", None)
-    assert base_icon is None
-
-
-def test_real_world_scenario_with_leak_protection_sensors() -> None:
-    """Test real-world scenario with LEXplus10SL leak protection sensors."""
-
-    class MockSensorEntity:
-        pass
-
-    leak_sensors = [
-        "getPA1",
-        "getPA2",
-        "getPA3",
-        "getPN1",
-        "getPN2",
-        "getPN3",
-        "getPF1",
-        "getPF2",
-        "getPF3",
-        "getPT1",
-        "getPT2",
-        "getPT3",
-        "getPV1",
-        "getPV2",
-        "getPV3",
-        "getPRF",
-    ]
-
-    for _sensor_key in leak_sensors:
-        sensor = MockSensorEntity()
-        base_icon = getattr(sensor, "_attr_icon", None)
-        assert base_icon is None
 
 
 async def test_getavo_parsing(hass: HomeAssistant) -> None:
@@ -5260,7 +4127,7 @@ async def test_sensor_icon_getbat_zero_string_alert(hass: HomeAssistant) -> None
 
 
 async def test_sensor_icon_getbat_invalid_fallback_base(hass: HomeAssistant) -> None:
-    """Invalid getBAT values should result in base icon (no alert)."""
+    """Invalid getBAT values should result in the default battery icon (no alert)."""
     data = {
         "devices": [
             {
@@ -5274,11 +4141,11 @@ async def test_sensor_icon_getbat_invalid_fallback_base(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
 
-    assert sensor.icon == sensor._base_icon
+    assert sensor.icon == "mdi:battery"
 
 
 async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -> None:
-    """Safe-T+ multi-value format should use base icon (not alert)."""
+    """Safe-T+ multi-value format should use the default battery icon (not alert)."""
     data = {
         "devices": [
             {
@@ -5292,27 +4159,7 @@ async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
 
-    assert sensor.icon == sensor._base_icon
-
-
-async def test_sensor_icon_getvlv_unknown_value(hass: HomeAssistant) -> None:
-    """Test getVLV sensor icon with unknown value returns base icon."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "99",  # Unknown value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    vlv_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-    assert vlv_sensor.icon == vlv_sensor._base_icon
+    assert sensor.icon == "mdi:battery"
 
 
 @pytest.mark.parametrize(
@@ -5833,106 +4680,6 @@ async def test_sensor_apply_numeric_conversion_vol_exception(hass: HomeAssistant
     value = sensor.native_value
     # The conversion should handle the exception
     assert value is not None or value is None  # Either way, no exception raised
-
-
-async def test_sensor_icon_ala_exception_in_mapping(hass: HomeAssistant) -> None:
-    """Test exception handling in icon property for getALA."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": "some_value",
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        project_id="project1",
-        sensor_key="getALA",
-    )
-
-    # Mock get_sensor_ala_map to raise exception
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Mapping error")):
-        icon = sensor.icon
-        # Should fall back to checking for "no_alarm" or return alert icon
-        assert icon in ("mdi:bell-outline", "mdi:bell-alert", "mdi:bell-alert-outline")
-
-
-async def test_sensor_icon_getab_none_status(hass: HomeAssistant) -> None:
-    """Test icon property for getAB when device not found."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "other_device",
-                "name": "Other Device",
-                "project_id": "project1",
-                "status": {},
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",  # Non-existent device
-        device_name="Device 1",
-        project_id="project1",
-        sensor_key="getAB",
-    )
-
-    # Should handle missing device gracefully
-    icon = sensor.icon
-    assert icon is not None or icon is None  # Base icon or None
-
-
-async def test_sensor_icon_getvlv_all_values(hass: HomeAssistant) -> None:
-    """Test icon for getVLV with all possible values."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    test_cases = [
-        ("10", "mdi:valve-closed"),
-        ("11", "mdi:valve"),
-        ("20", "mdi:valve-open"),
-        ("21", "mdi:valve"),
-        ("99", None),  # Unknown value, should return base icon
-    ]
-
-    for value, expected_icon_prefix in test_cases:
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        "getVLV": value,
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        sensor = SyrConnectSensor(
-            coordinator=coordinator,
-            device_id="device1",
-            device_name="Device 1",
-            project_id="project1",
-            sensor_key="getVLV",
-        )
-
-        icon = sensor.icon
-        if expected_icon_prefix:
-            assert icon == expected_icon_prefix
 
 
 async def test_sensor_icon_getbat_zero_value(hass: HomeAssistant) -> None:
@@ -6898,28 +5645,6 @@ async def test_sensor_pa_group_exception_handling(hass: HomeAssistant) -> None:
         assert mock_add_entities.called
 
 
-async def test_sensor_icon_pst_invalid_datetime(hass: HomeAssistant) -> None:
-    """Test getPST icon with value that cannot be converted."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "invalid",  # Invalid value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
-
-    # When value cannot be converted, ival defaults to 1, returning close-circle
-    icon = sensor.icon
-    assert icon == "mdi:close-circle"
-
-
 async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
     """Test getBAT icon with non-zero string value."""
     data = {
@@ -6937,7 +5662,7 @@ async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
 
-    # Non-zero battery voltage should return base icon
+    # Non-zero battery voltage keeps the default battery icon
     icon = sensor.icon
     assert icon == "mdi:battery"
 
@@ -6959,150 +5684,9 @@ async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
 
-    # Should return base icon when conversion fails
+    # Conversion failure keeps the default battery icon
     icon = sensor.icon
     assert icon == "mdi:battery"
-
-
-async def test_sensor_icon_rg_datetime_value(hass: HomeAssistant) -> None:
-    """Test getRG1/2/3 icon with datetime value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG1": "1",  # Will be converted then tested as datetime
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    # Mock native_value property to return datetime
-    with patch.object(type(sensor), "native_value", new_callable=PropertyMock, return_value=datetime.now(UTC)):
-        icon = sensor.icon
-        # Datetime timestamp (large int) doesn't equal 1, so returns closed valve
-        assert icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_rg_string_true(hass: HomeAssistant) -> None:
-    """Test getRG icon with string 'true' value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG2": "true",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG2")
-
-    # String "true" should show open valve
-    icon = sensor.icon
-    assert icon == "mdi:valve"
-
-
-async def test_sensor_icon_rg_exception_handling(hass: HomeAssistant) -> None:
-    """Test getRG icon exception handling."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRG3": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG3")
-
-    # Invalid value is treated as 0 (not in active list), returns closed valve
-    icon = sensor.icon
-    assert icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_alm_ala_exception(hass: HomeAssistant) -> None:
-    """Test getALM/ALA icon when mapping raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": "some_value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
-
-    # When mapping exception occurs but raw value exists, should return alert icon
-    with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Mapping error")):
-        icon = sensor.icon
-        # Should return bell-alert-outline when raw value exists (alarm active)
-        assert icon == "mdi:bell-alert-outline"
-
-
-async def test_sensor_icon_ab_raw_status_none(hass: HomeAssistant) -> None:
-    """Test getAB icon when device not found in coordinator data."""
-    data = {
-        "devices": [
-            {
-                "id": "other_device",
-                "name": "Other",
-                "project_id": "project1",
-                "status": {"getAB": "true"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-
-    # get_sensor_ab_value should receive empty dict and return None
-    icon = sensor.icon
-    # None value should return base icon
-    assert icon == "mdi:valve"
-
-
-async def test_sensor_icon_vlv_values(hass: HomeAssistant) -> None:
-    """Test getVLV icon for all possible values."""
-    test_cases = [
-        ("10", "mdi:valve-closed"),
-        ("11", "mdi:valve"),
-        ("20", "mdi:valve-open"),
-        ("21", "mdi:valve"),
-        ("99", "mdi:valve"),  # Unknown value returns base icon
-    ]
-
-    for value, expected_icon in test_cases:
-        data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        "getVLV": value,
-                    },
-                }
-            ]
-        }
-        coordinator = _build_coordinator(hass, data)
-        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-        assert sensor.icon == expected_icon
 
 
 async def test_sensor_native_value_ala_exception(hass: HomeAssistant) -> None:
@@ -7808,87 +6392,6 @@ async def test_sensor_getbat_invalid_type(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_icon_getab_closed(hass: HomeAssistant) -> None:
-    """Test getAB icon shows closed valve when true."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": "2",  # 2 = closed
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-
-    assert sensor.icon == "mdi:valve-closed"
-
-
-async def test_sensor_icon_getab_open(hass: HomeAssistant) -> None:
-    """Test getAB icon shows open valve when false."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getAB": "1",  # 1 = open
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-
-    assert sensor.icon == "mdi:valve-open"
-
-
-async def test_sensor_icon_getala_empty_string(hass: HomeAssistant) -> None:
-    """Test getALA icon with empty string shows inactive bell."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": "  ",  # Whitespace only
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
-
-    assert sensor.icon == "mdi:bell-outline"
-
-
-async def test_sensor_icon_getalm_empty_string(hass: HomeAssistant) -> None:
-    """Test getALM icon with empty string shows inactive bell."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
-
-    # getALM uses a static icon
-    assert sensor.icon == "mdi:bell-plus-outline"
-
-
 async def test_sensor_getala_exception_handling(hass: HomeAssistant) -> None:
     """Test getALA handles exceptions in get_sensor_ala_map."""
     data = {
@@ -8140,66 +6643,6 @@ async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) ->
 
     # Invalid type (dict) falls through and returns the value as-is
     assert sensor.native_value == {"dict": "value"}
-
-
-async def test_sensor_getvlv_closing_state(hass: HomeAssistant) -> None:
-    """Test getVLV icon for closing state (11)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "11",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-
-    assert sensor.icon == "mdi:valve"  # Closing in progress
-
-
-async def test_sensor_getvlv_opening_state(hass: HomeAssistant) -> None:
-    """Test getVLV icon for opening state (21)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "21",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-
-    assert sensor.icon == "mdi:valve"  # Opening in progress
-
-
-async def test_sensor_getvlv_unknown_state(hass: HomeAssistant) -> None:
-    """Test getVLV icon for unknown state."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVLV": "99",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-
-    assert sensor.icon == sensor._base_icon
 
 
 async def test_sensor_apply_numeric_conversion_zerodivision(hass: HomeAssistant) -> None:
@@ -8685,14 +7128,6 @@ def test_getala_uses_generic_codes_for_unknown_model(create_mock_coordinator) ->
     assert sensor.native_value == "alarm_max_flow_rate_reached"
 
 
-async def test_icon_getab_no_status(hass: HomeAssistant) -> None:
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAB")
-
-    assert sensor.icon == sensor._base_icon
-
-
 async def test_battery_zero_icon(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getBAT": "0"}}]}
     coordinator = _build_coordinator(hass, data)
@@ -8700,37 +7135,6 @@ async def test_battery_zero_icon(hass: HomeAssistant) -> None:
 
     assert sensor.native_value == 0.0
     assert sensor.icon == "mdi:battery-alert-variant-outline"
-
-
-@pytest.mark.parametrize(
-    ("val", "expected"),
-    [
-        ("10", "mdi:valve-closed"),
-        ("11", "mdi:valve"),
-        ("20", "mdi:valve-open"),
-        ("21", "mdi:valve"),
-        ("99", None),
-    ],
-)
-async def test_vlv_icon_variants(hass: HomeAssistant, val: str, expected: str | None) -> None:
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getVLV": val}}]}
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVLV")
-
-    if expected is None:
-        assert sensor.icon == sensor._base_icon
-    else:
-        assert sensor.icon == expected
-
-
-async def test_rgx_active_string(hass: HomeAssistant) -> None:
-    data = {
-        "devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getRG1": "active"}}]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRG1")
-
-    assert sensor.icon == "mdi:valve"
 
 
 async def test_getala_exception_handling(hass: HomeAssistant) -> None:
@@ -9009,61 +7413,8 @@ def test_sensor_icon_bat_cached_non_numeric_string(create_mock_coordinator):
     sensor._last_native_value = "not a number"  # force cache
 
     icon = sensor.icon
-    # ValueError caught → falls through → returns base icon
-    assert icon == sensor._base_icon
-
-
-# ---------------------------------------------------------------------------
-# Line 421 — getPST datetime branch in icon
-# ---------------------------------------------------------------------------
-
-
-def test_sensor_icon_pst_datetime_branch(create_mock_coordinator):
-    """getPST icon: isinstance(val, datetime) branch is taken (line 421).
-    Cache a datetime so native_value returns it when status has getPST: None.
-    """
-    data = {"devices": [{"id": "d1", "status": {"getPST": None}}]}
-    coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPST")
-    sensor._last_native_value = datetime(2024, 1, 1, tzinfo=UTC)
-
-    icon = sensor.icon
-    # timestamp() returns a large positive int → ival != 1 and != 2 → base icon
-    assert icon is not None
-
-
-# ---------------------------------------------------------------------------
-# Lines 433-434 — getPST icon outer except(ValueError,TypeError)
-# ---------------------------------------------------------------------------
-
-
-def test_sensor_icon_pst_native_value_raises(create_mock_coordinator):
-    """getPST icon outer except catches TypeError from native_value (lines 433-434)."""
-    data = {"devices": [{"id": "d1", "status": {"getPST": "2"}}]}
-    coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPST")
-
-    with patch.object(type(sensor), "native_value", new_callable=PropertyMock, side_effect=TypeError("boom")):
-        icon = sensor.icon
-    # outer except fires → pass → falls through to next icon check → base icon
-    assert icon is not None
-
-
-# ---------------------------------------------------------------------------
-# Lines 462-463 — getRG1/2/3 icon outer except(ValueError,TypeError,AttributeError)
-# ---------------------------------------------------------------------------
-
-
-def test_sensor_icon_rg_native_value_raises(create_mock_coordinator):
-    """getRG1 icon outer except catches TypeError from native_value (lines 462-463)."""
-    data = {"devices": [{"id": "d1", "status": {"getRG1": "1"}}]}
-    coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getRG1")
-
-    with patch.object(type(sensor), "native_value", new_callable=PropertyMock, side_effect=TypeError("boom")):
-        icon = sensor.icon
-    # outer except fires → pass → falls through → base icon
-    assert icon is not None
+    # ValueError caught → falls through → default battery icon
+    assert icon == "mdi:battery"
 
 
 # ---------------------------------------------------------------------------
@@ -9319,41 +7670,6 @@ async def test_connection_state_sensor_native_value_no_data(hass: HomeAssistant)
     coordinator = _build_coordinator(hass, {})
     sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1", "project1")
     assert sensor.native_value is None
-
-
-async def test_connection_state_sensor_icon_online(hass: HomeAssistant) -> None:
-    """Icon is check-network-outline when dst=2 (online)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 2}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:check-network-outline"
-
-
-async def test_connection_state_sensor_icon_offline(hass: HomeAssistant) -> None:
-    """Icon is close-network-outline when dst=1 (offline)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 1}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:close-network-outline"
-
-
-async def test_connection_state_sensor_icon_never_online(hass: HomeAssistant) -> None:
-    """Icon is network-outline when dst=0 (never been online)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 0}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:network-outline"
-
-
-async def test_connection_state_sensor_icon_standby(hass: HomeAssistant) -> None:
-    """Icon is check-network-outline when dst=3 (standby)."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"dst": 3}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:check-network-outline"
-
-
-async def test_connection_state_sensor_icon_fallback(hass: HomeAssistant) -> None:
-    """Icon falls back to network-outline when sta is None."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
-    sensor = _build_connection_state_sensor(hass, data)
-    assert sensor.icon == "mdi:network-outline"
 
 
 async def test_connection_state_sensor_entity_category(hass: HomeAssistant) -> None:

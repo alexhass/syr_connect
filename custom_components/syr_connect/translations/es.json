@@ -138,7 +138,7 @@
         }
       },
       "getiwh": {
-        "name": "Dureza del agua de entrada"
+        "name": "Dureza del agua cruda"
       },
       "getlot": {
         "name": "Conductividad máxima de salida"
@@ -339,7 +339,7 @@
         "name": "Dureza del agua blanda"
       },
       "getowh": {
-        "name": "Dureza del agua de salida"
+        "name": "Dureza del agua blanda"
       },
       "getprf": {
         "name": "Perfil de protección contra fugas activo",
@@ -700,7 +700,7 @@
         "name": "Dirección IP"
       },
       "getiwh": {
-        "name": "Dureza del agua de entrada"
+        "name": "Dureza del agua cruda"
       },
       "getlan": {
         "name": "Idioma del dispositivo",
@@ -800,7 +800,7 @@
         "name": "Dureza del agua blanda"
       },
       "getowh": {
-        "name": "Dureza del agua de salida"
+        "name": "Dureza del agua blanda"
       },
       "getpa1": {
         "name": "Perfil de protección contra fugas 1",

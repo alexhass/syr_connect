@@ -151,7 +151,7 @@ The integration provides comprehensive monitoring of your devices:
 
 #### Water Quality & Capacity
 
-- Input/Output water hardness monitoring
+- Raw/Soft water hardness monitoring
 - Water conductivity (µS/cm)
 - Water temperature (°C)
 - Remaining softening capacity tracking
@@ -248,7 +248,7 @@ The integration provides comprehensive monitoring of your devices:
 - **Display Rotation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display)
 - **Filter Type**: Select the installed filter type (for NeoSoft devices)
 - **Regeneration Mode**: Select Standard / ECO / Power / Automatic (for devices that support it)
-- **Input / Output Water Hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l)
+- **Raw / Soft Water Hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l)
 - **Water Treatment and Filling** (MuCo-based devices): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure
 - **Floor Leak Sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronisation interval
 

@@ -339,7 +339,7 @@
         "name": "Weichwasserhärte"
       },
       "getowh": {
-        "name": "Ausgangshärte"
+        "name": "Weichwasserhärte"
       },
       "getprf": {
         "name": "Aktives Leckagesschutz-Profil",

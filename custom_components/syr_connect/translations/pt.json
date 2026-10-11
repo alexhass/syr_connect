@@ -138,7 +138,7 @@
         }
       },
       "getiwh": {
-        "name": "Dureza da água de entrada"
+        "name": "Dureza da água bruta"
       },
       "getlot": {
         "name": "Condutividade máxima de saída"
@@ -339,7 +339,7 @@
         "name": "Dureza da água amaciada"
       },
       "getowh": {
-        "name": "Dureza da água de saída"
+        "name": "Dureza da água amaciada"
       },
       "getprf": {
         "name": "Perfil de proteção contra vazamento ativo",
@@ -700,7 +700,7 @@
         "name": "Endereço IP"
       },
       "getiwh": {
-        "name": "Dureza da água de entrada"
+        "name": "Dureza da água bruta"
       },
       "getlan": {
         "name": "Idioma do dispositivo",
@@ -800,7 +800,7 @@
         "name": "Dureza da água amaciada"
       },
       "getowh": {
-        "name": "Dureza da água de saída"
+        "name": "Dureza da água amaciada"
       },
       "getpa1": {
         "name": "Perfil de proteção contra vazamento 1",

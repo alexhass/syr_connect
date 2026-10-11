@@ -138,7 +138,7 @@
         }
       },
       "getiwh": {
-        "name": "Input water hardness"
+        "name": "Raw water hardness"
       },
       "getlot": {
         "name": "Maximum output conductivity"
@@ -339,7 +339,7 @@
         "name": "Soft water hardness"
       },
       "getowh": {
-        "name": "Output water hardness"
+        "name": "Soft water hardness"
       },
       "getprf": {
         "name": "Active leak protection profile",
@@ -700,7 +700,7 @@
         "name": "IP address"
       },
       "getiwh": {
-        "name": "Input water hardness"
+        "name": "Raw water hardness"
       },
       "getlan": {
         "name": "Device language",
@@ -800,7 +800,7 @@
         "name": "Soft water hardness"
       },
       "getowh": {
-        "name": "Output water hardness"
+        "name": "Soft water hardness"
       },
       "getpa1": {
         "name": "Leak protection profile 1",

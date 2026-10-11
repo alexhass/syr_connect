@@ -20,7 +20,6 @@ from .const import (
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_ICON,
     _SYR_CONNECT_SENSOR_UNIT,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
@@ -569,9 +568,6 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getRTM_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
-        # Use same icon as the combined regeneration time sensor if available
-        # Use the regeneration-time icon mapped to `getRTM`
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getRTM")
 
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
@@ -669,8 +665,6 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         self.entity_id = build_entity_id("select", device_id, sensor_key)
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-        # Icon mapping if present
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
 
         # Disable by default if key is in the disabled-by-default set
         if sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
@@ -817,7 +811,6 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         self.entity_id = build_entity_id("select", device_id, "getSRO")
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getSRO_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getSRO")
 
         # Use raw state keys so the frontend will translate them via the translation files
         self._options = ["0", "90", "180", "270"]
@@ -909,7 +902,6 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         self.entity_id = build_entity_id("select", device_id, sensor_key)
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get(sensor_key)
 
         # Options are the raw state keys (strings) of the mapping so the frontend
         # can translate the displayed state using the integration translations.
@@ -1008,7 +1000,6 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         self.entity_id = build_entity_id("select", device_id, "getPRF")
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getPRF_select")
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getPRF")
 
         # Set entity category according to central sensor mappings
         if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:

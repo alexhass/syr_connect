@@ -232,15 +232,14 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
     assert valve.is_closed is True
     assert valve.is_opening is False
     assert valve.is_closing is False
-    assert valve.icon == "mdi:valve-closed"
+    assert valve.state == "closed"
 
     # Update status to opening (21)
     coordinator.async_set_updated_data(
         {"devices": [{"id": "dev", "name": "Dev", "status": {"getVLV": "21"}}]}
     )
-    # Opening maps to moving icon
     assert valve.is_opening is True
-    assert valve.icon == "mdi:valve"
+    assert valve.state == "opening"
 
 
 async def test_is_closed_reads_only_getab(hass: HomeAssistant) -> None:
@@ -317,15 +316,15 @@ async def test_sync_service_wrappers_schedule_tasks(hass: HomeAssistant) -> None
     assert fake_hass.async_create_task.call_count >= 2
 
 
-async def test_icon_fallback_when_no_status(hass: HomeAssistant) -> None:
+async def test_state_unknown_when_no_status(hass: HomeAssistant) -> None:
     data = {"devices": []}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "missing", "Missing")
-    # No status -> closed is None -> icon should be base icon
-    assert valve.icon == valve._base_icon
+    # No status -> closed is None -> no state
+    assert valve.state is None
 
 
-async def test_is_closing_state_and_icon(hass: HomeAssistant) -> None:
+async def test_is_closing_state(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "c1", "name": "C1", "status": {"getVLV": "11"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "c1", "C1")
@@ -334,8 +333,7 @@ async def test_is_closing_state_and_icon(hass: HomeAssistant) -> None:
     assert valve.is_closing is True
     assert valve.is_opening is False
     assert valve.is_closed is None
-    # moving icon for closing
-    assert valve.icon == "mdi:valve"
+    assert valve.state == "closing"
 
 
 async def test_extra_state_attributes_none_when_no_status(hass: HomeAssistant) -> None:
@@ -439,13 +437,13 @@ async def test_sync_wrappers_without_hass_do_nothing(hass: HomeAssistant) -> Non
     valve.close_valve()
 
 
-async def test_icon_open_state(hass: HomeAssistant) -> None:
+async def test_state_open(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "o1", "name": "O1", "status": {"getVLV": "20", "getAB": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "o1", "O1")
-    # getAB=1 -> open -> icon should be open
+    # getAB=1 -> open
     assert valve.is_closed is False
-    assert valve.icon == "mdi:valve-open"
+    assert valve.state == "open"
 
 
 async def test_async_setup_entry_skips_invalid_values(hass: HomeAssistant) -> None:
@@ -970,35 +968,34 @@ async def test_build_set_ab_command_respects_boolean_raw(hass: HomeAssistant) ->
     assert build_set_ab_command({}, True) is None
 
 
-async def test_icon_opening_state(hass: HomeAssistant) -> None:
-    """Icon should show generic valve when opening (getVLV=21)."""
+async def test_state_opening(hass: HomeAssistant) -> None:
+    """State is opening when getVLV=21."""
     data = {"devices": [{"id": "io1", "name": "IO1", "status": {"getVLV": "21"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "io1", "IO1")
 
     assert valve.is_opening is True
-    assert valve.icon == "mdi:valve"
+    assert valve.state == "opening"
 
 
-async def test_icon_closing_state(hass: HomeAssistant) -> None:
-    """Icon should show generic valve when closing (getVLV=11)."""
+async def test_state_closing(hass: HomeAssistant) -> None:
+    """State is closing when getVLV=11."""
     data = {"devices": [{"id": "ic1", "name": "IC1", "status": {"getVLV": "11"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "ic1", "IC1")
 
     assert valve.is_closing is True
-    assert valve.icon == "mdi:valve"
+    assert valve.state == "closing"
 
 
-async def test_icon_unknown_returns_base_icon(hass: HomeAssistant) -> None:
-    """When state is unknown, icon should fall back to the base icon."""
+async def test_state_unknown(hass: HomeAssistant) -> None:
+    """Without getVLV/getAB the valve has no state."""
     data = {"devices": [{"id": "unk", "name": "UNK", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "unk", "UNK")
 
-    # No getVLV/getAB reported -> is_closed is None -> icon uses base icon
     assert valve.is_closed is None
-    assert valve.icon == valve._base_icon
+    assert valve.state is None
 
 
 async def test_setup_getab_invalid_value_hits_except_branch(hass: HomeAssistant) -> None:

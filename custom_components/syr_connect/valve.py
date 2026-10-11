@@ -14,7 +14,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_SENSOR_ICON, _SYR_CONNECT_VALVE_KNOWN_KEYS
+from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_VALVE_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
 from .helpers import (
@@ -142,10 +142,6 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
         # Build device info from coordinator data
         self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-
-        # Set icon if available
-        self._attr_icon = _SYR_CONNECT_SENSOR_ICON.get("getAB")
-        self._base_icon = getattr(self, "_attr_icon", None)
 
         # Enable valve entities by default
         self._attr_entity_registry_enabled_default = True
@@ -303,23 +299,3 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         """Sync service entrypoint to close the valve (schedules async task)."""
         if self.hass is not None:
             self.hass.async_create_task(self.async_close())
-
-    @property
-    def icon(self) -> str | None:
-        """Return a dynamic icon based on the valve state.
-
-        If the valve is currently moving (opening/closing) show a
-        generic valve icon; otherwise show open/closed icons.
-        """
-        opening = self.is_opening
-        if opening is True:
-            return "mdi:valve"
-        closing = self.is_closing
-        if closing is True:
-            return "mdi:valve"
-
-        # Prefer getAB/getVLV derived closed state for final display
-        closed = self.is_closed
-        if closed is None:
-            return self._base_icon
-        return "mdi:valve-closed" if closed else "mdi:valve-open"

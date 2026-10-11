@@ -567,8 +567,8 @@ async def test_binary_sensor_string_nonzero(hass: HomeAssistant) -> None:
     assert sensor.is_on is True
 
 
-async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
-    """Test binary sensor initialization with icon from const."""
+async def test_binary_sensor_icon_from_icons_json(hass: HomeAssistant) -> None:
+    """Test binary sensor leaves the icon to icons.json."""
     data = {
         "devices": [
             {
@@ -584,10 +584,10 @@ async def test_binary_sensor_with_icon(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
-    # getBUZ has an icon defined in _SYR_CONNECT_SENSOR_ICON
     sensor = SyrConnectBinarySensor(
         coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
-    # Should have icon set from const
-    assert sensor._attr_icon is not None
+    # The icon is resolved from icons.json via the translation key
+    assert sensor.icon is None
+    assert sensor.translation_key == "getbuz"

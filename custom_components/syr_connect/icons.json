@@ -1,0 +1,802 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "getbuz": {
+        "default": "mdi:volume-high"
+      }
+    },
+    "button": {
+      "setala": {
+        "default": "mdi:alarm-off"
+      },
+      "setnot": {
+        "default": "mdi:bell-off-outline"
+      },
+      "setsir": {
+        "default": "mdi:reload"
+      },
+      "setwrn": {
+        "default": "mdi:alert-remove-outline"
+      }
+    },
+    "select": {
+      "getald": {
+        "default": "mdi:alarm-light-outline"
+      },
+      "getcrs": {
+        "default": "mdi:filter"
+      },
+      "getcrt": {
+        "default": "mdi:filter-variant"
+      },
+      "getfcd": {
+        "default": "mdi:calendar-filter-outline"
+      },
+      "getffm": {
+        "default": "mdi:filter"
+      },
+      "getiwh": {
+        "default": "mdi:water-percent"
+      },
+      "getlot": {
+        "default": "mdi:flash"
+      },
+      "getmih": {
+        "default": "mdi:water-percent"
+      },
+      "getmit": {
+        "default": "mdi:thermometer-low"
+      },
+      "getmxh": {
+        "default": "mdi:water-percent"
+      },
+      "getmxt": {
+        "default": "mdi:thermometer-high"
+      },
+      "getohw": {
+        "default": "mdi:water-percent"
+      },
+      "getowh": {
+        "default": "mdi:water-percent"
+      },
+      "getprf": {
+        "default": "mdi:account"
+      },
+      "getrcd": {
+        "default": "mdi:calendar-sync"
+      },
+      "getrcp": {
+        "default": "mdi:sync-circle"
+      },
+      "getrmn": {
+        "default": "mdi:counter"
+      },
+      "getrmo": {
+        "default": "mdi:autorenew"
+      },
+      "getrmt": {
+        "default": "mdi:timer-outline"
+      },
+      "getrpd": {
+        "default": "mdi:calendar-clock"
+      },
+      "getrtm": {
+        "default": "mdi:clock-outline"
+      },
+      "getrvt": {
+        "default": "mdi:water-plus"
+      },
+      "getsro": {
+        "default": "mdi:rotate-right"
+      },
+      "getsv1": {
+        "default": "mdi:delete-variant"
+      },
+      "getsv2": {
+        "default": "mdi:delete-variant"
+      },
+      "getsv3": {
+        "default": "mdi:delete-variant"
+      },
+      "gettpr": {
+        "default": "mdi:gauge"
+      },
+      "getwmp": {
+        "default": "mdi:timer-sync-outline"
+      }
+    },
+    "sensor": {
+      "dst": {
+        "default": "mdi:network-outline",
+        "state": {
+          "0": "mdi:network-outline",
+          "1": "mdi:close-network-outline",
+          "2": "mdi:check-network-outline",
+          "3": "mdi:check-network-outline"
+        }
+      },
+      "getab": {
+        "default": "mdi:valve",
+        "state": {
+          "false": "mdi:valve-open",
+          "true": "mdi:valve-closed"
+        }
+      },
+      "getala": {
+        "default": "mdi:bell-alert-outline",
+        "state": {
+          "no_alarm": "mdi:bell-outline",
+          "unknown": "mdi:bell-outline"
+        }
+      },
+      "getald": {
+        "default": "mdi:alarm-light-outline"
+      },
+      "getalm": {
+        "default": "mdi:bell-plus-outline"
+      },
+      "getaln": {
+        "default": "mdi:bell-plus"
+      },
+      "getalw": {
+        "default": "mdi:alert-plus-outline"
+      },
+      "getapt": {
+        "default": "mdi:timer-outline"
+      },
+      "getavo": {
+        "default": "mdi:waves-arrow-right"
+      },
+      "getbap": {
+        "default": "mdi:battery"
+      },
+      "getbar": {
+        "default": "mdi:gauge"
+      },
+      "getbar2": {
+        "default": "mdi:gauge"
+      },
+      "getcel": {
+        "default": "mdi:thermometer"
+      },
+      "getcft": {
+        "default": "mdi:timer-outline"
+      },
+      "getcfv": {
+        "default": "mdi:water-plus"
+      },
+      "getcna": {
+        "default": "mdi:tag"
+      },
+      "getcnd": {
+        "default": "mdi:flash"
+      },
+      "getcno": {
+        "default": "mdi:identifier"
+      },
+      "getcoa": {
+        "default": "mdi:counter"
+      },
+      "getcof": {
+        "default": "mdi:counter"
+      },
+      "getcom": {
+        "default": "mdi:counter"
+      },
+      "getcrs": {
+        "default": "mdi:filter"
+      },
+      "getcrt": {
+        "default": "mdi:filter-variant"
+      },
+      "getcs1": {
+        "default": "mdi:beaker"
+      },
+      "getcs2": {
+        "default": "mdi:beaker"
+      },
+      "getcs3": {
+        "default": "mdi:beaker"
+      },
+      "getcyn": {
+        "default": "mdi:numeric"
+      },
+      "getcyt": {
+        "default": "mdi:timer-sync"
+      },
+      "getdbd": {
+        "default": "mdi:gauge"
+      },
+      "getdfm": {
+        "default": "mdi:cog-outline"
+      },
+      "getdgw": {
+        "default": "mdi:router-network"
+      },
+      "getdma": {
+        "default": "mdi:alert-circle-outline"
+      },
+      "getdrp": {
+        "default": "mdi:calendar-clock"
+      },
+      "getdsv": {
+        "default": "mdi:water-check"
+      },
+      "getdtt": {
+        "default": "mdi:clock-outline"
+      },
+      "getdwf": {
+        "default": "mdi:water-alert"
+      },
+      "getegw": {
+        "default": "mdi:router-network"
+      },
+      "geteip": {
+        "default": "mdi:ip-network"
+      },
+      "getfco": {
+        "default": "mdi:counter"
+      },
+      "getffm": {
+        "default": "mdi:filter"
+      },
+      "getfir": {
+        "default": "mdi:chip"
+      },
+      "getflo": {
+        "default": "mdi:waves-arrow-right"
+      },
+      "gethmd": {
+        "default": "mdi:water-percent"
+      },
+      "getinr": {
+        "default": "mdi:counter"
+      },
+      "getipa": {
+        "default": "mdi:ip-network"
+      },
+      "getiwh": {
+        "default": "mdi:water-percent"
+      },
+      "getlan": {
+        "default": "mdi:translate"
+      },
+      "getlar": {
+        "default": "mdi:calendar-clock"
+      },
+      "getle": {
+        "default": "mdi:water-alert"
+      },
+      "getlft": {
+        "default": "mdi:timer-outline"
+      },
+      "getlfv": {
+        "default": "mdi:water-plus"
+      },
+      "getlng": {
+        "default": "mdi:translate"
+      },
+      "getlot": {
+        "default": "mdi:flash"
+      },
+      "getlrc": {
+        "default": "mdi:gauge"
+      },
+      "getltv": {
+        "default": "mdi:faucet"
+      },
+      "getmac": {
+        "default": "mdi:ethernet"
+      },
+      "getmac1": {
+        "default": "mdi:ethernet"
+      },
+      "getmac2": {
+        "default": "mdi:ethernet"
+      },
+      "getman": {
+        "default": "mdi:factory"
+      },
+      "getmih": {
+        "default": "mdi:water-percent"
+      },
+      "getmit": {
+        "default": "mdi:thermometer-low"
+      },
+      "getmxh": {
+        "default": "mdi:water-percent"
+      },
+      "getmxt": {
+        "default": "mdi:thermometer-high"
+      },
+      "getnet": {
+        "default": "mdi:sine-wave"
+      },
+      "getnms": {
+        "default": "mdi:valve"
+      },
+      "getnmt": {
+        "default": "mdi:calendar-clock"
+      },
+      "getnor": {
+        "default": "mdi:counter"
+      },
+      "getnot": {
+        "default": "mdi:bell"
+      },
+      "getnps": {
+        "default": "mdi:turbine"
+      },
+      "getnpt": {
+        "default": "mdi:calendar-alert"
+      },
+      "getnrt": {
+        "default": "mdi:water-off"
+      },
+      "getohw": {
+        "default": "mdi:water-percent"
+      },
+      "getowh": {
+        "default": "mdi:water-percent"
+      },
+      "getpa1": {
+        "default": "mdi:shield-check"
+      },
+      "getpa2": {
+        "default": "mdi:shield-check"
+      },
+      "getpa3": {
+        "default": "mdi:shield-check"
+      },
+      "getpa4": {
+        "default": "mdi:shield-check"
+      },
+      "getpa5": {
+        "default": "mdi:shield-check"
+      },
+      "getpa6": {
+        "default": "mdi:shield-check"
+      },
+      "getpa7": {
+        "default": "mdi:shield-check"
+      },
+      "getpa8": {
+        "default": "mdi:shield-check"
+      },
+      "getpb1": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb2": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb3": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb4": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb5": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb6": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb7": {
+        "default": "mdi:bell-alert"
+      },
+      "getpb8": {
+        "default": "mdi:bell-alert"
+      },
+      "getpf1": {
+        "default": "mdi:water-alert"
+      },
+      "getpf2": {
+        "default": "mdi:water-alert"
+      },
+      "getpf3": {
+        "default": "mdi:water-alert"
+      },
+      "getpf4": {
+        "default": "mdi:water-alert"
+      },
+      "getpf5": {
+        "default": "mdi:water-alert"
+      },
+      "getpf6": {
+        "default": "mdi:water-alert"
+      },
+      "getpf7": {
+        "default": "mdi:water-alert"
+      },
+      "getpf8": {
+        "default": "mdi:water-alert"
+      },
+      "getpm1": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm2": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm3": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm4": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm5": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm6": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm7": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpm8": {
+        "default": "mdi:pipe-leak"
+      },
+      "getpn1": {
+        "default": "mdi:account"
+      },
+      "getpn2": {
+        "default": "mdi:account"
+      },
+      "getpn3": {
+        "default": "mdi:account"
+      },
+      "getpn4": {
+        "default": "mdi:account"
+      },
+      "getpn5": {
+        "default": "mdi:account"
+      },
+      "getpn6": {
+        "default": "mdi:account"
+      },
+      "getpn7": {
+        "default": "mdi:account"
+      },
+      "getpn8": {
+        "default": "mdi:account"
+      },
+      "getpr1": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr2": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr3": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr4": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr5": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr6": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr7": {
+        "default": "mdi:clock-outline"
+      },
+      "getpr8": {
+        "default": "mdi:clock-outline"
+      },
+      "getprc": {
+        "default": "mdi:beaker"
+      },
+      "getprf": {
+        "default": "mdi:account"
+      },
+      "getprs": {
+        "default": "mdi:gauge"
+      },
+      "getpst": {
+        "default": "mdi:check-circle",
+        "state": {
+          "1": "mdi:close-circle",
+          "2": "mdi:check-circle"
+        }
+      },
+      "getpt1": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt2": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt3": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt4": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt5": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt6": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt7": {
+        "default": "mdi:timer-outline"
+      },
+      "getpt8": {
+        "default": "mdi:timer-outline"
+      },
+      "getpv1": {
+        "default": "mdi:gauge"
+      },
+      "getpv2": {
+        "default": "mdi:gauge"
+      },
+      "getpv3": {
+        "default": "mdi:gauge"
+      },
+      "getpv4": {
+        "default": "mdi:gauge"
+      },
+      "getpv5": {
+        "default": "mdi:gauge"
+      },
+      "getpv6": {
+        "default": "mdi:gauge"
+      },
+      "getpv7": {
+        "default": "mdi:gauge"
+      },
+      "getpv8": {
+        "default": "mdi:gauge"
+      },
+      "getpw1": {
+        "default": "mdi:alert"
+      },
+      "getpw2": {
+        "default": "mdi:alert"
+      },
+      "getpw3": {
+        "default": "mdi:alert"
+      },
+      "getpw4": {
+        "default": "mdi:alert"
+      },
+      "getpw5": {
+        "default": "mdi:alert"
+      },
+      "getpw6": {
+        "default": "mdi:alert"
+      },
+      "getpw7": {
+        "default": "mdi:alert"
+      },
+      "getpw8": {
+        "default": "mdi:alert"
+      },
+      "getrcc": {
+        "default": "mdi:counter"
+      },
+      "getrcd": {
+        "default": "mdi:calendar-sync"
+      },
+      "getrcn": {
+        "default": "mdi:counter"
+      },
+      "getrcp": {
+        "default": "mdi:sync-circle"
+      },
+      "getrdo": {
+        "default": "mdi:shaker"
+      },
+      "getre1": {
+        "default": "mdi:gas-cylinder"
+      },
+      "getre2": {
+        "default": "mdi:gas-cylinder"
+      },
+      "getres": {
+        "default": "mdi:gauge"
+      },
+      "getrg1": {
+        "default": "mdi:valve-closed",
+        "state": {
+          "1": "mdi:valve"
+        }
+      },
+      "getrg2": {
+        "default": "mdi:valve-closed",
+        "state": {
+          "1": "mdi:valve"
+        }
+      },
+      "getrg3": {
+        "default": "mdi:valve-closed",
+        "state": {
+          "1": "mdi:valve"
+        }
+      },
+      "getrmn": {
+        "default": "mdi:counter"
+      },
+      "getrmo": {
+        "default": "mdi:autorenew"
+      },
+      "getrmt": {
+        "default": "mdi:timer-outline"
+      },
+      "getrpd": {
+        "default": "mdi:calendar-clock"
+      },
+      "getrpw": {
+        "default": "mdi:calendar-filter-outline"
+      },
+      "getrsa": {
+        "default": "mdi:calendar-clock"
+      },
+      "getrsd": {
+        "default": "mdi:timer-outline"
+      },
+      "getrse": {
+        "default": "mdi:calendar-clock"
+      },
+      "getrti": {
+        "default": "mdi:clock-outline"
+      },
+      "getrtm": {
+        "default": "mdi:clock-outline"
+      },
+      "getrvt": {
+        "default": "mdi:water-plus"
+      },
+      "getsle": {
+        "default": "mdi:timer-sand"
+      },
+      "getslf": {
+        "default": "mdi:waves-arrow-right"
+      },
+      "getslt": {
+        "default": "mdi:timer-outline"
+      },
+      "getslv": {
+        "default": "mdi:water"
+      },
+      "getsrh": {
+        "default": "mdi:wrench-clock"
+      },
+      "getsrn": {
+        "default": "mdi:identifier"
+      },
+      "getsro": {
+        "default": "mdi:rotate-right"
+      },
+      "getsrv": {
+        "default": "mdi:wrench"
+      },
+      "getss1": {
+        "default": "mdi:calendar-week"
+      },
+      "getss2": {
+        "default": "mdi:calendar-week"
+      },
+      "getss3": {
+        "default": "mdi:calendar-week"
+      },
+      "getsta": {
+        "default": "mdi:list-status"
+      },
+      "getsv1": {
+        "default": "mdi:delete-variant"
+      },
+      "getsv2": {
+        "default": "mdi:delete-variant"
+      },
+      "getsv3": {
+        "default": "mdi:delete-variant"
+      },
+      "gett1": {
+        "default": "mdi:timer-outline"
+      },
+      "gett2": {
+        "default": "mdi:timer-outline"
+      },
+      "gettmp": {
+        "default": "mdi:timer-off-outline"
+      },
+      "gettor": {
+        "default": "mdi:counter"
+      },
+      "gettpr": {
+        "default": "mdi:gauge"
+      },
+      "gettrt": {
+        "default": "mdi:timer-outline"
+      },
+      "gettrv": {
+        "default": "mdi:water-plus"
+      },
+      "gettyp": {
+        "default": "mdi:devices"
+      },
+      "getul": {
+        "default": "mdi:water-alert"
+      },
+      "getver": {
+        "default": "mdi:chip"
+      },
+      "getvlv": {
+        "default": "mdi:valve",
+        "state": {
+          "10": "mdi:valve-closed",
+          "11": "mdi:valve",
+          "20": "mdi:valve-open",
+          "21": "mdi:valve"
+        }
+      },
+      "getvol": {
+        "default": "mdi:gauge-full"
+      },
+      "getvps1": {
+        "default": "mdi:turbine"
+      },
+      "getvps2": {
+        "default": "mdi:turbine"
+      },
+      "getvs1": {
+        "default": "mdi:gauge"
+      },
+      "getvs2": {
+        "default": "mdi:gauge"
+      },
+      "getvs3": {
+        "default": "mdi:gauge"
+      },
+      "getwfc": {
+        "default": "mdi:wifi"
+      },
+      "getwfr": {
+        "default": "mdi:wifi-strength-1"
+      },
+      "getwfs": {
+        "default": "mdi:wifi-check"
+      },
+      "getwgw": {
+        "default": "mdi:router-wireless"
+      },
+      "getwhu": {
+        "default": "mdi:water-opacity"
+      },
+      "getwip": {
+        "default": "mdi:ip-network"
+      },
+      "getwmp": {
+        "default": "mdi:timer-sync-outline"
+      },
+      "getwrn": {
+        "default": "mdi:alert-outline"
+      }
+    },
+    "switch": {
+      "getbuz": {
+        "default": "mdi:volume-high"
+      },
+      "getdfi": {
+        "default": "mdi:water-sync"
+      },
+      "getssa": {
+        "default": "mdi:autorenew"
+      },
+      "getsse": {
+        "default": "mdi:bell-outline"
+      }
+    },
+    "valve": {
+      "getab": {
+        "default": "mdi:valve",
+        "state": {
+          "closed": "mdi:valve-closed",
+          "closing": "mdi:valve",
+          "open": "mdi:valve-open",
+          "opening": "mdi:valve"
+        }
+      }
+    }
+  }
+}

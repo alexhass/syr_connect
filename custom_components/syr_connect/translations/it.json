@@ -138,7 +138,7 @@
         }
       },
       "getiwh": {
-        "name": "Durezza acqua in ingresso"
+        "name": "Durezza acqua grezza"
       },
       "getlot": {
         "name": "Conducibilità massima in uscita"
@@ -339,7 +339,7 @@
         "name": "Durezza acqua addolcita"
       },
       "getowh": {
-        "name": "Durezza acqua in uscita"
+        "name": "Durezza acqua addolcita"
       },
       "getprf": {
         "name": "Profilo protezione attivo",
@@ -700,7 +700,7 @@
         "name": "Indirizzo IP"
       },
       "getiwh": {
-        "name": "Durezza acqua in ingresso"
+        "name": "Durezza acqua grezza"
       },
       "getlan": {
         "name": "Lingua del dispositivo",
@@ -800,7 +800,7 @@
         "name": "Durezza acqua addolcita"
       },
       "getowh": {
-        "name": "Durezza acqua in uscita"
+        "name": "Durezza acqua addolcita"
       },
       "getpa1": {
         "name": "Profilo protezione perdite 1",

@@ -221,7 +221,7 @@ rules:
   
   icon-translations:
     status: done
-    comment: Dynamic state-based icons for alarm, regeneration, salt stock, and remaining capacity sensors
+    comment: Icons and state icons are defined in icons.json by translation key; code only sets the getBAT icon (depends on the battery device class)
   
   reconfiguration-flow:
     status: done
