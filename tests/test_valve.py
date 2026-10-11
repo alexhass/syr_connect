@@ -1,7 +1,9 @@
 """Tests for valve platform."""
+# mypy: disable-error-code="method-assign, misc"
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -157,22 +159,6 @@ async def test_available(hass: HomeAssistant) -> None:
     assert valve.available is True
 
 
-def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
-    config_data = {
-        CONF_USERNAME: "test@example.com",
-        CONF_PASSWORD: "password",
-    }
-    coordinator = SyrConnectDataUpdateCoordinator(
-        hass,
-        MagicMock(),
-        config_data,
-        60,
-    )
-    coordinator.async_set_updated_data(data)
-    coordinator.last_update_success = True
-    return coordinator
-
-
 def _build_entry(coordinator: SyrConnectDataUpdateCoordinator) -> MockConfigEntry:
     entry = MockConfigEntry(domain="syr_connect", data={})
     entry.runtime_data = coordinator
@@ -225,6 +211,7 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
 
     # Raw attributes are exposed as strings
     attrs = valve.extra_state_attributes
+    assert attrs is not None
     assert attrs["getVLV"] == "10"
     assert attrs["getAB"] == "2"
 
@@ -317,7 +304,7 @@ async def test_sync_service_wrappers_schedule_tasks(hass: HomeAssistant) -> None
 
 
 async def test_state_unknown_when_no_status(hass: HomeAssistant) -> None:
-    data = {"devices": []}
+    data: dict = {"devices": []}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "missing", "Missing")
     # No status -> closed is None -> no state
@@ -337,7 +324,7 @@ async def test_is_closing_state(hass: HomeAssistant) -> None:
 
 
 async def test_extra_state_attributes_none_when_no_status(hass: HomeAssistant) -> None:
-    data = {"devices": []}
+    data: dict = {"devices": []}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "no_status", "NoStatus")
     assert valve.extra_state_attributes is None
@@ -368,7 +355,7 @@ async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -
     # If entry.runtime_data.data is falsy, async_setup_entry should not call add_entities
     coordinator = _build_coordinator(hass, {"devices": []})
     # Simulate missing data
-    coordinator.data = None
+    coordinator.data = None  # type: ignore[assignment]
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
@@ -431,7 +418,7 @@ async def test_sync_wrappers_without_hass_do_nothing(hass: HomeAssistant) -> Non
     coordinator = _build_coordinator(hass, {"devices": []})
     valve = SyrConnectValve(coordinator, "no_hass", "NoHass")
     # Ensure hass is None
-    valve.hass = None
+    valve.hass = None  # type: ignore[assignment]
     # Should not raise
     valve.open_valve()
     valve.close_valve()
@@ -1013,7 +1000,7 @@ async def test_setup_getab_invalid_value_hits_except_branch(hass: HomeAssistant)
     entry.add_to_hass(hass)
 
     added: list = []
-    await async_setup_entry(hass, entry, added.append)
+    await async_setup_entry(hass, entry, added.append)  # type: ignore[arg-type]
 
     # int(float("not_a_number")) raises ValueError → except branch → create=False → no entity
     assert added == []
@@ -1118,13 +1105,14 @@ async def test_async_open_valve_active_alarm_json_calls_clr_then_set(hass: HomeA
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.api.__class__ = SyrConnectJsonAPI
-    coordinator.api.request_json_data = AsyncMock(return_value={})
+    api: Any = coordinator.api
+    api.request_json_data = AsyncMock(return_value={})
     coordinator.api.set_device_status = AsyncMock(return_value=True)
     coordinator.hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
 
     await coordinator.async_open_valve("dev4", "setAB", 1)
 
-    coordinator.api.request_json_data.assert_awaited_once_with("clr/ala")
+    api.request_json_data.assert_awaited_once_with("clr/ala")
     coordinator.api.set_device_status.assert_awaited_once_with("dev4", [("setAB", 1)])
 
 
@@ -1230,7 +1218,7 @@ async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
 async def test_async_open_valve_no_data_raises(hass: HomeAssistant) -> None:
     """async_open_valve raises HomeAssistantError when coordinator data is not available."""
     coordinator = _build_coordinator(hass, {"devices": []})
-    coordinator.data = None  # force data to be falsy
+    coordinator.data = None  # type: ignore[assignment]  # force data to be falsy
 
     with pytest.raises(HomeAssistantError, match="Coordinator data not available"):
         await coordinator.async_open_valve("dev_x", "setAB", 1)
@@ -1283,7 +1271,8 @@ async def test_async_open_valve_optimistic_update_exception_still_sends_command(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.api.__class__ = SyrConnectJsonAPI
-    coordinator.api.request_json_data = AsyncMock(return_value={})
+    api: Any = coordinator.api
+    api.request_json_data = AsyncMock(return_value={})
     coordinator.api.set_device_status = AsyncMock(return_value=True)
     coordinator.hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
 

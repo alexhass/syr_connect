@@ -1,8 +1,11 @@
 """Tests for switch platform."""
+# mypy: disable-error-code="method-assign, misc"
 
 from __future__ import annotations
 
 import logging
+from types import MappingProxyType
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -25,7 +28,7 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
         source="user",
         entry_id="test_entry_id",
         unique_id="test_unique_id",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -57,7 +60,7 @@ async def test_async_setup_entry_no_coordinator_data_logs_warning(hass: HomeAssi
         source="user",
         entry_id="test_entry_nodata",
         unique_id="test_unique_id_nodata",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -92,6 +95,7 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     sw_off = SyrConnectBooleanSwitch(mock_coordinator, "SN124", "DeviceOff", "", "getBUZ")
 
     # Unique id should include platform suffix set in implementation
+    assert sw_on._attr_unique_id is not None
     assert sw_on._attr_unique_id.endswith("_switch")
 
     assert sw_on.is_on is True
@@ -142,7 +146,7 @@ async def test_async_setup_entry_creates_entity(hass: HomeAssistant) -> None:
         source="user",
         entry_id="test_entry_create",
         unique_id="test_unique_id_create",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -235,7 +239,7 @@ async def test_async_setup_entry_handles_instantiation_error(hass: HomeAssistant
         source="user",
         entry_id="test_entry_err",
         unique_id="test_unique_id_err",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -246,23 +250,17 @@ async def test_async_setup_entry_handles_instantiation_error(hass: HomeAssistant
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
 
-    # Monkeypatch the constructor to raise
-    original_cls = switch_mod.SyrConnectBooleanSwitch
-
     def raise_on_init(*args, **kwargs):
         raise RuntimeError("ctor boom")
-
-    switch_mod.SyrConnectBooleanSwitch = raise_on_init
 
     mock_add_entities = MagicMock()
 
     # Should not raise
-    await async_setup_entry(hass, config_entry, mock_add_entities)
+    with pytest.MonkeyPatch.context() as m:
+        m.setattr(switch_mod, "SyrConnectBooleanSwitch", raise_on_init)
+        await async_setup_entry(hass, config_entry, mock_add_entities)
 
     mock_add_entities.assert_not_called()
-
-    # restore
-    switch_mod.SyrConnectBooleanSwitch = original_cls
 
 
 async def test_async_setup_entry_device_without_getbuz(hass: HomeAssistant) -> None:
@@ -276,7 +274,7 @@ async def test_async_setup_entry_device_without_getbuz(hass: HomeAssistant) -> N
         source="user",
         entry_id="test_entry_nobuz",
         unique_id="test_unique_id_nobuz",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -359,7 +357,7 @@ async def test_async_setup_entry_uses_existing_registry_entity_id(hass: HomeAssi
         source="user",
         entry_id="test_entry_reg",
         unique_id="test_unique_id_reg",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -369,9 +367,8 @@ async def test_async_setup_entry_uses_existing_registry_entity_id(hass: HomeAssi
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
 
-    entities = []
-    def _add(ents):
-        entities.extend(ents)
+    entities: list[Any] = []
+    _add = MagicMock(side_effect=entities.extend)
 
     # Mock registry to return an existing entity id for the unique_id
     mock_registry = MagicMock()
@@ -400,7 +397,7 @@ async def test_async_setup_entry_detects_missing_registry_entries(hass: HomeAssi
         source="user",
         entry_id="test_entry_miss",
         unique_id="test_unique_id_miss",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -410,9 +407,8 @@ async def test_async_setup_entry_detects_missing_registry_entries(hass: HomeAssi
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
 
-    entities = []
-    def _add(ents):
-        entities.extend(ents)
+    entities: list[Any] = []
+    _add = MagicMock(side_effect=entities.extend)
 
     # Registry that returns None for lookups -> triggers 'missing' path
     mock_registry = MagicMock()
@@ -442,7 +438,7 @@ async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant
         source="user",
         entry_id="test_entry_errreg",
         unique_id="test_unique_id_errreg",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -452,9 +448,8 @@ async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
 
-    entities = []
-    def _add(ents):
-        entities.extend(ents)
+    entities: list[Any] = []
+    _add = MagicMock(side_effect=entities.extend)
 
     # async_get will raise to hit the exception branch
     def _raise(_h):
@@ -483,7 +478,7 @@ async def test_async_setup_entry_missing_registry_no_unique_id(hass: HomeAssista
         source="user",
         entry_id="test_entry_nouid",
         unique_id="test_unique_id_nouid",
-        discovery_keys={},
+        discovery_keys=MappingProxyType({}),
         options={},
         subentries_data={},
     )
@@ -494,17 +489,15 @@ async def test_async_setup_entry_missing_registry_no_unique_id(hass: HomeAssista
     config_entry.runtime_data = mock_coordinator
 
     # Subclass that clears unique_id so the else-missing branch (line 103) is taken.
-    original_cls = switch_mod.SyrConnectBooleanSwitch
+    from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
 
-    class _NoUniqueIdSwitch(original_cls):
+    class _NoUniqueIdSwitch(SyrConnectBooleanSwitch):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self._attr_unique_id = None  # force unique_id to be falsy
 
-    entities = []
-
-    def _add(ents):
-        entities.extend(ents)
+    entities: list[Any] = []
+    _add = MagicMock(side_effect=entities.extend)
 
     # Registry returns None for every lookup so both entity_id and unique_id paths miss.
     mock_registry = MagicMock()
