@@ -492,7 +492,7 @@ Some further data about the device
 | setUPG | "" | | Triggers a firmware update (write-only). Identical implementation shared by 8 device base classes: SafeTech, SafeFloor, LEX Plus, All-in-One+, MultiController, HygBox, Dosing Pump and Trio LS. Same command in JSON and XML. Always sent with an empty value (`setUPG=""`). |
 | getFRN | "A25032111217" | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
 | getSRV | "14.02.2027" | | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel) |
-| getCNO | "EPFI6860AAPA7S8" | | Code number / device sub-identifier (Safe-T+, LEXplus10SL) |
+| getCNO | "XXXXXXXXXXXXXXX" | | Code number / device sub-identifier (Safe-T+, LEXplus10SL) |
 
 ### Device Status
 
