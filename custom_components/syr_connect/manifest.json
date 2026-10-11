@@ -1,6 +1,9 @@
 {
   "domain": "syr_connect",
   "name": "SYR Connect",
+  "after_dependencies": [
+    "recorder"
+  ],
   "codeowners": [
     "@alexhass"
   ],

@@ -20,7 +20,7 @@ from .const import (
     CONF_API_TYPE,
     CONF_HOST,
 )
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectDataUpdateCoordinator, async_remove_safefloor_history_store
 from .helpers import cleanup_removed_devices, get_default_scan_interval_for_entry
 from .migrations import (
     v1_to_v2_update_kwargs,
@@ -224,6 +224,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.warning("Failed to unload SYR Connect integration")
 
     return unload_ok
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Delete stored data of a removed config entry (SafeFloor history fetch state)."""
+    await async_remove_safefloor_history_store(hass, entry.entry_id)
 
 
 async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
