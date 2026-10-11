@@ -38,7 +38,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Alarm / Notification / Warning ---
     "getALA", "getALM", "getNOT", "getWRN",
     # --- Voltage / Battery ---
-    "getBAP", "getBAT", "getNET",
+    "getBAT", "getNET",
     # --- Alarm Duration ---
     "getALD",
     # --- Water Consumption & Volume ---
