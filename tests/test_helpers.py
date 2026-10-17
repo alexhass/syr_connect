@@ -1429,6 +1429,21 @@ def test_mask_ug_value_handles_empty_value():
     assert masked.count('ug="***"') == 2
 
 
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    [
+        ('<us ug="SECRET', '<us ug="***'),  # truncated payload
+        ('<dcl a="x>y" ug="SECRET"/>', '<dcl a="x>y" ug="***"/>'),  # raw `>` in a value
+        ('error: ug="SECRET"', 'error: ug="***"'),  # outside any tag
+        ('<a UG = "SECRET"/>', '<a UG = "***"/>'),  # case and spacing
+        ('<a xug="keep" ug="SECRET"/>', '<a xug="keep" ug="***"/>'),  # longer names untouched
+    ],
+)
+def test_mask_ug_value_masks_outside_complete_tags(payload: str, expected: str):
+    """The token must be masked even when the payload is not well-formed XML."""
+    assert mask_ug_value(payload) == expected
+
+
 def test_mask_ug_value_empty_string_returns_empty():
     """When payload is an empty string, return it unchanged."""
     assert mask_ug_value("") == ""

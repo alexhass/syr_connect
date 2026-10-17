@@ -147,6 +147,18 @@ def test_session_and_device_payloads_roundtrip_special_characters(value: str) ->
     assert stats.find(".//dcl").attrib["dclg"] == value
 
 
+def test_none_attribute_value_raises_instead_of_sending_none_string() -> None:
+    """A missing id must fail fast rather than be sent as ``"None"``."""
+    pb = PayloadBuilder("1.2.3", MagicMock())
+
+    with pytest.raises(TypeError, match="ug"):
+        pb.build_device_get_list_payload(None, "p")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="pg"):
+        pb.build_device_get_list_payload("s", None)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="dclg"):
+        pb.build_device_get_status_payload("s", None)  # type: ignore[arg-type]
+
+
 def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
     """The checksum input excludes <cs>; <cs> ends up as the last child of <sc>."""
     fake_checksum = MagicMock()

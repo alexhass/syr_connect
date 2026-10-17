@@ -1246,41 +1246,21 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     return True
 
 
-def _mask_attribute_values(payload: str, attributes: tuple[str, ...], element: str | None = None) -> str:
-    """Replace the values of the given attributes in an XML payload with `***`.
-
-    Only `<element ...>` tags are touched when `element` is set, otherwise every tag.
-    Non-string and empty payloads are returned unchanged.
-
-    The payload is edited as text, not parsed: diagnostics may pass truncated or malformed XML, and
-    logged payloads must stay exactly as they were sent.
-
-    Example:
-        `_mask_attribute_values('<usr n="bob" v="pw" />', ("n", "v"), element="usr")`
-        returns `'<usr n="***" v="***" />'`.
-    """
-    if not isinstance(payload, str) or payload == "":
-        return payload
-
-    # `\b` keeps `usr` from matching `<usrx>`. `>` inside values is escaped as `&gt;`, so `[^>]*` ends at the tag.
-    tag_pattern = rf"<{element}\b[^>]*>" if element else r"<[^>]*>"
-    # Group 1 (` name="`) is kept, the value is replaced. The leading whitespace keeps `ug` from matching `xug`.
-    # Values cannot contain `"` because it is escaped as `&quot;`.
-    attribute_pattern = re.compile(rf'(\s(?:{"|".join(attributes)})=")[^"]*', re.IGNORECASE)
-
-    def mask_tag(tag: re.Match[str]) -> str:
-        return attribute_pattern.sub(r"\1***", tag.group(0))
-
-    try:
-        return re.sub(tag_pattern, mask_tag, payload)
-    except re.error:
-        return payload
-
-
 def mask_ug_value(payload: str) -> str:
     """Redact `ug` attribute values in an XML payload.
 
     Replaces values like `ug="..."` with `ug="***"` (case-insensitive)
     so session tokens are not leaked in logs or diagnostics.
+
+    The payload is edited as text, not parsed, and `ug="..."` is masked anywhere in it: diagnostics
+    may pass truncated or malformed XML, server responses may contain a raw `>` inside attribute
+    values, and error messages may quote the token outside any tag. An unterminated value is masked
+    up to the end of the string. Non-string and empty payloads are returned unchanged.
     """
-    return _mask_attribute_values(payload, ("ug",))
+    if not isinstance(payload, str) or payload == "":
+        return payload
+    try:
+        # The lookbehind keeps `ug` from matching inside longer names such as `xug` or `a:ug`.
+        return re.sub(r'(?i)(?<![\w:.-])(ug\s*=\s*")[^"]*', r"\1***", payload)
+    except re.error:
+        return payload

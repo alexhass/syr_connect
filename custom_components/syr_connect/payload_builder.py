@@ -91,9 +91,15 @@ class PayloadBuilder:
 
         Values are converted to ``str``. ElementTree escapes them on serialisation,
         so no value can break out of its attribute or inject markup.
+
+        Raises:
+            TypeError: If a value is ``None``, so a missing session, device or project ID fails
+                here instead of being sent to the API as the literal string ``"None"``.
         """
         element = ET.Element(tag) if parent is None else ET.SubElement(parent, tag)
         for name, value in attrs.items():
+            if value is None:
+                raise TypeError(f"XML attribute <{tag} {name}> must not be None")
             element.set(name, str(value))
         return element
 
