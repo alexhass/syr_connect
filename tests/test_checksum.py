@@ -1,6 +1,8 @@
 """Tests for checksum module."""
 from __future__ import annotations
 
+from defusedxml import ElementTree as DefusedET
+
 from custom_components.syr_connect.checksum import SyrChecksum
 
 
@@ -72,6 +74,14 @@ def test_compute_xml_checksum_with_attributes():
     assert result != "0"
     result_without_n = checksum.compute_xml_checksum('<root><element a="value1" b="value2"/></root>')
     assert result == result_without_n
+
+
+def test_compute_element_checksum_matches_xml_checksum():
+    """The tree-based checksum equals the checksum of the same tree as XML string."""
+    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    xml_string = '<sc><si v="1.2.3"/><us ug="a &amp; &lt;b&gt;"/><col><dcl dclg="d" fref="1"><c n="x" v="1"/></dcl></col></sc>'
+
+    assert checksum.compute_element_checksum(DefusedET.fromstring(xml_string)) == checksum.compute_xml_checksum(xml_string)
 
 
 def test_compute_xml_checksum_invalid_xml():

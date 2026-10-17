@@ -109,13 +109,14 @@ def test_login_payload_roundtrips_special_characters(value: str) -> None:
 def test_set_status_payload_roundtrips_special_characters(value: str) -> None:
     """Command name/value and ids are escaped for attribute context."""
     fake_checksum = MagicMock()
-    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
     payload = pb.build_device_set_status_payload(value, value, [("setAB", value)])
 
-    # The checksum input must be well-formed XML (malformed input yields a bogus checksum).
-    DefusedET.fromstring(fake_checksum.compute_xml_checksum.call_args.args[0])
+    # The checksum is computed over the unescaped attribute values of the tree.
+    checksum_input = fake_checksum.compute_element_checksum.call_args.args[0]
+    assert checksum_input.find(".//c").attrib["v"] == value
 
     root = DefusedET.fromstring(payload)
     cmd = root.find(".//c")
@@ -131,7 +132,7 @@ def test_set_status_payload_roundtrips_special_characters(value: str) -> None:
 def test_session_and_device_payloads_roundtrip_special_characters(value: str) -> None:
     """Session, project and device ids are escaped in every payload builder."""
     fake_checksum = MagicMock()
-    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
     device_list = DefusedET.fromstring(pb.build_device_get_list_payload(value, value))
@@ -161,14 +162,17 @@ def test_none_attribute_value_raises_instead_of_sending_none_string() -> None:
 
 def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
     """The checksum input excludes <cs>; <cs> ends up as the last child of <sc>."""
+    # The root is mutated after the call, so record its children at call time.
+    tags_at_checksum_time: list[list[str]] = []
     fake_checksum = MagicMock()
-    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    fake_checksum.compute_element_checksum.side_effect = lambda root: (
+        tags_at_checksum_time.append([child.tag for child in root]) or "CHK"
+    )
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
     payload = pb.build_device_get_status_payload("sess", "dev")
 
-    checksum_input = DefusedET.fromstring(fake_checksum.compute_xml_checksum.call_args.args[0])
-    assert checksum_input.find("cs") is None
+    assert tags_at_checksum_time == [["si", "us", "col"]]
     root = DefusedET.fromstring(payload)
     assert list(root)[-1].tag == "cs"
     assert [child.tag for child in root] == ["si", "us", "col", "cs"]
@@ -223,7 +227,7 @@ def test_payloads_match_request_fixtures(name: str) -> None:
 def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     """Login payload should include escaped credentials and computed tzo/lang/reg."""
     fake_checksum = MagicMock()
-    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
     with patch.object(PayloadBuilder, "_compute_local_tzo", return_value="+01:00:00"), patch.object(
@@ -242,7 +246,7 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
 def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lang(caplog) -> None:
     """Statistics payload branches for salt and water include correct units and checksum."""
     fake_checksum = MagicMock()
-    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
     with patch.object(PayloadBuilder, "_compute_locale_lang_reg", return_value=("it", "IT")):

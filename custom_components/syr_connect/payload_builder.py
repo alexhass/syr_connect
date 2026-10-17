@@ -286,6 +286,6 @@ class PayloadBuilder:
         Returns:
             XML string with the checksum element as last child of ``<sc>``
         """
-        checksum_value = self.checksum.compute_xml_checksum(self._serialize(root))
+        checksum_value = self.checksum.compute_element_checksum(root)
         self._element(root, "cs", v=checksum_value)
         return self._serialize(root)

@@ -1,6 +1,8 @@
 """Checksum calculation for SYR Connect API."""
 from __future__ import annotations
 
+from xml.etree.ElementTree import Element
+
 import defusedxml.ElementTree as etree  # noqa: N813
 
 
@@ -129,21 +131,29 @@ class SyrChecksum:
         Returns:
             Checksum value in uppercase hexadecimal
         """
-        checksum_value = 0
         try:
             root = etree.fromstring(xml_string)
-            values: list[str] = []
-
-            def extract_values(element: etree.Element) -> None:
-                for key, value in element.attrib.items():
-                    if key != 'n':
-                        values.append(str(value))
-                for child in element:
-                    extract_values(child)
-
-            extract_values(root)
-            for value in values:
-                checksum_value += self.compute_checksum_value(value)
         except etree.ParseError:
-            pass
+            return format(0, 'X')
+        return self.compute_element_checksum(root)
+
+    def compute_element_checksum(self, root: Element) -> str:
+        """Compute the checksum for an already built element tree.
+
+        Sums the contributions of all attribute values except ``n`` across ``root`` and its
+        descendants. Gives the same result as ``compute_xml_checksum`` on the serialised tree,
+        without serialising and re-parsing it.
+
+        Args:
+            root: Root element of the request
+
+        Returns:
+            Checksum value in uppercase hexadecimal
+        """
+        checksum_value = sum(
+            self.compute_checksum_value(str(value))
+            for element in root.iter()
+            for key, value in element.attrib.items()
+            if key != 'n'
+        )
         return format(checksum_value, 'X')
