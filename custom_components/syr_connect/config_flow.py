@@ -31,7 +31,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import CannotConnectError, HostInvalidError, InvalidAuthError
-from .helpers import get_default_scan_interval_for_entry, is_valid_host
+from .helpers import get_api_locale, get_default_scan_interval_for_entry, is_valid_host
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
@@ -129,6 +129,7 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
         api_app_name=api_app_name,
         api_base_url=api_base_url,
         cf_bundle_identifier=cf_bundle_identifier,
+        language=get_api_locale(hass.config.language, hass.config.country),
     )
 
     # Test authentication

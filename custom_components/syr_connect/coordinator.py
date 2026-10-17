@@ -32,7 +32,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-from .helpers import get_default_scan_interval_for_entry, get_sensor_iwh_value
+from .helpers import get_api_locale, get_default_scan_interval_for_entry, get_sensor_iwh_value
 from .models import MODEL_SIGNATURES, detect_model
 from .repairs import create_issue, delete_issue
 
@@ -121,6 +121,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 api_app_name=api_app_name,
                 api_base_url=api_base_url,
                 cf_bundle_identifier=cf_bundle_identifier,
+                language=get_api_locale(hass.config.language, hass.config.country),
             )
             self._username = username
             self._configuration_url = svc["configuration_url"] if svc else None

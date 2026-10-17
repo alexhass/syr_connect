@@ -24,6 +24,22 @@ def api_client(mock_session):
     return SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword")
 
 
+def test_language_is_passed_to_payload_builder_and_http_client(mock_session):
+    """The locale reaches the login/statistics payloads and the Accept-Language header."""
+    api = SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword", language="en-DE")
+
+    assert api.payload_builder.app_version.startswith("App-3.7.10-en-DE-iOS-")
+    assert api.payload_builder._compute_locale_lang_reg() == ("en", "DE")
+    assert api.http_client._build_accept_language() == "en-DE,en;q=0.9"
+
+
+def test_language_defaults(api_client):
+    """Without a locale, the app version, payloads and header all fall back to en-US."""
+    assert api_client.payload_builder.app_version.startswith("App-3.7.10-en-US-iOS-")
+    assert api_client.payload_builder._compute_locale_lang_reg() == ("en", "US")
+    assert api_client.http_client._build_accept_language() == "en-US,en;q=0.9"
+
+
 async def test_session_valid_check(api_client):
     """Test session validity checking."""
     # No session data

@@ -57,7 +57,7 @@ _SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 # Device info - internal
 # CF = Core Foundation (iOS/macOS framework)
 # Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
-_SYR_CONNECT_CLIENT_OS_LANGUAGE = "de-DE"
+_SYR_CONNECT_CLIENT_OS_LANGUAGE = "en-US"  # Default; the integration passes the HA locale instead
 _SYR_CONNECT_CLIENT_OS_NAME = "iOS"
 _SYR_CONNECT_CLIENT_OS_VERSION = "15.8.3"
 _SYR_CONNECT_CLIENT_OS_MODEL = "iPhone"

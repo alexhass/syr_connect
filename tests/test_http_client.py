@@ -1,7 +1,6 @@
 """Tests for the HTTP client helper."""
 from __future__ import annotations
 
-import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -11,10 +10,10 @@ from custom_components.syr_connect.http_client import HTTPClient
 
 
 def test_get_headers_accept_language_default_and_custom() -> None:
-    """Default Accept-Language when no `language` set, and respects `language` when set."""
+    """Default Accept-Language is en-US, and respects `language` when set."""
     client = HTTPClient(session=MagicMock(), user_agent="test-agent")
 
-    # Default fallback when no language set
+    # Default when no language is passed
     headers_default = client._get_headers()
     assert headers_default["Accept-Language"] == "en-US,en;q=0.9"
 
@@ -28,7 +27,7 @@ def test_build_accept_language_computes_value() -> None:
     """Accept-Language is computed from `language` or defaults."""
     client = HTTPClient(session=MagicMock(), user_agent="test-agent")
 
-    # Default value when no language set
+    # Default when no language is passed
     assert client._build_accept_language() == "en-US,en;q=0.9"
 
     # Custom language is respected and formatted
@@ -259,21 +258,11 @@ async def test_http_client_post_zero_retries_raises() -> None:
         await client.post("https://example.com/api", {"key": "value"})
 
 
-def test_build_accept_language_exception_fallback(caplog) -> None:
-    """If computing Accept-Language raises, fallback to default is used and error logged."""
-    client = HTTPClient(session=MagicMock(), user_agent="test-agent")
+def test_build_accept_language_from_constructor() -> None:
+    """The language passed to the constructor is used."""
+    client = HTTPClient(session=MagicMock(), user_agent="test-agent", language="en-DE")
 
-    class BadLang:
-        def replace(self, *args, **kwargs):
-            raise RuntimeError("boom")
-
-    client.language = BadLang()
-    caplog.set_level(logging.ERROR)
-
-    result = client._build_accept_language()
-
-    assert result == "en-US,en;q=0.9"
-    assert "Failed to determine Accept-Language" in caplog.text
+    assert client._build_accept_language() == "en-DE,en;q=0.9"
 
 
 def test_build_accept_language_assignment_failure(monkeypatch) -> None:

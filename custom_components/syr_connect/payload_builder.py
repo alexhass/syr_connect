@@ -9,6 +9,7 @@ from xml.etree import ElementTree as ET
 from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
+    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
@@ -22,19 +23,25 @@ _XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
 class PayloadBuilder:
     """Build XML payloads for SYR Connect API requests."""
 
-    language: str | None = None
-
-    def __init__(self, app_version: str, checksum_calculator: SyrChecksum, app_name: str = "SYR Connect") -> None:
+    def __init__(
+        self,
+        app_version: str,
+        checksum_calculator: SyrChecksum,
+        app_name: str = "SYR Connect",
+        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+    ) -> None:
         """Initialize payload builder.
 
         Args:
             app_version: Application version string
             checksum_calculator: Checksum calculator instance
             app_name: Application name sent in the login payload ``<nfo v=...>``
+            language: Locale like ``de-DE`` for ``lng``/``reg`` and ``lg``/``rg``
         """
         self.app_version = app_version
         self.checksum = checksum_calculator
         self.app_name = app_name
+        self.language = language
 
     @staticmethod
     def get_timestamp() -> str:
@@ -67,23 +74,15 @@ class PayloadBuilder:
             return "+00:00:00"
 
     def _compute_locale_lang_reg(self) -> tuple[str, str]:
-        """Return (lang, reg) based on instance language or defaults to en/US.
+        """Return (lang, reg) from the instance language, e.g. ``de-DE`` -> ``("de", "DE")``.
 
-        The integration (coordinator) may set `builder.language` from
-        `hass.config.language`. If not present, a safe default is used.
+        The coordinator and config flow pass the Home Assistant locale (see
+        `helpers.get_api_locale`). A language without region gets ``US``.
         """
-        try:
-            lang_pref = getattr(self, "language", None)
-            if not lang_pref:
-                return ("en", "US")
-            loc = lang_pref.replace("-", "_")
-            parts = loc.split("_")
-            lang = parts[0].lower() if parts else "en"
-            reg = parts[1].upper() if len(parts) > 1 else "US"
-            return (lang, reg)
-        except Exception as err:
-            _LOGGER.exception("Failed to determine locale language/region; falling back to en/US: %s", err)
-            return ("en", "US")
+        parts = self.language.replace("_", "-").split("-")
+        lang = parts[0].lower()
+        reg = parts[1].upper() if len(parts) > 1 else "US"
+        return (lang, reg)
 
     @staticmethod
     def _element(parent: ET.Element | None, tag: str, **attrs: Any) -> ET.Element:

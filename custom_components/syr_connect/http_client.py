@@ -7,6 +7,8 @@ from typing import Any
 
 import aiohttp
 
+from .const import _SYR_CONNECT_CLIENT_OS_LANGUAGE
+
 _LOGGER = logging.getLogger(__name__)
 
 # Default timeout for HTTP requests (seconds)
@@ -22,6 +24,7 @@ class HTTPClient:
         user_agent: str,
         max_retries: int = 3,
         timeout: int = _SYR_CONNECT_DEFAULT_HTTP_TIMEOUT,
+        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize HTTP client.
 
@@ -30,31 +33,24 @@ class HTTPClient:
             user_agent: User agent string for requests
             max_retries: Maximum number of retry attempts
             timeout: Request timeout in seconds
+            language: Locale like ``de-DE`` for the Accept-Language header
         """
         self.session = session
         self.user_agent = user_agent
         self.max_retries = max_retries
         self.timeout = timeout
+        self.language = language
 
     def _build_accept_language(self) -> str:
         """Compute the Accept-Language header value from the instance language.
 
-        Reads ``self.language`` if set (e.g. populated from ``hass.config.language``
-        after construction). Normalises underscore locale codes (``de_DE``) to
-        BCP-47 hyphen form (``de-DE``). Falls back to ``en-US,en;q=0.9`` if
-        no language is configured or an error occurs.
+        Uses ``self.language`` (the Home Assistant locale passed in by the XML API
+        client), normalising underscore locale codes (``de_DE``) to BCP-47 hyphen
+        form (``de-DE``), e.g. ``de-DE,de;q=0.9``.
         """
-        lang_pref = getattr(self, "language", None)
-
-        try:
-            if lang_pref:
-                lang_tag = lang_pref.replace("_", "-")
-                primary = lang_tag.split("-")[0]
-                return f"{lang_tag},{primary};q=0.9"
-            return "en-US,en;q=0.9"
-        except Exception as err:
-            _LOGGER.exception("Failed to determine Accept-Language: %s", err)
-            return "en-US,en;q=0.9"
+        lang_tag = self.language.replace("_", "-")
+        primary = lang_tag.split("-")[0]
+        return f"{lang_tag},{primary};q=0.9"
 
     def _get_headers(self, content_type: str = "application/x-www-form-urlencoded") -> dict[str, str]:
         """Get standard headers for API requests."""

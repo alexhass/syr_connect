@@ -1246,6 +1246,27 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     return True
 
 
+def get_api_locale(language: str | None, country: str | None) -> str:
+    """Build the locale sent to the SYR Connect cloud from the Home Assistant settings.
+
+    Takes `hass.config.language` (e.g. `de`, `en-GB`, `zh-Hans`) and `hass.config.country`
+    (e.g. `DE`). A region in the language wins; otherwise the country is used, so `de` + `AT`
+    gives `de-AT`. Scripts such as `Hans` are not regions and are dropped.
+
+    HA always sets a language (default `en`), but the country is optional. A missing region
+    becomes `US`, matching the app, which always sends a full locale.
+
+    Returns:
+        A full locale like `de-DE`, `de-US` (no country) or `en-US` (no language).
+    """
+    parts = (language or "en").replace("_", "-").split("-")
+    lang = parts[0].lower()
+    region = next((p.upper() for p in parts[1:] if len(p) == 2 and p.isalpha()), None)
+    if region is None:
+        region = country.upper() if country else "US"
+    return f"{lang}-{region}"
+
+
 def mask_ug_value(payload: str) -> str:
     """Redact `ug` attribute values in an XML payload.
 

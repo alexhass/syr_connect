@@ -1444,6 +1444,26 @@ def test_mask_ug_value_masks_outside_complete_tags(payload: str, expected: str):
     assert mask_ug_value(payload) == expected
 
 
+@pytest.mark.parametrize(
+    ("language", "country", "expected"),
+    [
+        (None, None, "en-US"),
+        ("", "DE", "en-DE"),
+        ("de", "DE", "de-DE"),
+        ("de", "AT", "de-AT"),
+        ("de", None, "de-US"),  # no country: region defaults to US
+        ("zh-Hans", None, "zh-US"),
+        ("en-GB", "DE", "en-GB"),  # region in the language wins
+        ("pt_BR", None, "pt-BR"),
+        ("zh-Hans", "CN", "zh-CN"),  # script is not a region
+        ("EN", "us", "en-US"),
+    ],
+)
+def test_get_api_locale(language, country, expected):
+    """The cloud locale combines the HA language with its region or the HA country."""
+    assert helpers.get_api_locale(language, country) == expected
+
+
 def test_mask_ug_value_empty_string_returns_empty():
     """When payload is an empty string, return it unchanged."""
     assert mask_ug_value("") == ""

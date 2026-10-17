@@ -82,6 +82,7 @@ class SyrConnectXmlAPI:
         api_app_name: str | None = None,
         api_base_url: str | None = None,
         cf_bundle_identifier: str | None = None,
+        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize the cloud API client.
 
@@ -95,6 +96,9 @@ class SyrConnectXmlAPI:
                 Defaults to _SYR_CONNECT_API_XML_BASE_URL ("https://syrconnect.de/").
             cf_bundle_identifier: iOS bundle identifier override (from _SYR_CONNECT_API_SERVICES).
                 Defaults to _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER ("de.consoft.syr.connect").
+            language: Locale like "de-DE" (from helpers.get_api_locale) sent in the app version string
+                "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
+                Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
         """
         # --- Authentication credentials ---
         self.username = username
@@ -122,9 +126,10 @@ class SyrConnectXmlAPI:
         self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
 
         # Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
+        # The app sends the phone's language here; use the HA locale.
         _app_version = (
             f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
-            f"-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}"
+            f"-{language}"
             f"-{_SYR_CONNECT_CLIENT_OS_NAME}"
             f"-{_SYR_CONNECT_CLIENT_OS_MODEL}"
             f"-{_SYR_CONNECT_CLIENT_OS_VERSION}"
@@ -141,13 +146,13 @@ class SyrConnectXmlAPI:
         self.checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
 
         # XML payload construction with embedded checksums
-        self.payload_builder = PayloadBuilder(_app_version, self.checksum, _app_name)
+        self.payload_builder = PayloadBuilder(_app_version, self.checksum, _app_name, language)
 
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
 
         # HTTP client with SYR-specific User-Agent
-        self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT)
+        self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT, language=language)
 
     def is_session_valid(self) -> bool:
         """Check if the current session is still valid.

@@ -49,33 +49,18 @@ def test_compute_locale_lang_reg_from_env() -> None:
     assert reg == "FR"
 
 
-def test_compute_locale_lang_reg_exception_fallback(caplog) -> None:
-    """If no instance language is set, fallback to en/US."""
+def test_compute_locale_lang_reg_default() -> None:
+    """Without a language argument, the default en-US is used."""
     pb = PayloadBuilder("1.0", MagicMock())
-    caplog.set_level("ERROR")
-    lang, reg = pb._compute_locale_lang_reg()
 
-    assert (lang, reg) == ("en", "US")
+    assert pb._compute_locale_lang_reg() == ("en", "US")
 
 
-def test_compute_locale_lang_reg_replace_exception(caplog) -> None:
-    """If `language.replace` raises, fallback to en/US is used and logged."""
-    from unittest.mock import MagicMock
+def test_compute_locale_lang_reg_from_constructor() -> None:
+    """The language passed to the constructor is used."""
+    pb = PayloadBuilder("1.0", MagicMock(), language="en-DE")
 
-    from custom_components.syr_connect.payload_builder import PayloadBuilder
-
-    class BadLang:
-        def replace(self, *args, **kwargs):
-            raise RuntimeError("boom")
-
-    pb = PayloadBuilder("1.0", MagicMock())
-    pb.language = BadLang()  # type: ignore[assignment]
-    caplog.set_level("ERROR")
-
-    lang, reg = pb._compute_locale_lang_reg()
-
-    assert (lang, reg) == ("en", "US")
-    assert "Failed to determine locale language/region" in caplog.text
+    assert pb._compute_locale_lang_reg() == ("en", "DE")
 
 
 _ATTR_SPECIAL_VALUES = [
