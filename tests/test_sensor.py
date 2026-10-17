@@ -764,11 +764,11 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
 
     sta = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getSTA")
     assert sta.native_value == "status_regenerant_rinse"
-    assert sta._attr_translation_key == "status_regenerant_rinse"
+    assert sta._attr_translation_key == "getsta"  # unchanged; the state is translated under it
 
     alm = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getALM")
     assert alm.native_value == "no_salt"
-    assert alm._attr_translation_key == "no_salt"
+    assert alm._attr_translation_key == "getalm"
 
     le = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getLE")
     assert le.native_value == 100
@@ -4646,9 +4646,9 @@ async def test_getsta_polish_pattern_mapping(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
 
     mapped = sensor.native_value
-    # Ensure we return a translation key (mapped) and translation key attribute set
+    # The mapped state key is returned; the entity's translation_key stays the sensor key
     assert isinstance(mapped, str)
-    assert sensor._attr_translation_key is not None
+    assert sensor._attr_translation_key == "getsta"
 
 
 async def test_sensor_apply_numeric_conversion_vol_exception(hass: HomeAssistant) -> None:
@@ -7453,7 +7453,7 @@ def test_sensor_getala_mapped_translation_key_returned(create_mock_coordinator):
 
     value = sensor.native_value
     assert value == "no_alarm"
-    assert sensor._attr_translation_key == "no_alarm"
+    assert sensor._attr_translation_key == "getala"  # unchanged; the state is translated under it
 
 
 # ---------------------------------------------------------------------------
@@ -7524,7 +7524,7 @@ def test_sensor_getnot_mapped_value_returned(create_mock_coordinator):
 
     value = sensor.native_value
     assert value == "new_software_available"
-    assert sensor._attr_translation_key == "new_software_available"
+    assert sensor._attr_translation_key == "getnot"  # unchanged; the state is translated under it
 
 
 def test_sensor_getnot_unmapped_returns_raw_code(create_mock_coordinator):
@@ -7564,7 +7564,7 @@ def test_sensor_getwrn_mapped_value_returned(create_mock_coordinator):
 
     value = sensor.native_value
     assert value == "power_outage"
-    assert sensor._attr_translation_key == "power_outage"
+    assert sensor._attr_translation_key == "getwrn"  # unchanged; the state is translated under it
 
 
 def test_sensor_getwrn_unmapped_returns_raw_code(create_mock_coordinator):

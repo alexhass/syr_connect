@@ -361,6 +361,9 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
         # device_id is the serial number - use it for technical entity IDs
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, sensor_key)
         self._attr_has_entity_name = True
+        # Fixed for the entity's lifetime: it names the entity ("entity.sensor.<key>.name") and its
+        # state values are translated under "entity.sensor.<key>.state.<value>". native_value only
+        # returns the state key (e.g. "no_alarm"); it must not change the translation_key.
         self._attr_translation_key = sensor_key.lower()
 
         # Override the entity_id to use technical name (serial number) with domain prefix
@@ -534,8 +537,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     try:
                         mapped, raw_code = get_sensor_ala_map(status, raw)
                         if mapped:
-                            # expose internal key (frontend will translate)
-                            self._attr_translation_key = mapped
                             return mapped
                         # If model was unknown or no mapping found, return raw value 1:1
                         sval = str(raw_code)
@@ -558,9 +559,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
 
                     mapped = ala_mapped or std_mapped
-                    # Set translation key when available so frontend translates the state
-                    if mapped is not None:
-                        self._attr_translation_key = mapped
                     # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
                     return mapped if mapped is not None else (value if value is not None else None)
 
@@ -676,7 +674,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     try:
                         mapped, raw_code = get_sensor_not_map(status, raw)
                         if mapped:
-                            self._attr_translation_key = mapped
                             return mapped
                         sval = str(raw_code)
                         return sval if sval.strip() != "" else None
@@ -780,7 +777,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         resistance_value = str(m_match.group(1) or "")
                         normalized = "Płukanie regenerantem"
                         mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
-                        self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
                         return mapped
 
@@ -789,14 +785,12 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                         rinse_round = str(m2_match.group(1) or "")
                         normalized = "Płukanie rapide"
                         mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, "status_fast_rinse"))
-                        self._attr_translation_key = mapped
                         _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": rinse_round})
                         return mapped
 
                     # Fallback: use raw string as normalized mapping key
                     normalized = raw
                     mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, normalized))
-                    self._attr_translation_key = mapped
                     _LOGGER.debug("getSTA mapped=%s", mapped)
                     return mapped
 
@@ -857,7 +851,6 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
                     try:
                         mapped, raw_code = get_sensor_wrn_map(status, raw)
                         if mapped:
-                            self._attr_translation_key = mapped
                             return mapped
                         sval = str(raw_code)
                         return sval if sval.strip() != "" else None
