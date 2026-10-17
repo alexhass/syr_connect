@@ -1305,12 +1305,12 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
 
     await coordinator.async_open_valve("dev_z", "setAB", 1)
 
-    # First call: clear alarm via set_device_status (clear_prefix starts with "set")
-    # Second call: open valve
-    assert coordinator.api.set_device_status.await_count == 2
-    calls = coordinator.api.set_device_status.await_args_list
-    assert calls[0].args == ("dev_z", [("setALA", "FF")])
-    assert calls[1].args == ("dev_z", [("setAB", 1)])
+    # Clear (setALA=FF) and open in one call; the JSON API sends the commands one after another
+    coordinator.api.set_device_status.assert_awaited_once_with("dev_z", [("setALA", "FF"), ("setAB", 1)])
+    # Both values are shown optimistically: valve open, alarm cleared
+    status = coordinator.data["devices"][0]["status"]
+    assert status["getAB"] == "1"
+    assert status["getALA"] == "FF"
 
 
 # ---------------------------------------------------------------------------
@@ -1345,6 +1345,30 @@ async def test_close_valve_request_failure_restores_previous_value(hass: HomeAss
         await coordinator.async_set_device_value("dev1", "setAB", "2")
 
     assert _status(coordinator)["getAB"] == "1"
+
+
+async def test_set_device_values_sends_one_request_and_updates_all_keys(hass: HomeAssistant) -> None:
+    """Several commands (e.g. setRTH + setRTM) go to the API in one call and update all values."""
+    coordinator = _build_coordinator(hass, _valve_data({"getRTH": "2", "getRTM": "30"}))
+    coordinator.api.set_device_status = AsyncMock(return_value=True)
+
+    await coordinator.async_set_device_values("dev1", [("setRTH", 3), ("setRTM", 45)])
+
+    coordinator.api.set_device_status.assert_awaited_once_with("dev1", [("setRTH", 3), ("setRTM", 45)])
+    assert _status(coordinator)["getRTH"] == "3"
+    assert _status(coordinator)["getRTM"] == "45"
+
+
+async def test_set_device_values_failure_restores_all_keys(hass: HomeAssistant) -> None:
+    """If the request fails, none of the values stays changed (no new hour with the old minute)."""
+    coordinator = _build_coordinator(hass, _valve_data({"getRTH": "2", "getRTM": "30"}))
+    coordinator.api.set_device_status = AsyncMock(side_effect=TimeoutError("no answer"))
+
+    with pytest.raises(TimeoutError):
+        await coordinator.async_set_device_values("dev1", [("setRTH", 3), ("setRTM", 45)])
+
+    assert _status(coordinator)["getRTH"] == "2"
+    assert _status(coordinator)["getRTM"] == "30"
 
 
 async def test_request_failure_does_not_overwrite_newer_poll_data(hass: HomeAssistant) -> None:

@@ -622,8 +622,9 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             return
 
         try:
-            for key, val in commands:
-                await coordinator.async_set_device_value(self._device_id, key, val)
+            # setRTH + setRTM in one call: with the XML API a single request, so the time
+            # is never left half-changed (new hour, old minute) when the request fails
+            await coordinator.async_set_device_values(self._device_id, commands)
             _LOGGER.debug("Requested regeneration time set commands for device %s: %s", self._device_id, commands)
             _LOGGER.debug("Regeneration time select changed for %s to %s", self._device_id, option)
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:

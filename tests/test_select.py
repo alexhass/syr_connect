@@ -80,14 +80,13 @@ async def test_regeneration_select_option_selection(hass: HomeAssistant) -> None
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_values = AsyncMock()
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
     await select.async_select_option("03:45")
 
-    assert coordinator.async_set_device_value.call_count == 2
-    coordinator.async_set_device_value.assert_any_call("device1", "setRTH", 3)
-    coordinator.async_set_device_value.assert_any_call("device1", "setRTM", 45)
+    # Hour and minute in one call (one XML request), never half-applied
+    coordinator.async_set_device_values.assert_awaited_once_with("device1", [("setRTH", 3), ("setRTM", 45)])
 
 
 async def test_numeric_select_current_option(hass: HomeAssistant) -> None:
@@ -913,11 +912,11 @@ async def test_regeneration_select_handles_coordinator_exception(hass: HomeAssis
     async def raiser(*args, **kwargs):
         raise ValueError("boom")
 
-    coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
+    coordinator.async_set_device_values = AsyncMock(side_effect=raiser)
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
     # Should raise HomeAssistantError to display error in UI
-    with pytest.raises(HomeAssistantError, match="Failed to set regeneration time"):
+    with pytest.raises(HomeAssistantError, match="Failed to set regeneration time: boom"):
         await select.async_select_option("03:45")
 
 
@@ -937,13 +936,13 @@ async def test_regeneration_select_no_commands_returns(hass: HomeAssistant) -> N
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_values = AsyncMock()
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
     with patch("custom_components.syr_connect.select.set_sensor_rtm_value", return_value=[]):
         await select.async_select_option("03:45")
 
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_values.assert_not_called()
 
 
 async def test_numeric_select_handles_coordinator_exception(hass: HomeAssistant) -> None:
@@ -1474,16 +1473,13 @@ async def test_regeneration_select_combined_mode_sends_only_set_rtm(hass: HomeAs
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_values = AsyncMock()
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
     await select.async_select_option("07:15")
 
-    # Only setRTM should be called with the HH:MM string
-    assert coordinator.async_set_device_value.call_count == 1
-    coordinator.async_set_device_value.assert_called_once_with("device1", "setRTM", "07:15")
-    # Ensure setRTH was not called
-    assert not any(c.args[1] == "setRTH" for c in coordinator.async_set_device_value.call_args_list)
+    # Only setRTM with the HH:MM string, no setRTH
+    coordinator.async_set_device_values.assert_awaited_once_with("device1", [("setRTM", "07:15")])
 
 
 async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities):
@@ -1532,12 +1528,12 @@ async def test_regeneration_select_current_and_select_with_mock(create_mock_coor
     data = {"devices": [{"id": "mdev1", "name": "Device M", "status": {"getRTM": "07:30"}, "available": True}]}
     coord = create_mock_coordinator(data)
     coord.last_update_success = True
-    coord.async_set_device_value = AsyncMock()
+    coord.async_set_device_values = AsyncMock()
 
     sel = SyrConnectRegenerationSelect(coord, "mdev1", "Device M")
     assert sel.current_option == "07:30"
     await sel.async_select_option("08:15")
-    assert coord.async_set_device_value.await_count >= 1
+    coord.async_set_device_values.assert_awaited_once_with("mdev1", [("setRTM", "08:15")])
 
 
 async def test_numeric_select_current_and_select_with_mock(create_mock_coordinator):

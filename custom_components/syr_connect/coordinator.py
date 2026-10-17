@@ -360,7 +360,23 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         Raises:
             HomeAssistantError: If coordinator data is not available, device not found, or setting the value fails
         """
-        _LOGGER.debug("Setting device %s command %s to %s", device_id, command, value)
+        await self.async_set_device_values(device_id, [(command, value)])
+
+    async def async_set_device_values(self, device_id: str, commands: list[tuple[str, Any]]) -> None:
+        """Set several device values together.
+
+        The XML API sends all commands in a single request, so they are applied
+        together or not at all (e.g. setRTH + setRTM of a regeneration time). The
+        JSON API has no multi-command endpoint and sends them one after another.
+
+        Args:
+            device_id: The device ID (serial number)
+            commands: Sequence of (command, value) pairs, executed in order
+
+        Raises:
+            HomeAssistantError: If coordinator data is not available, device not found, or setting the values fails
+        """
+        _LOGGER.debug("Setting device %s commands %s", device_id, commands)
 
         if not self.data:
             raise HomeAssistantError("Coordinator data not available")
@@ -370,36 +386,36 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             raise HomeAssistantError(f"Device {device_id} not found")
 
         # Optimistically update the in-memory coordinator data so entities show
-        # the new value immediately, then attempt to set it via the API and
-        # schedule a background refresh to retrieve authoritative data.
-        # Ensure get_key is always defined to avoid NameError if command
-        # does not follow the 'setXYZ' convention and code later checks it.
-        get_key: str | None = None
+        # the new values immediately, then attempt to set them via the API.
         previous_data = self.data
         optimistic_data: dict[str, Any] | None = None
 
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
-                # Derive the read key from the write command.
-                # Convention: all writable SYR commands are named "setXYZ";
-                # the corresponding readable key is "getXYZ".
-                # Guard explicitly so we never write a garbage key to the status dict.
-                if not command.startswith("set"):
-                    _LOGGER.warning(
-                        "Command '%s' does not follow the 'setXYZ' convention; "
-                        "skipping optimistic status update for device %s",
-                        command,
-                        device_id,
-                    )
-                else:
-                    get_key = f"get{command[3:]}"
-                    for dev in new_data.get("devices", []):
-                        if dev.get("id") == device_id:
-                            status = dev.setdefault("status", {})
-                            status[get_key] = str(value)
-                            dev["available"] = True
-                            break
+                device = next((dev for dev in new_data.get("devices", []) if dev.get("id") == device_id), None)
+                applied = False
+                for command, value in commands:
+                    # "clrXYZ" clears an alarm; it has no value to show optimistically
+                    if command.startswith("clr"):
+                        continue
+                    # Derive the read key from the write command.
+                    # Convention: all writable SYR commands are named "setXYZ";
+                    # the corresponding readable key is "getXYZ".
+                    # Guard explicitly so we never write a garbage key to the status dict.
+                    if not command.startswith("set"):
+                        _LOGGER.warning(
+                            "Command '%s' does not follow the 'setXYZ' convention; "
+                            "skipping optimistic status update for device %s",
+                            command,
+                            device_id,
+                        )
+                        continue
+                    if device is not None:
+                        device.setdefault("status", {})[f"get{command[3:]}"] = str(value)
+                        device["available"] = True
+                    applied = True
+                if applied:
                     self.async_set_updated_data(new_data)
                     optimistic_data = new_data
 
@@ -407,7 +423,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
         try:
-            await self.api.set_device_status(dclg, [(command, value)])
+            await self.api.set_device_status(dclg, commands)
         except Exception:
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
@@ -517,58 +533,18 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             await self.async_set_device_value(device_id, set_key, set_val)
             return
 
-        # --- Active alarm: apply optimistic update then send clear + open ---
-        get_key_ab: str | None = f"get{set_key[3:]}" if set_key.startswith("set") else None
-        previous_data = self.data
-        optimistic_data: dict[str, Any] | None = None
-        try:
-            if isinstance(self.data, dict) and get_key_ab:
-                new_data = copy.deepcopy(self.data)
-                for dev in new_data.get("devices", []):
-                    if dev.get("id") == device_id:
-                        status = dev.setdefault("status", {})
-                        status[get_key_ab] = str(set_val)
-                        dev["available"] = True
-                        break
-                self.async_set_updated_data(new_data)
-                optimistic_data = new_data
-        except (KeyError, AttributeError, TypeError, ValueError) as err:
-            _LOGGER.warning(
-                "Valve open with alarm clear: failed to apply optimistic update for %s: %s",
-                device_id,
-                err,
-            )
-
-        try:
-            if isinstance(self.api, SyrConnectJsonAPI):
-                # JSON API: two sequential requests (no multi-command endpoint)
-                if clear_prefix[0].startswith("clr"):
-                    await self.api.request_json_data(f"clr/{clear_prefix[0][3:].lower()}")
-                else:
-                    await self.api.set_device_status(dclg, [(clear_prefix[0], clear_prefix[1])])
-                await self.api.set_device_status(dclg, [(set_key, set_val)])
-                _LOGGER.info(
-                    "Valve open with alarm clear (JSON): sent %s then %s=%s for device %s",
-                    clear_prefix[0],
-                    set_key,
-                    set_val,
-                    device_id,
-                )
-            else:
-                # XML API: clear + open in a single multi-command payload
-                await self.api.set_device_status(
-                    dclg, [clear_prefix, (set_key, set_val)]
-                )
-                _LOGGER.info(
-                    "Valve open with alarm clear (XML): sent [%s, %s=%s] for device %s",
-                    clear_prefix[0],
-                    set_key,
-                    set_val,
-                    device_id,
-                )
-        except Exception:
-            _LOGGER.debug(
-                "Valve open with alarm clear failed for device %s, re-raising", device_id
-            )
-            self._rollback_optimistic_update(previous_data, optimistic_data)
-            raise
+        # --- Active alarm: send clear + open together (optimistic update and rollback included) ---
+        if isinstance(self.api, SyrConnectJsonAPI) and clear_prefix[0].startswith("clr"):
+            # The JSON API clears alarms via its own /clr/<field> endpoint, not via set
+            await self.api.request_json_data(f"clr/{clear_prefix[0][3:].lower()}")
+            await self.async_set_device_values(device_id, [(set_key, set_val)])
+        else:
+            # XML API: clear + open in a single request. JSON API (setALA=FF): sent one after another.
+            await self.async_set_device_values(device_id, [clear_prefix, (set_key, set_val)])
+        _LOGGER.info(
+            "Valve open with alarm clear: sent %s and %s=%s for device %s",
+            clear_prefix[0],
+            set_key,
+            set_val,
+            device_id,
+        )
