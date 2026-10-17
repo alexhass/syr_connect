@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
@@ -1998,6 +1999,31 @@ async def test_getpa_group_false_removes_registry_entries(hass: HomeAssistant) -
 
     # Ensure at least one removal was performed for group sensor
     assert len(dummy.removed) > 0
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        {},  # status not fetched yet (temporary failure at startup)
+        {"getFLO": "10"},  # getPAx not reported at all
+    ],
+)
+async def test_getpa_group_missing_flag_keeps_registry_entries(hass: HomeAssistant, status: dict) -> None:
+    """A missing getPAx is unknown, not false: the profile sensors must not be removed."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": status}]}
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    removed: list[str] = []
+    registry = MagicMock()
+    registry.async_get = MagicMock(side_effect=lambda eid: MagicMock(entity_id=eid, config_entry_id=coordinator.entry_id))
+    registry.async_remove = MagicMock(side_effect=removed.append)
+
+    with patch("custom_components.syr_connect.sensor.er.async_get", return_value=registry):
+        await async_setup_entry(hass, entry, lambda ents: None)  # type: ignore[arg-type]
+
+    assert not [eid for eid in removed if re.search(r"_getp[a-z]\d$", eid)]
 
 
 async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:

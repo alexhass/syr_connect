@@ -173,8 +173,10 @@ async def async_setup_entry(
                             )
                         )
                         sensor_count += 1
-                else:
-                    # Remove group sensors from entity registry when PA flag is false
+                elif pa_key in status:
+                    # Remove group sensors from entity registry when the PA flag is reported false.
+                    # A missing flag (e.g. empty status after a failed fetch at startup) is unknown,
+                    # not false, and must not remove the sensors with their customizations.
                     for gk in group_keys:
                         try:
                             entity_id = build_entity_id("sensor", device_id, gk)
