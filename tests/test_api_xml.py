@@ -24,6 +24,20 @@ def api_client(mock_session):
     return SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword")
 
 
+async def test_login_logs_payload_with_locale_but_without_password(mock_session, caplog):
+    """The login payload is logged (to check lng/reg), with the password masked."""
+    api = SyrConnectXmlAPI(mock_session, "user@example.com", "s3cr3t!", language="en-DE")
+    caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
+
+    with patch.object(api.http_client, "post", side_effect=aiohttp.ClientError("offline")), \
+         pytest.raises(SyrConnectConnectionError):
+        await api.login()
+
+    assert 'lng="en" reg="DE"' in caplog.text
+    assert '<usr n="user@example.com" v="***"' in caplog.text
+    assert "s3cr3t!" not in caplog.text
+
+
 def test_language_is_passed_to_payload_builder_and_http_client(mock_session):
     """The locale reaches the login/statistics payloads and the Accept-Language header."""
     api = SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword", language="en-DE")
@@ -76,9 +90,9 @@ async def test_login_success(api_client):
 
 
 async def test_login_auth_error(api_client):
-    """Test login with authentication error."""
-    with patch.object(api_client.http_client, 'post', side_effect=ValueError("Invalid credentials")):
-        with pytest.raises(SyrConnectAuthError):
+    """Wrong credentials: valid encrypted answer whose decrypted content has no session -> re-auth."""
+    with patch.object(api_client.http_client, 'post', return_value="<sc><api>encrypted</api></sc>"),          patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})),          patch.object(api_client.encryption, 'decrypt', return_value='<prs><pre id="p1" n="P1"/></prs>'):
+        with pytest.raises(SyrConnectAuthError, match="Invalid credentials"):
             await api_client.login()
 
 
@@ -314,18 +328,18 @@ async def test_get_statistics_exception_handling(api_client):
 
 
 async def test_login_with_parser_value_error(api_client):
-    """Test login raises SyrConnectAuthError when parser raises ValueError."""
+    """A malformed login answer is a connection problem, not rejected credentials (no re-auth)."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
     with patch.object(api_client.http_client, 'post', return_value=mock_response), \
          patch.object(api_client.response_parser, 'parse_login_response', side_effect=ValueError("Invalid response structure")):
 
-        with pytest.raises(SyrConnectAuthError, match="Authentication failed"):
+        with pytest.raises(SyrConnectConnectionError, match="Invalid login response"):
             await api_client.login()
 
 
 async def test_login_with_decryption_parser_error(api_client):
-    """Test login raises SyrConnectAuthError when decryption parsing fails."""
+    """A malformed decrypted answer is a connection problem, not rejected credentials (no re-auth)."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
     with patch.object(api_client.http_client, 'post', return_value=mock_response), \
@@ -333,7 +347,7 @@ async def test_login_with_decryption_parser_error(api_client):
          patch.object(api_client.encryption, 'decrypt', return_value='<invalid>'), \
          patch.object(api_client.response_parser, 'parse_decrypted_login', side_effect=ValueError("Invalid decrypted data")):
 
-        with pytest.raises(SyrConnectAuthError, match="Authentication failed"):
+        with pytest.raises(SyrConnectConnectionError, match="Invalid login response"):
             await api_client.login()
 
 

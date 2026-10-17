@@ -1477,6 +1477,31 @@ def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
     assert is_sensor_visible(status, "getPN1", "value") is False
 
 
+@pytest.mark.parametrize("password", ["secret", 'a" v="x', "p>w<d", 'v="', ""])
+def test_mask_login_password(password: str):
+    """Only the password is masked; username, locale and the rest of the payload stay readable."""
+    from custom_components.syr_connect.payload_builder import PayloadBuilder
+
+    builder = PayloadBuilder("1.0", MagicMock(), language="en-DE")
+    with patch.object(PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"):
+        payload = builder.build_login_payload("user@example.com", password)
+        expected = builder.build_login_payload("user@example.com", "***")
+
+    masked = helpers.mask_login_password(payload)
+
+    # Identical to the payload built with "***" as password: the password is gone
+    # and nothing else is touched
+    assert masked == expected
+    assert '<usr n="user@example.com" v="***" />' in masked
+    assert 'lng="en" reg="DE"' in masked
+
+
+def test_mask_login_password_non_string_and_empty():
+    """Non-string and empty payloads are returned unchanged."""
+    assert helpers.mask_login_password("") == ""
+    assert helpers.mask_login_password(None) is None  # type: ignore[arg-type]
+
+
 def test_mask_ug_value_basic():
     payload = '<sc ug="SECRET_TOKEN"><payload>data</payload></sc>'
 

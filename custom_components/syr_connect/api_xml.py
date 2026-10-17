@@ -56,7 +56,7 @@ from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
 )
-from .helpers import mask_ug_value
+from .helpers import mask_login_password, mask_ug_value
 from .http_client import HTTPClient
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
@@ -222,7 +222,7 @@ class SyrConnectXmlAPI:
         # --- Build Login Request ---
         # Payload includes username, password, and checksum for integrity
         xml_data = self.payload_builder.build_login_payload(self.username, self.password)
-        _LOGGER.debug("Login payload prepared")
+        _LOGGER.debug("Login payload prepared: %s", mask_login_password(xml_data))
 
         try:
             # --- Make HTTP Request ---
@@ -256,10 +256,15 @@ class SyrConnectXmlAPI:
             return True
 
         # --- Error Handling ---
-        except ValueError as err:
-            # Parser errors usually mean invalid credentials or malformed response
+        except SyrConnectAuthError as err:
+            # The server rejected the credentials (see parse_decrypted_login): re-authentication needed
             _LOGGER.error("Authentication failed: %s", err)
-            raise SyrConnectAuthError(f"Authentication failed: {err}") from err
+            raise
+        except ValueError as err:
+            # Malformed or unexpected answer (e.g. a maintenance page instead of XML). The
+            # credentials are not known to be wrong, so this must not trigger a re-authentication.
+            _LOGGER.error("Invalid login response: %s", err)
+            raise SyrConnectConnectionError(f"Invalid login response: {err}") from err
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors (DNS, connection timeout, etc.)
             error_representation = repr(err)

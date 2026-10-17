@@ -1302,6 +1302,21 @@ def get_api_locale(language: str | None, country: str | None) -> str:
     return f"{lang}-{region}"
 
 
+def mask_login_password(payload: str) -> str:
+    """Redact the password in a login payload so the payload can be logged.
+
+    The login payload carries the credentials as `<usr n="<username>" v="<password>" />`;
+    only the `v` value of `<usr>` is replaced with `***`. The payload is built by
+    `PayloadBuilder.build_login_payload` with ElementTree, which escapes `"` and `>`
+    inside attribute values, so the value always ends at the next `"`. Non-string and
+    empty payloads are returned unchanged.
+    """
+    if not isinstance(payload, str) or payload == "":
+        return payload
+    # Group 1 keeps `<usr ... v="`; `\s` keeps `v` from matching the end of a longer name.
+    return re.sub(r'(<usr\b[^>]*?\sv\s*=\s*")[^"]*', r"\1***", payload)
+
+
 def mask_ug_value(payload: str) -> str:
     """Redact `ug` attribute values in an XML payload.
 

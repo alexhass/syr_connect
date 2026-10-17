@@ -7,6 +7,8 @@ from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree  # noqa: N813
 
+from .exceptions import SyrConnectAuthError
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -138,14 +140,27 @@ class ResponseParser:
             Tuple of (session_id, projects_list)
 
         Raises:
+            SyrConnectAuthError: If the server rejected the credentials
             ValueError: If structure is invalid
         """
         wrapped_xml = f'<xml>{decrypted_xml}</xml>'
         parsed = self.parse_xml(wrapped_xml)
 
-        # Validate session structure
+        # Wrong username or password: the server still answers with HTTP 200 and a valid
+        # encrypted response, but the decrypted content has no session (usr@id). This is
+        # the only reliable sign of rejected credentials; every other parser error is a
+        # malformed or unexpected answer and must not trigger a re-authentication.
+        # See docs/known_issues_xml_api.md, issue 3.
         if not self.validate_structure(parsed, ['xml', 'usr', '@id']):
-            raise ValueError("Authentication failed: Invalid credentials or session data")
+            # Safe to log: without a session there is no token to leak, and the content
+            # shows what the server answered instead.
+            _LOGGER.debug("Decrypted login response without session: %s", decrypted_xml)
+            # The server's <msg v="..."> names the cause only for a known user with a
+            # wrong password; it is added for the log but not used for detection.
+            msg = parsed['xml'].get('msg') if isinstance(parsed.get('xml'), dict) else None
+            server_message = msg.get('@v') if isinstance(msg, dict) else None
+            detail = f" Message: {server_message}" if server_message else ""
+            raise SyrConnectAuthError(f"Invalid credentials or session data.{detail}")
 
         session_id = parsed['xml']['usr']['@id']
 

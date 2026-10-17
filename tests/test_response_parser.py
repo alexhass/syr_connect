@@ -3,6 +3,7 @@ import os
 import defusedxml.ElementTree as ElementTree
 import pytest
 
+from custom_components.syr_connect.exceptions import SyrConnectAuthError
 from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrLEXplus10S_GetProjectDeviceCollections.xml")
@@ -187,10 +188,28 @@ def test_parse_decrypted_login_multiple_projects(parser):
     assert projects[1]["id"] == "p2"
 
 
+@pytest.mark.parametrize(
+    "server_message",
+    [
+        "Der Vorgang konnte nicht durchgeführt werden.",  # unknown username and password
+        "Der Benutzername und das Passwort stimmen nicht überein.",  # known username, wrong password
+    ],
+)
+def test_parse_decrypted_login_rejected_credentials_response(parser, server_message):
+    """Real decrypted answers for rejected credentials (see docs/known_issues_xml_api.md, issue 3)."""
+    decrypted = (
+        '<nfo v="SyrConnect.Api.GetProjects" version="1.0.0" ts="2026-10-17 21:31:37" tzo="00:00:00" lng="de" reg="DE" />'
+        f'<app id="1" /><ags /><msg hl="Fehler" v="{server_message}" typ="1" />'
+    )
+    with pytest.raises(SyrConnectAuthError, match="Invalid credentials") as excinfo:
+        parser.parse_decrypted_login(decrypted)
+    assert server_message in str(excinfo.value)
+
+
 def test_parse_decrypted_login_no_session(parser):
-    """Test parsing decrypted login without session raises ValueError."""
+    """Rejected credentials: the decrypted answer has no session, which is an auth error."""
     xml = '<invalid>data</invalid>'
-    with pytest.raises(ValueError, match="Invalid credentials or session data"):
+    with pytest.raises(SyrConnectAuthError, match="Invalid credentials or session data"):
         parser.parse_decrypted_login(xml)
 
 
