@@ -25,6 +25,7 @@ from .helpers import (
     build_entity_id,
     build_unique_id,
     get_model_known_keys,
+    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -163,12 +164,4 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         Returns:
             True if last coordinator update was successful and device is available
         """
-        if not self.coordinator.last_update_success:
-            return False
-
-        # Check if the specific device is available
-        for device in self.coordinator.data.get('devices', []):
-            if device['id'] == self._device_id:
-                return device.get('available', True)
-
-        return True
+        return is_device_available(self.coordinator, self._device_id)

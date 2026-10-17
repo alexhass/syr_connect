@@ -31,6 +31,7 @@ from .helpers import (
     build_unique_id,
     get_model_known_keys,
     get_sensor_rtm_value,
+    is_device_available,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
@@ -625,12 +626,7 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device.get("id") == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
 
 class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
@@ -753,12 +749,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device.get("id") == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
 
 class SyrConnectHardnessSelect(SyrConnectNumericSelect):
@@ -871,12 +862,7 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device.get("id") == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
 
 class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
@@ -968,12 +954,7 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device.get("id") == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
 
 class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
@@ -1071,9 +1052,4 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def available(self) -> bool:
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device.get("id") == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)

@@ -24,6 +24,7 @@ from .helpers import (
     build_unique_id,
     get_model_known_keys,
     get_sensor_ab_value,
+    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -245,12 +246,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
     @property
     def available(self) -> bool:
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device.get("id") == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
     async def async_open(self) -> None:
         """Open the valve (send `setAB` -> open value)."""

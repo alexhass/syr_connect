@@ -53,6 +53,7 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    is_device_available,
     is_sensor_visible,
     is_value_true,
     registry_cleanup,
@@ -881,15 +882,7 @@ class SyrConnectSensor(CoordinatorEntity, SensorEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        if not self.coordinator.last_update_success:
-            return False
-
-        # Check if the specific device is available
-        for device in self.coordinator.data.get('devices', []):
-            if device['id'] == self._device_id:
-                return device.get('available', True)
-
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
 
 class SyrConnectConnectionStateSensor(CoordinatorEntity, SensorEntity):

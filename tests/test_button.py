@@ -288,7 +288,7 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
     button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
 
     # Should return True when device not found (default availability)
-    assert button.available is True
+    assert button.available is False
 
 
 async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:

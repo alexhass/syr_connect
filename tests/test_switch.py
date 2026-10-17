@@ -596,8 +596,8 @@ def test_available_returns_device_available_flag() -> None:
     assert sw.available is False
 
 
-def test_available_returns_true_when_device_not_in_list() -> None:
-    """available returns True when device_id is not found in devices list (line 172)."""
+def test_available_false_when_device_not_in_list() -> None:
+    """available returns False when device_id is not found in devices list (removed from the account)."""
     from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
 
     mock_coordinator = MagicMock()
@@ -606,4 +606,4 @@ def test_available_returns_true_when_device_not_in_list() -> None:
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "MISSING", "Dev", "", "getBUZ")
 
-    assert sw.available is True
+    assert sw.available is False

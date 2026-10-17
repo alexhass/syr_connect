@@ -144,6 +144,24 @@ def get_default_scan_interval_for_entry(entry: ConfigEntry | dict | None) -> int
     )
 
 
+def is_device_available(coordinator: Any, device_id: str) -> bool:
+    """Return whether the entities of a device are available.
+
+    Shared by the `available` property of all entities of a device:
+    - False if the last coordinator update failed.
+    - The device's own `available` flag otherwise (False while the cloud reports it offline).
+    - False if the device is not in the data: temporary failures keep the devices of the
+      last update, so a missing device was removed from the account (it is removed from
+      Home Assistant at the next setup).
+    """
+    if not coordinator.last_update_success:
+        return False
+    for device in (coordinator.data or {}).get("devices", []):
+        if device.get("id") == device_id:
+            return bool(device.get("available", True))
+    return False
+
+
 def build_device_info(
     device_id: str,
     device_name: str,

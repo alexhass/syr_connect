@@ -23,6 +23,7 @@ from .helpers import (
     build_unique_id,
     get_model_known_keys,
     get_sensor_not_map,
+    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -134,12 +135,7 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         # The device goes offline while flashing; stay available so the progress bar remains visible.
         if self.in_progress:
             return True
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device["id"] == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
     @property
     def installed_version(self) -> str | None:

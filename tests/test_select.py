@@ -849,7 +849,7 @@ async def test_regeneration_select_available_device_not_found(hass: HomeAssistan
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")  # device1 doesn't exist
 
     # Should default to True when device not found
-    assert select.available is True
+    assert select.available is False
 
 
 async def test_regeneration_select_combined_current_option(hass: HomeAssistant) -> None:
@@ -1049,7 +1049,7 @@ async def test_numeric_select_available_device_not_found(hass: HomeAssistant) ->
     select = SyrConnectNumericSelect(coordinator, "device1", "Device 1", "getSV1", 0, 25, 1)  # device1 doesn't exist
 
     # Should default to True when device not found
-    assert select.available is True
+    assert select.available is False
 
 
 async def test_async_setup_entry_skip_empty_sv_values(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
@@ -1709,7 +1709,7 @@ async def test_prf_select_device_not_found_in_current_option(hass: HomeAssistant
 
 
 async def test_prf_select_device_not_found_in_available(hass: HomeAssistant) -> None:
-    """Test PRF select available returns True when device not found."""
+    """Test PRF select is unavailable when device not found (removed from the account)."""
     data = {
         "devices": [
             {
@@ -1723,7 +1723,7 @@ async def test_prf_select_device_not_found_in_available(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
 
-    assert select.available is True
+    assert select.available is False
 
 
 async def test_prf_select_empty_prf_value(hass: HomeAssistant) -> None:
@@ -2451,12 +2451,12 @@ async def test_rotation_select_available_device_found(hass: HomeAssistant) -> No
 
 
 async def test_rotation_select_available_device_not_found(hass: HomeAssistant) -> None:
-    """available returns True (default) when device not in coordinator data (lines 488-493)."""
+    """available returns False when device not in coordinator data (removed from the account)."""
     data = {"devices": [{"id": "other", "status": {"getSRO": "90"}}]}
     coordinator = _build_coordinator(hass, data)
     select = SyrConnectRotationSelect(coordinator, "d1", "D1")
 
-    assert select.available is True
+    assert select.available is False
 
 
 # ---------------------------------------------------------------------------
@@ -2536,13 +2536,13 @@ async def test_discrete_select_available_device_found(hass: HomeAssistant) -> No
 
 
 async def test_discrete_select_available_device_not_found(hass: HomeAssistant) -> None:
-    """available returns True (default) when device not in coordinator data (lines 575-580)."""
+    """available returns False when device not in coordinator data (removed from the account)."""
     mapping = {"opt_one": 1}
     data = {"devices": [{"id": "other", "status": {"getTEST": "1"}}]}
     coordinator = _build_coordinator(hass, data)
     select = SyrConnectDiscreteSelect(coordinator, "d1", "D1", "getTEST", mapping)
 
-    assert select.available is True
+    assert select.available is False
 
 
 # ---------------------------------------------------------------------------

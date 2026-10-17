@@ -1007,7 +1007,7 @@ async def test_setup_getab_invalid_value_hits_except_branch(hass: HomeAssistant)
 
 
 async def test_available_fallback_when_device_not_in_data(hass: HomeAssistant) -> None:
-    """Line 318: available property returns True when device_id is not in coordinator data."""
+    """available property returns False when device_id is not in coordinator data (removed from the account)."""
     # Coordinator data contains a different device id
     data = {"devices": [{"id": "other", "name": "Other", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
@@ -1015,7 +1015,7 @@ async def test_available_fallback_when_device_not_in_data(hass: HomeAssistant) -
     valve = SyrConnectValve(coordinator, "missing_id", "Missing")
 
     # Device not found -> falls through the loop -> return True
-    assert valve.available is True
+    assert valve.available is False
 
 
 # ---------------------------------------------------------------------------

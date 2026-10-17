@@ -958,7 +958,7 @@ async def test_sensor_missing_device(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
 
     assert sensor.native_value is None
-    assert sensor.available is True  # Returns True when device not found
+    assert sensor.available is False  # Device removed from the account
 
 
 async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
@@ -1522,7 +1522,7 @@ async def test_sensor_available_device_not_found(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "nonexistent_device", "Nonexistent", "project1", "getSTA")
 
     # Should return True when device not found
-    assert sensor.available is True
+    assert sensor.available is False
 
 
 async def test_sensor_rpw_empty_string(hass: HomeAssistant) -> None:

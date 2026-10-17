@@ -302,7 +302,7 @@ async def test_binary_sensor_missing_device(hass: HomeAssistant) -> None:
     )
 
     assert sensor.is_on is None
-    assert sensor.available is True  # Returns True when device not found
+    assert sensor.available is False  # Device removed from the account
 
 
 async def test_binary_sensor_string_true(hass: HomeAssistant) -> None:

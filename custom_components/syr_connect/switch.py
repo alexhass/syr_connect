@@ -22,7 +22,14 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .exceptions import SyrConnectError
-from .helpers import build_device_info, build_entity_id, build_unique_id, get_model_known_keys, registry_cleanup
+from .helpers import (
+    build_device_info,
+    build_entity_id,
+    build_unique_id,
+    get_model_known_keys,
+    is_device_available,
+    registry_cleanup,
+)
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -171,12 +178,7 @@ class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        if not self.coordinator.last_update_success:
-            return False
-        for device in self.coordinator.data.get("devices", []):
-            if device["id"] == self._device_id:
-                return device.get("available", True)
-        return True
+        return is_device_available(self.coordinator, self._device_id)
 
     @property
     def is_on(self) -> bool | None:
