@@ -18,7 +18,7 @@ Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten übe
 | comfort by sanibel | <https://comfort-by-sanibel.de/> |
 | CONEL | <https://www.conel.de/> |
 | DITECH | <https://www.ditech-haustechnik.de/> |
-| hansgrohe Pontos | <https://www.hansgrohe.de/> |
+| Hansgrohe Pontos | <https://www.hansgrohe.de/> |
 | mein concept | <https://www.mein-concept.de/> |
 | mein Optima | <https://www.mein-optima.de/> |
 | Reliance Valves | <https://www.rwc.com/brands/reliance-valves> |
