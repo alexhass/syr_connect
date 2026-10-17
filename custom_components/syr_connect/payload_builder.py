@@ -22,6 +22,8 @@ _XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
 class PayloadBuilder:
     """Build XML payloads for SYR Connect API requests."""
 
+    language: str | None = None
+
     def __init__(self, app_version: str, checksum_calculator: SyrChecksum, app_name: str = "SYR Connect") -> None:
         """Initialize payload builder.
 

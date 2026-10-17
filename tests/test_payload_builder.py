@@ -69,7 +69,7 @@ def test_compute_locale_lang_reg_replace_exception(caplog) -> None:
             raise RuntimeError("boom")
 
     pb = PayloadBuilder("1.0", MagicMock())
-    pb.language = BadLang()
+    pb.language = BadLang()  # type: ignore[assignment]
     caplog.set_level("ERROR")
 
     lang, reg = pb._compute_locale_lang_reg()
