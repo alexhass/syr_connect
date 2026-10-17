@@ -812,10 +812,29 @@ def test_registry_cleanup_remove_called() -> None:
     registry.async_get = MagicMock(return_value=None)
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
-        coordinator = {"devices": [{"id": device_id}]}
+        coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getPRS"})
 
     registry.async_remove.assert_called_once_with(unlisted_entity_id)
+
+
+def test_registry_cleanup_skips_device_with_empty_status() -> None:
+    """Without a status (not fetched yet, e.g. temporary failure at startup) nothing is removed."""
+    hass = MagicMock()
+    registry = MagicMock()
+    device_id = "DEV"
+    registry.entities.values.return_value = [
+        SimpleNamespace(entity_id=build_entity_id("sensor", device_id, "getFOO")),
+    ]
+    registry.async_remove = MagicMock()
+    # A conditionally hidden sensor that would be removed if the empty status were trusted
+    registry.async_get = MagicMock(return_value=SimpleNamespace(config_entry_id=None))
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": device_id, "status": {}}]}
+        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getPRS"})
+
+    registry.async_remove.assert_not_called()
 
 
 def test_registry_cleanup_entry_id_scoping_ignores_other_hub() -> None:
@@ -836,7 +855,7 @@ def test_registry_cleanup_entry_id_scoping_ignores_other_hub() -> None:
     registry.async_get = MagicMock(return_value=None)
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
-        coordinator = {"devices": [{"id": device_id}]}
+        coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
             hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
         )
@@ -857,7 +876,7 @@ def test_registry_cleanup_entry_id_scoping_removes_own_hub() -> None:
     registry.async_get = MagicMock(return_value=None)
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
-        coordinator = {"devices": [{"id": device_id}]}
+        coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
             hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
         )
@@ -875,7 +894,7 @@ def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
     registry.async_remove.side_effect = RuntimeError("boom")
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
-        coordinator = {"devices": [{"id": device_id}]}
+        coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         # Should not raise despite async_remove throwing
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys=set())
 

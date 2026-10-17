@@ -5,6 +5,7 @@ import pytest
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady, HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
@@ -16,6 +17,7 @@ from custom_components.syr_connect.const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_SERVICE,
+    DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.exceptions import (
@@ -455,8 +457,7 @@ async def test_coordinator_device_status_none_reuses_previous(hass: HomeAssistan
 
 async def test_coordinator_device_status_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
     """Test coordinator handles exceptions when fetching device status."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-         patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.projects = [{"id": "project1", "name": "Test Project"}]
@@ -481,21 +482,27 @@ async def test_coordinator_device_status_exception(hass: HomeAssistant, setup_in
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        # Device should be present but marked unavailable
+        # Without previous data the device stays available with an empty status
         assert coordinator.data is not None
         assert len(coordinator.data["devices"]) == 1
         device = coordinator.data["devices"][0]
         assert device["id"] == "device1"
-        assert device["available"] is False
+        assert device["available"] is True
         assert device["status"] == {}
 
-        # Verify repair issue was created
-        mock_create_issue.assert_called_once_with(
-            hass,
-            "device_offline_device1",
-            "device_offline",
-            translation_placeholders={"device_name": "Device 1"},
-        )
+        # A temporary failure is only logged, no repair issue is created
+        assert ir.async_get(hass).async_get_issue(DOMAIN, "device_offline_device1") is None
+
+        # Once a status is known, a failed poll keeps the previous values
+        mock_api.get_device_status = AsyncMock(return_value={"getFLO": "5"})
+        await coordinator.async_refresh()
+        mock_api.get_device_status = AsyncMock(side_effect=Exception("Connection timeout"))
+        await coordinator.async_refresh()
+
+        assert coordinator.last_update_success is True
+        device = coordinator.data["devices"][0]
+        assert device["status"] == {"getFLO": "5"}
+        assert device["available"] is True
 
 
 async def test_coordinator_device_status_exception_result(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -711,42 +718,6 @@ async def test_coordinator_delete_offline_issue_on_recovery(hass: HomeAssistant,
 
         # Verify delete_issue was called when device status was successfully fetched
         mock_delete_issue.assert_called_once_with(hass, "device_offline_device1")
-
-
-async def test_coordinator_device_without_cna_fallback_to_id(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
-    """Test coordinator uses device ID as fallback when cna is missing."""
-    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class, \
-         patch("custom_components.syr_connect.coordinator.create_issue") as mock_create_issue:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(return_value=[
-            {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}  # No 'cna' field
-        ])
-        mock_api.get_device_status = AsyncMock(side_effect=Exception("Device offline"))
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-        await coordinator.async_config_entry_first_refresh()
-
-        # Verify create_issue was called with device ID as fallback
-        mock_create_issue.assert_called_once_with(
-            hass,
-            "device_offline_device1",
-            "device_offline",
-            translation_placeholders={"device_name": "device1"},
-        )
 
 
 async def test_coordinator_optimistic_update_exception_handling(hass: HomeAssistant, setup_in_progress_config_entry) -> None:

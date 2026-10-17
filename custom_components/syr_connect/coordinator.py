@@ -34,7 +34,7 @@ from .const import (
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import get_api_locale, get_default_scan_interval_for_entry, get_sensor_iwh_value
 from .models import MODEL_SIGNATURES, detect_model
-from .repairs import create_issue, delete_issue
+from .repairs import delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -262,21 +262,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     "Device %s returned unexpected status structure; preserving previous status if present",
                     device.get("id"),
                 )
-                # Try to find previous device data and return it unchanged
-                if getattr(self, "data", None) and isinstance(self.data.get("devices", None), list):
-                    for prev in self.data.get("devices", []):
-                        if prev.get("id") == device.get("id"):
-                            _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
-                            return prev
-                # No previous data available: keep empty status but do NOT mark
-                # the device as unavailable to avoid clearing sensors in HA.
-                device["status"] = {}
-                device["available"] = True
-                _LOGGER.debug(
-                    "No previous status for device %s; keeping device available with empty status",
-                    device.get("id"),
-                )
-                return device
+                return self._previous_device_or_empty(device)
 
             device["status"] = status
 
@@ -301,7 +287,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             except (ValueError, TypeError) as err:
                 _LOGGER.warning("Failed to compute derived sensor values for device %s: %s", device.get("id"), err)
 
-            # Delete offline issue if device is back online
+            # Remove "device offline" repair issues left over from older versions,
+            # which created one on every failed status poll
             delete_issue(self.hass, f"device_offline_{device['id']}")
 
             return device
@@ -310,22 +297,27 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Propagate — caught by _async_update_data's outer handler
             raise
         except Exception as err:
-            _LOGGER.warning("Failed to get status for device %s: %s", device["id"], err)
-            # Mark device as unavailable but still add it
-            device["status"] = {}
-            device["available"] = False
+            # Temporary failures happen (routing, timeouts). Only log them and keep the
+            # previous values; no unavailable state and no repair issue.
+            _LOGGER.warning("Failed to get status for device %s, keeping previous status: %s", device["id"], err)
+            return self._previous_device_or_empty(device)
 
-            # Create repair issue for offline device
-            create_issue(
-                self.hass,
-                f"device_offline_{device['id']}",
-                "device_offline",
-                translation_placeholders={
-                    "device_name": device.get("cna", device["id"]),
-                },
-            )
+    def _previous_device_or_empty(self, device: dict[str, Any]) -> dict[str, Any]:
+        """Return the device from the last update unchanged, or the device with an empty status.
 
-            return device
+        Used when the status could not be fetched, so the sensors keep their old values
+        instead of being cleared. Without previous data the device stays available with
+        an empty status.
+        """
+        if self.data:
+            for prev in self.data.get("devices", []):
+                if prev.get("id") == device.get("id"):
+                    _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
+                    return prev
+        _LOGGER.debug("No previous status for device %s; keeping device available with empty status", device.get("id"))
+        device["status"] = {}
+        device["available"] = True
+        return device
 
     def _get_device_dclg_from_srn(self, device_id: str) -> str | None:
         """Return the DCLG (Device Collection Group UUID) for the given device serial number.

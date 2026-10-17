@@ -1465,7 +1465,7 @@ async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssist
     from custom_components.syr_connect import select as select_module
 
     device_id = "device_del"
-    data = {"devices": [{"id": device_id, "name": "Device Del", "status": {}}]}
+    data = {"devices": [{"id": device_id, "name": "Device Del", "status": {"getFLO": "5"}}]}
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 

@@ -387,9 +387,16 @@ def registry_cleanup(
                 continue
             prefix = f"{domain}.{DOMAIN}_{device_id.lower()}_"
 
+            # An empty status means it could not be fetched yet (e.g. a temporary
+            # failure at startup), not that the device lost all its keys. Removing
+            # entities now would drop their registry customizations (name, area, ...).
+            status = device.get("status", {})
+            if not status:
+                _LOGGER.debug("No status for device %s yet; skipping %s registry cleanup", device_id, domain)
+                continue
+
             # Scope the allowlist to the detected model (falls back to allowed_keys
             # unchanged for models that haven't opted into per-model key lists).
-            status = device.get("status", {})
             model_info = detect_model(status)
             device_allowed_keys = get_model_known_keys(model_info, domain, allowed_keys)
             allowed_lower = {k.lower() for k in device_allowed_keys}

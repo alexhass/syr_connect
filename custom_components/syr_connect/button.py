@@ -146,6 +146,10 @@ async def async_setup_entry(
         # for this device (e.g. a command whose get-key disappeared from the status).
         # These buttons are in _SYR_CONNECT_BUTTON_KNOWN_KEYS and therefore survive
         # the global registry_cleanup above; they must be removed individually here.
+        # Skipped without a status (not fetched yet): no button was created, but
+        # none of them disappeared either.
+        if not status:
+            continue
         try:
             registry = er.async_get(hass)
             prefix = f"button.syr_connect_{device_id.lower()}_"

@@ -434,7 +434,7 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {},  # getSIR is absent — button must not be created
+                "status": {"getFLO": "5"},  # getSIR is absent — button must not be created
             }
         ]
     }
@@ -456,6 +456,29 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
 
     mock_registry.async_remove.assert_called_once_with(stale_entity_id)
     assert len(entities) == 0
+
+
+async def test_async_setup_entry_keeps_buttons_without_status(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+) -> None:
+    """Without a status (not fetched yet, e.g. temporary failure at startup) no button is removed."""
+    from unittest.mock import MagicMock, patch
+
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    stale_entity_id = "button.syr_connect_device1_setsir"
+    mock_registry = MagicMock()
+    mock_registry.async_remove = MagicMock()
+    mock_registry.entities = {stale_entity_id: MagicMock(entity_id=stale_entity_id, config_entry_id=None)}
+
+    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    mock_registry.async_remove.assert_not_called()
 
 
 async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
@@ -511,7 +534,7 @@ async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {},  # getSIR is absent — button must not be created
+                "status": {"getFLO": "5"},  # getSIR is absent — button must not be created
             }
         ]
     }
