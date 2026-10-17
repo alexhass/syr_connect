@@ -178,6 +178,18 @@ def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
     assert [child.tag for child in root] == ["si", "us", "col", "cs"]
 
 
+def test_add_checksum_is_idempotent() -> None:
+    """Adding the checksum twice to the same root gives one <cs> and the same payload."""
+    pb = PayloadBuilder("1.2.3", SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2))
+    root = pb._new_request("sess")
+
+    first = pb._add_checksum(root)
+    second = pb._add_checksum(root)
+
+    assert second == first
+    assert len(DefusedET.fromstring(second).findall("cs")) == 1
+
+
 # Request fixtures: realistic payload structure with placeholder ids; checksums are computed by
 # the integration itself, not captured from the app.
 REQUEST_FIXTURE_DIR = Path(__file__).parent / "fixtures/xml/requests"

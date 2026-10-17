@@ -278,14 +278,18 @@ class PayloadBuilder:
     def _add_checksum(self, root: ET.Element) -> str:
         """Serialise the request and append its checksum element.
 
-        The checksum is computed over the request without the ``<cs>`` element.
+        The checksum is computed over the request without the ``<cs>`` element. Any ``<cs>``
+        already present is removed first, so calling this again on the same root yields the
+        same request instead of a second ``<cs>`` and a checksum that includes the first.
 
         Args:
-            root: ``<sc>`` element of the request, without checksum
+            root: ``<sc>`` element of the request
 
         Returns:
             XML string with the checksum element as last child of ``<sc>``
         """
+        for old_checksum in root.findall("cs"):
+            root.remove(old_checksum)
         checksum_value = self.checksum.compute_element_checksum(root)
         self._element(root, "cs", v=checksum_value)
         return self._serialize(root)
