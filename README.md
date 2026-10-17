@@ -2,15 +2,28 @@
 
 [![GitHub Release](https://img.shields.io/github/release/alexhass/syr_connect.svg?style=flat)](https://github.com/alexhass/syr_connect/releases)
 [![syr_connect installs](https://img.shields.io/badge/dynamic/json?logo=home-assistant&logoColor=ccc&label=usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.syr_connect.total)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
+[![Quality scale: Platinum](https://img.shields.io/badge/Quality%20scale-Platinum%20%F0%9F%8F%86-b5d2e0?style=flat)](https://github.com/alexhass/syr_connect/blob/main/quality_scale.yaml)
+
 [![hassfest](https://github.com/alexhass/syr_connect/actions/workflows/hassfest.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hassfest.yaml)
 [![HACS](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml)
 [![ci](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexhass/syr_connect/graph/badge.svg?token=8P822HPPF3)](https://codecov.io/gh/alexhass/syr_connect)
-[![Quality scale: Platinum](https://img.shields.io/badge/Quality%20scale-Platinum%20%F0%9F%8F%86-b5d2e0?style=flat)](https://github.com/alexhass/syr_connect/blob/main/quality_scale.yaml)
-
-This custom integration enables control of SYR Connect devices through Home Assistant.
 
 ![Syr](custom_components/syr_connect/logo.png)
+
+This custom integration enables control of SYR Connect devices through Home Assistant. This integration can also be used with identical devices from other brands. Mixed installations of different brands are supported as well.
+
+| Brand | Link |
+|--------|--------|
+| comfort by sanibel | https://comfort-by-sanibel.de/ |
+| CONEL | https://www.conel.de/ |
+| DITECH | https://www.ditech-haustechnik.de/ |
+| hansgrohe | https://www.hansgrohe.de/ |
+| mein concept | https://www.mein-concept.de/ |
+| mein Optima | https://www.mein-optima.de/ |
+| Reliance Valves | https://www.rwc.com/brands/reliance-valves |
+| SYR | https://www.syr.de/ |
+| TAKE | https://take-bad.de/ |
 
 ## Screenshots
 
@@ -19,21 +32,6 @@ Examples of device interfaces:
 ![LEXplus10S screenshot](docs/assets/screenshots/en/lexplus10s.png)
 
 ![Safe-T+ screenshot](docs/assets/screenshots/en/safetplus.png)
-
-## Disclaimer
-
-### IMPORTANT: Read this before using the integration
-
-This integration controls water treatment and water shut-off systems. Improper configuration or malfunctioning automations could result in water damage, system failures, or property damage.
-
-- **Use at Your Own Risk**: This software is provided "as is" without warranty of any kind
-- **Test Thoroughly**: Always test automations in safe conditions before deploying them
-- **Critical Systems**: Valve control automations can shut off your entire water supply - test carefully
-- **No Liability**: The authors and contributors are not responsible for any damages, water damage, property damage, or other issues resulting from the use of this integration
-- **Cloud Dependency**: This integration relies on the SYR Connect cloud service - availability is not guaranteed
-- **Backup Plan**: Ensure you have alternative access to your water shut-off valve in case of system failure
-
-By installing and using this integration, you acknowledge these risks and agree to use it responsibly.
 
 ## Installation
 
@@ -523,6 +521,21 @@ This package is **automatically installed** by Home Assistant when you:
 2. Restart Home Assistant after installation
 
 For detailed system requirements and troubleshooting, see [REQUIREMENTS.md](REQUIREMENTS.md).
+
+## Disclaimer
+
+### IMPORTANT: Read this before using the integration
+
+This integration controls water treatment and water shut-off systems. Improper configuration or malfunctioning automations could result in water damage, system failures, or property damage.
+
+- **Use at Your Own Risk**: This software is provided "as is" without warranty of any kind
+- **Test Thoroughly**: Always test automations in safe conditions before deploying them
+- **Critical Systems**: Valve control automations can shut off your entire water supply - test carefully
+- **No Liability**: The authors and contributors are not responsible for any damages, water damage, property damage, or other issues resulting from the use of this integration
+- **Cloud Dependency**: This integration relies on the SYR Connect cloud service - availability is not guaranteed
+- **Backup Plan**: Ensure you have alternative access to your water shut-off valve in case of system failure
+
+By installing and using this integration, you acknowledge these risks and agree to use it responsibly.
 
 ## License
 

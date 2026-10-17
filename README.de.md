@@ -2,15 +2,28 @@
 
 [![GitHub Release](https://img.shields.io/github/release/alexhass/syr_connect.svg?style=flat)](https://github.com/alexhass/syr_connect/releases)
 [![syr_connect installs](https://img.shields.io/badge/dynamic/json?logo=home-assistant&logoColor=ccc&label=usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.syr_connect.total)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
+[![Quality scale: Platinum](https://img.shields.io/badge/Quality%20scale-Platinum%20%F0%9F%8F%86-b5d2e0?style=flat)](https://github.com/alexhass/syr_connect/blob/main/quality_scale.yaml)
+
 [![hassfest](https://github.com/alexhass/syr_connect/actions/workflows/hassfest.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hassfest.yaml)
 [![HACS](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml)
 [![ci](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexhass/syr_connect/graph/badge.svg?token=8P822HPPF3)](https://codecov.io/gh/alexhass/syr_connect)
-[![Quality scale: Platinum](https://img.shields.io/badge/Quality%20scale-Platinum%20%F0%9F%8F%86-b5d2e0?style=flat)](https://github.com/alexhass/syr_connect/blob/main/quality_scale.yaml)
-
-Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant.
 
 ![Syr](custom_components/syr_connect/logo.png)
+
+Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant. Desweiteren kann diese Integration auch für die baugleichen Geräte anderer Marken genutzt werden. Gemischte Installationen unterschiedlicher Marken werden ebenfalls unterstützt.
+
+| Marke | Link |
+|--------|--------|
+| comfort by sanibel | https://comfort-by-sanibel.de/ |
+| CONEL | https://www.conel.de/ |
+| DITECH | https://www.ditech-haustechnik.de/ |
+| hansgrohe | https://www.hansgrohe.de/ |
+| mein concept | https://www.mein-concept.de/ |
+| mein Optima | https://www.mein-optima.de/ |
+| Reliance Valves | https://www.rwc.com/brands/reliance-valves |
+| SYR | https://www.syr.de/ |
+| TAKE | https://take-bad.de/ |
 
 ## Screenshots
 
@@ -19,21 +32,6 @@ Beispiele der Geräteoberflächen:
 ![LEXplus10S Screenshot](docs/assets/screenshots/en/lexplus10s.png)
 
 ![Safe-T+ Screenshot](docs/assets/screenshots/en/safetplus.png)
-
-## Haftungsausschluss
-
-### WICHTIG: Bitte vor der Verwendung der Integration lesen
-
-Diese Integration steuert Wasseraufbereitungssysteme und Absperrventile. Fehlerhafte Konfiguration oder fehlerhafte Automatisierungen können zu Wasserschäden, Systemausfällen oder Sachschäden führen.
-
-- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen" ohne jegliche Garantie bereitgestellt
-- **Gründlich testen**: Teste Automatisierungen immer unter sicheren Bedingungen, bevor du sie produktiv einsetzt
-- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können deine gesamte Wasserversorgung abschalten - teste sorgfältig
-- **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen
-- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen - Verfügbarkeit ist nicht garantiert
-- **Notfallplan**: Stelle sicher, dass du alternativen Zugang zu deinem Absperrventil hast, falls das System ausfällt
-
-Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken an und stimmst zu, sie verantwortungsbewusst zu verwenden.
 
 ## Installation
 
@@ -514,6 +512,21 @@ Dieses Paket wird von Home Assistant automatisch installiert, wenn du:
 2. Home Assistant nach der Installation neu startest
 
 Für detaillierte Systemanforderungen siehe [REQUIREMENTS.md](REQUIREMENTS.md).
+
+## Haftungsausschluss
+
+### WICHTIG: Bitte vor der Verwendung der Integration lesen
+
+Diese Integration steuert Wasseraufbereitungssysteme und Absperrventile. Fehlerhafte Konfiguration oder fehlerhafte Automatisierungen können zu Wasserschäden, Systemausfällen oder Sachschäden führen.
+
+- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen" ohne jegliche Garantie bereitgestellt
+- **Gründlich testen**: Teste Automatisierungen immer unter sicheren Bedingungen, bevor du sie produktiv einsetzt
+- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können deine gesamte Wasserversorgung abschalten - teste sorgfältig
+- **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen
+- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen - Verfügbarkeit ist nicht garantiert
+- **Notfallplan**: Stelle sicher, dass du alternativen Zugang zu deinem Absperrventil hast, falls das System ausfällt
+
+Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken an und stimmst zu, sie verantwortungsbewusst zu verwenden.
 
 ## Lizenz
 
