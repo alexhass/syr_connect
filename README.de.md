@@ -23,6 +23,7 @@ Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten übe
 | mein Optima | https://www.mein-optima.de/ |
 | Reliance Valves | https://www.rwc.com/brands/reliance-valves |
 | SYR | https://www.syr.de/ |
+| SYR Oceanic | https://www.debestewaterbehandeling.be/ |
 | TAKE | https://take-bad.de/ |
 
 ## Screenshots
