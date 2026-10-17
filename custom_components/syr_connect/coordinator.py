@@ -367,6 +367,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # Ensure get_key is always defined to avoid NameError if command
         # does not follow the 'setXYZ' convention and code later checks it.
         get_key: str | None = None
+        previous_data = self.data
+        optimistic_data: dict[str, Any] | None = None
 
         try:
             if isinstance(self.data, dict):
@@ -391,17 +393,30 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                             dev["available"] = True
                             break
                     self.async_set_updated_data(new_data)
+                    optimistic_data = new_data
 
         except (KeyError, AttributeError, TypeError, ValueError) as err:  # pragma: no cover - defensive
             _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
         try:
             await self.api.set_device_status(dclg, [(command, value)])
-        except Exception:  # pragma: no cover - defensive
+        except Exception:
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
             _LOGGER.debug("Failed to set device %s via API, re-raising to caller", device_id)
+            self._rollback_optimistic_update(previous_data, optimistic_data)
             raise
+
+    def _rollback_optimistic_update(self, previous_data: Any, optimistic_data: dict[str, Any] | None) -> None:
+        """Restore the data from before an optimistic update whose command failed.
+
+        Without this, the entity keeps showing a value the device never received
+        (e.g. a valve shown closed while water still flows) until the next poll.
+        Skipped if a poll has replaced the optimistic data in the meantime, so
+        newer data is not overwritten with older one.
+        """
+        if optimistic_data is not None and self.data is optimistic_data:
+            self.async_set_updated_data(previous_data)
 
     async def async_clear_device_alarm(self, device_id: str, field: str = "ala") -> None:
         """Clear active alarm via the /clr/{field} endpoint (JSON API) or clr command (XML API).
@@ -496,6 +511,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         # --- Active alarm: apply optimistic update then send clear + open ---
         get_key_ab: str | None = f"get{set_key[3:]}" if set_key.startswith("set") else None
+        previous_data = self.data
+        optimistic_data: dict[str, Any] | None = None
         try:
             if isinstance(self.data, dict) and get_key_ab:
                 new_data = copy.deepcopy(self.data)
@@ -506,6 +523,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         dev["available"] = True
                         break
                 self.async_set_updated_data(new_data)
+                optimistic_data = new_data
         except (KeyError, AttributeError, TypeError, ValueError) as err:
             _LOGGER.warning(
                 "Valve open with alarm clear: failed to apply optimistic update for %s: %s",
@@ -544,4 +562,5 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.debug(
                 "Valve open with alarm clear failed for device %s, re-raising", device_id
             )
+            self._rollback_optimistic_update(previous_data, optimistic_data)
             raise

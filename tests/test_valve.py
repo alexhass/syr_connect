@@ -1311,3 +1311,65 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
     calls = coordinator.api.set_device_status.await_args_list
     assert calls[0].args == ("dev_z", [("setALA", "FF")])
     assert calls[1].args == ("dev_z", [("setAB", 1)])
+
+
+# ---------------------------------------------------------------------------
+# Optimistic update and rollback when the command does not reach the cloud
+# ---------------------------------------------------------------------------
+
+
+def _valve_data(status: dict[str, Any]) -> dict[str, Any]:
+    return {"devices": [{"id": "dev1", "name": "Dev1", "project_id": "p1", "status": status}]}
+
+
+def _status(coordinator: SyrConnectDataUpdateCoordinator) -> dict[str, Any]:
+    return coordinator.data["devices"][0]["status"]
+
+
+async def test_close_valve_accepted_keeps_optimistic_value(hass: HomeAssistant) -> None:
+    """HTTP 200 only means "accepted"; the optimistic value stays until the next poll shows the real one."""
+    coordinator = _build_coordinator(hass, _valve_data({"getAB": "1"}))
+    coordinator.api.set_device_status = AsyncMock(return_value=True)
+
+    await coordinator.async_set_device_value("dev1", "setAB", "2")
+
+    assert _status(coordinator)["getAB"] == "2"
+
+
+async def test_close_valve_request_failure_restores_previous_value(hass: HomeAssistant) -> None:
+    """If the request fails (no answer), the valve must not stay shown as closed."""
+    coordinator = _build_coordinator(hass, _valve_data({"getAB": "1"}))
+    coordinator.api.set_device_status = AsyncMock(side_effect=TimeoutError("no answer"))
+
+    with pytest.raises(TimeoutError):
+        await coordinator.async_set_device_value("dev1", "setAB", "2")
+
+    assert _status(coordinator)["getAB"] == "1"
+
+
+async def test_request_failure_does_not_overwrite_newer_poll_data(hass: HomeAssistant) -> None:
+    """If a poll delivered new data while the request was running, that data is kept."""
+    coordinator = _build_coordinator(hass, _valve_data({"getAB": "1"}))
+    polled = _valve_data({"getAB": "1", "getFLO": "7"})
+
+    async def _poll_then_fail(*_args: Any) -> None:
+        coordinator.async_set_updated_data(polled)
+        raise TimeoutError("no answer")
+
+    coordinator.api.set_device_status = AsyncMock(side_effect=_poll_then_fail)
+
+    with pytest.raises(TimeoutError):
+        await coordinator.async_set_device_value("dev1", "setAB", "2")
+
+    assert coordinator.data is polled
+
+
+async def test_open_valve_with_alarm_clear_failure_restores_previous_value(hass: HomeAssistant) -> None:
+    """The alarm-clear + open path rolls back the optimistic "open" as well."""
+    coordinator = _build_coordinator(hass, _valve_data({"getAB": "2", "getALA": "A5"}))
+    coordinator.api.set_device_status = AsyncMock(side_effect=TimeoutError("no answer"))
+
+    with pytest.raises(TimeoutError):
+        await coordinator.async_open_valve("dev1", "setAB", "1")
+
+    assert _status(coordinator)["getAB"] == "2"
