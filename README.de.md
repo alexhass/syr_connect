@@ -85,7 +85,7 @@ Die Integration erstellt automatisch Entitäten für alle SYR Connect Geräte in
 
 ### Unterstützte Geräte
 
-Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräte und anderen, die im SYR Connect-Cloud-Portal (über die SYR Connect App) sichtbar sind.
+Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräte und anderen, die im SYR Connect-Cloud-Portal (über die jeweilige Mobile App) sichtbar sind.
 
 Getestet und gemeldet als funktionierend:
 
@@ -265,7 +265,7 @@ Die Integration unterstützt zwei API-Modi:
 #### Cloud-API (XML-basiert)
 
 - **Unterstützt von**: Allen SYR Connect-Geräten
-- **Verbindung**: Über den SYR Connect-Cloud-Dienst (syrconnect.de)
+- **Verbindung**: Über den SYR Connect-Cloud-Dienst
 - **Authentifizierung**: Benutzername und Passwort vom SYR Connect-Konto
 - **Vorteile**: Funktioniert mit allen Gerätemodellen, Fernzugriff von überall
 - **Voraussetzungen**: Internetverbindung, SYR Connect-Konto

@@ -85,7 +85,7 @@ The integration automatically creates entities for all your SYR Connect devices.
 
 ### Supported Devices
 
-This integration works with SYR water softeners and leakage detection devices and other that appear in the SYR Connect cloud (via the SYR Connect app).
+This integration works with SYR water softeners and leakage detection devices and other that appear in the SYR Connect cloud (via the respective mobile app).
 
 Tested and reported as working:
 
@@ -265,7 +265,7 @@ The integration supports two API modes:
 #### Cloud API (XML-based)
 
 - **Supported by**: All SYR Connect devices
-- **Connection**: Via SYR Connect cloud service (syrconnect.de)
+- **Connection**: Via SYR Connect cloud service
 - **Authentication**: Username and password from SYR Connect account
 - **Advantages**: Works with all device models, remote access from anywhere
 - **Requirements**: Internet connection, SYR Connect account
