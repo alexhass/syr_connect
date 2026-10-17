@@ -203,14 +203,14 @@ def test_parse_decrypted_login_no_projects(parser):
 
 def test_parse_device_list_no_devices(parser):
     """Test parsing device list with no devices."""
-    xml = "<sc><col/></sc>"
+    xml = '<sc><prs><pr pg="p1"/></prs><col/></sc>'
     devices = parser.parse_device_list_response(xml)
     assert devices == []
 
 
 def test_parse_device_list_dvs_is_device(parser):
     """Test parsing when dvs element itself is a device."""
-    xml = '<sc><dvs dclg="123" srn="serial123"><nam>Device</nam></dvs></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><dvs dclg="123" srn="serial123"><nam>Device</nam></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     assert len(devices) >= 0  # May find device depending on structure
 
@@ -333,7 +333,7 @@ def test_element_to_dict_text_with_children(parser):
 
 def test_parse_device_list_single_device(parser):
     """Test parsing device list with single device (not a list)."""
-    xml = '<sc><col><dcl dclg="abc" ali="MyDevice"/></col><dvs><d dclg="abc" sn="12345"/></dvs></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><col><dcl dclg="abc" ali="MyDevice"/></col><dvs><d dclg="abc" sn="12345"/></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 1
     assert devices[0]["name"] == "MyDevice"
@@ -342,7 +342,7 @@ def test_parse_device_list_single_device(parser):
 
 def test_parse_device_list_device_without_dclg(parser):
     """Test parsing device list with device missing dclg attribute."""
-    xml = '<sc><dvs><d sn="12345"/></dvs></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><dvs><d sn="12345"/></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     # Device without @dclg should be skipped
     assert devices == []
@@ -350,7 +350,7 @@ def test_parse_device_list_device_without_dclg(parser):
 
 def test_parse_device_list_dvs_no_d_no_dclg(parser):
     """Test parsing device list when dvs has no 'd' and no '@dclg'."""
-    xml = '<sc><dvs><other>data</other></dvs></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><dvs><other>data</other></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     assert devices == []
 
@@ -463,7 +463,7 @@ def test_flatten_attributes_c_missing_n_or_v(parser):
 
 def test_parse_device_list_dvs_itself_has_dclg(parser):
     """Test parsing when dvs element itself has @dclg (is the device)."""
-    xml = '<sc><col><dcl dclg="xyz" ali="MyDevice"/></col><dvs dclg="xyz" sn="SN001"/></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><col><dcl dclg="xyz" ali="MyDevice"/></col><dvs dclg="xyz" sn="SN001"/></sc>'
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 1
     assert devices[0]["dclg"] == "xyz"
@@ -501,9 +501,29 @@ def test_parse_device_status_empty_device_list(parser):
 def test_parse_device_list_no_sc(parser):
     """Test parsing device list without sc element."""
     xml = '<root><invalid/></root>'
-    devices = parser.parse_device_list_response(xml)
-    # Should return empty list when no 'sc' element
-    assert devices == []
+    with pytest.raises(ValueError, match="no project"):
+        parser.parse_device_list_response(xml)
+
+
+def test_parse_device_list_project_without_devices_fixture(parser):
+    """A valid answer for a project without devices yields an empty list (devices get removed)."""
+    path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml")
+    with open(path, encoding="utf-8") as f:
+        assert parser.parse_device_list_response(f.read()) == []
+
+
+@pytest.mark.parametrize(
+    "xml",
+    [
+        "<html><body>Maintenance</body></html>",
+        "<sc><err /></sc>",
+        '<sc><prs /><dvs><d dclg="abc" sn="SN1"/></dvs></sc>',
+    ],
+)
+def test_parse_device_list_without_project_raises(parser, xml):
+    """Answers without sc>prs>pr are errors, not an empty project, so no device gets removed."""
+    with pytest.raises(ValueError, match="no project"):
+        parser.parse_device_list_response(xml)
 
 
 def test_element_to_dict_multiple_same_tag(parser):
@@ -598,7 +618,7 @@ def test_element_to_dict_whitespace_only_text(parser):
 
 def test_parse_device_list_multiple_dcl_aliases(parser):
     """Test parsing device list with multiple dcl aliases."""
-    xml = '''<sc>
+    xml = '''<sc><prs><pr pg="p1"/></prs>
         <col>
             <dcl dclg="id1" ali="Device1"/>
             <dcl dclg="id2" ali="Device2"/>
@@ -619,7 +639,7 @@ def test_parse_device_list_multiple_dcl_aliases(parser):
 
 def test_parse_device_list_alias_not_found_fallback_to_serial(parser):
     """Test parsing device list when alias not found, falls back to serial."""
-    xml = '<sc><dvs><d dclg="unknown_id" sn="SN123"/></dvs></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><dvs><d dclg="unknown_id" sn="SN123"/></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 1
     # Should use serial number as name when alias not found
@@ -628,7 +648,7 @@ def test_parse_device_list_alias_not_found_fallback_to_serial(parser):
 
 def test_parse_device_list_col_with_single_dcl(parser):
     """Test parsing device list when col contains single dcl (not a list)."""
-    xml = '''<sc>
+    xml = '''<sc><prs><pr pg="p1"/></prs>
         <col><dcl dclg="xyz" ali="SingleDevice"/></col>
         <dvs><d dclg="xyz" sn="SN001"/></dvs>
     </sc>'''
@@ -639,7 +659,7 @@ def test_parse_device_list_col_with_single_dcl(parser):
 
 def test_parse_device_list_device_missing_sn_attribute(parser):
     """Test parsing device list when device is missing @sn attribute."""
-    xml = '<sc><dvs><d dclg="abc"/></dvs></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><dvs><d dclg="abc"/></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 1
     # Should use 'Unknown' as fallback for serial_number
@@ -762,7 +782,7 @@ def test_flatten_attributes_empty_list(parser):
 
 def test_parse_device_list_no_dvs_element(parser):
     """Test parsing device list when there's no dvs element at all."""
-    xml = '<sc><col><dcl dclg="abc" ali="Dev"/></col></sc>'
+    xml = '<sc><prs><pr pg="p1"/></prs><col><dcl dclg="abc" ali="Dev"/></col></sc>'
     devices = parser.parse_device_list_response(xml)
     # Should return empty list when dvs missing
     assert devices == []

@@ -176,9 +176,20 @@ class ResponseParser:
             xml_response: XML response string
 
         Returns:
-            List of devices with their information
+            List of devices with their information; empty if the project has no devices
+
+        Raises:
+            ValueError: If the response contains no project (``sc>prs>pr``)
         """
         parsed = self.parse_xml(xml_response)
+
+        # A valid answer always contains the project, even if it has no devices left
+        # (see SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml). Anything else
+        # (error answer, maintenance page) must not be mistaken for an empty project,
+        # because devices missing from the list are removed from Home Assistant.
+        if not self.validate_structure(parsed, ['sc', 'prs', 'pr']):
+            raise ValueError("Device list response contains no project.")
+
         devices: list[dict[str, Any]] = []
         device_aliases: dict[str, str] = {}
 

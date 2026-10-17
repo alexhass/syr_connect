@@ -130,6 +130,10 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session
 
+        # False if the device list of at least one project could not be fetched in the
+        # last update; devices missing from the data are then not known to be deleted.
+        self.device_list_complete = False
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
 
@@ -159,24 +163,27 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
 
             # Process each project's devices
+            failed_projects = 0
             for project_idx, result in enumerate(projects_devices):
                 if isinstance(result, SyrConnectAuthError):
                     raise ConfigEntryAuthFailed(
                         f"Authentication failed during device list poll: {result}"
                     ) from result
-                if isinstance(result, Exception):
-                    _LOGGER.warning(
-                        "Failed to get devices for project %s: %s",
-                        self.api.projects[project_idx]["name"], result
-                    )
-                    continue
 
                 project = self.api.projects[project_idx]
-                devices_result = result
-                if not isinstance(devices_result, list):
-                    _LOGGER.warning("Device list result is not a list: %s", devices_result)
+                if not isinstance(result, list):
+                    # Temporary failures happen (routing, timeouts, maintenance). Keep the
+                    # project's devices from the last update with their old values instead
+                    # of dropping them or marking them unavailable; the next poll updates them.
+                    previous = self._previous_project_devices(project["id"])
+                    _LOGGER.warning(
+                        "Failed to get devices for project %s, keeping %d device(s) from the last update: %s",
+                        project["name"], len(previous), result,
+                    )
+                    all_devices.extend(previous)
+                    failed_projects += 1
                     continue
-                devices: list[dict[str, Any]] = devices_result
+                devices: list[dict[str, Any]] = result
 
                 _LOGGER.debug("Found %d device(s) in project %s", len(devices), project["name"])
 
@@ -193,8 +200,16 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     if isinstance(device_result, Exception):
                         _LOGGER.warning("Device status fetch failed: %s", device_result)
                         continue
-                    if device_result:
+                    if isinstance(device_result, dict) and device_result:
                         all_devices.append(device_result)
+
+            # On the first refresh there is nothing to keep: without any device list,
+            # setup is retried (ConfigEntryNotReady) instead of showing an empty account.
+            if failed_projects and failed_projects == len(projects_devices) and self.data is None:
+                raise SyrConnectConnectionError(
+                    f"Failed to get the device list of all {failed_projects} project(s)"
+                )
+            self.device_list_complete = failed_projects == 0
 
             _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
             return {
@@ -214,6 +229,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         except Exception as err:
             _LOGGER.error("Update failed: %s", err, exc_info=True)
             raise UpdateFailed(f"Error communicating with API: {err}") from err
+
+    def _previous_project_devices(self, project_id: str) -> list[dict[str, Any]]:
+        """Return the devices of a project from the last successful update."""
+        if not self.data:
+            return []
+        return [d for d in self.data.get("devices", []) if d.get("project_id") == project_id]
 
     async def _fetch_device_status(self, device: dict[str, Any]) -> dict[str, Any] | None:
         """Fetch status for a single device.

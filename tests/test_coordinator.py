@@ -372,11 +372,10 @@ async def test_coordinator_non_list_device_result(hass: HomeAssistant, setup_in_
             60,
         )
         coordinator.config_entry = setup_in_progress_config_entry
-        await coordinator.async_config_entry_first_refresh()
 
-        # Should handle gracefully with no devices
-        assert coordinator.data is not None
-        assert len(coordinator.data["devices"]) == 0
+        # The only project has no usable device list: fail instead of reporting an empty account
+        with pytest.raises(ConfigEntryNotReady):
+            await coordinator.async_config_entry_first_refresh()
 
 
 async def test_coordinator_device_status_none(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -919,12 +918,9 @@ async def test_coordinator_gather_returns_exception(hass: HomeAssistant, setup_i
         )
         coordinator.config_entry = setup_in_progress_config_entry
 
-        # Should handle exception gracefully
-        await coordinator.async_config_entry_first_refresh()
-
-        # Should have no devices
-        assert coordinator.data is not None
-        assert len(coordinator.data["devices"]) == 0
+        # The only project failed: fail instead of reporting an empty account
+        with pytest.raises(ConfigEntryNotReady):
+            await coordinator.async_config_entry_first_refresh()
 
 
 async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -1042,7 +1038,7 @@ async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
 
 
 async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
-    """If asyncio.gather returns Exception objects, they should be skipped."""
+    """If the device list of every project fails, the update fails instead of returning no devices."""
     import inspect
     from types import SimpleNamespace
 
@@ -1080,10 +1076,72 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
             60,
         )
 
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+        assert coordinator.device_list_complete is False
+
+
+def _two_project_api(failing: set[str]):
+    """Return an XML API stub with projects p1/p2 (one device each); projects in `failing` time out."""
+    from types import SimpleNamespace
+
+    async def _get_devices(project_id):
+        if project_id in failing:
+            raise SyrConnectConnectionError("timeout")
+        return [{"id": f"d_{project_id}", "dclg": f"d_{project_id}", "project_id": project_id}]
+
+    async def _get_device_status(dclg):
+        return {"getSRN": dclg, "getFLO": "5"}
+
+    return SimpleNamespace(
+        session_data="test_session",
+        is_session_valid=lambda: True,
+        projects=[{"id": "p1", "name": "P1"}, {"id": "p2", "name": "P2"}],
+        get_devices=_get_devices,
+        get_device_status=_get_device_status,
+    )
+
+
+async def test_async_update_data_failed_project_keeps_previous_devices(hass: HomeAssistant) -> None:
+    """A failed project keeps its devices from the last update; the list is marked incomplete."""
+    from types import SimpleNamespace
+
+    failing: set[str] = set()
+    mock_api = _two_project_api(failing)
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass, SimpleNamespace(), {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}, 60
+        )
+        coordinator.data = await coordinator._async_update_data()
+        assert coordinator.device_list_complete is True
+        previous_p2 = coordinator.data["devices"][1]
+
+        failing.add("p2")
         result = await coordinator._async_update_data()
-        # No devices should be returned since the project result was an Exception
-        assert isinstance(result, dict)
-        assert result.get("devices") == []
+
+        assert [d["id"] for d in result["devices"]] == ["d_p1", "d_p2"]
+        assert result["devices"][1] is previous_p2  # old values, not marked unavailable
+        assert result["devices"][1]["available"] is True
+        assert coordinator.device_list_complete is False
+
+
+async def test_async_update_data_all_projects_failed_keeps_previous_devices(hass: HomeAssistant) -> None:
+    """After a first successful update, a total failure keeps all devices instead of failing the update."""
+    from types import SimpleNamespace
+
+    failing: set[str] = set()
+    mock_api = _two_project_api(failing)
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass, SimpleNamespace(), {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}, 60
+        )
+        coordinator.data = await coordinator._async_update_data()
+
+        failing.update({"p1", "p2"})
+        result = await coordinator._async_update_data()
+
+        assert result["devices"] == coordinator.data["devices"]
+        assert coordinator.device_list_complete is False
 
 
 async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:

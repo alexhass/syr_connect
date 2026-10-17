@@ -197,7 +197,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Detach devices that were removed from the account (e.g. by another user
     # of the same hub) so they don't linger in HA forever alongside their entities.
-    cleanup_removed_devices(hass, coordinator.data, entry.entry_id)
+    # Skipped if a project's device list failed: its devices are missing, not deleted.
+    if coordinator.device_list_complete:
+        cleanup_removed_devices(hass, coordinator.data, entry.entry_id)
+    else:
+        _LOGGER.warning("Device list incomplete; skipping removal of stale devices")
 
     # Register listener for options changes (scan_interval updates)
     entry.async_on_unload(entry.add_update_listener(async_options_update_listener))

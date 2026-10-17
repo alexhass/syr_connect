@@ -50,6 +50,33 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
     mock_coordinator.async_config_entry_first_refresh.assert_called_once()
 
 
+@pytest.mark.parametrize("complete", [True, False])
+async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
+    hass: HomeAssistant, complete: bool
+) -> None:
+    """Stale devices are only removed if every project's device list was fetched."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        entry_id="test_entry_id",
+    )
+    config_entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class,
+        patch("custom_components.syr_connect.cleanup_removed_devices") as mock_cleanup,
+        patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+    ):
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_coordinator.device_list_complete = complete
+        mock_coordinator_class.return_value = mock_coordinator
+
+        assert await async_setup_entry(hass, config_entry) is True
+
+    assert mock_cleanup.called is complete
+
+
 async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssistant) -> None:
     """Test JSON API path uses host identifier and clamps scan interval below minimum."""
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
