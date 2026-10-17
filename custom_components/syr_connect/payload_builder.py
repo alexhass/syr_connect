@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from xml.sax.saxutils import escape
+from xml.etree import ElementTree as ET
 
 from .checksum import SyrChecksum
 from .const import (
@@ -15,6 +15,8 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+_XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
 
 
 class PayloadBuilder:
@@ -81,6 +83,30 @@ class PayloadBuilder:
             _LOGGER.exception("Failed to determine locale language/region; falling back to en/US: %s", err)
             return ("en", "US")
 
+    @staticmethod
+    def _element(parent: ET.Element | None, tag: str, **attrs: Any) -> ET.Element:
+        """Create an element (optionally below ``parent``) with attributes in the given order.
+
+        Values are converted to ``str``. ElementTree escapes them on serialisation,
+        so no value can break out of its attribute or inject markup.
+        """
+        element = ET.Element(tag) if parent is None else ET.SubElement(parent, tag)
+        for name, value in attrs.items():
+            element.set(name, str(value))
+        return element
+
+    @staticmethod
+    def _serialize(root: ET.Element) -> str:
+        """Serialise an element tree to an XML string with the declaration the API expects."""
+        return _XML_DECLARATION + ET.tostring(root, encoding="unicode")
+
+    def _new_request(self, session_id: str) -> ET.Element:
+        """Create the ``<sc>`` root with the ``<si>`` and ``<us>`` elements shared by all requests."""
+        root = self._element(None, "sc")
+        self._element(root, "si", v=self.app_version)
+        self._element(root, "us", ug=session_id)
+        return root
+
     def build_login_payload(self, username: str, password: str) -> str:
         """Build login XML payload.
 
@@ -90,20 +116,36 @@ class PayloadBuilder:
 
         Returns:
             XML string for login request
+
+        Example (``tests/fixtures/xml/requests/ExampleRequest_Login.xml``)::
+
+            <sc>
+              <api version="1.0">
+                <nfo v="SYR Connect" version="3.7.10" osv="15.8.3" os="iOS" dn="iPhone"
+                     ts="2026-10-17 10:00:00" tzo="+02:00:00" lng="de" reg="DE" />
+                <usr n="user@example.com" v="secret" />
+              </api>
+            </sc>
         """
-        timestamp = self.get_timestamp()
-        # Escape username and password to prevent XML injection
-        safe_username = escape(username)
-        safe_password = escape(password)
         tzo = self._compute_local_tzo()
         lang, reg = self._compute_locale_lang_reg()
-        payload = (
-            f'<nfo v="{self.app_name}" version="{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}" osv="{_SYR_CONNECT_CLIENT_OS_VERSION}" '
-            f'os="{_SYR_CONNECT_CLIENT_OS_NAME}" dn="{_SYR_CONNECT_CLIENT_OS_MODEL}" ts="{timestamp}" tzo="{tzo}" '
-            f'lng="{lang}" reg="{reg}" />'
-            f'<usr n="{safe_username}" v="{safe_password}" />'
+        root = self._element(None, "sc")
+        api = self._element(root, "api", version="1.0")
+        self._element(
+            api,
+            "nfo",
+            v=self.app_name,
+            version=_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
+            osv=_SYR_CONNECT_CLIENT_OS_VERSION,
+            os=_SYR_CONNECT_CLIENT_OS_NAME,
+            dn=_SYR_CONNECT_CLIENT_OS_MODEL,
+            ts=self.get_timestamp(),
+            tzo=tzo,
+            lng=lang,
+            reg=reg,
         )
-        return f'<?xml version="1.0" encoding="utf-8"?><sc><api version="1.0">{payload}</api></sc>'
+        self._element(api, "usr", n=username, v=password)
+        return self._serialize(root)
 
     def build_device_get_list_payload(self, session_id: str, project_id: str) -> str:
         """Build device list XML payload with checksum.
@@ -114,17 +156,19 @@ class PayloadBuilder:
 
         Returns:
             XML string with checksum
+
+        Example (``tests/fixtures/xml/requests/ExampleRequest_GetProjectDeviceCollections.xml``)::
+
+            <sc>
+              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
+              <prs><pr pg="8625a6fc-3547-45c4-b394-671b5c99b6b9"/></prs>
+              <cs v="3825"/>
+            </sc>
         """
-        safe_session = escape(session_id)
-        safe_project = escape(project_id)
-        payload = (
-            f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{escape(self.app_version)}"/>'
-            f'<us ug="{safe_session}"/>'
-            f'<prs><pr pg="{safe_project}"/></prs>'
-            f'</sc>'
-        )
-        return self._add_checksum(payload)
+        root = self._new_request(session_id)
+        self._element(self._element(root, "prs"), "pr", pg=project_id)
+        return self._add_checksum(root)
 
     def build_device_get_status_payload(self, session_id: str, device_id: str) -> str:
         """Build "get" device status XML payload with checksum.
@@ -135,17 +179,19 @@ class PayloadBuilder:
 
         Returns:
             XML string with checksum
+
+        Example (``tests/fixtures/xml/requests/ExampleRequest_GetDeviceCollectionStatus.xml``)::
+
+            <sc>
+              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
+              <col><dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" fref="1"/></col>
+              <cs v="38DE"/>
+            </sc>
         """
-        safe_session = escape(session_id)
-        safe_device = escape(device_id)
-        payload = (
-            f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{escape(self.app_version)}"/>'
-            f'<us ug="{safe_session}"/>'
-            f'<col><dcl dclg="{safe_device}" fref="1"/></col>'
-            f'</sc>'
-        )
-        return self._add_checksum(payload)
+        root = self._new_request(session_id)
+        self._element(self._element(root, "col"), "dcl", dclg=device_id, fref="1")
+        return self._add_checksum(root)
 
     def build_device_set_status_payload(
         self,
@@ -162,23 +208,26 @@ class PayloadBuilder:
 
         Returns:
             XML string with checksum
+
+        Example (``tests/fixtures/xml/requests/ExampleRequest_SetDeviceCollectionStatus.xml``)::
+
+            <sc>
+              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
+              <col>
+                <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" fref="1">
+                  <c n="setAB" v="1"/>
+                  <c n="setSIR" v=""/>
+                </dcl>
+              </col>
+              <cs v="395A"/>
+            </sc>
         """
-        safe_session = escape(session_id)
-        safe_device = escape(device_id)
-        cmd_elements = "".join(
-            f'<c n="{escape(str(cmd))}" v="{escape(str(val))}"/>'
-            for cmd, val in commands
-        )
-        payload = (
-            f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{escape(self.app_version)}"/>'
-            f'<us ug="{safe_session}"/>'
-            f'<col><dcl dclg="{safe_device}" fref="1">'
-            f'{cmd_elements}'
-            f'</dcl></col>'
-            f'</sc>'
-        )
-        return self._add_checksum(payload)
+        root = self._new_request(session_id)
+        dcl = self._element(self._element(root, "col"), "dcl", dclg=device_id, fref="1")
+        for cmd, val in commands:
+            self._element(dcl, "c", n=cmd, v=val)
+        return self._add_checksum(root)
 
     def build_device_get_statistics_payload(
         self, session_id: str, device_id: str, statistic_type: str = "water"
@@ -192,37 +241,43 @@ class PayloadBuilder:
 
         Returns:
             XML string with checksum
-        """
-        safe_session = escape(session_id)
-        safe_device = escape(device_id)
-        base_payload = (
-            f'<?xml version="1.0" encoding="utf-8"?><sc>'
-            f'<si v="{escape(self.app_version)}"/>'
-            f'<us ug="{safe_session}"/>'
-            f'<col><dcl dclg="{safe_device}"></dcl></col>'
-            f'</sc>'
-        )
 
-        # Add statistic-specific payload
+        Example for ``water`` (``tests/fixtures/xml/requests/ExampleRequest_GetStatistics_Water.xml``);
+        ``salt`` uses ``t="2"`` and ``unit="kg"``::
+
+            <sc>
+              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
+              <col>
+                <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f">
+                  <sh t="1" rtyp="1" lg="de" rg="DE" unit="l"/>
+                </dcl>
+              </col>
+              <cs v="3C39"/>
+            </sc>
+        """
+        root = self._new_request(session_id)
+        dcl = self._element(self._element(root, "col"), "dcl", dclg=device_id)
+
+        # Add statistic-specific element
         lang, reg = self._compute_locale_lang_reg()
         if statistic_type == "salt":
-            stat_payload = f'<sh t="2" rtyp="1" lg="{lang}" rg="{reg}" unit="kg"/>'
+            self._element(dcl, "sh", t="2", rtyp="1", lg=lang, rg=reg, unit="kg")
         else:
-            stat_payload = f'<sh t="1" rtyp="1" lg="{lang}" rg="{reg}" unit="l"/>'
+            self._element(dcl, "sh", t="1", rtyp="1", lg=lang, rg=reg, unit="l")
+        return self._add_checksum(root)
 
-        payload = base_payload.replace('></dcl>', f'>{stat_payload}</dcl>')
-        return self._add_checksum(payload)
+    def _add_checksum(self, root: ET.Element) -> str:
+        """Serialise the request and append its checksum element.
 
-    def _add_checksum(self, payload: str) -> str:
-        """Add checksum to XML payload.
+        The checksum is computed over the request without the ``<cs>`` element.
 
         Args:
-            payload: XML payload without checksum
+            root: ``<sc>`` element of the request, without checksum
 
         Returns:
-            XML payload with checksum tag
+            XML string with the checksum element as last child of ``<sc>``
         """
-        checksum_value = self.checksum.compute_xml_checksum(payload)
-        return payload.replace('</sc>', f'<cs v="{checksum_value}"/></sc>')
-
-
+        checksum_value = self.checksum.compute_xml_checksum(self._serialize(root))
+        self._element(root, "cs", v=checksum_value)
+        return self._serialize(root)

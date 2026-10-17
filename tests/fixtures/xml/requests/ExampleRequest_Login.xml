@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- build_login_payload("user@example.com", "secret"); placeholder credentials, no <si>, no checksum -->
+<sc>
+  <api version="1.0">
+    <nfo v="SYR Connect" version="3.7.10" osv="15.8.3" os="iOS" dn="iPhone" ts="2026-10-17 10:00:00" tzo="+02:00:00" lng="de" reg="DE" />
+    <usr n="user@example.com" v="secret" />
+  </api>
+</sc>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- build_device_set_status_payload(session, device, [("setAB", 1), ("setSIR", "")]); ids are placeholders, checksum computed by the integration -->
+<sc>
+  <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+  <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
+  <col>
+    <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" fref="1">
+      <c n="setAB" v="1"/>
+      <c n="setSIR" v=""/>
+    </dcl>
+  </col>
+  <cs v="395A"/>
+</sc>

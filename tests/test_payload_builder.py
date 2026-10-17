@@ -1,11 +1,18 @@
 """Test the SYR Connect payload builder."""
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
+from xml.etree.ElementTree import canonicalize
 
 import pytest
+from defusedxml import ElementTree as DefusedET
 
 from custom_components.syr_connect.checksum import SyrChecksum
+from custom_components.syr_connect.const import (
+    _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
+    _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+)
 from custom_components.syr_connect.payload_builder import PayloadBuilder
 
 
@@ -71,6 +78,136 @@ def test_compute_locale_lang_reg_replace_exception(caplog) -> None:
     assert "Failed to determine locale language/region" in caplog.text
 
 
+_ATTR_SPECIAL_VALUES = [
+    'pa"ss',
+    "it's",
+    """both ' and " quotes""",
+    'x" admin="1',
+    "a&b<c>d",
+    "tab\there",
+    "line\nbreak",
+    "cr\rreturn",
+    '"',
+]
+
+
+@pytest.mark.parametrize("value", _ATTR_SPECIAL_VALUES)
+def test_login_payload_roundtrips_special_characters(value: str) -> None:
+    """Credentials with quotes/markup/whitespace arrive unchanged and cannot inject attributes."""
+    pb = PayloadBuilder("1.2.3", MagicMock())
+
+    payload = pb.build_login_payload(value, value)
+
+    usr = DefusedET.fromstring(payload).find(".//usr")
+    assert usr is not None
+    assert set(usr.attrib) == {"n", "v"}  # nothing injected
+    assert usr.attrib["n"] == value
+    assert usr.attrib["v"] == value
+
+
+@pytest.mark.parametrize("value", _ATTR_SPECIAL_VALUES)
+def test_set_status_payload_roundtrips_special_characters(value: str) -> None:
+    """Command name/value and ids are escaped for attribute context."""
+    fake_checksum = MagicMock()
+    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    pb = PayloadBuilder("1.2.3", fake_checksum)
+
+    payload = pb.build_device_set_status_payload(value, value, [("setAB", value)])
+
+    # The checksum input must be well-formed XML (malformed input yields a bogus checksum).
+    DefusedET.fromstring(fake_checksum.compute_xml_checksum.call_args.args[0])
+
+    root = DefusedET.fromstring(payload)
+    cmd = root.find(".//c")
+    assert cmd is not None
+    assert set(cmd.attrib) == {"n", "v"}
+    assert cmd.attrib["n"] == "setAB"
+    assert cmd.attrib["v"] == value
+    assert root.find(".//us").attrib["ug"] == value
+    assert root.find(".//dcl").attrib["dclg"] == value
+
+
+@pytest.mark.parametrize("value", _ATTR_SPECIAL_VALUES)
+def test_session_and_device_payloads_roundtrip_special_characters(value: str) -> None:
+    """Session, project and device ids are escaped in every payload builder."""
+    fake_checksum = MagicMock()
+    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    pb = PayloadBuilder("1.2.3", fake_checksum)
+
+    device_list = DefusedET.fromstring(pb.build_device_get_list_payload(value, value))
+    assert device_list.find(".//us").attrib["ug"] == value
+    assert device_list.find(".//pr").attrib["pg"] == value
+
+    status = DefusedET.fromstring(pb.build_device_get_status_payload(value, value))
+    assert status.find(".//us").attrib["ug"] == value
+    assert status.find(".//dcl").attrib["dclg"] == value
+
+    stats = DefusedET.fromstring(pb.build_device_get_statistics_payload(value, value))
+    assert stats.find(".//us").attrib["ug"] == value
+    assert stats.find(".//dcl").attrib["dclg"] == value
+
+
+def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
+    """The checksum input excludes <cs>; <cs> ends up as the last child of <sc>."""
+    fake_checksum = MagicMock()
+    fake_checksum.compute_xml_checksum.return_value = "CHK"
+    pb = PayloadBuilder("1.2.3", fake_checksum)
+
+    payload = pb.build_device_get_status_payload("sess", "dev")
+
+    checksum_input = DefusedET.fromstring(fake_checksum.compute_xml_checksum.call_args.args[0])
+    assert checksum_input.find("cs") is None
+    root = DefusedET.fromstring(payload)
+    assert list(root)[-1].tag == "cs"
+    assert [child.tag for child in root] == ["si", "us", "col", "cs"]
+
+
+# Request fixtures: realistic payload structure with placeholder ids; checksums are computed by
+# the integration itself, not captured from the app.
+REQUEST_FIXTURE_DIR = Path(__file__).parent / "fixtures/xml/requests"
+_REQUEST_FIXTURES = {
+    "login": "ExampleRequest_Login.xml",
+    "list": "ExampleRequest_GetProjectDeviceCollections.xml",
+    "status": "ExampleRequest_GetDeviceCollectionStatus.xml",
+    "set": "ExampleRequest_SetDeviceCollectionStatus.xml",
+    "water": "ExampleRequest_GetStatistics_Water.xml",
+    "salt": "ExampleRequest_GetStatistics_Salt.xml",
+}
+
+
+def _build_reference_payloads() -> dict[str, str]:
+    session, project, device = (
+        "9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413",
+        "8625a6fc-3547-45c4-b394-671b5c99b6b9",
+        "0b09f7ce-41a0-4085-9e69-fa8827a32b6f",
+    )
+    pb = PayloadBuilder(
+        "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect",
+        SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2),
+    )
+    with (
+        patch.object(PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"),
+        patch.object(PayloadBuilder, "_compute_local_tzo", return_value="+02:00:00"),
+        patch.object(PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")),
+    ):
+        return {
+            "login": pb.build_login_payload("user@example.com", "secret"),
+            "list": pb.build_device_get_list_payload(session, project),
+            "status": pb.build_device_get_status_payload(session, device),
+            "set": pb.build_device_set_status_payload(session, device, [("setAB", 1), ("setSIR", "")]),
+            "water": pb.build_device_get_statistics_payload(session, device, "water"),
+            "salt": pb.build_device_get_statistics_payload(session, device, "salt"),
+        }
+
+
+@pytest.mark.parametrize("name", list(_REQUEST_FIXTURES))
+def test_payloads_match_request_fixtures(name: str) -> None:
+    """Payloads equal the fixture (canonical XML, incl. real checksum, which pins attribute order)."""
+    expected = (REQUEST_FIXTURE_DIR / _REQUEST_FIXTURES[name]).read_text(encoding="utf-8")
+    actual = _build_reference_payloads()[name]
+    assert canonicalize(actual, strip_text=True) == canonicalize(expected, strip_text=True)
+
+
 def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     """Login payload should include escaped credentials and computed tzo/lang/reg."""
     fake_checksum = MagicMock()
@@ -101,8 +238,8 @@ def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lan
         water_payload = pb.build_device_get_statistics_payload("sess", "dev", statistic_type="water")
 
     # Checksum added
-    assert '<cs v="CHK"/>' in salt_payload
-    assert '<cs v="CHK"/>' in water_payload
+    assert DefusedET.fromstring(salt_payload).find("cs").attrib["v"] == "CHK"
+    assert DefusedET.fromstring(water_payload).find("cs").attrib["v"] == "CHK"
 
     # salt uses kg, water uses l
     assert 'unit="kg"' in salt_payload

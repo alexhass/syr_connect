@@ -1246,16 +1246,26 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     return True
 
 
+def _mask_attribute_values(payload: str, attributes: tuple[str, ...], element: str | None = None) -> str:
+    """Replace the values of the given attributes in an XML payload with `***`.
+
+    Restricted to `<element ...>` tags when `element` is set, otherwise applied to every tag.
+    Non-string and empty payloads are returned unchanged.
+    """
+    if not isinstance(payload, str) or payload == "":
+        return payload
+    attribute = re.compile(rf'(\s(?:{"|".join(attributes)})=")[^"]*', re.IGNORECASE)
+    tag = rf"<{element}\b[^>]*>" if element else r"<[^>]*>"
+    try:
+        return re.sub(tag, lambda m: attribute.sub(r"\1***", m.group(0)), payload)
+    except re.error:
+        return payload
+
+
 def mask_ug_value(payload: str) -> str:
     """Redact `ug` attribute values in an XML payload.
 
     Replaces values like `ug="..."` with `ug="***"` (case-insensitive)
     so session tokens are not leaked in logs or diagnostics.
     """
-    if not isinstance(payload, str) or payload == "":
-        return payload
-    try:
-        # Use case-insensitive lookbehind to replace the attribute value only
-        return re.sub(r'(?i)(?<=ug=")[^"]*', "***", payload)
-    except re.error:
-        return payload
+    return _mask_attribute_values(payload, ("ug",))
