@@ -2001,16 +2001,9 @@ async def test_getpa_group_false_removes_registry_entries(hass: HomeAssistant) -
     assert len(dummy.removed) > 0
 
 
-@pytest.mark.parametrize(
-    "status",
-    [
-        {},  # status not fetched yet (temporary failure at startup)
-        {"getFLO": "10"},  # getPAx not reported at all
-    ],
-)
-async def test_getpa_group_missing_flag_keeps_registry_entries(hass: HomeAssistant, status: dict) -> None:
-    """A missing getPAx is unknown, not false: the profile sensors must not be removed."""
-    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": status}]}
+async def test_getpa_group_empty_status_keeps_registry_entries(hass: HomeAssistant) -> None:
+    """An empty status (not fetched yet, e.g. temporary failure at startup) must not remove the profile sensors."""
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
@@ -2024,6 +2017,27 @@ async def test_getpa_group_missing_flag_keeps_registry_entries(hass: HomeAssista
         await async_setup_entry(hass, entry, lambda ents: None)  # type: ignore[arg-type]
 
     assert not [eid for eid in removed if re.search(r"_getp[a-z]\d$", eid)]
+
+
+async def test_getpa_group_without_flag_pontos_removes_registry_entries(hass: HomeAssistant) -> None:
+    """Pontos Base reports profile keys without getPAx: they stay hidden and old registry entries are removed."""
+    status = {"getPN1": "Home", "getPV1": "250", "getPRF": "1", "getFLO": "10"}
+    data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": status}]}
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    removed: list[str] = []
+    registry = MagicMock()
+    registry.async_get = MagicMock(side_effect=lambda eid: MagicMock(entity_id=eid, config_entry_id=coordinator.entry_id))
+    registry.async_remove = MagicMock(side_effect=removed.append)
+    added: list = []
+
+    with patch("custom_components.syr_connect.sensor.er.async_get", return_value=registry):
+        await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
+
+    assert "sensor.syr_connect_device1_getpn1" in removed
+    assert not [e for e in added if getattr(e, "_sensor_key", "") in ("getPN1", "getPV1")]
 
 
 async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:

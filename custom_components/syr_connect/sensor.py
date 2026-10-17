@@ -173,10 +173,11 @@ async def async_setup_entry(
                             )
                         )
                         sensor_count += 1
-                elif pa_key in status:
-                    # Remove group sensors from entity registry when the PA flag is reported false.
-                    # A missing flag (e.g. empty status after a failed fetch at startup) is unknown,
-                    # not false, and must not remove the sensors with their customizations.
+                elif status:
+                    # Remove group sensors from entity registry when the PA flag is false or missing
+                    # (Pontos Base reports the profile keys without any getPAx; they are not shown).
+                    # Skipped for an empty status: it was not fetched yet (temporary failure at
+                    # startup), which says nothing about the profiles, like in registry_cleanup.
                     for gk in group_keys:
                         try:
                             entity_id = build_entity_id("sensor", device_id, gk)
