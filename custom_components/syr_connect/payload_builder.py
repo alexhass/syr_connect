@@ -6,6 +6,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from xml.etree import ElementTree as ET
 
+from homeassistant.util import dt as dt_util
+
 from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
@@ -54,24 +56,19 @@ class PayloadBuilder:
 
     @staticmethod
     def _compute_local_tzo() -> str:
-        """Compute local timezone offset string in format ±HH:MM:SS.
+        """Return the current UTC offset of the Home Assistant time zone as ``HH:MM:SS``.
 
-        Uses the system local timezone at the current time to derive the
-        offset. Returns a string like '01:00:00' or '-05:00:00'.
+        Uses the time zone configured in Home Assistant, not the one of the process (often UTC
+        in Docker), including daylight saving time: Europe/Berlin gives ``02:00:00`` in summer
+        and ``01:00:00`` in winter. Positive offsets have no sign, like the ``tzo`` the server
+        returns for projects; negative offsets get ``-`` (e.g. ``-05:30:00``).
         """
-        # Use the system local timezone offset at current time
-        try:
-            offset = datetime.now().astimezone().utcoffset() or timedelta(0)
-            total_seconds = int(offset.total_seconds())
-            sign = "+" if total_seconds >= 0 else "-"
-            total_seconds = abs(total_seconds)
-            hours, rem = divmod(total_seconds, 3600)
-            minutes, seconds = divmod(rem, 60)
-            return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
-        except Exception as err:
-            _LOGGER.exception("Failed to compute local timezone offset (tzo); falling back to UTC: %s", err)
-            # Fallback to UTC
-            return "+00:00:00"
+        offset = dt_util.now().utcoffset() or timedelta(0)
+        total_seconds = int(offset.total_seconds())
+        sign = "-" if total_seconds < 0 else ""
+        hours, rem = divmod(abs(total_seconds), 3600)
+        minutes, seconds = divmod(rem, 60)
+        return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def _compute_locale_lang_reg(self) -> tuple[str, str]:
         """Return (lang, reg) from the instance language, e.g. ``de-DE`` -> ``("de", "DE")``.
@@ -129,7 +126,7 @@ class PayloadBuilder:
             <sc>
               <api version="1.0">
                 <nfo v="SYR Connect" version="3.7.10" osv="15.8.3" os="iOS" dn="iPhone"
-                     ts="2026-10-17 10:00:00" tzo="+02:00:00" lng="de" reg="DE" />
+                     ts="2026-10-17 10:00:00" tzo="02:00:00" lng="de" reg="DE" />
                 <usr n="user@example.com" v="secret" />
               </api>
             </sc>

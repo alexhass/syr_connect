@@ -1,9 +1,11 @@
 """Test the SYR Connect payload builder."""
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from xml.etree.ElementTree import canonicalize
+from zoneinfo import ZoneInfo
 
 import pytest
 from defusedxml import ElementTree as DefusedET
@@ -14,19 +16,6 @@ from custom_components.syr_connect.const import (
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
 )
 from custom_components.syr_connect.payload_builder import PayloadBuilder
-
-
-def test_compute_local_tzo_exception_fallback(caplog) -> None:
-    """When datetime.now raises, _compute_local_tzo falls back to +00:00:00."""
-    # Patch the module-level `datetime` name to a mock so we don't try to set
-    # attributes on the real immutable `datetime.datetime` type.
-    with patch("custom_components.syr_connect.payload_builder.datetime") as fake_dt:
-        fake_dt.now.side_effect = Exception("boom")
-        caplog.set_level("ERROR")
-        tzo = PayloadBuilder._compute_local_tzo()
-
-    assert tzo == "+00:00:00"
-    assert "Failed to compute local timezone offset (tzo)" in caplog.text
 
 
 def test_compute_locale_lang_reg_from_getlocale() -> None:
@@ -200,7 +189,7 @@ def _build_reference_payloads() -> dict[str, str]:
     )
     with (
         patch.object(PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"),
-        patch.object(PayloadBuilder, "_compute_local_tzo", return_value="+02:00:00"),
+        patch.object(PayloadBuilder, "_compute_local_tzo", return_value="02:00:00"),
         patch.object(PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")),
     ):
         return {
@@ -227,7 +216,7 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
-    with patch.object(PayloadBuilder, "_compute_local_tzo", return_value="+01:00:00"), patch.object(
+    with patch.object(PayloadBuilder, "_compute_local_tzo", return_value="01:00:00"), patch.object(
         PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")
     ):
         payload = pb.build_login_payload("user<&>", "pwd<&>")
@@ -236,7 +225,7 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     assert "user&lt;&amp;&gt;" in payload
     assert "pwd&lt;&amp;&gt;" in payload
     # tzo and locale tags should be present
-    assert 'tzo="+01:00:00"' in payload
+    assert 'tzo="01:00:00"' in payload
     assert 'lng="de"' in payload and 'reg="DE"' in payload
 
 
@@ -263,33 +252,21 @@ def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lan
     assert 'rg="IT"' in water_payload
 
 
-def test_compute_local_tzo_normal_format() -> None:
-    """_compute_local_tzo returns a string in ±HH:MM:SS format."""
-    tzo = PayloadBuilder._compute_local_tzo()
-    # Basic sanity: should be 9 chars like '+01:00:00' or '-05:30:00'
-    assert isinstance(tzo, str)
-    assert len(tzo) == 9
-    assert (tzo[0] == '+' or tzo[0] == '-')
-    assert tzo[3] == ':' and tzo[6] == ':'
-
-
-def test_compute_local_tzo_negative_offset() -> None:
-    """Force a negative offset from astimezone() and ensure '-' sign used."""
-    from datetime import timedelta
-    from unittest.mock import MagicMock
-
-    with patch("custom_components.syr_connect.payload_builder.datetime") as fake_dt:
-        fake_now = MagicMock()
-        tz_obj = MagicMock()
-        tz_obj.utcoffset.return_value = timedelta(hours=-5, minutes=-30)
-        fake_now.astimezone.return_value = tz_obj
-        fake_dt.now.return_value = fake_now
-
-        tzo = PayloadBuilder._compute_local_tzo()
-
-    assert isinstance(tzo, str)
-    assert tzo.startswith("-")
-    assert tzo == "-05:30:00"
+@pytest.mark.parametrize(
+    ("time_zone", "month", "expected"),
+    [
+        ("Europe/Berlin", 7, "02:00:00"),  # CEST
+        ("Europe/Berlin", 1, "01:00:00"),  # CET
+        ("UTC", 7, "00:00:00"),
+        ("Asia/Kolkata", 1, "05:30:00"),
+        ("America/St_Johns", 1, "-03:30:00"),
+    ],
+)
+def test_compute_local_tzo_uses_ha_time_zone(time_zone: str, month: int, expected: str) -> None:
+    """The offset comes from the HA time zone incl. DST; positive offsets have no sign."""
+    now = datetime(2026, month, 15, 12, 0, tzinfo=ZoneInfo(time_zone))
+    with patch("custom_components.syr_connect.payload_builder.dt_util.now", return_value=now):
+        assert PayloadBuilder._compute_local_tzo() == expected
 
 
 def test_compute_locale_lang_reg_dash_and_single() -> None:
@@ -540,21 +517,3 @@ def test_get_timestamp_format(payload_builder):
     assert hour.isdigit() and len(hour) == 2
     assert minute.isdigit() and len(minute) == 2
     assert second.isdigit() and len(second) == 2
-
-
-def test_compute_local_tzo_fallback_extra(monkeypatch) -> None:
-    """Force an exception in module datetime to hit the fallback branch."""
-    import importlib
-
-    pb_mod = importlib.import_module("custom_components.syr_connect.payload_builder")
-
-    class BadDateTime:
-        def now(self, *args, **kwargs):
-            raise RuntimeError("boom")
-
-    monkeypatch.setattr(pb_mod, "datetime", BadDateTime())
-
-    checksum = SyrChecksum("0123456789ABCDEF", "key")
-    pb = PayloadBuilder("1.0.0", checksum)
-
-    assert pb._compute_local_tzo() == "+00:00:00"
