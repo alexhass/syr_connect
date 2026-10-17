@@ -14,17 +14,17 @@
 Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant. Desweiteren kann diese Integration auch für die baugleichen Geräte anderer Marken genutzt werden. Gemischte Installationen unterschiedlicher Marken werden ebenfalls unterstützt.
 
 | Marke | Link |
-|--------|--------|
-| comfort by sanibel | https://comfort-by-sanibel.de/ |
-| CONEL | https://www.conel.de/ |
-| DITECH | https://www.ditech-haustechnik.de/ |
-| hansgrohe | https://www.hansgrohe.de/ |
-| mein concept | https://www.mein-concept.de/ |
-| mein Optima | https://www.mein-optima.de/ |
-| Reliance Valves | https://www.rwc.com/brands/reliance-valves |
-| SYR | https://www.syr.de/ |
-| SYR Oceanic | https://www.debestewaterbehandeling.be/ |
-| TAKE | https://take-bad.de/ |
+| ------ | ------ |
+| comfort by sanibel | <https://comfort-by-sanibel.de/> |
+| CONEL | <https://www.conel.de/> |
+| DITECH | <https://www.ditech-haustechnik.de/> |
+| hansgrohe | <https://www.hansgrohe.de/> |
+| mein concept | <https://www.mein-concept.de/> |
+| mein Optima | <https://www.mein-optima.de/> |
+| Reliance Valves | <https://www.rwc.com/brands/reliance-valves> |
+| SYR | <https://www.syr.de/> |
+| SYR Oceanic | <https://www.debestewaterbehandeling.be/> |
+| TAKE | <https://take-bad.de/> |
 
 ## Screenshots
 
