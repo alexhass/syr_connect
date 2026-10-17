@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 from homeassistant.config_entries import ConfigEntry
@@ -1593,7 +1594,7 @@ async def test_diagnostics_api_login_exception(hass: HomeAssistant) -> None:
 
 
 async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssistant) -> None:
-    """Ensure JSON fetch for devices with `base_path` redacts `getSRN`.
+    """Ensure JSON fetch for devices whose model has a `base_path` redacts `getSRN`.
 
     This exercises the XML-API code path that instantiates
     `SyrConnectJsonAPI(session, host, base_path)` and assigns
@@ -1644,9 +1645,10 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssista
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     # Provide a session so diagnostics will attempt JSON fetch
     mock_coordinator._session = MagicMock()
-    # Device with base_path and ip triggers the per-device JSON fetch path
+    # NeoSoft 2500 status with an IP triggers the per-device JSON fetch path
     mock_coordinator.data = {
-        "devices": [{"id": "dev1", "base_path": "/api", "ip": "192.168.1.2"}],
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.2"}}],
         "projects": [],
     }
     mock_coordinator.last_update_success = True
@@ -1910,7 +1912,8 @@ async def test_diagnostics_xml_json_session_none_returns_error_additional(hass) 
 
     fake_coord = type("C", (), {})()
     fake_coord._session = None
-    fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api"}]}
+    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+    fake_coord.data = {"devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345"}}]}
     from datetime import datetime
     fake_coord.last_update_success = True
     fake_coord.last_update_success_time = datetime.now()
@@ -2298,7 +2301,8 @@ async def test_fetch_device_json_status_exception(hass: HomeAssistant) -> None:
 
     fake_coord = type("C", (), {})()
     fake_coord._session = object()
-    fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.0.2.1"}], "projects": []}
+    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+    fake_coord.data = {"devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.0.2.1"}}], "projects": []}
     fake_coord.last_update_success = True
     fake_coord.last_update_success_time = None
 
@@ -2555,7 +2559,8 @@ async def test_xml_jsonapi_constructor_raises(monkeypatch, hass: HomeAssistant) 
     )
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "base_path": "/api"}], "projects": []}
+    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+    mock_coordinator.data = {"devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345"}}], "projects": []}
     mock_coordinator.last_update_success = True
     mock_coordinator.last_update_success_time = None
     mock_coordinator._session = MagicMock()
@@ -2583,7 +2588,7 @@ async def test_xml_jsonapi_constructor_raises(monkeypatch, hass: HomeAssistant) 
 
 
 async def test_diagnostics_raw_json_with_base_path(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json collection with devices that have base_path."""
+    """Test diagnostics raw_json collection with devices whose model has a base_path."""
     from unittest.mock import AsyncMock, MagicMock, patch
 
     config_entry = ConfigEntry(
@@ -2607,9 +2612,8 @@ async def test_diagnostics_raw_json_with_base_path(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
-                "ip": "192.168.1.100",
-                "status": {"getWVI": {"value": 100}},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100", "getWVI": {"value": 100}},
             }
         ],
         "projects": [],
@@ -2662,9 +2666,9 @@ async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
                 # No ip, getWIP, getEIP, or getIPA
-                "status": {},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345"},
             }
         ],
         "projects": [],
@@ -2710,9 +2714,8 @@ async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
-                "ip": "192.168.1.100",
-                "status": {},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
             }
         ],
         "projects": [],
@@ -2762,9 +2765,8 @@ async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
-                "ip": "192.168.1.100",
-                "status": {},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
             }
         ],
         "projects": [],
@@ -2786,47 +2788,6 @@ async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
 
         # Should handle fetch failure gracefully
         assert "raw_json" in diagnostics
-
-
-async def test_diagnostics_raw_json_device_no_base_path(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json when device has base_path set to None."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys={},
-        options={},
-        subentries_data={},
-    )
-
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                "base_path": None,
-                "status": {},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should skip devices with base_path set to None
-    assert "raw_json" in diagnostics
 
 
 async def test_diagnostics_raw_json_exception_handler(hass: HomeAssistant) -> None:
@@ -2907,9 +2868,9 @@ async def test_diagnostics_raw_json_device_ip_from_status(hass: HomeAssistant) -
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
                 # IP is in status, not top-level
-                "status": {"getWIP": "192.168.1.100"},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
             }
         ],
         "projects": [],
@@ -3017,9 +2978,8 @@ async def test_diagnostics_raw_json_gather_exception(hass: HomeAssistant) -> Non
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
-                "ip": "192.168.1.100",
-                "status": {},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
             }
         ],
         "projects": [],
@@ -3066,9 +3026,8 @@ async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> Non
             {
                 "id": "dev1",
                 "name": "Device 1",
-                "base_path": "/api/v1/",
-                "ip": "192.168.1.100",
-                "status": {},
+                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
             }
         ],
         "projects": [],
@@ -3236,7 +3195,8 @@ async def test_fetch_device_json_assignment_exception_handled(monkeypatch, hass:
 
     fake_coord = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     fake_coord._session = object()
-    fake_coord.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.0.2.1"}], "projects": []}
+    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+    fake_coord.data = {"devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.0.2.1"}}], "projects": []}
     fake_coord.last_update_success = True
     fake_coord.last_update_success_time = None
     entry.runtime_data = fake_coord
@@ -3795,7 +3755,7 @@ async def test_diagnostics_no_http_session_sets_error(hass) -> None:
     coordinator = MagicMock()
     coordinator.last_update_success = True
     coordinator.last_update_success_time = datetime.now(UTC)
-    # Provide a device with no base_path (no fetch tasks) and no _session
+    # Provide a device without a known model (no fetch tasks) and no _session
     coordinator.data = {"devices": [{"id": "x", "name": "X"}]}
     coordinator._session = None
 
@@ -4015,39 +3975,6 @@ async def test_diagnostics_xml_device_status_gather_exception(hass: HomeAssistan
 
 
 # ---------------------------------------------------------------------------
-# Line 299 — _fetch_device_json: return (dev_id, None) when base_path is falsy
-# ---------------------------------------------------------------------------
-
-async def test_diagnostics_fetch_device_json_no_base_path(hass: HomeAssistant) -> None:
-    """Line 299: _fetch_device_json returns (dev_id, None) when base_path becomes falsy.
-
-    Uses a dict subclass whose second get('base_path') call returns None so it
-    passes the tasks list-comprehension filter but hits the internal guard.
-    """
-    class _OnceTrueBasePathDict(dict):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self._bp_calls = 0
-
-        def get(self, key, default=None):
-            if key == "base_path":
-                self._bp_calls += 1
-                return "/api" if self._bp_calls == 1 else None
-            return super().get(key, default)
-
-    device = _OnceTrueBasePathDict({"id": "dev1", "name": "Dev1"})
-    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
-
-    result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "raw_json" in result
-    assert result["raw_json"] == {}
-
-
-# ---------------------------------------------------------------------------
 # Line 310 — _fetch_device_json: ip = None when IP is "" or "0.0.0.0"
 # ---------------------------------------------------------------------------
 
@@ -4056,8 +3983,8 @@ async def test_diagnostics_fetch_device_json_empty_ip_normalized(hass: HomeAssis
     device = {
         "id": "dev1",
         "name": "Dev1",
-        "base_path": "/api",
-        "status": {"getIPA": ""},  # empty string → triggers line 310 → ip = None
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "status": {"getSRN": "206AAA12345", "getIPA": ""},  # empty string → triggers line 310 → ip = None
     }
     coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
 
@@ -4081,8 +4008,8 @@ async def test_diagnostics_fetch_device_json_empty_base_url(hass: HomeAssistant)
     device = {
         "id": "dev1",
         "name": "Dev1",
-        "base_path": "/api",
-        "status": {"getIPA": "192.168.1.100"},
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "status": {"getSRN": "206AAA12345", "getIPA": "192.168.1.100"},
     }
     coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
 
@@ -4111,8 +4038,8 @@ async def test_diagnostics_fetch_device_json_gather_exception(hass: HomeAssistan
     device = {
         "id": "dev1",
         "name": "Dev1",
-        "base_path": "/api",
-        "status": {"getIPA": "192.168.1.100"},
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "status": {"getSRN": "206AAA12345", "getIPA": "192.168.1.100"},
     }
     coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
 
@@ -4249,7 +4176,8 @@ async def test_xml_device_json_getsrn_except_block(monkeypatch, hass: HomeAssist
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
-        "devices": [{"id": "dev1", "base_path": "/api", "ip": "192.168.1.1", "status": {}}],
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.1"}}],
         "projects": [],
     }
     mock_coordinator.last_update_success = True
@@ -4461,8 +4389,8 @@ async def test_diagnostics_fetch_device_json_ip_zero_normalized(hass: HomeAssist
     device = {
         "id": "dev1",
         "name": "Dev1",
-        "base_path": "/api",
-        "status": {"getIPA": "0.0.0.0"},
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "status": {"getSRN": "206AAA12345", "getIPA": "0.0.0.0"},
     }
     coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
 
@@ -4480,7 +4408,8 @@ async def test_diagnostics_fetch_device_json_get_device_status_raises(hass: Home
     """When JSON API get_device_status raises, diagnostics should skip that device."""
     from unittest.mock import patch
 
-    device = {"id": "dev1", "name": "Dev1", "base_path": "/api", "status": {"getIPA": "192.0.2.5"}}
+    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+    device = {"id": "dev1", "name": "Dev1", "status": {"getSRN": "206AAA12345", "getIPA": "192.0.2.5"}}
     coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
 
     entry = _cov_entry()
@@ -4542,29 +4471,9 @@ def test_mask_mac_last_char_replace_re_error(monkeypatch):
     assert "XX" in res
 
 
-async def test_diagnostics_xml_json_per_device_success(monkeypatch, hass: HomeAssistant) -> None:
-    """When running diagnostics for an XML-configured entry, per-device JSON fetch should be included."""
-    # Fake JSON API that returns a typical device payload
-    class FakeJsonApi:
-        def __init__(self, session, host=None, base_path=None):
-            self._session = session
-
-        def is_session_valid(self):
-            return True
-
-        async def login(self):
-            return None
-
-        def _build_base_url(self):
-            return "http://1.2.3.4"
-
-        async def get_device_status(self, *_a, **_kw):
-            return {"getSRN": "206AAA67890", "getMAC": "AA:BB:CC:DD:EE:FF", "getFLO": "5"}
-
-    # Make diagnostics use our FakeJsonApi
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
-
-    config_entry = ConfigEntry(
+def _xml_entry() -> ConfigEntry:
+    """Return an XML (cloud) config entry for the local JSON fetch tests."""
+    return ConfigEntry(
         version=1,
         minor_version=0,
         domain=DOMAIN,
@@ -4578,23 +4487,68 @@ async def test_diagnostics_xml_json_per_device_success(monkeypatch, hass: HomeAs
         subentries_data={},
     )
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1", "base_path": "/api", "ip": "192.168.1.10", "status": {}}], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = MagicMock()
-    mock_coordinator.api = None
 
-    config_entry.runtime_data = mock_coordinator
+def _xml_coordinator(status: dict[str, Any]) -> MagicMock:
+    """Return a coordinator with one XML device carrying the given status."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = {"devices": [{"id": "dev1", "status": status}], "projects": []}
+    coordinator.last_update_success = True
+    coordinator.last_update_success_time = None
+    coordinator._session = MagicMock()
+    coordinator.api = None
+    return coordinator
+
+
+async def test_diagnostics_xml_local_json_uses_model_base_path(monkeypatch, hass: HomeAssistant) -> None:
+    """A cloud device whose model offers local access is queried via the model's base path and status IP."""
+    constructed: list[dict[str, Any]] = []
+
+    class FakeJsonApi:
+        def __init__(self, session, host=None, base_path=None):
+            constructed.append({"host": host, "base_path": base_path})
+
+        def is_session_valid(self):
+            return True
+
+        def _build_base_url(self):
+            return "http://192.168.178.20:5333/neosoft"
+
+        async def get_device_status(self, *_a, **_kw):
+            return {"getSRN": "206AAA12345", "getVER": "NSS.V.2.36", "getFLO": "5"}
+
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
+    config_entry = _xml_entry()
+    # NeoSoft 2500 (values from SyrNeoSoft2500_GetDeviceCollectionStatus.xml): base_path "/neosoft"
+    config_entry.runtime_data = _xml_coordinator(
+        {"getSRN": "206AAA12345", "getVER": "NSS.V.2.028", "getWIP": "192.168.178.20", "getEIP": ""}
+    )
 
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    assert "dev1" in raw_json
-    payload = raw_json["dev1"]
-    # getSRN should have been replaced with the redact marker
-    assert payload.get("getSRN") == "**REDACTED**" or payload.get("getSRN") is None
+    assert constructed == [{"host": "192.168.178.20", "base_path": "/neosoft"}]
+    assert diagnostics["raw_json"]["dev1"]["getSRN"] == "**REDACTED**"
+    assert diagnostics["raw_json"]["dev1"]["getFLO"] == "5"
+
+
+async def test_diagnostics_xml_local_json_skipped_without_model_base_path(monkeypatch, hass: HomeAssistant) -> None:
+    """A cloud device whose model has no local access is not queried, even with a known IP."""
+    constructed: list[str] = []
+
+    class FakeJsonApi:
+        def __init__(self, session, host=None, base_path=None):
+            constructed.append(host)
+
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
+    config_entry = _xml_entry()
+    # LEX Plus 10 S (values from SyrLEXplus10S_GetDeviceCollectionStatus.xml): no base_path
+    config_entry.runtime_data = _xml_coordinator(
+        {"getCNA": "LEXplus10S", "getSRN": "123456789", "getVER": "2.3", "getWIP": "192.168.178.21"}
+    )
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert constructed == []
+    assert diagnostics["raw_json"] == {}
 
 
 async def test_diagnostics_json_api_success_redact(monkeypatch, hass: HomeAssistant) -> None:
@@ -4674,7 +4628,8 @@ async def test_diagnostics_xml_outer_try_except_sets_error(hass: HomeAssistant) 
 async def test_diagnostics_xml_json_no_session_sets_error(hass: HomeAssistant) -> None:
     """When coordinator lacks an HTTP session, JSON collection should set an error."""
     entry = _cov_entry()
-    coord = _cov_coordinator(data={"devices": [{"id": "dev1", "base_path": "/api"}], "projects": []})
+    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+    coord = _cov_coordinator(data={"devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345"}}], "projects": []})
     coord._session = None
     coord.api = None
     entry.runtime_data = coord

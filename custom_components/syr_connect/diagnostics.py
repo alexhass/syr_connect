@@ -43,6 +43,19 @@ _TO_REDACT = {
 }
 
 
+def _local_json_base_path(device: dict[str, Any]) -> str | None:
+    """Return the local JSON API base path of the device's model, or None without local access.
+
+    The base path is not part of the coordinator's device dict; it comes from the model
+    signature (`MODEL_SIGNATURES`) detected from the device status. Adding a `base_path`
+    to a model is therefore enough to include its local `/get/all` data in diagnostics,
+    even when the device is set up via the cloud (XML) API.
+    """
+    status = device.get("status")
+    base_path = detect_model(status if isinstance(status, dict) else {}).get("base_path")
+    return base_path if isinstance(base_path, str) and base_path else None
+
+
 def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
     """Mask a MAC address while preserving the vendor (first three octets).
 
@@ -388,7 +401,8 @@ async def async_get_config_entry_diagnostics(
             # Set error but don't overwrite the entire dict
             raw_json["error"] = "failed to collect raw json for JSON API"
     else:
-        # For XML API, attempt to collect JSON data from devices with base_path
+        # For XML API, attempt to collect local JSON data from devices whose model
+        # offers local access (has a `base_path`), using the device IP from the status
         try:
             # Use the coordinator's aiohttp session so we reuse the existing
             # HA-managed ClientSession and its connectors.
@@ -398,11 +412,8 @@ async def async_get_config_entry_diagnostics(
                 raw_json = {"error": "no http session available on coordinator"}
                 diagnostics_data["raw_json"] = raw_json
             else:
-                async def _fetch_device_json(dev: dict[str, Any]):
+                async def _fetch_device_json(dev: dict[str, Any], base_path: str):
                     dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
-                    base_path = dev.get("base_path")
-                    if not base_path:
-                        return dev_id, None
 
                     # Determine IP from device fields or status
                     ip = dev.get("ip") or dev.get("getWIP") or dev.get("getEIP")
@@ -457,11 +468,15 @@ async def async_get_config_entry_diagnostics(
                     devices = coordinator.data.get("devices", [])
                     semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
 
-                    async def _wrap(dev):
+                    async def _wrap(dev, base_path):
                         async with semaphore:
-                            return await _fetch_device_json(dev)
+                            return await _fetch_device_json(dev, base_path)
 
-                    tasks = [_wrap(d) for d in devices if isinstance(d, dict) and d.get("base_path")]
+                    tasks = [
+                        _wrap(d, base_path)
+                        for d in devices
+                        if isinstance(d, dict) and (base_path := _local_json_base_path(d))
+                    ]
                     if tasks:
                         results = await asyncio.gather(*tasks, return_exceptions=True)
                         for res in results:
