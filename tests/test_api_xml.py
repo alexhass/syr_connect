@@ -351,6 +351,26 @@ async def test_login_with_decryption_parser_error(api_client):
             await api_client.login()
 
 
+@pytest.mark.parametrize(
+    ("method", "args"),
+    [
+        ("get_device_status", ("dclg1",)),
+        ("set_device_status", ("dclg1", [("setAB", "2")])),
+        ("get_statistics", ("dclg1", "water")),
+    ],
+)
+async def test_network_errors_are_wrapped_in_connection_error(api_client, method, args):
+    """Network errors after all retries become SyrConnectConnectionError, which the entities handle."""
+    api_client.session_data = "valid_session"
+    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
+
+    with patch.object(api_client.http_client, "post", side_effect=aiohttp.ClientError("Request failed after 3 attempts")):
+        with pytest.raises(SyrConnectConnectionError, match="Request failed after 3 attempts") as excinfo:
+            await getattr(api_client, method)(*args)
+
+    assert isinstance(excinfo.value.__cause__, aiohttp.ClientError)
+
+
 async def test_get_devices_adds_project_id(api_client):
     """Test get_devices adds project_id to each device."""
     api_client.session_data = "valid_session"

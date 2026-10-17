@@ -404,6 +404,11 @@ class SyrConnectXmlAPI:
             _LOGGER.debug("Status data parsed: %d attributes", len(status_data))
             return status_data
 
+        except (aiohttp.ClientError, TimeoutError) as err:
+            # Network errors after all retries: wrap them like login()/get_devices() so callers
+            # only need to handle SyrConnectError
+            _LOGGER.error("Failed to get device status: %s", err)
+            raise SyrConnectConnectionError(f"Failed to get device status: {err}") from err
         except Exception as err:
             _LOGGER.error("Failed to get device status: %s", err)
             raise
@@ -459,6 +464,11 @@ class SyrConnectXmlAPI:
                 device_id,
             )
             return True
+        except (aiohttp.ClientError, TimeoutError) as err:
+            # Network errors after all retries: wrapped so the entity turns them into a
+            # HomeAssistantError for the user instead of an unhandled exception
+            _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
+            raise SyrConnectConnectionError(f"Failed to set device status: {err}") from err
         except Exception as err:
             _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
             raise
@@ -517,6 +527,9 @@ class SyrConnectXmlAPI:
             _LOGGER.debug("Statistics data parsed: %d attributes", len(stats_data))
             return stats_data
 
+        except (aiohttp.ClientError, TimeoutError) as err:
+            _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
+            raise SyrConnectConnectionError(f"Failed to get {statistic_type} statistics: {err}") from err
         except Exception as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
             raise
