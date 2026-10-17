@@ -320,18 +320,17 @@ def test_is_on_with_int_and_float_values() -> None:
 
 
 @pytest.mark.asyncio
-async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> None:
-    """If API raises during set, the switch should still request a refresh and swallow the error."""
+async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
+    """If the API call fails, the service call fails too (HomeAssistantError) instead of looking successful."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    from custom_components.syr_connect.exceptions import SyrConnectConnectionError
     from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
 
     device = {"id": "SN300", "name": "DeviceErr", "status": {"getBUZ": "0"}}
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
-
-    async def raising_set(device_id, cmd, value):
-        raise RuntimeError("boom")
-
-    mock_coordinator.async_set_device_value = AsyncMock(side_effect=raising_set)
+    mock_coordinator.async_set_device_value = AsyncMock(side_effect=SyrConnectConnectionError("no answer"))
     mock_coordinator.async_request_refresh = AsyncMock()
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN300", "DeviceErr", "", "getBUZ")
@@ -339,9 +338,11 @@ async def test_turn_on_api_exception_still_refreshes(hass: HomeAssistant) -> Non
     # Icon comes from icons.json via the translation key, not from the entity
     assert sw.icon is None
 
-    # Calling turn_on should not raise despite API exception
-    await sw.async_turn_on()
-    mock_coordinator.async_set_device_value.assert_awaited_once()
+    with pytest.raises(HomeAssistantError, match="Failed to set getBUZ: no answer"):
+        await sw.async_turn_on()
+    mock_coordinator.async_set_device_value.assert_awaited_once_with("SN300", "setBUZ", "1")
+    # The coordinator already restored the previous value; no refresh needed
+    mock_coordinator.async_request_refresh.assert_not_awaited()
 
 
 async def test_async_setup_entry_uses_existing_registry_entity_id(hass: HomeAssistant) -> None:

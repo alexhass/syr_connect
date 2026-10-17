@@ -8,6 +8,7 @@ from typing import cast
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -20,6 +21,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .exceptions import SyrConnectError
 from .helpers import build_device_info, build_entity_id, build_unique_id, get_model_known_keys, registry_cleanup
 from .models import detect_model
 
@@ -225,6 +227,10 @@ class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
             # `CoordinatorEntity.coordinator` is typed as DataUpdateCoordinator in the base
             # class; cast to our concrete coordinator type so mypy recognizes the method.
             await cast(SyrConnectDataUpdateCoordinator, self.coordinator).async_set_device_value(self._device_id, set_key, value)
-        except Exception as err:
+        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+            # Report the failure to the caller (UI, automation) like valve/select/button do;
+            # swallowing it would make the service call look successful. The coordinator has
+            # already restored the previous value.
             _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
+            raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
         await self.coordinator.async_request_refresh()
