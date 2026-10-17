@@ -8,10 +8,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from custom_components.syr_connect import helpers
-from custom_components.syr_connect.const import API_TYPE_JSON
+from custom_components.syr_connect.const import API_TYPE_JSON, DOMAIN
 from custom_components.syr_connect.helpers import (
     build_device_info,
     build_entity_id,
+    build_unique_id,
     get_current_mac,
     get_sensor_ab_value,
     get_sensor_ala_map,
@@ -796,16 +797,28 @@ def test_get_default_scan_interval_for_entry_with_dict() -> None:
     assert helpers.get_default_scan_interval_for_entry(entry) == 30
 
 
+def _registry_entry(
+    domain: str, device_id: str, key: str, config_entry_id: str | None = None, entity_id: str | None = None
+) -> SimpleNamespace:
+    """Return an entity registry entry as created by this integration (entity_id defaults to the standard one)."""
+    return SimpleNamespace(
+        entity_id=entity_id or build_entity_id(domain, device_id, key),
+        unique_id=build_unique_id(config_entry_id, device_id, key),
+        platform=DOMAIN,
+        domain=domain,
+        config_entry_id=config_entry_id,
+    )
+
+
 def test_registry_cleanup_remove_called() -> None:
     """Allowlist mode: entity with key NOT in allowed_keys is removed."""
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
     unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
-    listed_entity_id = build_entity_id("sensor", device_id, "getPRS")
     registry.entities.values.return_value = [
-        SimpleNamespace(entity_id=unlisted_entity_id),
-        SimpleNamespace(entity_id=listed_entity_id),
+        _registry_entry("sensor", device_id, "getFOO"),
+        _registry_entry("sensor", device_id, "getPRS"),
     ]
     registry.async_remove = MagicMock()
     # No conditional entities exist in the registry for this test.
@@ -824,7 +837,7 @@ def test_registry_cleanup_skips_device_with_empty_status() -> None:
     registry = MagicMock()
     device_id = "DEV"
     registry.entities.values.return_value = [
-        SimpleNamespace(entity_id=build_entity_id("sensor", device_id, "getFOO")),
+        _registry_entry("sensor", device_id, "getFOO"),
     ]
     registry.async_remove = MagicMock()
     # A conditionally hidden sensor that would be removed if the empty status were trusted
@@ -847,9 +860,8 @@ def test_registry_cleanup_entry_id_scoping_ignores_other_hub() -> None:
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
-    unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
     registry.entities.values.return_value = [
-        SimpleNamespace(entity_id=unlisted_entity_id, config_entry_id="other_hub"),
+        _registry_entry("sensor", device_id, "getFOO", config_entry_id="other_hub"),
     ]
     registry.async_remove = MagicMock()
     registry.async_get = MagicMock(return_value=None)
@@ -870,7 +882,7 @@ def test_registry_cleanup_entry_id_scoping_removes_own_hub() -> None:
     device_id = "DEV"
     unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
     registry.entities.values.return_value = [
-        SimpleNamespace(entity_id=unlisted_entity_id, config_entry_id="this_hub"),
+        _registry_entry("sensor", device_id, "getFOO", config_entry_id="this_hub"),
     ]
     registry.async_remove = MagicMock()
     registry.async_get = MagicMock(return_value=None)
@@ -890,13 +902,57 @@ def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
     registry = MagicMock()
     device_id = "DEV2"
     unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
-    registry.entities.values.return_value = [SimpleNamespace(entity_id=unlisted_entity_id)]
+    registry.entities.values.return_value = [_registry_entry("sensor", device_id, "getFOO")]
+    registry.async_get = MagicMock(return_value=None)
     registry.async_remove.side_effect = RuntimeError("boom")
 
     with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         # Should not raise despite async_remove throwing
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys=set())
+
+    registry.async_remove.assert_called_once_with(unlisted_entity_id)
+
+
+@pytest.mark.parametrize(
+    "entity_id",
+    [
+        "sensor.syr_connect_206aaa12345_getflo_2",  # same device set up via a second hub
+        "sensor.syr_connect_206aaa12345_durchfluss",  # renamed by the user, prefix kept
+    ],
+)
+def test_registry_cleanup_uses_unique_id_not_entity_id(entity_id: str) -> None:
+    """An allowed key is kept even if its entity_id differs from the standard one."""
+    registry = MagicMock()
+    registry.async_get = MagicMock(return_value=None)
+    registry.entities.values.return_value = [
+        _registry_entry("sensor", "206AAA12345", "getFLO", config_entry_id="hub2", entity_id=entity_id),
+    ]
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": "206AAA12345", "status": {"getFLO": "5"}}]}
+        helpers.registry_cleanup(MagicMock(), coordinator, "sensor", allowed_keys={"getFLO"}, entry_id="hub2")
+
+    registry.async_remove.assert_not_called()
+
+
+def test_registry_cleanup_strips_platform_suffix_and_ignores_other_platforms() -> None:
+    """Select unique_ids end in "_select"; entities of other platforms or integrations are not touched."""
+    registry = MagicMock()
+    registry.async_get = MagicMock(return_value=None)
+    stale = _registry_entry("select", "DEV", "getFOO_select", config_entry_id="hub")
+    registry.entities.values.return_value = [
+        _registry_entry("select", "DEV", "getRTM_select", config_entry_id="hub"),
+        stale,
+        _registry_entry("sensor", "DEV", "getFOO", config_entry_id="hub"),
+        SimpleNamespace(**{**vars(_registry_entry("select", "DEV", "getBAR", config_entry_id="hub")), "platform": "other"}),
+    ]
+
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        coordinator = {"devices": [{"id": "DEV", "status": {"getRTM": "02:00"}}]}
+        helpers.registry_cleanup(MagicMock(), coordinator, "select", allowed_keys={"getRTM"}, entry_id="hub")
+
+    registry.async_remove.assert_called_once_with(stale.entity_id)
 
 
 def test_registry_cleanup_allowed_keys_none_is_noop() -> None:

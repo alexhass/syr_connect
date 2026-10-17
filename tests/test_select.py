@@ -1477,10 +1477,14 @@ async def test_async_setup_entry_removes_excluded_from_registry(hass: HomeAssist
     stale_entity_id = f"select.syr_connect_{device_id.lower()}_getrtime"
 
     class FakeEntry:
-        def __init__(self, eid: str) -> None:
+        def __init__(self, eid: str, unique_id: str) -> None:
             self.entity_id = eid
+            self.unique_id = unique_id
+            self.platform = "syr_connect"
+            self.domain = eid.split(".")[0]
+            self.config_entry_id = None
 
-    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id)}
+    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id, f"{device_id}_getRTIME_select")}
 
     # Patch the entity registry accessor used by Home Assistant to return our mock
     with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):

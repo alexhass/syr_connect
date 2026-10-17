@@ -444,12 +444,16 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
     stale_entity_id = "button.syr_connect_device1_setsir"
 
     class FakeEntry:
-        def __init__(self, eid: str) -> None:
+        def __init__(self, eid: str, unique_id: str) -> None:
             self.entity_id = eid
+            self.unique_id = unique_id
+            self.platform = "syr_connect"
+            self.domain = eid.split(".")[0]
+            self.config_entry_id = None
 
     mock_registry = MagicMock()
     mock_registry.async_remove = MagicMock()
-    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id)}
+    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id, "device1_setSIR")}
 
     with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -506,12 +510,16 @@ async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
     other_entity_id = "button.syr_connect_other_device_setsir"
 
     class FakeEntry:
-        def __init__(self, eid: str) -> None:
+        def __init__(self, eid: str, unique_id: str) -> None:
             self.entity_id = eid
+            self.unique_id = unique_id
+            self.platform = "syr_connect"
+            self.domain = eid.split(".")[0]
+            self.config_entry_id = None
 
     mock_registry = MagicMock()
     mock_registry.async_remove = MagicMock()
-    mock_registry.entities = {other_entity_id: FakeEntry(other_entity_id)}
+    mock_registry.entities = {other_entity_id: FakeEntry(other_entity_id, "other_device_setSIR")}
 
     with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -548,6 +556,9 @@ async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
     class FakeEntry:
         def __init__(self, eid: str, config_entry_id: str) -> None:
             self.entity_id = eid
+            self.unique_id = f"{config_entry_id}_device1_setSIR"
+            self.platform = "syr_connect"
+            self.domain = "button"
             self.config_entry_id = config_entry_id
 
     mock_registry = MagicMock()

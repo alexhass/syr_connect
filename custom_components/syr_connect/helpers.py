@@ -402,12 +402,40 @@ def registry_cleanup(
             allowed_lower = {k.lower() for k in device_allowed_keys}
 
             # Remove entities whose key is no longer in the allowed set.
+            #
+            # The key is taken from the unique_id, not from the entity_id. Both are set by
+            # the entities of this integration, but only the unique_id is stable:
+            # - unique_id: "<entry_id>_<device_id>_<key>" (see build_unique_id), e.g.
+            #   "01J..._206AAA12345_getFLO". Home Assistant never changes it.
+            # - entity_id: "<domain>.syr_connect_<device_id>_<key>" (see build_entity_id),
+            #   e.g. "sensor.syr_connect_206aaa12345_getflo". It is not reliable: if the
+            #   same device is set up via a second hub, HA appends "_2" because the
+            #   entity_id is already taken, and users may rename it. Reading the key from
+            #   it would turn "getflo_2" or a renamed "..._durchfluss" into an unknown key
+            #   and remove a valid entity (with its name, area, ... customizations) on
+            #   every setup.
+            #
+            # All ids of this device and config entry start with the same prefix,
+            # "<entry_id>_<device_id>_" (only "<device_id>_" without entry_id). Comparisons
+            # are case-insensitive because switch/update build their unique_id lowercased.
+            unique_id_prefix = build_unique_id(entry_id, device_id, "").lower()
             for entry in list(registry.entities.values()):
+                # Only entities of this integration and of the platform being cleaned up
+                # (sensor cleanup must not touch a select of the same device).
+                if entry.platform != DOMAIN or entry.domain != domain:
+                    continue
+                # Only entities of this config entry: the same physical device may also
+                # belong to another hub, whose entities are not ours to remove.
                 if entry_id is not None and entry.config_entry_id != entry_id:
                     continue
-                if not entry.entity_id.startswith(prefix):
+                # Only entities of this device.
+                unique_id = str(entry.unique_id).lower()
+                if not unique_id.startswith(unique_id_prefix):
                     continue
-                key_lower = entry.entity_id[len(prefix):]
+                # What remains is the key. Some platforms add their own suffix to keep
+                # unique_ids distinct from a sensor with the same key: "getRTM_select",
+                # "getbuz_switch", "getnot_update". Strip it to get the plain key ("getrtm").
+                key_lower = unique_id[len(unique_id_prefix):].removesuffix(f"_{domain}")
                 if key_lower not in allowed_lower:
                     _LOGGER.debug(
                         "Removing unlisted %s from registry: %s",
