@@ -491,10 +491,16 @@ def _async_setup_muco_conditional_selects(
     def _wanted_key(status: dict[str, Any]) -> str | None:
         crt = str(status.get("getCRT") or "").strip()
         if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
-            return "getLOT"
-        if crt == "0" and status.get("getOHW") not in (None, ""):
-            return "getOHW"
-        return None
+            key = "getLOT"
+        elif crt == "0" and status.get("getOHW") not in (None, ""):
+            key = "getOHW"
+        else:
+            return None
+        # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
+        # also report getCRT/getLOT/getOHW but deliberately do not expose them; a select there
+        # would even write setOHW/setLOT.
+        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+        return key if key in known_select_keys else None
 
     def _build_entity(device_id: str, device_name: str, key: str) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
         if key == "getLOT":

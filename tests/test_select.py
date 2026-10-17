@@ -1349,6 +1349,32 @@ async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands
     assert len(sv1_entities) == 0
 
 
+@pytest.mark.parametrize(
+    ("fixture", "expected"),
+    [
+        ("ConelClearProFill_get_all.json", {"getLOT"}),  # MuCo filling, getCRT=1
+        ("ConelClearProLeakProtection.json", set()),  # reports getCRT=0/getOHW=1, but no OHW/LOT
+        ("SanibelLeakProtectionModuleA25_get_all.json", set()),
+        ("SyrTrioLock_get_all.json", set()),
+    ],
+)
+async def test_muco_lot_ohw_select_only_for_models_listing_it(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, fixture: str, expected: set
+) -> None:
+    """The dynamic getLOT/getOHW select respects the per-model allowlist (real fixtures)."""
+    import json
+
+    status = json.loads((Path(__file__).parent / "fixtures/json" / fixture).read_text(encoding="utf-8"))
+    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert keys & {"getLOT", "getOHW"} == expected
+
+
 async def test_async_setup_entry_creates_triolock_selects_from_real_fixture(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
 ) -> None:
