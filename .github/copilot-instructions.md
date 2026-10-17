@@ -12,6 +12,7 @@ https://github.com/home-assistant/core/blob/dev/.github/copilot-instructions.md
 - All contributors and AI agents must follow the rules and recommendations in this file in addition to those in CODE_STYLE.md.
 - For integration development, always check the quality scale and exemption status before applying rules.
 - Use this file as a reference for code structure, entity patterns, error handling, logging, testing, and workflow.
+- For Markdown files (README, docs), also follow `.github/instructions/markdown.instructions.md`.
 
 ---
 

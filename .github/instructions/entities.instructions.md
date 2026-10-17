@@ -1,0 +1,15 @@
+---
+description: Entity, unique_id and entity registry rules for the syr_connect platforms
+applyTo: "custom_components/syr_connect/*.py"
+---
+
+# Entities and registry
+
+- Build every `unique_id` with `helpers.build_unique_id(entry_id, device_id, key)`. The same device can be reachable from several config entries.
+- `entry_id` is an uppercase ULID. Never call `.lower()` on the whole `unique_id`. Lowercase only the `device_id` and key parts before passing them in, otherwise the id no longer matches the migrated registry entry and a duplicate entity appears.
+- Do not change the `entity_id` format. Home Assistant resolves collisions itself.
+- Every entity registry removal (`registry_cleanup()` and ad-hoc removal loops) must be limited to entities owned by the current config entry (`entry.config_entry_id == coordinator.entry_id`). Otherwise one hub deletes the entities of another hub on startup.
+- Entities that do not apply to a device are added or removed (registry removal plus `async_add_entities`), not just marked unavailable. `available` is only for offline devices.
+- Never use truthiness for values that can legitimately be `0` or an empty collection. Use `is None` / `is not None` (for example `raw = str(v) if v is not None else ""`).
+- Every platform must honor the per-model allowlists, see `devices.instructions.md`. An entity-creation loop that only checks `key in status` is a bug.
+- Firmware update entity (`update.py`): `entity_category` is `DIAGNOSTIC`, there is no `entity_picture` override and `INSTALL` is only a stub that raises `SyrConnectError`. Do not change these without being asked, they were decided deliberately.
