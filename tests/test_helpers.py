@@ -1003,6 +1003,23 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     registry.async_remove.assert_called_once_with(entity_id)
 
 
+def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
+    """An offline device (dst 0/1) reports empty measurements; that must not remove its sensors."""
+    registry = MagicMock()
+    registry.entities.values.return_value = []
+    registry.async_get = MagicMock(side_effect=lambda eid: SimpleNamespace(entity_id=eid, config_entry_id=None))
+    registry.async_remove = MagicMock()
+
+    # Offline as marked by the coordinator; measurements are empty strings
+    device = {"id": "DEV", "available": False, "status": {"dst": "1", "getCEL": "", "getBAR": "", "getWIP": ""}}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(
+            MagicMock(), {"devices": [device]}, "sensor", allowed_keys={"getCEL", "getBAR", "getWIP"}
+        )
+
+    registry.async_remove.assert_not_called()
+
+
 def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> None:
     """Conditionally hidden sensor owned by a DIFFERENT config entry must not be removed."""
     hass = MagicMock()
