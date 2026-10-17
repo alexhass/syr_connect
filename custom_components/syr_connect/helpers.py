@@ -1249,15 +1249,30 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
 def _mask_attribute_values(payload: str, attributes: tuple[str, ...], element: str | None = None) -> str:
     """Replace the values of the given attributes in an XML payload with `***`.
 
-    Restricted to `<element ...>` tags when `element` is set, otherwise applied to every tag.
+    Only `<element ...>` tags are touched when `element` is set, otherwise every tag.
     Non-string and empty payloads are returned unchanged.
+
+    The payload is edited as text, not parsed: diagnostics may pass truncated or malformed XML, and
+    logged payloads must stay exactly as they were sent.
+
+    Example:
+        `_mask_attribute_values('<usr n="bob" v="pw" />', ("n", "v"), element="usr")`
+        returns `'<usr n="***" v="***" />'`.
     """
     if not isinstance(payload, str) or payload == "":
         return payload
-    attribute = re.compile(rf'(\s(?:{"|".join(attributes)})=")[^"]*', re.IGNORECASE)
-    tag = rf"<{element}\b[^>]*>" if element else r"<[^>]*>"
+
+    # `\b` keeps `usr` from matching `<usrx>`. `>` inside values is escaped as `&gt;`, so `[^>]*` ends at the tag.
+    tag_pattern = rf"<{element}\b[^>]*>" if element else r"<[^>]*>"
+    # Group 1 (` name="`) is kept, the value is replaced. The leading whitespace keeps `ug` from matching `xug`.
+    # Values cannot contain `"` because it is escaped as `&quot;`.
+    attribute_pattern = re.compile(rf'(\s(?:{"|".join(attributes)})=")[^"]*', re.IGNORECASE)
+
+    def mask_tag(tag: re.Match[str]) -> str:
+        return attribute_pattern.sub(r"\1***", tag.group(0))
+
     try:
-        return re.sub(tag, lambda m: attribute.sub(r"\1***", m.group(0)), payload)
+        return re.sub(tag_pattern, mask_tag, payload)
     except re.error:
         return payload
 
