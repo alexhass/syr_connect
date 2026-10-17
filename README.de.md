@@ -302,7 +302,7 @@ Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten b
 
 ### Bekannte Einschränkungen
 
-- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden SYR Connect-Cloud-Dienst
+- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden Cloud-Dienst
 - **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
 - **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
 - **Filter-Rückspülintervall**: Die Auswahl für diese Einstellung ist vorübergehend deaktiviert, weil das Gerät den Wert nach dem Schreiben wieder zurücksetzt; der aktuelle Wert wird weiterhin als Sensor angezeigt

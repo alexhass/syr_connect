@@ -302,7 +302,7 @@ If a device becomes unavailable (e.g., offline or communication error), its enti
 
 ### Known Limitations
 
-- **Cloud Dependency**: The cloud API requires an active internet connection and functioning SYR Connect cloud service
+- **Cloud Dependency**: The cloud API requires an active internet connection and functioning cloud service
 - **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting when using cloud API
 - **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
 - **Filter Backwash Interval**: The select for this setting is temporarily disabled because the device resets the value after writing it; the current value is still shown as a sensor
