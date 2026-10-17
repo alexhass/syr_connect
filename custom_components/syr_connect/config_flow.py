@@ -7,7 +7,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
@@ -322,6 +322,27 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         return SyrConnectOptionsFlow(config_entry)
 
+    @staticmethod
+    def _entry_unique_id(api_type: str, data: dict[str, Any]) -> str:
+        """Return the config entry unique_id for the given connection data.
+
+        Same format as set by the user steps: "xml_<username>" or "json_<host>".
+        """
+        if api_type == API_TYPE_JSON:
+            return f"{API_TYPE_JSON}_{data[CONF_HOST]}"
+        return f"{API_TYPE_XML}_{data[CONF_USERNAME]}"
+
+    def _unique_id_used_by_other_entry(self, entry: ConfigEntry, unique_id: str) -> bool:
+        """Return True if another config entry already uses this unique_id.
+
+        Reauth and reconfigure may change the username or host. Without this check
+        two entries could poll the same account or device.
+        """
+        return any(
+            other.entry_id != entry.entry_id and other.unique_id == unique_id
+            for other in self._async_current_entries(include_ignore=False)
+        )
+
     async def async_step_reauth(self, _entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle reauth flow when credentials are invalid.
 
@@ -371,9 +392,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     if "login_required" in info and info["login_required"] is not None:
                         new_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
 
-                    # Update entry
-                    self.hass.config_entries.async_update_entry(entry, data=new_data)
-
                 else:
                     # Default/XML flow — pass existing conf_service so the correct endpoint is tested
                     await validate_input_xml(self.hass, {
@@ -386,7 +404,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
-                    self.hass.config_entries.async_update_entry(entry, data=new_data)
+
+                # A changed username/host also changes the entry's unique_id
+                new_unique_id = self._entry_unique_id(api_type, new_data)
+                if self._unique_id_used_by_other_entry(entry, new_unique_id):
+                    return self.async_abort(reason="already_configured")
+                self.hass.config_entries.async_update_entry(entry, data=new_data, unique_id=new_unique_id)
 
                 # Reload the config entry
                 await self.hass.config_entries.async_reload(entry.entry_id)
@@ -469,8 +492,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                # Update the config entry
-                self.hass.config_entries.async_update_entry(entry, data=new_data)
+                # Update the config entry. A changed username/host also changes its unique_id
+                # (e.g. a new e-mail address of the same SYR account, or a new device IP).
+                new_unique_id = self._entry_unique_id(api_type, new_data)
+                if self._unique_id_used_by_other_entry(entry, new_unique_id):
+                    return self.async_abort(reason="already_configured")
+                self.hass.config_entries.async_update_entry(entry, data=new_data, unique_id=new_unique_id)
 
                 # Reload the config entry
                 await self.hass.config_entries.async_reload(entry.entry_id)
@@ -575,7 +602,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 # Set unique ID based on username and API type
-                unique_id = f"{API_TYPE_XML}_{user_input[CONF_USERNAME]}"
+                unique_id = self._entry_unique_id(API_TYPE_XML, user_input)
                 _LOGGER.debug("Setting unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
@@ -633,7 +660,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 # Set unique ID based on host and API type
-                unique_id = f"{API_TYPE_JSON}_{user_input[CONF_HOST]}"
+                unique_id = self._entry_unique_id(API_TYPE_JSON, user_input)
                 _LOGGER.debug("Setting unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()

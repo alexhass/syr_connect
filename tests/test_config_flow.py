@@ -784,6 +784,57 @@ async def test_reconfigure_flow(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reconfigure_successful"
+    # The changed username (e.g. a new e-mail address of the account) also changes the unique_id
+    assert entry.unique_id == "xml_new_user@example.com"
+    assert entry.data[CONF_USERNAME] == "new_user@example.com"
+
+
+@pytest.mark.usefixtures("mock_syr_api")
+@pytest.mark.parametrize("source", [config_entries.SOURCE_REAUTH, config_entries.SOURCE_RECONFIGURE])
+async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(hass: HomeAssistant, source: str) -> None:
+    """Switching to a username that another entry already uses would poll the same account twice."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_alice@example.com",
+        data={CONF_USERNAME: "alice@example.com", CONF_PASSWORD: "pw", CONF_API_TYPE: API_TYPE_XML},
+    )
+    entry.add_to_hass(hass)
+    MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_bob@example.com",
+        data={CONF_USERNAME: "bob@example.com", CONF_PASSWORD: "pw", CONF_API_TYPE: API_TYPE_XML},
+    ).add_to_hass(hass)
+
+    # Reauth is started with the entry data; reconfigure without (data would count as submitted input)
+    data = entry.data if source == config_entries.SOURCE_REAUTH else None
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": source, "entry_id": entry.entry_id}, data=data
+    )
+    assert result["type"] == FlowResultType.FORM
+    with patch("custom_components.syr_connect.async_setup_entry", new_callable=AsyncMock, return_value=True):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_USERNAME: "bob@example.com", CONF_PASSWORD: "new_password"}
+        )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == "already_configured"
+    # The entry is left unchanged
+    assert entry.unique_id == "xml_alice@example.com"
+    assert entry.data[CONF_USERNAME] == "alice@example.com"
+
+
+@pytest.mark.parametrize(
+    ("api_type", "data", "expected"),
+    [
+        (API_TYPE_XML, {CONF_USERNAME: "user@example.com"}, "xml_user@example.com"),
+        (API_TYPE_JSON, {CONF_HOST: "192.168.1.20"}, "json_192.168.1.20"),
+    ],
+)
+def test_entry_unique_id(api_type: str, data: dict, expected: str) -> None:
+    """Reauth/reconfigure build the same unique_id as the user steps."""
+    from custom_components.syr_connect.config_flow import ConfigFlow
+
+    assert ConfigFlow._entry_unique_id(api_type, data) == expected
 
 
 async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:
