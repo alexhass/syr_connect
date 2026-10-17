@@ -1115,6 +1115,29 @@ async def test_async_update_data_all_projects_failed_keeps_previous_devices(hass
         assert coordinator.device_list_complete is False
 
 
+async def test_failed_relogin_keeps_previous_data(hass: HomeAssistant) -> None:
+    """A failed re-login after the session timeout (e.g. cloud outage) keeps the last data available."""
+    from types import SimpleNamespace
+
+    mock_api = _two_project_api(set())
+    with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass, SimpleNamespace(), {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}, 60
+        )
+        await coordinator.async_refresh()
+        previous = coordinator.data
+        assert coordinator.last_update_success is True
+
+        # Session expired, the re-login fails because the cloud is down
+        mock_api.is_session_valid = lambda: False
+        mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("maintenance page"))
+        await coordinator.async_refresh()
+
+        assert coordinator.last_update_success is True  # entities stay available
+        assert coordinator.data is previous
+        assert coordinator.device_list_complete is False
+
+
 async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
     """Test coordinator initialization with JSON API."""
     with patch("custom_components.syr_connect.coordinator.SyrConnectJsonAPI") as mock_json_api_class:
