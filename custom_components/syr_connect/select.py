@@ -240,16 +240,15 @@ async def async_setup_entry(
                 SyrConnectHardnessSelect(coordinator, device_id, device_name, hardness_key, hardness_min, 100, 1)
             )
 
-        # Add getFFM select (filter type) if present: expose raw numeric keys so frontend translates the state
+        # Add getFFM select (filter type) if present: expose raw numeric keys so frontend translates the state.
+        # Only create it for a valid value >= 1 (filter types 1..3); 0 or an invalid value only skips this
+        # select, not the remaining selects of the device (e.g. getRMO below).
         ffm_value = status.get("getFFM")
-        if ffm_value is not None and ffm_value != "":
-            try:
-                v = float(ffm_value)
-            except (ValueError, TypeError):
-                continue
-            # Only create select when value is >= 1 (filter types 1..3); ignore 0
-            if v < 1:
-                continue
+        try:
+            ffm_valid = ffm_value is not None and ffm_value != "" and float(ffm_value) >= 1
+        except (ValueError, TypeError):
+            ffm_valid = False
+        if ffm_valid:
             # create numeric select and expose raw numeric options (strings) so HA translates the selected state
             sel = SyrConnectNumericSelect(coordinator, device_id, device_name, "getFFM", 1, 3, 1)
             sel._options = [str(x) for x in range(1, 4)]

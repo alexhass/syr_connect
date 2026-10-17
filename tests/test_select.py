@@ -2161,6 +2161,31 @@ async def test_async_setup_entry_skips_ffm_zero(hass: HomeAssistant, create_mock
     assert len(ffm_entities) == 0
 
 
+@pytest.mark.parametrize("ffm_value", ["0", "not_a_number"])
+async def test_async_setup_entry_ffm_skip_does_not_skip_rmo(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, ffm_value: str
+) -> None:
+    """A getFFM of 0 or an invalid value only omits the FFM select, not the device's other selects."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getFFM": ffm_value, "getRMO": "4"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = [getattr(e, "_sensor_key", None) for e in entities]
+    assert "getFFM" not in keys
+    assert "getRMO" in keys
+
+
 async def test_discrete_select_current_option_no_match(hass: HomeAssistant) -> None:
     """Test discrete select current_option returns None when mapping has no match."""
     data = {"devices": [{"id": "device1", "status": {"getTEST": "99"}}]}
