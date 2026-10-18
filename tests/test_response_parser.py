@@ -924,3 +924,24 @@ def test_parse_device_status_shadow_values(parser):
     assert result["getMXT"] == "490"
     # Key without 's' uses 'v' as before
     assert result["getFLO"] == "10"
+
+
+def test_never_online_device_minimal_status_is_parsed(parser):
+    """A never-online device (dst="0") reports only getSRN; that is genuine, not the Trio glitch.
+
+    Parsed (instead of returning None) so the coordinator sees dst="0" and marks the device unavailable.
+    """
+    path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_GetDeviceCollectionStatus_NewDevice.xml")
+    with open(path, encoding="utf-8") as f:
+        status = parser.parse_device_status_response(f.read())
+
+    assert status is not None
+    assert status["dst"] == "0"
+    assert status["getSRN"] == "123456789"
+
+
+def test_trio_minimal_status_of_online_device_is_still_ignored(parser):
+    """The Trio DFR/LS glitch (online device, dst="2", only getSRN/getALA/getNOT/getWRN) is still discarded."""
+    path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml")
+    with open(path, encoding="utf-8") as f:
+        assert parser.parse_device_status_response(f.read()) is None

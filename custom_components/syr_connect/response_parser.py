@@ -377,12 +377,16 @@ class ResponseParser:
                 names.add(c['@n'])
             return names
 
-        c_names_list: list[set] = []
-        if isinstance(device_list, list):
-            for d in device_list:
-                c_names_list.append(get_c_names(d))
-        else:
-            c_names_list.append(get_c_names(device_list))
+        devices = device_list if isinstance(device_list, list) else [device_list]
+
+        # A device the cloud reports offline (dst="0" never online, dst="1" offline) has
+        # no more data than this; its minimal answer is genuine, not the Trio glitch
+        # (which comes from online devices, dst="2"). Parsing it lets the coordinator
+        # mark the device unavailable instead of keeping it "available" with no status.
+        if any(isinstance(d, dict) and str(d.get('@dst', '')).strip() in ('0', '1') for d in devices):
+            return False
+
+        c_names_list: list[set] = [get_c_names(d) for d in devices]
 
         # If every device has at least one c-name and all names are a subset
         # of the minimal broken set, ignore the response.
