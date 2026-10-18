@@ -353,13 +353,36 @@ class ResponseParser:
     def _ignore_broken_response(self, device_list: Any) -> bool:
         """Ignore broken responses
 
+        Whenever the cloud returns nonsense, the response is ignored and the previous
+        values are kept. This is a heuristic: there is no list of keys that makes a
+        response complete, and it is not known which other broken answers the cloud
+        sends. It is extended whenever a new broken answer is found.
+
         Dirty workaround:
         1. Syr Trio DFR/LS: For unknown reasons the device very often returns an XML
            response with getSRN, getALA, getNOT, getWRN only. This causes unwanted
            sensor status flapping. This need to be ignored.
+
+        Exception: devices the cloud reports offline (dst="0" never online, dst="1"
+        offline) also answer with getSRN etc. only. That answer is passed on, so the
+        coordinator marks the device unavailable. These devices are skipped by the
+        check; an online device in the same response is still checked.
+
+        Resulting device states:
+        - Offline (dst 0/1): passed on, the device becomes unavailable.
+        - Back online (dst="2") with a full answer: passed on, the values are updated
+          and the device is available again.
+        - Back online (dst="2") with broken names only: ignored, the device keeps its
+          previous state (stays unavailable) until a full answer arrives.
+
+        Args:
+            device_list: The <d> entries of the response (a list, or a single dict)
+
+        Returns:
+            True if the response is broken and must be ignored, otherwise False
         """
-        # New detection: if every device only contains minimal 'c' entries
-        # with names in the broken set, treat as broken response.
+        # Detection: if every device that is not offline only contains minimal 'c'
+        # entries with names in the broken set, treat as broken response.
         broken_names = {"getSRN", "getALA", "getNOT", "getWRN"}
 
         def get_c_names(d: Any) -> set:
