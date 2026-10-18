@@ -343,6 +343,38 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             for other in self._async_current_entries(include_ignore=False)
         )
 
+    async def _async_update_entry_and_reload(
+        self,
+        entry: ConfigEntry,
+        api_type: str,
+        new_data: dict[str, Any],
+        success_reason: str,
+    ) -> ConfigFlowResult:
+        """Save the new connection data of an existing entry, reload it and finish the flow.
+
+        Shared by reauth and reconfigure. A changed username/host also changes the entry's
+        unique_id (e.g. a new e-mail address of the same SYR account, or a new device IP);
+        the flow aborts with "already_configured" if another entry already uses it.
+
+        Args:
+            entry: The config entry to update
+            api_type: API type of the entry
+            new_data: Complete new entry data
+            success_reason: Abort reason shown on success ("reauth_successful", "reconfigure_successful")
+
+        Returns:
+            The abort result that ends the flow
+        """
+        new_unique_id = self._entry_unique_id(api_type, new_data)
+        if self._unique_id_used_by_other_entry(entry, new_unique_id):
+            return self.async_abort(reason="already_configured")
+        self.hass.config_entries.async_update_entry(entry, data=new_data, unique_id=new_unique_id)
+
+        # Reload the config entry
+        await self.hass.config_entries.async_reload(entry.entry_id)
+
+        return self.async_abort(reason=success_reason)
+
     async def async_step_reauth(self, _entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle reauth flow when credentials are invalid.
 
@@ -405,16 +437,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                # A changed username/host also changes the entry's unique_id
-                new_unique_id = self._entry_unique_id(api_type, new_data)
-                if self._unique_id_used_by_other_entry(entry, new_unique_id):
-                    return self.async_abort(reason="already_configured")
-                self.hass.config_entries.async_update_entry(entry, data=new_data, unique_id=new_unique_id)
-
-                # Reload the config entry
-                await self.hass.config_entries.async_reload(entry.entry_id)
-
-                return self.async_abort(reason="reauth_successful")
+                return await self._async_update_entry_and_reload(entry, api_type, new_data, "reauth_successful")
 
             except CannotConnectError:
                 errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
@@ -492,17 +515,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                # Update the config entry. A changed username/host also changes its unique_id
-                # (e.g. a new e-mail address of the same SYR account, or a new device IP).
-                new_unique_id = self._entry_unique_id(api_type, new_data)
-                if self._unique_id_used_by_other_entry(entry, new_unique_id):
-                    return self.async_abort(reason="already_configured")
-                self.hass.config_entries.async_update_entry(entry, data=new_data, unique_id=new_unique_id)
-
-                # Reload the config entry
-                await self.hass.config_entries.async_reload(entry.entry_id)
-
-                return self.async_abort(reason="reconfigure_successful")
+                return await self._async_update_entry_and_reload(entry, api_type, new_data, "reconfigure_successful")
 
             except CannotConnectError:
                 # Use appropriate error message based on API type
@@ -511,10 +524,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except HomeAssistantError as err:
-                if "port" in str(err).lower():
-                    errors[CONF_HOST] = "host_no_port"
+                # Host validation errors for JSON; the XML form has no host field to show them at
+                if api_type == API_TYPE_JSON:
+                    if "port" in str(err).lower():
+                        errors[CONF_HOST] = "host_no_port"
+                    else:
+                        errors[CONF_HOST] = "host_invalid"
                 else:
-                    errors[CONF_HOST] = "host_invalid"
+                    errors["base"] = "unknown"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
                 errors["base"] = "unknown"

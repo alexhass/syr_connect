@@ -1610,6 +1610,37 @@ async def test_reconfigure_homeassistant_error_direct(hass: HomeAssistant) -> No
     assert result["errors"] == {CONF_HOST: "host_invalid"}
 
 
+async def test_reconfigure_homeassistant_error_xml_shows_unknown(hass: HomeAssistant) -> None:
+    """The XML reconfigure form has no host field, so a HomeAssistantError is shown as "unknown"."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    from custom_components.syr_connect.config_flow import ConfigFlow
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_reconfigure_direct@example.com",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "reconfigure_direct@example.com",
+            CONF_PASSWORD: "old",
+        },
+    )
+    entry.add_to_hass(hass)
+
+    flow = ConfigFlow()
+    flow.hass = hass
+    flow.context = {"entry_id": entry.entry_id}
+
+    with patch(
+        "custom_components.syr_connect.config_flow.validate_input_xml",
+        side_effect=HomeAssistantError("Some problem"),
+    ):
+        result = await flow.async_step_reconfigure({CONF_USERNAME: "reconfigure_direct@example.com", CONF_PASSWORD: "new"})
+
+    assert result["type"] == FlowResultType.FORM
+    assert result["errors"] == {"base": "unknown"}
+
+
 async def test_configflow_async_step_api_json_homeassistant_error_direct(hass: HomeAssistant) -> None:
     """Directly call ConfigFlow.async_step_api_json to hit HomeAssistantError branch."""
     from homeassistant.exceptions import HomeAssistantError
