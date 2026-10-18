@@ -24,6 +24,7 @@ from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
     get_model_known_keys,
+    is_value_true,
     registry_cleanup,
 )
 from .models import detect_model
@@ -166,13 +167,10 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         if self._device is None:
             return None
         value = self._status.get(self._sensor_key)
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.strip().lower() in ("1", "true", "on", "yes")
-        if isinstance(value, int | float):
-            return int(value) != 0
-        return None
+        if value is None:
+            return None
+        # A reported but unknown value (e.g. empty) is shown as off
+        return is_value_true(value)
 
     async def async_turn_on(self, **kwargs):
         """Turn the setting on."""

@@ -22,6 +22,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .helpers import (
     get_model_known_keys,
+    is_value_true,
     registry_cleanup,
 )
 from .models import detect_model
@@ -127,12 +128,5 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
         """
         if self._device is None:
             return None
-        value = self._status.get(self._sensor_key)
-
-        # Convert value to boolean
-        if isinstance(value, int | float):
-            return value != 0
-        elif isinstance(value, str):
-            return value not in ("0", "false", "False", "")
-
-        return False
+        # An unknown value (missing, empty) is shown as off
+        return is_value_true(self._status.get(self._sensor_key))

@@ -60,9 +60,6 @@ from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
-# Returned by a value handler to continue with the generic string/number conversion
-_SYR_CONNECT_SENSOR_NOT_HANDLED = object()
-
 # Leak-protection boolean flags getPAx, getPBx, getPMx, getPWx (not getPRx: numeric return times)
 _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG = re.compile(r"^getP(?:A|B|M|W)\d$")
 
@@ -511,9 +508,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if handler is None and _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG.match(self._sensor_key):
             handler = SyrConnectSensor._value_leak_protection_flag
         if handler is not None:
-            result = handler(self, status, value)
-            if result is not _SYR_CONNECT_SENSOR_NOT_HANDLED:
-                return result
+            return handler(self, status, value)
 
         # Clean prefix like 'Vol[L]6530' -> '6530', then continue as a number
         if self._sensor_key == 'getVOL' and value is not None:
@@ -539,8 +534,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         return value
 
     # --- Value handlers -------------------------------------------------------------
-    # Each handler gets the device status and the raw value of the sensor key. It returns
-    # the native value, or _SYR_CONNECT_SENSOR_NOT_HANDLED to continue with the generic conversion.
+    # Each handler gets the device status and the raw value of the sensor key and returns
+    # the native value.
 
     @staticmethod
     def _map_code(status: dict[str, Any], raw: Any, mapper: Any) -> str | None:
@@ -696,22 +691,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         """
         if value is None or (isinstance(value, str) and value.strip() == ""):
             return None
-        if isinstance(value, (int | float)):
-            try:
-                return "true" if int(float(value)) != 0 else "false"
-            except (ValueError, TypeError):
-                return None
-        if isinstance(value, str):
-            sval = value.strip().lower()
-            if sval in ("1", "true", "on", "yes"):
-                return "true"
-            if sval in ("0", "false", "off", "no"):
-                return "false"
-            try:
-                return "true" if int(float(sval)) != 0 else "false"
-            except (ValueError, TypeError):
-                return sval
-        return _SYR_CONNECT_SENSOR_NOT_HANDLED
+        return "true" if is_value_true(value) else "false"
 
     def _value_rtm(self, status: dict[str, Any], value: Any) -> Any:
         """Regeneration time (getRTM): "HH:MM" from getRTM, or combined from getRTH + getRTM."""

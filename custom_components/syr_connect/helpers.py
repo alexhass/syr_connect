@@ -76,10 +76,11 @@ _DEVICE_MODULES: dict[str, ModuleType] = {
 def is_value_true(val: object) -> bool:
     """Normalize a heterogeneous API flag value to a Python bool.
 
-    SYR devices report binary activation flags (e.g. getPAx) in varying
-    formats depending on firmware version: native bool, int/float,
-    or strings such as "1" or "true". This function provides a single,
-    consistent conversion so callers do not need to handle each format separately.
+    SYR devices report binary activation flags (e.g. getPAx, getBUZ) in varying
+    formats depending on API and firmware version: the XML API always sends strings
+    ("1", "0", "True", "false"), the local JSON API native bool or int/float. This
+    function is the single conversion for all boolean keys, so callers do not need
+    to handle each format separately.
 
     Args:
         val: Raw value received from the device API.
@@ -1239,7 +1240,7 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     Rules (applied in order):
     - Group-controlled keys: keys matching getPVx, getPTx, getPFx, getPNx,
         getPMx, getPWx, getPBx, getPRx are only visible when the device's
-        corresponding getPAx flag is truthy (1, "true", "on", etc.).
+        corresponding getPAx flag is truthy (1, "1", True, "true"; see `is_value_true`).
     - Special-case salt counters (getCS1/2/3): shown if the associated
         getSVx value is non-zero; otherwise they follow the normal empty
         value rules (hide when 0, "0", empty or None).

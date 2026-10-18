@@ -4231,11 +4231,11 @@ async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -
         ("getPW2", "1", "true"),
         ("getPW2", "0", "false"),
         ("getPB3", "true", "true"),
-        ("getPB3", "on", "true"),
-        ("getPB3", "yes", "true"),
+        ("getPB3", "True", "true"),
+        ("getPB3", True, "true"),
         ("getPM1", "false", "false"),
-        ("getPM1", "off", "false"),
-        ("getPW2", "maybe", "maybe"),
+        ("getPM1", "False", "false"),
+        ("getPW2", "maybe", "false"),
     ],
 )
 async def test_leak_protection_boolean_flags_various_values(
@@ -5351,10 +5351,8 @@ async def test_sensor_getpmx_getwx_getbx_invalid_numeric(hass: HomeAssistant) ->
             sensor_key=sensor_key,
         )
 
-        # Should handle invalid conversion and return raw value
-        value = sensor.native_value
-        # When string conversion fails, it returns the string itself
-        assert value == "not_numeric" or value is None
+        # An unknown value counts as not set (see is_value_true)
+        assert sensor.native_value == "false"
 
 
 async def test_sensor_getpmx_getwx_getbx_int_exception(hass: HomeAssistant) -> None:
@@ -5834,8 +5832,8 @@ async def test_sensor_native_value_pm_boolean_exception(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM1")
 
-    # Should return the string value as-is when conversion fails
-    assert sensor.native_value == "invalid_float"
+    # An unknown value counts as not set (see is_value_true)
+    assert sensor.native_value == "false"
 
 
 async def test_sensor_native_value_pm_numeric_exception(hass: HomeAssistant) -> None:
@@ -5860,8 +5858,8 @@ async def test_sensor_native_value_pm_numeric_exception(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM2")
 
-    # BadNumber object is returned as-is when it doesn't match expected types
-    assert isinstance(sensor.native_value, BadNumber)
+    # An unknown type counts as not set (see is_value_true)
+    assert sensor.native_value == "false"
 
 
 async def test_sensor_native_value_alm_exception(hass: HomeAssistant) -> None:
@@ -6605,66 +6603,6 @@ async def test_sensor_leak_protection_getpw_empty_string(hass: HomeAssistant) ->
     assert sensor.native_value is None
 
 
-async def test_sensor_leak_protection_getpb_string_on(hass: HomeAssistant) -> None:
-    """Test leak protection getPB boolean with 'on' string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPB5": "on",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPB5")
-
-    assert sensor.native_value == "true"
-
-
-async def test_sensor_leak_protection_getpa_string_yes(hass: HomeAssistant) -> None:
-    """Test leak protection getPA boolean with 'yes' string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA6": "yes",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPA6")
-
-    assert sensor.native_value == "true"
-
-
-async def test_sensor_leak_protection_getpm_string_no(hass: HomeAssistant) -> None:
-    """Test leak protection getPM boolean with 'no' string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPM7": "no",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM7")
-
-    assert sensor.native_value == "false"
-
-
 async def test_sensor_leak_protection_getpw_invalid_numeric_string(hass: HomeAssistant) -> None:
     """Test leak protection getPW boolean with invalid numeric string."""
     data = {
@@ -6682,8 +6620,8 @@ async def test_sensor_leak_protection_getpw_invalid_numeric_string(hass: HomeAss
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPW8")
 
-    # Should return raw string when conversion fails
-    assert sensor.native_value == "not_a_number"
+    # An unknown value counts as not set (see is_value_true)
+    assert sensor.native_value == "false"
 
 
 async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) -> None:
@@ -6703,8 +6641,8 @@ async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) ->
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPB1")
 
-    # Invalid type (dict) falls through and returns the value as-is
-    assert sensor.native_value == {"dict": "value"}
+    # An unknown type counts as not set (see is_value_true)
+    assert sensor.native_value == "false"
 
 
 async def test_sensor_apply_numeric_conversion_zerodivision(hass: HomeAssistant) -> None:
@@ -7065,7 +7003,7 @@ def test_pm_boolean_edgecases(create_mock_coordinator):
                 "id": "d1",
                 "name": "D",
                 "project_id": "p1",
-                "status": {"getPM1": "ON", "getPM2": "off", "getPM3": "xyz", "getPM4": 0},
+                "status": {"getPM1": "True", "getPM2": "False", "getPM3": "xyz", "getPM4": 0},
             }
         ]
     }
@@ -7078,7 +7016,7 @@ def test_pm_boolean_edgecases(create_mock_coordinator):
 
     assert pm1.native_value == "true"
     assert pm2.native_value == "false"
-    assert pm3.native_value == "xyz"
+    assert pm3.native_value == "false"
     assert pm4.native_value == "false"
 
 
@@ -7604,13 +7542,13 @@ def test_sensor_getnot_unmapped_returns_raw_code(create_mock_coordinator):
 # ---------------------------------------------------------------------------
 
 
-def test_sensor_leak_flag_float_nan_returns_none(create_mock_coordinator):
-    """getPM1 with float('nan'): int(float(nan)) raises ValueError → None (lines 659-660)."""
+def test_sensor_leak_flag_float_nan_returns_false(create_mock_coordinator):
+    """getPM1 with float('nan'): int(float(nan)) raises ValueError, so it counts as not set."""
     data = {"devices": [{"id": "d1", "status": {"getPM1": float("nan")}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPM1")
 
-    assert sensor.native_value is None
+    assert sensor.native_value == "false"
 
 
 # ---------------------------------------------------------------------------

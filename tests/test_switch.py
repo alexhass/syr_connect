@@ -176,27 +176,21 @@ def test_is_on_boolean_and_string_values() -> None:
     dev_bool_true = {"id": "SN500", "name": "BTrue", "status": {"getBUZ": True}}
     dev_bool_false = {"id": "SN501", "name": "BFalse", "status": {"getBUZ": False}}
     dev_str_true = {"id": "SN502", "name": "STrue", "status": {"getBUZ": " true "}}
-    dev_str_on = {"id": "SN503", "name": "SOn", "status": {"getBUZ": "On"}}
-    dev_str_yes = {"id": "SN504", "name": "SYes", "status": {"getBUZ": "YES"}}
 
     mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [dev_bool_true, dev_bool_false, dev_str_true, dev_str_on, dev_str_yes]}
+    mock_coordinator.data = {"devices": [dev_bool_true, dev_bool_false, dev_str_true]}
 
     sw_bool_true = SyrConnectBooleanSwitch(mock_coordinator, "SN500", "BTrue", "", "getBUZ")
     sw_bool_false = SyrConnectBooleanSwitch(mock_coordinator, "SN501", "BFalse", "", "getBUZ")
     sw_str_true = SyrConnectBooleanSwitch(mock_coordinator, "SN502", "STrue", "", "getBUZ")
-    sw_str_on = SyrConnectBooleanSwitch(mock_coordinator, "SN503", "SOn", "", "getBUZ")
-    sw_str_yes = SyrConnectBooleanSwitch(mock_coordinator, "SN504", "SYes", "", "getBUZ")
 
     assert sw_bool_true.is_on is True
     assert sw_bool_false.is_on is False
     assert sw_str_true.is_on is True
-    assert sw_str_on.is_on is True
-    assert sw_str_yes.is_on is True
 
 
-def test_is_on_unrecognized_type_returns_none() -> None:
-    """Unrecognized types (e.g., dict) should return None for is_on."""
+def test_is_on_unrecognized_type_returns_false() -> None:
+    """A reported value of an unrecognized type (e.g. dict) counts as off; only a missing value is None."""
     from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
 
     dev_bad = {"id": "SN600", "name": "Bad", "status": {"getBUZ": {"foo": "bar"}}}
@@ -204,7 +198,7 @@ def test_is_on_unrecognized_type_returns_none() -> None:
     mock_coordinator.data = {"devices": [dev_bad]}
 
     sw_bad = SyrConnectBooleanSwitch(mock_coordinator, "SN600", "Bad", "", "getBUZ")
-    assert sw_bad.is_on is None
+    assert sw_bad.is_on is False
 
 
 def test_entity_category_is_config() -> None:
