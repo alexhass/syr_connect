@@ -91,8 +91,8 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     # Async refresh stub
     mock_coordinator.async_request_refresh = AsyncMock()
 
-    sw_on = SyrConnectBooleanSwitch(mock_coordinator, "SN123", "DeviceOn", "", "getBUZ")
-    sw_off = SyrConnectBooleanSwitch(mock_coordinator, "SN124", "DeviceOff", "", "getBUZ")
+    sw_on = SyrConnectBooleanSwitch(mock_coordinator, "SN123", "DeviceOn", "getBUZ")
+    sw_off = SyrConnectBooleanSwitch(mock_coordinator, "SN124", "DeviceOff", "getBUZ")
 
     # Unique id should include platform suffix set in implementation
     assert sw_on._attr_unique_id is not None
@@ -130,7 +130,7 @@ async def test_switch_unique_id_preserves_entry_id_casing() -> None:
     mock_coordinator.entry_id = "01M196XPFB9GY9Z1KZ7SATCN9C"
     mock_coordinator.data = {"devices": [{"id": "SN123", "name": "DeviceOn", "status": {"getBUZ": "1"}}]}
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN123", "DeviceOn", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN123", "DeviceOn", "getBUZ")
 
     assert sw._attr_unique_id == "01M196XPFB9GY9Z1KZ7SATCN9C_sn123_getbuz_switch"
 
@@ -180,9 +180,9 @@ def test_is_on_boolean_and_string_values() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [dev_bool_true, dev_bool_false, dev_str_true]}
 
-    sw_bool_true = SyrConnectBooleanSwitch(mock_coordinator, "SN500", "BTrue", "", "getBUZ")
-    sw_bool_false = SyrConnectBooleanSwitch(mock_coordinator, "SN501", "BFalse", "", "getBUZ")
-    sw_str_true = SyrConnectBooleanSwitch(mock_coordinator, "SN502", "STrue", "", "getBUZ")
+    sw_bool_true = SyrConnectBooleanSwitch(mock_coordinator, "SN500", "BTrue", "getBUZ")
+    sw_bool_false = SyrConnectBooleanSwitch(mock_coordinator, "SN501", "BFalse", "getBUZ")
+    sw_str_true = SyrConnectBooleanSwitch(mock_coordinator, "SN502", "STrue", "getBUZ")
 
     assert sw_bool_true.is_on is True
     assert sw_bool_false.is_on is False
@@ -197,7 +197,7 @@ def test_is_on_unrecognized_type_returns_false() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [dev_bad]}
 
-    sw_bad = SyrConnectBooleanSwitch(mock_coordinator, "SN600", "Bad", "", "getBUZ")
+    sw_bad = SyrConnectBooleanSwitch(mock_coordinator, "SN600", "Bad", "getBUZ")
     assert sw_bad.is_on is False
 
 
@@ -215,7 +215,7 @@ def test_entity_category_is_config() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [dev]}
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN700", "Cfg", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN700", "Cfg", "getBUZ")
     assert sw._attr_entity_category == EntityCategory.CONFIG
 
 
@@ -292,7 +292,7 @@ def test_is_on_device_missing() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": []}
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "MISSING", "Missing", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "MISSING", "Missing", "getBUZ")
     assert sw.is_on is None
 
 
@@ -306,8 +306,8 @@ def test_is_on_with_int_and_float_values() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [dev_int, dev_float]}
 
-    sw_int = SyrConnectBooleanSwitch(mock_coordinator, "SN200", "I", "", "getBUZ")
-    sw_float = SyrConnectBooleanSwitch(mock_coordinator, "SN201", "F", "", "getBUZ")
+    sw_int = SyrConnectBooleanSwitch(mock_coordinator, "SN200", "I", "getBUZ")
+    sw_float = SyrConnectBooleanSwitch(mock_coordinator, "SN201", "F", "getBUZ")
 
     assert sw_int.is_on is True
     assert sw_float.is_on is False
@@ -327,7 +327,7 @@ async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
     mock_coordinator.async_set_device_value = AsyncMock(side_effect=SyrConnectConnectionError("no answer"))
     mock_coordinator.async_request_refresh = AsyncMock()
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN300", "DeviceErr", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN300", "DeviceErr", "getBUZ")
 
     # Icon comes from icons.json via the translation key, not from the entity
     assert sw.icon is None
@@ -520,7 +520,7 @@ async def test_set_buz_bool_current_uses_bool_value() -> None:
     mock_coordinator.async_set_device_value = AsyncMock()
     mock_coordinator.async_request_refresh = AsyncMock()
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN1001", "BoolDev", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN1001", "BoolDev", "getBUZ")
     await sw.async_turn_on()
 
     # bool branch → value = True (state)
@@ -537,7 +537,7 @@ async def test_set_buz_int_current_uses_int_value() -> None:
     mock_coordinator.async_set_device_value = AsyncMock()
     mock_coordinator.async_request_refresh = AsyncMock()
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN1002", "IntDev", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN1002", "IntDev", "getBUZ")
     await sw.async_turn_on()
 
     # int branch → value = 1
@@ -555,7 +555,7 @@ async def test_set_buz_else_fallback_uses_string_true_false() -> None:
     mock_coordinator.async_set_device_value = AsyncMock()
     mock_coordinator.async_request_refresh = AsyncMock()
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN1003", "NoneDev", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN1003", "NoneDev", "getBUZ")
     await sw.async_turn_on()
 
     # else branch → value = "True"
@@ -571,7 +571,7 @@ def test_available_returns_false_when_last_update_failed() -> None:
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.last_update_success = False
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN2001", "Dev", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN2001", "Dev", "getBUZ")
 
     assert sw.available is False
 
@@ -585,7 +585,7 @@ def test_available_returns_device_available_flag() -> None:
     mock_coordinator.data = {"devices": [device_unavailable]}
     mock_coordinator.last_update_success = True
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN2002", "Dev", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN2002", "Dev", "getBUZ")
 
     assert sw.available is False
 
@@ -598,6 +598,17 @@ def test_available_false_when_device_not_in_list() -> None:
     mock_coordinator.data = {"devices": []}
     mock_coordinator.last_update_success = True
 
-    sw = SyrConnectBooleanSwitch(mock_coordinator, "MISSING", "Dev", "", "getBUZ")
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "MISSING", "Dev", "getBUZ")
 
     assert sw.available is False
+
+
+def test_is_on_missing_value_returns_none() -> None:
+    """A device that does not report the key gives None (unknown), not off."""
+    from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
+
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [{"id": "SN700", "name": "Missing", "status": {}}]}
+
+    sw = SyrConnectBooleanSwitch(mock_coordinator, "SN700", "Missing", "getBUZ")
+    assert sw.is_on is None

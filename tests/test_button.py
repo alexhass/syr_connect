@@ -45,7 +45,7 @@ async def test_button_press_success(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     await button.async_press()
 
@@ -67,7 +67,7 @@ async def test_button_press_setsir_when_getsir_false(hass: HomeAssistant) -> Non
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     await button.async_press()
 
@@ -89,7 +89,7 @@ async def test_button_press_setsir_when_getsir_false_string(hass: HomeAssistant)
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     await button.async_press()
 
@@ -111,7 +111,7 @@ async def test_button_press_failure(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("Test error"))
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     with pytest.raises(HomeAssistantError):
         await button.async_press()
@@ -132,7 +132,7 @@ async def test_button_available(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     assert button.available is True
 
@@ -201,7 +201,7 @@ async def test_button_press_other_command(hass: HomeAssistant) -> None:
     coordinator.async_set_device_value = AsyncMock()
 
     # Use a different command that should use value=1
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setOTHER")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setOTHER")
 
     await button.async_press()
 
@@ -224,7 +224,7 @@ async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("Unexpected error"))
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     with pytest.raises(HomeAssistantError, match="Failed to press button"):
         await button.async_press()
@@ -246,7 +246,7 @@ async def test_button_unavailable_coordinator(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     coordinator.last_update_success = False
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     assert button.available is False
 
@@ -266,7 +266,7 @@ async def test_button_unavailable_device(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     assert button.available is False
 
@@ -285,7 +285,7 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     # Should return True when device not found (default availability)
     assert button.available is False
@@ -316,7 +316,7 @@ async def test_button_initialization_attributes(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setSIR")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     # Check attributes
     assert button._attr_unique_id == "device1_setSIR"
@@ -589,7 +589,7 @@ async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device_reset", "Device Reset", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device_reset", "Device Reset", "setALA")
 
     with pytest.raises(HomeAssistantError, match=r"No reset required for getALA on device_reset"):
         await button.async_press()
@@ -611,7 +611,7 @@ async def test_button_reset_ala_lexplus10s_calls_clr_alm(hass: HomeAssistant) ->
     coordinator.async_set_device_value = AsyncMock()
     coordinator.async_clear_device_alarm = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setALA")
 
     await button.async_press()
 
@@ -635,7 +635,7 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(hass: HomeAssistant)
     coordinator.async_set_device_value = AsyncMock()
     coordinator.async_clear_device_alarm = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device2", "Device 2", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device2", "Device 2", "setALA")
 
     await button.async_press()
 
@@ -664,7 +664,7 @@ async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypa
     # Make detect_model raise
     monkeypatch.setattr(button_mod, "detect_model", lambda *_: (_ for _ in ()).throw(ValueError("boom")))
 
-    button = SyrConnectButton(coordinator, "device3", "Device 3", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device3", "Device 3", "setALA")
 
     await button.async_press()
 
@@ -688,7 +688,7 @@ async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> 
     coordinator.async_set_device_value = AsyncMock()
     coordinator.async_clear_device_alarm = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "setALA")
     await button.async_press()
 
     coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
@@ -711,7 +711,7 @@ async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> 
     coordinator.async_set_device_value = AsyncMock()
     coordinator.async_clear_device_alarm = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "setALA")
     await button.async_press()
 
     coordinator.async_clear_device_alarm.assert_called_once_with("device_stv4", "ala")
@@ -736,7 +736,7 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
         side_effect=HomeAssistantError("Connection failed")
     )
 
-    button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "setALA")
     with pytest.raises(HomeAssistantError):
         await button.async_press()
 
@@ -758,7 +758,7 @@ async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device_not", "Device NOT", "project1", "setNOT")
+    button = SyrConnectButton(coordinator, "device_not", "Device NOT", "setNOT")
 
     with pytest.raises(HomeAssistantError, match=r"No reset required for getNOT on device_not"):
         await button.async_press()
@@ -779,7 +779,7 @@ async def test_button_reset_not_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_not1", "Device NOT1", "project1", "setNOT")
+    button = SyrConnectButton(coordinator, "device_not1", "Device NOT1", "setNOT")
 
     await button.async_press()
 
@@ -801,7 +801,7 @@ async def test_button_reset_not_send_ff_for_other_models(hass: HomeAssistant) ->
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_not2", "Device NOT2", "project1", "setNOT")
+    button = SyrConnectButton(coordinator, "device_not2", "Device NOT2", "setNOT")
 
     await button.async_press()
 
@@ -822,7 +822,7 @@ async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    button = SyrConnectButton(coordinator, "device_wrn", "Device WRN", "project1", "setWRN")
+    button = SyrConnectButton(coordinator, "device_wrn", "Device WRN", "setWRN")
 
     with pytest.raises(HomeAssistantError, match=r"No reset required for getWRN on device_wrn"):
         await button.async_press()
@@ -843,7 +843,7 @@ async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_wrn1", "Device WRN1", "project1", "setWRN")
+    button = SyrConnectButton(coordinator, "device_wrn1", "Device WRN1", "setWRN")
 
     await button.async_press()
 
@@ -865,7 +865,7 @@ async def test_button_reset_wrn_send_ff_for_other_models(hass: HomeAssistant) ->
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_wrn2", "Device WRN2", "project1", "setWRN")
+    button = SyrConnectButton(coordinator, "device_wrn2", "Device WRN2", "setWRN")
 
     await button.async_press()
 
@@ -889,7 +889,7 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(hass: HomeAssistant
     coordinator.async_set_device_value = AsyncMock()
     coordinator.async_clear_device_alarm = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "setALA")
 
     await button.async_press()
 
@@ -915,7 +915,7 @@ async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> N
     coordinator.async_set_device_value = AsyncMock()
     coordinator.api.__class__ = SyrConnectJsonAPI
 
-    button = SyrConnectButton(coordinator, "device_not_json", "Device NOT JSON", "project1", "setNOT")
+    button = SyrConnectButton(coordinator, "device_not_json", "Device NOT JSON", "setNOT")
 
     await button.async_press()
 
@@ -940,7 +940,7 @@ async def test_button_reset_wrn_sends_255_via_json_api(hass: HomeAssistant) -> N
     coordinator.async_set_device_value = AsyncMock()
     coordinator.api.__class__ = SyrConnectJsonAPI
 
-    button = SyrConnectButton(coordinator, "device_wrn_json", "Device WRN JSON", "project1", "setWRN")
+    button = SyrConnectButton(coordinator, "device_wrn_json", "Device WRN JSON", "setWRN")
 
     await button.async_press()
 
@@ -964,7 +964,7 @@ async def test_button_reset_ala_sentinel_values_no_reset(hass: HomeAssistant, se
     coordinator.async_set_device_value = AsyncMock()
     coordinator.async_clear_device_alarm = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_sentinel", "Device Sentinel", "project1", "setALA")
+    button = SyrConnectButton(coordinator, "device_sentinel", "Device Sentinel", "setALA")
 
     with pytest.raises(HomeAssistantError, match="No reset required"):
         await button.async_press()
@@ -1174,7 +1174,7 @@ async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
     await button.async_press()
 
@@ -1196,7 +1196,7 @@ async def test_button_press_setdex_sends_integer_when_typ_lt_100(hass: HomeAssis
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
     await button.async_press()
 
@@ -1223,7 +1223,7 @@ async def test_button_press_setdex_skips_when_test_already_running(
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
     import logging
     with caplog.at_level(logging.WARNING, logger="custom_components.syr_connect.button"):
@@ -1248,7 +1248,7 @@ async def test_button_press_setdex_sends_true_when_typ_absent(hass: HomeAssistan
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
     await button.async_press()
 
@@ -1270,7 +1270,7 @@ async def test_button_press_setdex_sends_true_when_typ_non_numeric(hass: HomeAss
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "project1", "setDEX")
+    button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
     await button.async_press()
 
@@ -1292,7 +1292,7 @@ async def test_button_press_setdex_sends_true_when_getdsv_is_two(hass: HomeAssis
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
-    button = SyrConnectButton(coordinator, "device_dex2", "Device DEX2", "project1", "setDEX")
+    button = SyrConnectButton(coordinator, "device_dex2", "Device DEX2", "setDEX")
 
     await button.async_press()
 

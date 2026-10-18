@@ -142,7 +142,7 @@ async def test_sensor_native_value_numeric(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", sensor_key)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", sensor_key)
 
     assert sensor.native_value == expected_value
 
@@ -162,7 +162,7 @@ async def test_sensor_native_value_timestamp(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     value = sensor.native_value
     assert isinstance(value, datetime)
@@ -184,7 +184,7 @@ async def test_sensor_native_value_string(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRN")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSRN")
 
     assert sensor.native_value == "123456789"
 
@@ -214,7 +214,7 @@ async def test_sensor_availability(hass: HomeAssistant, available: bool, last_su
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.last_update_success = last_success
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     assert sensor.available is expected
 
@@ -235,7 +235,7 @@ async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
 
     assert sensor.native_value == "02:30"
 
@@ -255,7 +255,7 @@ async def test_sensor_water_hardness_unit(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     assert sensor.native_value == "°dH"
 
@@ -275,7 +275,7 @@ async def test_sensor_regeneration_weekdays_all(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return comma-separated weekday names
     assert sensor.native_value is not None
@@ -297,7 +297,7 @@ async def test_sensor_regeneration_weekdays_zero(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # The integration exposes mask==0 as the internal translation key "0"
     assert sensor.native_value == "0"
@@ -318,7 +318,7 @@ async def test_sensor_status_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     # Should return mapped translation key
     assert sensor.native_value == "status_regenerant_rinse"
@@ -339,7 +339,7 @@ async def test_sensor_status_fast_rinse(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     assert sensor.native_value == "status_fast_rinse"
 
@@ -359,7 +359,7 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
     # Should return mapped key
     assert sensor.native_value in ("low_salt", "LowSalt")
@@ -442,7 +442,7 @@ async def test_sensor_lar_empty_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     assert sensor.native_value is None
 
@@ -462,7 +462,7 @@ async def test_sensor_lar_invalid_timestamp(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     assert sensor.native_value is None
 
@@ -483,7 +483,7 @@ async def test_sensor_rtime_invalid(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
 
     assert sensor.native_value is None
 
@@ -503,7 +503,7 @@ async def test_sensor_rpw_invalid_mask(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     assert sensor.native_value is None
 
@@ -523,7 +523,7 @@ async def test_sensor_string_value_numeric(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
     # getFLO has precision 0, so 123.45 is rounded to 123 (int)
     assert sensor.native_value == 123
@@ -544,7 +544,7 @@ async def test_sensor_string_value_non_numeric(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
     assert sensor.native_value == "not-a-number"
 
@@ -645,7 +645,7 @@ def test_getdbd_rounding_precision_typeerror(monkeypatch):
     coord = DummyCoord(data)
     from custom_components.syr_connect.sensor import SyrConnectSensor
 
-    sensor = SyrConnectSensor(coord, "dev_x", "X", "p1", "getDBD")
+    sensor = SyrConnectSensor(coord, "dev_x", "X", "getDBD")
     # When precision is invalid, rounding should raise and the function returns None
     assert sensor.native_value is None
 
@@ -672,7 +672,7 @@ async def test_getdbd_various_values(hass: HomeAssistant, raw_value, expected) -
         ]
     }
     coord = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coord, "dev_dbd", "Device DBD", "p1", "getDBD")
+    sensor = SyrConnectSensor(coord, "dev_dbd", "Device DBD", "getDBD")
     assert sensor.native_value == expected
 
 
@@ -695,17 +695,17 @@ def test_extra_getavo_and_getbar_and_getbat_and_getul(create_mock_coordinator):
     }
     coord = create_mock_coordinator(data)
 
-    avo = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getAVO")
+    avo = SyrConnectSensor(coord, "dev_s", "Device S", "getAVO")
     assert abs(float(avo.native_value) - 1.655) < 0.001
 
-    bar = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getBAR")
+    bar = SyrConnectSensor(coord, "dev_s", "Device S", "getBAR")
     # 4077 mbar -> 4.077 bar -> rounded to 1 decimal -> 4.1
     assert bar.native_value == 4.1
 
-    bat = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getBAT")
+    bat = SyrConnectSensor(coord, "dev_s", "Device S", "getBAT")
     assert bat.native_value == 3.63
 
-    ul = SyrConnectSensor(coord, "dev_s", "Device S", "p1", "getUL")
+    ul = SyrConnectSensor(coord, "dev_s", "Device S", "getUL")
     assert ul.native_value == 50
 
 
@@ -726,14 +726,14 @@ def test_extra_getrtm_and_getab_icon_and_getpm_boolean(create_mock_coordinator):
     }
     coord = create_mock_coordinator(data)
 
-    rtm = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getRTM")
+    rtm = SyrConnectSensor(coord, "dev_rt", "Device RT", "getRTM")
     assert rtm.native_value == "07:15"
 
-    ab = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getAB")
+    ab = SyrConnectSensor(coord, "dev_rt", "Device RT", "getAB")
     # native_value returns 'true'/'false' strings
     assert ab.native_value == "true"
 
-    pm1 = SyrConnectSensor(coord, "dev_rt", "Device RT", "p1", "getPM1")
+    pm1 = SyrConnectSensor(coord, "dev_rt", "Device RT", "getPM1")
     assert pm1.native_value == "true"
 
 
@@ -756,15 +756,15 @@ def test_extra_getwhu_and_getlar_and_getrpw(create_mock_coordinator):
     }
     coord = create_mock_coordinator(data)
 
-    whu = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getWHU")
+    whu = SyrConnectSensor(coord, "dev_w", "Device W", "getWHU")
     assert whu.native_value == "°fH"
 
-    lar = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getLAR")
+    lar = SyrConnectSensor(coord, "dev_w", "Device W", "getLAR")
     assert isinstance(lar.native_value, datetime)
     # Check timestamp matches (allow timezone differences by comparing UTC timestamp)
     assert int(lar.native_value.replace(tzinfo=UTC).timestamp()) == ts
 
-    rpw = SyrConnectSensor(coord, "dev_w", "Device W", "p1", "getRPW")
+    rpw = SyrConnectSensor(coord, "dev_w", "Device W", "getRPW")
     # Should return a comma-separated list for mask with multiple days
     assert isinstance(rpw.native_value, str)
     assert "," in rpw.native_value or rpw.native_value != ""
@@ -788,18 +788,18 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(create_mock_coordinator):
     }
     coord = create_mock_coordinator(data)
 
-    sta = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getSTA")
+    sta = SyrConnectSensor(coord, "dev_map", "Device Map", "getSTA")
     assert sta.native_value == "status_regenerant_rinse"
     assert sta._attr_translation_key == "getsta"  # unchanged; the state is translated under it
 
-    alm = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getALM")
+    alm = SyrConnectSensor(coord, "dev_map", "Device Map", "getALM")
     assert alm.native_value == "no_salt"
     assert alm._attr_translation_key == "getalm"
 
-    le = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getLE")
+    le = SyrConnectSensor(coord, "dev_map", "Device Map", "getLE")
     assert le.native_value == 100
 
-    t1 = SyrConnectSensor(coord, "dev_map", "Device Map", "p1", "getT1")
+    t1 = SyrConnectSensor(coord, "dev_map", "Device Map", "getT1")
     assert t1.native_value == 1.5
 
 
@@ -817,7 +817,7 @@ def test_getlot_conversion(create_mock_coordinator):
     }
     coord = create_mock_coordinator(data)
 
-    lot = SyrConnectSensor(coord, "dev_lot", "Device LOT", "p1", "getLOT")
+    lot = SyrConnectSensor(coord, "dev_lot", "Device LOT", "getLOT")
     assert lot.native_value == 70
 
 
@@ -844,7 +844,7 @@ def test_getcrs_value_mapping(create_mock_coordinator, raw_value, expected):
     }
     coord = create_mock_coordinator(data)
 
-    crs = SyrConnectSensor(coord, "dev_crs", "Device CRS", "p1", "getCRS")
+    crs = SyrConnectSensor(coord, "dev_crs", "Device CRS", "getCRS")
     assert crs.native_value == expected
 
 
@@ -870,7 +870,7 @@ def test_getcrt_value_mapping(create_mock_coordinator, raw_value, expected):
     }
     coord = create_mock_coordinator(data)
 
-    crt = SyrConnectSensor(coord, "dev_crt", "Device CRT", "p1", "getCRT")
+    crt = SyrConnectSensor(coord, "dev_crt", "Device CRT", "getCRT")
     assert crt.native_value == expected
 
 
@@ -896,7 +896,7 @@ def test_getrcd_value_mapping(create_mock_coordinator, raw_value, expected):
     }
     coord = create_mock_coordinator(data)
 
-    rcd = SyrConnectSensor(coord, "dev_rcd", "Device RCD", "p1", "getRCD")
+    rcd = SyrConnectSensor(coord, "dev_rcd", "Device RCD", "getRCD")
     assert rcd.native_value == expected
 
 
@@ -981,7 +981,7 @@ async def test_sensor_missing_device(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     assert sensor.native_value is None
     assert sensor.available is False  # Device removed from the account
@@ -1037,7 +1037,7 @@ async def test_sensor_whu_string_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should convert string to int and map correctly
     assert sensor.native_value is not None
@@ -1058,7 +1058,7 @@ async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should return None for invalid values
     assert sensor.native_value is None
@@ -1135,7 +1135,7 @@ async def test_sensor_rpw_invalid_string_mask(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return None for invalid mask
     assert sensor.native_value is None
@@ -1158,7 +1158,7 @@ async def test_sensor_rpw_with_babel_fallback(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Mock format_datetime to raise exception
     with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=ValueError("Babel error")):
@@ -1183,7 +1183,7 @@ async def test_sensor_icon_exception_handling(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSWS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSWS")
 
     # Should return base icon without crashing
     icon = sensor.icon
@@ -1205,7 +1205,7 @@ async def test_sensor_alarm_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
     # When getALM is None, it gets mapped via the alarm value map
     # str(None or "") = "" which maps to 'no_alarm'
@@ -1228,7 +1228,7 @@ async def test_sensor_water_hardness_init_with_whu(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
 
     # Should have water hardness unit set
     assert sensor.native_unit_of_measurement is not None
@@ -1250,7 +1250,7 @@ async def test_sensor_water_hardness_init_invalid_whu(hass: HomeAssistant) -> No
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getOWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getOWH")
 
     # Should fallback to None for invalid WHU
     assert sensor.native_unit_of_measurement is None
@@ -1272,7 +1272,7 @@ async def test_sensor_water_hardness_init_no_whu(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
 
     # Should be None when WHU not present
     assert sensor.native_unit_of_measurement is None
@@ -1293,7 +1293,7 @@ async def test_sensor_getiwh_derived_from_getcnd(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
 
     # getIWH should be derived as getCND / 33.0 -> 10 (int)
     assert sensor.native_value == 10
@@ -1314,7 +1314,7 @@ async def test_sensor_numeric_int_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
     # Should convert int to float
     assert isinstance(sensor.native_value, int | float)
@@ -1336,7 +1336,7 @@ async def test_sensor_numeric_float_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
     # getFLO has precision 0, so 123.45 should be rounded to 123
     assert sensor.native_value == 123
@@ -1398,7 +1398,7 @@ async def test_sensor_cel_temperature_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getCEL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCEL")
 
     # getCEL values are provided as 1/10 °C
     assert sensor.native_value == 11.0
@@ -1419,7 +1419,7 @@ async def test_sensor_prs_pressure_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # getPRS divides by 10 to convert from dbar to bar
     assert sensor.native_value == 3.5
@@ -1440,7 +1440,7 @@ async def test_sensor_icon_none_value_fallback(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPST")
 
     # When value is None, icon should return base icon
     icon = sensor.icon
@@ -1462,7 +1462,7 @@ async def test_sensor_sta_unknown_status(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     # Unknown status should be returned as-is (or mapped to itself)
     assert sensor.native_value == "Unknown Status XYZ"
@@ -1481,7 +1481,7 @@ async def test_sensor_mit_temperature_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getMIT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getMIT")
     assert sensor.native_value == -4.0
 
 
@@ -1498,7 +1498,7 @@ async def test_sensor_mxt_temperature_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getMXT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getMXT")
     assert sensor.native_value == 49.0
 
 
@@ -1527,7 +1527,7 @@ async def test_sensor_safefloor_config_sensors(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", sensor_key)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", sensor_key)
     assert sensor.native_value == expected_value
 
 
@@ -1545,7 +1545,7 @@ async def test_sensor_available_device_not_found(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     # Create sensor for device that doesn't exist in data
-    sensor = SyrConnectSensor(coordinator, "nonexistent_device", "Nonexistent", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "nonexistent_device", "Nonexistent", "getSTA")
 
     # Should return True when device not found
     assert sensor.available is False
@@ -1566,7 +1566,7 @@ async def test_sensor_rpw_empty_string(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Empty string should return None
     assert sensor.native_value is None
@@ -1587,7 +1587,7 @@ async def test_sensor_cel_string_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getCEL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCEL")
 
     # String should be converted to float then divided by 10
     assert sensor.native_value == 15.0
@@ -1608,7 +1608,7 @@ async def test_sensor_prs_string_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # String should be converted to float then divided by 10
     assert sensor.native_value == 4.2
@@ -1629,7 +1629,7 @@ async def test_sensor_sta_empty_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     # Empty string maps to 'status_inactive' per const.py mapping
     assert sensor.native_value == "status_inactive"
@@ -1650,7 +1650,7 @@ async def test_sensor_icon_value_conversion_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPST")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPST")
 
     # Should handle conversion error and return base icon or close-circle
     icon = sensor.icon
@@ -1672,7 +1672,7 @@ async def test_sensor_precision_without_config(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getXYZ")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getXYZ")
 
     # Without precision config, value should be returned as-is
     assert sensor.native_value == 123.456
@@ -1694,7 +1694,7 @@ async def test_sensor_native_value_none_status_key(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     # Create sensor for key that doesn't exist
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getMISSING")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getMISSING")
 
     # Should return None when key doesn't exist
     assert sensor.native_value is None
@@ -1875,7 +1875,7 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
 def test_icon_battery_zero(create_mock_coordinator):
     data = {"devices": [{"id": "d7", "name": "D7", "project_id": "p1", "status": {"getBAT": "0"}}]}
     coord = create_mock_coordinator(data)
-    sb = SyrConnectSensor(coord, "d7", "D7", "p1", "getBAT")
+    sb = SyrConnectSensor(coord, "d7", "D7", "getBAT")
     assert sb.icon == "mdi:battery-alert-variant-outline"
 
 
@@ -2110,7 +2110,7 @@ async def test_sensor_rpw_locale_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # The exception handling in sensor.py catches Exception when accessing locale
     # Just verify the sensor can still return weekday names
@@ -2135,7 +2135,7 @@ async def test_sensor_whu_numeric_int_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should convert int to mapped value
     assert sensor.native_value is not None
@@ -2156,7 +2156,7 @@ async def test_sensor_whu_numeric_float_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should convert float to int then map
     assert sensor.native_value is not None
@@ -2177,7 +2177,7 @@ async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getFLO")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
     # Should return string value when rounding fails
     assert sensor.native_value == "invalid"
@@ -2365,7 +2365,7 @@ async def test_sensor_rpw_mask_invalid_int_conversion(hass: HomeAssistant) -> No
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return None when conversion fails
     assert sensor.native_value is None
@@ -2386,7 +2386,7 @@ async def test_sensor_rpw_mask_empty_string(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return None for empty string
     assert sensor.native_value is None
@@ -2407,7 +2407,7 @@ async def test_sensor_rpw_format_datetime_exception(hass: HomeAssistant) -> None
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Mock format_datetime to raise exception
     with patch("custom_components.syr_connect.sensor.format_datetime", side_effect=ValueError("Test error")):
@@ -2432,7 +2432,7 @@ async def test_sensor_lar_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None for None value
     assert sensor.native_value is None
@@ -2453,7 +2453,7 @@ async def test_sensor_lar_empty_string(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None for empty string
     assert sensor.native_value is None
@@ -2474,7 +2474,7 @@ async def test_sensor_lar_overflow_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None when overflow occurs
     assert sensor.native_value is None
@@ -2495,7 +2495,7 @@ async def test_sensor_lar_invalid_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None when value is invalid
     assert sensor.native_value is None
@@ -2517,7 +2517,7 @@ async def test_sensor_rth_invalid_hour(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
 
     # Should return None when conversion fails
     assert sensor.native_value is None
@@ -2538,7 +2538,7 @@ async def test_sensor_string_sensor_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSRN")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSRN")
 
     # Should return None for None value
     assert sensor.native_value is None
@@ -2664,7 +2664,7 @@ async def test_sensor_rpw_hass_config_no_language(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should handle missing language attribute gracefully
     value = sensor.native_value
@@ -2687,7 +2687,7 @@ async def test_sensor_rpw_mask_specific_bit(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return Sunday
     value = sensor.native_value
@@ -2710,7 +2710,7 @@ async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
     # When value is not in map, .get() returns None, should fallback to original value
     value = sensor.native_value
@@ -2733,7 +2733,7 @@ async def test_sensor_alarm_value_none_and_unmapped(hass: HomeAssistant) -> None
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
     # Should handle gracefully
     value = sensor.native_value
@@ -2755,7 +2755,7 @@ async def test_sensor_rpw_getattr_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Mock getattr on hass.config to raise exception
     with patch("custom_components.syr_connect.sensor.getattr", side_effect=AttributeError("Test exception")):
@@ -2779,7 +2779,7 @@ async def test_sensor_sta_with_rapide_variant(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     # Should map to status_fast_rinse
     value = sensor.native_value
@@ -2801,7 +2801,7 @@ async def test_sensor_whu_none_value_returns_none(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should return None
     assert sensor.native_value is None
@@ -3064,7 +3064,7 @@ async def test_sensor_whu_unit_value_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
 
     # Should set unit to None
     assert sensor._attr_native_unit_of_measurement is None
@@ -3086,7 +3086,7 @@ async def test_sensor_whu_unit_type_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getOWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getOWH")
 
     # Should set unit to None
     assert sensor._attr_native_unit_of_measurement is None
@@ -3108,7 +3108,7 @@ async def test_sensor_whu_unit_not_found(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getIWH")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
 
     # Should set unit to None
     assert sensor._attr_native_unit_of_measurement is None
@@ -3130,7 +3130,7 @@ async def test_sensor_rtm_value_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
 
     # Should return None when both RTH and RTM are None
     assert sensor.native_value is None
@@ -3151,7 +3151,7 @@ async def test_sensor_whu_string_value_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should return None
     assert sensor.native_value is None
@@ -3172,7 +3172,7 @@ async def test_sensor_rpw_int_conversion_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return None on exception
     assert sensor.native_value is None
@@ -3193,7 +3193,7 @@ async def test_sensor_sta_fallback_to_raw(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     # Should use raw value as mapped value
     value = sensor.native_value
@@ -3215,7 +3215,7 @@ async def test_sensor_alm_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
     # When value is None, str(None) = "None" which maps to 'no_alarm'
     assert sensor.native_value == "no_alarm"
@@ -3236,7 +3236,7 @@ async def test_sensor_numeric_conversion_precision_type_error(hass: HomeAssistan
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Mock precision to None and test
     with patch.dict("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION", {"getPRS": None}):
@@ -3260,7 +3260,7 @@ async def test_sensor_available_device_not_available(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Should not be available
     assert sensor.available is False
@@ -3279,7 +3279,7 @@ async def test_sensor_native_value_device_not_found(hass: HomeAssistant) -> None
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Should return None
     assert sensor.native_value is None
@@ -3300,7 +3300,7 @@ async def test_sensor_value_not_in_status(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Should return None when key not in status
     assert sensor.native_value is None
@@ -3321,7 +3321,7 @@ async def test_sensor_whu_int_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should return mapped value
     assert sensor.native_value == "°dH"
@@ -3342,7 +3342,7 @@ async def test_sensor_whu_float_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWHU")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
 
     # Should return mapped value
     assert sensor.native_value == "°fH"
@@ -3363,7 +3363,7 @@ async def test_sensor_lar_value_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None
     assert sensor.native_value is None
@@ -3384,7 +3384,7 @@ async def test_sensor_lar_type_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None
     assert sensor.native_value is None
@@ -3405,7 +3405,7 @@ async def test_sensor_rpw_zero_mask(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return the internal translation key "0" for mask == 0
     assert sensor.native_value == "0"
@@ -3426,7 +3426,7 @@ async def test_sensor_rpw_value_error_on_float(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Should return None
     assert sensor.native_value is None
@@ -3446,7 +3446,7 @@ async def test_sensor_available_coordinator_not_successful(hass: HomeAssistant) 
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.last_update_success = False
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Should not be available
     assert sensor.available is False
@@ -3469,7 +3469,7 @@ async def test_sensor_getvol_with_prefix(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     # Test getVOL sensor - should extract numeric value
-    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
     val = vol_sensor.native_value
     assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
@@ -3491,7 +3491,7 @@ async def test_sensor_getvol_normal_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
     val = vol_sensor.native_value
     assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
@@ -3513,7 +3513,7 @@ async def test_sensor_getvol_numeric_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    vol_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
     val = vol_sensor.native_value
     assert isinstance(val, int | float | str)
     assert abs(float(val) - 6.53) < 1e-6
@@ -3535,7 +3535,7 @@ async def test_sensor_getbat_with_multiple_values(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
     assert bat_sensor.native_value == 6.12
 
 
@@ -3555,7 +3555,7 @@ async def test_sensor_getbat_empty_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
     assert bat_sensor.native_value is None
 
 
@@ -3575,7 +3575,7 @@ async def test_sensor_getbat_invalid_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    bat_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
     assert bat_sensor.native_value is None
 
 
@@ -3595,7 +3595,7 @@ async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     from homeassistant.components.sensor import SensorDeviceClass
     from homeassistant.const import PERCENTAGE
@@ -3622,7 +3622,7 @@ async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     from homeassistant.const import PERCENTAGE
 
@@ -3643,7 +3643,7 @@ async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
     for bat_pct in ["95", "85", "75", "65", "55", "45", "35", "25", "15", "5", "0"]:
         data = {"devices": [{**base_data, "status": {**base_data["status"], "getBAT": bat_pct}}]}  # type: ignore[dict-item]
         coordinator = _build_coordinator(hass, data)
-        bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+        bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
         assert bat.device_class == SensorDeviceClass.BATTERY
         assert bat.icon is None, f"Expected None for {bat_pct}% — HA renders icons via device_class"
 
@@ -3664,7 +3664,7 @@ async def test_sensor_getbat_voltage_device_unaffected(hass: HomeAssistant) -> N
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     from homeassistant.components.sensor import SensorDeviceClass
     from homeassistant.const import UnitOfElectricPotential
@@ -3690,7 +3690,7 @@ async def test_sensor_getbar_with_unit(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
     assert bar_sensor.native_value == 4.1
 
 
@@ -3710,7 +3710,7 @@ async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
     assert bar_sensor.native_value == 4.1
 
 
@@ -3730,7 +3730,7 @@ async def test_sensor_getbar_empty_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
     assert bar_sensor.native_value is None
 
 
@@ -3750,7 +3750,7 @@ async def test_sensor_getbar_invalid_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
     assert bar_sensor.native_value is None
 
 
@@ -3770,7 +3770,7 @@ async def test_sensor_getavo_with_ml_suffix(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
     assert avo_sensor.native_value == 1.655  # mL converted to L
 
 
@@ -3790,7 +3790,7 @@ async def test_sensor_getavo_numeric_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
     assert avo_sensor.native_value == 1.655
 
 
@@ -3810,7 +3810,7 @@ async def test_sensor_getavo_empty_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
     assert avo_sensor.native_value is None
 
 
@@ -3830,7 +3830,7 @@ async def test_sensor_getavo_none_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    avo_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
     assert avo_sensor.native_value is None
 
 
@@ -3850,7 +3850,7 @@ async def test_sensor_gettmp_numeric_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getTMP")
+    tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getTMP")
     assert tmp_sensor.native_value == 300.0
 
 
@@ -3870,7 +3870,7 @@ async def test_sensor_gettmp_zero_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getTMP")
+    tmp_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getTMP")
     assert tmp_sensor.native_value == 0.0
 
 
@@ -3890,7 +3890,7 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
+    le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLE")
     # Mapped display value (matches mapping in const.py)
     assert le_sensor.native_value == 250  # Mapped display value
 
@@ -3911,7 +3911,7 @@ async def test_sensor_getul_value_mapping(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    ul_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getUL")
     # Integration returns scaled integer (value*10)
     assert ul_sensor.native_value == 30  # Mapped display value as int
 
@@ -3932,7 +3932,7 @@ async def test_sensor_gett1_value_mapping(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getT1")
+    t1_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getT1")
     assert t1_sensor.native_value == 5.0  # Mapped display value
 
 
@@ -3949,7 +3949,7 @@ async def test_sensor_getul_integer_input(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getUL")
 
     # 4 -> 40 liters
     assert sensor.native_value == 40
@@ -3968,7 +3968,7 @@ async def test_sensor_getul_mapped_string_key(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getUL")
 
     # Mapping '1' -> 10 liters; implementation returns numeric int
     assert sensor.native_value == 10
@@ -3978,7 +3978,7 @@ async def test_getvol_conversion_to_m3(hass: HomeAssistant) -> None:
     """getVOL string values should be converted to cubic meters (divide by 1000)."""
     data = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getVOL": "6530"}}]}
     coord = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coord, "d1", "Device", "p", "getVOL")
+    sensor = SyrConnectSensor(coord, "d1", "Device", "getVOL")
     # 6530 L -> 6.53 m3
     assert sensor.native_value == 6.53
 
@@ -4019,7 +4019,7 @@ async def test_getavo_parsing(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
 
     # 1655 mL -> 1.655 L
     val = sensor.native_value
@@ -4039,7 +4039,7 @@ async def test_getvol_cleaning_and_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
 
     # Cleaned value should be numeric 6.53 (m³)
     val = sensor.native_value
@@ -4059,7 +4059,7 @@ async def test_getbar_parsing_and_precision(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
 
     # 4077 mbar -> 4.077 bar rounded to precision 1 -> 4.1
     assert sensor.native_value == 4.1
@@ -4077,7 +4077,7 @@ async def test_getbat_parsing_and_precision(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     # First value 6,12 -> 6.12 with precision 2
     assert sensor.native_value == 6.12
@@ -4095,7 +4095,7 @@ async def test_getul_numeric_conversion(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getUL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getUL")
 
     # 5 -> multiplied by 10 -> 50 (int)
     assert sensor.native_value == 50
@@ -4114,7 +4114,7 @@ async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data_ok)
-    sensor_ok = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    sensor_ok = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
     assert sensor_ok.native_value == "07:05"
 
     # Combined invalid string (hour out of range)
@@ -4129,7 +4129,7 @@ async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data_bad)
-    sensor_bad = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRTM")
+    sensor_bad = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
     assert sensor_bad.native_value is None
 
 
@@ -4145,7 +4145,7 @@ async def test_getle_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getLE")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLE")
 
     # getLE value '2' maps to 100 per constants
     assert sensor.native_value == 100
@@ -4164,7 +4164,7 @@ async def test_sensor_icon_getbat_zero_numeric_alert(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.icon == "mdi:battery-alert-variant-outline"
 
@@ -4182,7 +4182,7 @@ async def test_sensor_icon_getbat_zero_string_alert(hass: HomeAssistant) -> None
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.icon == "mdi:battery-alert-variant-outline"
 
@@ -4200,7 +4200,7 @@ async def test_sensor_icon_getbat_invalid_fallback_base(hass: HomeAssistant) -> 
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.icon == "mdi:battery"
 
@@ -4218,7 +4218,7 @@ async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.icon == "mdi:battery"
 
@@ -4253,7 +4253,7 @@ async def test_leak_protection_boolean_flags_various_values(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", key)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", key)
 
     assert sensor.native_value == expected
 
@@ -4272,7 +4272,7 @@ async def test_leak_protection_boolean_flags_empty_and_none(hass: HomeAssistant)
             ]
         }
         coordinator = _build_coordinator(hass, data)
-        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM1")
+        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPM1")
         assert sensor.native_value is None
 
 
@@ -4285,7 +4285,7 @@ async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> No
         for raw in variants:
             data = {"devices": [{"id": "d_ex", "name": "Device", "project_id": "p", "status": {key: raw}}]}
             coord = _build_coordinator(hass, data)
-            s = SyrConnectSensor(coord, "d_ex", "Device", "p", key)
+            s = SyrConnectSensor(coord, "d_ex", "Device", key)
 
             val = s.native_value
 
@@ -4313,7 +4313,7 @@ async def test_sensor_getala_not_and_wrn_various_values(hass: HomeAssistant) -> 
                 ]
             }
             coordinator = _build_coordinator(hass, data)
-            sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", key)
+            sensor = SyrConnectSensor(coordinator, "device1", "Device 1", key)
 
             # Ensure we exercise the parsing/mapping logic and return a stable type
             val = sensor.native_value
@@ -4325,7 +4325,7 @@ async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
     # Mapped example (most integrations return string mapping); we don't assert exact mapping
     data_mapped = {"devices": [{"id": "d1", "name": "Device", "project_id": "p", "status": {"getALA": ""}}]}
     coord_m = _build_coordinator(hass, data_mapped)
-    s_m = SyrConnectSensor(coord_m, "d1", "Device", "p", "getALA")
+    s_m = SyrConnectSensor(coord_m, "d1", "Device", "getALA")
     assert (s_m.native_value is None) or isinstance(s_m.native_value, str)
 
     # Unmapped raw value should be returned or handled
@@ -4333,7 +4333,7 @@ async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
         "devices": [{"id": "d2", "name": "Device", "project_id": "p", "status": {"getALA": "CompletelyUnknown"}}]
     }
     coord_u = _build_coordinator(hass, data_unmapped)
-    s_u = SyrConnectSensor(coord_u, "d2", "Device", "p", "getALA")
+    s_u = SyrConnectSensor(coord_u, "d2", "Device", "getALA")
     assert s_u.native_value is not None
 
 
@@ -4373,7 +4373,6 @@ def test_getcof_returns_correct_value():
         coordinator=mock_coordinator,
         device_id="210836887",
         device_name="Test Device",
-        project_id="test-project",
         sensor_key="getCOF",
     )
 
@@ -4400,7 +4399,6 @@ def test_getcof_handles_string_values():
         coordinator=mock_coordinator,
         device_id="210836887",
         device_name="Test Device",
-        project_id="test-project",
         sensor_key="getCOF",
     )
 
@@ -4674,7 +4672,7 @@ async def test_getrpw_locale_and_formatting_fallback(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
     sensor.hass = hass
 
     # Simulate format_datetime raising so fallback to strftime is used
@@ -4705,7 +4703,7 @@ async def test_getsta_polish_pattern_mapping(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getSTA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
     mapped = sensor.native_value
     # The mapped state key is returned; the entity's translation_key stays the sensor key
@@ -4734,7 +4732,6 @@ async def test_sensor_apply_numeric_conversion_vol_exception(hass: HomeAssistant
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getVOL",
     )
 
@@ -4765,7 +4762,6 @@ async def test_sensor_icon_getbat_zero_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAT",
     )
 
@@ -4797,7 +4793,6 @@ async def test_sensor_icon_getbat_invalid_conversion(hass: HomeAssistant) -> Non
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAT",
     )
 
@@ -4827,7 +4822,6 @@ async def test_sensor_native_value_caching(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getFLO",
     )
 
@@ -4873,7 +4867,6 @@ async def test_sensor_getbar_none_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAR",
     )
 
@@ -4903,7 +4896,6 @@ async def test_sensor_getbar_empty_string(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAR",
     )
 
@@ -4933,7 +4925,6 @@ async def test_sensor_getbar_no_match(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAR",
     )
 
@@ -4963,7 +4954,6 @@ async def test_sensor_getbar_value_error(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAR",
     )
 
@@ -4995,7 +4985,6 @@ async def test_sensor_getbat_not_string_int_float(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getBAT",
     )
 
@@ -5025,7 +5014,6 @@ async def test_sensor_getal_none_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getUL",
     )
 
@@ -5055,7 +5043,6 @@ async def test_sensor_getal_empty_string(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getUL",
     )
 
@@ -5085,7 +5072,6 @@ async def test_sensor_getala_none_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getALA",
     )
 
@@ -5121,7 +5107,6 @@ async def test_sensor_getala_exception_returns_raw(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getALA",
     )
 
@@ -5151,7 +5136,6 @@ async def test_sensor_getnot_none_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getNOT",
     )
 
@@ -5186,7 +5170,6 @@ async def test_sensor_getnot_exception_returns_raw(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getNOT",
     )
 
@@ -5216,7 +5199,6 @@ async def test_sensor_getwrn_none_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getWRN",
     )
 
@@ -5251,7 +5233,6 @@ async def test_sensor_getwrn_exception_returns_raw(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getWRN",
     )
 
@@ -5283,7 +5264,6 @@ async def test_sensor_getpmx_getwx_getbx_none_value(hass: HomeAssistant) -> None
             coordinator=coordinator,
             device_id="device1",
             device_name="Device 1",
-            project_id="project1",
             sensor_key=sensor_key,
         )
 
@@ -5315,7 +5295,6 @@ async def test_sensor_getpmx_getwx_getbx_empty_string(hass: HomeAssistant) -> No
             coordinator=coordinator,
             device_id="device1",
             device_name="Device 1",
-            project_id="project1",
             sensor_key=sensor_key,
         )
 
@@ -5347,7 +5326,6 @@ async def test_sensor_getpmx_getwx_getbx_invalid_numeric(hass: HomeAssistant) ->
             coordinator=coordinator,
             device_id="device1",
             device_name="Device 1",
-            project_id="project1",
             sensor_key=sensor_key,
         )
 
@@ -5386,7 +5364,6 @@ async def test_sensor_getpmx_getwx_getbx_int_exception(hass: HomeAssistant) -> N
             coordinator=coordinator,
             device_id="device1",
             device_name="Device 1",
-            project_id="project1",
             sensor_key=sensor_key,
         )
 
@@ -5416,7 +5393,6 @@ async def test_sensor_getwhu_none_value(hass: HomeAssistant) -> None:
         coordinator=coordinator,
         device_id="device1",
         device_name="Device 1",
-        project_id="project1",
         sensor_key="getWHU",
     )
 
@@ -5720,7 +5696,7 @@ async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     # Non-zero battery voltage keeps the default battery icon
     icon = sensor.icon
@@ -5742,7 +5718,7 @@ async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     # Conversion failure keeps the default battery icon
     icon = sensor.icon
@@ -5764,7 +5740,7 @@ async def test_sensor_native_value_ala_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALA")
 
     # Mock get_sensor_ala_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Map error")):
@@ -5786,7 +5762,7 @@ async def test_sensor_native_value_not_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getNOT")
 
     # Mock get_sensor_not_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=ValueError("Map error")):
@@ -5808,7 +5784,7 @@ async def test_sensor_native_value_wrn_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWRN")
 
     # Mock get_sensor_wrn_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=ValueError("Map error")):
@@ -5830,7 +5806,7 @@ async def test_sensor_native_value_pm_boolean_exception(hass: HomeAssistant) -> 
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM1")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPM1")
 
     # An unknown value counts as not set (see is_value_true)
     assert sensor.native_value == "false"
@@ -5856,7 +5832,7 @@ async def test_sensor_native_value_pm_numeric_exception(hass: HomeAssistant) -> 
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPM2")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPM2")
 
     # An unknown type counts as not set (see is_value_true)
     assert sensor.native_value == "false"
@@ -5877,7 +5853,7 @@ async def test_sensor_native_value_alm_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALM")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
     # Mock get_sensor_ala_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Map error")):
@@ -5900,7 +5876,7 @@ async def test_sensor_native_value_rpw_exception_in_loop(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
     sensor.hass = hass
 
     # Mock format_datetime to raise exception
@@ -5926,7 +5902,7 @@ async def test_sensor_native_value_rpw_hass_config_exception(hass: HomeAssistant
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getRPW")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
 
     # Mock hass to raise exception when accessing config
     mock_hass = MagicMock()
@@ -5953,7 +5929,7 @@ async def test_sensor_apply_numeric_conversion_exception(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Mock _SYR_CONNECT_SENSOR_UNIT_PRECISION to return value and test exception path
     with patch("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION", {"getPRS": 2}):
@@ -5978,7 +5954,7 @@ async def test_sensor_native_value_vol_exception(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
 
     # Patch get_sensor_vol_value to return a value that causes exception during division
     class BadValue:
@@ -6056,7 +6032,7 @@ async def test_getbat_with_invalid_type(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     # Should return None for invalid type
     assert sensor.native_value is None
@@ -6327,7 +6303,7 @@ async def test_sensor_native_value_caching_returns_last_known_value(hass: HomeAs
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # First call should return computed value and cache it
     value1 = sensor.native_value
@@ -6367,7 +6343,7 @@ async def test_sensor_getvol_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
 
     assert sensor.native_value is None
 
@@ -6387,7 +6363,7 @@ async def test_sensor_getbar_no_numeric_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
 
     assert sensor.native_value is None
 
@@ -6407,7 +6383,7 @@ async def test_sensor_getbar_invalid_type(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
 
     assert sensor.native_value is None
 
@@ -6427,7 +6403,7 @@ async def test_sensor_getbat_none_value(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.native_value is None
 
@@ -6447,7 +6423,7 @@ async def test_sensor_getbat_invalid_type(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.native_value is None
 
@@ -6467,7 +6443,7 @@ async def test_sensor_getala_exception_handling(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALA")
 
     # Mock get_sensor_ala_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("Test error")):
@@ -6490,7 +6466,7 @@ async def test_sensor_getnot_exception_handling(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getNOT")
 
     # Mock get_sensor_not_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=TypeError("Test error")):
@@ -6513,7 +6489,7 @@ async def test_sensor_getwrn_exception_handling(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWRN")
 
     # Mock get_sensor_wrn_map to raise exception
     with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=AttributeError("Test error")):
@@ -6536,7 +6512,7 @@ async def test_sensor_leak_protection_getpv_float_value(hass: HomeAssistant) -> 
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPV1")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPV1")
 
     # getPV is not in the boolean regex pattern, so returns numeric value (rounded)
     assert sensor.native_value == 2
@@ -6557,7 +6533,7 @@ async def test_sensor_leak_protection_getpt_zero_float(hass: HomeAssistant) -> N
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPT2")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPT2")
 
     # getPT is not in the boolean regex pattern, so returns numeric value
     assert sensor.native_value == 0
@@ -6578,7 +6554,7 @@ async def test_sensor_leak_protection_getpn_none_value(hass: HomeAssistant) -> N
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPN3")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPN3")
 
     assert sensor.native_value is None
 
@@ -6598,7 +6574,7 @@ async def test_sensor_leak_protection_getpw_empty_string(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPW4")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPW4")
 
     assert sensor.native_value is None
 
@@ -6618,7 +6594,7 @@ async def test_sensor_leak_protection_getpw_invalid_numeric_string(hass: HomeAss
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPW8")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPW8")
 
     # An unknown value counts as not set (see is_value_true)
     assert sensor.native_value == "false"
@@ -6639,7 +6615,7 @@ async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPB1")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPB1")
 
     # An unknown type counts as not set (see is_value_true)
     assert sensor.native_value == "false"
@@ -6660,7 +6636,7 @@ async def test_sensor_apply_numeric_conversion_zerodivision(hass: HomeAssistant)
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
 
     # Mock division to raise ZeroDivisionError
     with patch.object(sensor, "_apply_numeric_conversion", side_effect=ZeroDivisionError):
@@ -6684,7 +6660,7 @@ async def test_sensor_apply_numeric_conversion_precision_valueerror(hass: HomeAs
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Temporarily patch round() to raise ValueError
     original_round = round
@@ -6975,7 +6951,7 @@ def test_getbar_no_digits(create_mock_coordinator):
     """getBAR with no digits should return None."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getBAR": "no digits"}}]}
     coord = create_mock_coordinator(data)
-    s = SyrConnectSensor(coord, "d1", "D", "p1", "getBAR")
+    s = SyrConnectSensor(coord, "d1", "D", "getBAR")
     assert s.native_value is None
 
 
@@ -6983,7 +6959,7 @@ def test_getbat_invalid_type(create_mock_coordinator):
     """getBAT with an unsupported type should return None."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getBAT": []}}]}
     coord = create_mock_coordinator(data)
-    s = SyrConnectSensor(coord, "d1", "D", "p1", "getBAT")
+    s = SyrConnectSensor(coord, "d1", "D", "getBAT")
     assert s.native_value is None
 
 
@@ -6991,7 +6967,7 @@ def test_getavo_empty(create_mock_coordinator):
     """Empty getAVO should return None instead of raising."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getAVO": ""}}]}
     coord = create_mock_coordinator(data)
-    s = SyrConnectSensor(coord, "d1", "D", "p1", "getAVO")
+    s = SyrConnectSensor(coord, "d1", "D", "getAVO")
     assert s.native_value is None
 
 
@@ -7009,10 +6985,10 @@ def test_pm_boolean_edgecases(create_mock_coordinator):
     }
     coord = create_mock_coordinator(data)
 
-    pm1 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM1")
-    pm2 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM2")
-    pm3 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM3")
-    pm4 = SyrConnectSensor(coord, "d1", "D", "p1", "getPM4")
+    pm1 = SyrConnectSensor(coord, "d1", "D", "getPM1")
+    pm2 = SyrConnectSensor(coord, "d1", "D", "getPM2")
+    pm3 = SyrConnectSensor(coord, "d1", "D", "getPM3")
+    pm4 = SyrConnectSensor(coord, "d1", "D", "getPM4")
 
     assert pm1.native_value == "true"
     assert pm2.native_value == "false"
@@ -7024,7 +7000,7 @@ def test_native_value_caching(create_mock_coordinator):
     """When API returns None later, the sensor should keep the last known non-None value."""
     data1 = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getFLO": "10"}}]}
     coord = create_mock_coordinator(data1)
-    s = SyrConnectSensor(coord, "d1", "D", "p1", "getFLO")
+    s = SyrConnectSensor(coord, "d1", "D", "getFLO")
     # first read should return parsed numeric
     assert s.native_value == 10
 
@@ -7059,7 +7035,7 @@ def test_sensor_disabled_by_default_flag(create_mock_coordinator) -> None:
     """Sensors in the disabled-by-default set should be disabled by default."""
     data = {"devices": [{"id": "DEV", "name": "D", "project_id": "p1", "status": {"getIPA": "1"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "DEV", "D", "p1", "getIPA")
+    sensor = SyrConnectSensor(coord, "DEV", "D", "getIPA")
 
     assert sensor._attr_entity_registry_enabled_default is False
 
@@ -7068,7 +7044,7 @@ def test_apply_numeric_conversion_precision_zero_returns_int(create_mock_coordin
     """When precision == 0, _apply_numeric_conversion should return int."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getPRS": "50"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getPRS")
+    sensor = SyrConnectSensor(coord, "d1", "D", "getPRS")
 
     with patch("custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION", {"getPRS": 0}):
         result = sensor._apply_numeric_conversion(50.0)
@@ -7082,7 +7058,7 @@ async def test_sensor_available_coordinator_fails(hass: HomeAssistant) -> None:
     coordinator.data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     coordinator.last_update_success = False
 
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
     assert sensor.available is False
 
 
@@ -7094,7 +7070,7 @@ async def test_sensor_available_device_marked_unavailable(hass: HomeAssistant) -
     }
     coordinator.last_update_success = True
 
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
     assert sensor.available is False
 
 
@@ -7106,7 +7082,7 @@ async def test_sensor_available_true(hass: HomeAssistant) -> None:
     }
     coordinator.last_update_success = True
 
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getPRS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
     assert sensor.available is True
 
 
@@ -7114,7 +7090,7 @@ def test_whu_invalid_sets_none(create_mock_coordinator) -> None:
     """When getWHU cannot be parsed the unit mapping attribute should be None."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getWHU": "invalid"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getIWH")
+    sensor = SyrConnectSensor(coord, "d1", "D", "getIWH")
 
     assert sensor._attr_native_unit_of_measurement is None
 
@@ -7123,7 +7099,7 @@ def test_getala_uses_generic_codes_for_unknown_model(create_mock_coordinator) ->
     """When model is unknown getALA is mapped with the generic alarm codes."""
     data = {"devices": [{"id": "d1", "name": "D", "project_id": "p1", "status": {"getALA": "A5"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D", "p1", "getALA")
+    sensor = SyrConnectSensor(coord, "d1", "D", "getALA")
 
     assert sensor.native_value == "alarm_max_flow_rate_reached"
 
@@ -7131,7 +7107,7 @@ def test_getala_uses_generic_codes_for_unknown_model(create_mock_coordinator) ->
 async def test_battery_zero_icon(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getBAT": "0"}}]}
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.native_value == 0.0
     assert sensor.icon == "mdi:battery-alert-variant-outline"
@@ -7141,7 +7117,7 @@ async def test_getala_exception_handling(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {"getALA": "A5"}}]}
     coordinator = _build_coordinator(hass, data)
     with patch("custom_components.syr_connect.sensor.get_sensor_ala_map", side_effect=ValueError("boom")):
-        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getALA")
+        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALA")
         assert sensor.native_value is None
 
 
@@ -7154,11 +7130,11 @@ async def test_getnot_and_getwrn_exception_paths(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     with patch("custom_components.syr_connect.sensor.get_sensor_not_map", side_effect=ValueError("boom")):
-        snot = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getNOT")
+        snot = SyrConnectSensor(coordinator, "device1", "Device 1", "getNOT")
         assert snot.native_value is None
 
     with patch("custom_components.syr_connect.sensor.get_sensor_wrn_map", side_effect=ValueError("boom")):
-        swrn = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getWRN")
+        swrn = SyrConnectSensor(coordinator, "device1", "Device 1", "getWRN")
         assert swrn.native_value is None
 
 
@@ -7175,13 +7151,13 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    bar = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getBAR")
+    bar = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
     assert bar.native_value is None
 
-    avo = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getAVO")
+    avo = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
     assert avo.native_value is None
 
-    vol = SyrConnectSensor(coordinator, "device1", "Device 1", "project1", "getVOL")
+    vol = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
     assert abs(float(vol.native_value) - 6.53) < 0.001  # type: ignore[arg-type]
 
     # end
@@ -7382,7 +7358,7 @@ async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
 def test_apply_numeric_conversion_vol_type_error(create_mock_coordinator):
     """getVOL division by 1000 TypeError is caught (lines 333-334)."""
     coord = create_mock_coordinator({"devices": [{"id": "d1", "status": {}}]})
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getVOL")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getVOL")
 
     class _BadDiv:
         def __truediv__(self, _other):
@@ -7409,7 +7385,7 @@ def test_sensor_icon_bat_cached_non_numeric_string(create_mock_coordinator):
     """
     data = {"devices": [{"id": "d1", "status": {"getBAT": None}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getBAT")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getBAT")
     sensor._last_native_value = "not a number"  # force cache
 
     icon = sensor.icon
@@ -7426,7 +7402,7 @@ def test_sensor_getab_native_value_none_when_ab_none(create_mock_coordinator):
     """getAB _compute_native_value returns None when get_sensor_ab_value returns None (line 524)."""
     data = {"devices": [{"id": "d1", "status": {"getAB": None}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getAB")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getAB")
 
     assert sensor.native_value is None
 
@@ -7449,7 +7425,7 @@ def test_sensor_getala_mapped_translation_key_returned(create_mock_coordinator):
         ]
     }
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getALA")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getALA")
 
     value = sensor.native_value
     assert value == "no_alarm"
@@ -7473,7 +7449,7 @@ def test_sensor_getbar_str_raises_type_error(create_mock_coordinator):
 
     data = {"devices": [{"id": "d1", "status": {"getBAR": _BadStr()}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getBAR")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getBAR")
 
     assert sensor.native_value is None
 
@@ -7487,7 +7463,7 @@ def test_sensor_getnet_valid_value(create_mock_coordinator):
     """getNET with a valid value returns get_sensor_net_value result (line 614)."""
     data = {"devices": [{"id": "d1", "status": {"getNET": "363"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNET")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getNET")
 
     value = sensor.native_value
     assert value is not None
@@ -7497,7 +7473,7 @@ def test_sensor_getnet_none_value(create_mock_coordinator):
     """getNET with None returns None (lines 610-611)."""
     data = {"devices": [{"id": "d1", "status": {"getNET": None}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNET")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getNET")
 
     assert sensor.native_value is None
 
@@ -7506,7 +7482,7 @@ def test_sensor_getnet_non_str_int_float_type(create_mock_coordinator):
     """getNET with non-str/int/float type returns None (lines 612-613)."""
     data = {"devices": [{"id": "d1", "status": {"getNET": {"a": 1}}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNET")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getNET")
 
     assert sensor.native_value is None
 
@@ -7520,7 +7496,7 @@ def test_sensor_getnot_mapped_value_returned(create_mock_coordinator):
     """getNOT: known code '01' returns mapped translation key (lines 641-643)."""
     data = {"devices": [{"id": "d1", "status": {"getNOT": "01"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNOT")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getNOT")
 
     value = sensor.native_value
     assert value == "new_software_available"
@@ -7531,7 +7507,7 @@ def test_sensor_getnot_unmapped_returns_raw_code(create_mock_coordinator):
     """getNOT: unknown code returns raw string (lines 641, 644-645)."""
     data = {"devices": [{"id": "d1", "status": {"getNOT": "99"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getNOT")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getNOT")
 
     value = sensor.native_value
     assert value == "99"
@@ -7546,7 +7522,7 @@ def test_sensor_leak_flag_float_nan_returns_false(create_mock_coordinator):
     """getPM1 with float('nan'): int(float(nan)) raises ValueError, so it counts as not set."""
     data = {"devices": [{"id": "d1", "status": {"getPM1": float("nan")}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getPM1")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getPM1")
 
     assert sensor.native_value == "false"
 
@@ -7560,7 +7536,7 @@ def test_sensor_getwrn_mapped_value_returned(create_mock_coordinator):
     """getWRN: known code '01' returns mapped translation key (lines 794-796)."""
     data = {"devices": [{"id": "d1", "status": {"getWRN": "01"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getWRN")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getWRN")
 
     value = sensor.native_value
     assert value == "power_outage"
@@ -7571,7 +7547,7 @@ def test_sensor_getwrn_unmapped_returns_raw_code(create_mock_coordinator):
     """getWRN: unknown code returns raw string (lines 794, 797-798)."""
     data = {"devices": [{"id": "d1", "status": {"getWRN": "99"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getWRN")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getWRN")
 
     value = sensor.native_value
     assert value == "99"
@@ -7581,7 +7557,7 @@ def test_sensor_getlng_none_value_returns_none(create_mock_coordinator):
     """getLNG: None value returns None (line 642)."""
     data = {"devices": [{"id": "d1", "status": {"getLNG": None}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getLNG")
 
     assert sensor.native_value is None
 
@@ -7590,7 +7566,7 @@ def test_sensor_getlng_empty_string_returns_none(create_mock_coordinator):
     """getLNG: empty string value returns None (line 642-643)."""
     data = {"devices": [{"id": "d1", "status": {"getLNG": ""}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getLNG")
 
     assert sensor.native_value is None
 
@@ -7599,7 +7575,7 @@ def test_sensor_getlng_annotated_value_stripped(create_mock_coordinator):
     """getLNG: annotated value is stripped to the leading integer (line 648)."""
     data = {"devices": [{"id": "d1", "status": {"getLNG": "0 (0=Deutsch 1=English)"}}]}
     coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "p1", "getLNG")
+    sensor = SyrConnectSensor(coord, "d1", "D1", "getLNG")
 
     assert sensor.native_value == "0"
 
@@ -7615,7 +7591,7 @@ def _build_connection_state_sensor(
     device_id: str = "device1",
 ) -> SyrConnectConnectionStateSensor:
     coordinator = _build_coordinator(hass, data)
-    return SyrConnectConnectionStateSensor(coordinator, device_id, "Device 1", "project1")
+    return SyrConnectConnectionStateSensor(coordinator, device_id, "Device 1")
 
 
 async def test_connection_state_sensor_always_available(hass: HomeAssistant) -> None:
@@ -7630,7 +7606,7 @@ async def test_connection_state_sensor_available_when_coordinator_fails(hass: Ho
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
     coordinator.last_update_success = False
-    sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1", "project1")
+    sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1")
     assert sensor.available is True
 
 
@@ -7668,7 +7644,7 @@ async def test_connection_state_sensor_native_value_non_integer_string(hass: Hom
 async def test_connection_state_sensor_native_value_no_data(hass: HomeAssistant) -> None:
     """native_value returns None when coordinator has no data."""
     coordinator = _build_coordinator(hass, {})
-    sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1", "project1")
+    sensor = SyrConnectConnectionStateSensor(coordinator, "device1", "Device 1")
     assert sensor.native_value is None
 
 
@@ -7902,6 +7878,6 @@ def test_mapped_int_sensor_invalid_value_returns_none(key: str, raw) -> None:
     coordinator.entry_id = None
     coordinator.data = {"devices": [{"id": "dev", "name": "Dev", "project_id": "p1", "status": {key: raw}}]}
 
-    sensor = SyrConnectSensor(coordinator, "dev", "Dev", "p1", key)
+    sensor = SyrConnectSensor(coordinator, "dev", "Dev", key)
 
     assert sensor._compute_native_value() is None

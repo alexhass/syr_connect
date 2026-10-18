@@ -56,7 +56,6 @@ async def async_setup_entry(
     for device in coordinator.data.get("devices", []):
         device_id = device.get("id")
         device_name = device.get("name", device_id)
-        project_id = device.get("project_id", "")
         status = device.get("status", {})
 
         # Scope to the detected model (falls back to the global allowlist for
@@ -65,7 +64,7 @@ async def async_setup_entry(
         if "getNOT" not in known_update_keys or "getNOT" not in status:
             continue
 
-        entities.append(SyrConnectFirmwareUpdate(coordinator, device_id, device_name, project_id))
+        entities.append(SyrConnectFirmwareUpdate(coordinator, device_id, device_name))
 
     if entities:
         _LOGGER.debug("Adding %d update entity(ies) total", len(entities))
@@ -96,7 +95,6 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        project_id: str,
     ) -> None:
         """Initialize the update entity."""
         # build_device_info() (in the base class) already replaces a bare-serial device name
@@ -106,7 +104,6 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
             coordinator, device_id, device_name, "update", "getNOT", translation_key="getnot_update"
         )
 
-        self._project_id = project_id
         self._install_started: float | None = None
 
         # "_update" suffix keeps this apart from the existing getNOT sensor's

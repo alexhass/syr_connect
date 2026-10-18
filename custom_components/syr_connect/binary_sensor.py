@@ -63,7 +63,6 @@ async def async_setup_entry(
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
-        project_id = device['project_id']
         status = device.get('status', {})
         known_binary_keys = get_model_known_keys(
             detect_model(status), "binary_sensor", _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS
@@ -77,7 +76,6 @@ async def async_setup_entry(
                         coordinator,
                         device_id,
                         device_name,
-                        project_id,
                         sensor_key,
                         device_class,
                     )
@@ -95,7 +93,6 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        project_id: str,
         sensor_key: str,
         device_class: BinarySensorDeviceClass,
     ) -> None:
@@ -105,13 +102,11 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
             coordinator: Data update coordinator
             device_id: Device ID (serial number)
             device_name: Device display name
-            project_id: Project ID
             sensor_key: Sensor key (e.g., 'getBUZ')
             device_class: Binary sensor device class
         """
         super().__init__(coordinator, device_id, device_name, "binary_sensor", sensor_key)
 
-        self._project_id = project_id
         self._sensor_key = sensor_key
         self._attr_device_class = device_class
 

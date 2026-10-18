@@ -56,7 +56,6 @@ async def async_setup_entry(
     for device in devices:
         device_id = device.get("id")
         device_name = device.get("name", device_id)
-        project_id = device.get("project_id", "")
         status = device.get("status", {})
         _LOGGER.debug("Checking device: id=%s, name=%s, status_keys=%s", device_id, device_name, list(status.keys()))
 
@@ -74,7 +73,6 @@ async def async_setup_entry(
                     coordinator,
                     device_id,
                     device_name,
-                    project_id,
                     sensor_key,
                 )
                 # If a registry entry already exists for this unique_id,
@@ -140,14 +138,12 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        project_id: str,
         sensor_key: str,
     ) -> None:
         """Initialize the switch."""
         _LOGGER.debug("Initializing SyrConnectBooleanSwitch: device_id=%s, name=%s, sensor_key=%s", device_id, device_name, sensor_key)
         super().__init__(coordinator, device_id, device_name, "switch", sensor_key)
 
-        self._project_id = project_id
         self._sensor_key = sensor_key
 
         # Use a platform-specific suffix to avoid unique_id collision with the

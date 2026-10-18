@@ -106,7 +106,6 @@ async def async_setup_entry(
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
-        project_id = device['project_id']
         status = device.get('status', {})
 
         # Scope the sensor allowlist to the detected model (falls back to the
@@ -123,7 +122,6 @@ async def async_setup_entry(
                     coordinator,
                     device_id,
                     device_name,
-                    project_id,
                 )
             )
 
@@ -169,7 +167,6 @@ async def async_setup_entry(
                                 coordinator,
                                 device_id,
                                 device_name,
-                                project_id,
                                 gk,
                             )
                         )
@@ -259,7 +256,6 @@ async def async_setup_entry(
                         coordinator,
                         device_id,
                         device_name,
-                        project_id,
                         key,
                     )
                 )
@@ -313,7 +309,6 @@ def _async_setup_muco_conditional_sensors(
                 if not device_id:
                     continue
                 device_name = device.get("name", device_id)
-                project_id = device.get("project_id")
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
                 wanted = _wanted_key(status)
@@ -327,7 +322,7 @@ def _async_setup_muco_conditional_sensors(
                     current.discard(key)
 
                 for key in wanted_set - current:
-                    new_entities.append(SyrConnectSensor(coordinator, device_id, device_name, project_id, key))
+                    new_entities.append(SyrConnectSensor(coordinator, device_id, device_name, key))
                     current.add(key)
         except Exception:
             _LOGGER.exception("Failed to sync conditional MuCo sensor(s)")
@@ -349,7 +344,6 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        project_id: str,
         sensor_key: str,
     ) -> None:
         """Initialize the sensor."""
@@ -359,7 +353,6 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # state key (e.g. "no_alarm"); it must not change the translation_key.
         super().__init__(coordinator, device_id, device_name, "sensor", sensor_key)
 
-        self._project_id = project_id
         self._sensor_key = sensor_key
 
         # Set entity category for diagnostic sensors
@@ -848,12 +841,9 @@ class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        project_id: str,
     ) -> None:
         """Initialize the connection state sensor."""
         super().__init__(coordinator, device_id, device_name, "sensor", "dst")
-
-        self._project_id = project_id
 
     @property
     def native_value(self) -> str | None:

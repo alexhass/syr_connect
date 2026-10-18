@@ -48,7 +48,7 @@ async def test_binary_sensor_is_on_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
+        coordinator, "device1", "Device 1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     assert sensor.is_on is True
@@ -71,7 +71,7 @@ async def test_binary_sensor_is_off_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
+        coordinator, "device1", "Device 1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     assert sensor.is_on is False
@@ -95,7 +95,7 @@ async def test_binary_sensor_available(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
+        coordinator, "device1", "Device 1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     assert sensor.available is True
@@ -207,7 +207,7 @@ async def test_binary_sensor_string_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is False
@@ -230,7 +230,7 @@ async def test_binary_sensor_numeric_float(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is True
@@ -253,7 +253,7 @@ async def test_binary_sensor_unavailable_coordinator(hass: HomeAssistant) -> Non
 
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.available is False
@@ -276,7 +276,7 @@ async def test_binary_sensor_device_unavailable(hass: HomeAssistant) -> None:
 
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.available is False
@@ -298,7 +298,7 @@ async def test_binary_sensor_missing_device(hass: HomeAssistant) -> None:
 
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is None
@@ -322,7 +322,7 @@ async def test_binary_sensor_string_true(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is True
@@ -345,7 +345,7 @@ async def test_binary_sensor_string_false(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is False
@@ -368,7 +368,7 @@ async def test_binary_sensor_string_empty(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is False
@@ -391,7 +391,7 @@ async def test_binary_sensor_int_zero(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is False
@@ -414,7 +414,7 @@ async def test_binary_sensor_int_nonzero(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is True
@@ -437,7 +437,7 @@ async def test_binary_sensor_float_zero(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is False
@@ -460,7 +460,7 @@ async def test_binary_sensor_none_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is False
@@ -561,7 +561,7 @@ async def test_binary_sensor_string_nonzero(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "test", BinarySensorDeviceClass.RUNNING
+        coordinator, "device1", "Device 1", "test", BinarySensorDeviceClass.RUNNING
     )
 
     assert sensor.is_on is True
@@ -585,7 +585,7 @@ async def test_binary_sensor_icon_from_icons_json(hass: HomeAssistant) -> None:
     from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
     sensor = SyrConnectBinarySensor(
-        coordinator, "device1", "Device 1", "project1", "getBUZ", BinarySensorDeviceClass.POWER
+        coordinator, "device1", "Device 1", "getBUZ", BinarySensorDeviceClass.POWER
     )
 
     # The icon is resolved from icons.json via the translation key

@@ -83,7 +83,6 @@ async def async_setup_entry(
     for device in coordinator.data.get('devices', []):
         device_id = device['id']
         device_name = device['name']
-        project_id = device['project_id']
         status = device.get('status', {})
 
         # Add action buttons
@@ -139,7 +138,6 @@ async def async_setup_entry(
                     coordinator,
                     device_id,
                     device_name,
-                    project_id,
                     command,
                 )
             )
@@ -184,7 +182,6 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        project_id: str,
         command: str,
     ) -> None:
         """Initialize the button.
@@ -193,12 +190,10 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
             coordinator: Data update coordinator
             device_id: Device ID (serial number)
             device_name: Device display name
-            project_id: Project ID
             command: Command to execute (e.g., 'setSIR')
         """
         super().__init__(coordinator, device_id, device_name, "button", command)
 
-        self._project_id = project_id
         self._command = command
 
     async def async_press(self) -> None:

@@ -91,7 +91,7 @@ def test_update_entity_no_update_pending() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN3", "Dev3", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN3", "Dev3")
 
     assert entity.installed_version == "MuCo V.2.14"
     assert entity.latest_version == "MuCo V.2.14"
@@ -103,7 +103,7 @@ def test_update_entity_update_available() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN4", "Dev4", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN4", "Dev4")
 
     assert entity.installed_version == "MuCo V.2.14"
     assert entity.latest_version == _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
@@ -115,7 +115,7 @@ def test_update_entity_update_available_no_installed_version() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN5", "Dev5", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN5", "Dev5")
 
     assert entity.installed_version is None
     assert entity.latest_version == _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
@@ -131,7 +131,7 @@ def test_update_entity_naming_uses_translation_key() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "500AAA12345", "500AAA12345", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "500AAA12345", "500AAA12345")
 
     assert entity._attr_has_entity_name is True
     assert entity._attr_translation_key == "getnot_update"
@@ -145,7 +145,7 @@ def test_update_entity_install_feature_supported() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6")
 
     assert UpdateEntityFeature.INSTALL in entity.supported_features
 
@@ -157,7 +157,7 @@ async def test_update_entity_async_install_sends_empty_setupg() -> None:
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.async_set_device_value = AsyncMock()
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6")
     await entity.async_install(version=None, backup=False)
 
     mock_coordinator.async_set_device_value.assert_called_once_with("SN6", "setUPG", "")
@@ -170,7 +170,7 @@ async def test_update_entity_async_install_wraps_errors() -> None:
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("boom"))
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6")
     with pytest.raises(HomeAssistantError):
         await entity.async_install(version=None, backup=False)
 
@@ -184,7 +184,7 @@ async def test_update_entity_in_progress_until_getnot_04() -> None:
     mock_coordinator.data = {"devices": [{"id": "SN9", "name": "Dev9", "status": status}]}
     mock_coordinator.async_set_device_value = AsyncMock()
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN9", "Dev9", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN9", "Dev9")
     entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
     assert entity.in_progress is False
     assert UpdateEntityFeature.PROGRESS in entity.supported_features
@@ -207,7 +207,7 @@ async def test_update_entity_in_progress_times_out() -> None:
     mock_coordinator.data = {"devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]}
     mock_coordinator.async_set_device_value = AsyncMock()
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12")
     entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
 
     with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0):
@@ -229,7 +229,7 @@ def test_update_entity_not_in_progress_without_install() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN10", "name": "Dev10", "status": {"getNOT": "01"}}]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN10", "Dev10", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN10", "Dev10")
     entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
     entity._handle_coordinator_update()
 
@@ -243,7 +243,7 @@ def test_update_entity_available_while_installing_even_if_device_offline() -> No
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.last_update_success = False
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN13", "Dev13", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN13", "Dev13")
     assert entity.available is False
 
     entity._install_started = monotonic()
@@ -257,7 +257,7 @@ def test_update_entity_available_property() -> None:
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.last_update_success = True
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN7", "Dev7", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN7", "Dev7")
     assert entity.available is False
 
     mock_coordinator.last_update_success = False
@@ -269,7 +269,7 @@ def test_status_returns_empty_dict_when_device_missing() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": []}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN_MISSING", "DevMissing", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN_MISSING", "DevMissing")
 
     assert entity._status == {}
 
@@ -280,7 +280,7 @@ def test_available_false_when_device_missing() -> None:
     mock_coordinator.data = {"devices": []}
     mock_coordinator.last_update_success = True
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN_MISSING", "DevMissing", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN_MISSING", "DevMissing")
 
     assert entity.available is False
 
@@ -291,7 +291,7 @@ def test_update_entity_unique_id_has_update_suffix() -> None:
     mock_coordinator.entry_id = "entry123"
     mock_coordinator.data = {"devices": [{"id": "SN8", "name": "Dev8", "status": {"getNOT": "FF"}}]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN8", "Dev8", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN8", "Dev8")
 
     assert entity._attr_unique_id == "entry123_sn8_getnot_update"
 
@@ -303,7 +303,7 @@ def test_update_entity_category_is_diagnostic() -> None:
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN11", "name": "Dev11", "status": {"getNOT": "01"}}]}
 
-    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN11", "Dev11", "")
+    entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN11", "Dev11")
 
     assert entity.entity_category is EntityCategory.DIAGNOSTIC
 

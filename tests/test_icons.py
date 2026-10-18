@@ -54,7 +54,7 @@ def test_connection_state_icons() -> None:
 
 def _sensor_state(create_mock_coordinator, key: str, raw: str) -> str:
     data = {"devices": [{"id": "d1", "name": "D1", "project_id": "p1", "status": {key: raw}}]}
-    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "p1", key)
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
     return str(sensor.native_value)
 
 
