@@ -1042,6 +1042,31 @@ def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
     registry.async_remove.assert_not_called()
 
 
+def test_registry_cleanup_keeps_unlisted_entities_of_offline_device() -> None:
+    """A never-online device reports only getSRN; model detection on that must not remove its entities."""
+    registry = MagicMock()
+    registry.entities.values.return_value = [
+        SimpleNamespace(
+            entity_id="sensor.syr_connect_dev_getdfm",
+            unique_id=build_unique_id("entry", "DEV", "getDFM"),
+            platform=DOMAIN,
+            domain="sensor",
+            config_entry_id="entry",
+        )
+    ]
+    registry.async_get = MagicMock(return_value=None)
+    registry.async_remove = MagicMock()
+
+    # getDFM is not in the allowlist, but the device is offline: skip the cleanup
+    device = {"id": "DEV", "available": False, "status": {"dst": "0", "getSRN": "123456789"}}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(
+            MagicMock(), {"devices": [device]}, "sensor", allowed_keys={"getSRN"}, entry_id="entry"
+        )
+
+    registry.async_remove.assert_not_called()
+
+
 def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> None:
     """Conditionally hidden sensor owned by a DIFFERENT config entry must not be removed."""
     hass = MagicMock()

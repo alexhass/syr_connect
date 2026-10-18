@@ -432,6 +432,14 @@ def registry_cleanup(
                 _LOGGER.debug("No status for device %s yet; skipping %s registry cleanup", device_id, domain)
                 continue
 
+            # While the cloud reports the device offline (dst 0/1, available=False) its status
+            # says nothing about which entities it has: the measurements are empty strings
+            # (docs/known_issues_xml_api.md, issue 2), and a never-online device reports little
+            # more than getSRN, so detect_model may pick the wrong model and key list.
+            if not device.get("available", True):
+                _LOGGER.debug("Device %s is offline; skipping %s registry cleanup", device_id, domain)
+                continue
+
             # Scope the allowlist to the detected model (falls back to allowed_keys
             # unchanged for models that haven't opted into per-model key lists).
             model_info = detect_model(status)
@@ -485,10 +493,7 @@ def registry_cleanup(
                         _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
 
             # Remove conditionally hidden sensor entities based on current device status.
-            # Skipped while the cloud reports the device offline (dst 0/1, available=False):
-            # its measurements are then empty strings (docs/known_issues_xml_api.md, issue 2),
-            # which says nothing about which sensors the device has.
-            if domain == "sensor" and device.get("available", True):
+            if domain == "sensor":
                 for key in _conditional_keys:
                     value = status.get(key)
                     if not is_sensor_visible(status, key, value):
