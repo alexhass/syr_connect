@@ -58,7 +58,7 @@ _SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 
 # Device info - internal
 # CF = Core Foundation (iOS/macOS framework)
-# Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
+# Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
 _SYR_CONNECT_CLIENT_OS_LANGUAGE = "en-US"  # Default; the integration passes the HA locale instead
 _SYR_CONNECT_CLIENT_OS_NAME = "iOS"
 _SYR_CONNECT_CLIENT_OS_VERSION = "27.0.0"
@@ -70,7 +70,7 @@ _SYR_CONNECT_CLIENT_APP_VERSION = f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}-
 
 # Example: "SYR/400 CFNetwork/3896.100.1.2.1 Darwin/27.0.0"
 _SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME = "SYR"
-# Example: 3.7.10-400 -> 400 (build number is incremented for each release, but not directly related to bundle version)
+# Example: 3.9.7-485 -> 485 (build number is incremented for each release, but not directly related to bundle version)
 _SYR_CONNECT_CLIENT_SYR_BUNDLE_BUILDNUMBER = "485"
 _SYR_CONNECT_CLIENT_OS_FRAMEWORK = "CFNetwork/3896.100.1.2.1"
 _SYR_CONNECT_CLIENT_OS_KERNEL = "Darwin/27.0.0"

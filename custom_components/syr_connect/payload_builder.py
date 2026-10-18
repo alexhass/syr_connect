@@ -125,7 +125,7 @@ class PayloadBuilder:
 
             <sc>
               <api version="1.0">
-                <nfo v="SYR Connect" version="3.7.10" osv="15.8.3" os="iOS" dn="iPhone"
+                <nfo v="SYR Connect" version="3.9.7" osv="27.0.0" os="iOS" dn="iPhone"
                      ts="2026-10-17 10:00:00" tzo="02:00:00" lng="de" reg="DE" />
                 <usr n="user@example.com" v="secret" />
               </api>
@@ -164,7 +164,7 @@ class PayloadBuilder:
         Example (``tests/fixtures/xml/requests/ExampleRequest_GetProjectDeviceCollections.xml``)::
 
             <sc>
-              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <prs><pr pg="8625a6fc-3547-45c4-b394-671b5c99b6b9"/></prs>
               <cs v="3825"/>
@@ -187,7 +187,7 @@ class PayloadBuilder:
         Example (``tests/fixtures/xml/requests/ExampleRequest_GetDeviceCollectionStatus.xml``)::
 
             <sc>
-              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <col><dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" fref="1"/></col>
               <cs v="38DE"/>
@@ -216,7 +216,7 @@ class PayloadBuilder:
         Example (``tests/fixtures/xml/requests/ExampleRequest_SetDeviceCollectionStatus.xml``)::
 
             <sc>
-              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <col>
                 <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" fref="1">
@@ -250,7 +250,7 @@ class PayloadBuilder:
         ``salt`` uses ``t="2"`` and ``unit="kg"``::
 
             <sc>
-              <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+              <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <col>
                 <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f">

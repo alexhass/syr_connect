@@ -126,7 +126,7 @@ class SyrConnectXmlAPI:
         self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
         self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
 
-        # Example: "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"
+        # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
         # The app sends the phone's language here; use the HA locale.
         _app_version = (
             f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"

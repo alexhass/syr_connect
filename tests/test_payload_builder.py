@@ -184,7 +184,7 @@ def _build_reference_payloads() -> dict[str, str]:
         "0b09f7ce-41a0-4085-9e69-fa8827a32b6f",
     )
     pb = PayloadBuilder(
-        "App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect",
+        "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect",
         SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2),
     )
     with (
@@ -293,7 +293,7 @@ def payload_builder():
         "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP",
         "KHGK5X29LVNZU56T"
     )
-    return PayloadBuilder("App-3.7.10-de-DE-iOS-iPhone", checksum)
+    return PayloadBuilder("App-3.9.7-de-DE-iOS-iPhone", checksum)
 
 
 def test_build_login_payload(payload_builder):
