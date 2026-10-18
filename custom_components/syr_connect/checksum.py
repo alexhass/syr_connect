@@ -1,9 +1,13 @@
 """Checksum calculation for SYR Connect API."""
 from __future__ import annotations
 
+import base64
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as etree  # noqa: N813
+
+# Standard Base32 alphabet (RFC 4648); the index of a character is its 5-bit value
+_SYR_CONNECT_BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
 
 class SyrChecksum:
@@ -18,33 +22,22 @@ class SyrChecksum:
         """
         self.base_characters = base_characters
         self.key = key
-
-    @staticmethod
-    def extract_bits(byte: int, start: int, length: int) -> int:
-        """Extract a subset of bits from a byte.
-
-        Args:
-            byte: The byte to extract bits from
-            start: The starting bit position
-            length: The number of bits to extract
-
-        Returns:
-            Extracted bits as a number
-        """
-        return (byte >> start) & ((1 << length) - 1)
+        # Position of each key character in base_characters (0 if missing)
+        self._key_offsets = [max(base_characters.find(char), 0) for char in key]
 
     def compute_checksum_value(self, value: str) -> int:
         """Compute a checksum-compatible numeric value from the input string.
 
-        This implements a proprietary SYR checksum algorithm based on:
-        1. Converting the input string to UTF-8 bytes
-        2. Extracting 5-bit chunks sequentially from the byte stream
-        3. Applying a key-based offset transformation to each chunk
-        4. Summing the character codes from the base_characters lookup table
+        Proprietary SYR algorithm; only step 1 is a standard method:
+        1. Base32-encode (RFC 4648) the UTF-8 bytes of the stripped string, giving
+           one 5-bit value per character
+        2. Shift each value by the position of a key character in base_characters,
+           cycling through the key (Vigenère-like)
+        3. Wrap values past the alphabet to 1 instead of 0 (a SYR quirk, not a modulo)
+        4. Sum the character codes of the resulting base_characters
 
-        The 5-bit chunking allows encoding the byte stream into a 32-character
-        alphabet (2^5 = 32). The key-based offset adds an additional layer of
-        obfuscation by rotating the mapping based on the position in the key.
+        This is an obfuscation, not a cryptographic checksum: both keys ship with
+        every app, and a sum does not depend on the order of its parts.
 
         Args:
             value: The input string to process
@@ -56,66 +49,20 @@ class SyrChecksum:
         if not normalized:
             return 0
 
-        # Convert the normalized string to bytes (UTF-8)
-        buf = normalized.encode('utf-8')
-        bytes_arr = list(buf)  # array of numbers in 0..255
-
-        # Calculate how many 5-bit chunks are available
-        # We use 5-bit chunks because the base_characters alphabet has 32 chars (2^5)
-        total_bits = len(bytes_arr) * 8
-        num_chunks = (total_bits + 4) // 5  # equivalent to Math.ceil(totalBits / 5)
+        # Step 1 is standard Base32: each character stands for one 5-bit chunk of the
+        # UTF-8 bytes, the last chunk zero-padded. The "=" padding is not a chunk.
+        encoded = base64.b32encode(normalized.encode('utf-8')).decode('ascii').rstrip('=')
 
         contribution = 0
-        bit_offset = 0
-        byte_index = 0
+        for chunk_index, char in enumerate(encoded):
+            # Shift the chunk by the key character for this position (Vigenère-like)
+            index = _SYR_CONNECT_BASE32_ALPHABET.index(char) + self._key_offsets[chunk_index % len(self._key_offsets)]
 
-        # Process each 5-bit chunk sequentially from the byte stream
-        for chunk_index in range(num_chunks):
-            if bit_offset >= 8:
-                byte_index += 1
-                bit_offset = bit_offset % 8
+            # SYR wraps to 1, not 0 (not a modulo); the checksums depend on this quirk
+            if index >= len(self.base_characters):
+                index -= len(self.base_characters) - 1
 
-            # Get the current byte (or 0 if out-of-range)
-            current_byte = bytes_arr[byte_index] if byte_index < len(bytes_arr) else 0
-
-            # Shift current byte to align the desired bits at positions 3-7
-            # We keep only 8 bits to prevent overflow
-            shifted = (current_byte << bit_offset) & 0xff
-
-            # If bit_offset > 3, the 5-bit chunk spans two bytes
-            # We need to combine bits from both the current and next byte
-            # Example: bit_offset=5 means we need 3 bits from current byte
-            # and 2 bits from the next byte to form a complete 5-bit chunk
-            if bit_offset > 3:
-                next_byte = bytes_arr[byte_index + 1] if byte_index + 1 < len(bytes_arr) else 0
-                shift_amt = 8 - (bit_offset - 3)
-                next_part = ((next_byte >> shift_amt) << 3) & 0xff
-                shifted = shifted | next_part
-
-            # Extract the 5-bit value from positions 3-7 (top 5 bits)
-            five_bit_value = shifted >> 3  # this is the extracted 5-bit chunk (0..31)
-
-            # Apply key-based offset transformation for obfuscation
-            # The key rotates: each chunk uses key[chunk_index % key_length]
-            # This makes the checksum dependent on both the data AND the key
-            key_char = self.key[chunk_index % len(self.key)]
-            offset = self.base_characters.find(key_char)
-            if offset < 0:
-                offset = 0  # safeguard
-
-            sum_val = five_bit_value + offset
-
-            # Wrap around if sum exceeds the alphabet size
-            # Note: wraps to 1, not 0, creating a non-standard modulo operation
-            if sum_val >= len(self.base_characters):
-                sum_val = sum_val - len(self.base_characters) + 1
-
-            # Look up the character in base_characters and add its ASCII value
-            # This final step converts the encoded chunk back to a numeric contribution
-            contribution += ord(self.base_characters[sum_val]) & 0xff
-
-            # Advance the bit offset by 5 for the next chunk
-            bit_offset += 5
+            contribution += ord(self.base_characters[index]) & 0xff
 
         return contribution
 

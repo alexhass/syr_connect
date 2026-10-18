@@ -16,16 +16,22 @@ def test_checksum_init():
     assert checksum.key == "TESTKEY"
 
 
-def test_extract_bits():
-    """Test bit extraction."""
-    # 0b11010110 = 214
-    # Extract 3 bits starting at position 2: bits 2,3,4 = 101 = 5
-    result = SyrChecksum.extract_bits(214, 2, 3)
-    assert result == 5
-
-    # Extract 5 bits starting at position 0: bits 0-4 = 10110 = 22
-    result = SyrChecksum.extract_bits(214, 0, 5)
-    assert result == 22
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("a", 122),
+        ("test", 395),
+        (" test ", 395),
+        ("zz", 287),
+        ("üöä", 738),
+        ("0b09f7ce-41a0-4085-9e69-fa8827a32b6f", 4011),
+        ("App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect", 6169),
+    ],
+)
+def test_compute_checksum_value_exact(value: str, expected: int):
+    """Exact values of the SYR algorithm, recorded from the original bitwise implementation."""
+    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    assert checksum.compute_checksum_value(value) == expected
 
 
 def test_compute_checksum_value_empty():
@@ -95,18 +101,16 @@ def test_compute_xml_checksum_invalid_xml():
 
 
 def test_compute_checksum_next_byte_and_offset_negative() -> None:
-    """Force next-byte branch and missing key character offset path."""
+    """A key character missing from base_characters uses offset 0."""
     # base characters long enough for wrapping logic and indexing
     base = ''.join(chr(65 + i) for i in range(64))
 
-    # Use a key character that is NOT present in base to trigger offset < 0 path
+    # Use a key character that is NOT present in base to trigger the offset 0 fallback
     checksum = SyrChecksum(base, "!")
 
-    # Two-character ASCII input will generate multiple 5-bit chunks and cause
-    # the implementation to hit the `bit_offset > 3` branch (next_byte logic).
+    # Two ASCII characters span several 5-bit chunks, including chunks across a byte boundary
     result = checksum.compute_checksum_value("zz")
-    assert isinstance(result, int)
-    assert result >= 0
+    assert result == 313
 
 
 def test_compute_checksum_with_high_offset_key() -> None:
@@ -118,8 +122,7 @@ def test_compute_checksum_with_high_offset_key() -> None:
     checksum = SyrChecksum(base32, key)
     # Use a short string that still produces multiple chunks
     result = checksum.compute_checksum_value("zz")
-    assert isinstance(result, int)
-    assert result > 0
+    assert result == 344
 
 
 _XML_FIXTURES = sorted(

@@ -10,13 +10,13 @@ Cloud API workflow:
 4. Get statistics (water/salt consumption) -> returns historical data
 
 Security features:
-- Request checksums using dual-key HMAC (prevents tampering)
+- Request checksums with a proprietary two-key algorithm (required by the webservice; not an HMAC)
 - Response encryption using AES (protects sensitive data)
 - Session-based authentication with 30-minute timeout
 
 The API client coordinates several helper components:
 - SyrEncryption: AES encryption/decryption
-- SyrChecksum: Dual-key HMAC checksums
+- SyrChecksum: Request checksums
 - PayloadBuilder: XML request construction
 - ResponseParser: XML response parsing
 - HTTPClient: HTTP POST with custom headers
@@ -143,7 +143,7 @@ class SyrConnectXmlAPI:
         # AES encryption for login response decryption
         self.encryption = SyrEncryption(_SYR_CONNECT_CLIENT_ENCRYPTION_KEY, _SYR_CONNECT_CLIENT_ENCRYPTION_IV)
 
-        # Dual-key HMAC checksums to prevent request tampering
+        # Request checksum required by the webservice (proprietary, two keys; not an HMAC)
         self.checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
 
         # XML payload construction with embedded checksums
