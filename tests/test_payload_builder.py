@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from xml.etree.ElementTree import canonicalize
+from xml.etree.ElementTree import Element, canonicalize
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -138,10 +138,13 @@ def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
     """The checksum input excludes <cs>; <cs> ends up as the last child of <sc>."""
     # The root is mutated after the call, so record its children at call time.
     tags_at_checksum_time: list[list[str]] = []
+
+    def record_tags(root: Element) -> str:
+        tags_at_checksum_time.append([child.tag for child in root])
+        return "CHK"
+
     fake_checksum = MagicMock()
-    fake_checksum.compute_element_checksum.side_effect = lambda root: (
-        tags_at_checksum_time.append([child.tag for child in root]) or "CHK"
-    )
+    fake_checksum.compute_element_checksum.side_effect = record_tags
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
     payload = pb.build_device_get_status_payload("sess", "dev")
