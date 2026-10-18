@@ -167,7 +167,7 @@ class PayloadBuilder:
               <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <prs><pr pg="8625a6fc-3547-45c4-b394-671b5c99b6b9"/></prs>
-              <cs v="3825"/>
+              <cs v="3788"/>
             </sc>
         """
         root = self._new_request(session_id)
@@ -190,7 +190,7 @@ class PayloadBuilder:
               <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <col><dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" fref="1"/></col>
-              <cs v="38DE"/>
+              <cs v="3841"/>
             </sc>
         """
         root = self._new_request(session_id)
@@ -224,7 +224,7 @@ class PayloadBuilder:
                   <c n="setSIR" v=""/>
                 </dcl>
               </col>
-              <cs v="395A"/>
+              <cs v="38BD"/>
             </sc>
         """
         root = self._new_request(session_id)
@@ -257,7 +257,7 @@ class PayloadBuilder:
                   <sh t="1" rtyp="1" lg="de" rg="DE" unit="l"/>
                 </dcl>
               </col>
-              <cs v="3C39"/>
+              <cs v="3B9C"/>
             </sc>
         """
         root = self._new_request(session_id)
