@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import Any
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -12,7 +12,6 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_SELECT_KNOWN_KEYS,
@@ -24,15 +23,12 @@ from .const import (
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
-    build_device_info,
-    build_entity_id,
-    build_unique_id,
     find_entity_id,
     get_model_known_keys,
     get_sensor_rtm_value,
-    is_device_available,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
@@ -550,7 +546,7 @@ def _async_setup_muco_conditional_selects(
     entry.async_on_unload(coordinator.async_add_listener(_sync))
 
 
-class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
+class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
     """Select entity exposing regeneration time as a choice list.
 
     This provides a Control-friendly domain for users who prefer the
@@ -564,17 +560,8 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
         device_id: str,
         device_name: str,
     ) -> None:
-        super().__init__(coordinator)
-        self._device_id = device_id
-        self._device_name = device_name
-
-        self._attr_has_entity_name = True
-        # Keep translation key for human-friendly name, but back the select by `getRTM` key
-        self._attr_translation_key = "getrtm"
-        self.entity_id = build_entity_id("select", device_id, "getRTM")
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getRTM_select")
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-
+        # Translation key "getrtm" for the human-friendly name; the select is backed by `getRTM`
+        super().__init__(coordinator, device_id, device_name, "select", "getRTM", unique_key="getRTM_select")
 
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
@@ -600,24 +587,14 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the currently configured regeneration time as HH:MM."""
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
-                continue
-            status = dev.get("status", {})
-            return get_sensor_rtm_value(status)
-        return None
+        if self._device is None:
+            return None
+        return get_sensor_rtm_value(self._status)
 
     async def async_select_option(self, option: str) -> None:
         """Called when user selects a time option from the UI."""
-        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
-        # Find raw status for this device
-        raw_status = None
-        for dev in coordinator.data.get("devices", []):
-            if dev.get("id") == self._device_id:
-                raw_status = dev.get("status", {})
-                break
-
-        commands = set_sensor_rtm_value(raw_status or {}, option)
+        coordinator = self.coordinator
+        commands = set_sensor_rtm_value(self._status, option)
         if not commands:
             _LOGGER.error("Invalid time option selected for device %s: %s", self._device_id, option)
             return
@@ -632,12 +609,8 @@ class SyrConnectRegenerationSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Failed to set regeneration time for device %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to set regeneration time: {err}") from err
 
-    @property
-    def available(self) -> bool:
-        return is_device_available(self.coordinator, self._device_id)
 
-
-class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
+class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
     """Select entity representing a numeric control.
 
     Options are stringified integers between min_value and max_value
@@ -655,19 +628,11 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
         step: int = 1,
         scale: int = 1,
     ) -> None:
-        super().__init__(coordinator)
-        self._device_id = device_id
-        self._device_name = device_name
+        super().__init__(coordinator, device_id, device_name, "select", sensor_key, unique_key=f"{sensor_key}_select")
         self._sensor_key = sensor_key
         # Raw device values are divided by `scale` for display and multiplied back when writing
         # (e.g. getTPR is stored as 1/10 bar, so scale=10 shows "1.8 bar" for the raw value 18).
         self._scale = scale
-
-        self._attr_has_entity_name = True
-        self._attr_translation_key = sensor_key.lower()
-        self.entity_id = build_entity_id("select", device_id, sensor_key)
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_select")
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Disable by default if key is in the disabled-by-default set
         if sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
@@ -711,26 +676,23 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
-                continue
-            status = dev.get("status", {})
-            val = status.get(self._sensor_key)
-            if val is None or val == "":
-                return None
-            try:
-                num = int(float(val))
-                # Return the option whose number (first token; options may carry a unit suffix,
-                # e.g. "20 s") equals the scaled display value. Same parsing as async_select_option.
-                # A prefix match would wrongly pick "20 s" for the value 2.
-                label = _format_scaled(num, self._scale)
-                for opt in self._options:
-                    if opt.split(" ", 1)[0] == label:
-                        return opt
-                return label
-            except (ValueError, TypeError, AttributeError):
-                return None
-        return None
+        if self._device is None:
+            return None
+        val = self._status.get(self._sensor_key)
+        if val is None or val == "":
+            return None
+        try:
+            num = int(float(val))
+            # Return the option whose number (first token; options may carry a unit suffix,
+            # e.g. "20 s") equals the scaled display value. Same parsing as async_select_option.
+            # A prefix match would wrongly pick "20 s" for the value 2.
+            label = _format_scaled(num, self._scale)
+            for opt in self._options:
+                if opt.split(" ", 1)[0] == label:
+                    return opt
+            return label
+        except (ValueError, TypeError, AttributeError):
+            return None
 
     async def async_select_option(self, option: str) -> None:
         try:
@@ -741,7 +703,7 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Invalid option for %s: %s", self._sensor_key, err)
             return
 
-        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        coordinator = self.coordinator
         # key for setting: remove leading 'get' and prefix with 'set'
         set_key = f"set{self._sensor_key[3:]}"
         try:
@@ -757,24 +719,16 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
             raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
 
-    @property
-    def available(self) -> bool:
-        return is_device_available(self.coordinator, self._device_id)
-
 
 class SyrConnectHardnessSelect(SyrConnectNumericSelect):
     """Water hardness select (`getIWH`/`getOWH`) with the unit taken from the live `getWHU` setting."""
 
     def _unit_label(self) -> str:
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
-                continue
-            try:
-                whu = int(float(dev.get("status", {}).get("getWHU")))
-            except (ValueError, TypeError):
-                return ""
-            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
-        return ""
+        try:
+            whu = int(float(self._status.get("getWHU")))  # type: ignore[arg-type]
+        except (ValueError, TypeError):
+            return ""
+        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
 
     @property
     def options(self) -> list[str]:
@@ -790,7 +744,7 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
         return f"{value} {unit}" if unit else value
 
 
-class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
+class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
     """Select entity exposing display rotation (`getSRO`).
 
     Options: raw state keys 0, 90, 180, 270 — frontend shows translated labels; selecting sends `setSRO`.
@@ -802,15 +756,7 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
         device_id: str,
         device_name: str,
     ) -> None:
-        super().__init__(coordinator)
-        self._device_id = device_id
-        self._device_name = device_name
-
-        self._attr_has_entity_name = True
-        self._attr_translation_key = "getsro"
-        self.entity_id = build_entity_id("select", device_id, "getSRO")
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getSRO_select")
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        super().__init__(coordinator, device_id, device_name, "select", "getSRO", unique_key="getSRO_select")
 
         # Use raw state keys so the frontend will translate them via the translation files
         self._options = ["0", "90", "180", "270"]
@@ -834,23 +780,20 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
-                continue
-            status = dev.get("status", {})
-            val = status.get("getSRO")
-            if val is None or val == "":
-                return None
-            try:
-                num = int(float(val))
-                # Return matching raw option (string)
-                for opt in self._options:
-                    if opt.startswith(f"{num}"):
-                        return opt
-                return str(num)
-            except (ValueError, TypeError, AttributeError):
-                return None
-        return None
+        if self._device is None:
+            return None
+        val = self._status.get("getSRO")
+        if val is None or val == "":
+            return None
+        try:
+            num = int(float(val))
+            # Return matching raw option (string)
+            for opt in self._options:
+                if opt.startswith(f"{num}"):
+                    return opt
+            return str(num)
+        except (ValueError, TypeError, AttributeError):
+            return None
 
     async def async_select_option(self, option: str) -> None:
         try:
@@ -860,7 +803,7 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Invalid option for getSRO: %s", err)
             return
 
-        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        coordinator = self.coordinator
         set_key = "setSRO"
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
@@ -870,12 +813,8 @@ class SyrConnectRotationSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
             raise HomeAssistantError(f"Failed to set getSRO: {err}") from err
 
-    @property
-    def available(self) -> bool:
-        return is_device_available(self.coordinator, self._device_id)
 
-
-class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
+class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
     """Select entity for discrete, non-sequential option maps (e.g., getFCD)."""
 
     def __init__(
@@ -886,17 +825,9 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         sensor_key: str,
         options_map: Mapping[str, int | None],
     ) -> None:
-        super().__init__(coordinator)
-        self._device_id = device_id
-        self._device_name = device_name
+        super().__init__(coordinator, device_id, device_name, "select", sensor_key, unique_key=f"{sensor_key}_select")
         self._sensor_key = sensor_key
         self._options_map = options_map
-
-        self._attr_has_entity_name = True
-        self._attr_translation_key = sensor_key.lower()
-        self.entity_id = build_entity_id("select", device_id, sensor_key)
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, f"{sensor_key}_select")
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Options are the raw state keys (strings) of the mapping so the frontend
         # can translate the displayed state using the integration translations.
@@ -922,26 +853,23 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def current_option(self) -> str | None:
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
-                continue
-            status = dev.get("status", {})
-            val = status.get(self._sensor_key)
-            if val is None or val == "":
-                # Some option maps include a sentinel entry (value=None, e.g. "undefined")
-                # representing this empty raw state instead of falling back to unknown.
-                for opt, mapped in self._options_map.items():
-                    if mapped is None:
-                        return opt
-                return None
-            try:
-                num = int(float(val))
-            except (ValueError, TypeError):
-                return None
+        if self._device is None:
+            return None
+        val = self._status.get(self._sensor_key)
+        if val is None or val == "":
+            # Some option maps include a sentinel entry (value=None, e.g. "undefined")
+            # representing this empty raw state instead of falling back to unknown.
             for opt, mapped in self._options_map.items():
-                if mapped == num:
+                if mapped is None:
                     return opt
             return None
+        try:
+            num = int(float(val))
+        except (ValueError, TypeError):
+            return None
+        for opt, mapped in self._options_map.items():
+            if mapped == num:
+                return opt
         return None
 
     async def async_select_option(self, option: str) -> None:
@@ -952,7 +880,7 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
         if val is None:
             _LOGGER.error("Option %s for %s has no underlying raw value and cannot be selected", option, self._sensor_key)
             return
-        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        coordinator = self.coordinator
         set_key = f"set{self._sensor_key[3:]}"
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
@@ -962,12 +890,8 @@ class SyrConnectDiscreteSelect(CoordinatorEntity, SelectEntity):
             _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
             raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
 
-    @property
-    def available(self) -> bool:
-        return is_device_available(self.coordinator, self._device_id)
 
-
-class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
+class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
     """Select entity exposing active leak-protection profile (`getPRF`).
 
     Options are derived from `getPN1..getPN8` for each `getPAx` that is
@@ -981,15 +905,7 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         device_id: str,
         device_name: str,
     ) -> None:
-        super().__init__(coordinator)
-        self._device_id = device_id
-        self._device_name = device_name
-
-        self._attr_has_entity_name = True
-        self._attr_translation_key = "getprf"
-        self.entity_id = build_entity_id("select", device_id, "getPRF")
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, "getPRF_select")
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        super().__init__(coordinator, device_id, device_name, "select", "getPRF", unique_key="getPRF_select")
 
         # Set entity category according to central sensor mappings
         if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:
@@ -1000,54 +916,44 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
 
     @property
     def options(self) -> list[str]:
+        status = self._status
         opts: list[str] = []
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
+        for i in range(1, 9):
+            pa = status.get(f"getPA{i}")
+            if not is_value_true(pa):
                 continue
-            status = dev.get("status", {})
-            for i in range(1, 9):
-                pa = status.get(f"getPA{i}")
-                if not is_value_true(pa):
-                    continue
-                name = status.get(f"getPN{i}") or str(i)
-                opts.append(str(name))
-            break
+            name = status.get(f"getPN{i}") or str(i)
+            opts.append(str(name))
         return opts
 
     @property
     def current_option(self) -> str | None:
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
-                continue
-            status = dev.get("status", {})
-            val = status.get("getPRF")
-            if val is None or val == "":
-                return None
-            try:
-                idx = int(float(val))
-            except (ValueError, TypeError):
-                return None
-            name = status.get(f"getPN{idx}")
-            return name
-        return None
+        if self._device is None:
+            return None
+        status = self._status
+        val = status.get("getPRF")
+        if val is None or val == "":
+            return None
+        try:
+            idx = int(float(val))
+        except (ValueError, TypeError):
+            return None
+        name = status.get(f"getPN{idx}")
+        return name
 
     async def async_select_option(self, option: str) -> None:
         # Find index corresponding to selected option
-        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
+        coordinator = self.coordinator
+        status = self._status
         selected_idx: int | None = None
-        for dev in coordinator.data.get("devices", []):
-            if dev.get("id") != self._device_id:
+        for i in range(1, 9):
+            pa = status.get(f"getPA{i}")
+            if not is_value_true(pa):
                 continue
-            status = dev.get("status", {})
-            for i in range(1, 9):
-                pa = status.get(f"getPA{i}")
-                if not is_value_true(pa):
-                    continue
-                name = status.get(f"getPN{i}") or str(i)
-                if str(name) == option:
-                    selected_idx = i
-                    break
-            break
+            name = status.get(f"getPN{i}") or str(i)
+            if str(name) == option:
+                selected_idx = i
+                break
 
         if selected_idx is None:
             _LOGGER.error("Selected profile not found for device %s: %s", self._device_id, option)
@@ -1059,7 +965,3 @@ class SyrConnectPrfSelect(CoordinatorEntity, SelectEntity):
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.error("Failed to set PRF for device %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to set profile: {err}") from err
-
-    @property
-    def available(self) -> bool:
-        return is_device_available(self.coordinator, self._device_id)

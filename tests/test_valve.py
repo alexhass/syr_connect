@@ -335,8 +335,8 @@ async def test_is_closed_none_when_device_missing(hass: HomeAssistant) -> None:
     data = {"devices": [{"id": "other", "name": "Other", "status": {"getVLV": "20"}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "missing_device", "Missing")
-    assert valve._get_device() is None
-    assert valve._get_status() is None
+    assert valve._device is None
+    assert valve._status == {}
     assert valve.is_closed is None
 
 

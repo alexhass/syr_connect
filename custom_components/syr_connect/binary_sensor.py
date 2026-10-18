@@ -11,7 +11,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
@@ -20,12 +19,9 @@ from .const import (
     _SYR_CONNECT_SENSOR_EXCLUDED,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .entity import SyrConnectEntity
 from .helpers import (
-    build_device_info,
-    build_entity_id,
-    build_unique_id,
     get_model_known_keys,
-    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -90,7 +86,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
+class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
     """Representation of a SYR Connect binary sensor."""
 
     def __init__(
@@ -112,28 +108,15 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
             sensor_key: Sensor key (e.g., 'getBUZ')
             device_class: Binary sensor device class
         """
-        super().__init__(coordinator)
+        super().__init__(coordinator, device_id, device_name, "binary_sensor", sensor_key)
 
-        self._device_id = device_id
-        self._device_name = device_name
         self._project_id = project_id
         self._sensor_key = sensor_key
-
-        # Set unique ID and translation platform
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, sensor_key)
-        self._attr_has_entity_name = True
-        self._attr_translation_key = sensor_key.lower()
         self._attr_device_class = device_class
-
-        # Override the entity_id to use technical name (serial number) with domain prefix
-        self.entity_id = build_entity_id("binary_sensor", device_id, sensor_key)
 
         # Set entity category for diagnostic sensors
         if sensor_key in _SYR_CONNECT_SENSOR_DIAGNOSTIC:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
-
-        # Build device info from coordinator data
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
     @property
     def is_on(self) -> bool | None:
@@ -142,26 +125,14 @@ class SyrConnectBinarySensor(CoordinatorEntity, BinarySensorEntity):
         Returns:
             True if sensor is on, False if off, None if unavailable
         """
-        for device in self.coordinator.data.get('devices', []):
-            if device['id'] == self._device_id:
-                status = device.get('status', {})
-                value = status.get(self._sensor_key)
+        if self._device is None:
+            return None
+        value = self._status.get(self._sensor_key)
 
-                # Convert value to boolean
-                if isinstance(value, int | float):
-                    return value != 0
-                elif isinstance(value, str):
-                    return value not in ("0", "false", "False", "")
+        # Convert value to boolean
+        if isinstance(value, int | float):
+            return value != 0
+        elif isinstance(value, str):
+            return value not in ("0", "false", "False", "")
 
-                return False
-
-        return None
-
-    @property
-    def available(self) -> bool:
-        """Return if entity is available.
-
-        Returns:
-            True if last coordinator update was successful and device is available
-        """
-        return is_device_available(self.coordinator, self._device_id)
+        return False

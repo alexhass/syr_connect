@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from typing import cast
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -12,7 +11,6 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _SYR_CONNECT_SENSOR_CONFIG,
@@ -21,13 +19,11 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
-    build_device_info,
-    build_entity_id,
     build_unique_id,
     get_model_known_keys,
-    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -135,7 +131,7 @@ async def async_setup_entry(
         _LOGGER.debug("No boolean switch entities found for any device.")
 
 
-class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
+class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
     """Generic switch entity for boolean get<KEY>/set<KEY> settings (e.g. getBUZ, getDFI)."""
 
     def __init__(
@@ -148,46 +144,28 @@ class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
     ) -> None:
         """Initialize the switch."""
         _LOGGER.debug("Initializing SyrConnectBooleanSwitch: device_id=%s, name=%s, sensor_key=%s", device_id, device_name, sensor_key)
-        super().__init__(coordinator)
+        super().__init__(coordinator, device_id, device_name, "switch", sensor_key)
 
-        self._device_id = device_id
-        self._device_name = device_name
         self._project_id = project_id
         self._sensor_key = sensor_key
 
-        # Set unique ID and translation platform
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
         # Only lowercase device_id/key, not entry_id (a case-sensitive ULID) -
         # otherwise this would never match the entry_id casing written by the
         # v6->v7 registry migration.
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id.lower(), f"{sensor_key}_switch".lower())
-        self._attr_has_entity_name = True
-        self._attr_translation_key = sensor_key.lower()
-
-        # Override the entity_id to use technical name (serial number) with domain prefix
-        self.entity_id = build_entity_id("switch", device_id, sensor_key)
-
-        # Build device info so the entity is linked to its device in the UI
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
 
         # Set entity category if this key is a config entity
         if sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
     @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return is_device_available(self.coordinator, self._device_id)
-
-    @property
     def is_on(self) -> bool | None:
         """Return True if the setting is enabled."""
-        device = next((d for d in self.coordinator.data.get("devices", []) if d["id"] == self._device_id), None)
-        if not device:
+        if self._device is None:
             return None
-        status = device.get("status", {})
-        value = status.get(self._sensor_key)
+        value = self._status.get(self._sensor_key)
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
@@ -208,11 +186,7 @@ class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
         """Set the boolean value via API."""
         # Mirror the exact type of the current getter value so the setter
         # uses the same format the device expects.
-        device = next(
-            (d for d in self.coordinator.data.get("devices", []) if d["id"] == self._device_id),
-            None,
-        )
-        current = device.get("status", {}).get(self._sensor_key) if device else None
+        current = self._status.get(self._sensor_key)
         value: bool | int | str
         if isinstance(current, bool):
             value = state
@@ -226,9 +200,7 @@ class SyrConnectBooleanSwitch(CoordinatorEntity, SwitchEntity):
         set_key = f"set{self._sensor_key[3:]}"
         try:
             # Use coordinator.async_set_device_value so the DCLG is resolved correctly
-            # `CoordinatorEntity.coordinator` is typed as DataUpdateCoordinator in the base
-            # class; cast to our concrete coordinator type so mypy recognizes the method.
-            await cast(SyrConnectDataUpdateCoordinator, self.coordinator).async_set_device_value(self._device_id, set_key, value)
+            await self.coordinator.async_set_device_value(self._device_id, set_key, value)
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             # Report the failure to the caller (UI, automation) like valve/select/button do;
             # swallowing it would make the service call look successful. The coordinator has

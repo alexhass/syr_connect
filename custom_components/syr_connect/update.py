@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from time import monotonic
-from typing import Any, cast
+from typing import Any
 
 from homeassistant.components.update import UpdateDeviceClass, UpdateEntity, UpdateEntityFeature
 from homeassistant.config_entries import ConfigEntry
@@ -12,18 +12,15 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import _SYR_CONNECT_UPDATE_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
-    build_device_info,
-    build_entity_id,
     build_unique_id,
     get_model_known_keys,
     get_sensor_not_map,
-    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -77,7 +74,7 @@ async def async_setup_entry(
         _LOGGER.debug("No update entities found for any device")
 
 
-class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
+class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
     """Firmware update indicator derived from getNOT == "01" (new_software_available).
 
     The SYR Connect API does not expose the actual target firmware version, so
@@ -102,32 +99,21 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         project_id: str,
     ) -> None:
         """Initialize the update entity."""
-        super().__init__(coordinator)
+        # build_device_info() (in the base class) already replaces a bare-serial device name
+        # with "<model> (<serial>)" when no real device name is available - that's what
+        # shows as the heading in the Settings > Updates overview.
+        super().__init__(
+            coordinator, device_id, device_name, "update", "getNOT", translation_key="getnot_update"
+        )
 
-        self._device_id = device_id
-        self._device_name = device_name
         self._project_id = project_id
         self._install_started: float | None = None
 
         # "_update" suffix keeps this apart from the existing getNOT sensor's
-        # unique_id, mirroring switch.py's "_switch" suffix convention.
+        # unique_id, mirroring switch.py's "_switch" suffix convention. Built in lowercase,
+        # unlike the base class; must stay unchanged to keep existing registry entries.
         self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id.lower(), "getNOT_update".lower())
-        self._attr_has_entity_name = True
-        self._attr_translation_key = "getnot_update"
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
-
-        self.entity_id = build_entity_id("update", device_id, "getNOT")
-        # build_device_info() already replaces a bare-serial device name with
-        # "<model> (<serial>)" when no real device name is available - that's
-        # what shows as the heading in the Settings > Updates overview.
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
-
-    def _get_status(self) -> dict:
-        """Return the current status dict for this device, or {} if not found."""
-        for device in self.coordinator.data.get("devices", []):
-            if device["id"] == self._device_id:
-                return device.get("status", {})
-        return {}
 
     @property
     def available(self) -> bool:
@@ -135,12 +121,12 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         # The device goes offline while flashing; stay available so the progress bar remains visible.
         if self.in_progress:
             return True
-        return is_device_available(self.coordinator, self._device_id)
+        return super().available
 
     @property
     def installed_version(self) -> str | None:
         """Return the currently installed firmware version (getVER)."""
-        version = self._get_status().get("getVER")
+        version = self._status.get("getVER")
         return str(version) if version else None
 
     @property
@@ -153,7 +139,7 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
         reports an update as available; otherwise report the installed version
         unchanged (no update pending).
         """
-        status = self._get_status()
+        status = self._status
         mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
         if mapped == "new_software_available":
             return NEW_VERSION_PLACEHOLDER
@@ -171,7 +157,7 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
     def _handle_coordinator_update(self) -> None:
         """Finish the progress state on getNOT == "04" (new_software_installed) or timeout."""
         if self._install_started is not None:
-            status = self._get_status()
+            status = self._status
             mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
             _LOGGER.debug("Firmware update %s in progress, getNOT=%s", self._device_id, status.get("getNOT"))
             if mapped == "new_software_installed":
@@ -188,11 +174,10 @@ class SyrConnectFirmwareUpdate(CoordinatorEntity, UpdateEntity):
 
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         """Trigger a firmware update by sending setUPG (always with an empty value)."""
-        coordinator = cast(SyrConnectDataUpdateCoordinator, self.coordinator)
-        _LOGGER.debug("Triggering firmware update for %s (getNOT=%s)", self._device_id, self._get_status().get("getNOT"))
+        _LOGGER.debug("Triggering firmware update for %s (getNOT=%s)", self._device_id, self._status.get("getNOT"))
         self._install_started = monotonic()
         try:
-            await coordinator.async_set_device_value(self._device_id, "setUPG", "")
+            await self.coordinator.async_set_device_value(self._device_id, "setUPG", "")
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             self._install_started = None
             raise HomeAssistantError(f"Failed to trigger firmware update: {err}") from err

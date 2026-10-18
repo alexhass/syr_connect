@@ -12,19 +12,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_VALVE_KNOWN_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
-    build_device_info,
-    build_entity_id,
     build_set_ab_command,
-    build_unique_id,
     get_model_known_keys,
     get_sensor_ab_value,
-    is_device_available,
     registry_cleanup,
 )
 from .models import detect_model
@@ -97,7 +93,7 @@ async def async_setup_entry(
         _LOGGER.debug("No valve entities to add")
 
 
-class SyrConnectValve(CoordinatorEntity, ValveEntity):
+class SyrConnectValve(SyrConnectEntity, ValveEntity):
     """Representation of a SYR Connect valve (shut-off).
 
     The entity exposes `is_closed`, `is_opening` and `is_closing`
@@ -123,26 +119,9 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
             device_name: Device display name
             sensor_key: Sensor key (e.g., 'getBUZ')
         """
-        super().__init__(coordinator)
-
-        self._device_id = device_id
-        self._device_name = device_name
         # support legacy callers that omit sensor_key
         self._sensor_key = sensor_key or "getAB"
-
-        # Set unique ID and translation key
-        self._attr_has_entity_name = True
-        self._attr_translation_key = self._sensor_key.lower()
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, self._sensor_key)
-
-        # Keep a typed reference to the coordinator to access integration-specific helpers
-        self._sc_coordinator: SyrConnectDataUpdateCoordinator = coordinator
-
-        # Override the entity_id to use technical name (serial number) with domain prefix
-        self.entity_id = build_entity_id("valve", device_id, self._sensor_key)
-
-        # Build device info from coordinator data
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        super().__init__(coordinator, device_id, device_name, "valve", self._sensor_key)
 
         # Enable valve entities by default
         self._attr_entity_registry_enabled_default = True
@@ -164,24 +143,6 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         # Home Assistant UI.
         self._attr_device_class = ValveDeviceClass.WATER
 
-    def _get_device(self) -> dict | None:
-        """Return the device dict for this entity, or None if not present."""
-        for dev in self.coordinator.data.get("devices", []):
-            if dev.get("id") == self._device_id:
-                return dev
-        return None
-
-    def _get_status(self) -> dict | None:
-        """Return the status dict for this entity's device, or None.
-
-        The coordinator stores a list of devices; this helper locates
-        the current device by id and returns its `status` mapping.
-        """
-        dev = self._get_device()
-        if not dev:
-            return None
-        return dev.get("status", {})
-
     @property
     def extra_state_attributes(self) -> dict[str, str] | None:
         """Return additional state attributes including raw API values.
@@ -189,7 +150,7 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         We expose the raw `getVLV` and `getAB` values as attributes so
         users and automations can inspect the low-level API payload.
         """
-        status = self._get_status()
+        status = self._status
         if not status:
             return None
         attrs: dict[str, str] = {}
@@ -204,9 +165,9 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
     @property
     def is_closed(self) -> bool | None:
         """Return True if valve is closed, False if open, None if unknown."""
-        status = self._get_status()
-        if status is None:
+        if self._device is None:
             return None
+        status = self._status
 
         return get_sensor_ab_value(status)
 
@@ -216,9 +177,9 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
         This maps `getVLV == 21` to an opening state.
         """
-        status = self._get_status()
-        if status is None:
+        if self._device is None:
             return None
+        status = self._status
         vlv = status.get("getVLV")
         if vlv is None or vlv == "":
             return None
@@ -233,9 +194,9 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
         This maps `getVLV == 11` to a closing state.
         """
-        status = self._get_status()
-        if status is None:
+        if self._device is None:
             return None
+        status = self._status
         vlv = status.get("getVLV")
         if vlv is None or vlv == "":
             return None
@@ -244,20 +205,16 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
         except (ValueError, TypeError):
             return None
 
-    @property
-    def available(self) -> bool:
-        return is_device_available(self.coordinator, self._device_id)
-
     async def async_open(self) -> None:
         """Open the valve (send `setAB` -> open value)."""
-        ab_cmd = build_set_ab_command(self._get_status() or {}, False)
+        ab_cmd = build_set_ab_command(self._status, False)
         if ab_cmd is None:
             raise HomeAssistantError(f"Cannot open valve {self._device_id}: unknown getAB format")
         set_key, set_val = ab_cmd
 
         try:
             # Send command to backend; prepend alarm-clear when an alarm is active.
-            await self._sc_coordinator.async_open_valve(self._device_id, set_key, set_val)
+            await self.coordinator.async_open_valve(self._device_id, set_key, set_val)
         except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
             _LOGGER.error("Failed to open valve %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to open valve {self._device_id}: {err}") from err
@@ -267,13 +224,13 @@ class SyrConnectValve(CoordinatorEntity, ValveEntity):
 
         See `async_open` for behavior and error handling.
         """
-        ab_cmd = build_set_ab_command(self._get_status() or {}, True)
+        ab_cmd = build_set_ab_command(self._status, True)
         if ab_cmd is None:
             raise HomeAssistantError(f"Cannot close valve {self._device_id}: unknown getAB format")
         set_key, set_val = ab_cmd
 
         try:
-            await self._sc_coordinator.async_set_device_value(self._device_id, set_key, set_val)
+            await self.coordinator.async_set_device_value(self._device_id, set_key, set_val)
         except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
             _LOGGER.error("Failed to close valve %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to close valve {self._device_id}: {err}") from err
