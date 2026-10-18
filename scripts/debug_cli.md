@@ -1,5 +1,15 @@
 # debug_cli.py - Command Reference
 
+## Requirements
+
+The script needs the dependencies of the project's virtualenv (`aiohttp`, Home Assistant, ...). Run it from the repository root with the virtualenv's Python:
+
+```powershell
+.venv\Scripts\python.exe scripts/debug_cli.py --username ... --password ...
+```
+
+Or activate the virtualenv first (`.venv\Scripts\activate.bat` in cmd, `.venv\Scripts\Activate.ps1` in PowerShell, `source .venv/bin/activate` on Linux/macOS); the examples below then work with `python`. If a module is missing, the script prints these instructions and exits.
+
 ## Options
 
 | Option | Default | Description |
@@ -13,7 +23,7 @@
 | `--user-agent STRING` | `_SYR_CONNECT_CLIENT_USER_AGENT` from `const.py` | HTTP User-Agent header |
 | `--list-devices` | - | List devices after login (prints `Project`, `id`, `dclg`, `name`) and exit |
 | `--identity DEVICE` | - | Target device identifier (matches `id`, `dclg`, `serial_number` or `name`) for a one-shot set command |
-| `--set-command CMD` | - | Set command to execute (e.g. `setSIR`, `setSV1`). Requires `--set-device` and `--set-value` |
+| `--set-command CMD` | - | Set command to execute (e.g. `setSIR`, `setSV1`). Requires `--identity` and `--set-value` |
 | `--set-value VALUE` | - | Value to use with `--set-command`. Parsed as `true`/`false` → bool, numbers → int/float, otherwise string |
 | `--get-devices` | - | Fetch device list for every project after login |
 | `--get-status` | - | Fetch device status for every device (implies `--get-devices`) |
@@ -72,7 +82,7 @@ python scripts/debug_cli.py `
     --set-value 10
 ```
 
-Note: `--set-command` requires `--set-device` and `--set-value`. The script parses `"true"`/`"false"` to booleans, numeric strings to `int`/`float`, otherwise the raw string is sent.
+Note: `--set-command` requires `--identity` and `--set-value`. The script parses `"true"`/`"false"` to booleans, numeric strings to `int`/`float`, otherwise the raw string is sent.
 
 #### With custom log file
 

@@ -52,7 +52,7 @@ import asyncio
 import logging
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 # ---------------------------------------------------------------------------
 # Make the custom_components package importable when running from repo root
@@ -60,26 +60,63 @@ from typing import Any
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
-import aiohttp  # noqa: E402  (after sys.path manipulation)
 
-from custom_components.syr_connect.checksum import SyrChecksum  # noqa: E402
-from custom_components.syr_connect.const import (  # noqa: E402
-    _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
-    _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
-    _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
-    _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
-    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
-    _SYR_CONNECT_CLIENT_OS_MODEL,
-    _SYR_CONNECT_CLIENT_OS_NAME,
-    _SYR_CONNECT_CLIENT_OS_VERSION,
-    _SYR_CONNECT_CLIENT_USER_AGENT,
-)
-from custom_components.syr_connect.encryption import SyrEncryption  # noqa: E402
-from custom_components.syr_connect.http_client import HTTPClient  # noqa: E402
-from custom_components.syr_connect.payload_builder import PayloadBuilder  # noqa: E402
-from custom_components.syr_connect.response_parser import ResponseParser  # noqa: E402
+def _exit_missing_dependency(err: ModuleNotFoundError) -> NoReturn:
+    """Explain how to run the script with the project's virtualenv, then exit."""
+    if sys.platform == "win32":
+        venv_python = _REPO_ROOT / ".venv" / "Scripts" / "python.exe"
+        activate = r".venv\Scripts\activate.bat  (PowerShell: .venv\Scripts\Activate.ps1)"
+    else:
+        venv_python = _REPO_ROOT / ".venv" / "bin" / "python"
+        activate = "source .venv/bin/activate"
+    lines = [
+        f"Error: the Python module '{err.name}' is not installed for this interpreter:",
+        f"    {sys.executable}",
+        "",
+    ]
+    if venv_python.exists():
+        lines += [
+            "Run the script with the project's virtualenv:",
+            f"    {venv_python} {Path(__file__).resolve()} --username ... --password ...",
+            "",
+            f"or activate it first (from {_REPO_ROOT}):",
+            f"    {activate}",
+            "    python scripts/debug_cli.py --username ... --password ...",
+        ]
+    else:
+        lines += [
+            f"Create the project's virtualenv and install the dependencies (from {_REPO_ROOT}):",
+            "    python -m venv .venv",
+            f"    {activate}",
+            "    pip install -r requirements-dev.txt",
+        ]
+    print("\n".join(lines), file=sys.stderr)
+    sys.exit(1)
+
+
+try:
+    import aiohttp  # noqa: E402  (after sys.path manipulation)
+
+    from custom_components.syr_connect.checksum import SyrChecksum  # noqa: E402
+    from custom_components.syr_connect.const import (  # noqa: E402
+        _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
+        _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
+        _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
+        _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+        _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
+        _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
+        _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        _SYR_CONNECT_CLIENT_OS_MODEL,
+        _SYR_CONNECT_CLIENT_OS_NAME,
+        _SYR_CONNECT_CLIENT_OS_VERSION,
+        _SYR_CONNECT_CLIENT_USER_AGENT,
+    )
+    from custom_components.syr_connect.encryption import SyrEncryption  # noqa: E402
+    from custom_components.syr_connect.http_client import HTTPClient  # noqa: E402
+    from custom_components.syr_connect.payload_builder import PayloadBuilder  # noqa: E402
+    from custom_components.syr_connect.response_parser import ResponseParser  # noqa: E402
+except ModuleNotFoundError as err:
+    _exit_missing_dependency(err)
 
 # ---------------------------------------------------------------------------
 # Logging setup -- maximum verbosity on every relevant logger
