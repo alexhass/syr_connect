@@ -720,10 +720,12 @@ class SyrConnectNumericSelect(CoordinatorEntity, SelectEntity):
                 return None
             try:
                 num = int(float(val))
-                # Return the option that starts with the scaled display value (preserves unit if present)
+                # Return the option whose number (first token; options may carry a unit suffix,
+                # e.g. "20 s") equals the scaled display value. Same parsing as async_select_option.
+                # A prefix match would wrongly pick "20 s" for the value 2.
                 label = _format_scaled(num, self._scale)
                 for opt in self._options:
-                    if opt.startswith(label):
+                    if opt.split(" ", 1)[0] == label:
                         return opt
                 return label
             except (ValueError, TypeError, AttributeError):

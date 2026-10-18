@@ -3195,6 +3195,40 @@ async def test_ald_select_current_option_and_selection(
     coordinator.async_set_device_value.assert_called_once_with("device1", "setALD", 120)
 
 
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("1", "1 s"),  # not "10 s", which also starts with "1"
+        ("5", "5 s"),
+        ("10", "10 s"),
+        ("20", "20 s"),
+        ("2", None),  # off the documented steps: unknown, not "20 s"
+    ],
+)
+async def test_ald_select_current_option_matches_whole_number(
+    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, raw: str, expected: str | None
+) -> None:
+    """A value off the step list is not shown as the option that merely starts with it (2 is not "20 s")."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getVER": "Syr Floorsensor 2.23", "getALD": raw},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    select = next(e for e in entities if getattr(e, "_sensor_key", None) == "getALD")
+    # Values off the list are returned unmatched, so HA shows the state as unknown
+    assert (select.current_option if select.current_option in select.options else None) == expected
+
+
 async def test_mit_mxt_select_off_sentinel_current_option(hass: HomeAssistant) -> None:
     """getMIT/getMXT expose a dedicated 'Off' sentinel option outside the normal stepped range."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "status": {"getMIT": "-400", "getMXT": "700"}}]}
