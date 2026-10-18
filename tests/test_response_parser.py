@@ -945,3 +945,12 @@ def test_trio_minimal_status_of_online_device_is_still_ignored(parser):
     path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml")
     with open(path, encoding="utf-8") as f:
         assert parser.parse_device_status_response(f.read()) is None
+
+
+def test_offline_device_does_not_exempt_glitching_online_device(parser):
+    """The offline exemption is per device: an offline device must not let an online Trio glitch through."""
+    offline = {"@dclg": "a", "@dst": "1", "c": {"@n": "getSRN", "@v": "1"}}
+    glitch = {"@dclg": "b", "@dst": "2", "c": [{"@n": "getSRN", "@v": "2"}, {"@n": "getALA", "@v": "0"}]}
+
+    assert parser._ignore_broken_response([offline, glitch]) is True
+    assert parser._ignore_broken_response([offline]) is False

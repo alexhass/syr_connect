@@ -354,7 +354,7 @@ class ResponseParser:
         """Ignore broken responses
 
         Dirty workaround:
-        1. Syr Trio DFR/LS: For unknown reaons the device very often returns an XML
+        1. Syr Trio DFR/LS: For unknown reasons the device very often returns an XML
            response with getSRN, getALA, getNOT, getWRN only. This causes unwanted
            sensor status flapping. This need to be ignored.
         """
@@ -383,10 +383,15 @@ class ResponseParser:
         # no more data than this; its minimal answer is genuine, not the Trio glitch
         # (which comes from online devices, dst="2"). Parsing it lets the coordinator
         # mark the device unavailable instead of keeping it "available" with no status.
-        if any(isinstance(d, dict) and str(d.get('@dst', '')).strip() in ('0', '1') for d in devices):
+        # Exempt only the offline devices, so an online one in the same response is still checked.
+        online_devices = [
+            d for d in devices if not (isinstance(d, dict) and str(d.get('@dst', '')).strip() in ('0', '1'))
+        ]
+        if not online_devices:
             return False
 
-        c_names_list: list[set] = [get_c_names(d) for d in devices]
+        # Collect the <c n="..."> names reported by each online device
+        c_names_list: list[set] = [get_c_names(d) for d in online_devices]
 
         # If every device has at least one c-name and all names are a subset
         # of the minimal broken set, ignore the response.
