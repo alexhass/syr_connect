@@ -419,7 +419,7 @@ class ResponseParser:
         # If every device has at least one c-name and all names are a subset
         # of the minimal broken set, ignore the response.
         if c_names_list and all(names and names.issubset(broken_names) for names in c_names_list):
-            _LOGGER.debug("Ignoring status response: minimal c-names present %s", c_names_list)
+            _LOGGER.debug("Ignoring status response: incomplete c-names present %s", c_names_list)
             return True
 
         # Only treat as broken when minimal c-names are present.
