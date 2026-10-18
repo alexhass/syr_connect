@@ -531,7 +531,7 @@ def test_parse_device_list_project_without_devices_fixture(parser):
         assert parser.parse_device_list_response(f.read()) == []
 
 
-INVALID_TOKEN_XML_PATH =os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_InvalidToken.xml")
+INVALID_TOKEN_XML_PATH =os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_InvalidSessionResponse.xml")
 
 
 @pytest.mark.parametrize(

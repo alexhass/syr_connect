@@ -80,7 +80,7 @@ test fixtures, and in the parsing/encryption layers implemented here.
   - The response parser recognizes the message by `mtid="1"` (language-independent) and raises `SyrConnectSessionExpiredError` (a `SyrConnectConnectionError`): `_raise_if_session_expired()` / `raise_if_session_expired()` in `custom_components/syr_connect/response_parser.py`.
   - `SyrConnectXmlAPI._post_with_session()` in `custom_components/syr_connect/api_xml.py` then logs in again and repeats the request once with the new token. Parallel requests that get the rejection at the same time share one login (`_relogin()`, guarded by a lock). If the new token is rejected as well, the error is handled like any other connection error: logged, entities keep their last values.
   - There is no client-side session expiry: a new login only happens when the server rejects the token.
-  - Fixture: `tests/fixtures/xml/SyrTestDevice_InvalidToken.xml`. Tests: `test_invalid_token_response_raises_session_expired` in `tests/test_response_parser.py`, `test_rejected_token_relogs_in_and_retries_once` and `test_rejected_token_twice_raises_session_expired` in `tests/test_api_xml.py`.
+  - Fixture: `tests/fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml`. Tests: `test_invalid_token_response_raises_session_expired` in `tests/test_response_parser.py`, `test_rejected_token_relogs_in_and_retries_once` and `test_rejected_token_twice_raises_session_expired` in `tests/test_api_xml.py`.
 
 ## References
 

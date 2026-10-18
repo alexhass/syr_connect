@@ -55,7 +55,7 @@ def test_language_defaults(api_client):
     assert api_client.http_client._build_accept_language() == "en-US,en;q=0.9"
 
 
-INVALID_TOKEN_XML = (Path(__file__).parent / "fixtures/xml/SyrTestDevice_InvalidToken.xml").read_text(encoding="utf-8")
+INVALID_TOKEN_XML = (Path(__file__).parent / "fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml").read_text(encoding="utf-8")
 
 
 async def test_session_valid_check(api_client):
