@@ -14,9 +14,16 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 - Classes of this integration start with `SyrConnect` (`SyrConnectXmlAPI`, `SyrConnectDataUpdateCoordinator`).
 - Internal constants live in `const.py` and start with `_SYR_CONNECT_` (`_SYR_CONNECT_API_XML_BASE_URL`). Constants that Home Assistant or other modules use as public names have no prefix (`DOMAIN`, `API_TYPE_JSON`, `CONF_*`).
+- `const.py` is grouped by topic; within a group the constants are sorted alphabetically. Insert new constants at their alphabetical position, without splitting an existing alphabetical run.
 - Constants that stay in their module, at module or class level, also start with `_SYR_CONNECT_` plus the module name (`_SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS`, `_SYR_CONNECT_SENSOR_VALUE_HANDLERS`). Exceptions are names Home Assistant requires, such as `PARALLEL_UPDATES` and `_LOGGER`.
 - Device keys keep the protocol spelling: `getFLO`, `setAB`, `clrALA`. Translation keys use the lowercase form (`getflo`).
 - Private helpers start with an underscore. Module-level helpers that several modules use go into `helpers.py`.
+
+## Formatting for Small Diffs
+
+- Write lists, sets, dicts and long argument lists with one entry per line and a trailing comma, so that adding or removing an entry changes exactly one line in the commit. Do not pack several entries on one line.
+- Keep values that are maintained by hand (option maps, key lists, step lists) as literal entries. Generate them (`range`, comprehensions) only when they follow a documented rule, such as "0-95 in steps of 5", so that a change is a one-line change of that rule.
+- When refactoring, keep existing code where it is and change only what the refactoring needs. Do not reformat, reorder or rewrite unrelated lines.
 
 ## Docstrings and Comments
 

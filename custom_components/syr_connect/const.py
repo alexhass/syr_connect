@@ -1406,3 +1406,146 @@ _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
     "getRVT": 0,    # Maximum filling charges: show as whole number by default
     "getTPR": 1,    # Target pressure: show with 1 decimal place (e.g., 1.8 bar)
 }
+
+# Select options, sorted by name:
+# - `*_MAP`: option maps of the discrete selects: option key (translated by the frontend,
+#   or a label with unit) -> raw device value. None marks the option for an empty raw value.
+# - `*_OPTIONS`: step lists of the numeric selects with non-uniform steps: raw values in
+#   ascending order, shown with the key's unit (see docs/syrconnect-protocol.md).
+
+# Alarm duration (getALD) in seconds, the documented GUI step list: 1, 5, 10, 20, 30,
+# then 1-10 minutes (60-600) in steps of 60
+_SYR_CONNECT_SELECT_ALD_OPTIONS = [
+    1,
+    5,
+    10,
+    20,
+    30,
+    *range(60, 601, 60),
+]
+
+# Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
+# _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
+_SYR_CONNECT_SELECT_CRS_MAP = {
+    f"{v:g} {_SYR_CONNECT_SENSOR_UNIT['getCRS']}": k for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
+}
+
+# Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
+_SYR_CONNECT_SELECT_CRT_MAP = {
+    "none": None,
+    "0": 0,
+    "1": 1,
+    "2": 2,
+}
+
+# TODO: Temporarily disabled - getFCD select (filter backwash interval).
+# Known bug: After writing a new value, the server resets the setting back to its previous value.
+# Root cause is unknown. Re-enable once the write-back issue is resolved, with this option map
+# and a getFCD block in _build_device_selects:
+# _SYR_CONNECT_SELECT_FCD_MAP = {
+#     "2592000": 2592000,
+#     "5184000": 5184000,
+#     "7776000": 7776000,
+#     "10368000": 10368000,
+#     "12960000": 12960000,
+#     "15552000": 15552000,
+#     "18144000": 18144000,
+#     "20736000": 20736000,
+#     "23328000": 23328000,
+#     "25920000": 25920000,
+#     "28512000": 28512000,
+#     "31104000": 31104000,
+# }
+
+# Minimum humidity threshold (getMIH): 0-95 % in steps of 5. The lower boundary 0 doubles
+# as "Off" (per docs/syrconnect-protocol.md), so no separate raw sentinel value is needed,
+# unlike getMIT. Options are raw values; display labels (including the "Off" text) come
+# from the select.getmih translation "state" map.
+_SYR_CONNECT_SELECT_MIH_MAP = {str(v): v for v in range(0, 96, 5)}
+
+# Minimum temperature threshold (getMIT): raw 1/10 °C, -30 to 49 °C in steps of 1 °C, with a
+# dedicated "Off" sentinel (-400) outside the normal stepped range (see docs/syrconnect-protocol.md).
+# Display labels come from the select.getmit translation "state" map.
+# Option keys must match hassfest's [a-z0-9-_]+ (no leading hyphen), so negatives use "minus_".
+_SYR_CONNECT_SELECT_MIT_MAP = {"off": -400} | {
+    (f"minus_{-d * 10}" if d < 0 else str(d * 10)): d * 10 for d in range(-30, 50)
+}
+
+# Maximum humidity threshold (getMXH): 5-100 % in steps of 5. The upper boundary 100 doubles
+# as "Off" (per docs/syrconnect-protocol.md), so no separate raw sentinel value is needed,
+# unlike getMXT. Display labels come from the select.getmxh translation "state" map.
+_SYR_CONNECT_SELECT_MXH_MAP = {str(v): v for v in range(5, 101, 5)}
+
+# Maximum temperature threshold (getMXT): raw 1/10 °C, 1-50 °C in steps of 1 °C, with a dedicated "Off"
+# sentinel (700). It is numerically above the range, so it sorts last.
+# Display labels come from the select.getmxt translation "state" map.
+_SYR_CONNECT_SELECT_MXT_MAP = {str(d * 10): d * 10 for d in range(1, 51)} | {"off": 700}
+
+# Filling processes period (getRCD): 0=hour, 1=day, 2=week, 3=month (empty value = undefined)
+_SYR_CONNECT_SELECT_RCD_MAP = {
+    "undefined": None,
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+}
+
+# Settings synchronisation interval (getRCP) in seconds: non-uniform duration steps as
+# documented in docs/syrconnect-protocol.md. Display labels come from the select.getrcp
+# translation "state" map.
+_SYR_CONNECT_SELECT_RCP_MAP = {
+    "3600": 3600,
+    "7200": 7200,
+    "10800": 10800,
+    "21600": 21600,
+    "43200": 43200,
+    "86400": 86400,
+    "172800": 172800,
+    "259200": 259200,
+    "345600": 345600,
+    "432000": 432000,
+    "518400": 518400,
+    "604800": 604800,
+    "691200": 691200,
+    "777600": 777600,
+    "1209600": 1209600,
+}
+
+# Regeneration mode (getRMO): 1=Standard, 2=ECO, 3=Power, 4=Automatic
+_SYR_CONNECT_SELECT_RMO_MAP = {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+}
+
+# Maximum filling duration (getRMT) in minutes: 1-5 (step 1), 10, 15-60 (step 15), 60-720 (step 30)
+_SYR_CONNECT_SELECT_RMT_OPTIONS = sorted({
+    *range(1, 6),
+    10,
+    *range(15, 61, 15),
+    *range(60, 721, 30),
+})
+
+# Maximum filling charges (getRVT) in liters: 0=off, 10-100 in steps of 10,
+# 100-1000 in steps of 50, 1000-9900 in steps of 100
+_SYR_CONNECT_SELECT_RVT_OPTIONS = sorted({
+    0,
+    *range(10, 101, 10),
+    *range(100, 1001, 50),
+    *range(1000, 9901, 100),
+})
+
+# Measurement interval (getWMP) in seconds: non-uniform duration steps as documented in
+# docs/syrconnect-protocol.md. Display labels come from the select.getwmp translation "state" map.
+_SYR_CONNECT_SELECT_WMP_MAP = {
+    "60": 60,
+    "600": 600,
+    "900": 900,
+    "1800": 1800,
+    "3600": 3600,
+    "7200": 7200,
+    "10800": 10800,
+    "21600": 21600,
+    "43200": 43200,
+}
