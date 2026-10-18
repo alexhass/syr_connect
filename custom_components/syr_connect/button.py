@@ -44,6 +44,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_unique_id,
+    find_entity_id,
     get_model_known_keys,
     is_device_available,
     registry_cleanup,
@@ -159,23 +160,14 @@ async def async_setup_entry(
             continue
         try:
             registry = er.async_get(hass)
-            prefix = f"button.syr_connect_{device_id.lower()}_"
-            for reg_entry in list(registry.entities.values()):
-                if coordinator.entry_id is not None and reg_entry.config_entry_id != coordinator.entry_id:
+            for command, _name in action_buttons:
+                if command in created_commands:
                     continue
-                if not reg_entry.entity_id.startswith(prefix):
-                    continue
-                key = reg_entry.entity_id[len(prefix):]
-                # Reconstruct the original command (e.g. "setsir" -> "setSIR")
-                # by checking against all known commands case-insensitively.
-                for known_cmd in action_buttons:
-                    if known_cmd[0].lower() == key and known_cmd[0] not in created_commands:
-                        _LOGGER.debug(
-                            "Removing conditionally-skipped button from registry: %s",
-                            reg_entry.entity_id,
-                        )
-                        registry.async_remove(reg_entry.entity_id)
-                        break
+                # Found by unique_id, so a renamed or "_2"-suffixed button is removed as well
+                stale_entity_id = find_entity_id(registry, "button", coordinator.entry_id, device_id, command)
+                if stale_entity_id is not None:
+                    _LOGGER.debug("Removing conditionally-skipped button from registry: %s", stale_entity_id)
+                    registry.async_remove(stale_entity_id)
         except Exception:
             _LOGGER.exception(
                 "Failed to remove conditionally-skipped buttons for device %s", device_id

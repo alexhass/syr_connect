@@ -419,46 +419,49 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
     assert len(entities) == 1
 
 
+def _register_button(hass: HomeAssistant, unique_id: str, object_id: str = "syr_connect_device1_setsir") -> str:
+    """Register a button of this integration in the real entity registry and return its entity_id."""
+    from homeassistant.helpers import entity_registry as er
+
+    from custom_components.syr_connect.const import DOMAIN
+
+    return er.async_get(hass).async_get_or_create("button", DOMAIN, unique_id, suggested_object_id=object_id).entity_id
+
+
+def _registered(hass: HomeAssistant, entity_id: str) -> bool:
+    from homeassistant.helpers import entity_registry as er
+
+    return er.async_get(hass).async_get(entity_id) is not None
+
+
+@pytest.mark.parametrize("object_id", ["syr_connect_device1_setsir", "regenerate_now_renamed"])
 async def test_async_setup_entry_removes_stale_setsir_from_registry(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator,
     mock_add_entities,
+    object_id: str,
 ) -> None:
-    """Test that a previously-registered setSIR button is removed from the registry
-    when the device no longer reports a getSIR key in its status."""
-    from unittest.mock import MagicMock, patch
+    """A previously-registered setSIR button is removed when the device no longer reports getSIR.
 
+    Found by unique_id, so this also works when the user renamed the entity_id.
+    """
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getFLO": "5"},  # getSIR is absent — button must not be created
+                "status": {"getFLO": "5"},  # getSIR is absent: button must not be created
             }
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
+    stale_entity_id = _register_button(hass, "device1_setSIR", object_id)
 
-    stale_entity_id = "button.syr_connect_device1_setsir"
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    class FakeEntry:
-        def __init__(self, eid: str, unique_id: str) -> None:
-            self.entity_id = eid
-            self.unique_id = unique_id
-            self.platform = "syr_connect"
-            self.domain = eid.split(".")[0]
-            self.config_entry_id = None
-
-    mock_registry = MagicMock()
-    mock_registry.async_remove = MagicMock()
-    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id, "device1_setSIR")}
-
-    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
-        await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    mock_registry.async_remove.assert_called_once_with(stale_entity_id)
+    assert not _registered(hass, stale_entity_id)
     assert len(entities) == 0
 
 
@@ -468,21 +471,14 @@ async def test_async_setup_entry_keeps_buttons_without_status(
     mock_add_entities,
 ) -> None:
     """Without a status (not fetched yet, e.g. temporary failure at startup) no button is removed."""
-    from unittest.mock import MagicMock, patch
-
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
+    stale_entity_id = _register_button(hass, "device1_setSIR")
 
-    stale_entity_id = "button.syr_connect_device1_setsir"
-    mock_registry = MagicMock()
-    mock_registry.async_remove = MagicMock()
-    mock_registry.entities = {stale_entity_id: MagicMock(entity_id=stale_entity_id, config_entry_id=None)}
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
-        await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    mock_registry.async_remove.assert_not_called()
+    assert _registered(hass, stale_entity_id)
 
 
 async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
@@ -490,42 +486,24 @@ async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """Cleanup loop skips registry entries that belong to a different device (line 121 continue)."""
-    from unittest.mock import MagicMock, patch
-
+    """The button cleanup of one device does not remove buttons of another device."""
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": "false"},
+                "status": {"getFLO": "5"},  # getSIR is absent: device1's setSIR would be removed
             }
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
+    other_entity_id = _register_button(hass, "other_device_setSIR", "syr_connect_other_device_setsir")
 
-    # An entry for a completely different device — should be skipped (continue)
-    other_entity_id = "button.syr_connect_other_device_setsir"
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    class FakeEntry:
-        def __init__(self, eid: str, unique_id: str) -> None:
-            self.entity_id = eid
-            self.unique_id = unique_id
-            self.platform = "syr_connect"
-            self.domain = eid.split(".")[0]
-            self.config_entry_id = None
-
-    mock_registry = MagicMock()
-    mock_registry.async_remove = MagicMock()
-    mock_registry.entities = {other_entity_id: FakeEntry(other_entity_id, "other_device_setSIR")}
-
-    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
-        await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    # The other-device entry must NOT be removed by this device's cleanup pass
-    mock_registry.async_remove.assert_not_called()
+    assert _registered(hass, other_entity_id)
 
 
 async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
@@ -533,43 +511,25 @@ async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """Cleanup loop skips registry entries owned by a different config entry (line 147 continue)."""
-    from unittest.mock import MagicMock, patch
-
+    """The same device's button owned by another config entry (second hub) is not removed."""
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getFLO": "5"},  # getSIR is absent — button must not be created
+                "status": {"getFLO": "5"},  # getSIR is absent: button must not be created
             }
         ]
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     mock_coordinator.entry_id = "this_entry"
     entities, async_add_entities = mock_add_entities()
+    other_hub_entity_id = _register_button(hass, "other_entry_device1_setSIR")
 
-    # Entity_id prefix matches this device, but it belongs to a different config entry
-    stale_entity_id = "button.syr_connect_device1_setsir"
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    class FakeEntry:
-        def __init__(self, eid: str, config_entry_id: str) -> None:
-            self.entity_id = eid
-            self.unique_id = f"{config_entry_id}_device1_setSIR"
-            self.platform = "syr_connect"
-            self.domain = "button"
-            self.config_entry_id = config_entry_id
-
-    mock_registry = MagicMock()
-    mock_registry.async_remove = MagicMock()
-    mock_registry.entities = {stale_entity_id: FakeEntry(stale_entity_id, "other_entry")}
-
-    with patch("homeassistant.helpers.entity_registry.async_get", return_value=mock_registry):
-        await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    # The entry belongs to a different config entry, so it must be skipped, not removed
-    mock_registry.async_remove.assert_not_called()
+    assert _registered(hass, other_hub_entity_id)
 
 
 async def test_async_setup_entry_registry_cleanup_exception_is_caught(

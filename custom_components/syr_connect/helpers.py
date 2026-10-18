@@ -272,6 +272,25 @@ def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
     return f"{device_id}_{key}"
 
 
+def find_entity_id(registry: er.EntityRegistry, domain: str, entry_id: str | None, device_id: str, key: str) -> str | None:
+    """Return the entity_id registered for an entity of this integration, or None.
+
+    Looks the entity up by its unique_id (see build_unique_id), not by the entity_id
+    built from the key: HA appends "_2" to the entity_id when the same device is set up
+    via a second hub, and users may rename it. Because the unique_id contains the
+    entry_id, only entities of this config entry are found.
+
+    Args:
+        registry: The entity registry.
+        domain: Entity domain (e.g. "sensor").
+        entry_id: Owning config entry ID, or None if unavailable.
+        device_id: Device ID (serial number).
+        key: Entity key as passed to build_unique_id, including any platform
+            suffix (e.g. "getOHW_select").
+    """
+    return registry.async_get_entity_id(domain, DOMAIN, build_unique_id(entry_id, device_id, key))
+
+
 def get_model_known_keys(model_info: dict[str, Any], platform: str, global_known_keys: set[str]) -> set[str]:
     """Return the known-keys allowlist for a platform, scoped to the detected model.
 

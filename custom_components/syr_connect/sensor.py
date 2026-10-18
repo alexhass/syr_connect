@@ -41,6 +41,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_unique_id,
+    find_entity_id,
     get_model_known_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
@@ -180,17 +181,13 @@ async def async_setup_entry(
                     # startup), which says nothing about the profiles, like in registry_cleanup.
                     for gk in group_keys:
                         try:
-                            entity_id = build_entity_id("sensor", device_id, gk)
-                            registry_entry = registry.async_get(entity_id)
-                            owned_by_this_entry = (
-                                coordinator.entry_id is None
-                                or getattr(registry_entry, "config_entry_id", None) == coordinator.entry_id
-                            )
-                            if registry_entry is not None and hasattr(registry_entry, "entity_id") and owned_by_this_entry:
-                                _LOGGER.debug("Removing sensor due to getPA=false: %s", entity_id)
-                                registry.async_remove(registry_entry.entity_id)
+                            # Found by unique_id, so a renamed or "_2"-suffixed sensor is removed as well
+                            stale_entity_id = find_entity_id(registry, "sensor", coordinator.entry_id, device_id, gk)
+                            if stale_entity_id is not None:
+                                _LOGGER.debug("Removing sensor due to getPA=false: %s", stale_entity_id)
+                                registry.async_remove(stale_entity_id)
                         except RuntimeError:
-                            _LOGGER.exception("Failed to remove sensor %s", entity_id)
+                            _LOGGER.exception("Failed to remove sensor %s for device %s", gk, device_id)
                         # Ensure group keys are marked as handled so they are not recreated
                         # later when iterating over status.items().
                         handled_keys.add(gk)
@@ -323,13 +320,10 @@ def _async_setup_muco_conditional_sensors(
                 wanted_set = {wanted} if wanted else set()
 
                 for key in current - wanted_set:
-                    entity_id = build_entity_id("sensor", device_id, key)
-                    existing = registry.async_get(entity_id)
-                    if existing is not None and (
-                        coordinator.entry_id is None or existing.config_entry_id == coordinator.entry_id
-                    ):
-                        _LOGGER.debug("Removing conditionally hidden sensor from registry: %s", entity_id)
-                        registry.async_remove(entity_id)
+                    stale_entity_id = find_entity_id(registry, "sensor", coordinator.entry_id, device_id, key)
+                    if stale_entity_id is not None:
+                        _LOGGER.debug("Removing conditionally hidden sensor from registry: %s", stale_entity_id)
+                        registry.async_remove(stale_entity_id)
                     current.discard(key)
 
                 for key in wanted_set - current:

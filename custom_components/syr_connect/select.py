@@ -29,6 +29,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_unique_id,
+    find_entity_id,
     get_model_known_keys,
     get_sensor_rtm_value,
     is_device_available,
@@ -525,13 +526,13 @@ def _async_setup_muco_conditional_selects(
                 wanted_set = {wanted} if wanted else set()
 
                 for key in current - wanted_set:
-                    entity_id = build_entity_id("select", device_id, key)
-                    existing = registry.async_get(entity_id)
-                    if existing is not None and (
-                        coordinator.entry_id is None or existing.config_entry_id == coordinator.entry_id
-                    ):
-                        _LOGGER.debug("Removing conditionally hidden select from registry: %s", entity_id)
-                        registry.async_remove(entity_id)
+                    # Selects use the "<key>_select" unique_id suffix (see SyrConnectDiscreteSelect/NumericSelect)
+                    stale_entity_id = find_entity_id(
+                        registry, "select", coordinator.entry_id, device_id, f"{key}_select"
+                    )
+                    if stale_entity_id is not None:
+                        _LOGGER.debug("Removing conditionally hidden select from registry: %s", stale_entity_id)
+                        registry.async_remove(stale_entity_id)
                     current.discard(key)
 
                 for key in wanted_set - current:
