@@ -10,7 +10,6 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -30,8 +29,8 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .exceptions import CannotConnectError, HostInvalidError, InvalidAuthError
-from .helpers import get_api_locale, get_default_scan_interval_for_entry, is_valid_host
+from .exceptions import CannotConnectError, HostInvalidError, HostWithPortError, InvalidAuthError
+from .helpers import get_api_locale, get_default_scan_interval_for_entry, host_has_port, is_valid_host
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
@@ -173,6 +172,10 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
 
     # Use central helper for IP/hostname validation
     if not is_valid_host(host):
+        # A port gets its own error, so the user is told to leave it out (host_no_port)
+        if host_has_port(host):
+            _LOGGER.error("Host field must not include a port. Received: %s", host)
+            raise HostWithPortError("Host must not include a port.")
         _LOGGER.error("Host field is not a valid IP address or hostname. Received: %s", host)
         raise HostInvalidError("Host must be a valid IP address or hostname.")
 
@@ -332,6 +335,19 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return f"{API_TYPE_JSON}_{data[CONF_HOST]}"
         return f"{API_TYPE_XML}_{data[CONF_USERNAME]}"
 
+    @staticmethod
+    def _strip_host(user_input: dict[str, Any]) -> dict[str, Any]:
+        """Return the user input with leading/trailing whitespace removed from the host.
+
+        Such whitespace usually comes from copy & paste; it is removed instead of
+        rejecting the host, and the cleaned host is what gets validated and saved
+        (also in the unique_id). Input without a host field is returned unchanged.
+        """
+        host = user_input.get(CONF_HOST)
+        if isinstance(host, str):
+            return {**user_input, CONF_HOST: host.strip()}
+        return user_input
+
     def _unique_id_used_by_other_entry(self, entry: ConfigEntry, unique_id: str) -> bool:
         """Return True if another config entry already uses this unique_id.
 
@@ -409,6 +425,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # At this point, if we reached here after the check above, `entry` must not be None
             assert entry is not None
+            user_input = self._strip_host(user_input)
             try:
                 # Validate and update based on API type
                 if api_type == API_TYPE_JSON:
@@ -443,15 +460,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
-            except HomeAssistantError as err:
-                # Host validation errors for JSON
-                if api_type == API_TYPE_JSON:
-                    if "port" in str(err).lower():
-                        errors[CONF_HOST] = "host_no_port"
-                    else:
-                        errors[CONF_HOST] = "host_invalid"
-                else:
-                    errors["base"] = "unknown"
+            except HostWithPortError:
+                errors[CONF_HOST] = "host_no_port"
+            except HostInvalidError:
+                errors[CONF_HOST] = "host_invalid"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reauth: %s", err)
                 errors["base"] = "unknown"
@@ -492,6 +504,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             # `entry` is guaranteed to be non-None beyond this point
             assert entry is not None
+            user_input = self._strip_host(user_input)
             try:
                 # Determine API type from current entry
                 api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
@@ -523,15 +536,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
-            except HomeAssistantError as err:
-                # Host validation errors for JSON; the XML form has no host field to show them at
-                if api_type == API_TYPE_JSON:
-                    if "port" in str(err).lower():
-                        errors[CONF_HOST] = "host_no_port"
-                    else:
-                        errors[CONF_HOST] = "host_invalid"
-                else:
-                    errors["base"] = "unknown"
+            except HostWithPortError:
+                errors[CONF_HOST] = "host_no_port"
+            except HostInvalidError:
+                errors[CONF_HOST] = "host_invalid"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
                 errors["base"] = "unknown"
@@ -653,6 +661,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            user_input = self._strip_host(user_input)
             _LOGGER.debug(
                 "Processing Local/JSON API config flow for host: %s, model: %s",
                 user_input[CONF_HOST],
@@ -665,13 +674,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_auth"
             except CannotConnectError:
                 errors["base"] = "cannot_connect_local"
+            except HostWithPortError:
+                errors[CONF_HOST] = "host_no_port"
             except HostInvalidError:
                 errors[CONF_HOST] = "host_invalid"
-            except HomeAssistantError as err:
-                if "port" in str(err).lower():
-                    errors[CONF_HOST] = "host_no_port"
-                else:
-                    errors["base"] = "unknown"
             except Exception as err:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
                 errors["base"] = "unknown"

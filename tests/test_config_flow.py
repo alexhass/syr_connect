@@ -19,7 +19,7 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
     DOMAIN,
 )
-from custom_components.syr_connect.exceptions import CannotConnectError
+from custom_components.syr_connect.exceptions import CannotConnectError, HostInvalidError, HostWithPortError
 
 # Patch path for API class (lazy-loaded in config_flow)
 _API_PATCH_PATH = "custom_components.syr_connect.api_xml.SyrConnectXmlAPI"
@@ -250,6 +250,61 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
     assert result3["data"][CONF_MODEL] == "neosoft5000"
     assert result3["data"][CONF_API_TYPE] == API_TYPE_JSON
 
+
+async def test_form_api_json_strips_host_whitespace(hass: HomeAssistant) -> None:
+    """Leading/trailing whitespace around the host is removed before it is validated and saved."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_json"}
+    )
+
+    with (
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            new_callable=AsyncMock,
+            return_value={"getSRN": "12345", "getVER": "test"},
+        ),
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
+            {
+                CONF_HOST: "  192.168.1.100 \t",
+                CONF_MODEL: "neosoft5000",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result3["type"] == FlowResultType.CREATE_ENTRY
+    assert result3["data"][CONF_HOST] == "192.168.1.100"
+    assert result3["result"].unique_id == f"{API_TYPE_JSON}_192.168.1.100"
+
+
+@pytest.mark.parametrize(
+    ("user_input", "expected"),
+    [
+        ({CONF_HOST: " 192.168.1.100 ", CONF_MODEL: "m"}, {CONF_HOST: "192.168.1.100", CONF_MODEL: "m"}),
+        ({CONF_HOST: "192.168.1.100"}, {CONF_HOST: "192.168.1.100"}),
+        ({CONF_USERNAME: " user ", CONF_PASSWORD: " pw "}, {CONF_USERNAME: " user ", CONF_PASSWORD: " pw "}),
+    ],
+)
+def test_strip_host(user_input, expected) -> None:
+    """Only the host is stripped; input without a host (XML credentials) is unchanged."""
+    from custom_components.syr_connect.config_flow import ConfigFlow
+
+    assert ConfigFlow._strip_host(user_input) == expected
+
+
 async def test_validate_input_json_device_missing_id_raises(hass: HomeAssistant) -> None:
     """If get_devices returns a device without an 'id', validation must fail."""
     from custom_components.syr_connect.config_flow import validate_input_json
@@ -346,7 +401,7 @@ async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> N
             await validate_input_json(hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
 
 async def test_reauth_confirm_json_homeassistant_error_port_sets_host_no_port(hass: HomeAssistant) -> None:
-    """HomeAssistantError mentioning 'port' during reauth JSON should map to host_no_port error."""
+    """HostWithPortError during reauth JSON should map to host_no_port error."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="json_reauth@example.com",
@@ -365,9 +420,8 @@ async def test_reauth_confirm_json_homeassistant_error_port_sets_host_no_port(ha
     )
 
     # Patch validate_input_json to raise HomeAssistantError mentioning 'port'
-    from homeassistant.exceptions import HomeAssistantError
 
-    with patch("custom_components.syr_connect.config_flow.validate_input_json", side_effect=HomeAssistantError("includes port")):
+    with patch("custom_components.syr_connect.config_flow.validate_input_json", side_effect=HostWithPortError("includes port")):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_HOST: "192.0.2.1", CONF_MODEL: "neosoft5000"}
         )
@@ -1382,10 +1436,7 @@ async def test_form_api_json_host_with_port_flow(hass: HomeAssistant) -> None:
     )
 
     assert result3["type"] == FlowResultType.FORM
-    # Depending on host validation implementation, the error may be
-    # reported as 'host_no_port' or 'host_invalid' — accept either.
-    assert result3["type"] == FlowResultType.FORM
-    assert result3["errors"] == {CONF_HOST: "host_no_port"} or result3["errors"] == {CONF_HOST: "host_invalid"}
+    assert result3["errors"] == {CONF_HOST: "host_no_port"}
 
 
 async def test_reconfigure_flow_reload_exception(hass: HomeAssistant) -> None:
@@ -1431,8 +1482,7 @@ async def test_reconfigure_flow_reload_exception(hass: HomeAssistant) -> None:
 
 
 async def test_reconfigure_flow_homeassistant_error_port_json(hass: HomeAssistant) -> None:
-    """Test reconfigure flow sets host_no_port when HomeAssistantError mentions port."""
-    from homeassistant.exceptions import HomeAssistantError
+    """Test reconfigure flow sets host_no_port on HostWithPortError."""
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -1458,7 +1508,7 @@ async def test_reconfigure_flow_homeassistant_error_port_json(hass: HomeAssistan
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Host must not include a port"),
+        side_effect=HostWithPortError("Host must not include a port"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -1470,8 +1520,7 @@ async def test_reconfigure_flow_homeassistant_error_port_json(hass: HomeAssistan
 
 
 async def test_reconfigure_flow_homeassistant_error_host_invalid_json(hass: HomeAssistant) -> None:
-    """Test reconfigure flow sets host_invalid when HomeAssistantError doesn't mention port."""
-    from homeassistant.exceptions import HomeAssistantError
+    """Test reconfigure flow sets host_invalid on HostInvalidError."""
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -1497,7 +1546,7 @@ async def test_reconfigure_flow_homeassistant_error_host_invalid_json(hass: Home
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Some other host error"),
+        side_effect=HostInvalidError("Some other host error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -1549,8 +1598,7 @@ async def test_validate_input_json_no_devices_raises(hass: HomeAssistant) -> Non
 
 
 async def test_reauth_confirm_homeassistant_error_json_direct(hass: HomeAssistant) -> None:
-    """Direct call to `ConfigFlow.async_step_reauth_confirm` maps HomeAssistantError with 'port' to host_no_port."""
-    from homeassistant.exceptions import HomeAssistantError
+    """Direct call to `ConfigFlow.async_step_reauth_confirm` maps HostWithPortError to host_no_port."""
 
     from custom_components.syr_connect.config_flow import ConfigFlow
 
@@ -1571,7 +1619,7 @@ async def test_reauth_confirm_homeassistant_error_json_direct(hass: HomeAssistan
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Host must not include port :8080"),
+        side_effect=HostWithPortError("Host must not include port :8080"),
     ):
         result = await flow.async_step_reauth_confirm({CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
 
@@ -1580,8 +1628,7 @@ async def test_reauth_confirm_homeassistant_error_json_direct(hass: HomeAssistan
 
 
 async def test_reconfigure_homeassistant_error_direct(hass: HomeAssistant) -> None:
-    """Direct call to `ConfigFlow.async_step_reconfigure` maps HomeAssistantError to host errors for JSON."""
-    from homeassistant.exceptions import HomeAssistantError
+    """Direct call to `ConfigFlow.async_step_reconfigure` maps HostInvalidError to host_invalid for JSON."""
 
     from custom_components.syr_connect.config_flow import ConfigFlow
 
@@ -1602,7 +1649,7 @@ async def test_reconfigure_homeassistant_error_direct(hass: HomeAssistant) -> No
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Some host problem"),
+        side_effect=HostInvalidError("Some host problem"),
     ):
         result = await flow.async_step_reconfigure({CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"})
 
@@ -1889,11 +1936,10 @@ async def test_form_api_json_host_port_error(hass: HomeAssistant) -> None:
     )
 
     # Simulate validate_input_json raising a HomeAssistantError mentioning a port
-    from homeassistant.exceptions import HomeAssistantError
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Host must not include port :8080"),
+        side_effect=HostWithPortError("Host must not include port :8080"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -2051,7 +2097,7 @@ async def test_reauth_confirm_unexpected_exception(hass: HomeAssistant) -> None:
 
 
 async def test_reauth_confirm_homeassistant_error_json_port(hass: HomeAssistant) -> None:
-    """Test reauth confirm handles HomeAssistantError with port for JSON API."""
+    """Test reauth confirm handles HostWithPortError for JSON API."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="json_reauth_port@example.com",
@@ -2072,11 +2118,10 @@ async def test_reauth_confirm_homeassistant_error_json_port(hass: HomeAssistant)
         data=entry.data,
     )
 
-    from homeassistant.exceptions import HomeAssistantError
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Host must not include port :8080"),
+        side_effect=HostWithPortError("Host must not include port :8080"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -2088,7 +2133,7 @@ async def test_reauth_confirm_homeassistant_error_json_port(hass: HomeAssistant)
 
 
 async def test_reauth_confirm_homeassistant_error_json_host_invalid(hass: HomeAssistant) -> None:
-    """Test reauth confirm handles HomeAssistantError without port for JSON API."""
+    """Test reauth confirm handles HostInvalidError for JSON API."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="json_reauth_invalid@example.com",
@@ -2109,11 +2154,10 @@ async def test_reauth_confirm_homeassistant_error_json_host_invalid(hass: HomeAs
         data=entry.data,
     )
 
-    from homeassistant.exceptions import HomeAssistantError
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("Invalid host"),
+        side_effect=HostInvalidError("Invalid host"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -2240,8 +2284,7 @@ async def test_form_api_json_generic_exception(hass: HomeAssistant) -> None:
 
 
 async def test_form_api_json_homeassistant_error_with_port(hass: HomeAssistant) -> None:
-    """Line 556: HomeAssistantError containing 'port' sets host_no_port error."""
-    from homeassistant.exceptions import HomeAssistantError
+    """HostWithPortError sets host_no_port error."""
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
@@ -2252,7 +2295,7 @@ async def test_form_api_json_homeassistant_error_with_port(hass: HomeAssistant) 
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
-        side_effect=HomeAssistantError("invalid port specified"),
+        side_effect=HostWithPortError("invalid port specified"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],

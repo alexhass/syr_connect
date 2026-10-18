@@ -10,7 +10,7 @@
     "error": {
       "cannot_connect": "Nie można połączyć się z usługą. Sprawdź połączenie internetowe i spróbuj ponownie.",
       "cannot_connect_local": "Nie można połączyć się z lokalnym urządzeniem. Sprawdź, czy adres IP urządzenia jest poprawny i czy urządzenie jest włączone oraz podłączone do sieci lokalnej.",
-      "host_invalid": "Nieprawidłowy host. Podaj prawidłowy adres IP lub nazwę hosta (bez spacji, bez numeru portu).",
+      "host_invalid": "Nieprawidłowy host. Podaj prawidłowy adres IP lub nazwę hosta.",
       "host_no_port": "Host nie może zawierać numeru portu. Podaj tylko adres IP lub nazwę hosta.",
       "invalid_auth": "Nieprawidłowa nazwa użytkownika lub hasło. Sprawdź swoje dane logowania.",
       "unknown": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."

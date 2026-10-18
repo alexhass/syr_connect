@@ -1869,3 +1869,21 @@ def test_is_valid_host_rejects(host: str) -> None:
 def test_is_device_offline(dst, expected) -> None:
     """dst 0 (never online) and 1 (offline) mean offline; everything else does not."""
     assert helpers.is_device_offline(dst) is expected
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("192.168.1.10:5333", True),
+        ("device.local:80", True),
+        ("[fe80::1]:5333", True),
+        ("192.168.1.10", False),
+        ("device.local", False),
+        ("fe80::1", False),
+        ("2001:db8::5333", False),
+        ("", False),
+    ],
+)
+def test_host_has_port(host, expected) -> None:
+    """A trailing :<port> is detected; plain IPv6 addresses ending in digits are not hosts with port."""
+    assert helpers.host_has_port(host) is expected

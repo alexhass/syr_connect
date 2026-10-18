@@ -764,6 +764,23 @@ def get_sensor_net_value(value: str | int | float) -> float | None:
     return None
 
 
+def host_has_port(host: str) -> bool:
+    """Return True if *host* ends with an explicit port, e.g. "192.168.1.10:5333".
+
+    A plain IPv6 address such as "fe80::1" is not a host with port, although it ends
+    with ":<digits>". Used by `is_valid_host` and to tell the user specifically that
+    the port must be left out (the local API always uses its fixed port).
+    """
+    if not isinstance(host, str):
+        return False
+    try:
+        ipaddress.ip_address(host.strip())
+        return False
+    except ValueError:
+        pass
+    return bool(re.match(r"^.+:\d+$", host.strip()))
+
+
 def is_valid_host(host: str) -> bool:
     """Return True if *host* is a valid IPv4, IPv6 or hostname (no port).
 
@@ -792,7 +809,7 @@ def is_valid_host(host: str) -> bool:
         pass
 
     # Reject explicit host:port
-    if re.match(r"^.+:\d+$", host):
+    if host_has_port(host):
         return False
 
     # Hostname validation: length and label rules

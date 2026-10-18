@@ -53,3 +53,7 @@ class InvalidAuthError(HomeAssistantError):
 
 class HostInvalidError(HomeAssistantError):
     """Error to indicate the host field value is invalid."""
+
+
+class HostWithPortError(HostInvalidError):
+    """Error to indicate the host field contains a port, which is not allowed (fixed port 5333)."""
