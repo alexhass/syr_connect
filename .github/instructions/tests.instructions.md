@@ -5,6 +5,7 @@ applyTo: "tests/**/*.py"
 
 # Tests
 
+- Line coverage of `custom_components/syr_connect` must stay at 100 %. Run the tests with `--cov=custom_components.syr_connect --cov-report=term-missing:skip-covered` after every change and cover every reported line with a test. Do not add `# pragma: no cover` to reach it.
 - Pytest needs `fcntl` and does not run on Windows. Use WSL or the "Pytest (WSL)" task, never a Windows virtualenv.
 - `MagicMock(spec=SyrConnectDataUpdateCoordinator)` exposes attributes without a default as random mocks. Set `entry_id` explicitly when the test depends on registry removal. `tests/conftest.py::create_mock_coordinator` sets it to `None`.
 - Hand-written coordinator stand-ins (`class Dummy*Coord`) need `entry_id = None`.
