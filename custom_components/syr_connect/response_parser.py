@@ -7,7 +7,7 @@ from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree  # noqa: N813
 
-from .exceptions import SyrConnectAuthError
+from .exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -100,6 +100,32 @@ class ResponseParser:
             result['#text'] = text
 
         return result if result else {}
+
+    @staticmethod
+    def _raise_if_session_expired(parsed: dict[str, Any]) -> None:
+        """Raise SyrConnectSessionExpiredError if the webservice rejected the session token.
+
+        An invalid or expired token is not answered with an HTTP error but with HTTP 200 and
+        `<sc><msg v="Der Access-Token ist ungültig oder abgelaufen. ..." hl="Ungültiger Token !"
+        mtid="1" /></sc>` instead of any data (see docs/known_issues_xml_api.md, issue 4).
+        `mtid="1"` is used for detection because the texts are localized.
+        """
+        sc = parsed.get('sc')
+        msg = sc.get('msg') if isinstance(sc, dict) else None
+        if isinstance(msg, dict) and str(msg.get('@mtid', '')).strip() == '1':
+            raise SyrConnectSessionExpiredError(f"Session token rejected: {msg.get('@v', '')}")
+
+    def raise_if_session_expired(self, xml_response: str) -> None:
+        """Raise SyrConnectSessionExpiredError if a response rejects the session token.
+
+        For responses that are otherwise not parsed (e.g. SetDeviceCollectionStatus).
+        A response that is no XML at all is left to the caller.
+        """
+        try:
+            parsed = self.parse_xml(xml_response)
+        except ValueError:
+            return
+        self._raise_if_session_expired(parsed)
 
     def parse_login_response(self, xml_response: str) -> tuple[str, dict[str, Any]]:
         """Parse login response and extract session ID and projects.
@@ -197,6 +223,7 @@ class ResponseParser:
             ValueError: If the response contains no project (``sc>prs>pr``)
         """
         parsed = self.parse_xml(xml_response)
+        self._raise_if_session_expired(parsed)
 
         # A valid answer always contains the project, even if it has no devices left
         # (see SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml). Anything else
@@ -274,6 +301,7 @@ class ResponseParser:
             Dictionary of status attributes or None if response is incomplete
         """
         parsed = self.parse_xml(xml_response)
+        self._raise_if_session_expired(parsed)
 
         if 'sc' not in parsed:
             _LOGGER.warning("No 'sc' element in status response")
@@ -375,6 +403,7 @@ class ResponseParser:
             Dictionary of statistics data
         """
         parsed = self.parse_xml(xml_response)
+        self._raise_if_session_expired(parsed)
 
         # Guard: require top-level 'sc' element before any further access
         if 'sc' not in parsed:

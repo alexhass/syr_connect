@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Answer of GetProjectDeviceCollections and GetDeviceCollectionStatus for an invalid or expired session token (ug): HTTP 200, no data, always German (observed 2026-10-18) -->
+<sc>
+  <msg v="Der Access-Token ist ungültig oder abgelaufen. Bitte loggen Sie sich erneut ein." hl="Ungültiger Token !" mtid="1" />
+  <cs v="2B20" />
+</sc>

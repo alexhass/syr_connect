@@ -1,5 +1,6 @@
 """Test the SYR Connect API client."""
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import aiohttp
@@ -54,22 +55,118 @@ def test_language_defaults(api_client):
     assert api_client.http_client._build_accept_language() == "en-US,en;q=0.9"
 
 
+INVALID_TOKEN_XML = (Path(__file__).parent / "fixtures/xml/SyrTestDevice_InvalidToken.xml").read_text(encoding="utf-8")
+
+
 async def test_session_valid_check(api_client):
-    """Test session validity checking."""
-    # No session data
+    """A session is usable as soon as a token from a login exists; there is no client-side expiry."""
     assert not api_client.is_session_valid()
 
-    # Has session but no expiry
     api_client.session_data = "test_session"
-    assert not api_client.is_session_valid()
-
-    # Has session with future expiry
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
     assert api_client.is_session_valid()
 
-    # Has session with past expiry
-    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=10)
-    assert not api_client.is_session_valid()
+
+async def test_parallel_first_requests_log_in_only_once(api_client):
+    """Without a token yet, parallel requests share one login instead of each logging in."""
+    import asyncio
+
+    async def _login():
+        await asyncio.sleep(0)  # let the other tasks reach the lock meanwhile
+        api_client.session_data = "new"
+        return True
+
+    with patch.object(api_client, "login", side_effect=_login) as login:
+        await asyncio.gather(*(api_client._ensure_session() for _ in range(5)))
+
+    assert login.await_count == 1
+    assert api_client.session_data == "new"
+
+
+async def test_parallel_rejections_relogin_only_once(api_client):
+    """When parallel requests get the token rejected at the same time, only one logs in again."""
+    import asyncio
+
+    api_client.session_data = "old"
+
+    async def _login():
+        await asyncio.sleep(0)
+        api_client.session_data = "new"
+        return True
+
+    with patch.object(api_client, "login", side_effect=_login) as login:
+        await asyncio.gather(*(api_client._relogin("old") for _ in range(5)))
+
+    assert login.await_count == 1
+    assert api_client.session_data == "new"
+
+
+@pytest.mark.parametrize(
+    ("method", "args", "parser"),
+    [
+        ("get_devices", ("project1",), "parse_device_list_response"),
+        ("get_device_status", ("dclg1",), "parse_device_status_response"),
+        ("set_device_status", ("dclg1", [("setAB", "2")]), None),
+        ("get_statistics", ("dclg1", "water"), "parse_statistics_response"),
+    ],
+)
+async def test_rejected_token_relogs_in_and_retries_once(api_client, method, args, parser):
+    """The real "invalid token" answer triggers one re-login and a retry with the new token."""
+    api_client.session_data = "old"
+    posted_payloads: list[str] = []
+
+    async def _post(_url, data, **_kw):
+        posted_payloads.append(data["xml"])
+        return INVALID_TOKEN_XML if len(posted_payloads) == 1 else "<sc><ok /></sc>"
+
+    async def _login():
+        api_client.session_data = "new"
+        return True
+
+    with patch.object(api_client.http_client, "post", side_effect=_post), \
+         patch.object(api_client, "login", side_effect=_login) as login:
+        if parser:
+            with patch.object(api_client.response_parser, parser, return_value=[] if method == "get_devices" else {}):
+                await getattr(api_client, method)(*args)
+        else:
+            await getattr(api_client, method)(*args)
+
+    login.assert_awaited_once()
+    assert len(posted_payloads) == 2
+    assert 'ug="old"' in posted_payloads[0]
+    assert 'ug="new"' in posted_payloads[1]
+
+
+async def test_rejected_token_twice_raises_session_expired(api_client):
+    """If the new token is rejected as well, no loop: SyrConnectSessionExpiredError (a connection error)."""
+    from custom_components.syr_connect.exceptions import SyrConnectSessionExpiredError
+
+    api_client.session_data = "old"
+
+    async def _login():
+        api_client.session_data = "new"
+        return True
+
+    with patch.object(api_client.http_client, "post", return_value=INVALID_TOKEN_XML) as post, \
+         patch.object(api_client, "login", side_effect=_login) as login:
+        with pytest.raises(SyrConnectSessionExpiredError) as excinfo:
+            await api_client.get_device_status("dclg1")
+
+    assert isinstance(excinfo.value, SyrConnectConnectionError)
+    login.assert_awaited_once()
+    assert post.await_count == 2
+
+
+async def test_valid_response_does_not_relogin(api_client):
+    """A normal answer is used as is, without any login."""
+    api_client.session_data = "token"
+
+    with patch.object(api_client.http_client, "post", return_value="<sc><ok /></sc>") as post, \
+         patch.object(api_client, "login") as login, \
+         patch.object(api_client.response_parser, "parse_device_status_response", return_value={"getFLO": "5"}):
+        assert await api_client.get_device_status("dclg1") == {"getFLO": "5"}
+
+    login.assert_not_called()
+    post.assert_awaited_once()
 
 
 async def test_login_success(api_client):
@@ -86,7 +183,6 @@ async def test_login_success(api_client):
         assert result is True
         assert api_client.session_data == "123"
         assert len(api_client.projects) == 1
-        assert api_client.session_expires_at is not None
 
 
 async def test_login_auth_error(api_client):
@@ -101,21 +197,6 @@ async def test_login_connection_error(api_client):
     with patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")):
         with pytest.raises(SyrConnectConnectionError):
             await api_client.login()
-
-
-async def test_get_devices_with_expired_session(api_client):
-    """Test get_devices re-authenticates on expired session."""
-    api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
-
-    with patch.object(api_client, 'login', return_value=True) as mock_login, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_list_response', return_value=[]):
-
-        await api_client.get_devices("project1")
-
-        # Should have called login due to expired session
-        mock_login.assert_called_once()
 
 
 async def test_get_device_status_with_valid_session(api_client):
@@ -231,20 +312,6 @@ async def test_get_device_status_exception_handling(api_client):
     with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Status error")):
         with pytest.raises(RuntimeError, match="Status error"):
             await api_client.get_device_status("device1")
-
-
-async def test_set_device_status_with_expired_session(api_client):
-    """Test set_device_status re-authenticates on expired session."""
-    api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
-
-    with patch.object(api_client, 'login', return_value=True) as mock_login, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
-
-        await api_client.set_device_status("device1", [("setSIR", 1)])
-
-        # Should have called login due to expired session
-        mock_login.assert_called_once()
 
 
 async def test_set_device_status_boolean_false(api_client):
@@ -392,21 +459,6 @@ async def test_get_devices_adds_project_id(api_client):
         assert devices[0]['project_id'] == "project123"
 
 
-async def test_get_device_status_with_expired_session(api_client):
-    """Test get_device_status re-authenticates on expired session."""
-    api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
-
-    with patch.object(api_client, 'login', return_value=True) as mock_login, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_status_response', return_value={}):
-
-        await api_client.get_device_status("device1")
-
-        # Should have called login due to expired session
-        mock_login.assert_called_once()
-
-
 async def test_get_statistics_default_type(api_client):
     """Test get_statistics with default statistic_type parameter."""
     api_client.session_data = "valid_session"
@@ -458,19 +510,3 @@ async def test_get_devices_with_device_already_has_id(api_client):
         assert len(devices) == 1
         # Should keep existing id, not overwrite with serial_number
         assert devices[0]['id'] == "EXISTING_ID"
-
-
-async def test_get_statistics_with_expired_session(api_client):
-    """Test get_statistics re-authenticates on expired session."""
-    api_client.session_data = "old_session"
-    api_client.session_expires_at = datetime.now(UTC) - timedelta(minutes=1)
-
-    with patch.object(api_client, 'login', return_value=True) as mock_login, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_statistics_response', return_value={}):
-
-        await api_client.get_statistics("device1", "water")
-
-        # Should have called login due to expired session
-        mock_login.assert_called_once()
-

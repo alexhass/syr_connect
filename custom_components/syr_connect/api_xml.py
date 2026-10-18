@@ -23,8 +23,9 @@ The API client coordinates several helper components:
 """
 from __future__ import annotations
 
+import asyncio
 import logging
-from datetime import UTC, datetime, timedelta
+from collections.abc import Callable
 from typing import Any
 
 import aiohttp
@@ -49,12 +50,12 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
     _SYR_CONNECT_CLIENT_USER_AGENT,
-    _SYR_CONNECT_SESSION_TIMEOUT_MINUTES,
 )
 from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectSessionExpiredError,
 )
 from .helpers import mask_login_password, mask_ug_value
 from .http_client import HTTPClient
@@ -107,8 +108,8 @@ class SyrConnectXmlAPI:
         # --- Session management ---
         # Session data is a token string returned by login, used for all subsequent requests
         self.session_data: str = ""
-        # Sessions expire after 30 minutes of inactivity
-        self.session_expires_at: datetime | None = None
+        # Serializes (re-)logins from parallel requests (see _ensure_session/_relogin)
+        self._login_lock = asyncio.Lock()
 
         # --- Project structure ---
         # Cloud API organizes devices into projects (locations/buildings)
@@ -155,46 +156,65 @@ class SyrConnectXmlAPI:
         self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT, language=language)
 
     def is_session_valid(self) -> bool:
-        """Check if the current session is still valid.
+        """Return True if a session token from a previous login is available.
 
-        Sessions are valid if:
-        1. We have a session token (self.session_data is not empty)
-        2. We have an expiry time set (self.session_expires_at is not None)
-        3. The current time is before the expiry time (not timed out)
-
-        Returns:
-            True if session is valid and can be used for API calls, False otherwise
+        There is no client-side expiry: the real session lifetime of the webservice is
+        unknown. A rejected token is detected in the response instead (see
+        _post_with_session), which then triggers a new login.
         """
-        # Check if we have a session token at all
-        if not self.session_data:
-            return False
-
-        # Check if we have an expiry time (should always be set with session_data)
-        if self.session_expires_at is None:
-            return False
-
-        # Check if session hasn't timed out yet
-        return datetime.now(UTC) < self.session_expires_at
+        return bool(self.session_data)
 
     async def _ensure_session(self) -> None:
-        """Ensure a valid session exists before making an API request.
-
-        If the current session is not valid, attempt to re-authenticate by
-        calling ``login()``. This centralises the repeated guard used across
-        the XML API methods.
-        """
-        if not self.is_session_valid():
-            _LOGGER.warning("Session expired, re-authenticating...")
+        """Log in if there is no session token yet (first request)."""
+        if self.is_session_valid():
+            return
+        # Requests run in parallel (projects, devices): only the first one logs in
+        async with self._login_lock:
+            if self.is_session_valid():
+                return
             await self.login()
 
-    def _update_session_expiry(self) -> None:
-        """Update session expiration time.
+    async def _relogin(self, rejected_token: str) -> None:
+        """Log in again after the webservice rejected `rejected_token`.
 
-        Called after successful login to set the session timeout.
-        Sessions expire after 30 minutes of inactivity, matching the
-        server-side timeout to avoid unnecessary re-authentication attempts.
+        Parallel requests usually get the rejection at the same time; only the first one
+        logs in, the others find a new token already and reuse it.
         """
-        self.session_expires_at = datetime.now(UTC) + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
+        async with self._login_lock:
+            if self.session_data and self.session_data != rejected_token:
+                return
+            await self.login()
+
+    async def _post_with_session(self, url: str, build_payload: Callable[[str], str], name: str) -> str:
+        """Post a request built with the current session token; re-login once if it is rejected.
+
+        The webservice answers a rejected (invalid or expired) token with HTTP 200 and
+        `<sc><msg mtid="1" .../></sc>` (docs/known_issues_xml_api.md, issue 4). The request is
+        then sent once more with a new token; a second rejection is raised as
+        SyrConnectSessionExpiredError, a SyrConnectConnectionError.
+
+        Args:
+            url: Endpoint URL
+            build_payload: Builds the XML payload for a given session token
+            name: Request name for log messages
+
+        Returns:
+            The raw XML response
+        """
+        token = self.session_data
+        payload = build_payload(token)
+        _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
+        xml_response = await self.http_client.post(url, {"xml": payload})
+        try:
+            self.response_parser.raise_if_session_expired(xml_response)
+        except SyrConnectSessionExpiredError as err:
+            _LOGGER.info("%s: %s; logging in again", name, err)
+            await self._relogin(token)
+            payload = build_payload(self.session_data)
+            _LOGGER.debug("%s payload (after re-login): %s", name, mask_ug_value(payload))
+            xml_response = await self.http_client.post(url, {"xml": payload})
+            self.response_parser.raise_if_session_expired(xml_response)
+        return xml_response
 
     async def login(self) -> bool:
         """Authenticate with the SYR Connect cloud service.
@@ -244,9 +264,6 @@ class SyrConnectXmlAPI:
             # Decrypted data contains session token and list of accessible projects
             self.session_data, self.projects = self.response_parser.parse_decrypted_login(decrypted)
 
-            # --- Update Session Tracking ---
-            # Set expiry time to 30 minutes from now
-            self._update_session_expiry()
             _LOGGER.info("Login successful, found %d project(s)", len(self.projects))
 
             # Log available projects for debugging
@@ -305,17 +322,13 @@ class SyrConnectXmlAPI:
 
         _LOGGER.debug("Getting devices for project: %s", project_id)
 
-        # --- Build Request Payload ---
-        # Payload includes session token and project ID
-        payload = self.payload_builder.build_device_get_list_payload(self.session_data, project_id)
-        _LOGGER.debug("Payload prepared: %s", mask_ug_value(payload))
-
         try:
             # --- Make HTTP Request ---
             # Device list endpoint uses form-encoded XML
-            xml_response = await self.http_client.post(
+            xml_response = await self._post_with_session(
                 self._device_list_url,
-                {'xml': payload}
+                lambda token: self.payload_builder.build_device_get_list_payload(token, project_id),
+                "Device list",
             )
             _LOGGER.debug("Device list XML response: %s", xml_response)
 
@@ -379,16 +392,12 @@ class SyrConnectXmlAPI:
 
         _LOGGER.debug("Getting status for device: %s", device_id)
 
-        # --- Build Request Payload ---
-        # Payload includes session token and device DCLG ID
-        payload = self.payload_builder.build_device_get_status_payload(self.session_data, device_id)
-        _LOGGER.debug("Status request payload: %s", mask_ug_value(payload))
-
         try:
             # --- Make HTTP Request ---
-            xml_response = await self.http_client.post(
+            xml_response = await self._post_with_session(
                 self._device_get_status_url,
-                {'xml': payload}
+                lambda token: self.payload_builder.build_device_get_status_payload(token, device_id),
+                "Status request",
             )
             _LOGGER.debug("Status XML response: %s", xml_response)
 
@@ -447,15 +456,11 @@ class SyrConnectXmlAPI:
             for cmd, val in commands
         ]
 
-        payload = self.payload_builder.build_device_set_status_payload(
-            self.session_data, device_id, normalized
-        )
-        _LOGGER.debug("Set status payload: %s", mask_ug_value(payload))
-
         try:
-            xml_response = await self.http_client.post(
+            xml_response = await self._post_with_session(
                 self._device_set_status_url,
-                {"xml": payload},
+                lambda token: self.payload_builder.build_device_set_status_payload(token, device_id, normalized),
+                "Set status",
             )
             _LOGGER.debug("Set status XML response: %s", xml_response)
             _LOGGER.info(
@@ -507,17 +512,12 @@ class SyrConnectXmlAPI:
 
         _LOGGER.debug("Getting %s statistics for device: %s", statistic_type, device_id)
 
-        # --- Build Request Payload ---
-        payload = self.payload_builder.build_device_get_statistics_payload(
-            self.session_data, device_id, statistic_type
-        )
-        _LOGGER.debug("Statistics payload: %s", mask_ug_value(payload))
-
         try:
             # --- Make HTTP Request ---
-            xml_response = await self.http_client.post(
+            xml_response = await self._post_with_session(
                 self._device_get_statistics_url,
-                {'xml': payload}
+                lambda token: self.payload_builder.build_device_get_statistics_payload(token, device_id, statistic_type),
+                "Statistics",
             )
             _LOGGER.debug("Statistics XML response: %s", xml_response)
 

@@ -35,7 +35,9 @@ _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM = 60  # seconds
 _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM = 10  # seconds
 _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 
-# Session timeout used by both XML and JSON API clients (minutes)
+# Client-side re-login interval of the local JSON API (ADM login, minutes). Assumed; the device
+# itself is not known to time out the login. The XML (cloud) API has no client-side timeout; it
+# logs in again when the server rejects the token.
 _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # API URLs (internal)

@@ -16,6 +16,16 @@ class SyrConnectConnectionError(SyrConnectError):
     """Connection error."""
 
 
+class SyrConnectSessionExpiredError(SyrConnectConnectionError):
+    """The XML webservice rejected the session token (invalid or expired).
+
+    Raised by the response parser for `<sc><msg mtid="1" .../></sc>`
+    (see docs/known_issues_xml_api.md, issue 4). The XML API client then logs
+    in again and repeats the request once; if it is rejected again, it is
+    handled like any other connection error.
+    """
+
+
 class SyrConnectHTTPError(SyrConnectConnectionError):
     """HTTP error with status code information.
 

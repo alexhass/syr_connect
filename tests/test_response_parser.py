@@ -3,7 +3,7 @@ import os
 import defusedxml.ElementTree as ElementTree
 import pytest
 
-from custom_components.syr_connect.exceptions import SyrConnectAuthError
+from custom_components.syr_connect.exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
 from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrLEXplus10S_GetProjectDeviceCollections.xml")
@@ -529,6 +529,33 @@ def test_parse_device_list_project_without_devices_fixture(parser):
     path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml")
     with open(path, encoding="utf-8") as f:
         assert parser.parse_device_list_response(f.read()) == []
+
+
+INVALID_TOKEN_XML_PATH =os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_InvalidToken.xml")
+
+
+@pytest.mark.parametrize(
+    "method", ["parse_device_list_response", "parse_device_status_response", "parse_statistics_response", "raise_if_session_expired"]
+)
+def test_invalid_token_response_raises_session_expired(parser, method):
+    """The real "invalid token" answer (HTTP 200, <msg mtid="1">) is recognized by all request parsers."""
+    with open(INVALID_TOKEN_XML_PATH, encoding="utf-8") as f:
+        xml = f.read()
+    with pytest.raises(SyrConnectSessionExpiredError, match="Access-Token ist ungültig"):
+        getattr(parser, method)(xml)
+
+
+@pytest.mark.parametrize(
+    "xml",
+    [
+        '<sc><msg v="Some other message" mtid="2" /></sc>',  # other message: not a session problem
+        "<html><body>Maintenance</body></html>",  # not the session check's business
+        "not xml at all",
+    ],
+)
+def test_raise_if_session_expired_ignores_other_responses(parser, xml):
+    """Only mtid="1" means a rejected token; anything else is left to the normal handling."""
+    parser.raise_if_session_expired(xml)
 
 
 @pytest.mark.parametrize(

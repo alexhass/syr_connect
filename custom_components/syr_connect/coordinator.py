@@ -225,7 +225,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             raise ConfigEntryAuthFailed("Authentication failed. Please reconfigure the integration.") from err
         except SyrConnectConnectionError as err:
             # Temporary failures happen (cloud outage, maintenance page, device reboot), e.g. when
-            # the re-login after the 30 min session timeout fails. Keep the data of the last update
+            # the re-login after a rejected session token fails. Keep the data of the last update
             # instead of raising UpdateFailed, which would make every entity unavailable.
             if self.data is not None:
                 _LOGGER.warning("Connection failed, keeping the data of the last update: %s", err)

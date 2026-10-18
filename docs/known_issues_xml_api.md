@@ -55,11 +55,32 @@ test fixtures, and in the parsing/encryption layers implemented here.
     ```
 
   A successful login contains `<usr id="<session token>" …/>` and `<prs><pre id="<project id>" n="<project name>" …/></prs>` instead of `<msg>`.
-- Impact: The HTTP status cannot distinguish rejected credentials from a successful login. The `<msg>` text differs by cause: for an unknown username it is generic ("The operation could not be performed"), only for a known username with a wrong password it names the problem ("Username and password do not match"). The text is localized (`lng="de"`) and does not exist for every cause, so it is not used for detection.
+- Impact: The HTTP status cannot distinguish rejected credentials from a successful login. The `<msg>` text differs by cause: for an unknown username it is generic ("The operation could not be performed"), only for a known username with a wrong password it names the problem ("Username and password do not match"). The text is always German, whatever locale is sent (see issue 4), and does not exist for every cause, so it is not used for detection.
 - Mitigation in this project:
   - A decrypted login response without `usr@id` is treated as rejected credentials: `parse_decrypted_login()` in `custom_components/syr_connect/response_parser.py` raises `SyrConnectAuthError`, which triggers the re-authentication flow. The server's `<msg v="…">` text is appended to the error message for the log, and the decrypted content is logged at debug level (it contains no session token).
   - Every other unexpected login response (no XML, e.g. a maintenance page, no `sc>api`, no projects) is raised as `SyrConnectConnectionError` by `SyrConnectXmlAPI.login()` in `custom_components/syr_connect/api_xml.py`: it is only logged, entities keep their last values, and no re-authentication is requested.
   - Test: `test_parse_decrypted_login_rejected_credentials_response` in `tests/test_response_parser.py` uses both responses above.
+
+### 4. Invalid or expired session token returns HTTP 200 with a message
+
+- Tentatively be considered part of the design, but it is not ideal.
+- Description: Requests with an invalid or expired session token (`<us ug="…"/>`) are not answered with an HTTP error. The server returns HTTP 200 with no data, only a `<msg>` element. Observed (2026-10-18) for `GetProjectDeviceCollections` and `GetDeviceCollectionStatus` with a modified token, a random UUID and an empty token, always identical:
+
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <sc>
+    <msg v="Der Access-Token ist ungültig oder abgelaufen. Bitte loggen Sie sich erneut ein." hl="Ungültiger Token !" mtid="1" />
+    <cs v="2B20" />
+  </sc>
+  ```
+
+  The texts are always German: sending `lng`/`reg` (login), `Accept-Language` and the locale in the app version string as `en-US` or `en-GB` makes no difference. The lifetime of a session is unknown.
+- Impact: The HTTP status cannot distinguish a rejected token from a successful request. Without special handling, the response looks like an incomplete answer (no `prs`/`dvs`), and the session would never be renewed.
+- Mitigation in this project:
+  - The response parser recognizes the message by `mtid="1"` (language-independent) and raises `SyrConnectSessionExpiredError` (a `SyrConnectConnectionError`): `_raise_if_session_expired()` / `raise_if_session_expired()` in `custom_components/syr_connect/response_parser.py`.
+  - `SyrConnectXmlAPI._post_with_session()` in `custom_components/syr_connect/api_xml.py` then logs in again and repeats the request once with the new token. Parallel requests that get the rejection at the same time share one login (`_relogin()`, guarded by a lock). If the new token is rejected as well, the error is handled like any other connection error: logged, entities keep their last values.
+  - There is no client-side session expiry: a new login only happens when the server rejects the token.
+  - Fixture: `tests/fixtures/xml/SyrTestDevice_InvalidToken.xml`. Tests: `test_invalid_token_response_raises_session_expired` in `tests/test_response_parser.py`, `test_rejected_token_relogs_in_and_retries_once` and `test_rejected_token_twice_raises_session_expired` in `tests/test_api_xml.py`.
 
 ## References
 
