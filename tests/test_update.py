@@ -16,8 +16,8 @@ from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.update import (
-    INSTALL_TIMEOUT_SECONDS,
-    NEW_VERSION_PLACEHOLDER,
+    _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
+    _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER,
     SyrConnectFirmwareUpdate,
     async_setup_entry,
 )
@@ -106,7 +106,7 @@ def test_update_entity_update_available() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN4", "Dev4", "")
 
     assert entity.installed_version == "MuCo V.2.14"
-    assert entity.latest_version == NEW_VERSION_PLACEHOLDER
+    assert entity.latest_version == _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
 
 
 def test_update_entity_update_available_no_installed_version() -> None:
@@ -118,7 +118,7 @@ def test_update_entity_update_available_no_installed_version() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN5", "Dev5", "")
 
     assert entity.installed_version is None
-    assert entity.latest_version == NEW_VERSION_PLACEHOLDER
+    assert entity.latest_version == _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
 
 
 def test_update_entity_naming_uses_translation_key() -> None:
@@ -202,7 +202,7 @@ async def test_update_entity_in_progress_until_getnot_04() -> None:
 
 
 async def test_update_entity_in_progress_times_out() -> None:
-    """in_progress ends after INSTALL_TIMEOUT_SECONDS even if getNOT never reaches '04'."""
+    """in_progress ends after _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS even if getNOT never reaches '04'."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]}
     mock_coordinator.async_set_device_value = AsyncMock()
@@ -214,10 +214,10 @@ async def test_update_entity_in_progress_times_out() -> None:
         await entity.async_install(version=None, backup=False)
         assert entity.in_progress is True
 
-    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + INSTALL_TIMEOUT_SECONDS - 1):
+    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS - 1):
         assert entity.in_progress is True
 
-    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + INSTALL_TIMEOUT_SECONDS):
+    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS):
         assert entity.in_progress is False
         entity._handle_coordinator_update()
 

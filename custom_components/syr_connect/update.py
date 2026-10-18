@@ -28,10 +28,10 @@ from .models import detect_model
 _LOGGER = logging.getLogger(__name__)
 
 # Give up showing progress if getNOT never switches to "04".
-INSTALL_TIMEOUT_SECONDS = 600
+_SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS = 600
 
 # Shown as "latest version" because the API never reports the real new version number.
-NEW_VERSION_PLACEHOLDER = "New version available"
+_SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER = "New version available"
 
 
 async def async_setup_entry(
@@ -85,7 +85,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
     with an empty value (see docs/syrconnect-protocol.md).
 
     After install is triggered, `in_progress` stays True until getNOT switches to
-    "04" (new_software_installed) or INSTALL_TIMEOUT_SECONDS have passed.
+    "04" (new_software_installed) or _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS have passed.
     """
 
     _attr_device_class = UpdateDeviceClass.FIRMWARE
@@ -135,18 +135,18 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
 
         The API only ever reports a notification code (getNOT), never the actual
         new version number. When getNOT signals "new_software_available", return
-        NEW_VERSION_PLACEHOLDER (never equal to installed_version) so the entity
+        _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER (never equal to installed_version) so the entity
         reports an update as available; otherwise report the installed version
         unchanged (no update pending).
         """
         status = self._status
         mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
         if mapped == "new_software_available":
-            return NEW_VERSION_PLACEHOLDER
+            return _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
         return self.installed_version
 
     def _install_timed_out(self) -> bool:
-        return self._install_started is not None and monotonic() - self._install_started >= INSTALL_TIMEOUT_SECONDS
+        return self._install_started is not None and monotonic() - self._install_started >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS
 
     @property
     def in_progress(self) -> bool:
@@ -167,7 +167,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
                 _LOGGER.warning(
                     "Firmware update for %s did not report completion (getNOT=04) within %d s",
                     self._device_id,
-                    INSTALL_TIMEOUT_SECONDS,
+                    _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
                 )
                 self._install_started = None
         super()._handle_coordinator_update()

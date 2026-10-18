@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -58,6 +59,12 @@ from .helpers import (
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
+
+# Returned by a value handler to continue with the generic string/number conversion
+_SYR_CONNECT_SENSOR_NOT_HANDLED = object()
+
+# Leak-protection boolean flags getPAx, getPBx, getPMx, getPWx (not getPRx: numeric return times)
+_SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG = re.compile(r"^getP(?:A|B|M|W)\d$")
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
@@ -478,19 +485,20 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         return getattr(self, "_last_native_value", None)
 
     def _compute_native_value(self) -> str | int | float | datetime | None:
-        """Original native_value computation moved here."""
+        """Compute the native value from the device status.
+
+        Keys with a special format or a value map have a handler in `_SYR_CONNECT_SENSOR_VALUE_HANDLERS`
+        (or are leak-protection flags, see `_SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG`). All other keys are
+        returned as string (`_SYR_CONNECT_SENSOR_STRING`) or as converted number.
+        """
         device = self._device
         if device is None:
             return None
         status = device.get('status', {})
-
-        # Defensive: always set value before use in string sensors
-        value = status.get(self._sensor_key) if self._sensor_key in status else None
+        value = status.get(self._sensor_key)
 
         # Log missing sensor data (API omitted field or returned None/empty)
-        if self._sensor_key not in status or value is None or (
-            isinstance(value, str) and value.strip() == ""
-        ):
+        if value is None or (isinstance(value, str) and value.strip() == ""):
             _LOGGER.debug(
                 "Missing sensor data for device=%s (%s) sensor=%s value=%r",
                 self._device_name,
@@ -499,341 +507,17 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 value,
             )
 
-        # Special handling for valve shut-off (getAB): return lowercase string for translations
-        if self._sensor_key == 'getAB':
-            ab = get_sensor_ab_value(status)
-            if ab is None:
-                return None
-            return "true" if ab else "false"
+        handler = self._SYR_CONNECT_SENSOR_VALUE_HANDLERS.get(self._sensor_key)
+        if handler is None and _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG.match(self._sensor_key):
+            handler = SyrConnectSensor._value_leak_protection_flag
+        if handler is not None:
+            result = handler(self, status, value)
+            if result is not _SYR_CONNECT_SENSOR_NOT_HANDLED:
+                return result
 
-        # Special handling for getALA: map alarm code to translation key
-        if self._sensor_key == 'getALA':
-            raw = status.get('getALA')
-            if raw is None:
-                return None
-            # Try to map to internal translation key based on device model
-            try:
-                mapped, raw_code = get_sensor_ala_map(status, raw)
-                if mapped:
-                    return mapped
-                # If model was unknown or no mapping found, return raw value 1:1
-                sval = str(raw_code)
-                return sval if sval.strip() != "" else None
-            except (ValueError, KeyError, AttributeError, TypeError):
-                return None
-
-        # Special handling for alarm sensor: map raw API values to internal keys
-        if self._sensor_key == 'getALM':
-            raw = status.get('getALM')
-            raw_str = str(raw) if raw is not None else ""
-
-            # Try model-aware mapping (same helper used for getALA), then fallback
-            # to the static getALM value map.
-            try:
-                ala_mapped, _ = get_sensor_ala_map(status or {}, raw)
-            except (ValueError, KeyError, AttributeError, TypeError):
-                ala_mapped = None
-
-            std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
-
-            mapped = ala_mapped or std_mapped
-            # Return mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or raw value as fallback
-            return mapped if mapped is not None else (value if value is not None else None)
-
-        # Special handling for current flow rate (getAVO)
-        # Format: "1655mL" - extract numeric value
-        if self._sensor_key == 'getAVO':
-            if value is None or value == "":
-                return None
-            return get_sensor_avo_value(value)
-
-        # Special handling for pressure sensors (getBAR / getBAR2) - Safe-T+ / SYR TRIO Lock Connect
-        # Format: "4077 mbar" - extract numeric value and convert to bar
-        if self._sensor_key in ('getBAR', 'getBAR2'):
-            if value is None or value == "":
-                return None
-            try:
-                # Extract integer value from string like "4077 mbar"
-                match = re.search(r'\d+', str(value))
-                if not match:
-                    return None
-                pressure_mbar = float(match.group())
-                # Convert mbar to bar (divide by 1000)
-                pressure_bar = pressure_mbar / 1000
-                # Apply configured precision
-                precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 3)
-                return round(pressure_bar, precision)
-            except (ValueError, TypeError):
-                return None
-
-        # Special handling for battery voltage/level (getBAT)
-        if self._sensor_key == 'getBAT':
-            # Support formats:
-            # - Safe-T+ format ("6,11 4,38 3,90" -> "6.11 V")
-            # - Trio DFR/LS format ("363" -> "3.63 V").
-            # - SafeFloor TYP=120 format ("85" -> 85%)
-            if value is None:
-                return None
-            if not isinstance(value, (str | int | float)):
-                return None
-            # SafeFloor (and similar) report battery as an integer percentage.
-            if self._attr_native_unit_of_measurement == PERCENTAGE:
-                try:
-                    return int(float(str(value).strip()))
-                except (ValueError, TypeError):
-                    return None
-            parsed = get_sensor_bat_value(value)
-            return parsed
-
-        # Special handling for microleakage pressure drop (getDBD)
-        # API reports this as tenths of a bar (e.g. "10" -> 1.0 bar)
-        if self._sensor_key == 'getDBD':
-            if value is None or value == "":
-                return None
-            try:
-                # Accept numeric or string values
-                match = re.search(r"-?\d+", str(value))
-                if not match:
-                    return None
-                raw_tenths = float(match.group())
-                pressure_bar = raw_tenths / 10.0
-                precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 1)
-                return round(pressure_bar, precision)
-            except (ValueError, TypeError):
-                return None
-
-        # Special handling for incoming water hardness (getIWH):
-        # Prefer explicit getIWH when present, otherwise derive from getCND.
-        if self._sensor_key == 'getIWH':
-            return get_sensor_iwh_value(status or {})
-
-        # Special handling for mains voltage (getNET)
-        if self._sensor_key == 'getNET':
-            # Support three formats:
-            # - Safe-T+ format ("ADC:950 6,16V" -> 6.16 V)
-            # - Safe-Tech+ format ("11,86" -> 11.86 V)
-            # - Trio DFR/LS format ("363" -> 3.63 V)
-            if value is None:
-                return None
-            if not isinstance(value, (str | int | float)):
-                return None
-            return get_sensor_net_value(value)
-
-        # Special handling for last regeneration timestamp (getLAR): convert unix seconds to datetime object
-        if self._sensor_key == 'getLAR':
-            if value is None or value == "":
-                # Return default datetime: 1970-01-01 00:00:00+00:00
-                return None
-            try:
-                ts = int(float(value))
-                # Return an aware datetime object (UTC). Home Assistant
-                # will format this according to the user's timezone/locale.
-                return datetime.fromtimestamp(ts, UTC)
-            except (ValueError, TypeError, OverflowError):
-                return None
-
-        # Special handling for getLE sensor: map raw API values to display values
-        if self._sensor_key == 'getLE':
-            raw = int(status.get('getLE') or 2)
-            return _SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(raw)
-
-        # Special handling for getLNG: strip trailing annotation if present
-        # e.g. "0 (0=Deutsch 1=English)" -> "0"
-        if self._sensor_key == 'getLNG':
-            if value is None or (isinstance(value, str) and value.strip() == ""):
-                return None
-            return get_sensor_lng_value(value)
-
-        # Special handling for getNOT: map notification codes to translation keys
-        if self._sensor_key == 'getNOT':
-            raw = status.get('getNOT')
-            if raw is None:
-                return None
-            try:
-                mapped, raw_code = get_sensor_not_map(status, raw)
-                if mapped:
-                    return mapped
-                sval = str(raw_code)
-                return sval if sval.strip() != "" else None
-            except (ValueError, KeyError, AttributeError, TypeError):
-                return None
-
-        # Special handling for leak-protection boolean flags (getPMx, getPWx, getPBx)
-        # Note: getPRx are numeric return-time values and must NOT be treated as boolean.
-        # Return "true"/"false" strings to match existing boolean string handling (e.g. getAB)
-        if re.match(r"^getP(?:A|B|M|W)\d$", self._sensor_key):
-            if value is None or (isinstance(value, str) and value.strip() == ""):
-                return None
-            # Numeric values
-            if isinstance(value, (int | float)):
-                try:
-                    return "true" if int(float(value)) != 0 else "false"
-                except (ValueError, TypeError):
-                    return None
-            # String values
-            if isinstance(value, str):
-                sval = value.strip().lower()
-                if sval in ("1", "true", "on", "yes"):
-                    return "true"
-                if sval in ("0", "false", "off", "no"):
-                    return "false"
-                try:
-                    return "true" if int(float(sval)) != 0 else "false"
-                except (ValueError, TypeError):
-                    return sval
-
-        # Special handling for regeneration time - expose as `getRTM`:
-        # - If `getRTM` exists and `getRTH` is missing, `getRTM` may contain a combined time string "HH:MM".
-        # - If both `getRTH` and `getRTM` exist as numeric values, combine them as HH:MM.
-        if self._sensor_key == 'getRTM':
-            # Use helper to parse regeneration time consistently.
-            return get_sensor_rtm_value(status)
-
-        # Special handling for regeneration permitted weekdays (getRPW):
-        # The device returns a bitmask where bit 1 = Monday, bit 2 = Tuesday, ... bit 7 = Sunday.
-        # - mask == 0 -> "Not specified"
-        # - other masks -> comma-separated short weekday names using strftime('%a')
-        if self._sensor_key == 'getRPW':
-            raw_mask = status.get('getRPW')
-            if raw_mask is None or raw_mask == "":
-                return None
-            try:
-                mask = int(float(raw_mask))
-            except (ValueError, TypeError):
-                try:
-                    mask = int(str(raw_mask).strip())
-                except (ValueError, TypeError):
-                    return None
-
-            if mask == 0:
-                # "Not specified" - use "0" as internal key for translation
-                return "0"
-
-            parts: list[str] = []
-            # Localize short weekday names using the Home Assistant language setting.
-            # Use a reference Monday date so weekday offsets map correctly.
-            ref_monday = datetime(2024, 1, 1)
-            locale = None
-            try:
-                locale = getattr(self.hass.config, "language", None)
-            except AttributeError:
-                locale = None
-
-            for idx in range(7):
-                if mask & (1 << idx):
-                    try:
-                        name = format_datetime(ref_monday + timedelta(days=idx), "EEE", locale=locale)
-                    except (ValueError, KeyError, AttributeError, TypeError):
-                        # Fallback to system short name if Babel/localization fails
-                        name = (ref_monday + timedelta(days=idx)).strftime("%a")
-                    parts.append(name)
-
-            return ",".join(parts)
-
-        # TEST: Override getSTA value for manual testing
-        #if self._sensor_key == 'getSTA':
-            #status['getSTA'] = "Płukanie regenerantem (587mA)"
-            #status['getSTA'] = "Płukanie szybkie 1"
-            #status['getSTA'] = "Płukanie wsteczne"
-
-        # Special handling for status sensor (getSTA): map Polish strings to internal keys and set translation key.
-        # NOTE: Translation placeholders are not supported for entity state strings in the frontend (they are only
-        # available for entity names / labels). See: https://github.com/home-assistant/frontend/issues/29064
-        if self._sensor_key == 'getSTA':
-            # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer
-            # (0=Standby); "or ''" would wrongly discard a genuine 0, so check
-            # for None explicitly instead.
-            raw_sta = status.get('getSTA')
-            raw = str(raw_sta) if raw_sta is not None else ""
-            _LOGGER.debug("getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw)
-
-            # Try known patterns and map to internal translation keys.
-            # Keep placeholder values local for debugging only (frontend
-            # states do not support placeholders).
-            m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
-            if m_match:
-                resistance_value = str(m_match.group(1) or "")
-                normalized = "Płukanie regenerantem"
-                mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, "status_regenerant_rinse"))
-                _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": resistance_value})
-                return mapped
-
-            m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
-            if m2_match:
-                rinse_round = str(m2_match.group(1) or "")
-                normalized = "Płukanie rapide"
-                mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, "status_fast_rinse"))
-                _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": rinse_round})
-                return mapped
-
-            # Fallback: use raw string as normalized mapping key
-            normalized = raw
-            mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(normalized, normalized))
-            _LOGGER.debug("getSTA mapped=%s", mapped)
-            return mapped
-
-        # Special handling for getT1 and getT2 sensors: map raw API values to display values
-        if self._sensor_key in ('getT1', 'getT2'):
-            raw = int(status.get(self._sensor_key) or 1)
-            return _SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(raw)
-
-        # Special handling for getUL sensor: map raw API values to display values
-        if self._sensor_key == 'getUL':
-            raw = int(status.get('getUL') or 1)
-            return _SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(raw)
-
-        # Special handling for getCRS sensor: map raw API values to display values (liters)
-        if self._sensor_key == 'getCRS':
-            if value is None or value == "":
-                return None
-            try:
-                raw = int(float(value))
-            except (ValueError, TypeError):
-                return None
-            return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
-
-        # Special handling for getCRT sensor: empty value means "no cartridge installed".
-        # HA translation keys cannot be an empty string, so map it to "none".
-        if self._sensor_key == 'getCRT':
-            if value is None or value == "":
-                return "none"
-            return str(value)
-
-        # Special handling for getRCD sensor: empty value means "undefined".
-        # HA translation keys cannot be an empty string, so map it to "undefined".
-        if self._sensor_key == 'getRCD':
-            if value is None or value == "":
-                return "undefined"
-            return str(value)
-
-        # Special handling for getVOL: clean prefix like 'Vol[L]6530' -> '6530'
+        # Clean prefix like 'Vol[L]6530' -> '6530', then continue as a number
         if self._sensor_key == 'getVOL' and value is not None:
             value = get_sensor_vol_value(value)
-
-        # Special handling for water hardness unit sensor (mapping)
-        if self._sensor_key == 'getWHU':
-            if isinstance(value, int | float):
-                return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-            elif isinstance(value, str):
-                try:
-                    return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-                except (ValueError, TypeError):
-                    return None
-            return None
-
-        # Special handling for getWRN: map warning codes to translation keys
-        if self._sensor_key == 'getWRN':
-            raw = status.get('getWRN')
-            if raw is None:
-                return None
-            try:
-                mapped, raw_code = get_sensor_wrn_map(status, raw)
-                if mapped:
-                    return mapped
-                sval = str(raw_code)
-                return sval if sval.strip() != "" else None
-            except (ValueError, KeyError, AttributeError, TypeError):
-                return None
 
         # Keep certain sensors as strings (version, serial, MAC, etc.)
         if self._sensor_key in _SYR_CONNECT_SENSOR_STRING:
@@ -853,6 +537,308 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             return self._apply_numeric_conversion(float(value))
 
         return value
+
+    # --- Value handlers -------------------------------------------------------------
+    # Each handler gets the device status and the raw value of the sensor key. It returns
+    # the native value, or _SYR_CONNECT_SENSOR_NOT_HANDLED to continue with the generic conversion.
+
+    @staticmethod
+    def _map_code(status: dict[str, Any], raw: Any, mapper: Any) -> str | None:
+        """Map an alarm/notification/warning code to its translation key, else the raw code."""
+        if raw is None:
+            return None
+        try:
+            mapped, raw_code = mapper(status, raw)
+            if mapped:
+                return mapped
+            # Model unknown or no mapping found: return the raw value 1:1
+            sval = str(raw_code)
+            return sval if sval.strip() != "" else None
+        except (ValueError, KeyError, AttributeError, TypeError):
+            return None
+
+    def _value_ab(self, status: dict[str, Any], value: Any) -> Any:
+        """Valve shut-off (getAB): lowercase "true"/"false" for translations."""
+        ab = get_sensor_ab_value(status)
+        if ab is None:
+            return None
+        return "true" if ab else "false"
+
+    def _value_ala(self, status: dict[str, Any], value: Any) -> Any:
+        """Alarm code (getALA): translation key based on the device model."""
+        return self._map_code(status, value, get_sensor_ala_map)
+
+    def _value_not(self, status: dict[str, Any], value: Any) -> Any:
+        """Notification code (getNOT): translation key."""
+        return self._map_code(status, value, get_sensor_not_map)
+
+    def _value_wrn(self, status: dict[str, Any], value: Any) -> Any:
+        """Warning code (getWRN): translation key."""
+        return self._map_code(status, value, get_sensor_wrn_map)
+
+    def _value_alm(self, status: dict[str, Any], value: Any) -> Any:
+        """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map."""
+        raw_str = str(value) if value is not None else ""
+        try:
+            ala_mapped, _ = get_sensor_ala_map(status or {}, value)
+        except (ValueError, KeyError, AttributeError, TypeError):
+            ala_mapped = None
+        std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
+        mapped = ala_mapped or std_mapped
+        # Mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or the raw value as fallback
+        return mapped if mapped is not None else value
+
+    def _value_avo(self, status: dict[str, Any], value: Any) -> Any:
+        """Current flow rate (getAVO): "1655mL" -> numeric value."""
+        if value is None or value == "":
+            return None
+        return get_sensor_avo_value(value)
+
+    def _value_bar(self, status: dict[str, Any], value: Any) -> Any:
+        """Pressure (getBAR / getBAR2, Safe-T+ / TRIO Lock): "4077 mbar" -> bar."""
+        if value is None or value == "":
+            return None
+        try:
+            match = re.search(r'\d+', str(value))
+            if not match:
+                return None
+            pressure_bar = float(match.group()) / 1000
+            precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 3)
+            return round(pressure_bar, precision)
+        except (ValueError, TypeError):
+            return None
+
+    def _value_bat(self, status: dict[str, Any], value: Any) -> Any:
+        """Battery (getBAT).
+
+        Formats: Safe-T+ ("6,11 4,38 3,90" -> 6.11 V), Trio DFR/LS ("363" -> 3.63 V),
+        SafeFloor TYP=120 ("85" -> 85 %).
+        """
+        if value is None:
+            return None
+        if not isinstance(value, (str | int | float)):
+            return None
+        # SafeFloor (and similar) report battery as an integer percentage.
+        if self._attr_native_unit_of_measurement == PERCENTAGE:
+            try:
+                return int(float(str(value).strip()))
+            except (ValueError, TypeError):
+                return None
+        return get_sensor_bat_value(value)
+
+    def _value_dbd(self, status: dict[str, Any], value: Any) -> Any:
+        """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
+        if value is None or value == "":
+            return None
+        try:
+            match = re.search(r"-?\d+", str(value))
+            if not match:
+                return None
+            pressure_bar = float(match.group()) / 10.0
+            precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 1)
+            return round(pressure_bar, precision)
+        except (ValueError, TypeError):
+            return None
+
+    def _value_iwh(self, status: dict[str, Any], value: Any) -> Any:
+        """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
+        return get_sensor_iwh_value(status or {})
+
+    def _value_net(self, status: dict[str, Any], value: Any) -> Any:
+        """Mains voltage (getNET).
+
+        Formats: Safe-T+ ("ADC:950 6,16V" -> 6.16 V), Safe-Tech+ ("11,86" -> 11.86 V),
+        Trio DFR/LS ("363" -> 3.63 V).
+        """
+        if value is None:
+            return None
+        if not isinstance(value, (str | int | float)):
+            return None
+        return get_sensor_net_value(value)
+
+    def _value_lar(self, status: dict[str, Any], value: Any) -> Any:
+        """Last regeneration (getLAR): unix seconds -> aware UTC datetime."""
+        if value is None or value == "":
+            return None
+        try:
+            # Home Assistant formats it according to the user's timezone/locale.
+            return datetime.fromtimestamp(int(float(value)), UTC)
+        except (ValueError, TypeError, OverflowError):
+            return None
+
+    def _value_le(self, status: dict[str, Any], value: Any) -> Any:
+        """getLE: raw value -> display value."""
+        return _SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(int(value or 2))
+
+    def _value_lng(self, status: dict[str, Any], value: Any) -> Any:
+        """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            return None
+        return get_sensor_lng_value(value)
+
+    def _value_leak_protection_flag(self, status: dict[str, Any], value: Any) -> Any:
+        """Leak-protection flags (getPAx, getPBx, getPMx, getPWx): "true"/"false" like getAB.
+
+        getPRx are numeric return-time values and are not matched (see _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG).
+        """
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            return None
+        if isinstance(value, (int | float)):
+            try:
+                return "true" if int(float(value)) != 0 else "false"
+            except (ValueError, TypeError):
+                return None
+        if isinstance(value, str):
+            sval = value.strip().lower()
+            if sval in ("1", "true", "on", "yes"):
+                return "true"
+            if sval in ("0", "false", "off", "no"):
+                return "false"
+            try:
+                return "true" if int(float(sval)) != 0 else "false"
+            except (ValueError, TypeError):
+                return sval
+        return _SYR_CONNECT_SENSOR_NOT_HANDLED
+
+    def _value_rtm(self, status: dict[str, Any], value: Any) -> Any:
+        """Regeneration time (getRTM): "HH:MM" from getRTM, or combined from getRTH + getRTM."""
+        return get_sensor_rtm_value(status)
+
+    def _value_rpw(self, status: dict[str, Any], value: Any) -> Any:
+        """Regeneration permitted weekdays (getRPW): bitmask, bit 1 = Monday ... bit 7 = Sunday.
+
+        0 -> "0" ("Not specified" translation key), otherwise comma-separated localized
+        short weekday names.
+        """
+        if value is None or value == "":
+            return None
+        try:
+            mask = int(float(value))
+        except (ValueError, TypeError):
+            try:
+                mask = int(str(value).strip())
+            except (ValueError, TypeError):
+                return None
+
+        if mask == 0:
+            return "0"
+
+        # Localize with the Home Assistant language; a reference Monday maps the weekday offsets.
+        ref_monday = datetime(2024, 1, 1)
+        try:
+            locale = getattr(self.hass.config, "language", None)
+        except AttributeError:
+            locale = None
+
+        parts: list[str] = []
+        for idx in range(7):
+            if mask & (1 << idx):
+                day = ref_monday + timedelta(days=idx)
+                try:
+                    name = format_datetime(day, "EEE", locale=locale)
+                except (ValueError, KeyError, AttributeError, TypeError):
+                    # Fallback to system short name if Babel/localization fails
+                    name = day.strftime("%a")
+                parts.append(name)
+        return ",".join(parts)
+
+    def _value_sta(self, status: dict[str, Any], value: Any) -> Any:
+        """Status (getSTA): map the Polish status strings to translation keys.
+
+        Translation placeholders are not supported for entity states in the frontend (only
+        for names/labels), see https://github.com/home-assistant/frontend/issues/29064, so
+        the placeholder values are only logged.
+        """
+        # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer (0=Standby);
+        # check for None explicitly so a genuine 0 is kept.
+        raw = str(value) if value is not None else ""
+        _LOGGER.debug("getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw)
+
+        m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
+        if m_match:
+            mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get("Płukanie regenerantem", "status_regenerant_rinse"))
+            _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": str(m_match.group(1) or "")})
+            return mapped
+
+        m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
+        if m2_match:
+            mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get("Płukanie rapide", "status_fast_rinse"))
+            _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": str(m2_match.group(1) or "")})
+            return mapped
+
+        # Fallback: use the raw string as mapping key
+        mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(raw, raw))
+        _LOGGER.debug("getSTA mapped=%s", mapped)
+        return mapped
+
+    def _value_t(self, status: dict[str, Any], value: Any) -> Any:
+        """getT1 / getT2: raw value -> display value."""
+        return _SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(int(value or 1))
+
+    def _value_ul(self, status: dict[str, Any], value: Any) -> Any:
+        """getUL: raw value -> display value."""
+        return _SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(int(value or 1))
+
+    def _value_crs(self, status: dict[str, Any], value: Any) -> Any:
+        """Cartridge size (getCRS): raw value -> liters."""
+        if value is None or value == "":
+            return None
+        try:
+            raw = int(float(value))
+        except (ValueError, TypeError):
+            return None
+        return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
+
+    def _value_crt(self, status: dict[str, Any], value: Any) -> Any:
+        """Cartridge type (getCRT): empty means "no cartridge"; translation keys cannot be "", so "none"."""
+        if value is None or value == "":
+            return "none"
+        return str(value)
+
+    def _value_rcd(self, status: dict[str, Any], value: Any) -> Any:
+        """Filling period (getRCD): empty means "undefined"; translation keys cannot be ""."""
+        if value is None or value == "":
+            return "undefined"
+        return str(value)
+
+    def _value_whu(self, status: dict[str, Any], value: Any) -> Any:
+        """Water hardness unit (getWHU): raw value -> unit."""
+        if isinstance(value, int | float):
+            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
+        if isinstance(value, str):
+            try:
+                return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
+            except (ValueError, TypeError):
+                return None
+        return None
+
+    _SYR_CONNECT_SENSOR_VALUE_HANDLERS: dict[str, Callable[[SyrConnectSensor, dict[str, Any], Any], Any]] = {
+        'getAB': _value_ab,
+        'getALA': _value_ala,
+        'getALM': _value_alm,
+        'getAVO': _value_avo,
+        'getBAR': _value_bar,
+        'getBAR2': _value_bar,
+        'getBAT': _value_bat,
+        'getCRS': _value_crs,
+        'getCRT': _value_crt,
+        'getDBD': _value_dbd,
+        'getIWH': _value_iwh,
+        'getLAR': _value_lar,
+        'getLE': _value_le,
+        'getLNG': _value_lng,
+        'getNET': _value_net,
+        'getNOT': _value_not,
+        'getRCD': _value_rcd,
+        'getRPW': _value_rpw,
+        'getRTM': _value_rtm,
+        'getSTA': _value_sta,
+        'getT1': _value_t,
+        'getT2': _value_t,
+        'getUL': _value_ul,
+        'getWHU': _value_whu,
+        'getWRN': _value_wrn,
+    }
 
 
 class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
