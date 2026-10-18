@@ -1160,7 +1160,7 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <sc>
-    <si v="App-3.7.10-de-DE-iOS-iPhone-15.8.3-de.consoft.syr.connect"/>
+    <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
     <us ug="{session}"/>
     <col><dcl dclg="{dclg}"><sh t="1" rtyp="4" lg="de" rg="DE" unit="°C"/></dcl></col>
     <cs v="{checksum}"/>
