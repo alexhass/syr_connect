@@ -122,12 +122,17 @@ def test_compute_checksum_with_high_offset_key() -> None:
     assert result > 0
 
 
-_RESPONSE_FIXTURES = sorted((Path(__file__).parent / "fixtures/xml").glob("*.xml"))
+_XML_FIXTURES = sorted(
+    [
+        *(Path(__file__).parent / "fixtures/xml").glob("*.xml"),
+        *(Path(__file__).parent / "fixtures/xml/requests").glob("*.xml"),
+    ]
+)
 
 
-@pytest.mark.parametrize("fixture", _RESPONSE_FIXTURES, ids=lambda p: p.name)
-def test_response_fixture_checksum_is_valid(fixture: Path) -> None:
-    """Server responses use the same checksum as requests (all attribute values except `n`, without <cs>).
+@pytest.mark.parametrize("fixture", _XML_FIXTURES, ids=lambda p: p.name)
+def test_fixture_checksum_is_valid(fixture: Path) -> None:
+    """Requests and server responses share one checksum (all attribute values except `n`, without <cs>).
 
     Verified against real responses; keeps the fixtures consistent after anonymizing values.
     """
