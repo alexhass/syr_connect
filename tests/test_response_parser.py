@@ -940,6 +940,23 @@ def test_never_online_device_minimal_status_is_parsed(parser):
     assert status["getSRN"] == "123456789"
 
 
+def test_offline_device_minimal_status_is_parsed(parser):
+    """An offline device (dst="1") reports only the broken names; that is genuine and passed on."""
+    xml = """<sc>
+        <dvs>
+            <d dg="abc-123" dst="1">
+                <c n="getSRN" v="123456789"/>
+                <c n="getALA" v="00"/>
+            </d>
+        </dvs>
+    </sc>"""
+    status = parser.parse_device_status_response(xml)
+
+    assert status is not None
+    assert status["dst"] == "1"
+    assert status["getSRN"] == "123456789"
+
+
 def test_trio_minimal_status_of_online_device_is_still_ignored(parser):
     """The Trio DFR/LS glitch (online device, dst="2", only getSRN/getALA/getNOT/getWRN) is still discarded."""
     path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml")
