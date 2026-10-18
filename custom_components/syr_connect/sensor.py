@@ -666,9 +666,22 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         except (ValueError, TypeError, OverflowError):
             return None
 
+    @staticmethod
+    def _map_int(value_map: dict[int, Any], value: Any, default: int) -> Any:
+        """Look up a raw integer value in a value map.
+
+        A missing, empty or 0 value uses `default`. A value that is not an integer
+        returns None instead of raising, so a broken device value does not break the
+        sensor update (native_value then keeps the last known value).
+        """
+        try:
+            return value_map.get(int(value or default))
+        except (ValueError, TypeError):
+            return None
+
     def _value_le(self, status: dict[str, Any], value: Any) -> Any:
         """getLE: raw value -> display value."""
-        return _SYR_CONNECT_SENSOR_LE_VALUE_MAP.get(int(value or 2))
+        return self._map_int(_SYR_CONNECT_SENSOR_LE_VALUE_MAP, value, 2)
 
     def _value_lng(self, status: dict[str, Any], value: Any) -> Any:
         """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
@@ -773,11 +786,11 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
     def _value_t(self, status: dict[str, Any], value: Any) -> Any:
         """getT1 / getT2: raw value -> display value."""
-        return _SYR_CONNECT_SENSOR_T1_VALUE_MAP.get(int(value or 1))
+        return self._map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
 
     def _value_ul(self, status: dict[str, Any], value: Any) -> Any:
         """getUL: raw value -> display value."""
-        return _SYR_CONNECT_SENSOR_UL_VALUE_MAP.get(int(value or 1))
+        return self._map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
 
     def _value_crs(self, status: dict[str, Any], value: Any) -> Any:
         """Cartridge size (getCRS): raw value -> liters."""

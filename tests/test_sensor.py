@@ -7954,3 +7954,16 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
 
     keys = {getattr(e, "_sensor_key", None) for e in entities}
     assert {"getAB", "getVLV", "getDBD", "getDMA", "getDRP", "getDSV", "getDTT", "getPA1", "getPRF"} <= keys
+
+
+@pytest.mark.parametrize("key", ["getLE", "getT1", "getT2", "getUL"])
+@pytest.mark.parametrize("raw", ["abc", "1.5", [1]])
+def test_mapped_int_sensor_invalid_value_returns_none(key: str, raw) -> None:
+    """A non-integer raw value of a mapped sensor gives None instead of raising."""
+    coordinator = MagicMock()
+    coordinator.entry_id = None
+    coordinator.data = {"devices": [{"id": "dev", "name": "Dev", "project_id": "p1", "status": {key: raw}}]}
+
+    sensor = SyrConnectSensor(coordinator, "dev", "Dev", "p1", key)
+
+    assert sensor._compute_native_value() is None
