@@ -596,18 +596,20 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": "Safe-Tech V4",
     },
     {
+        # POLYGONVATRO (today POLYGON Deutschland) sold these "SYR Safe-Tech Connect" devices together
+        # with the AXA building insurance, called "Wasserwächter". Order.-No.: 2422.25.003
         "base_path": None,
         #"base_path": "/safe-tec",
         "device_file": "safetech",
-        "display_name": "SafeTech Connect",
+        "display_name": "Water Monitor",
         "dk": 140,
         "dkv": 38,
         "manufacturer": "POLYGONVATRO",
         "name": "safetechpolygonvatro",
-        # POLYGONVATRO (today POLYGON Deutschland) sold these SafeTech devices together with
-        # the AXA building insurance, often called "Wasserwächter".
         # TODO: Untested model.
-        "srn_prefix": "38",
+        #"srn_prefix": "38",
+        # Version string: "Safe-Tech V3.53", see https://www.youtube.com/watch?v=apdL8SLZ64Q&t=585s
+        #"ver_prefix": "Safe-Tech V3",
     },
     {
         "base_path": "/safe-tec",
