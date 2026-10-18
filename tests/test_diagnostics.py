@@ -1336,7 +1336,7 @@ async def test_diagnostics_redact_obj_dict_key_matches_redact(hass: HomeAssistan
     )
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Create data with keys that match _TO_REDACT
+    # Create data with keys that match _SYR_CONNECT_DIAGNOSTICS_TO_REDACT
     mock_coordinator.data = {
         "devices": [
             {
@@ -1678,7 +1678,7 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssista
 
 
 async def test_diagnostics_redact_xml_empty_key_in_set(hass: HomeAssistant) -> None:
-    """Test XML redaction handles empty string in _TO_REDACT set."""
+    """Test XML redaction handles empty string in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT set."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,
@@ -1700,7 +1700,7 @@ async def test_diagnostics_redact_xml_empty_key_in_set(hass: HomeAssistant) -> N
 
     config_entry.runtime_data = mock_coordinator
 
-    # Should handle empty keys in _TO_REDACT gracefully
+    # Should handle empty keys in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT gracefully
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
     assert diagnostics is not None
@@ -3903,15 +3903,15 @@ async def test_diagnostics_title_redact_except_branch(hass: HomeAssistant) -> No
 # ---------------------------------------------------------------------------
 
 async def test_diagnostics_redact_xml_empty_key_continue(hass: HomeAssistant) -> None:
-    """Line 113: empty key in _TO_REDACT hits 'continue' inside _redact_xml."""
-    original = diag._TO_REDACT
-    diag._TO_REDACT = {"", *original}
+    """Line 113: empty key in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT hits 'continue' inside _redact_xml."""
+    original = diag._SYR_CONNECT_DIAGNOSTICS_TO_REDACT
+    diag._SYR_CONNECT_DIAGNOSTICS_TO_REDACT = {"", *original}
     try:
         entry = _cov_entry()
         entry.runtime_data = _cov_coordinator()
         result = await async_get_config_entry_diagnostics(hass, entry)
     finally:
-        diag._TO_REDACT = original
+        diag._SYR_CONNECT_DIAGNOSTICS_TO_REDACT = original
 
     assert "entry" in result
 
