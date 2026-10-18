@@ -1,6 +1,9 @@
 """Tests for checksum module."""
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
 from defusedxml import ElementTree as DefusedET
 
 from custom_components.syr_connect.checksum import SyrChecksum
@@ -117,3 +120,26 @@ def test_compute_checksum_with_high_offset_key() -> None:
     result = checksum.compute_checksum_value("zz")
     assert isinstance(result, int)
     assert result > 0
+
+
+_RESPONSE_FIXTURES = sorted((Path(__file__).parent / "fixtures/xml").glob("*.xml"))
+
+
+@pytest.mark.parametrize("fixture", _RESPONSE_FIXTURES, ids=lambda p: p.name)
+def test_response_fixture_checksum_is_valid(fixture: Path) -> None:
+    """Server responses use the same checksum as requests (all attribute values except `n`, without <cs>).
+
+    Verified against real responses; keeps the fixtures consistent after anonymizing values.
+    """
+    from custom_components.syr_connect.const import _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
+
+    root = DefusedET.fromstring(fixture.read_bytes())
+    cs_elements = root.findall("cs")
+    if not cs_elements:
+        pytest.skip("fixture has no <cs> element")
+    expected = cs_elements[0].get("v")
+    for cs in cs_elements:
+        root.remove(cs)
+
+    checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
+    assert checksum.compute_element_checksum(root) == expected
