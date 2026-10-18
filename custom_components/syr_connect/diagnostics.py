@@ -24,8 +24,9 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import is_sensor_visible, mask_ug_value
 from .models import detect_model
 
-# Maximum concurrent API calls for diagnostics data collection
-_SYR_CONNECT_CONCURRENT_API_CALLS = 5
+# Maximum number of requests the diagnostics send at the same time (cloud status XML,
+# local /get/all), so that many devices do not flood the cloud or the LAN
+_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS = 5
 
 # Keys whose values are removed completely: in dicts by `_redact_obj` and
 # `async_redact_data`, in XML strings by `_redact_xml`.
@@ -285,7 +286,7 @@ async def _collect_raw_xml(coordinator: SyrConnectDataUpdateCoordinator) -> dict
         # Capture api in a typed local variable for the closures below;
         # mypy does not narrow `api` to not-None inside them.
         xml_api: SyrConnectXmlAPI = api
-        semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
+        semaphore = asyncio.Semaphore(_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS)
 
         # A failed request only leaves an empty response for this project/device
         async def _fetch(url: str, payload: dict[str, Any]) -> str:
@@ -452,7 +453,7 @@ async def _collect_raw_json_cloud_devices(coordinator: SyrConnectDataUpdateCoord
 
         if coordinator and getattr(coordinator, "data", None):
             devices = coordinator.data.get("devices", [])
-            semaphore = asyncio.Semaphore(_SYR_CONNECT_CONCURRENT_API_CALLS)
+            semaphore = asyncio.Semaphore(_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS)
 
             async def _wrap(dev: dict[str, Any], base_path: str) -> tuple[str, Any]:
                 async with semaphore:
