@@ -21,6 +21,7 @@ This custom integration enables control of SYR Connect devices through Home Assi
 | Hansgrohe Pontos | <https://www.hansgrohe.de/> |
 | mein concept | <https://www.mein-concept.de/> |
 | mein Optima | <https://www.mein-optima.de/> |
+| POLYGONVATRO (today POLYGON Deutschland) | <https://www.polygongroup.com/de-DE/> |
 | Reliance Valves | <https://www.rwc.com/brands/reliance-valves> |
 | SYR | <https://www.syr.de/> |
 | SYR Oceanic | <https://www.debestewaterbehandeling.be/> |
@@ -103,37 +104,56 @@ Tested and reported as working:
 - SYR Safe-T+ Connect
 - SYR SafeTech Connect
 - SYR SafeTech plus Connect
+- SYR SafeTech V3 Connect
+- SYR SafeTech V4 Connect
 - SYR TRIO DFR/LS Connect 2425
 - SYR TRIO Lock Connect
 - SYR Oceanic i-LEX / Limex iQ Single (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
 
 Other devices are also of interest, but may need to be integrated or at least tested (please report):
 
+- CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
+- concept 200 Replacement Filter
+- concept 200 Twin Water Softener
 - concept Single Water Softener
 - concept Twin Water Softener
 - Ditech Single Water Softener
 - Ditech Twin Water Softener
 - Hansgrohe PontosBase
+- Optima Single Water Softener
+- Optima T Replacement Filter
+- Optima T2.3 Twin Water Softener
+- Optima Twin Water Softener
+- POLYGONVATRO SafeTech Connect (sold with AXA building insurance as "Wasserwächter")
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
+- Sanibel Automatic Backwash System RSA A25
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
+- SYR All in One +
+- SYR CONTROLICmini
+- SYR HVA
 - SYR HygBox Connect
+- SYR Hygiene Module (cold / warm / cold and warm)
+- SYR Inliner-HWA 3300
 - SYR IT 3000 Pendulum system
-- SYR LEX 1500 Connect Duplex
 - SYR LEX 1500 Connect Alternating
+- SYR LEX 1500 Connect Duplex
 - SYR LEX 1500 Connect Triple
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
+- SYR NeoSoft Connect
+- SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
+- SYR Safe-T Communication Module
+- SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
-- Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
+- SYR Trio LS Connect
 - TAKE Single Water Softener
 - TAKE Twin Water Softener
-- Optima Single Water Softener
-- Optima Twin Water Softener
+- Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
 **Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
 

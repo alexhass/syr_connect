@@ -583,7 +583,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 35,
         "manufacturer": "SYR",
         "name": "safetechv3",
-        # TODO: Untested model.
         "ver_prefix": "Safe-Tech V3",
     },
     {
@@ -605,6 +604,8 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 38,
         "manufacturer": "POLYGONVATRO",
         "name": "safetechpolygonvatro",
+        # POLYGONVATRO (today POLYGON Deutschland) sold these SafeTech devices together with
+        # the AXA building insurance, often called "Wasserwächter".
         # TODO: Untested model.
         "srn_prefix": "38",
     },
@@ -626,6 +627,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": None,
         "manufacturer": "Hansgrohe",
         "name": "pontosbase",
+        # TODO: Untested model.
         "ver_prefix": "PontosBase",
     },
     {
@@ -691,6 +693,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "manufacturer": "SYR",
         "name": "dosingpump",
         # TODO: Untested model.
+        # Probably the SYR NeoDos Connect; not yet confirmed by the manufacturer.
         # Unverified serial prefix from documentation, missing infix 'AAA' and match condition.
         "srn_prefix": "2031",
     },
@@ -855,7 +858,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
         "device_file": "neosoft_duo",
-        "display_name": "Optima T2.2 Double Softening System",
+        "display_name": "Optima T2.3 Double Softening System",
         "dk": 1211,
         "dkv": 211,
         "manufacturer": "OPTIMA",
@@ -1017,6 +1020,10 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
 
     # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
+    # The "... MultiController" / "... Multicontroller" signatures in this section
+    # (conelmuco, sanibelmuco, ditechmuco, takemuco, conceptmuco, optimamuco, syrmuco)
+    # are fallbacks for future devices of this platform, not real products. Do not
+    # list them in the device lists of README.md / README.de.md.
     {
         # CLEARPNLS - Retrofit Leakage Protection
         "alarm_clear_via_set": True,

@@ -21,6 +21,7 @@ Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten übe
 | Hansgrohe Pontos | <https://www.hansgrohe.de/> |
 | mein concept | <https://www.mein-concept.de/> |
 | mein Optima | <https://www.mein-optima.de/> |
+| POLYGONVATRO (heute POLYGON Deutschland) | <https://www.polygongroup.com/de-DE/> |
 | Reliance Valves | <https://www.rwc.com/brands/reliance-valves> |
 | SYR | <https://www.syr.de/> |
 | SYR Oceanic | <https://www.debestewaterbehandeling.be/> |
@@ -103,37 +104,56 @@ Getestet und gemeldet als funktionierend:
 - SYR Safe-T+ Connect
 - SYR SafeTech Connect
 - SYR SafeTech plus Connect
+- SYR SafeTech V3 Connect
+- SYR SafeTech V4 Connect
 - SYR TRIO DFR/LS Connect 2425
 - SYR TRIO Lock Connect
 - SYR Oceanic i-LEX / Limex iQ Einzel (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
 
 Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindest getestet werden (bitte melden):
 
+- CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
-- concept Einzelenthärtungsanlage
+- concept 200 Doppelenthärtungsanlage
+- concept 200 Ersatzfilter
 - concept Doppelenthärtungsanlage
-- Ditech Einzelenthärtungsanlage
+- concept Einzelenthärtungsanlage
 - Ditech Doppelenthärtungsanlage
+- Ditech Einzelenthärtungsanlage
 - Hansgrohe PontosBase
+- Optima Doppelenthärtungsanlage
+- Optima Einzelenthärtungsanlage
+- Optima T Ersatzfilter
+- Optima T2.3 Doppelenthärtungsanlage
+- POLYGONVATRO SafeTech Connect (über die AXA Gebäudeversicherung als „Wasserwächter“ vertrieben)
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
+- Sanibel Automatische Rückspülanlage RSA A25
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
+- SYR All in One +
+- SYR CONTROLICmini
+- SYR HVA
 - SYR HygBox Connect
+- SYR Hygienemodul (kalt / warm / kalt und warm)
+- SYR Inliner-HWA 3300
 - SYR IT 3000 Pendelanlage
 - SYR LEX 1500 Connect Doppel
-- SYR LEX 1500 Connect Pendel
 - SYR LEX 1500 Connect Dreifach
+- SYR LEX 1500 Connect Pendel
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
+- SYR NeoSoft Connect
+- SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
+- SYR Safe-T Kommunikationsmodul
+- SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
-- Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
-- TAKE Einzelenthärtungsanlage
+- SYR Trio LS Connect
 - TAKE Doppelenthärtungsanlage
-- Optima Einzelenthärtungsanlage
-- Optima Doppelenthärtungsanlage
+- TAKE Einzelenthärtungsanlage
+- Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
 **Hinweis**: Wenn ein Gerät in deinem SYR Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
 
