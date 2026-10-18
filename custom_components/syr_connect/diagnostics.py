@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import re
 from datetime import datetime
 from typing import Any
@@ -429,6 +430,13 @@ async def async_get_config_entry_diagnostics(
 
                     # If no usable IP, skip JSON fetch for this device
                     if not ip:
+                        return dev_id, None
+
+                    # The IP comes from the cloud; only contact devices in the local network
+                    try:
+                        if not ipaddress.ip_address(str(ip).strip()).is_private:
+                            return dev_id, None
+                    except ValueError:
                         return dev_id, None
 
                     json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)

@@ -16,6 +16,16 @@ https://github.com/home-assistant/core/blob/dev/.github/copilot-instructions.md
 
 ---
 
+## Project Rules
+
+- Debug logging is not masked or redacted: `_LOGGER.debug` messages log requests, responses and
+  values in full, so problems can be analysed. Do not add masking to debug logs and do not report
+  unmasked debug output as a finding in reviews. Redaction belongs to diagnostics (`diagnostics.py`).
+- Exception: passwords and session tokens are always masked, in every log level including debug
+  (e.g. `mask_login_password`, `mask_ug_value` in `helpers.py`).
+
+---
+
 ## Note
 
 This file is a reference copy. For updates, always consult the original in the Home Assistant core repository.

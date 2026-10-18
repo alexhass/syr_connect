@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -2722,6 +2723,44 @@ async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
         diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
         assert "raw_json" in diagnostics
+
+
+@pytest.mark.parametrize("ip", ["8.8.8.8", "2001:4860:4860::8888", "device.example.com"])
+async def test_diagnostics_raw_json_skips_non_private_ip(hass: HomeAssistant, ip: str) -> None:
+    """The device IP comes from the cloud: public addresses and hostnames are not contacted."""
+    from unittest.mock import MagicMock, patch
+
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="Test",
+        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
+        "devices": [{"id": "dev1", "name": "Device 1", "status": {"getSRN": "206AAA12345", "getWIP": ip}}],
+        "projects": [],
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = None
+    mock_coordinator._session = MagicMock()
+
+    config_entry.runtime_data = mock_coordinator
+
+    with patch("custom_components.syr_connect.diagnostics.SyrConnectJsonAPI") as mock_json_api_class:
+        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert "raw_json" in diagnostics
+    mock_json_api_class.assert_not_called()
 
 
 async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
