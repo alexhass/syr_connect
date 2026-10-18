@@ -330,22 +330,16 @@ class ResponseParser:
         if not device_list:
             _LOGGER.warning("Status response 'dvs' element contains no device entries; skipping update: %s", dvs)
             return None
+        # A single <d> element is parsed as a dict, several as a list
+        if not isinstance(device_list, list):
+            device_list = [device_list]
 
         # If the response is broken (broken fragments), skip it.
         if self._ignore_broken_response(device_list):
             return None
 
         # Ensure at least one device entry contains detailed <c> children
-        has_c = False
-        if isinstance(device_list, list):
-            for d in device_list:
-                if isinstance(d, dict) and 'c' in d:
-                    has_c = True
-                    break
-        elif isinstance(device_list, dict) and 'c' in device_list:
-            has_c = True
-
-        if not has_c:
+        if not any(isinstance(d, dict) and 'c' in d for d in device_list):
             _LOGGER.warning("Device entries in 'dvs' lack <c> children; skipping update")
             return None
 
