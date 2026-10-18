@@ -162,6 +162,11 @@ async def test_diagnostics_multiple_devices(hass: HomeAssistant) -> None:
     # If coordinator.data exists, devices should be processed
     assert isinstance(diagnostics["devices"], list)
     assert isinstance(diagnostics["projects"], list)
+    # Project names are user-defined (often an address) and masked like `pn` in raw_xml
+    assert diagnostics["projects"] == [
+        {"id": "project1", "name": "My Project"},
+        {"id": "project2", "name": "My Project"},
+    ]
 
 
 async def test_diagnostics_redact_xml_basic(hass: HomeAssistant) -> None:

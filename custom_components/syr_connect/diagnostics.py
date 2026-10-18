@@ -557,11 +557,12 @@ async def async_get_config_entry_diagnostics(
 
             devices_info.append(device_info)
 
-        # Add project information
+        # Add project information. The project name is user-defined and often an address or
+        # family name; it is masked like `pn` in raw_xml above ("My+Project").
         for project in coordinator.data.get("projects", []):
             project_info = {
                 "id": project.get("id"),
-                "name": project.get("name"),
+                "name": "My Project" if project.get("name") else project.get("name"),
             }
             projects_info.append(project_info)
 
