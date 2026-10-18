@@ -494,6 +494,8 @@ class SyrConnectXmlAPI:
         Note: Not all device models support statistics. SafeTech and older
         NeoSoft models may not provide this data.
 
+        Not used by the integration yet; kept for planned water/salt statistics sensors.
+
         Args:
             device_id: Device collection group ID (DCLG)
             statistic_type: Type of statistic to fetch:
