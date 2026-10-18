@@ -12,7 +12,7 @@ Cloud API workflow:
 Security features:
 - Request checksums with a proprietary two-key algorithm (required by the webservice; not an HMAC)
 - Response encryption using AES (protects sensitive data)
-- Session-based authentication with 30-minute timeout
+- Session-based authentication; a token rejected by the webservice triggers one new login (no client-side expiry)
 
 The API client coordinates several helper components:
 - SyrEncryption: AES encryption/decryption
