@@ -33,6 +33,7 @@ _TO_REDACT = {
     CONF_PASSWORD,
     CONF_USERNAME,
     "session_data",
+    "getCNO",   # Code number printed on the device label; registers the device to an account
     "getDGW",   # Default gateway
     "getEGW",   # Ethernet gateway
     "getEIP",   # Ethernet IP address

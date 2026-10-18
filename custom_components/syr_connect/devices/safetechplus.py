@@ -31,7 +31,7 @@ SENSOR_KNOWN_KEYS = {
     "getPV1", "getPV2", "getPV3", "getPV4", "getPV5", "getPV6", "getPV7", "getPV8",
     "getPW1", "getPW2", "getPW3", "getPW4", "getPW5", "getPW6", "getPW7", "getPW8",
     # --- Device information and diagnostics ---
-    "getAPT", "getCNO", "getEGW", "getEIP", "getFFM", "getLNG",
+    "getAPT", "getEGW", "getEIP", "getFFM", "getLNG",
     "getMAC", "getMAC1", "getMAC2", "getSRN", "getSRO", "getSRV", "getT2",
     "getTMP", "getTYP", "getVER",
     # --- Wi-Fi ---

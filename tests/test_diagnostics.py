@@ -1930,6 +1930,36 @@ async def test_diagnostics_xml_json_session_none_returns_error_additional(hass) 
     assert diagnostics.get("raw_json") == {"error": "no http session available on coordinator"}
 
 
+async def test_diagnostics_redacts_registration_code_getcno(hass, monkeypatch) -> None:
+    """getCNO (code number on the device label, registers the device to an account) never appears in diagnostics."""
+    from types import SimpleNamespace
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    secret = "CNO1234567890AB"
+    entry = MockConfigEntry(domain="syr_connect", title="TestJSON", data={"api_type": API_TYPE_JSON}, entry_id="e_cno")
+
+    async def _get_devices(_scope):
+        return [{"id": "dev1"}]
+
+    async def _get_device_status(_did):
+        return {"getCNO": secret, "getFLO": "5"}
+
+    fake_api = SimpleNamespace(is_session_valid=lambda: True, get_devices=_get_devices, get_device_status=_get_device_status)
+    monkeypatch.setattr(diag, "SyrConnectJsonAPI", SimpleNamespace)
+    entry.runtime_data = SimpleNamespace(
+        api=fake_api,
+        data={"devices": [{"id": "dev1", "name": "Dev", "status": {"getCNO": secret, "getFLO": "5"}}], "projects": []},
+        last_update_success=True,
+        last_update_success_time=datetime.now(UTC),
+    )
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert secret not in str(diagnostics)
+    assert diagnostics["raw_json"]["dev1"]["getFLO"] == "5"
+
+
 async def test_diagnostics_json_api_redacts_srn_additional(hass) -> None:
     """When coordinator.api is a JSON API, ensure SRN is replaced with **REDACTED** (additional)."""
     from types import SimpleNamespace

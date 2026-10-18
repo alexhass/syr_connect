@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Geleidbaarheid"
       },
-      "getcno": {
-        "name": "Codenummer"
-      },
       "getcoa": {
         "name": "Teller automatische terugspoelingen"
       },

@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Conduttività"
       },
-      "getcno": {
-        "name": "Numero di codice"
-      },
       "getcoa": {
         "name": "Contatore controlavaggi automatici"
       },

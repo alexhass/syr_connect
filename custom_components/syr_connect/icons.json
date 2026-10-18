@@ -171,9 +171,6 @@
       "getcnd": {
         "default": "mdi:flash"
       },
-      "getcno": {
-        "default": "mdi:identifier"
-      },
       "getcoa": {
         "default": "mdi:counter"
       },

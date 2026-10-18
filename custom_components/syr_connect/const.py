@@ -506,7 +506,6 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Device Info & Diagnostics ---
     "getCDE",   # Configuration code
     "getCNA",   # Device name
-    "getCNO",   # Code number / device sub-identifier
     "getDGW",   # Gateway IP address
     "getEGW",   # Ethernet (LAN) gateway
     "getEIP",   # Ethernet (LAN) IP address
@@ -591,7 +590,6 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "dst",      # Device connection state
     # --- Device Info ---
     "getCNA",   # Device name
-    "getCNO",   # Code number / device sub-identifier
     "getDFM",   # Device feature mode (device function type)
     "getFIR",   # Firmware model identifier
     "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
@@ -1121,7 +1119,6 @@ _SYR_CONNECT_SENSOR_STATE_CLASS = {
 _SYR_CONNECT_SENSOR_STRING = {
     # Note: getBAT is handled specially - extracts first numeric value from space-separated string
     "getCNA",  # Device name
-    "getCNO",  # Code number / device sub-identifier
     "getDGW",  # Gateway
     "getDTT",  # Microleakage test time
     "getFIR",  # Firmware

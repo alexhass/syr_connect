@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Conductividad"
       },
-      "getcno": {
-        "name": "Número de código"
-      },
       "getcoa": {
         "name": "Contador de retrolavados automáticos"
       },

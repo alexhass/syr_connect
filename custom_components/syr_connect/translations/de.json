@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Wasserleitfähigkeit"
       },
-      "getcno": {
-        "name": "Codenummer"
-      },
       "getcoa": {
         "name": "Zähler automatische Rückspülungen"
       },

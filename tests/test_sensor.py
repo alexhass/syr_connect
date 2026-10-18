@@ -58,6 +58,32 @@ def test_filling_status_sensor_metadata() -> None:
     assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCFV"] == "measurement"
 
 
+@pytest.mark.parametrize(
+    "fixture",
+    [
+        "SyrSafeFloor_GetDeviceCollectionStatus.xml",
+        "SyrSafeTPlus_GetDeviceCollectionStatus.xml",
+        "SyrSafeTechV4_GetDeviceCollectionStatus.xml",
+    ],
+)
+async def test_getcno_registration_code_is_not_exposed(hass: HomeAssistant, fixture: str) -> None:
+    """getCNO is printed on the device label and registers the device to an account: never a sensor."""
+    xml = (Path(__file__).parent / "fixtures/xml" / fixture).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    assert "getCNO" in status
+    coordinator = _build_coordinator(
+        hass, {"devices": [{"id": "device1", "name": "Device 1", "project_id": "p1", "status": status}]}
+    )
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+    added: list = []
+
+    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
+
+    assert added  # the device gets its other sensors
+    assert not [e for e in added if getattr(e, "_sensor_key", None) == "getCNO"]
+
+
 async def test_sensor_setup(hass: HomeAssistant) -> None:
     """Test sensor platform setup."""
     data = {

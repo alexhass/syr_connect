@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Conductivité"
       },
-      "getcno": {
-        "name": "Numéro de code"
-      },
       "getcoa": {
         "name": "Compteur de rinçages inverses automatiques"
       },

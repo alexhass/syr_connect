@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Conductivity"
       },
-      "getcno": {
-        "name": "Code number"
-      },
       "getcoa": {
         "name": "Automatic backwash counter"
       },

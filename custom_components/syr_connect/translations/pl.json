@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Przewodność"
       },
-      "getcno": {
-        "name": "Numer kodu"
-      },
       "getcoa": {
         "name": "Licznik automatycznych płukań zwrotnych"
       },

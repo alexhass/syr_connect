@@ -36,7 +36,7 @@ SENSOR_KNOWN_KEYS = {
     # --- Intervals ---
     "getRCP", "getWMP",
     # --- Device Info & Diagnostics ---
-    "getCNO", "getMAC", "getSRN", "getTYP", "getVER",
+    "getMAC", "getSRN", "getTYP", "getVER",
     # --- Wi-Fi ---
     "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
 }

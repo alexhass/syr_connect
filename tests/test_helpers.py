@@ -810,6 +810,28 @@ def _registry_entry(
     )
 
 
+def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
+    """getCNO (registration code on the device label) is no longer a known key: an existing sensor is removed."""
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_SENSOR_KNOWN_KEYS
+
+    registry = MagicMock()
+    registry.async_get = MagicMock(return_value=None)
+    stale = _registry_entry("sensor", "DEV", "getCNO")
+    registry.entities.values.return_value = [stale, _registry_entry("sensor", "DEV", "getSRN")]
+
+    # SafeFloor has its own per-model allowlist, which listed getCNO before
+    status = {"getVER": "Syr Floorsensor 2.23", "getSRN": "123", "getCNO": "XXXXXXXXXXXXXXX"}
+    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+        helpers.registry_cleanup(
+            MagicMock(),
+            {"devices": [{"id": "DEV", "status": status}]},
+            "sensor",
+            allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        )
+
+    registry.async_remove.assert_called_once_with(stale.entity_id)
+
+
 def test_registry_cleanup_remove_called() -> None:
     """Allowlist mode: entity with key NOT in allowed_keys is removed."""
     hass = MagicMock()

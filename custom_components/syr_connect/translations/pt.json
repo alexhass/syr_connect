@@ -561,9 +561,6 @@
       "getcnd": {
         "name": "Condutividade"
       },
-      "getcno": {
-        "name": "Número de código"
-      },
       "getcoa": {
         "name": "Contador de retrolavagens automáticas"
       },
