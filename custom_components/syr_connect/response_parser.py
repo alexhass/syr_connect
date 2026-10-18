@@ -8,6 +8,7 @@ from urllib.parse import unquote_plus
 import defusedxml.ElementTree as etree  # noqa: N813
 
 from .exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
+from .helpers import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -408,7 +409,7 @@ class ResponseParser:
         # mark the device unavailable instead of keeping it "available" with no status.
         # Exempt only the offline devices, so an online one in the same response is still checked.
         online_devices = [
-            d for d in devices if not (isinstance(d, dict) and str(d.get('@dst', '')).strip() in ('0', '1'))
+            d for d in devices if not (isinstance(d, dict) and is_device_offline(d.get('@dst')))
         ]
         if not online_devices:
             return False

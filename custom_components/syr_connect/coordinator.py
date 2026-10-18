@@ -32,7 +32,7 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-from .helpers import get_api_locale, get_default_scan_interval_for_entry, get_sensor_iwh_value
+from .helpers import get_api_locale, get_default_scan_interval_for_entry, get_sensor_iwh_value, is_device_offline
 from .models import MODEL_SIGNATURES, detect_model
 from .repairs import delete_issue
 
@@ -281,7 +281,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             #
             # dst=0 (never online) or dst=1 (offline) means the device is not reachable via the cloud.
             # Mark it unavailable so all entities show as "Unavailable" in HA.
-            if str(status.get("dst", "")).strip() in ("0", "1"):
+            if is_device_offline(status.get("dst")):
                 _LOGGER.debug("Device %s is offline (dst=%s); marking unavailable", device.get("id"), status.get("dst"))
                 device["available"] = False
             else:

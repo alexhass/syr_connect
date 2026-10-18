@@ -902,6 +902,20 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
     return None
 
 
+def is_device_offline(dst: Any) -> bool:
+    """Return True if the cloud device state means offline.
+
+    dst="0" never online, dst="1" offline (2 = online, 3 = standby).
+
+    Args:
+        dst: The ``dst`` value of a status response
+
+    Returns:
+        True if the device is not reachable via the cloud
+    """
+    return str(dst if dst is not None else "").strip() in ("0", "1")
+
+
 def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     """Compute or return incoming water hardness (getIWH).
 

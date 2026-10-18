@@ -1860,3 +1860,12 @@ def test_is_valid_host_accepts(host: str) -> None:
 def test_is_valid_host_rejects(host: str) -> None:
     """Empty values, whitespace, explicit ports and malformed names are invalid."""
     assert is_valid_host(host) is False
+
+
+@pytest.mark.parametrize(
+    ("dst", "expected"),
+    [("0", True), ("1", True), (" 1 ", True), (1, True), ("2", False), ("3", False), ("", False), (None, False)],
+)
+def test_is_device_offline(dst, expected) -> None:
+    """dst 0 (never online) and 1 (offline) mean offline; everything else does not."""
+    assert helpers.is_device_offline(dst) is expected
