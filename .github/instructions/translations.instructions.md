@@ -10,5 +10,5 @@ applyTo: "custom_components/syr_connect/{const.py,sensor.py,select.py,translatio
 - Add lowercase keys (`getxxx`) to all files in `translations/*.json`. Keep keys alphabetically sorted inside each object and use 2-space indentation.
 - `entity.select.<key>` translations are separate from `entity.sensor.<key>`. Duplicate `name` (and `state` for enum selects) for every select.
 - If a raw-to-display value map exists in `const.py`, reuse it to build select options. Do not duplicate it as translation `state` entries. Use translation `state` maps only for pure enums.
-- Boolean switch-only keys need `_SYR_CONNECT_SWITCH_KNOWN_KEYS`, `_SYR_CONNECT_SENSOR_CONFIG`, `_SYR_CONNECT_SENSOR_ICON` and a `switch.<key>` translation, but no sensor known-keys entry.
+- Boolean switch-only keys need `_SYR_CONNECT_SWITCH_KNOWN_KEYS`, `_SYR_CONNECT_SENSOR_CONFIG`, an `entity.switch.<key>` icon in `icons.json` and a `switch.<key>` translation, but no sensor known-keys entry.
 - Verify with `python scripts/find_missing_translations.py`.

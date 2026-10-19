@@ -231,7 +231,7 @@ class TestLEXplus10SL(unittest.TestCase):
 
         This was the original bug in sensor.py:175
 
-        Many leak protection sensors do not have an icon in _SYR_CONNECT_SENSOR_ICON.
+        Many leak protection sensors do not have an icon in icons.json.
         The code must handle this.
         """
         # Simuliere Sensoren ohne Icon
