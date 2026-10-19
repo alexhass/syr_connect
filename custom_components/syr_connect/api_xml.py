@@ -50,6 +50,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_VERSION,
     _SYR_CONNECT_CLIENT_USER_AGENT,
 )
+from .data import SyrConnectDevice
 from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
@@ -324,7 +325,7 @@ class SyrConnectXmlAPI:
         else:
             return True
 
-    async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Fetch all devices in a project.
 
         Each project (building/location) can contain multiple devices.
@@ -370,19 +371,10 @@ class SyrConnectXmlAPI:
             devices = self.response_parser.parse_device_list_response(xml_response)
 
             # --- Enrich Device Data ---
-            # Add project context and normalize ID fields
+            # Add project context
             for device in devices:
                 # Associate device with its parent project
                 device["project_id"] = project_id
-
-                # Ensure 'id' field exists (parser may use 'serial_number')
-                # This normalizes the interface for the coordinator
-                if "id" not in device and "serial_number" in device:
-                    _LOGGER.debug(
-                        "Device missing 'id' field; falling back to 'serial_number' for id: %s",
-                        device["serial_number"],
-                    )
-                    device["id"] = device["serial_number"]
 
                 _LOGGER.debug(
                     "Device found: %s (ID: %s, DCLG: %s)",

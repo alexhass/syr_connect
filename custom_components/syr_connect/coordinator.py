@@ -27,6 +27,7 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
+from .data import SyrConnectCoordinatorData, SyrConnectDevice
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import (
     get_api_locale,
@@ -40,7 +41,9 @@ from .repairs import delete_issue
 _LOGGER = logging.getLogger(__name__)
 
 
-class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
+class SyrConnectDataUpdateCoordinator(
+    DataUpdateCoordinator[SyrConnectCoordinatorData | None]
+):
     """Class to manage fetching SYR Connect data."""
 
     api: SyrConnectXmlAPI | SyrConnectJsonAPI
@@ -142,7 +145,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         self.device_list_complete = False
 
     @override
-    async def _async_update_data(self) -> dict[str, Any]:
+    async def _async_update_data(self) -> SyrConnectCoordinatorData:
         """Fetch data from API.
 
         Returns:
@@ -166,7 +169,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # the re-login after a rejected session token fails. Keep the data of the last update
             # instead of raising UpdateFailed, which would make every entity unavailable.
             # The coordinator data is None until the first successful refresh
-            previous: dict[str, Any] | None = self.data
+            previous: SyrConnectCoordinatorData | None = self.data
             if previous is not None:
                 _LOGGER.warning(
                     "Connection failed, keeping the data of the last update: %s", err
@@ -186,7 +189,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 "projects": self.api.projects,
             }
 
-    async def _async_fetch_all_devices(self) -> list[dict[str, Any]]:
+    async def _async_fetch_all_devices(self) -> list[SyrConnectDevice]:
         """Log in if needed and fetch the status of all devices of all projects.
 
         Returns:
@@ -203,7 +206,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.debug("No valid session, logging in...")
             await self.api.login()
 
-        all_devices = []
+        all_devices: list[SyrConnectDevice] = []
 
         # Get devices from all projects in parallel
         device_tasks = [
@@ -238,7 +241,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 all_devices.extend(previous)
                 failed_projects += 1
                 continue
-            devices: list[dict[str, Any]] = result
+            devices: list[SyrConnectDevice] = result
 
             _LOGGER.debug(
                 "Found %d device(s) in project %s", len(devices), project["name"]
@@ -275,7 +278,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
         return all_devices
 
-    def _previous_project_devices(self, project_id: str) -> list[dict[str, Any]]:
+    def _previous_project_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Return the devices of a project from the last successful update."""
         if not self.data:
             return []
@@ -284,8 +287,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         ]
 
     async def _fetch_device_status(
-        self, device: dict[str, Any]
-    ) -> dict[str, Any] | None:
+        self, device: SyrConnectDevice
+    ) -> SyrConnectDevice | None:
         """Fetch status for a single device.
 
         Args:
@@ -367,7 +370,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         else:
             return device
 
-    def _previous_device_or_empty(self, device: dict[str, Any]) -> dict[str, Any]:
+    def _previous_device_or_empty(self, device: SyrConnectDevice) -> SyrConnectDevice:
         """Return the device from the last update unchanged, or the device with an empty status.
 
         Used when the status could not be fetched, so the sensors keep their old values
@@ -375,7 +378,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         an empty status.
         """
         if self.data:
-            previous_devices: list[dict[str, Any]] = self.data.get("devices", [])
+            previous_devices: list[SyrConnectDevice] = self.data.get("devices", [])
             for prev in previous_devices:
                 if prev.get("id") == device.get("id"):
                     _LOGGER.debug(
@@ -407,7 +410,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """
         if not self.data:
             return None
-        devices: list[dict[str, Any]] = self.data.get("devices", [])
+        devices: list[SyrConnectDevice] = self.data.get("devices", [])
         for device in devices:
             if device["id"] == device_id:
                 dclg: str = device.get("dclg", device_id)
@@ -457,7 +460,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # Optimistically update the in-memory coordinator data so entities show
         # the new values immediately, then attempt to set them via the API.
         previous_data = self.data
-        optimistic_data: dict[str, Any] | None = None
+        optimistic_data: SyrConnectCoordinatorData | None = None
 
         try:
             if isinstance(self.data, dict):
@@ -514,7 +517,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             raise
 
     def _rollback_optimistic_update(
-        self, previous_data: Any, optimistic_data: dict[str, Any] | None
+        self,
+        previous_data: SyrConnectCoordinatorData | None,
+        optimistic_data: SyrConnectCoordinatorData | None,
     ) -> None:
         """Restore the data from before an optimistic update whose command failed.
 

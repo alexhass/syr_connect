@@ -111,6 +111,7 @@ try:
         _SYR_CONNECT_CLIENT_OS_VERSION,
         _SYR_CONNECT_CLIENT_USER_AGENT,
     )
+    from custom_components.syr_connect.data import SyrConnectDevice
     from custom_components.syr_connect.encryption import SyrEncryption
     from custom_components.syr_connect.http_client import HTTPClient
     from custom_components.syr_connect.payload_builder import PayloadBuilder
@@ -360,7 +361,7 @@ class DebugXmlClient:
     # Devices
     # ------------------------------------------------------------------
 
-    async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Fetch and log the devices of a project."""
         _LOGGER.info("=== GET DEVICES  project_id=%s ===", project_id)
 
@@ -376,13 +377,11 @@ class DebugXmlClient:
         )
         _LOGGER.debug("--- Raw device list response ---\n%s", raw_response)
 
-        devices: list[dict[str, Any]] = self.response_parser.parse_device_list_response(
-            raw_response
+        devices: list[SyrConnectDevice] = (
+            self.response_parser.parse_device_list_response(raw_response)
         )
         for dev in devices:
             dev["project_id"] = project_id
-            if "id" not in dev and "serial_number" in dev:
-                dev["id"] = dev["serial_number"]
 
         _LOGGER.info("Devices found: %d", len(devices))
         for dev in devices:
@@ -401,7 +400,7 @@ class DebugXmlClient:
     # Status
     # ------------------------------------------------------------------
 
-    async def get_status(self, device: dict[str, Any]) -> dict[str, Any]:
+    async def get_status(self, device: SyrConnectDevice) -> dict[str, Any]:
         """Fetch and log the status of a device."""
         device_id = device.get("id", "?")
         dclg = device.get("dclg", "")
@@ -522,9 +521,9 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-async def _collect_devices(client: DebugXmlClient) -> list[dict[str, Any]]:
+async def _collect_devices(client: DebugXmlClient) -> list[SyrConnectDevice]:
     """Fetch devices across all projects, logging and skipping per-project failures."""
-    all_devices: list[dict[str, Any]] = []
+    all_devices: list[SyrConnectDevice] = []
     for project in client.projects:
         try:
             devices = await client.get_devices(project["id"])

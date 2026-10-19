@@ -364,7 +364,9 @@ def _async_setup_muco_conditional_sensors(
         new_entities: list[SyrConnectSensor] = []
         try:
             registry = er.async_get(hass)
-            for device in coordinator.data.get("devices", []):
+            for device in (
+                coordinator.data.get("devices", []) if coordinator.data else []
+            ):
                 device_id = device.get("id")
                 if not device_id:
                     continue

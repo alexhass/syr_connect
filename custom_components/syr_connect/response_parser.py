@@ -6,6 +6,7 @@ from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree
 
+from .data import SyrConnectDevice
 from .exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
 from .helpers import is_device_offline
 
@@ -221,7 +222,7 @@ class ResponseParser:
 
         return session_id, projects
 
-    def parse_device_list_response(self, xml_response: str) -> list[dict[str, Any]]:
+    def parse_device_list_response(self, xml_response: str) -> list[SyrConnectDevice]:
         """Parse device list response.
 
         Args:
@@ -243,7 +244,7 @@ class ResponseParser:
         if not self.validate_structure(parsed, ["sc", "prs", "pr"]):
             raise ValueError("Device list response contains no project.")
 
-        devices: list[dict[str, Any]] = []
+        devices: list[SyrConnectDevice] = []
         device_aliases: dict[str, str] = {}
 
         # Extract device aliases

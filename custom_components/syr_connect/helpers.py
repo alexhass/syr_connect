@@ -29,6 +29,7 @@ from .const import (
     CONF_API_TYPE,
     DOMAIN,
 )
+from .data import SyrConnectCoordinatorData
 from .devices import (
     lex,
     lexplus10s,
@@ -165,7 +166,7 @@ def is_device_available(coordinator: Any, device_id: str) -> bool:
 def build_device_info(
     device_id: str,
     device_name: str,
-    coordinator_data: dict[str, Any],
+    coordinator_data: SyrConnectCoordinatorData | None,
 ) -> DeviceInfo:
     """Build DeviceInfo object from coordinator data.
 
@@ -187,7 +188,8 @@ def build_device_info(
     configuration_url: str | None = None
 
     # Extract device information from coordinator data
-    for device in coordinator_data.get("devices", []):
+    devices = coordinator_data.get("devices", []) if coordinator_data else []
+    for device in devices:
         if device["id"] == device_id:
             status = device.get("status", {})
 
@@ -197,7 +199,9 @@ def build_device_info(
             if display_name:
                 model = str(display_name)
             manufacturer = detected.get("manufacturer") or None
-            configuration_url = coordinator_data.get("configuration_url")
+            configuration_url = (
+                coordinator_data.get("configuration_url") if coordinator_data else None
+            )
 
             # Get software version from getVER
             if status.get("getVER"):
@@ -344,7 +348,7 @@ def get_model_known_keys(
 
 def cleanup_removed_devices(
     hass: HomeAssistant,
-    coordinator_data: dict[str, Any],
+    coordinator_data: SyrConnectCoordinatorData | None,
     entry_id: str,
 ) -> None:
     """Detach HA devices for this entry that no longer exist in the SYR Connect account.
@@ -369,7 +373,9 @@ def cleanup_removed_devices(
     """
     try:
         current_ids = {
-            d["id"] for d in (coordinator_data or {}).get("devices", []) if d.get("id")
+            d["id"]
+            for d in (coordinator_data.get("devices", []) if coordinator_data else [])
+            if d.get("id")
         }
         device_registry = dr.async_get(hass)
         for device_entry in dr.async_entries_for_config_entry(
@@ -394,7 +400,7 @@ def cleanup_removed_devices(
 
 def registry_cleanup(
     hass: HomeAssistant,
-    coordinator_data: dict[str, Any],
+    coordinator_data: SyrConnectCoordinatorData | None,
     domain: str,
     allowed_keys: set[str] | None = None,
     entry_id: str | None = None,
@@ -438,7 +444,7 @@ def registry_cleanup(
             | {"getLOT", "getOHW"}
         ) - _SYR_CONNECT_SENSOR_EXCLUDED
 
-        for device in (coordinator_data or {}).get("devices", []):
+        for device in coordinator_data.get("devices", []) if coordinator_data else []:
             device_id = device.get("id")
             if not device_id:
                 continue

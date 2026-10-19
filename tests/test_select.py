@@ -3213,7 +3213,7 @@ async def test_muco_conditional_select_skips_device_without_id(
     """The conditional MuCo select sync skips devices without an id."""
     data = {
         "devices": [
-            {"name": "No ID Device", "project_id": "project1", "status": {}},
+            {"id": "", "name": "No ID Device", "project_id": "project1", "status": {}},
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)

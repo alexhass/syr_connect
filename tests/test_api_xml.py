@@ -382,31 +382,6 @@ async def test_get_devices_connection_timeout_error(api_client):
         await api_client.get_devices("project1")
 
 
-async def test_get_devices_id_fallback(api_client):
-    """Test get_devices falls back to serial_number for id."""
-    api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
-
-    device_without_id = {
-        "name": "Test Device",
-        "serial_number": "SN12345",
-        "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    }
-
-    with (
-        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
-        patch.object(
-            api_client.response_parser,
-            "parse_device_list_response",
-            return_value=[device_without_id],
-        ),
-    ):
-        devices = await api_client.get_devices("project1")
-
-        assert len(devices) == 1
-        assert devices[0]["id"] == "SN12345"  # Should use serial_number as id
-
-
 async def test_get_device_status_returns_none(api_client):
     """Test get_device_status returns None when parser returns None."""
     api_client.session_data = "valid_session"

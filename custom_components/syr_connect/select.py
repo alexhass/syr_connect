@@ -2,7 +2,7 @@
 
 from collections.abc import Callable, Mapping
 import logging
-from typing import Any, cast, override
+from typing import Any, override
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -34,6 +34,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .data import SyrConnectDevice
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
@@ -134,13 +135,12 @@ class _SyrConnectSelectBuilder:
     """
 
     def __init__(
-        self, coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]
+        self, coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
     ) -> None:
         """Initialize the builder for one device from the coordinator data."""
         self.coordinator = coordinator
-        # cast only types the values for the entity constructors; they are not converted
-        self.device_id = cast(str, device.get("id"))
-        self.device_name = cast(str, device.get("name", self.device_id))
+        self.device_id = device["id"]
+        self.device_name = device.get("name", self.device_id)
         self.status: dict[str, Any] = device.get("status", {})
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
@@ -207,7 +207,7 @@ class _SyrConnectSelectBuilder:
 
 
 def _build_device_selects(
-    coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]
+    coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
 ) -> list[SelectEntity]:
     """Return the selects of one device (except the conditional getLOT/getOHW).
 
@@ -432,7 +432,9 @@ def _async_setup_muco_conditional_selects(
         new_entities: list[SyrConnectDiscreteSelect | SyrConnectNumericSelect] = []
         try:
             registry = er.async_get(hass)
-            for device in coordinator.data.get("devices", []):
+            for device in (
+                coordinator.data.get("devices", []) if coordinator.data else []
+            ):
                 device_id = device.get("id")
                 if not device_id:
                     continue

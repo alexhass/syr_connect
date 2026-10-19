@@ -22,6 +22,7 @@ from .const import (
     CONF_API_TYPE,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .data import SyrConnectDevice
 from .helpers import is_sensor_visible, mask_ug_value
 from .models import detect_model
 
@@ -52,7 +53,7 @@ _SYR_CONNECT_DIAGNOSTICS_TO_REDACT = {
 }
 
 
-def _local_json_base_path(device: dict[str, Any]) -> str | None:
+def _local_json_base_path(device: SyrConnectDevice) -> str | None:
     """Return the local JSON API base path of the device's model, or None without local access.
 
     The base path is not part of the coordinator's device dict; it comes from the model
@@ -391,7 +392,7 @@ async def _collect_raw_json_local_entry(
 
 
 async def _fetch_local_device_json(
-    session: Any, dev: dict[str, Any], base_path: str
+    session: Any, dev: SyrConnectDevice, base_path: str
 ) -> tuple[str, Any]:
     """Fetch the redacted local `/get/all` data of a cloud device.
 
@@ -400,12 +401,10 @@ async def _fetch_local_device_json(
     """
     dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
 
-    # Determine IP from device fields or, if missing, from the status
-    # (Wi-Fi first, then Ethernet, then the generic IP address)
-    ip = dev.get("ip") or dev.get("getWIP") or dev.get("getEIP")
-    if not ip:
-        status = dev.get("status") or {}
-        ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
+    # Determine the IP from the status (Wi-Fi first, then Ethernet, then the generic
+    # IP address)
+    status = dev.get("status") or {}
+    ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
 
     # Normalize IP: treat empty string or the placeholder 0.0.0.0 as absent
     if isinstance(ip, str) and (ip.strip() == "" or ip == "0.0.0.0"):
@@ -471,11 +470,11 @@ async def _collect_raw_json_cloud_devices(
         if session is None:
             return {"error": "no http session available on coordinator"}
 
-        if coordinator and getattr(coordinator, "data", None):
+        if coordinator and coordinator.data:
             devices = coordinator.data.get("devices", [])
             semaphore = asyncio.Semaphore(_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS)
 
-            async def _wrap(dev: dict[str, Any], base_path: str) -> tuple[str, Any]:
+            async def _wrap(dev: SyrConnectDevice, base_path: str) -> tuple[str, Any]:
                 async with semaphore:
                     return await _fetch_local_device_json(session, dev, base_path)
 
@@ -501,7 +500,7 @@ async def _collect_raw_json_cloud_devices(
     return raw_json
 
 
-def _device_summary(device: dict[str, Any], api_type: str) -> dict[str, Any]:
+def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
     """Return the diagnostics summary of a coordinator device.
 
     Lists the detected model, versions and the keys that become visible sensors, so

@@ -28,6 +28,7 @@ import aiohttp
 from yarl import URL
 
 from .const import _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
+from .data import SyrConnectDevice
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -512,7 +513,7 @@ class SyrConnectJsonAPI:
             raise SyrConnectInvalidResponseError(f"No data returned from {path}")
         return data
 
-    async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Return a single-device list for the local JSON API.
 
         The local JSON API is single-device focused (one device per base_path).

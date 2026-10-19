@@ -5,6 +5,7 @@ from typing import Any, override
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .data import SyrConnectDevice
 from .helpers import (
     build_device_info,
     build_entity_id,
@@ -56,9 +57,10 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         )
 
     @property
-    def _device(self) -> dict[str, Any] | None:
+    def _device(self) -> SyrConnectDevice | None:
         """Return this entity's device from the coordinator data, or None if it is missing."""
-        devices: list[dict[str, Any]] = (self.coordinator.data or {}).get("devices", [])
+        data = self.coordinator.data
+        devices = data.get("devices", []) if data else []
         for device in devices:
             if device.get("id") == self._device_id:
                 return device
