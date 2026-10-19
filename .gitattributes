@@ -1,5 +1,11 @@
-# .gitattributes (im Projektroot anlegen oder ergänzen)
-*.py    text eol=lf
-*.json  text eol=lf
-*.yaml  text eol=lf
-*.md    text eol=lf
+# Line endings follow Home Assistant core: LF for every text file on every
+# platform, independent of the local core.autocrlf setting.
+*     text eol=lf
+*.py  whitespace=error
+
+*.ico binary
+*.jpg binary
+*.png binary
+*.zip binary
+*.mp3 binary
+*.pcm binary
