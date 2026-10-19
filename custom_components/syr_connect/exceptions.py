@@ -1,5 +1,4 @@
 """Custom exceptions for SYR Connect integration."""
-from __future__ import annotations
 
 from homeassistant.exceptions import HomeAssistantError
 

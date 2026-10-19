@@ -1,22 +1,21 @@
 """Platform smoke tests for SYR Connect."""
-from __future__ import annotations
 
 from unittest.mock import MagicMock, Mock
 
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.syr_connect.binary_sensor import async_setup_entry as async_setup_binary_sensor
+from custom_components.syr_connect.binary_sensor import (
+    async_setup_entry as async_setup_binary_sensor,
+)
 from custom_components.syr_connect.button import async_setup_entry as async_setup_button
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.select import (
     SyrConnectNumericSelect,
     SyrConnectRegenerationSelect,
-)
-from custom_components.syr_connect.select import (
     async_setup_entry as async_setup_select,
 )
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:

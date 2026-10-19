@@ -1,12 +1,16 @@
 """Base entity for SYR Connect."""
-from __future__ import annotations
 
 from typing import Any
 
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .helpers import build_device_info, build_entity_id, build_unique_id, is_device_available
+from .helpers import (
+    build_device_info,
+    build_entity_id,
+    build_unique_id,
+    is_device_available,
+)
 
 
 class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):

@@ -2,6 +2,7 @@ from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
+
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
@@ -65,7 +66,9 @@ def mock_config_entry():
 @pytest.fixture
 def create_mock_coordinator():
     """Create a mock coordinator with given data."""
-    from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+    from custom_components.syr_connect.coordinator import (
+        SyrConnectDataUpdateCoordinator,
+    )
 
     def _create(data: dict | None = None) -> MagicMock:
         mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)

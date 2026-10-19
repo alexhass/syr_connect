@@ -3,12 +3,6 @@ repos:
     rev: main
     hooks:
       - id: ruff
-        args: [
-          "check",
-          "--select=E,F,W,B,B9",
-          "--extend-ignore=E501",
-          ".",
-        ]
   - repo: local
     hooks:
       - id: ruff-local
@@ -17,4 +11,4 @@ repos:
         language: python
         additional_dependencies: ["ruff"]
         pass_filenames: false
-        args: ["check", "--select=E,F,W,B,B9", "--extend-ignore=E501", "."]
+        args: ["check", "."]

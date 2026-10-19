@@ -18,11 +18,9 @@ The client is intentionally small and mirrors the interface used by the
 XML API client so it can be integrated into the coordinator later.
 """
 
-from __future__ import annotations
-
+from datetime import UTC, datetime, timedelta
 import ipaddress
 import logging
-from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import quote
 
@@ -735,16 +733,16 @@ class SyrConnectJsonAPI:
         if status == "OK":
             # Success - no action needed, caller will log
             return
-        elif status == "FACTORY":
+        if status == "FACTORY":
             # Success - for ADM command, no action needed, caller will log
             return
-        elif status == "MIMA":
+        if status == "MIMA":
             msg = f"Value {value} is outside valid range for command {cmd}"
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
             _LOGGER.debug("JSON API: %s (device: %s)", msg, device_id)
             raise SyrConnectInvalidResponseError(msg)
-        elif status in ("NSC", "ERROR: NSC"):
+        if status in ("NSC", "ERROR: NSC"):
             # - Pontos / SafeTech V4: "ERROR: NSC"
             # - Other devices: "NSC"
             msg = f"Command {cmd} does not exist for device {device_id}"
@@ -752,15 +750,14 @@ class SyrConnectJsonAPI:
             # properly by the calling entity (select, button, etc.)
             _LOGGER.debug("JSON API: %s", msg)
             raise SyrConnectInvalidResponseError(msg)
-        else:
-            # Unknown/unexpected status
-            msg = f"Unexpected status '{status}' for command {cmd} (device: {device_id})"
-            _LOGGER.warning("JSON API: %s", msg)
-            # For login, any non-OK status is a failure
-            if is_login:
-                raise SyrConnectInvalidResponseError(f"Device returned status '{status}'")
-            # For other commands, don't fail hard on unknown status codes
-            return
+        # Unknown/unexpected status
+        msg = f"Unexpected status '{status}' for command {cmd} (device: {device_id})"
+        _LOGGER.warning("JSON API: %s", msg)
+        # For login, any non-OK status is a failure
+        if is_login:
+            raise SyrConnectInvalidResponseError(f"Device returned status '{status}'")
+        # For other commands, don't fail hard on unknown status codes
+        return
 
     def _validate_response_errors(self, data: dict[str, Any], url: str) -> None:
         """Check response for API-level error codes and log warnings.

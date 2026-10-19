@@ -1,20 +1,19 @@
 """Tests for valve platform."""
-# mypy: disable-error-code="method-assign, misc"
-from __future__ import annotations
 
+# mypy: disable-error-code="method-assign, misc"
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 
 def _consume_coro_return_task(coro):

@@ -1,4 +1,5 @@
 """Test the SYR Connect API client."""
+
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import MagicMock, patch

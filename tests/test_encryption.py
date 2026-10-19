@@ -1,8 +1,9 @@
 """Test the SYR Connect encryption module."""
+
 import base64
 
-import pytest
 from Cryptodome.Cipher import AES
+import pytest
 
 from custom_components.syr_connect.encryption import SyrEncryption
 

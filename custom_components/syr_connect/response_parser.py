@@ -1,11 +1,10 @@
 """Response parser and validator for SYR Connect API."""
-from __future__ import annotations
 
 import logging
 from typing import Any
 from urllib.parse import unquote_plus
 
-import defusedxml.ElementTree as etree  # noqa: N813
+import defusedxml.ElementTree as etree
 
 from .exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
 from .helpers import is_device_offline

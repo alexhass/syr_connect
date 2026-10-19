@@ -1,5 +1,4 @@
 """HTTP client with retry logic for SYR Connect API."""
-from __future__ import annotations
 
 import asyncio
 import logging

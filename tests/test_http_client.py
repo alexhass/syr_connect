@@ -1,5 +1,4 @@
 """Tests for the HTTP client helper."""
-from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 

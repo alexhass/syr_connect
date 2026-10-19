@@ -5,7 +5,6 @@ for config entry migrations. The helpers return a dict suitable for
 passing to `hass.config_entries.async_update_entry(entry, **update_kwargs)`
 or `None` if no update is required.
 """
-from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, UnitOfVolumeFlowRate

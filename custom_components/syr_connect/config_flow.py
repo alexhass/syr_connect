@@ -1,11 +1,10 @@
 """Config flow for SYR Connect integration."""
 
-from __future__ import annotations
-
 import logging
 from typing import Any
 
-import voluptuous as vol
+import probatio
+
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
@@ -29,16 +28,26 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .exceptions import CannotConnectError, HostInvalidError, HostWithPortError, InvalidAuthError
-from .helpers import get_api_locale, get_default_scan_interval_for_entry, host_has_port, is_valid_host
+from .exceptions import (
+    CannotConnectError,
+    HostInvalidError,
+    HostWithPortError,
+    InvalidAuthError,
+)
+from .helpers import (
+    get_api_locale,
+    get_default_scan_interval_for_entry,
+    host_has_port,
+    is_valid_host,
+)
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
 
 # Schema for Cloud/XML API initial setup (backend selector + username + password)
-STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
+STEP_CLOUD_XML_DATA_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_SERVICE, default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER): selector.SelectSelector(
+        probatio.Required(CONF_SERVICE, default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
                     selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
@@ -47,16 +56,16 @@ STEP_CLOUD_XML_DATA_SCHEMA = vol.Schema(
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )
         ),
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
+        probatio.Required(CONF_USERNAME): str,
+        probatio.Required(CONF_PASSWORD): str,
     }
 )
 
 # Schema for reauth (backend already set — only credentials needed)
-_STEP_REAUTH_XML_DATA_SCHEMA = vol.Schema(
+_STEP_REAUTH_XML_DATA_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
+        probatio.Required(CONF_USERNAME): str,
+        probatio.Required(CONF_PASSWORD): str,
     }
 )
 
@@ -75,9 +84,9 @@ LOCAL_API_MODELS = sorted(
 )
 
 # Schema for Local/JSON API configuration (host + model)
-STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
+STEP_LOCAL_JSON_DATA_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_MODEL): selector.SelectSelector(
+        probatio.Required(CONF_MODEL): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
                     selector.SelectOptionDict(value=name, label=display)
@@ -86,7 +95,7 @@ STEP_LOCAL_JSON_DATA_SCHEMA = vol.Schema(
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )
         ),
-        vol.Required(CONF_HOST): str,
+        probatio.Required(CONF_HOST): str,
     }
 )
 
@@ -281,7 +290,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 
         # Build schema for options: scan interval only
         schema_dict: dict = {
-            vol.Optional(
+            probatio.Optional(
                 _SYR_CONNECT_SCAN_INTERVAL_CONF,
                 default=current_scan_interval,
             ): selector.NumberSelector(
@@ -301,7 +310,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(schema_dict),
+            data_schema=probatio.Schema(schema_dict),
         )
 
 
@@ -552,9 +561,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Pre-fill with current values for JSON API (or empty if entry is None)
             return self.async_show_form(
                 step_id="reconfigure",
-                data_schema=vol.Schema(
+                data_schema=probatio.Schema(
                     {
-                        vol.Required(
+                        probatio.Required(
                             CONF_MODEL,
                             default=entry.data.get(CONF_MODEL, "") if entry else ""
                         ): selector.SelectSelector(
@@ -566,7 +575,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                 mode=selector.SelectSelectorMode.DROPDOWN,
                             )
                         ),
-                        vol.Required(
+                        probatio.Required(
                             CONF_HOST,
                             default=entry.data.get(CONF_HOST, "") if entry else ""
                         ): str,
@@ -574,22 +583,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
                 errors=errors,
             )
-        else:
-            # Pre-fill with current values for XML API (or defaults if entry is None)
-            # Do not allow changing the configured service here; only credentials may be updated.
-            return self.async_show_form(
-                step_id="reconfigure",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(
-                            CONF_USERNAME,
-                            default=entry.data.get(CONF_USERNAME, "") if entry else ""
-                        ): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
-                errors=errors,
-            )
+        # Pre-fill with current values for XML API (or defaults if entry is None)
+        # Do not allow changing the configured service here; only credentials may be updated.
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=probatio.Schema(
+                {
+                    probatio.Required(
+                        CONF_USERNAME,
+                        default=entry.data.get(CONF_USERNAME, "") if entry else ""
+                    ): str,
+                    probatio.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
+        )
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step - show menu to select API type.

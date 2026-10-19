@@ -1,5 +1,4 @@
 """Valve platform for SYR Connect (water shut-off valve)."""
-from __future__ import annotations
 
 import logging
 
@@ -71,14 +70,14 @@ async def async_setup_entry(
         # treat the device as a valve that can be controlled.
         try:
             if ab_value is not None and ab_value != "":
-                # Native boolean from JSON
-                if isinstance(ab_value, bool):
-                    create = True
-                # Boolean-like strings
-                elif isinstance(ab_value, str) and ab_value.strip().lower() in ("true", "false"):
-                    create = True
-                # Numeric representation (1=open, 2=closed)
-                elif int(float(ab_value)) in (1, 2):
+                if (
+                    # Native boolean from JSON
+                    isinstance(ab_value, bool)
+                    # Boolean-like strings
+                    or (isinstance(ab_value, str) and ab_value.strip().lower() in ("true", "false"))
+                    # Numeric representation (1=open, 2=closed)
+                    or int(float(ab_value)) in (1, 2)
+                ):
                     create = True
         except (ValueError, TypeError):
             create = False

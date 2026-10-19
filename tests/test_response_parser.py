@@ -3,7 +3,10 @@ import os
 import defusedxml.ElementTree as ElementTree
 import pytest
 
-from custom_components.syr_connect.exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
+from custom_components.syr_connect.exceptions import (
+    SyrConnectAuthError,
+    SyrConnectSessionExpiredError,
+)
 from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrLEXplus10S_GetProjectDeviceCollections.xml")

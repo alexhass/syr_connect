@@ -1,7 +1,6 @@
 """Tests for switch platform."""
-# mypy: disable-error-code="method-assign, misc"
 
-from __future__ import annotations
+# mypy: disable-error-code="method-assign, misc"
 
 import logging
 from types import MappingProxyType
@@ -9,12 +8,12 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.switch import async_setup_entry
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
 
 
 async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
@@ -203,10 +202,9 @@ def test_is_on_unrecognized_type_returns_false() -> None:
 
 def test_entity_category_is_config() -> None:
     """Entity category should be CONFIG for keys in _SYR_CONNECT_SENSOR_CONFIG."""
-    from homeassistant.helpers.entity import EntityCategory
-
     from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_CONFIG
     from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
+    from homeassistant.helpers.entity import EntityCategory
 
     # Ensure getBUZ is in the config set (it is by design)
     assert "getBUZ" in _SYR_CONNECT_SENSOR_CONFIG
@@ -316,10 +314,9 @@ def test_is_on_with_int_and_float_values() -> None:
 @pytest.mark.asyncio
 async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
     """If the API call fails, the service call fails too (HomeAssistantError) instead of looking successful."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.syr_connect.exceptions import SyrConnectConnectionError
     from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
+    from homeassistant.exceptions import HomeAssistantError
 
     device = {"id": "SN300", "name": "DeviceErr", "status": {"getBUZ": "0"}}
     mock_coordinator = MagicMock()
@@ -460,9 +457,8 @@ async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant
 
 async def test_async_setup_entry_missing_registry_no_unique_id(hass: HomeAssistant) -> None:
     """Line 103: entity without unique_id and not found by entity_id goes to else-missing branch."""
-    import homeassistant.helpers.entity_registry as er_mod
-
     import custom_components.syr_connect.switch as switch_mod
+    import homeassistant.helpers.entity_registry as er_mod
 
     config_entry = ConfigEntry(
         version=1,

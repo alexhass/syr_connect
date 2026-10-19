@@ -1,13 +1,11 @@
 """Tests for repairs platform."""
-from __future__ import annotations
 
 from unittest.mock import patch
 
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers import issue_registry as ir
-
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.repairs import create_issue, delete_issue
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 
 
 async def test_create_issue(hass: HomeAssistant) -> None:

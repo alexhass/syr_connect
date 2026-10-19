@@ -1,8 +1,7 @@
 """XML payload builder for SYR Connect API."""
-from __future__ import annotations
 
-import logging
 from datetime import UTC, datetime, timedelta
+import logging
 from typing import Any
 from xml.etree import ElementTree as ET
 

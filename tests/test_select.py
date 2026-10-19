@@ -1,14 +1,10 @@
 """Tests for select platform."""
-from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -24,6 +20,9 @@ from custom_components.syr_connect.select import (
     _build_time_options,
     async_setup_entry,
 )
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> Any:
@@ -3028,7 +3027,9 @@ async def test_rmo_select_entity_category_is_config(hass: HomeAssistant) -> None
 
 def test_regeneration_select_disabled_by_default_when_in_set(hass):
     """Test SyrConnectRegenerationSelect sets entity_registry_enabled_default=False when getRTM is in DISABLED_BY_DEFAULT."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    )
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
@@ -3043,7 +3044,9 @@ def test_regeneration_select_disabled_by_default_when_in_set(hass):
 
 def test_discrete_select_disabled_by_default_when_in_set(hass):
     """Test SyrConnectDiscreteSelect sets entity_registry_enabled_default=False when key is in DISABLED_BY_DEFAULT."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    )
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
@@ -3059,7 +3062,9 @@ def test_discrete_select_disabled_by_default_when_in_set(hass):
 
 def test_prf_select_disabled_by_default_when_in_set(hass):
     """Test SyrConnectPrfSelect sets entity_registry_enabled_default=False when getPRF is in DISABLED_BY_DEFAULT."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    )
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)

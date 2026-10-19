@@ -45,7 +45,6 @@ Example (CLEAR PRO):
         --api-app-name "CLEAR PRO" \\
         --api-package-name de.consoft.gc.conel.connect
 """
-from __future__ import annotations
 
 import argparse
 import asyncio

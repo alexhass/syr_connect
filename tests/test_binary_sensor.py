@@ -1,11 +1,8 @@
 """Tests for binary_sensor platform."""
-from __future__ import annotations
 
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
 
 from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
@@ -13,6 +10,8 @@ from custom_components.syr_connect.binary_sensor import (
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers import _DEVICE_MODULES
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:

@@ -1,10 +1,9 @@
 """Diagnostics support for SYR Connect."""
-from __future__ import annotations
 
 import asyncio
+from datetime import datetime
 import ipaddress
 import re
-from datetime import datetime
 from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data

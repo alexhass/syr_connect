@@ -1,13 +1,12 @@
 """Test the SYR Connect exceptions."""
 
-from homeassistant.exceptions import HomeAssistantError
-
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectError,
     SyrConnectInvalidResponseError,
 )
+from homeassistant.exceptions import HomeAssistantError
 
 
 def test_exception_hierarchy():

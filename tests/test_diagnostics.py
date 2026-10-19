@@ -1,14 +1,10 @@
 """Tests for diagnostics platform."""
-from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import diagnostics as diag
@@ -24,7 +20,14 @@ from custom_components.syr_connect.const import (
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics, mask_mac_value, mask_srn_value
+from custom_components.syr_connect.diagnostics import (
+    async_get_config_entry_diagnostics,
+    mask_mac_value,
+    mask_srn_value,
+)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
 
 
 async def test_diagnostics(hass: HomeAssistant) -> None:
@@ -172,7 +175,9 @@ async def test_diagnostics_multiple_devices(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_redact_xml_basic(hass: HomeAssistant) -> None:
     """Test XML redaction of sensitive data."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -204,7 +209,9 @@ async def test_diagnostics_redact_xml_basic(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_masks_ug_attribute(hass: HomeAssistant) -> None:
     """Ensure `ug` attribute values are redacted in raw XML diagnostics."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -550,7 +557,9 @@ def test_mask_srn_value_re_match_exception(monkeypatch) -> None:
 async def test_raw_json_api_getsrn_redacted(hass: HomeAssistant) -> None:
     """Test JSON API path ensures getSRN is explicitly redacted to **REDACTED**."""
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -609,9 +618,11 @@ async def test_raw_json_api_getsrn_redacted_for_json_api_branch(hass: HomeAssist
     This explicitly forces `async_redact_data` to return the original dict so the
     code path that assigns `redacted["getSRN"] = "**REDACTED**"` is executed.
     """
-    import custom_components.syr_connect.diagnostics as diag_mod
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    import custom_components.syr_connect.diagnostics as diag_mod
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -672,7 +683,9 @@ async def test_raw_json_api_getsrn_redacted_for_json_api_branch(hass: HomeAssist
 
 async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) -> None:
     """Verify XML SRN masking and com replacement in device_list."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -806,7 +819,9 @@ async def test_diagnostics_masks_id_srn(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_xml_redaction_patterns(hass: HomeAssistant) -> None:
     """Test various XML redaction patterns."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1080,7 +1095,9 @@ async def test_diagnostics_redact_obj_with_raw_xml(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_redact_xml_empty_input(hass: HomeAssistant) -> None:
     """Test XML redaction with empty/None input."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1232,7 +1249,9 @@ async def test_diagnostics_status_fetch_exception(hass: HomeAssistant) -> None:
 
 async def test_diagnostics_redact_xml_empty_key(hass: HomeAssistant) -> None:
     """Test XML redaction with empty key in TO_REDACT."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1319,7 +1338,9 @@ async def test_diagnostics_redact_xml_key_value_pattern(hass: HomeAssistant) -> 
 
 async def test_diagnostics_redact_obj_dict_key_matches_redact(hass: HomeAssistant) -> None:
     """Test _redact_obj when dict key matches redact list."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1367,7 +1388,9 @@ async def test_diagnostics_redact_obj_dict_key_matches_redact(hass: HomeAssistan
 
 async def test_diagnostics_redact_obj_list_processing(hass: HomeAssistant) -> None:
     """Test _redact_obj processes lists correctly."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1409,7 +1432,9 @@ async def test_diagnostics_redact_obj_list_processing(hass: HomeAssistant) -> No
 
 async def test_diagnostics_redact_obj_string_processing(hass: HomeAssistant) -> None:
     """Test _redact_obj processes strings correctly."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1535,7 +1560,9 @@ async def test_diagnostics_gather_returns_tuple_wrong_length(hass: HomeAssistant
 
 async def test_diagnostics_redact_xml_non_string_input(hass: HomeAssistant) -> None:
     """Test _redact_xml with non-string input."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -1607,7 +1634,9 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(hass: HomeAssista
     `redacted['getSRN'] = "**REDACTED**"`.
     """
     import custom_components.syr_connect.diagnostics as diag_mod
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -2114,7 +2143,9 @@ async def test_diagnostics_redact_obj_preserves_raw_xml(hass: HomeAssistant) -> 
     """Test _redact_obj preserves 'raw_xml' keys."""
     from unittest.mock import AsyncMock
 
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -2166,7 +2197,9 @@ async def test_diagnostics_redact_obj_preserves_raw_xml(hass: HomeAssistant) -> 
 
 async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) -> None:
     """Test _redact_obj handles integer and other non-dict/list/str types."""
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -2355,7 +2388,9 @@ async def test_json_redact_getsrn_contains_raises(monkeypatch, hass: HomeAssista
     """Ensure exceptions during '"getSRN" in redacted' are caught (covers except/pass branch)."""
     from custom_components.syr_connect import diagnostics as diag_mod
     from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     config_entry = ConfigEntry(
         version=1,
@@ -3206,7 +3241,9 @@ async def test_fetch_device_json_assignment_exception_handled(monkeypatch, hass:
     `__setitem__`, exercising the inner except/pass branch in diagnostics.
     """
     from custom_components.syr_connect import diagnostics as diag_mod
-    from custom_components.syr_connect.diagnostics import async_get_config_entry_diagnostics
+    from custom_components.syr_connect.diagnostics import (
+        async_get_config_entry_diagnostics,
+    )
 
     entry = ConfigEntry(
         version=1,

@@ -1,17 +1,16 @@
 """Tests for button platform."""
-from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.response_parser import ResponseParser
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -421,9 +420,8 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
 
 def _register_button(hass: HomeAssistant, unique_id: str, object_id: str = "syr_connect_device1_setsir") -> str:
     """Register a button of this integration in the real entity registry and return its entity_id."""
-    from homeassistant.helpers import entity_registry as er
-
     from custom_components.syr_connect.const import DOMAIN
+    from homeassistant.helpers import entity_registry as er
 
     return er.async_get(hass).async_get_or_create("button", DOMAIN, unique_id, suggested_object_id=object_id).entity_id
 

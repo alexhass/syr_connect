@@ -1,10 +1,7 @@
 """Tests for migration helpers in migrations.py."""
-from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from homeassistant.const import UnitOfVolumeFlowRate
-from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.const import (
@@ -23,6 +20,8 @@ from custom_components.syr_connect.migrations import (
     v5_to_v6_fix_nps_unit,
     v6_to_v7_scope_unique_id_by_entry,
 )
+from homeassistant.const import UnitOfVolumeFlowRate
+from homeassistant.core import HomeAssistant
 
 
 def test_v1_to_v2_with_host_sets_json_and_unique_id() -> None:

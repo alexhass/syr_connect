@@ -1,5 +1,4 @@
 """Tests for helpers module."""
-from __future__ import annotations
 
 import re
 from types import SimpleNamespace
@@ -812,7 +811,10 @@ def _registry_entry(
 
 def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
     """getCNO (registration code on the device label) is no longer a known key: an existing sensor is removed."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_SENSOR_KNOWN_KEYS
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_EXCLUDED,
+        _SYR_CONNECT_SENSOR_KNOWN_KEYS,
+    )
 
     registry = MagicMock()
     registry.async_get = MagicMock(return_value=None)

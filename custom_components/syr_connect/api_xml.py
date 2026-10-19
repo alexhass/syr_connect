@@ -21,11 +21,10 @@ The API client coordinates several helper components:
 - ResponseParser: XML response parsing
 - HTTPClient: HTTP POST with custom headers
 """
-from __future__ import annotations
 
 import asyncio
-import logging
 from collections.abc import Callable
+import logging
 from typing import Any
 
 import aiohttp

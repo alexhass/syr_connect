@@ -1,5 +1,4 @@
 """Helper functions for SYR Connect integration."""
-from __future__ import annotations
 
 import ipaddress
 import logging
@@ -9,8 +8,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import (
@@ -201,11 +199,11 @@ def build_device_info(
             configuration_url = coordinator_data.get("configuration_url")
 
             # Get software version from getVER
-            if 'getVER' in status and status['getVER']:
+            if status.get('getVER'):
                 sw_version = str(status['getVER'])
 
             # Get hardware version from getFIR
-            if 'getFIR' in status and status['getFIR']:
+            if status.get('getFIR'):
                 hw_version = str(status['getFIR'])
 
             # Get MAC address using prioritized helper

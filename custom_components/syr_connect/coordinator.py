@@ -1,21 +1,17 @@
 """Data update coordinator for SYR Connect."""
 
-from __future__ import annotations
-
 import asyncio
 import copy
-import logging
 from datetime import timedelta
+import logging
 from typing import Any
 
 import aiohttp
+
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
-from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
@@ -32,7 +28,12 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-from .helpers import get_api_locale, get_default_scan_interval_for_entry, get_sensor_iwh_value, is_device_offline
+from .helpers import (
+    get_api_locale,
+    get_default_scan_interval_for_entry,
+    get_sensor_iwh_value,
+    is_device_offline,
+)
 from .models import MODEL_SIGNATURES, detect_model
 from .repairs import delete_issue
 

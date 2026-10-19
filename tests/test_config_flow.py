@@ -3,10 +3,6 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.config_flow import validate_input_json
@@ -19,7 +15,15 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
     DOMAIN,
 )
-from custom_components.syr_connect.exceptions import CannotConnectError, HostInvalidError, HostWithPortError
+from custom_components.syr_connect.exceptions import (
+    CannotConnectError,
+    HostInvalidError,
+    HostWithPortError,
+)
+from homeassistant import config_entries
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
 
 # Patch path for API class (lazy-loaded in config_flow)
 _API_PATCH_PATH = "custom_components.syr_connect.api_xml.SyrConnectXmlAPI"
@@ -1008,7 +1012,10 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
 async def test_validate_input_xml_auth_error(hass: HomeAssistant) -> None:
     """Test validate_input_xml raises InvalidAuthError on auth failure."""
     from custom_components.syr_connect.config_flow import validate_input_xml
-    from custom_components.syr_connect.exceptions import InvalidAuthError, SyrConnectAuthError
+    from custom_components.syr_connect.exceptions import (
+        InvalidAuthError,
+        SyrConnectAuthError,
+    )
 
     with patch(
         "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
@@ -1024,7 +1031,10 @@ async def test_validate_input_xml_auth_error(hass: HomeAssistant) -> None:
 async def test_validate_input_xml_connection_error(hass: HomeAssistant) -> None:
     """Test validate_input_xml raises CannotConnectError on connection failure."""
     from custom_components.syr_connect.config_flow import validate_input_xml
-    from custom_components.syr_connect.exceptions import CannotConnectError, SyrConnectConnectionError
+    from custom_components.syr_connect.exceptions import (
+        CannotConnectError,
+        SyrConnectConnectionError,
+    )
 
     with patch(
         "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
@@ -1071,9 +1081,8 @@ async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None
 
 async def test_validate_input_json_host_empty_and_nonstring(hass: HomeAssistant) -> None:
     """Host empty string or non-string should raise HomeAssistantError."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.syr_connect.config_flow import validate_input_json
+    from homeassistant.exceptions import HomeAssistantError
 
     # Empty string
     with pytest.raises(HomeAssistantError):
@@ -1086,9 +1095,8 @@ async def test_validate_input_json_host_empty_and_nonstring(hass: HomeAssistant)
 
 async def test_validate_input_json_host_with_port_and_whitespace_and_invalid_pattern(hass: HomeAssistant) -> None:
     """Host containing a port, whitespace, or invalid pattern should raise HomeAssistantError."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.syr_connect.config_flow import validate_input_json
+    from homeassistant.exceptions import HomeAssistantError
 
     # Host including a port
     with pytest.raises(HomeAssistantError):
@@ -1659,9 +1667,8 @@ async def test_reconfigure_homeassistant_error_direct(hass: HomeAssistant) -> No
 
 async def test_reconfigure_homeassistant_error_xml_shows_unknown(hass: HomeAssistant) -> None:
     """The XML reconfigure form has no host field, so a HomeAssistantError is shown as "unknown"."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.syr_connect.config_flow import ConfigFlow
+    from homeassistant.exceptions import HomeAssistantError
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -1690,9 +1697,8 @@ async def test_reconfigure_homeassistant_error_xml_shows_unknown(hass: HomeAssis
 
 async def test_configflow_async_step_api_json_homeassistant_error_direct(hass: HomeAssistant) -> None:
     """Directly call ConfigFlow.async_step_api_json to hit HomeAssistantError branch."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.syr_connect.config_flow import ConfigFlow
+    from homeassistant.exceptions import HomeAssistantError
 
     flow = ConfigFlow()
     flow.hass = hass
@@ -2029,7 +2035,10 @@ async def test_reconfigure_flow_json_cannot_connect_local(hass: HomeAssistant) -
 
 async def test_validate_input_json_auth_error(hass: HomeAssistant) -> None:
     """Test validate_input_json raises InvalidAuthError on auth failure (lines 195-196)."""
-    from custom_components.syr_connect.exceptions import InvalidAuthError, SyrConnectAuthError
+    from custom_components.syr_connect.exceptions import (
+        InvalidAuthError,
+        SyrConnectAuthError,
+    )
 
     with patch(
         "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",

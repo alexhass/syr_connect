@@ -1,10 +1,9 @@
 """Checksum calculation for SYR Connect API."""
-from __future__ import annotations
 
 import base64
 from xml.etree.ElementTree import Element
 
-import defusedxml.ElementTree as etree  # noqa: N813
+import defusedxml.ElementTree as etree
 
 # Standard Base32 alphabet (RFC 4648); the index of a character is its 5-bit value
 _SYR_CONNECT_BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"

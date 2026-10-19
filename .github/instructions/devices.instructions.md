@@ -13,7 +13,7 @@ applyTo: "custom_components/syr_connect/{devices/*.py,models.py,helpers.py}"
 - The official per-model validity matrix in `docs/syrconnect-protocol.md` beats fixture contents. A key that is present in a fixture can still be a stub value. Only judge by fixture for properties the matrix does not cover.
 - Fixture co-presence of a key across models does not prove it is generic. When domain knowledge and fixture data conflict, ask the maintainer.
 - Match the exact `dk`/`dkv` in `models.py` before mapping a name from the matrix to a device file. Similar names can be different products.
-- `device_file` names use underscores (valid module names, no ruff `N999`) and describe the role, for example `muco_filling`. Do not use the raw `getDFM` number, its meaning differs per `dk`/`dkv` family.
+- `device_file` names use underscores (valid module names) and describe the role, for example `muco_filling`. Do not use the raw `getDFM` number, its meaning differs per `dk`/`dkv` family.
 - `attrs_equals` in `MODEL_SIGNATURES` is matched against the flattened status (`getXXX` keys only). `dk` and `dkv` are never present there.
 - A specific signature needs the same `srn_prefix` as its generic sibling plus its `attrs_equals`, otherwise the generic one always wins.
 - Rebrand siblings share one device file (for example all NeoSoft rebrands). A change affects the whole family, grep `"device_file": "<name>"` in `models.py` first.

@@ -1,5 +1,4 @@
 """Test the SYR Connect payload builder."""
-from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
@@ -7,8 +6,8 @@ from unittest.mock import MagicMock, patch
 from xml.etree.ElementTree import Element, canonicalize
 from zoneinfo import ZoneInfo
 
-import pytest
 from defusedxml import ElementTree as DefusedET
+import pytest
 
 from custom_components.syr_connect.checksum import SyrChecksum
 from custom_components.syr_connect.const import (

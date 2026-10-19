@@ -1,8 +1,7 @@
 """Select platform for SYR Connect (regeneration time wrapper)."""
-from __future__ import annotations
 
-import logging
 from collections.abc import Callable, Mapping
+import logging
 from typing import Any, cast
 
 from homeassistant.components.select import SelectEntity
@@ -347,7 +346,7 @@ def _async_setup_muco_conditional_selects(
     def _build_entity(device_id: str, device_name: str, key: str) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
         if key == "getLOT":
             lot_unit = _SYR_CONNECT_SENSOR_UNIT["getLOT"]
-            lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(0, 21)}
+            lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(21)}
             return SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getLOT", lot_map)
         return SyrConnectNumericSelect(coordinator, device_id, device_name, "getOHW", 0, 12, 1)
 

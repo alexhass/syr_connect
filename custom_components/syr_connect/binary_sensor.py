@@ -1,5 +1,4 @@
 """Binary sensor platform for SYR Connect."""
-from __future__ import annotations
 
 import logging
 
@@ -20,11 +19,7 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
-from .helpers import (
-    get_model_known_keys,
-    is_value_true,
-    registry_cleanup,
-)
+from .helpers import get_model_known_keys, is_value_true, registry_cleanup
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)

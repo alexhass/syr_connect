@@ -4,8 +4,8 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 ## Language and Tooling
 
-- Target is Python 3.14 (`pyproject.toml`, `mypy.ini`). Every module starts with a docstring followed by `from __future__ import annotations`.
-- Ruff is the linter: line length 120, rule sets `E`, `F`, `I` (import order), `W`, `N`, `UP`, `B`. Run it from the Windows virtualenv: `.venv/Scripts/ruff.exe check custom_components tests`.
+- Target is Python 3.14 (`pyproject.toml`, `mypy.ini`). Every module starts with a docstring.
+- Ruff is the linter. Its rules are taken over 1:1 from Home Assistant core. Run it from the Windows virtualenv: `.venv/Scripts/ruff.exe check custom_components tests`.
 - mypy checks `custom_components/syr_connect`: `.venv/Scripts/mypy.exe custom_components/syr_connect`. Add type hints to all new functions, even though `disallow_untyped_defs` is off.
 - Pytest only runs in WSL, see `.github/instructions/tests.instructions.md`.
 - Use the dedicated libraries already in `manifest.json`: `defusedxml` for parsing XML, `pycryptodomex` for AES. Do not add dependencies without asking.
@@ -21,7 +21,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 ## Formatting for Small Diffs
 
-- Write lists, sets, dicts and long argument lists with one entry per line and a trailing comma, so that adding or removing an entry changes exactly one line in the commit. Do not pack several entries on one line.
+- Write lists, sets, dicts and long argument lists with one entry per line and a trailing comma, so that adding or removing an entry changes exactly one line in the commit. Do not pack several entries on one line. This applies to values such as constants and maps. Imports follow the Home Assistant core rules, Ruff decides their layout.
 - Keep values that are maintained by hand (option maps, key lists, step lists) as literal entries. Generate them (`range`, comprehensions) only when they follow a documented rule, such as "0-95 in steps of 5", so that a change is a one-line change of that rule.
 - When refactoring, keep existing code where it is and change only what the refactoring needs. Do not reformat, reorder or rewrite unrelated lines.
 

@@ -1,18 +1,11 @@
 """Tests for update platform."""
 
-from __future__ import annotations
-
 import logging
 from time import monotonic
 from types import MappingProxyType
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.components.update import UpdateEntityFeature
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.update import (
@@ -21,6 +14,11 @@ from custom_components.syr_connect.update import (
     SyrConnectFirmwareUpdate,
     async_setup_entry,
 )
+from homeassistant.components.update import UpdateEntityFeature
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 
 def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:

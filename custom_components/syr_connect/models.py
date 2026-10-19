@@ -3,7 +3,6 @@
 This module provides a small heuristic to identify device models from
 the flattened attribute dictionary produced by `ResponseParser._flatten_attributes`.
 """
-from __future__ import annotations
 
 import logging
 from typing import Any

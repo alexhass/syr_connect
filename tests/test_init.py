@@ -1,14 +1,10 @@
 """Tests for __init__.py integration setup."""
-from __future__ import annotations
 
-import logging
 from datetime import timedelta
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import (
@@ -20,6 +16,9 @@ from custom_components.syr_connect import (
     async_unload_entry,
 )
 from custom_components.syr_connect.const import DOMAIN
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 
 
 async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
@@ -79,7 +78,11 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
 
 async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssistant) -> None:
     """Test JSON API path uses host identifier and clamps scan interval below minimum."""
-    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
+    from custom_components.syr_connect.const import (
+        API_TYPE_JSON,
+        CONF_API_TYPE,
+        CONF_HOST,
+    )
 
     # Create entry with JSON API and very small scan_interval to trigger clamp
     config_entry = MockConfigEntry(
@@ -317,7 +320,11 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
 
 async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssistant, caplog) -> None:
     """Test options update listener clamps scan interval below minimum for JSON API."""
-    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
+    from custom_components.syr_connect.const import (
+        API_TYPE_JSON,
+        CONF_API_TYPE,
+        CONF_HOST,
+    )
 
     config_entry = MockConfigEntry(
         version=1,
@@ -351,7 +358,11 @@ async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssis
 
 async def test_async_setup_entry_clamps_scan_interval_and_logs(hass: HomeAssistant, caplog) -> None:
     """Test JSON API clamps scan interval below minimum and logs a warning."""
-    from custom_components.syr_connect.const import API_TYPE_JSON, CONF_API_TYPE, CONF_HOST
+    from custom_components.syr_connect.const import (
+        API_TYPE_JSON,
+        CONF_API_TYPE,
+        CONF_HOST,
+    )
 
     config_entry = MockConfigEntry(
         version=1,

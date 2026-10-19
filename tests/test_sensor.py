@@ -1,14 +1,10 @@
 """Tests for sensor platform."""
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime, UnitOfVolume
-from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.const import (
@@ -25,6 +21,8 @@ from custom_components.syr_connect.sensor import (
     SyrConnectSensor,
     async_setup_entry,
 )
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime, UnitOfVolume
+from homeassistant.core import HomeAssistant
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -2630,9 +2628,8 @@ async def test_sensor_setup_binary_key_in_known_keys_not_created(hass: HomeAssis
 
     add_entities = Mock()
 
-    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-
     from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_KNOWN_KEYS
+    from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 
     # Temporarily add getFAKE to KNOWN_KEYS and BINARY so it reaches the binary-sensor guard
     patched_known = _SYR_CONNECT_SENSOR_KNOWN_KEYS | {"getFAKE"}
@@ -4409,9 +4406,7 @@ def test_getcof_handles_string_values():
 
 def test_getcof_not_excluded():
     """Test that getCOF is not in the excluded sensors list."""
-    from custom_components.syr_connect.const import (
-        _SYR_CONNECT_SENSOR_EXCLUDED,
-    )
+    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED
 
     assert "getCOF" not in _SYR_CONNECT_SENSOR_EXCLUDED
 
@@ -5403,7 +5398,9 @@ async def test_sensor_getwhu_none_value(hass: HomeAssistant) -> None:
 
 async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None:
     """Test sensor setup skips sensors in EXCLUDED_WHEN_EMPTY with None value."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
+    )
 
     # Pick a sensor from the excluded list that's not getCS1/2/3
     test_key = None
@@ -5454,7 +5451,9 @@ async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None
 
 async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
     """Test sensor setup skips sensors in EXCLUDED_WHEN_EMPTY with whitespace string."""
-    from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
+    )
 
     test_key = None
     for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:

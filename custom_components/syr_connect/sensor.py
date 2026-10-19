@@ -1,13 +1,13 @@
 """Sensor platform for SYR Connect."""
-from __future__ import annotations
 
-import logging
-import re
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+import logging
+import re
 from typing import Any
 
 from babel.dates import format_datetime
+
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE

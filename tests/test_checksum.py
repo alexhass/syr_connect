@@ -1,10 +1,9 @@
 """Tests for checksum module."""
-from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 from defusedxml import ElementTree as DefusedET
+import pytest
 
 from custom_components.syr_connect.checksum import SyrChecksum
 
@@ -139,7 +138,10 @@ def test_fixture_checksum_is_valid(fixture: Path) -> None:
 
     Verified against real responses; keeps the fixtures consistent after anonymizing values.
     """
-    from custom_components.syr_connect.const import _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
+    from custom_components.syr_connect.const import (
+        _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
+        _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+    )
 
     root = DefusedET.fromstring(fixture.read_bytes())
     cs_elements = root.findall("cs")

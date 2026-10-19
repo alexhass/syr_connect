@@ -1,7 +1,5 @@
 """Switch platform for SYR Connect integration."""
 
-from __future__ import annotations
-
 import logging
 
 from homeassistant.components.switch import SwitchEntity
