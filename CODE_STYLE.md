@@ -6,7 +6,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 - Target is Python 3.14 (`pyproject.toml`, `mypy.ini`). Every module starts with a docstring.
 - Ruff is the linter. Its rules are taken over 1:1 from Home Assistant core. Run it from the Windows virtualenv: `.venv/Scripts/ruff.exe check custom_components tests`.
-- mypy checks `custom_components/syr_connect`: `.venv/Scripts/mypy.exe custom_components/syr_connect`. Add type hints to all new functions, even though `disallow_untyped_defs` is off.
+- mypy checks `custom_components/syr_connect` with the strict settings of Home Assistant core: `.venv/Scripts/mypy.exe custom_components/syr_connect`. Every function needs complete type hints, and methods that override a base class method are marked with `@override` (directly above `def`, below `@property`).
 - Pytest only runs in WSL, see `.github/instructions/tests.instructions.md`.
 - Use the dedicated libraries already in `manifest.json`: `defusedxml` for parsing XML, `pycryptodomex` for AES. Do not add dependencies without asking.
 

@@ -1,3 +1,6 @@
+"""Tests for the model detection."""
+
+import json
 import logging
 from pathlib import Path
 from unittest.mock import patch
@@ -20,6 +23,7 @@ def test_lexplus10_detection_synthetic():
 
 
 def test_lexplus10s_detection():
+    """Test lexplus10s detection."""
     xml = _load_xml("SyrLEXplus10S_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
@@ -29,6 +33,7 @@ def test_lexplus10s_detection():
 
 
 def test_lexplus10sl_detection():
+    """Test lexplus10sl detection."""
     xml = _load_xml("SyrLEXplus10SL_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
@@ -38,6 +43,7 @@ def test_lexplus10sl_detection():
 
 
 def test_neosoft2500_detection():
+    """Test neosoft2500 detection."""
     xml = _load_xml("SyrNeoSoft2500_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
@@ -47,6 +53,7 @@ def test_neosoft2500_detection():
 
 
 def test_neosoft5000_detection():
+    """Test neosoft5000 detection."""
     xml = _load_xml("SyrNeoSoft5000_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
@@ -68,6 +75,7 @@ def test_syrtriolockconnect_detection():
 
 
 def test_trio_dfrls_detection():
+    """Test trio dfrls detection."""
     xml = _load_xml("SyrTrioDFRLS_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
@@ -77,6 +85,7 @@ def test_trio_dfrls_detection():
 
 
 def test_safetplus_detection():
+    """Test safetplus detection."""
     xml = _load_xml("SyrSafeTPlus_GetDeviceCollectionStatus.xml")
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
@@ -139,7 +148,7 @@ def test_lexplus10_with_display_name_and_base_path():
 
 
 def test_getcna_none_converted_to_empty_string():
-    """getCNA of None should be safely converted to empty string."""
+    """The getCNA of None should be safely converted to empty string."""
     flat = {"getSRN": "112AAA12345", "getCNA": None, "getVER": "Safe-Tech-1"}
     result = detect_model(flat)
     # Should still detect by version
@@ -147,7 +156,7 @@ def test_getcna_none_converted_to_empty_string():
 
 
 def test_getver_none_converted_to_empty_string():
-    """getVER of None should be safely converted to empty string."""
+    """The getVER of None should be safely converted to empty string."""
     flat = {"getCNA": "LEXplus10", "getVER": None}
     result = detect_model(flat)
     # Should still detect by getCNA
@@ -718,7 +727,6 @@ def test_manufacturer_via_xml_fixtures():
 
 def test_manufacturer_via_json_fixture_pontosbase():
     """Verify manufacturer 'Hansgrohe' when detecting from Pontos Base JSON fixture."""
-    import json
     fixture_path = Path(__file__).parent / "fixtures/json/HansgrohePontosBase_get_all.json"
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
     # The JSON fixture is a flat status dict already
@@ -730,7 +738,6 @@ def test_manufacturer_via_json_fixture_pontosbase():
 
 def test_safetech_detection_via_json_fixture():
     """Verify SafeTech Connect is detected from the SyrSafeTech_get_all.json fixture."""
-    import json
     fixture_path = Path(__file__).parent / "fixtures/json/SyrSafeTech_get_all.json"
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
     flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
@@ -813,7 +820,6 @@ def test_manufacturer_conel_via_srn_prefix():
 
 def test_conelclearprosoft_detection_via_json_fixture():
     """Verify CONEL CLEAR PRO SOFT is detected from the JSON get_all fixture."""
-    import json
     fixture_path = Path(__file__).parent / "fixtures/json/ConelClearProSoft_get_all.json"
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
     flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)

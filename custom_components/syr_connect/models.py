@@ -40,19 +40,19 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #                                   share one override file instead of duplicating near-identical content.
 # - `display_name`:                 human-readable model label used for `DeviceInfo.model` and
 #                                   the local model selector.
-# - `dk`:                           cloud API deviceKind – the integer `dk` attribute in GetProjectDeviceCollections XML
-# - `dkv`:                          cloud API deviceKindVersion – the integer `dkv` attribute in GetProjectDeviceCollections XML;
+# - `dk`:                           cloud API deviceKind - the integer `dk` attribute in GetProjectDeviceCollections XML
+# - `dkv`:                          cloud API deviceKindVersion - the integer `dkv` attribute in GetProjectDeviceCollections XML;
 #                                   for Azure-connected devices this also equals the numeric SRN prefix of newer production units.
 # - `manufacturer`:                 human-readable name of the device manufacturer
 # - `maximum_regeneration_interval`: maximum number of days between regenerations; `None` means no regeneration interval
 # - `maximum_salt_volume`:          maximum salt tank volume; `None` means no salt container.
 # - `name`:                         stable machine-readable model identifier returned by `detect_model()`
 #                                   (e.g. "lexplus10s"); also the default `device_file` value.
-# - `sbt`:                          cloud API device subtype – the integer `sbt` attribute in GetProjectDeviceCollections XML;
+# - `sbt`:                          cloud API device subtype - the integer `sbt` attribute in GetProjectDeviceCollections XML;
 #                                   only set when the subtype uniquely identifies this model within its dk/dkv family.
 # - `srn_prefix`:                   prefix that `getSRN` must start with
 # - `srn_infix`:                    string that must immediately follow `srn_prefix`
-#                                   (default: "AAA" – the factory batch code used by all
+#                                   (default: "AAA" - the factory batch code used by all
 #                                   current SYR/Hansgrohe/Sanibel devices; override if a
 #                                   future production run changes the pattern)
 # - `ver_prefix` / `ver_contains`:  require `getVER` to match the prefix or contain
@@ -423,7 +423,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "ver_prefix": None,
     },
 
-    # ── Hygiene module (dk=60–63) ────────────────────────────────────────────────
+    # ── Hygiene module (dk=60-63) ────────────────────────────────────────────────
     {
         "base_path": None,
         "display_name": "Hygiene Module (cold)",
@@ -699,7 +699,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "2031",
     },
 
-    # ── Trio LS platform (dk=1100–1113) ──────────────────────────────────────────
+    # ── Trio LS platform (dk=1100-1113) ──────────────────────────────────────────
     {
         "alarm_clear_via_set": True,
         "base_path": "/trio",
@@ -756,7 +756,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "113",
     },
 
-    # ── NeoSoft platform (dk=1200–1222) ──────────────────────────────────────────
+    # ── NeoSoft platform (dk=1200-1222) ──────────────────────────────────────────
     {
         "alarm_clear_via_set": True,
         "base_path": "/neosoft",
@@ -1020,7 +1020,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "srn_prefix": "222",
     },
 
-    # ── MultiController platform (dk=1500–1506) ──────────────────────────────────
+    # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
     # The "... MultiController" / "... Multicontroller" signatures in this section
     # (conelmuco, sanibelmuco, ditechmuco, takemuco, conceptmuco, optimamuco, syrmuco)
     # are fallbacks for future devices of this platform, not real products. Do not
@@ -1238,7 +1238,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
 ]
 
 
-def detect_model(flat: dict[str, object]) -> dict[str, Any]:
+def detect_model(flat: object) -> dict[str, Any]:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
@@ -1282,10 +1282,7 @@ def detect_model(flat: dict[str, object]) -> dict[str, Any]:
         attrs = sig.get("attrs_equals")
         if not attrs:
             return True
-        for k, v in attrs.items():
-            if str(flat.get(k, "")) != str(v):
-                return False
-        return True
+        return all(str(flat.get(k, "")) == str(v) for k, v in attrs.items())
 
     def srn_match(sig: dict) -> bool:
         srn_prefix = sig.get("srn_prefix")

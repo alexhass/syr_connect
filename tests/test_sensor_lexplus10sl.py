@@ -1,5 +1,4 @@
-"""
-Unit tests for SYR Connect with real LEXplus10SL data.
+"""Unit tests for SYR Connect with real LEXplus10SL data.
 
 These tests use real data from a LEXplus10SL (Firmware 2.9, Hardware SLPL)
 to ensure that the integration works with this device type.
@@ -11,7 +10,7 @@ Firmware: 2.9 (SLPL)
 
 import unittest
 
-import defusedxml.ElementTree as ElementTree
+from defusedxml import ElementTree
 
 # Real XML response from LEXplus10SL
 REAL_XML_RESPONSE = """<?xml version="1.0" encoding="utf-8"?>
@@ -96,127 +95,119 @@ class TestLEXplus10SL(unittest.TestCase):
 
     def test_device_identification(self):
         """Test that LEXplus10SL is correctly identified."""
-        self.assertEqual(self.sensors['getSRN'], '210836887')
-        self.assertEqual(self.sensors['getVER'], '2.9')
-        self.assertEqual(self.sensors['getFIR'], 'SLPL')
-        self.assertEqual(self.sensors['getTYP'], '80')
-        self.assertEqual(self.sensors['getCNA'], 'LEXplus10SL')
+        assert self.sensors['getSRN'] == '210836887'
+        assert self.sensors['getVER'] == '2.9'
+        assert self.sensors['getFIR'] == 'SLPL'
+        assert self.sensors['getTYP'] == '80'
+        assert self.sensors['getCNA'] == 'LEXplus10SL'
 
     def test_flow_sensor_exists(self):
         """Test that flow sensor exists."""
-        self.assertIn('getFLO', self.sensors)
+        assert 'getFLO' in self.sensors
         # In idle state, flow should be 0
-        self.assertEqual(self.sensors['getFLO'], '0')
+        assert self.sensors['getFLO'] == '0'
 
     def test_pressure_sensor_exists(self):
         """Test that pressure sensor exists."""
-        self.assertIn('getPRS', self.sensors)
+        assert 'getPRS' in self.sensors
         # Value 39 = 3.9 bar
-        self.assertEqual(self.sensors['getPRS'], '39')
+        assert self.sensors['getPRS'] == '39'
 
     def test_volume_uses_gettor_not_getvol(self):
-        """
-        IMPORTANT: LEXplus10SL uses getTOR instead of getVOL!
+        """IMPORTANT: LEXplus10SL uses getTOR instead of getVOL!
 
         This is a critical difference to other SYR devices.
         If the code only supports getVOL, volume display will not work.
         """
-        self.assertIn('getTOR', self.sensors)
-        self.assertNotIn('getVOL', self.sensors)
-        self.assertEqual(self.sensors['getTOR'], '722')
+        assert 'getTOR' in self.sensors
+        assert 'getVOL' not in self.sensors
+        assert self.sensors['getTOR'] == '722'
 
     def test_regeneration_sensor_exists(self):
         """Test that regeneration sensor exists."""
-        self.assertIn('getSRE', self.sensors)
+        assert 'getSRE' in self.sensors
         # 0 = no regeneration active
-        self.assertEqual(self.sensors['getSRE'], '0')
+        assert self.sensors['getSRE'] == '0'
 
     def test_leak_protection_profile_activation(self):
-        """
-        Test leak protection profile activation.
+        """Test leak protection profile activation.
 
         LEXplus10SL has up to 8 profiles that can be activated/deactivated.
         This device has profiles 1-3 activated, 4-8 deactivated.
         """
         # Aktivierte Profile
-        self.assertEqual(self.sensors['getPA1'], '1')
-        self.assertEqual(self.sensors['getPA2'], '1')
-        self.assertEqual(self.sensors['getPA3'], '1')
+        assert self.sensors['getPA1'] == '1'
+        assert self.sensors['getPA2'] == '1'
+        assert self.sensors['getPA3'] == '1'
 
         # Deaktivierte Profile
-        self.assertEqual(self.sensors['getPA4'], '0')
-        self.assertEqual(self.sensors['getPA5'], '0')
-        self.assertEqual(self.sensors['getPA6'], '0')
-        self.assertEqual(self.sensors['getPA7'], '0')
-        self.assertEqual(self.sensors['getPA8'], '0')
+        assert self.sensors['getPA4'] == '0'
+        assert self.sensors['getPA5'] == '0'
+        assert self.sensors['getPA6'] == '0'
+        assert self.sensors['getPA7'] == '0'
+        assert self.sensors['getPA8'] == '0'
 
     def test_leak_protection_profile_names(self):
-        """
-        Test leak protection profile names.
+        """Test leak protection profile names.
 
         Profiles can be named by the user.
         This device has: "Anwesend" (Present), "Abwesend" (Absent), "Neues Profil" (New Profile)
         """
-        self.assertEqual(self.sensors['getPN1'], 'Anwesend')
-        self.assertEqual(self.sensors['getPN2'], 'Abwesend')
-        self.assertEqual(self.sensors['getPN3'], 'Neues Profil')
+        assert self.sensors['getPN1'] == 'Anwesend'
+        assert self.sensors['getPN2'] == 'Abwesend'
+        assert self.sensors['getPN3'] == 'Neues Profil'
 
         # Non-configured profiles have empty names
-        self.assertEqual(self.sensors['getPN4'], '')
-        self.assertEqual(self.sensors['getPN5'], '')
+        assert self.sensors['getPN4'] == ''
+        assert self.sensors['getPN5'] == ''
 
     def test_leak_protection_active_profile(self):
-        """
-        Test that active profile is correctly detected.
+        """Test that active profile is correctly detected.
 
         getPRF shows which profile (1-8) is currently active.
         In this case: Profile 3 "Neues Profil"
         """
-        self.assertEqual(self.sensors['getPRF'], '3')
-        self.assertEqual(self.sensors['getPRN'], '3')
+        assert self.sensors['getPRF'] == '3'
+        assert self.sensors['getPRN'] == '3'
 
         # The active profile should also be activated
-        self.assertEqual(self.sensors['getPA3'], '1')
+        assert self.sensors['getPA3'] == '1'
 
         # Name of the active profile
-        self.assertEqual(self.sensors['getPN3'], 'Neues Profil')
+        assert self.sensors['getPN3'] == 'Neues Profil'
 
     def test_leak_protection_profile_3_flow_threshold(self):
-        """
-        Test flow leakage threshold of profile 3.
+        """Test flow leakage threshold of profile 3.
 
         App shows: "Flow leakage 1999 l/h"
         XML provides: getPF3="1999"
 
         If this value is exceeded, an alarm is triggered.
         """
-        self.assertEqual(self.sensors['getPF3'], '1999')
+        assert self.sensors['getPF3'] == '1999'
 
     def test_leak_protection_profile_3_time_threshold(self):
-        """
-        Test time leakage threshold of profile 3.
+        """Test time leakage threshold of profile 3.
 
         App shows: "Time leakage 0.2 h"
         XML provides: getPT3="13" (minutes)
 
-        0.2h × 60 = 12 minutes (rounding difference in app)
+        0.2h x 60 = 12 minutes (rounding difference in app)
         """
-        self.assertEqual(self.sensors['getPT3'], '13')
+        assert self.sensors['getPT3'] == '13'
 
     def test_leak_protection_profile_3_volume_threshold(self):
-        """
-        Test volume leakage threshold of profile 3.
+        """Test volume leakage threshold of profile 3.
 
         App shows: "Volume leakage 185 L"
         XML provides: getPV3="185"
 
         Perfect match!
         """
-        self.assertEqual(self.sensors['getPV3'], '185')
+        assert self.sensors['getPV3'] == '185'
 
     def test_all_leak_protection_profiles_have_all_parameters(self):
-        """
-        Test that ALL 8 profiles have the required parameters.
+        """Test that ALL 8 profiles have the required parameters.
 
         Each profile (1-8) must have:
         - getPA: activation
@@ -227,15 +218,14 @@ class TestLEXplus10SL(unittest.TestCase):
         """
         for i in range(1, 9):
             with self.subTest(profile=i):
-                self.assertIn(f'getPA{i}', self.sensors, f"Profil {i} fehlt Aktivierung")
-                self.assertIn(f'getPN{i}', self.sensors, f"Profil {i} fehlt Name")
-                self.assertIn(f'getPF{i}', self.sensors, f"Profil {i} fehlt Durchflussleckage")
-                self.assertIn(f'getPT{i}', self.sensors, f"Profil {i} fehlt Zeitleckage")
-                self.assertIn(f'getPV{i}', self.sensors, f"Profil {i} fehlt Volumenleckage")
+                assert f'getPA{i}' in self.sensors, f"Profil {i} fehlt Aktivierung"
+                assert f'getPN{i}' in self.sensors, f"Profil {i} fehlt Name"
+                assert f'getPF{i}' in self.sensors, f"Profil {i} fehlt Durchflussleckage"
+                assert f'getPT{i}' in self.sensors, f"Profil {i} fehlt Zeitleckage"
+                assert f'getPV{i}' in self.sensors, f"Profil {i} fehlt Volumenleckage"
 
     def test_sensor_creation_should_not_crash_on_missing_icon(self):
-        """
-        CRITICAL TEST: Sensor creation must not crash if icon is missing.
+        """CRITICAL TEST: Sensor creation must not crash if icon is missing.
 
         This was the original bug in sensor.py:175
 
@@ -255,23 +245,21 @@ class TestLEXplus10SL(unittest.TestCase):
         for sensor_key in sensors_without_icon:
             with self.subTest(sensor=sensor_key):
                 # These sensors exist in the real data
-                self.assertIn(sensor_key, self.sensors,
-                             f"Sensor {sensor_key} missing in real XML data")
+                assert sensor_key in self.sensors, f"Sensor {sensor_key} missing in real XML data"
 
                 # Simulate getattr(self, '_attr_icon', None) - must not crash
                 mock_sensor = type('MockSensor', (), {})()
                 # No _attr_icon set (as with sensors without icon)
                 base_icon = getattr(mock_sensor, '_attr_icon', None)
                 # Should return None, not crash
-                self.assertIsNone(base_icon)
+                assert base_icon is None
 
 
 class TestLEXplus10SLCompatibility(unittest.TestCase):
     """Tests for compatibility and backward compatibility."""
 
     def test_minimum_required_sensors_for_basic_functionality(self):
-        """
-        Test that minimum requirements for basic functionality are met.
+        """Test that minimum requirements for basic functionality are met.
 
         These sensors MUST work, otherwise the integration is unusable:
         - getFLO: flow (critical for water consumption)
@@ -286,16 +274,13 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         # These sensors are CRITICAL
         critical_sensors = ['getFLO', 'getPRS', 'getSRE']
         for sensor in critical_sensors:
-            self.assertIn(sensor, sensors,
-                         f"Critical sensor {sensor} missing - integration not usable!")
+            assert sensor in sensors, f"Critical sensor {sensor} missing - integration not usable!"
 
         # Either getTOR or getVOL must be present
-        self.assertTrue('getTOR' in sensors or 'getVOL' in sensors,
-                       "Neither getTOR nor getVOL present - volume display impossible!")
+        assert 'getTOR' in sensors or 'getVOL' in sensors, "Neither getTOR nor getVOL present - volume display impossible!"
 
     def test_backward_compatibility_with_getvol(self):
-        """
-        Test that code can handle both volume sensors.
+        """Test that code can handle both volume sensors.
 
         Older devices: getVOL
         LEXplus10SL: getTOR
@@ -310,17 +295,15 @@ class TestLEXplus10SLCompatibility(unittest.TestCase):
         if 'getTOR' in sensors and 'getVOL' not in sensors:
             # LEXplus10SL mode: getTOR should be treated as getVOL
             volume_value = sensors.get('getTOR') or sensors.get('getVOL')
-            self.assertIsNotNone(volume_value,
-                               "Volume value not available (neither getTOR nor getVOL)")
-            self.assertEqual(volume_value, '722')
+            assert volume_value is not None, "Volume value not available (neither getTOR nor getVOL)"
+            assert volume_value == '722'
 
 
 class TestLEXplus10SLEdgeCases(unittest.TestCase):
     """Tests for edge cases and special cases."""
 
     def test_empty_profile_names_should_be_handled(self):
-        """
-        Test that empty profile names are handled correctly.
+        """Test that empty profile names are handled correctly.
 
         Profiles 4-8 have empty names ("") - the code must handle this.
         """
@@ -331,12 +314,10 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         # Empty names for non-configured profiles
         for i in range(4, 9):
             profile_name = sensors.get(f'getPN{i}')
-            self.assertEqual(profile_name, '',
-                           f"Nicht konfiguriertes Profil {i} sollte leeren Namen haben")
+            assert profile_name == '', f"Nicht konfiguriertes Profil {i} sollte leeren Namen haben"
 
     def test_deactivated_profiles_should_still_have_valid_thresholds(self):
-        """
-        Test that deactivated profiles still have valid thresholds.
+        """Test that deactivated profiles still have valid thresholds.
 
         Even if profiles 4-8 are deactivated (getPA=0), they have default values.
         These should not cause errors.
@@ -346,16 +327,15 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         sensors = {c.get('n'): c.get('v') for c in device.findall('c')}
 
         # Profile 4 is deactivated
-        self.assertEqual(sensors['getPA4'], '0')
+        assert sensors['getPA4'] == '0'
 
         # But still has valid thresholds
-        self.assertEqual(sensors['getPF4'], '3500')
-        self.assertEqual(sensors['getPT4'], '60')
-        self.assertEqual(sensors['getPV4'], '300')
+        assert sensors['getPF4'] == '3500'
+        assert sensors['getPT4'] == '60'
+        assert sensors['getPV4'] == '300'
 
     def test_active_profile_consistency(self):
-        """
-        Test that active profile is consistent.
+        """Test that active profile is consistent.
 
         If getPRF=3, then:
         - Profile 3 must be activated (getPA3=1)
@@ -368,12 +348,10 @@ class TestLEXplus10SLEdgeCases(unittest.TestCase):
         active_profile = int(sensors['getPRF'])
 
         # Active profile must be activated
-        self.assertEqual(sensors[f'getPA{active_profile}'], '1',
-                        f"Aktives Profil {active_profile} ist nicht aktiviert!")
+        assert sensors[f'getPA{active_profile}'] == '1', f"Aktives Profil {active_profile} ist nicht aktiviert!"
 
         # Active profile should have a name
-        self.assertNotEqual(sensors[f'getPN{active_profile}'], '',
-                          f"Aktives Profil {active_profile} hat keinen Namen!")
+        assert sensors[f'getPN{active_profile}'] != '', f"Aktives Profil {active_profile} hat keinen Namen!"
 
 
 if __name__ == '__main__':

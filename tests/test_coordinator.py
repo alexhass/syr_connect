@@ -1,5 +1,11 @@
 """Test the SYR Connect coordinator."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
+import contextlib
+import inspect
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -38,15 +44,10 @@ def _consume_coro_return_task(coro):
     warnings and returns a dummy task-like object with a `cancel` and
     `done` method so callers that inspect the returned value behave.
     """
-    try:
-        close = getattr(coro, "close", None)
-        if callable(close):
-            try:
-                close()
-            except Exception:
-                pass
-    except Exception:
-        pass
+    close = getattr(coro, "close", None)
+    if callable(close):
+        with contextlib.suppress(Exception):
+            close()
 
     class _DummyTask:
         def cancel(self):
@@ -161,9 +162,11 @@ async def test_coordinator_set_device_value(hass: HomeAssistant, setup_in_progre
         await coordinator.async_config_entry_first_refresh()
 
         # Set device value
-        with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
-                await coordinator.async_set_device_value("device1", "setSIR", 0)
+        with (
+            patch.object(coordinator, "async_set_updated_data"),
+            patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task),
+        ):
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
         mock_api.set_device_status.assert_called_once_with("f47ac10b-58cc-4372-a567-0e02b2c3d479", [("setSIR", 0)])
@@ -189,9 +192,11 @@ async def test_set_device_status_api_raises_propagates(hass: HomeAssistant, setu
         await coordinator.async_config_entry_first_refresh()
 
         # Ensure exception from API call is propagated
-        with patch.object(coordinator, "async_set_updated_data"):
-            with pytest.raises(Exception, match="set failed"):
-                await coordinator.async_set_device_value("device1", "setSIR", 10)
+        with (
+            patch.object(coordinator, "async_set_updated_data"),
+            pytest.raises(Exception, match="set failed"),
+        ):
+            await coordinator.async_set_device_value("device1", "setSIR", 10)
 
 
 async def test_invalid_command_no_optimistic_update(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -287,10 +292,12 @@ async def test_coordinator_device_not_found_error(hass: HomeAssistant, setup_in_
         await coordinator.async_config_entry_first_refresh()
 
         # Try to set value for non-existent device
-        with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
-                with pytest.raises(HomeAssistantError, match="Device unknown_device not found"):
-                    await coordinator.async_set_device_value("unknown_device", "setSIR", 0)
+        with (
+            patch.object(coordinator, "async_set_updated_data"),
+            patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task),
+            pytest.raises(HomeAssistantError, match="Device unknown_device not found"),
+        ):
+            await coordinator.async_set_device_value("unknown_device", "setSIR", 0)
 
 
 async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
@@ -311,10 +318,12 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
         )
 
         # Try to set value when coordinator has no data
-        with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task):
-                with pytest.raises(HomeAssistantError, match="Coordinator data not available"):
-                    await coordinator.async_set_device_value("device1", "setSIR", 0)
+        with (
+            patch.object(coordinator, "async_set_updated_data"),
+            patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task),
+            pytest.raises(HomeAssistantError, match="Coordinator data not available"),
+        ):
+            await coordinator.async_set_device_value("device1", "setSIR", 0)
 
 
 async def test_coordinator_device_fetch_exception(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -331,7 +340,7 @@ async def test_coordinator_device_fetch_exception(hass: HomeAssistant, setup_in_
         # First project raises exception, second succeeds
         async def get_devices_side_effect(project_id):
             if project_id == "project1":
-                raise Exception("Failed to fetch devices")
+                raise RuntimeError("Failed to fetch devices")
             return [{"id": "device2", "dclg": "c4d5e6f7-a8b9-0123-cdef-123456789012"}]
 
         mock_api.get_devices = AsyncMock(side_effect=get_devices_side_effect)
@@ -529,7 +538,7 @@ async def test_coordinator_device_status_exception_result(hass: HomeAssistant, s
             call_count += 1
             if call_count == 1:
                 return {"getPRS": "50"}
-            raise Exception("Device offline")
+            raise RuntimeError("Device offline")
 
         mock_api.get_device_status = AsyncMock(side_effect=get_device_status_side_effect)
         mock_api_class.return_value = mock_api
@@ -607,9 +616,11 @@ async def test_coordinator_device_status_poll_auth_error(
         coordinator.config_entry = setup_in_progress_config_entry
 
         # Patch internal fetch to raise SyrConnectAuthError so gather returns exception result
-        with patch.object(coordinator, "_fetch_device_status", side_effect=SyrConnectAuthError("auth")):
-            with pytest.raises(ConfigEntryAuthFailed):
-                await coordinator.async_config_entry_first_refresh()
+        with (
+            patch.object(coordinator, "_fetch_device_status", side_effect=SyrConnectAuthError("auth")),
+            pytest.raises(ConfigEntryAuthFailed),
+        ):
+            await coordinator.async_config_entry_first_refresh()
 
 
 async def test_coordinator_auth_error_during_login(hass: HomeAssistant, setup_in_progress_config_entry) -> None:
@@ -791,7 +802,7 @@ async def test_coordinator_refresh_schedule_exception_handling(hass: HomeAssista
         # Mock async_create_task to raise exception
         def raise_and_close(coro):
             coro.close()
-            raise Exception("Task creation failed")
+            raise RuntimeError("Task creation failed")
 
         with patch.object(coordinator, "async_set_updated_data"):
             # Should not raise, exception is caught and logged
@@ -859,11 +870,13 @@ async def test_coordinator_set_value_device_without_dclg(hass: HomeAssistant, se
         coordinator.config_entry = setup_in_progress_config_entry
         await coordinator.async_config_entry_first_refresh()
 
-        with patch.object(coordinator, "async_set_updated_data"):
-            with patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task:
-                mock_task.return_value = None
-                with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
-                    await coordinator.async_set_device_value("device1", "setSIR", 0)
+        with (
+            patch.object(coordinator, "async_set_updated_data"),
+            patch.object(hass, "async_create_task", side_effect=_consume_coro_return_task) as mock_task,
+        ):
+            mock_task.return_value = None
+            with patch.object(coordinator, "async_refresh", new_callable=AsyncMock):
+                await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Should use device ID as fallback
         mock_api.set_device_status.assert_called_once_with("device1", [("setSIR", 0)])
@@ -933,7 +946,6 @@ async def test_coordinator_data_structure_with_empty_devices(hass: HomeAssistant
 
 async def test_fetch_device_status_no_ignore_key_keeps_status(hass: HomeAssistant) -> None:
     """Non-getAB API values always pass through unchanged on each poll."""
-    from unittest.mock import patch
 
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI") as mock_api_class:
         mock_api = MagicMock()
@@ -977,7 +989,6 @@ async def test_coordinator_unexpected_exception_in_update(hass: HomeAssistant, s
         coordinator.config_entry = setup_in_progress_config_entry
 
         # Should raise ConfigEntryNotReady for unexpected errors during first refresh
-        from homeassistant.exceptions import ConfigEntryNotReady
         with pytest.raises(ConfigEntryNotReady, match="Error communicating with API"):
             await coordinator.async_config_entry_first_refresh()
 
@@ -1015,8 +1026,6 @@ async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
 
 async def test_async_update_data_gather_returns_exception_result(hass: HomeAssistant) -> None:
     """If the device list of every project fails, the update fails instead of returning no devices."""
-    import inspect
-    from types import SimpleNamespace
 
     async def _fake_gather(*args, **kwargs):
         # Close any passed coroutines so they don't trigger unawaited warnings.
@@ -1059,7 +1068,6 @@ async def test_async_update_data_gather_returns_exception_result(hass: HomeAssis
 
 def _two_project_api(failing: set[str]):
     """Return an XML API stub with projects p1/p2 (one device each); projects in `failing` time out."""
-    from types import SimpleNamespace
 
     async def _get_devices(project_id):
         if project_id in failing:
@@ -1080,7 +1088,6 @@ def _two_project_api(failing: set[str]):
 
 async def test_async_update_data_failed_project_keeps_previous_devices(hass: HomeAssistant) -> None:
     """A failed project keeps its devices from the last update; the list is marked incomplete."""
-    from types import SimpleNamespace
 
     failing: set[str] = set()
     mock_api = _two_project_api(failing)
@@ -1103,7 +1110,6 @@ async def test_async_update_data_failed_project_keeps_previous_devices(hass: Hom
 
 async def test_async_update_data_all_projects_failed_keeps_previous_devices(hass: HomeAssistant) -> None:
     """After a first successful update, a total failure keeps all devices instead of failing the update."""
-    from types import SimpleNamespace
 
     failing: set[str] = set()
     mock_api = _two_project_api(failing)
@@ -1122,7 +1128,6 @@ async def test_async_update_data_all_projects_failed_keeps_previous_devices(hass
 
 async def test_failed_relogin_keeps_previous_data(hass: HomeAssistant) -> None:
     """A failed re-login after the session timeout (e.g. cloud outage) keeps the last data available."""
-    from types import SimpleNamespace
 
     mock_api = _two_project_api(set())
     with patch("custom_components.syr_connect.coordinator.SyrConnectXmlAPI", new=lambda *_a, **_kw: mock_api):

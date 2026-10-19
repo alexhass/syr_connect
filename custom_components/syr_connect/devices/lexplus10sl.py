@@ -1,5 +1,6 @@
-"""Entity allowlist override for the lexplus10sl model (LEX Plus 10 SL Connect,
-dk=80/dkv=25, sbt=7).
+"""Entity allowlist override for the lexplus10sl model.
+
+LEX Plus 10 SL Connect (dk=80/dkv=25, sbt=7).
 
 Derived from tests/fixtures/xml/SyrLEXplus10SL_GetDeviceCollectionStatus.xml (no
 JSON fixture exists for this model). Unlike the plain "lex"/lexplus10s

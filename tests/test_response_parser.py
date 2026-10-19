@@ -1,6 +1,11 @@
+"""Tests for the XML response parser."""
+
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
 import os
 
-import defusedxml.ElementTree as ElementTree
+from defusedxml import ElementTree
 import pytest
 
 from custom_components.syr_connect.exceptions import (
@@ -15,20 +20,24 @@ FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtu
 
 @pytest.fixture
 def parser():
+    """Return a response parser."""
     return ResponseParser()
 
 @pytest.fixture
 def lexplus10s_project_collections_xml():
+    """Return the LEXplus10S project collections XML fixture."""
     with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
         return f.read()
 
 @pytest.fixture
 def lexplus10s_xml():
+    """Return the LEXplus10S device status XML fixture."""
     with open(FIXTURE_PATH_10S_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
 
 @pytest.fixture
 def lexplus10sl_xml():
+    """Return the LEXplus10SL device status XML fixture."""
     with open(FIXTURE_PATH_10SL_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
 
@@ -185,7 +194,7 @@ def test_parse_decrypted_login(parser):
 def test_parse_decrypted_login_multiple_projects(parser):
     """Test parsing decrypted login data with multiple projects."""
     xml = '<usr id="sess"><nam>User</nam></usr><prs><pre id="p1" n="Proj1"/><pre id="p2" n="Proj2"/></prs>'
-    session_id, projects = parser.parse_decrypted_login(xml)
+    _session_id, projects = parser.parse_decrypted_login(xml)
     assert len(projects) == 2
     assert projects[0]["id"] == "p1"
     assert projects[1]["id"] == "p2"
@@ -778,7 +787,7 @@ def test_element_to_dict_nested_elements_same_tag(parser):
 
 
 def test_parse_device_status_dvs_is_python_list(parser):
-    """dvs becomes a Python list when multiple <dvs> elements exist (line 265)."""
+    """The dvs value becomes a Python list when multiple <dvs> elements exist (line 265)."""
     # Two <dvs> elements at the same level cause parse_xml to return dvs as a list.
     # Each entry needs a 'c' child to pass the has_c check.
     xml = """<sc>
@@ -840,7 +849,7 @@ def test_parse_device_list_no_dvs_element(parser):
 def test_parse_login_response_api_dict_no_text_key(parser):
     """Test login response when api is dict without #text key."""
     xml = '<sc><api attr="value"/></sc>'
-    encrypted, parsed = parser.parse_login_response(xml)
+    encrypted, _parsed = parser.parse_login_response(xml)
     # Should get empty string when #text is missing
     assert encrypted == ""
 

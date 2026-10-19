@@ -1,5 +1,6 @@
-"""Entity allowlist override for the muco_backwash model (SYR RSA Connect,
-dkv=506, getDFM=4, automatic-backwash "Rückspülautomatik" role).
+"""Entity allowlist override for the muco_backwash model.
+
+SYR RSA Connect (dkv=506, getDFM=4), automatic-backwash "Rückspülautomatik" role.
 
 Model type: Automatic Backwash System
 

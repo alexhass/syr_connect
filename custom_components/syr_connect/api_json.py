@@ -307,8 +307,8 @@ class SyrConnectJsonAPI:
                     try:
                         response_text = await resp.text()
                         _LOGGER.debug("JSON API: %s - Error response: %r", operation, response_text)
-                    except Exception as err:
-                        _LOGGER.debug("JSON API: %s - Could not read error response: %s", operation, err)
+                    except Exception:
+                        _LOGGER.debug("JSON API: %s - Could not read error response", operation, exc_info=True)
 
                 # Raise exception on HTTP errors (4xx, 5xx)
                 resp.raise_for_status()
@@ -317,19 +317,6 @@ class SyrConnectJsonAPI:
                 # Note: SYR devices return JSON without proper Content-Type header (application/json).
                 # Use content_type=None to skip Content-Type validation
                 data = await resp.json(content_type=None)
-                if not isinstance(data, dict):
-                    _LOGGER.error("JSON API: %s - Non-dict payload from %s", operation, url)
-                    raise SyrConnectInvalidResponseError("API returned unexpected payload type")
-
-                # --- Log Response Data ---
-                _LOGGER.debug("JSON API: %s - Response data: %s", operation, data)
-
-                # --- Check for API-Level Error Codes ---
-                # Even with HTTP 200, the API may return error codes like "NSC" or "MIMA"
-                self._validate_response_errors(data, str(url))
-
-                _LOGGER.debug("JSON API: %s - Success", operation)
-                return data
 
         # --- HTTP Error Handling ---
         except aiohttp.ClientResponseError as err:
@@ -352,16 +339,25 @@ class SyrConnectJsonAPI:
             _LOGGER.error("JSON API: %s - Connection error: %s", operation, err)
             raise SyrConnectConnectionError(f"Connection failed: {err}") from err
 
-        # --- API Validation Errors ---
-        # Re-raise our own validation errors without wrapping
-        except SyrConnectInvalidResponseError:
-            raise
-
         # --- Unexpected Errors ---
         # Catch-all for any other exceptions
         except Exception as err:
             _LOGGER.error("JSON API: %s - Unexpected error: %s", operation, err)
             raise SyrConnectConnectionError(f"Unexpected error: {err}") from err
+
+        if not isinstance(data, dict):
+            _LOGGER.error("JSON API: %s - Non-dict payload from %s", operation, url)
+            raise SyrConnectInvalidResponseError("API returned unexpected payload type")
+
+        # --- Log Response Data ---
+        _LOGGER.debug("JSON API: %s - Response data: %s", operation, data)
+
+        # --- Check for API-Level Error Codes ---
+        # Even with HTTP 200, the API may return error codes like "NSC" or "MIMA"
+        self._validate_response_errors(data, str(url))
+
+        _LOGGER.debug("JSON API: %s - Success", operation)
+        return data
 
     async def login(self) -> bool:
         """Call the login endpoint required by the device JSON API.
@@ -709,14 +705,14 @@ class SyrConnectJsonAPI:
         #
         # Perform a case-insensitive lookup for the response key so that
         # devices returning e.g. 'setala255' or 'setALA255' are accepted.
-        found_key = next((k for k in response.keys() if k.lower() == response_key.lower()), None)
+        found_key = next((k for k in response if k.lower() == response_key.lower()), None)
 
         # Some devices (e.g. Floorsensor) omit the "set" prefix in the response key:
         # {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
         # Fall back to a prefix-less lookup: cmd+value (case-insensitive).
         if not found_key:
             bare_key = f"{str(cmd).upper()}{value}"
-            found_key = next((k for k in response.keys() if k.lower() == bare_key.lower()), None)
+            found_key = next((k for k in response if k.lower() == bare_key.lower()), None)
 
         if not found_key:
             msg = f"Response missing expected key '{response_key}'"

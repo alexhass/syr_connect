@@ -246,7 +246,7 @@ rules:
   
   strict-typing:
     status: done
-    comment: Extensive type hints; mypy config added; py.typed marker file present for PEP 561 compliance
+    comment: mypy runs with the strict settings of Home Assistant core (mypy.ini); py.typed marker file present for PEP 561 compliance
 
 # Summary
 # Bronze: 19/19 completed (100%) ✅ (2 exempt rules)

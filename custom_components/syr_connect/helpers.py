@@ -1,5 +1,6 @@
 """Helper functions for SYR Connect integration."""
 
+import contextlib
 import ipaddress
 import logging
 import re
@@ -229,7 +230,7 @@ def build_device_info(
         sw_version=sw_version,
         hw_version=hw_version,
         serial_number=device_id,
-        connections=connections if connections else set(),
+        connections=connections or set(),
         configuration_url=configuration_url,
     )
 
@@ -535,7 +536,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
             s = val.strip()
             # Treat empty string and the unspecified address 0.0.0.0 as empty
             # Syr "Trio DFR/LS" sets IP as "0.0.0.0", where others do not.
-            if s == "" or s == "0.0.0.0":
+            if s in {"", "0.0.0.0"}:
                 return False
             return True
         return True
@@ -583,7 +584,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
     return None
 
 
-def get_sensor_avo_value(value: str | int | float) -> float | None:
+def get_sensor_avo_value(value: Any) -> float | None:
     """Extract numeric flow value from strings like '1655mL' -> 1.655 (L).
 
     The getAVO sensor returns flow values in the format '1655mL', '0mL', etc.
@@ -615,9 +616,10 @@ def get_sensor_avo_value(value: str | int | float) -> float | None:
             flow_ml = int(match.group(1))
             flow_l = flow_ml / 1000  # Convert mL to L
             _LOGGER.debug("Extracted flow value from '%s' to %.3f L", value, flow_l)
-            return flow_l
         except (ValueError, TypeError):
             return None
+        else:
+            return flow_l
 
     # If pattern doesn't match, try to extract any number at the start and convert
     match = re.match(r'^(\d+)', value)
@@ -631,7 +633,7 @@ def get_sensor_avo_value(value: str | int | float) -> float | None:
     return None
 
 
-def get_sensor_vol_value(value: str | int | float) -> str | int | float | None:
+def get_sensor_vol_value(value: str | float) -> str | int | float | None:
     """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
 
     Some devices send values with prefixes that include the parameter name
@@ -671,7 +673,7 @@ def get_sensor_vol_value(value: str | int | float) -> str | int | float | None:
     return value
 
 
-def get_sensor_lng_value(value: str | int | float) -> str | int | float | None:
+def get_sensor_lng_value(value: str | float) -> str | int | float | None:
     """Extract the leading integer from a getLNG value.
 
     Some devices append a human-readable annotation to the numeric value,
@@ -703,12 +705,13 @@ def get_sensor_lng_value(value: str | int | float) -> str | int | float | None:
     token = value.split(maxsplit=1)[0]
     try:
         int(token)
-        return token
     except ValueError:
         return value
+    else:
+        return token
 
 
-def get_sensor_net_value(value: str | int | float) -> float | None:
+def get_sensor_net_value(value: Any) -> float | None:
     """Parse mains voltage (getNET) supporting three formats.
 
     Formats supported:
@@ -763,7 +766,7 @@ def get_sensor_net_value(value: str | int | float) -> float | None:
     return None
 
 
-def host_has_port(host: str) -> bool:
+def host_has_port(host: object) -> bool:
     """Return True if *host* ends with an explicit port, e.g. "192.168.1.10:5333".
 
     A plain IPv6 address such as "fe80::1" is not a host with port, although it ends
@@ -774,9 +777,10 @@ def host_has_port(host: str) -> bool:
         return False
     try:
         ipaddress.ip_address(host.strip())
-        return False
     except ValueError:
         pass
+    else:
+        return False
     return bool(re.match(r"^.+:\d+$", host.strip()))
 
 
@@ -803,9 +807,10 @@ def is_valid_host(host: str) -> bool:
     # host:port pattern below.
     try:
         ipaddress.ip_address(host)
-        return True
-    except Exception:
+    except ValueError:
         pass
+    else:
+        return True
 
     # Reject explicit host:port
     if host_has_port(host):
@@ -816,7 +821,7 @@ def is_valid_host(host: str) -> bool:
     return bool(re.match(hostname_pattern, host))
 
 
-def get_sensor_bat_value(value: str | int | float) -> float | None:
+def get_sensor_bat_value(value: Any) -> float | None:
     """Parse battery voltage supporting two formats.
 
     Formats supported:
@@ -951,10 +956,8 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
         try:
             val = float(raw_iwh)
             # Persist normalized numeric getiwh back into status
-            try:
+            with contextlib.suppress(Exception):
                 status["getIWH"] = int(val) if val.is_integer() else val
-            except Exception:
-                pass
             # Return int when it's an exact whole number
             return int(val) if val.is_integer() else val
         except (ValueError, TypeError):
@@ -976,10 +979,8 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
         whu = int(float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
     except (ValueError, TypeError):
         whu = 0
-    try:
+    with contextlib.suppress(Exception):
         status["getWHU"] = whu
-    except Exception:
-        pass
 
     # Compute and persist getIWH
     # Calculation notes:
@@ -987,10 +988,8 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     # - However, the more precise standard value for clean, unpolluted fresh water appears to be 1 °dH = 33 µS/cm.
     iwh = cnd / 33.0
     iwh_out = int(iwh) if iwh.is_integer() else iwh
-    try:
+    with contextlib.suppress(Exception):
         status["getIWH"] = iwh_out
-    except Exception:
-        pass
     return iwh_out
 
 
@@ -1278,82 +1277,86 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     """
     # Group keys controlled by getPAx should be hidden when getPAx is false
     m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
-    if m:
-        idx = m.group(2)
-        pa_key = f"getPA{idx}"
-        if not is_value_true(status.get(pa_key)):
-            return False
+    if m and not is_value_true(status.get(f"getPA{m.group(2)}")):
+        return False
 
-    # Firmware-bug workaround: suppress getBAP only when it is exactly 0/empty
-    # AND getBAT reports a non-zero voltage. In that case the device exposes a
-    # spurious percentage field alongside the real voltage reading.
-    if key == "getBAP":
-        try:
-            bap_zero = float(value) == 0
-        except (ValueError, TypeError):
-            bap_zero = value is None or str(value).strip() == ""
-        if bap_zero:
-            bat_val = status.get("getBAT")
-            if bat_val is not None:
-                try:
-                    if float(bat_val) > 0:
-                        return False
-                except (ValueError, TypeError):
-                    pass
+    if key == "getBAP" and _is_spurious_bap(status, value):
+        return False
 
     # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
     if key in ("getCS1", "getCS2", "getCS3"):
-        sv_key = "getSV" + key[-1]
-        sv_val = status.get(sv_key)
-        if sv_val is not None:
-            try:
-                if float(sv_val) != 0:
-                    return True
-            except (ValueError, TypeError):
-                pass
-        if value is None:
-            return False
-        if isinstance(value, int | float) and float(value) == 0:
-            return False
-        if isinstance(value, str) and (value.strip() == "" or value == "0"):
+        if _is_non_zero_number(status.get("getSV" + key[-1])):
+            return True
+        if _is_empty_or_zero(value):
             return False
 
+    crt_val = status.get("getCRT")
+    crt = None if crt_val is None else str(crt_val).strip()
     # getLOT (Maximum output conductivity) only applies to HVE / HVE+ cartridges (getCRT 1 or 2).
-    if key == "getLOT":
-        crt_val = status.get("getCRT")
-        if crt_val is None or str(crt_val).strip() not in ("1", "2"):
-            return False
-
+    if key == "getLOT" and crt not in ("1", "2"):
+        return False
     # getOHW (Soft water hardness) only applies to HWE cartridges (getCRT 0).
-    if key == "getOHW":
-        crt_val = status.get("getCRT")
-        if crt_val is None or str(crt_val).strip() != "0":
-            return False
+    if key == "getOHW" and crt != "0":
+        return False
 
+    return not _is_excluded_when_empty(key, value)
+
+
+def _is_non_zero_number(value: Any) -> bool:
+    """Return True if the value is a number other than zero."""
+    if value is None:
+        return False
+    try:
+        return float(value) != 0
+    except (ValueError, TypeError):
+        return False
+
+
+def _is_empty_or_zero(value: Any) -> bool:
+    """Return True for None, numeric zero, the string "0" and empty strings."""
+    if value is None:
+        return True
+    if isinstance(value, int | float) and float(value) == 0:
+        return True
+    return isinstance(value, str) and (value.strip() == "" or value == "0")
+
+
+def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
+    """Return True if getBAP is a spurious field next to a real battery voltage.
+
+    Firmware-bug workaround: getBAP is suppressed only when it is exactly 0/empty
+    AND getBAT reports a non-zero voltage. In that case the device exposes a
+    spurious percentage field alongside the real voltage reading.
+    """
+    try:
+        bap_zero = float(value) == 0
+    except (ValueError, TypeError):
+        bap_zero = value is None or str(value).strip() == ""
+    if not bap_zero:
+        return False
+    bat_val = status.get("getBAT")
+    if bat_val is None:
+        return False
+    try:
+        return float(bat_val) > 0
+    except (ValueError, TypeError):
+        return False
+
+
+def _is_excluded_when_empty(key: str, value: Any) -> bool:
+    """Return True if the key is hidden because its value counts as empty for this key."""
     # Exclude when empty string
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING:
-        if value is None:
-            return False
-        if isinstance(value, str) and value.strip() == "":
-            return False
-
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING and (
+        value is None or (isinstance(value, str) and value.strip() == "")
+    ):
+        return True
     # Exclude when empty value (0 or "")
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
-        if value is None:
-            return False
-        if isinstance(value, int | float) and float(value) == 0:
-            return False
-        if isinstance(value, str) and (value.strip() == "" or value == "0"):
-            return False
-
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE and _is_empty_or_zero(value):
+        return True
     # Exclude empty IPs
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS:
-        if value is None:
-            return False
-        if isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"):
-            return False
-
-    return True
+    return key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS and (
+        value is None or (isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"))
+    )
 
 
 def get_api_locale(language: str | None, country: str | None) -> str:

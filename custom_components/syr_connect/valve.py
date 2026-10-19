@@ -1,6 +1,7 @@
 """Valve platform for SYR Connect (water shut-off valve)."""
 
 import logging
+from typing import override
 
 from homeassistant.components.valve import (
     ValveDeviceClass,
@@ -143,6 +144,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         self._attr_device_class = ValveDeviceClass.WATER
 
     @property
+    @override
     def extra_state_attributes(self) -> dict[str, str] | None:
         """Return additional state attributes including raw API values.
 
@@ -162,6 +164,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         return attrs
 
     @property
+    @override
     def is_closed(self) -> bool | None:
         """Return True if valve is closed, False if open, None if unknown."""
         if self._device is None:
@@ -171,6 +174,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         return get_sensor_ab_value(status)
 
     @property
+    @override
     def is_opening(self) -> bool | None:
         """Return True if valve is currently opening.
 
@@ -188,6 +192,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
             return None
 
     @property
+    @override
     def is_closing(self) -> bool | None:
         """Return True if valve is currently closing.
 
@@ -214,7 +219,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         try:
             # Send command to backend; prepend alarm-clear when an alarm is active.
             await self.coordinator.async_open_valve(self._device_id, set_key, set_val)
-        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
+        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:
             _LOGGER.error("Failed to open valve %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to open valve {self._device_id}: {err}") from err
 
@@ -230,23 +235,27 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
 
         try:
             await self.coordinator.async_set_device_value(self._device_id, set_key, set_val)
-        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:  # pragma: no cover - defensive
+        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:
             _LOGGER.error("Failed to close valve %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to close valve {self._device_id}: {err}") from err
 
+    @override
     async def async_open_valve(self) -> None:
         """Async service entrypoint to open the valve."""
         await self.async_open()
 
+    @override
     def open_valve(self) -> None:
         """Sync service entrypoint to open the valve (schedules async task)."""
         if self.hass is not None:
             self.hass.async_create_task(self.async_open())
 
+    @override
     async def async_close_valve(self) -> None:
         """Async service entrypoint to close the valve."""
         await self.async_close()
 
+    @override
     def close_valve(self) -> None:
         """Sync service entrypoint to close the valve (schedules async task)."""
         if self.hass is not None:

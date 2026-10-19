@@ -4,7 +4,7 @@ import asyncio
 import copy
 from datetime import timedelta
 import logging
-from typing import Any
+from typing import Any, override
 
 import aiohttp
 
@@ -135,6 +135,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         # last update; devices missing from the data are then not known to be deleted.
         self.device_list_complete = False
 
+    @override
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from API.
 
@@ -146,79 +147,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             UpdateFailed: If API communication fails
         """
         try:
-            # Login if not already logged in or session expired.
-            # For the XML API this also (re-)populates api.projects, which is
-            # required before device tasks can be dispatched.
-            if not self.api.is_session_valid():
-                _LOGGER.debug("No valid session, logging in...")
-                await self.api.login()
-
-            all_devices = []
-
-            # Get devices from all projects in parallel
-            device_tasks = [self.api.get_devices(project["id"]) for project in self.api.projects]
-
-            # Gather device lists for all projects. We use `return_exceptions=True`
-            # so asyncio.gather will never raise; any per-project failures are
-            # returned as Exception instances and handled below.
-            projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
-
-            # Process each project's devices
-            failed_projects = 0
-            for project_idx, result in enumerate(projects_devices):
-                if isinstance(result, SyrConnectAuthError):
-                    raise ConfigEntryAuthFailed(
-                        f"Authentication failed during device list poll: {result}"
-                    ) from result
-
-                project = self.api.projects[project_idx]
-                if not isinstance(result, list):
-                    # Temporary failures happen (routing, timeouts, maintenance). Keep the
-                    # project's devices from the last update with their old values instead
-                    # of dropping them or marking them unavailable; the next poll updates them.
-                    previous = self._previous_project_devices(project["id"])
-                    _LOGGER.warning(
-                        "Failed to get devices for project %s, keeping %d device(s) from the last update: %s",
-                        project["name"], len(previous), result,
-                    )
-                    all_devices.extend(previous)
-                    failed_projects += 1
-                    continue
-                devices: list[dict[str, Any]] = result
-
-                _LOGGER.debug("Found %d device(s) in project %s", len(devices), project["name"])
-
-                # Get status for all devices in parallel
-                status_tasks = [self._fetch_device_status(device) for device in devices]
-
-                device_results = await asyncio.gather(*status_tasks, return_exceptions=True)
-
-                for device_result in device_results:
-                    if isinstance(device_result, SyrConnectAuthError):
-                        raise ConfigEntryAuthFailed(
-                            f"Authentication failed during device status poll: {device_result}"
-                        ) from device_result
-                    if isinstance(device_result, Exception):
-                        _LOGGER.warning("Device status fetch failed: %s", device_result)
-                        continue
-                    if isinstance(device_result, dict) and device_result:
-                        all_devices.append(device_result)
-
-            # On the first refresh there is nothing to keep: without any device list,
-            # setup is retried (ConfigEntryNotReady) instead of showing an empty account.
-            if failed_projects and failed_projects == len(projects_devices) and self.data is None:
-                raise SyrConnectConnectionError(
-                    f"Failed to get the device list of all {failed_projects} project(s)"
-                )
-            self.device_list_complete = failed_projects == 0
-
-            _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
-            return {
-                "configuration_url": self._configuration_url,
-                "devices": all_devices,
-                "projects": self.api.projects,
-            }
-
+            all_devices = await self._async_fetch_all_devices()
         except ConfigEntryAuthFailed:
             raise
         except SyrConnectAuthError as err:
@@ -228,16 +157,103 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # Temporary failures happen (cloud outage, maintenance page, device reboot), e.g. when
             # the re-login after a rejected session token fails. Keep the data of the last update
             # instead of raising UpdateFailed, which would make every entity unavailable.
-            if self.data is not None:
+            # The coordinator data is None until the first successful refresh
+            previous: dict[str, Any] | None = self.data
+            if previous is not None:
                 _LOGGER.warning("Connection failed, keeping the data of the last update: %s", err)
                 self.device_list_complete = False
-                return self.data
+                return previous
             # First refresh: nothing to keep, setup is retried (ConfigEntryNotReady)
             _LOGGER.error("Connection failed: %s", err)
             raise UpdateFailed(f"Connection error: {err}") from err
         except Exception as err:
-            _LOGGER.error("Update failed: %s", err, exc_info=True)
+            _LOGGER.exception("Update failed")
             raise UpdateFailed(f"Error communicating with API: {err}") from err
+        else:
+            return {
+                "configuration_url": self._configuration_url,
+                "devices": all_devices,
+                "projects": self.api.projects,
+            }
+
+    async def _async_fetch_all_devices(self) -> list[dict[str, Any]]:
+        """Log in if needed and fetch the status of all devices of all projects.
+
+        Returns:
+            List of device status dictionaries
+
+        Raises:
+            ConfigEntryAuthFailed: If authentication fails
+            SyrConnectConnectionError: If no device list could be fetched on the first refresh
+        """
+        # Login if not already logged in or session expired.
+        # For the XML API this also (re-)populates api.projects, which is
+        # required before device tasks can be dispatched.
+        if not self.api.is_session_valid():
+            _LOGGER.debug("No valid session, logging in...")
+            await self.api.login()
+
+        all_devices = []
+
+        # Get devices from all projects in parallel
+        device_tasks = [self.api.get_devices(project["id"]) for project in self.api.projects]
+
+        # Gather device lists for all projects. We use `return_exceptions=True`
+        # so asyncio.gather will never raise; any per-project failures are
+        # returned as Exception instances and handled below.
+        projects_devices = await asyncio.gather(*device_tasks, return_exceptions=True)
+
+        # Process each project's devices
+        failed_projects = 0
+        for project_idx, result in enumerate(projects_devices):
+            if isinstance(result, SyrConnectAuthError):
+                raise ConfigEntryAuthFailed(
+                    f"Authentication failed during device list poll: {result}"
+                ) from result
+
+            project = self.api.projects[project_idx]
+            if not isinstance(result, list):
+                # Temporary failures happen (routing, timeouts, maintenance). Keep the
+                # project's devices from the last update with their old values instead
+                # of dropping them or marking them unavailable; the next poll updates them.
+                previous = self._previous_project_devices(project["id"])
+                _LOGGER.warning(
+                    "Failed to get devices for project %s, keeping %d device(s) from the last update: %s",
+                    project["name"], len(previous), result,
+                )
+                all_devices.extend(previous)
+                failed_projects += 1
+                continue
+            devices: list[dict[str, Any]] = result
+
+            _LOGGER.debug("Found %d device(s) in project %s", len(devices), project["name"])
+
+            # Get status for all devices in parallel
+            status_tasks = [self._fetch_device_status(device) for device in devices]
+
+            device_results = await asyncio.gather(*status_tasks, return_exceptions=True)
+
+            for device_result in device_results:
+                if isinstance(device_result, SyrConnectAuthError):
+                    raise ConfigEntryAuthFailed(
+                        f"Authentication failed during device status poll: {device_result}"
+                    ) from device_result
+                if isinstance(device_result, Exception):
+                    _LOGGER.warning("Device status fetch failed: %s", device_result)
+                    continue
+                if isinstance(device_result, dict) and device_result:
+                    all_devices.append(device_result)
+
+        # On the first refresh there is nothing to keep: without any device list,
+        # setup is retried (ConfigEntryNotReady) instead of showing an empty account.
+        if failed_projects and failed_projects == len(projects_devices) and self.data is None:
+            raise SyrConnectConnectionError(
+                f"Failed to get the device list of all {failed_projects} project(s)"
+            )
+        self.device_list_complete = failed_projects == 0
+
+        _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
+        return all_devices
 
     def _previous_project_devices(self, project_id: str) -> list[dict[str, Any]]:
         """Return the devices of a project from the last successful update."""
@@ -300,16 +316,16 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # which created one on every failed status poll
             delete_issue(self.hass, f"device_offline_{device['id']}")
 
-            return device
-
         except SyrConnectAuthError:
             # Propagate — caught by _async_update_data's outer handler
             raise
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001
             # Temporary failures happen (routing, timeouts). Only log them and keep the
             # previous values; no unavailable state and no repair issue.
             _LOGGER.warning("Failed to get status for device %s, keeping previous status: %s", device["id"], err)
             return self._previous_device_or_empty(device)
+        else:
+            return device
 
     def _previous_device_or_empty(self, device: dict[str, Any]) -> dict[str, Any]:
         """Return the device from the last update unchanged, or the device with an empty status.
@@ -319,7 +335,8 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         an empty status.
         """
         if self.data:
-            for prev in self.data.get("devices", []):
+            previous_devices: list[dict[str, Any]] = self.data.get("devices", [])
+            for prev in previous_devices:
                 if prev.get("id") == device.get("id"):
                     _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
                     return prev
@@ -345,9 +362,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """
         if not self.data:
             return None
-        for device in self.data.get("devices", []):
+        devices: list[dict[str, Any]] = self.data.get("devices", [])
+        for device in devices:
             if device["id"] == device_id:
-                return device.get("dclg", device_id)
+                dclg: str = device.get("dclg", device_id)
+                return dclg
         return None
 
     async def async_set_device_value(self, device_id: str, command: str, value: Any) -> None:
@@ -420,7 +439,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     self.async_set_updated_data(new_data)
                     optimistic_data = new_data
 
-        except (KeyError, AttributeError, TypeError, ValueError) as err:  # pragma: no cover - defensive
+        except (KeyError, AttributeError, TypeError, ValueError) as err:
             _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
 
         try:
@@ -526,6 +545,7 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 "Valve open: alarm detection failed for %s (will open without clear): %s",
                 device_id,
                 err,
+                exc_info=True,
             )
             clear_prefix = None
 

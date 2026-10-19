@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Debug script for tracing the XML API.
+r"""Debug script for tracing the XML API.
 
 Usage:
     python scripts/debug_cli.py --username <email> --password <pw> [options]
@@ -22,35 +22,34 @@ Options:
     --no-decrypt                Skip decryption step; also prevents set commands from running
 
 Examples:
-
 Login and list devices:
-    python scripts/debug_cli.py \\
-        --username me@example.com \\
-        --password secret \\
+    python scripts/debug_cli.py \
+        --username me@example.com \
+        --password secret \
         --list-devices
 
 Execute a single set command (one-shot):
-    python scripts/debug_cli.py \\
-        --username me@example.com \\
-        --password secret \\
-        --identity 1234567890 \\
-        --set-command setSV1 \\
+    python scripts/debug_cli.py \
+        --username me@example.com \
+        --password secret \
+        --identity 1234567890 \
+        --set-command setSV1 \
         --set-value 10
 
 Example (CLEAR PRO):
-    python scripts/debug_cli.py \\
-        --username me@example.com \\
-        --password secret \\
-        --base-url https://api.conelclearpro.de \\
-        --api-app-name "CLEAR PRO" \\
+    python scripts/debug_cli.py \
+        --username me@example.com \
+        --password secret \
+        --base-url https://api.conelclearpro.de \
+        --api-app-name "CLEAR PRO" \
         --api-package-name de.consoft.gc.conel.connect
 """
 
 import argparse
 import asyncio
 import logging
-import sys
 from pathlib import Path
+import sys
 from typing import Any, NoReturn
 
 # ---------------------------------------------------------------------------
@@ -94,10 +93,10 @@ def _exit_missing_dependency(err: ModuleNotFoundError) -> NoReturn:
 
 
 try:
-    import aiohttp  # noqa: E402  (after sys.path manipulation)
+    import aiohttp
 
-    from custom_components.syr_connect.checksum import SyrChecksum  # noqa: E402
-    from custom_components.syr_connect.const import (  # noqa: E402
+    from custom_components.syr_connect.checksum import SyrChecksum
+    from custom_components.syr_connect.const import (
         _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
         _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
         _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
@@ -110,10 +109,10 @@ try:
         _SYR_CONNECT_CLIENT_OS_VERSION,
         _SYR_CONNECT_CLIENT_USER_AGENT,
     )
-    from custom_components.syr_connect.encryption import SyrEncryption  # noqa: E402
-    from custom_components.syr_connect.http_client import HTTPClient  # noqa: E402
-    from custom_components.syr_connect.payload_builder import PayloadBuilder  # noqa: E402
-    from custom_components.syr_connect.response_parser import ResponseParser  # noqa: E402
+    from custom_components.syr_connect.encryption import SyrEncryption
+    from custom_components.syr_connect.http_client import HTTPClient
+    from custom_components.syr_connect.payload_builder import PayloadBuilder
+    from custom_components.syr_connect.response_parser import ResponseParser
 except ModuleNotFoundError as err:
     _exit_missing_dependency(err)
 
@@ -154,7 +153,7 @@ def _setup_logging(log_file: str | None = None) -> None:
     logging.getLogger("aiohttp.client").setLevel(logging.DEBUG)
 
 
-_LOG = logging.getLogger("debug_cli")
+_LOGGER = logging.getLogger("debug_cli")
 
 
 # ---------------------------------------------------------------------------
@@ -201,6 +200,7 @@ class DebugXmlClient:
         skip_decrypt: bool = False,
         show_password: bool = False,
     ) -> None:
+        """Initialize the client with the endpoints and client constants to use."""
         self.username = username
         self.password = password
         self.skip_decrypt = skip_decrypt
@@ -230,24 +230,25 @@ class DebugXmlClient:
 
         # Log after all objects are constructed so a constructor failure doesn't
         # leave a misleading "=== Endpoint configuration ===" banner in the log.
-        _LOG.info("=== Endpoint configuration ===")
-        _LOG.info("  base_url          : %s", base_url)
-        _LOG.info("  login_url         : %s", self.login_url)
-        _LOG.info("  device_list_url   : %s", self.device_list_url)
-        _LOG.info("  device_status_url : %s", self.device_status_url)
-        _LOG.info("  device_set_url    : %s", self.device_set_url)
-        _LOG.info("  app_version       : %s", app_version)
-        _LOG.info("  api_app_name      : %s", app_name)
-        _LOG.info("  api_package_name  : %s", api_package_name)
-        _LOG.info("  user_agent        : %s", user_agent)
+        _LOGGER.info("=== Endpoint configuration ===")
+        _LOGGER.info("  base_url          : %s", base_url)
+        _LOGGER.info("  login_url         : %s", self.login_url)
+        _LOGGER.info("  device_list_url   : %s", self.device_list_url)
+        _LOGGER.info("  device_status_url : %s", self.device_status_url)
+        _LOGGER.info("  device_set_url    : %s", self.device_set_url)
+        _LOGGER.info("  app_version       : %s", app_version)
+        _LOGGER.info("  api_app_name      : %s", app_name)
+        _LOGGER.info("  api_package_name  : %s", api_package_name)
+        _LOGGER.info("  user_agent        : %s", user_agent)
 
     # ------------------------------------------------------------------
     # Login
     # ------------------------------------------------------------------
 
     async def login(self) -> bool:
-        _LOG.info("=== LOGIN ===")
-        _LOG.info("Username: %s", self.username)
+        """Log in and store the session token and the projects."""
+        _LOGGER.info("=== LOGIN ===")
+        _LOGGER.info("Username: %s", self.username)
 
         xml_data = self.payload_builder.build_login_payload(self.username, self.password)
         # Guard against replace("", ...) corrupting the XML when password is empty
@@ -255,9 +256,9 @@ class DebugXmlClient:
             log_payload = xml_data
         else:
             log_payload = xml_data.replace(self.password, "***")
-        _LOG.debug("--- Login request payload ---\n%s", log_payload)
+        _LOGGER.debug("--- Login request payload ---\n%s", log_payload)
 
-        _LOG.info("POST %s", self.login_url)
+        _LOGGER.info("POST %s", self.login_url)
         try:
             raw_response = await self.http_client.post(
                 self.login_url,
@@ -265,37 +266,37 @@ class DebugXmlClient:
                 content_type="text/xml",
             )
         except aiohttp.ClientResponseError as exc:
-            _LOG.error(
+            _LOGGER.error(
                 "HTTP %s %s\n  URL : %s\n  Hint: check --base-url",
                 exc.status, exc.message, exc.request_info.url,
             )
-            _LOG.debug("Full HTTP error details", exc_info=True)
+            _LOGGER.debug("Full HTTP error details", exc_info=True)
             raise
         except aiohttp.ClientError as exc:
-            _LOG.error("Connection error: %s\n  Hint: check --base-url and network", exc)
-            _LOG.debug("Full connection error details", exc_info=True)
+            _LOGGER.error("Connection error: %s\n  Hint: check --base-url and network", exc)
+            _LOGGER.debug("Full connection error details", exc_info=True)
             raise
 
-        _LOG.debug("--- Raw login response ---\n%s", raw_response)
+        _LOGGER.debug("--- Raw login response ---\n%s", raw_response)
         if self.skip_decrypt:
-            _LOG.warning("--no-decrypt flag set -- skipping decryption, cannot extract session.")
+            _LOGGER.warning("--no-decrypt flag set -- skipping decryption, cannot extract session.")
             return False
 
-        _LOG.info("Parsing login response ...")
+        _LOGGER.info("Parsing login response ...")
         encrypted_text, raw_parsed = self.response_parser.parse_login_response(raw_response)
-        _LOG.debug("Encrypted session text length: %d chars", len(encrypted_text))
-        _LOG.debug("parse_login_response extras: %s", raw_parsed)
+        _LOGGER.debug("Encrypted session text length: %d chars", len(encrypted_text))
+        _LOGGER.debug("parse_login_response extras: %s", raw_parsed)
 
-        _LOG.info("Decrypting session data ...")
+        _LOGGER.info("Decrypting session data ...")
         decrypted = self.encryption.decrypt(encrypted_text)
-        _LOG.debug("--- Decrypted session payload ---\n%s", decrypted)
+        _LOGGER.debug("--- Decrypted session payload ---\n%s", decrypted)
 
-        _LOG.info("Parsing decrypted session ...")
+        _LOGGER.info("Parsing decrypted session ...")
         self.session_data, self.projects = self.response_parser.parse_decrypted_login(decrypted)
-        _LOG.info("Session token (first 20 chars): %s...", self.session_data[:20])
-        _LOG.info("Projects found: %d", len(self.projects))
+        _LOGGER.info("Session token (first 20 chars): %s...", self.session_data[:20])
+        _LOGGER.info("Projects found: %d", len(self.projects))
         for p in self.projects:
-            _LOG.info("  Project: id=%s  name=%s", p.get("id"), p.get("name"))
+            _LOGGER.info("  Project: id=%s  name=%s", p.get("id"), p.get("name"))
 
         return True
 
@@ -314,39 +315,41 @@ class DebugXmlClient:
         Returns:
             True on success
         """
-        _LOG.info("Setting %s on device %s to %r", command, device_id, value)
+        _LOGGER.info("Setting %s on device %s to %r", command, device_id, value)
 
         if self.skip_decrypt:
-            _LOG.warning("--no-decrypt flag set -- cannot perform set operation without a valid session.")
+            _LOGGER.warning("--no-decrypt flag set -- cannot perform set operation without a valid session.")
             return False
 
         payload = self.payload_builder.build_device_set_status_payload(self.session_data, device_id, [(command, value)])
         try:
             resp = await self.http_client.post(self.device_set_url, {"xml": payload})
-            _LOG.debug("Set response: %s", resp)
-            _LOG.info("Set command completed for %s", device_id)
-            return True
+            _LOGGER.debug("Set response: %s", resp)
+            _LOGGER.info("Set command completed for %s", device_id)
         except Exception as exc:
-            _LOG.error("Set command failed: %s", exc)
-            _LOG.debug("Set command traceback", exc_info=True)
+            _LOGGER.error("Set command failed: %s", exc)
+            _LOGGER.debug("Set command traceback", exc_info=True)
             return False
+        else:
+            return True
 
     # ------------------------------------------------------------------
     # Devices
     # ------------------------------------------------------------------
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
-        _LOG.info("=== GET DEVICES  project_id=%s ===", project_id)
+        """Fetch and log the devices of a project."""
+        _LOGGER.info("=== GET DEVICES  project_id=%s ===", project_id)
 
         payload = self.payload_builder.build_device_get_list_payload(self.session_data, project_id)
-        _LOG.debug("--- Device list payload ---\n%s", payload)
+        _LOGGER.debug("--- Device list payload ---\n%s", payload)
 
-        _LOG.info("POST %s", self.device_list_url)
+        _LOGGER.info("POST %s", self.device_list_url)
         raw_response = await self.http_client.post(
             self.device_list_url,
             {"xml": payload},
         )
-        _LOG.debug("--- Raw device list response ---\n%s", raw_response)
+        _LOGGER.debug("--- Raw device list response ---\n%s", raw_response)
 
         devices: list[dict[str, Any]] = self.response_parser.parse_device_list_response(raw_response)
         for dev in devices:
@@ -354,9 +357,9 @@ class DebugXmlClient:
             if "id" not in dev and "serial_number" in dev:
                 dev["id"] = dev["serial_number"]
 
-        _LOG.info("Devices found: %d", len(devices))
+        _LOGGER.info("Devices found: %d", len(devices))
         for dev in devices:
-            _LOG.info(
+            _LOGGER.info(
                 "  Device: id=%s  name=%s  dclg=%s  dk=%s  dkv=%s  sbt=%s",
                 dev.get("id"),
                 dev.get("name"),
@@ -372,25 +375,30 @@ class DebugXmlClient:
     # ------------------------------------------------------------------
 
     async def get_status(self, device: dict[str, Any]) -> dict[str, Any]:
+        """Fetch and log the status of a device."""
         device_id = device.get("id", "?")
         dclg = device.get("dclg", "")
 
-        _LOG.info("=== GET STATUS  device=%s  dclg=%s ===", device_id, dclg)
+        _LOGGER.info("=== GET STATUS  device=%s  dclg=%s ===", device_id, dclg)
 
         payload = self.payload_builder.build_device_get_status_payload(self.session_data, dclg)
-        _LOG.debug("--- Status request payload ---\n%s", payload)
+        _LOGGER.debug("--- Status request payload ---\n%s", payload)
 
-        _LOG.info("POST %s", self.device_status_url)
+        _LOGGER.info("POST %s", self.device_status_url)
         raw_response = await self.http_client.post(
             self.device_status_url,
             {"xml": payload},
         )
-        _LOG.debug("--- Raw status response (first 2000 chars) ---\n%s", raw_response[:2000])
+        _LOGGER.debug("--- Raw status response (first 2000 chars) ---\n%s", raw_response[:2000])
 
-        status: dict[str, Any] = self.response_parser.parse_device_status_response(raw_response)
-        _LOG.info("Status keys returned: %d", len(status))
+        status = self.response_parser.parse_device_status_response(raw_response)
+        if status is None:
+            # The parser drops broken or incomplete answers, like the integration does
+            _LOGGER.warning("Status response was dropped as broken or incomplete")
+            return {}
+        _LOGGER.info("Status keys returned: %d", len(status))
         for k, v in sorted(status.items()):
-            _LOG.info("  %-20s = %r", k, v)
+            _LOGGER.info("  %-20s = %r", k, v)
         return status
 
 
@@ -489,18 +497,18 @@ async def _collect_devices(client: DebugXmlClient) -> list[dict[str, Any]]:
             devices = await client.get_devices(project["id"])
             all_devices.extend(devices)
         except Exception as exc:
-            _LOG.error(
+            _LOGGER.error(
                 "Failed to get devices for project %s: %s",
                 project.get("name") or project.get("id"),
                 exc,
             )
-            _LOG.debug("Device list traceback", exc_info=True)
+            _LOGGER.debug("Device list traceback", exc_info=True)
     return all_devices
 
 
 async def _run(args: argparse.Namespace) -> None:
-    _LOG.info("Starting SYR Connect debug login script")
-    _LOG.info("Python sys.path includes: %s", _REPO_ROOT)
+    _LOGGER.info("Starting SYR Connect debug login script")
+    _LOGGER.info("Python sys.path includes: %s", _REPO_ROOT)
 
     async with aiohttp.ClientSession() as session:
         effective_app_version = (
@@ -528,28 +536,29 @@ async def _run(args: argparse.Namespace) -> None:
         try:
             ok = await client.login()
         except Exception as exc:
-            _LOG.error("Login failed: %s", exc)
-            _LOG.debug("Login traceback", exc_info=True)
+            _LOGGER.error("Login failed: %s", exc)
+            _LOGGER.debug("Login traceback", exc_info=True)
             sys.exit(1)
 
         if not ok:
-            _LOG.warning("Login returned False -- aborting further steps.")
+            _LOGGER.warning("Login returned False -- aborting further steps.")
             return
 
         # ------------------------------------------------------------------
         # --list-devices: print a summary and exit
         # ------------------------------------------------------------------
         if args.list_devices:
-            _LOG.info("Listing devices for all projects")
+            _LOGGER.info("Listing devices for all projects")
             for project in client.projects:
                 try:
                     devices = await client.get_devices(project["id"])
                 except Exception as exc:
-                    _LOG.error(
+                    _LOGGER.error(
                         "Failed to get devices for project %s: %s",
                         project.get("name") or project.get("id"),
                         exc,
                     )
+                    _LOGGER.debug("Device list traceback", exc_info=True)
                     continue
                 if devices:
                     print(f"Project: {project.get('name')} (id={project.get('id')})")
@@ -565,7 +574,7 @@ async def _run(args: argparse.Namespace) -> None:
         # ------------------------------------------------------------------
         if args.set_command:
             if not args.identity or args.set_value is None:
-                _LOG.error("--set-command requires --identity and --set-value")
+                _LOGGER.error("--set-command requires --identity and --set-value")
                 sys.exit(1)
 
             all_devices = await _collect_devices(client)
@@ -579,9 +588,9 @@ async def _run(args: argparse.Namespace) -> None:
             )
 
             if not target:
-                _LOG.error("Device '%s' not found. Available devices:", args.identity)
+                _LOGGER.error("Device '%s' not found. Available devices:", args.identity)
                 for d in all_devices:
-                    _LOG.info(
+                    _LOGGER.info(
                         "  id=%s  dclg=%s  name=%s  dk=%s  dkv=%s  sbt=%s",
                         d.get("id"),
                         d.get("dclg"),
@@ -593,13 +602,16 @@ async def _run(args: argparse.Namespace) -> None:
                 sys.exit(1)
 
             dclg = target.get("dclg") or target.get("id")
+            if not dclg:
+                _LOGGER.error("Device %s has neither a dclg nor an id", target)
+                sys.exit(1)
             value = _parse_set_value(args.set_value)
 
             success = await client.set_device_status(dclg, args.set_command, value)
             if success:
-                _LOG.info("Set command succeeded: %s -> %s=%r", target.get("id"), args.set_command, value)
+                _LOGGER.info("Set command succeeded: %s -> %s=%r", target.get("id"), args.set_command, value)
                 return
-            _LOG.error("Set command failed for device %s", target.get("id"))
+            _LOGGER.error("Set command failed for device %s", target.get("id"))
             sys.exit(1)
 
         # ------------------------------------------------------------------
@@ -613,13 +625,14 @@ async def _run(args: argparse.Namespace) -> None:
                     try:
                         await client.get_status(device)
                     except Exception as exc:
-                        _LOG.error("Failed to get status for device %s: %s", device.get("id"), exc)
-                        _LOG.debug("Device status traceback", exc_info=True)
+                        _LOGGER.error("Failed to get status for device %s: %s", device.get("id"), exc)
+                        _LOGGER.debug("Device status traceback", exc_info=True)
 
-    _LOG.info("Done.")
+    _LOGGER.info("Done.")
 
 
 def main() -> None:
+    """Run the debug client with the command line arguments."""
     args = _parse_args()
     _setup_logging(args.log_file)
     asyncio.run(_run(args))

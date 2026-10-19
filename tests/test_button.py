@@ -1,16 +1,24 @@
 """Tests for button platform."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
+import logging
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from custom_components.syr_connect import button as button_mod
+from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
+from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
@@ -148,7 +156,7 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
             }
         ]
     }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -175,7 +183,7 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mo
             },
         ]
     }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -292,8 +300,8 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
 
 async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities) -> None:
     """Test async_setup_entry with no coordinator data."""
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(None)
-    entities, async_add_entities = mock_add_entities()
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(None)
+    _entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
@@ -318,9 +326,9 @@ async def test_button_initialization_attributes(hass: HomeAssistant) -> None:
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
     # Check attributes
-    assert button._attr_unique_id == "device1_setSIR"
-    assert button._attr_has_entity_name is True
-    assert button._attr_translation_key == "setsir"
+    assert button.unique_id == "device1_setSIR"
+    assert button.has_entity_name is True
+    assert button.translation_key == "setsir"
     assert button._device_id == "device1"
     assert button._command == "setSIR"
 
@@ -341,7 +349,7 @@ async def test_async_setup_entry_skip_setsir_when_getsir_missing(hass: HomeAssis
             }
         ]
     }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -365,7 +373,7 @@ async def test_async_setup_entry_create_setsir_when_getsir_present(hass: HomeAss
             }
         ]
     }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -387,7 +395,7 @@ async def test_async_setup_entry_no_getsir(hass: HomeAssistant, create_mock_entr
             }
         ]
     }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     # Should not create any button
@@ -411,7 +419,7 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
             }
         ]
     }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
     # getSIR='false' -> softener is idle -> setSIR button must be created
@@ -420,14 +428,11 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(hass: HomeAssista
 
 def _register_button(hass: HomeAssistant, unique_id: str, object_id: str = "syr_connect_device1_setsir") -> str:
     """Register a button of this integration in the real entity registry and return its entity_id."""
-    from custom_components.syr_connect.const import DOMAIN
-    from homeassistant.helpers import entity_registry as er
 
     return er.async_get(hass).async_get_or_create("button", DOMAIN, unique_id, suggested_object_id=object_id).entity_id
 
 
 def _registered(hass: HomeAssistant, entity_id: str) -> bool:
-    from homeassistant.helpers import entity_registry as er
 
     return er.async_get(hass).async_get(entity_id) is not None
 
@@ -471,7 +476,7 @@ async def test_async_setup_entry_keeps_buttons_without_status(
     """Without a status (not fetched yet, e.g. temporary failure at startup) no button is removed."""
     data = {"devices": [{"id": "device1", "name": "Device 1", "project_id": "project1", "status": {}}]}
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
+    _entities, async_add_entities = mock_add_entities()
     stale_entity_id = _register_button(hass, "device1_setSIR")
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -496,7 +501,7 @@ async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
+    _entities, async_add_entities = mock_add_entities()
     other_entity_id = _register_button(hass, "other_device_setSIR", "syr_connect_other_device_setsir")
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -522,7 +527,7 @@ async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     mock_coordinator.entry_id = "this_entry"
-    entities, async_add_entities = mock_add_entities()
+    _entities, async_add_entities = mock_add_entities()
     other_hub_entity_id = _register_button(hass, "other_entry_device1_setSIR")
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
@@ -536,7 +541,6 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
     mock_add_entities,
 ) -> None:
     """Exception from er.async_get during per-device cleanup is caught (line 134)."""
-    from unittest.mock import patch
 
     data = {
         "devices": [
@@ -549,7 +553,7 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
         ]
     }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
+    _entities, async_add_entities = mock_add_entities()
 
     call_count = 0
 
@@ -558,7 +562,6 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
         call_count += 1
         # First call is for registry_cleanup (let it succeed with an empty registry),
         # second call is the per-device cleanup in async_setup_entry.
-        from unittest.mock import MagicMock
         if call_count == 1:
             empty_reg = MagicMock()
             empty_reg.entities = {}
@@ -643,7 +646,6 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(hass: HomeAssistant)
 
 async def test_button_reset_detect_model_exception(hass: HomeAssistant, monkeypatch) -> None:
     """If detect_model raises, falls back to default model_info={} and calls clrALA."""
-    from custom_components.syr_connect import button as button_mod
 
     data = {
         "devices": [
@@ -743,7 +745,7 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
 
 
 async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
-    """setNOT raises when no reset required (missing/empty getNOT)."""
+    """The setNOT raises when no reset required (missing/empty getNOT)."""
     data = {
         "devices": [
             {
@@ -763,7 +765,7 @@ async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
 
 
 async def test_button_reset_not_sends_ff_via_xml_api(hass: HomeAssistant) -> None:
-    """setNOT sends 'FF' when using the XML API (MagicMock api is not SyrConnectJsonAPI)."""
+    """The setNOT sends 'FF' when using the XML API (MagicMock api is not SyrConnectJsonAPI)."""
     data = {
         "devices": [
             {
@@ -807,7 +809,7 @@ async def test_button_reset_not_send_ff_for_other_models(hass: HomeAssistant) ->
 
 
 async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
-    """setWRN raises when no reset required (missing/empty getWRN)."""
+    """The setWRN raises when no reset required (missing/empty getWRN)."""
     data = {
         "devices": [
             {
@@ -827,7 +829,7 @@ async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
 
 
 async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> None:
-    """setWRN sends 'FF' when using the XML API (MagicMock api is not SyrConnectJsonAPI)."""
+    """The setWRN sends 'FF' when using the XML API (MagicMock api is not SyrConnectJsonAPI)."""
     data = {
         "devices": [
             {
@@ -896,8 +898,7 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(hass: HomeAssistant
 
 
 async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> None:
-    """setNOT sends integer 255 when using the JSON API (/set/not/255)."""
-    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+    """The setNOT sends integer 255 when using the JSON API (/set/not/255)."""
 
     data = {
         "devices": [
@@ -921,8 +922,7 @@ async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> N
 
 
 async def test_button_reset_wrn_sends_255_via_json_api(hass: HomeAssistant) -> None:
-    """setWRN sends integer 255 when using the JSON API (/set/wrn/255)."""
-    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+    """The setWRN sends integer 255 when using the JSON API (/set/wrn/255)."""
 
     data = {
         "devices": [
@@ -972,7 +972,7 @@ async def test_button_reset_ala_sentinel_values_no_reset(hass: HomeAssistant, se
 
 
 # ---------------------------------------------------------------------------
-# setDEX – microleakage test
+# setDEX - microleakage test
 # ---------------------------------------------------------------------------
 
 async def test_async_setup_entry_creates_setdex_when_getdsv_present(
@@ -981,7 +981,6 @@ async def test_async_setup_entry_creates_setdex_when_getdsv_present(
     mock_add_entities,
 ) -> None:
     """async_setup_entry creates a setDEX button on JSON API devices when getDSV is present."""
-    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 
     data = {
         "devices": [
@@ -1008,7 +1007,7 @@ async def test_async_setup_entry_skips_setdex_on_xml_api(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """setDEX is skipped when the coordinator uses the XML API (not SyrConnectJsonAPI)."""
+    """The setDEX is skipped when the coordinator uses the XML API (not SyrConnectJsonAPI)."""
     data = {
         "devices": [
             {
@@ -1058,7 +1057,6 @@ async def test_async_setup_entry_creates_setdex_for_triolock_real_fixture(
     mock_add_entities,
 ) -> None:
     """SYR TRIO Lock Connect (muco_triolock) real fixture creates setDEX on the JSON API."""
-    from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 
     xml = (Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml").read_text(encoding="utf-8")
     status = ResponseParser().parse_device_status_response(xml)
@@ -1077,8 +1075,9 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """A command not in the detected model's per-model BUTTON_KNOWN_KEYS override is
-    skipped before any getXYZ presence check (covers the model-allowlist continue).
+    """A command missing from the model's BUTTON_KNOWN_KEYS override is skipped.
+
+    It is skipped before any getXYZ presence check (covers the model-allowlist continue).
 
     The muco_filling override (conelclearprofill, getDFM==3) deliberately excludes
     setSIR and setDEX - both must be skipped even though this device has no
@@ -1107,8 +1106,9 @@ async def test_async_setup_entry_creates_setala_for_lexplus10sl_with_getala(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """LEXplus10SL (alarm_style_alm=False) reports getALA, not getALM - regression
-    test for a bug where models.py wrongly had alarm_style_alm=True for this
+    """LEXplus10SL (alarm_style_alm=False) reports getALA, not getALM.
+
+    Regression test for a bug where models.py wrongly had alarm_style_alm=True for this
     model, making async_setup_entry look for getALM (absent) and never create
     the setALA button at all.
     """
@@ -1135,7 +1135,9 @@ async def test_async_setup_entry_skips_setala_for_lexplus10s_without_getalm(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """LEXplus10S (alarm_style_alm=True) looks for getALM - having only getALA in
+    """LEXplus10S (alarm_style_alm=True) looks for getALM, not getALA.
+
+    Having only getALA in
     status (no getALM) must NOT create the setALA button, proving the gate
     actually distinguishes between the two model styles.
     """
@@ -1158,7 +1160,7 @@ async def test_async_setup_entry_skips_setala_for_lexplus10s_without_getalm(
 
 
 async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
-    """setDEX press sends boolean 'true' when getTYP≥100 and no test is running."""
+    """The setDEX press sends boolean 'true' when getTYP≥100 and no test is running."""
     data = {
         "devices": [
             {
@@ -1180,7 +1182,7 @@ async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
 
 
 async def test_button_press_setdex_sends_integer_when_typ_lt_100(hass: HomeAssistant) -> None:
-    """setDEX press sends integer 1 when getTYP<100 and no test is running."""
+    """The setDEX press sends integer 1 when getTYP<100 and no test is running."""
     data = {
         "devices": [
             {
@@ -1207,7 +1209,7 @@ async def test_button_press_setdex_skips_when_test_already_running(
     caplog: pytest.LogCaptureFixture,
     dsv_value,
 ) -> None:
-    """setDEX press logs a warning and is a no-op when getDSV == 1 (test already running)."""
+    """The setDEX press logs a warning and is a no-op when getDSV == 1 (test already running)."""
     data = {
         "devices": [
             {
@@ -1223,7 +1225,6 @@ async def test_button_press_setdex_skips_when_test_already_running(
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
-    import logging
     with caplog.at_level(logging.WARNING, logger="custom_components.syr_connect.button"):
         await button.async_press()
 
@@ -1232,7 +1233,7 @@ async def test_button_press_setdex_skips_when_test_already_running(
 
 
 async def test_button_press_setdex_sends_true_when_typ_absent(hass: HomeAssistant) -> None:
-    """setDEX falls back to boolean 'true' when getTYP is absent (TypeError branch)."""
+    """The setDEX falls back to boolean 'true' when getTYP is absent (TypeError branch)."""
     data = {
         "devices": [
             {
@@ -1254,7 +1255,7 @@ async def test_button_press_setdex_sends_true_when_typ_absent(hass: HomeAssistan
 
 
 async def test_button_press_setdex_sends_true_when_typ_non_numeric(hass: HomeAssistant) -> None:
-    """setDEX falls back to boolean 'true' when getTYP is non-numeric (ValueError branch)."""
+    """The setDEX falls back to boolean 'true' when getTYP is non-numeric (ValueError branch)."""
     data = {
         "devices": [
             {
@@ -1276,7 +1277,7 @@ async def test_button_press_setdex_sends_true_when_typ_non_numeric(hass: HomeAss
 
 
 async def test_button_press_setdex_sends_true_when_getdsv_is_two(hass: HomeAssistant) -> None:
-    """setDEX press sends 'true' (getTYP≥100) when getDSV is '2' (test finished)."""
+    """The setDEX press sends 'true' (getTYP≥100) when getDSV is '2' (test finished)."""
     data = {
         "devices": [
             {

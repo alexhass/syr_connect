@@ -99,7 +99,7 @@ class ResponseParser:
             # Otherwise add it as #text key
             result['#text'] = text
 
-        return result if result else {}
+        return result or {}
 
     @staticmethod
     def _raise_if_session_expired(parsed: dict[str, Any]) -> None:
@@ -201,12 +201,13 @@ class ResponseParser:
             projects_data = [projects_data]
 
         # Parse projects
-        projects = []
-        for project in projects_data:
-            projects.append({
+        projects = [
+            {
                 'id': project['@id'],
                 'name': project['@n'],
-            })
+            }
+            for project in projects_data
+        ]
 
         return session_id, projects
 
@@ -345,7 +346,7 @@ class ResponseParser:
         return self._flatten_attributes(parsed['sc'])
 
     def _ignore_broken_response(self, device_list: Any) -> bool:
-        """Ignore broken responses
+        """Ignore broken responses.
 
         Whenever the cloud returns nonsense, the response is ignored and the previous
         values are kept. This is a heuristic: there is no list of keys that makes a

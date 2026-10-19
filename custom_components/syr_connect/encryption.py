@@ -62,7 +62,8 @@ class SyrEncryption:
             # 2. Whitespace - may be used as additional padding
             result = decrypted.decode('utf-8').rstrip('\x00').rstrip()
             _LOGGER.debug("Decryption successful (result length: %d chars)", len(result))
-            return result
         except Exception as err:
             _LOGGER.error("Decryption failed: %s", err)
             raise ValueError(f"Failed to decrypt payload: {err}") from err
+        else:
+            return result

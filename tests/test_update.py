@@ -1,5 +1,8 @@
 """Tests for update platform."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
 import logging
 from time import monotonic
 from types import MappingProxyType
@@ -16,7 +19,7 @@ from custom_components.syr_connect.update import (
 )
 from homeassistant.components.update import UpdateEntityFeature
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
@@ -131,13 +134,12 @@ def test_update_entity_naming_uses_translation_key() -> None:
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "500AAA12345", "500AAA12345")
 
-    assert entity._attr_has_entity_name is True
-    assert entity._attr_translation_key == "getnot_update"
+    assert entity.has_entity_name is True
+    assert entity.translation_key == "getnot_update"
 
 
 def test_update_entity_install_feature_supported() -> None:
     """UpdateEntityFeature.INSTALL is set now that setUPG is known to trigger an update."""
-    from homeassistant.components.update import UpdateEntityFeature
 
     device = {"id": "SN6", "name": "Dev6", "status": {"getNOT": "FF"}}
     mock_coordinator = MagicMock()
@@ -223,7 +225,7 @@ async def test_update_entity_in_progress_times_out() -> None:
 
 
 def test_update_entity_not_in_progress_without_install() -> None:
-    """getNOT == '01' alone does not show progress; only a triggered install does."""
+    """The getNOT == '01' alone does not show progress; only a triggered install does."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN10", "name": "Dev10", "status": {"getNOT": "01"}}]}
 
@@ -249,7 +251,7 @@ def test_update_entity_available_while_installing_even_if_device_offline() -> No
 
 
 def test_update_entity_available_property() -> None:
-    """available reflects coordinator.last_update_success and per-device availability."""
+    """The available property reflects coordinator.last_update_success and per-device availability."""
     device = {"id": "SN7", "name": "Dev7", "status": {"getNOT": "FF"}, "available": False}
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
@@ -273,7 +275,7 @@ def test_status_returns_empty_dict_when_device_missing() -> None:
 
 
 def test_available_false_when_device_missing() -> None:
-    """available is False when the device is no longer in coordinator.data (removed from the account)."""
+    """The available property is False when the device is no longer in coordinator.data (removed from the account)."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": []}
     mock_coordinator.last_update_success = True
@@ -291,12 +293,11 @@ def test_update_entity_unique_id_has_update_suffix() -> None:
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN8", "Dev8")
 
-    assert entity._attr_unique_id == "entry123_sn8_getnot_update"
+    assert entity.unique_id == "entry123_sn8_getnot_update"
 
 
 def test_update_entity_category_is_diagnostic() -> None:
     """entity_category is DIAGNOSTIC so it doesn't show under the device page's Controls section."""
-    from homeassistant.const import EntityCategory
 
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN11", "name": "Dev11", "status": {"getNOT": "01"}}]}

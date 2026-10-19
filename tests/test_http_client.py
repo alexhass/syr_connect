@@ -1,5 +1,8 @@
 """Tests for the HTTP client helper."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -190,9 +193,11 @@ async def test_http_client_post_max_retries_exceeded() -> None:
 
     client = HTTPClient(mock_session, "TestAgent/1.0", max_retries=2)
 
-    with patch("asyncio.sleep", new_callable=AsyncMock):
-        with pytest.raises(aiohttp.ClientError, match="Connection error"):
-            await client.post("https://example.com/api", {"key": "value"})
+    with (
+        patch("asyncio.sleep", new_callable=AsyncMock),
+        pytest.raises(aiohttp.ClientError, match="Connection error"),
+    ):
+        await client.post("https://example.com/api", {"key": "value"})
 
     assert mock_session.post.call_count == 2
 

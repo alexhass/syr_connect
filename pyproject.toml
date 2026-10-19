@@ -1,6 +1,6 @@
 # Ruff configuration follows Home Assistant core:
 # https://github.com/home-assistant/core/blob/dev/pyproject.toml
-# The rules are taken over 1:1. Entries marked "Temporary" are removed step by step.
+# The rules are taken over 1:1.
 
 [tool.ruff]
 required-version = ">=0.17.0"
@@ -144,32 +144,6 @@ ignore = [
   # Disabled to implement in follow up PRs after ruff 0.16 bump
   "ISC004",
   "LOG004",
-
-  # Temporary: findings that still exist in the code. Remove one entry at a time and fix its findings.
-  "BLE001",
-  "C901",
-  "D102",
-  "D107",
-  "D205",
-  "D301",
-  "D415",
-  "FURB110",
-  "G201",
-  "PERF401",
-  "PLC0415",
-  "PLR1714",
-  "PYI041",
-  "RET504",
-  "RUF003",
-  "RUF046",
-  "SIM105",
-  "SIM110",
-  "SIM118",
-  "SLF001",
-  "TRY002",
-  "TRY300",
-  "TRY301",
-  "TRY401",
 ]
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
@@ -260,26 +234,12 @@ combine-as-imports = true
 split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = [
-  "PTH",
-  # Temporary: findings that still exist in the tests. Remove one entry at a time and fix its findings.
-  "D100",
-  "D103",
-  "D209",
-  "D212",
-  "D403",
-  "ICN001",
-  "INP001",
-  "PERF102",
-  "PLC0207",
-  "PLR0402",
-  "PT009",
-  "PT017",
-  "RUF002",
-  "RUF059",
-  "SIM117",
-  "SLOT000",
-]
+
+# Allow scripts to write to stdout (core: "script/*")
+"scripts/*" = ["T20"]
+
+# Temporary in core
+"tests/**" = ["PTH"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 25

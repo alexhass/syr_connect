@@ -1,5 +1,9 @@
 """Test the SYR Connect API client."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
+import asyncio
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -11,6 +15,7 @@ from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectSessionExpiredError,
 )
 
 
@@ -24,6 +29,14 @@ def mock_session():
 def api_client(mock_session):
     """Create an API client instance."""
     return SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword")
+
+
+def test_request_urls_use_the_base_url(mock_session):
+    """The device list and status URLs are built from the configured base URL."""
+    api = SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword", api_base_url="https://example.invalid/")
+
+    assert api.device_list_url == "https://example.invalid/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+    assert api.device_get_status_url.startswith("https://example.invalid/WebServices/")
 
 
 async def test_login_logs_payload_with_locale_but_without_password(mock_session, caplog):
@@ -69,7 +82,6 @@ async def test_session_valid_check(api_client):
 
 async def test_parallel_first_requests_log_in_only_once(api_client):
     """Without a token yet, parallel requests share one login instead of each logging in."""
-    import asyncio
 
     async def _login():
         await asyncio.sleep(0)  # let the other tasks reach the lock meanwhile
@@ -85,7 +97,6 @@ async def test_parallel_first_requests_log_in_only_once(api_client):
 
 async def test_parallel_rejections_relogin_only_once(api_client):
     """When parallel requests get the token rejected at the same time, only one logs in again."""
-    import asyncio
 
     api_client.session_data = "old"
 
@@ -139,7 +150,6 @@ async def test_rejected_token_relogs_in_and_retries_once(api_client, method, arg
 
 async def test_rejected_token_twice_raises_session_expired(api_client):
     """If the new token is rejected as well, no loop: SyrConnectSessionExpiredError (a connection error)."""
-    from custom_components.syr_connect.exceptions import SyrConnectSessionExpiredError
 
     api_client.session_data = "old"
 
@@ -147,10 +157,12 @@ async def test_rejected_token_twice_raises_session_expired(api_client):
         api_client.session_data = "new"
         return True
 
-    with patch.object(api_client.http_client, "post", return_value=INVALID_TOKEN_XML) as post, \
-         patch.object(api_client, "login", side_effect=_login) as login:
-        with pytest.raises(SyrConnectSessionExpiredError) as excinfo:
-            await api_client.get_device_status("dclg1")
+    with (
+        patch.object(api_client.http_client, "post", return_value=INVALID_TOKEN_XML) as post,
+        patch.object(api_client, "login", side_effect=_login) as login,
+        pytest.raises(SyrConnectSessionExpiredError) as excinfo,
+    ):
+        await api_client.get_device_status("dclg1")
 
     assert isinstance(excinfo.value, SyrConnectConnectionError)
     login.assert_awaited_once()
@@ -188,16 +200,22 @@ async def test_login_success(api_client):
 
 async def test_login_auth_error(api_client):
     """Wrong credentials: valid encrypted answer whose decrypted content has no session -> re-auth."""
-    with patch.object(api_client.http_client, 'post', return_value="<sc><api>encrypted</api></sc>"),          patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})),          patch.object(api_client.encryption, 'decrypt', return_value='<prs><pre id="p1" n="P1"/></prs>'):
-        with pytest.raises(SyrConnectAuthError, match="Invalid credentials"):
-            await api_client.login()
+    with (
+        patch.object(api_client.http_client, 'post', return_value="<sc><api>encrypted</api></sc>"),
+        patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})),
+        patch.object(api_client.encryption, 'decrypt', return_value='<prs><pre id="p1" n="P1"/></prs>'),
+        pytest.raises(SyrConnectAuthError, match="Invalid credentials"),
+    ):
+        await api_client.login()
 
 
 async def test_login_connection_error(api_client):
     """Test login with connection error."""
-    with patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")):
-        with pytest.raises(SyrConnectConnectionError):
-            await api_client.login()
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")),
+        pytest.raises(SyrConnectConnectionError),
+    ):
+        await api_client.login()
 
 
 async def test_get_device_status_with_valid_session(api_client):
@@ -230,16 +248,20 @@ async def test_set_device_status_value_conversion(api_client):
 
 async def test_login_timeout_error(api_client):
     """Test login with timeout error."""
-    with patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")):
-        with pytest.raises(SyrConnectConnectionError, match="Connection failed"):
-            await api_client.login()
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")),
+        pytest.raises(SyrConnectConnectionError, match="Connection failed"),
+    ):
+        await api_client.login()
 
 
 async def test_login_generic_exception(api_client):
     """Test login with generic unexpected exception."""
-    with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Unexpected error")):
-        with pytest.raises(SyrConnectConnectionError, match="Login failed"):
-            await api_client.login()
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Unexpected error")),
+        pytest.raises(SyrConnectConnectionError, match="Login failed"),
+    ):
+        await api_client.login()
 
 
 async def test_get_devices_exception_handling(api_client):
@@ -247,9 +269,11 @@ async def test_get_devices_exception_handling(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("API error")):
-        with pytest.raises(RuntimeError, match="API error"):
-            await api_client.get_devices("project1")
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("API error")),
+        pytest.raises(RuntimeError, match="API error"),
+    ):
+        await api_client.get_devices("project1")
 
 
 async def test_get_devices_connection_client_error(api_client):
@@ -257,9 +281,11 @@ async def test_get_devices_connection_client_error(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")):
-        with pytest.raises(SyrConnectConnectionError):
-            await api_client.get_devices("project1")
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")),
+        pytest.raises(SyrConnectConnectionError),
+    ):
+        await api_client.get_devices("project1")
 
 
 async def test_get_devices_connection_timeout_error(api_client):
@@ -267,9 +293,11 @@ async def test_get_devices_connection_timeout_error(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")):
-        with pytest.raises(SyrConnectConnectionError):
-            await api_client.get_devices("project1")
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")),
+        pytest.raises(SyrConnectConnectionError),
+    ):
+        await api_client.get_devices("project1")
 
 
 async def test_get_devices_id_fallback(api_client):
@@ -310,9 +338,11 @@ async def test_get_device_status_exception_handling(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Status error")):
-        with pytest.raises(RuntimeError, match="Status error"):
-            await api_client.get_device_status("device1")
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Status error")),
+        pytest.raises(RuntimeError, match="Status error"),
+    ):
+        await api_client.get_device_status("device1")
 
 
 async def test_set_device_status_boolean_false(api_client):
@@ -350,9 +380,11 @@ async def test_set_device_status_exception_handling(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Set error")):
-        with pytest.raises(RuntimeError, match="Set error"):
-            await api_client.set_device_status("device1", [("setSIR", 1)])
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Set error")),
+        pytest.raises(RuntimeError, match="Set error"),
+    ):
+        await api_client.set_device_status("device1", [("setSIR", 1)])
 
 
 async def test_get_statistics_water(api_client):
@@ -390,33 +422,37 @@ async def test_get_statistics_exception_handling(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Stats error")):
-        with pytest.raises(RuntimeError, match="Stats error"):
-            await api_client.get_statistics("device1", "water")
+    with (
+        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Stats error")),
+        pytest.raises(RuntimeError, match="Stats error"),
+    ):
+        await api_client.get_statistics("device1", "water")
 
 
 async def test_login_with_parser_value_error(api_client):
     """A malformed login answer is a connection problem, not rejected credentials (no re-auth)."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
-    with patch.object(api_client.http_client, 'post', return_value=mock_response), \
-         patch.object(api_client.response_parser, 'parse_login_response', side_effect=ValueError("Invalid response structure")):
-
-        with pytest.raises(SyrConnectConnectionError, match="Invalid login response"):
-            await api_client.login()
+    with (
+        patch.object(api_client.http_client, 'post', return_value=mock_response),
+        patch.object(api_client.response_parser, 'parse_login_response', side_effect=ValueError("Invalid response structure")),
+        pytest.raises(SyrConnectConnectionError, match="Invalid login response"),
+    ):
+        await api_client.login()
 
 
 async def test_login_with_decryption_parser_error(api_client):
     """A malformed decrypted answer is a connection problem, not rejected credentials (no re-auth)."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
-    with patch.object(api_client.http_client, 'post', return_value=mock_response), \
-         patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})), \
-         patch.object(api_client.encryption, 'decrypt', return_value='<invalid>'), \
-         patch.object(api_client.response_parser, 'parse_decrypted_login', side_effect=ValueError("Invalid decrypted data")):
-
-        with pytest.raises(SyrConnectConnectionError, match="Invalid login response"):
-            await api_client.login()
+    with (
+        patch.object(api_client.http_client, 'post', return_value=mock_response),
+        patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})),
+        patch.object(api_client.encryption, 'decrypt', return_value='<invalid>'),
+        patch.object(api_client.response_parser, 'parse_decrypted_login', side_effect=ValueError("Invalid decrypted data")),
+        pytest.raises(SyrConnectConnectionError, match="Invalid login response"),
+    ):
+        await api_client.login()
 
 
 @pytest.mark.parametrize(
@@ -432,9 +468,11 @@ async def test_network_errors_are_wrapped_in_connection_error(api_client, method
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, "post", side_effect=aiohttp.ClientError("Request failed after 3 attempts")):
-        with pytest.raises(SyrConnectConnectionError, match="Request failed after 3 attempts") as excinfo:
-            await getattr(api_client, method)(*args)
+    with (
+        patch.object(api_client.http_client, "post", side_effect=aiohttp.ClientError("Request failed after 3 attempts")),
+        pytest.raises(SyrConnectConnectionError, match="Request failed after 3 attempts") as excinfo,
+    ):
+        await getattr(api_client, method)(*args)
 
     assert isinstance(excinfo.value.__cause__, aiohttp.ClientError)
 

@@ -1,6 +1,6 @@
 """Base entity for SYR Connect."""
 
-from typing import Any
+from typing import Any, override
 
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -54,7 +54,8 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
     @property
     def _device(self) -> dict[str, Any] | None:
         """Return this entity's device from the coordinator data, or None if it is missing."""
-        for device in (self.coordinator.data or {}).get("devices", []):
+        devices: list[dict[str, Any]] = (self.coordinator.data or {}).get("devices", [])
+        for device in devices:
             if device.get("id") == self._device_id:
                 return device
         return None
@@ -66,6 +67,7 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         return device.get("status", {}) if device is not None else {}
 
     @property
+    @override
     def available(self) -> bool:
         """Return if the entity is available (last update successful and device not offline)."""
         return is_device_available(self.coordinator, self._device_id)

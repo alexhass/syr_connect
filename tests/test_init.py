@@ -15,10 +15,17 @@ from custom_components.syr_connect import (
     async_setup_entry,
     async_unload_entry,
 )
-from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.config_flow import ConfigFlow
+from custom_components.syr_connect.const import (
+    API_TYPE_JSON,
+    API_TYPE_XML,
+    CONF_API_TYPE,
+    CONF_HOST,
+    DOMAIN,
+)
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
 
 async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
@@ -78,11 +85,6 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
 
 async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssistant) -> None:
     """Test JSON API path uses host identifier and clamps scan interval below minimum."""
-    from custom_components.syr_connect.const import (
-        API_TYPE_JSON,
-        CONF_API_TYPE,
-        CONF_HOST,
-    )
 
     # Create entry with JSON API and very small scan_interval to trigger clamp
     config_entry = MockConfigEntry(
@@ -120,7 +122,6 @@ async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssista
 
 async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> None:
     """Test v1->v2 migration bumps version even when username is missing."""
-    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
     config_entry = MockConfigEntry(
         version=1,
@@ -147,7 +148,6 @@ async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> N
 
 async def test_async_migrate_entry_v1_with_username(hass: HomeAssistant) -> None:
     """Test v1->v2 migration adds CONF_API_TYPE and updates unique_id."""
-    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
     config_entry = MockConfigEntry(
         version=1,
@@ -320,11 +320,6 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
 
 async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssistant, caplog) -> None:
     """Test options update listener clamps scan interval below minimum for JSON API."""
-    from custom_components.syr_connect.const import (
-        API_TYPE_JSON,
-        CONF_API_TYPE,
-        CONF_HOST,
-    )
 
     config_entry = MockConfigEntry(
         version=1,
@@ -358,11 +353,6 @@ async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssis
 
 async def test_async_setup_entry_clamps_scan_interval_and_logs(hass: HomeAssistant, caplog) -> None:
     """Test JSON API clamps scan interval below minimum and logs a warning."""
-    from custom_components.syr_connect.const import (
-        API_TYPE_JSON,
-        CONF_API_TYPE,
-        CONF_HOST,
-    )
 
     config_entry = MockConfigEntry(
         version=1,
@@ -467,13 +457,15 @@ async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> 
         mock_coordinator_class.return_value = mock_coordinator
 
         caplog.set_level(logging.INFO)
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
-            with patch.object(
+        with (
+            patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+            patch.object(
                 hass.config_entries,
                 "async_update_entry",
                 new_callable=MagicMock,
-            ) as mock_update:
-                result = await async_setup_entry(hass, config_entry)
+            ) as mock_update,
+        ):
+            result = await async_setup_entry(hass, config_entry)
 
     assert result is True
     # async_setup_entry must not perform migration itself (async_migrate_entry is invoked by HA)
@@ -492,7 +484,6 @@ async def test_mask_sensitive_data_masks_password_and_does_not_mutate_original()
 
 async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
     """async_setup_entry must re-raise ConfigEntryAuthFailed from coordinator."""
-    from homeassistant.exceptions import ConfigEntryAuthFailed
 
     config_entry = MockConfigEntry(
         version=1,
@@ -517,7 +508,6 @@ async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
 
 async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
     """Ensure migration returns False for future-version entries."""
-    from custom_components.syr_connect.config_flow import ConfigFlow
 
     config_entry = MockConfigEntry(
         version=ConfigFlow.VERSION + 1,
@@ -594,7 +584,6 @@ async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:
     Migration is now handled exclusively by async_migrate_entry (called by HA
     before setup). async_setup_entry must never call async_update_entry.
     """
-    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
     # Simulate a v2 entry that has already been migrated
     config_entry = MockConfigEntry(
@@ -618,13 +607,15 @@ async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
-            with patch.object(
+        with (
+            patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+            patch.object(
                 hass.config_entries,
                 "async_update_entry",
                 new_callable=MagicMock,
-            ) as mock_update:
-                result = await async_setup_entry(hass, config_entry)
+            ) as mock_update,
+        ):
+            result = await async_setup_entry(hass, config_entry)
 
     assert result is True
     # async_setup_entry must never call async_update_entry
@@ -633,7 +624,6 @@ async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:
 
 async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssistant) -> None:
     """Test that async_setup_entry never calls async_update_entry for any entry."""
-    from custom_components.syr_connect.const import API_TYPE_XML, CONF_API_TYPE
 
     config_entry = MockConfigEntry(
         version=2,
@@ -656,13 +646,15 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock):
-            with patch.object(
+        with (
+            patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+            patch.object(
                 hass.config_entries,
                 "async_update_entry",
                 new_callable=MagicMock
-            ) as mock_update:
-                result = await async_setup_entry(hass, config_entry)
+            ) as mock_update,
+        ):
+            result = await async_setup_entry(hass, config_entry)
 
     # Verify setup succeeded
     assert result is True

@@ -1,8 +1,10 @@
 """Diagnostics support for SYR Connect."""
 
 import asyncio
+import contextlib
 from datetime import datetime
 import ipaddress
+import logging
 import re
 from typing import Any
 
@@ -22,6 +24,8 @@ from .const import (
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import is_sensor_visible, mask_ug_value
 from .models import detect_model
+
+_LOGGER = logging.getLogger(__name__)
 
 # Maximum number of requests the diagnostics send at the same time (cloud status XML,
 # local /get/all), so that many devices do not flood the cloud or the LAN
@@ -79,10 +83,8 @@ def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
     masked_tail = ['XX'] * (len(pairs) - 3)
     result = sep.join(preserved + masked_tail)
     if last_char_replace is not None:
-        try:
+        with contextlib.suppress(re.error):
             result = re.sub(r"([0-9A-F])$", last_char_replace, result)
-        except re.error:
-            pass
     return result
 
 
@@ -117,10 +119,8 @@ def _redact_xml(xml: str) -> str:
 
     cleaned = xml
     # Mask session token `ug` attributes early to avoid leaking tokens
-    try:
+    with contextlib.suppress(Exception):
         cleaned = mask_ug_value(cleaned)
-    except Exception:
-        pass
 
     # Replace standalone MAC addresses in text using the shared helper
     cleaned = re.sub(
@@ -130,25 +130,21 @@ def _redact_xml(xml: str) -> str:
     )
 
     # Mask SRN values inside XML attribute forms and <c n="getSRN" v="..."/> entries
-    try:
+    with contextlib.suppress(re.error, TypeError, ValueError):
         cleaned = re.sub(
             r'(<c\b[^>]*\bn\s*=\s*"getSRN"[^>]*\bv\s*=\s*")([^\"]*)(")',
             lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
             cleaned,
             flags=re.IGNORECASE,
         )
-    except (re.error, TypeError, ValueError):
-        pass
 
-    try:
+    with contextlib.suppress(re.error, TypeError, ValueError):
         cleaned = re.sub(
             r'(\bgetSRN\s*=\s*")([^\"]*)(")',
             lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
             cleaned,
             flags=re.IGNORECASE,
         )
-    except (re.error, TypeError, ValueError):
-        pass
 
     # For each redact key, replace attribute values like key="..."
     for key in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT:
@@ -158,37 +154,31 @@ def _redact_xml(xml: str) -> str:
         placeholder = f"***REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', key_str).upper()}***"
 
         # Attributes like mac="..."
-        try:
+        with contextlib.suppress(re.error, TypeError, ValueError):
             cleaned = re.sub(
                 rf'({re.escape(key_str)}\s*=\s*")([^"]*)(")',
                 rf'\1{placeholder}\3',
                 cleaned,
                 flags=re.IGNORECASE,
             )
-        except (re.error, TypeError, ValueError):
-            pass
 
         # <c n="getMAC" v="..." /> or similar: redact v when n matches key
-        try:
+        with contextlib.suppress(re.error, TypeError, ValueError):
             cleaned = re.sub(
                 rf'(<c\b[^>]*\bn\s*=\s*"{re.escape(key_str)}"[^>]*\bv\s*=\s*")([^"]*)(")',
                 rf'\1{placeholder}\3',
                 cleaned,
                 flags=re.IGNORECASE,
             )
-        except (re.error, TypeError, ValueError):
-            pass
 
         # Simple key:value or key=val patterns
-        try:
+        with contextlib.suppress(re.error, TypeError, ValueError):
             cleaned = re.sub(
                 rf'({re.escape(key_str)}\s*[:=]\s*)([^\s><"\']+)',
                 rf'\1{placeholder}',
                 cleaned,
                 flags=re.IGNORECASE,
             )
-        except (re.error, TypeError, ValueError):
-            pass
 
     # Generic redactions
     try:
@@ -226,16 +216,11 @@ def _redact_device_list_xml(xml: str) -> str:
     so the structure of the response stays recognizable.
     """
     cleaned = _redact_xml(xml)
-    try:
+    # If a replacement fails, keep the redacted content as-is
+    with contextlib.suppress(re.error, TypeError, ValueError):
         cleaned = re.sub(r'(\bpn\s*=\s*")([^"]*)(")', r'\1My+Project\3', cleaned)
-    except (re.error, TypeError, ValueError):
-        # If replacement fails, keep the redacted content as-is
-        pass
-    try:
+    with contextlib.suppress(re.error, TypeError, ValueError):
         cleaned = re.sub(r'(\bcom\s*=\s*")([^"]*)(")', r'\1Firstname+Lastname\3', cleaned)
-    except (re.error, TypeError, ValueError):
-        # If replacement fails, keep the redacted content as-is
-        pass
     return cleaned
 
 
@@ -249,11 +234,8 @@ def _redact_json_payload(data: Any) -> Any:
     # Remove the values of all sensitive keys from the parsed payload
     redacted = async_redact_data(data, _SYR_CONNECT_DIAGNOSTICS_TO_REDACT)
     # Ensure SRN is fully redacted for raw_json payloads
-    try:
-        if isinstance(redacted, dict) and "getSRN" in redacted:
-            redacted["getSRN"] = "**REDACTED**"
-    except Exception:
-        pass
+    if isinstance(redacted, dict) and "getSRN" in redacted:
+        redacted["getSRN"] = "**REDACTED**"
     return redacted
 
 
@@ -275,8 +257,9 @@ async def _collect_raw_xml(coordinator: SyrConnectDataUpdateCoordinator) -> dict
             try:
                 if not api.is_session_valid():
                     await api.login()
-            except Exception:  # pragma: no cover - diagnostics should never fail
+            except Exception:
                 # Don't fail diagnostics if login fails
+                _LOGGER.debug("Diagnostics: XML API login failed", exc_info=True)
                 api = None
 
         if not (api and api.projects):
@@ -292,12 +275,13 @@ async def _collect_raw_xml(coordinator: SyrConnectDataUpdateCoordinator) -> dict
             try:
                 async with semaphore:
                     return await xml_api.http_client.post(url, payload)
-            except Exception:  # pragma: no cover - diagnostics should never fail
+            except Exception:
+                _LOGGER.debug("Diagnostics: XML request to %s failed", url, exc_info=True)
                 return ""
 
         async def _fetch_status(did: str) -> tuple[str, str]:
             payload = xml_api.payload_builder.build_device_get_status_payload(xml_api.session_data or "", did)
-            xml_status = await _fetch(xml_api._device_get_status_url, {"xml": payload})
+            xml_status = await _fetch(xml_api.device_get_status_url, {"xml": payload})
             return did, _redact_xml(xml_status)
 
         # Iterate all projects of the account (from the login response)
@@ -308,13 +292,14 @@ async def _collect_raw_xml(coordinator: SyrConnectDataUpdateCoordinator) -> dict
                 continue
             projects_raw[pid] = {"device_list": "", "devices": {}}
             payload = xml_api.payload_builder.build_device_get_list_payload(xml_api.session_data or "", pid)
-            xml_resp = await _fetch(xml_api._device_list_url, {"xml": payload})
+            xml_resp = await _fetch(xml_api.device_list_url, {"xml": payload})
             projects_raw[pid]["device_list"] = _redact_device_list_xml(xml_resp)
 
             # Parse devices (best-effort) from the original, unredacted response
             try:
                 devices = xml_api.response_parser.parse_device_list_response(xml_resp)
-            except Exception:  # pragma: no cover - diagnostics should never fail
+            except Exception:
+                _LOGGER.debug("Diagnostics: device list of project %s could not be parsed", pid, exc_info=True)
                 devices = []
 
             # Fetch status for each device (limited concurrency by semaphore)
@@ -332,11 +317,12 @@ async def _collect_raw_xml(coordinator: SyrConnectDataUpdateCoordinator) -> dict
                         did, xmls = res
                         projects_raw[pid]["devices"][did] = xmls
 
-        return projects_raw
-
-    except Exception:  # pragma: no cover - diagnostics should never fail
+    except Exception:
         # Never raise from diagnostics
+        _LOGGER.debug("Diagnostics: failed to collect raw XML", exc_info=True)
         return {"error": "failed to collect raw xml for all projects"}
+    else:
+        return projects_raw
 
 
 async def _collect_raw_json_local_entry(coordinator: SyrConnectDataUpdateCoordinator) -> dict[str, Any]:
@@ -353,28 +339,31 @@ async def _collect_raw_json_local_entry(coordinator: SyrConnectDataUpdateCoordin
                 # Ensure we have a valid session
                 if not api.is_session_valid():
                     await api.login()
-            except Exception:  # pragma: no cover - diagnostics should never fail
+            except Exception:
                 # If login fails, still attempt to fetch once
-                pass
+                _LOGGER.debug("Diagnostics: JSON API login failed", exc_info=True)
 
             try:
                 # Use public API methods to fetch device data so we don't
                 # depend on a private implementation that may change.
                 devices = await api.get_devices("local")
-                if not devices:
-                    raise Exception("no devices returned")
-                did = devices[0].get("id")
-                data = await api.get_device_status(str(did))
+                if devices:
+                    data = await api.get_device_status(str(devices[0].get("id")))
+            except Exception:
+                _LOGGER.debug("Diagnostics: failed to fetch JSON data from device", exc_info=True)
+                devices = []
+            if not devices:
+                # Set error but don't overwrite the entire dict
+                raw_json["error"] = "failed to fetch JSON data from device"
+            else:
                 # Use the first device ID from coordinator data as key, or "local_device"
                 device_id = "local_device"
                 if coordinator.data and coordinator.data.get("devices"):
                     device_id = coordinator.data["devices"][0].get("id", "local_device")
                 raw_json[device_id] = _redact_json_payload(data)
-            except Exception:  # pragma: no cover - diagnostics should never fail
-                # Set error but don't overwrite the entire dict
-                raw_json["error"] = "failed to fetch JSON data from device"
-    except Exception:  # pragma: no cover - diagnostics should never fail
+    except Exception:
         # Set error but don't overwrite the entire dict
+        _LOGGER.debug("Diagnostics: failed to collect raw JSON", exc_info=True)
         raw_json["error"] = "failed to collect raw json for JSON API"
     return raw_json
 
@@ -417,22 +406,20 @@ async def _fetch_local_device_json(session: Any, dev: dict[str, Any], base_path:
         try:
             if not json_api.is_session_valid():
                 await json_api.login()
-        except Exception:  # pragma: no cover - diagnostics should never fail
+        except Exception:
             # If login fails, still attempt to fetch once
-            pass
-
-        base = json_api._build_base_url()
-        if not base:
-            return dev_id, None
+            _LOGGER.debug("Diagnostics: local login to device %s failed", dev_id, exc_info=True)
 
         try:
             # get_device_status() fetches /get/all and returns the parsed dict
             data = await json_api.get_device_status(dev_id)
-        except Exception:  # pragma: no cover - diagnostics should never fail
+        except Exception:
+            _LOGGER.debug("Diagnostics: local /get/all of device %s failed", dev_id, exc_info=True)
             return dev_id, None
 
         return dev_id, _redact_json_payload(data)
-    except Exception:  # pragma: no cover - diagnostics should never fail
+    except Exception:
+        _LOGGER.debug("Diagnostics: local data of device %s could not be collected", dev_id, exc_info=True)
         return dev_id, None
 
 
@@ -472,7 +459,8 @@ async def _collect_raw_json_cloud_devices(coordinator: SyrConnectDataUpdateCoord
                         did, payload = res
                         if payload is not None:
                             raw_json[did] = payload
-    except Exception:  # pragma: no cover - diagnostics should never fail
+    except Exception:
+        _LOGGER.debug("Diagnostics: failed to collect local JSON of cloud devices", exc_info=True)
         return {"error": "failed to collect raw json for devices"}
     return raw_json
 
@@ -521,9 +509,9 @@ def _device_summary(device: dict[str, Any], api_type: str) -> dict[str, Any]:
 
 
 def _mask_sensitive(obj: Any) -> Any:
-    """Mask serial numbers and MAC addresses, keeping their recognizable parts.
+    r"""Mask serial numbers and MAC addresses, keeping their recognizable parts.
 
-    1) `getSRN`: If value matches `\\d{3}[A-Z]{3}\\d{5}`, replace trailing 5 digits with '12345'.
+    1) `getSRN`: If value matches `\d{3}[A-Z]{3}\d{5}`, replace trailing 5 digits with '12345'.
     2) `getMAC` / `getMAC1`: Replace the device part (last 3 octets) with 'XX'.
     3) `getMAC2`: Same masking, then replace final character with 'Y'.
     SRN-like strings in other keys (e.g. `id`) are masked as well.
@@ -659,11 +647,13 @@ async def async_get_config_entry_diagnostics(
 
         # The project name is user-defined and often an address or family name;
         # it is masked like `pn` in raw_xml above ("My+Project").
-        for project in coordinator.data.get("projects", []):
-            projects_info.append({
+        projects_info.extend(
+            {
                 "id": project.get("id"),
                 "name": "My Project" if project.get("name") else project.get("name"),
-            })
+            }
+            for project in coordinator.data.get("projects", [])
+        )
 
         # 1) Mask serial numbers and MACs, keeping their recognizable parts (in place)
         diagnostics_data = _mask_sensitive(diagnostics_data)

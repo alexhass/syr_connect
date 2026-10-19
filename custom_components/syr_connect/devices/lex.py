@@ -1,6 +1,7 @@
-"""Entity allowlist override for the lex model family (i-LEX / LEX conventional
-softeners, dk=40/dkv=16 - shared by all l10-l100 and lex10-lex100 signatures
-via "device_file": "lex").
+"""Entity allowlist override for the lex model family.
+
+Covers i-LEX / LEX conventional softeners (dk=40/dkv=16), shared by all l10-l100
+and lex10-lex100 signatures via "device_file": "lex".
 
 Derived from tests/fixtures/xml/SyrL20_GetDeviceCollectionStatus.xml and
 tests/fixtures/xml/SyrLEX30_GetDeviceCollectionStatus.xml (no JSON fixture exists

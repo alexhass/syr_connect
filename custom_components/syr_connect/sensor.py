@@ -1,10 +1,11 @@
 """Sensor platform for SYR Connect."""
 
 from collections.abc import Callable
+import contextlib
 from datetime import UTC, datetime, timedelta
 import logging
 import re
-from typing import Any
+from typing import Any, override
 
 from babel.dates import format_datetime
 
@@ -125,141 +126,27 @@ async def async_setup_entry(
                 )
             )
 
-        # Create sensors for all status values
-        sensor_count = 0
-
         # Handle leak-protection groups controlled by getPA1..getPA8
-        # If getPAx evaluates to true, ensure sensors getPVx, getPTx, getPFx, getPMx, getPWx, getPBx, getPRx are created.
-        # If getPAx evaluates to false, remove those sensors from the registry if present.
-        handled_keys: set[str] = set()
+        group_entities, handled_keys = _build_pa_group_sensors(
+            coordinator, registry, device_id, device_name, status, known_sensor_keys
+        )
+        entities.extend(group_entities)
+        sensor_count = len(group_entities)
 
-        for idx in range(1, 9):
-            pa_key = f"getPA{idx}"
-            pa_val = status.get(pa_key)
-            group_keys = [
-                f"getPA{idx}",
-                f"getPV{idx}",
-                f"getPT{idx}",
-                f"getPF{idx}",
-                f"getPN{idx}",
-                f"getPM{idx}",
-                f"getPW{idx}",
-                f"getPB{idx}",
-                f"getPR{idx}"
-            ]
-
-            try:
-                if is_value_true(pa_val):
-                    # Create entities for group keys — only if the key is actually present in
-                    # status AND allowed for this model (per-model allowlist takes precedence).
-                    for gk in group_keys:
-                        # Avoid duplicates when iterating over status later
-                        handled_keys.add(gk)
-                        if gk not in known_sensor_keys:
-                            _LOGGER.debug("Skipping PA group sensor (not in allowlist): device=%s key=%s", device_id, gk)
-                            continue
-                        if gk not in status:
-                            _LOGGER.debug("Skipping PA group sensor (not in status): device=%s key=%s", device_id, gk)
-                            continue
-                        _LOGGER.debug("Creating sensor (PA group): device=%s key=%s", device_id, gk)
-                        entities.append(
-                            SyrConnectSensor(
-                                coordinator,
-                                device_id,
-                                device_name,
-                                gk,
-                            )
-                        )
-                        sensor_count += 1
-                elif status:
-                    # Remove group sensors from entity registry when the PA flag is false or missing
-                    # (Pontos Base reports the profile keys without any getPAx; they are not shown).
-                    # Skipped for an empty status: it was not fetched yet (temporary failure at
-                    # startup), which says nothing about the profiles, like in registry_cleanup.
-                    for gk in group_keys:
-                        try:
-                            # Found by unique_id, so a renamed or "_2"-suffixed sensor is removed as well
-                            stale_entity_id = find_entity_id(registry, "sensor", coordinator.entry_id, device_id, gk)
-                            if stale_entity_id is not None:
-                                _LOGGER.debug("Removing sensor due to getPA=false: %s", stale_entity_id)
-                                registry.async_remove(stale_entity_id)
-                        except RuntimeError:
-                            _LOGGER.exception("Failed to remove sensor %s for device %s", gk, device_id)
-                        # Ensure group keys are marked as handled so they are not recreated
-                        # later when iterating over status.items().
-                        handled_keys.add(gk)
-            except (ValueError, KeyError, AttributeError, TypeError):
-                _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
-
+        # Create sensors for all status values
         for key, value in status.items():
-            # Allowlist check: the definitive list of keys this integration handles.
-            # Anything not listed here is ignored unconditionally, regardless of
-            # what other checks follow. This takes precedence over all other logic.
-            if key not in known_sensor_keys:
-                _LOGGER.debug("Skipping unknown sensor key %s (not in allowlist)", key)
+            if not _is_sensor_wanted(status, key, value, known_sensor_keys, handled_keys):
                 continue
-
-            # Exclusion check: skip keys that are explicitly excluded.
-            if key in _SYR_CONNECT_SENSOR_EXCLUDED:
-                _LOGGER.debug("Skipping excluded sensor key %s", key)
-                continue
-
-            # Skip keys that are handled as binary sensors
-            if key in _SYR_CONNECT_SENSOR_BINARY:
-                continue
-
-            # Skip dst — handled as a dedicated SyrConnectConnectionStateSensor (always created above)
-            if key == "dst":
-                continue
-
-            # Skip keys already handled by getPA group logic above
-            if key in handled_keys:
-                continue
-
-            # getLOT/getOHW are mutually exclusive depending on getCRT and are handled
-            # dynamically below (_async_setup_muco_conditional_sensors) so the applicable
-            # one can be added/removed live without an integration reload.
-            if key in ("getLOT", "getOHW"):
-                continue
-
-            # Centralized visibility check
-            if not is_sensor_visible(status, key, value):
-                continue
-
-            # Create sensor if value is valid
-            # Special: only create getSRO sensor when the reported value is an integer
-            if key == "getSRO":
-                if value is None or value == "":
-                    continue
-                try:
-                    v = float(value)
-                    if not v.is_integer():
-                        continue
-                except (ValueError, TypeError):
-                    continue
-
-            # Special: only create getFFM sensor when the reported value is >= 1
-            if key == "getFFM":
-                if value is None or value == "":
-                    continue
-                try:
-                    v = float(value)
-                    if v < 1:
-                        continue
-                except (ValueError, TypeError):
-                    continue
-
-            if isinstance(value, int | float | str):
-                _LOGGER.debug("Creating sensor: device=%s key=%s value=%r", device_id, key, value)
-                entities.append(
-                    SyrConnectSensor(
-                        coordinator,
-                        device_id,
-                        device_name,
-                        key,
-                    )
+            _LOGGER.debug("Creating sensor: device=%s key=%s value=%r", device_id, key, value)
+            entities.append(
+                SyrConnectSensor(
+                    coordinator,
+                    device_id,
+                    device_name,
+                    key,
                 )
-                sensor_count += 1
+            )
+            sensor_count += 1
 
         _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
 
@@ -267,6 +154,148 @@ async def async_setup_entry(
     async_add_entities(entities)
 
     _async_setup_muco_conditional_sensors(hass, entry, coordinator, async_add_entities)
+
+
+def _build_pa_group_sensors(
+    coordinator: SyrConnectDataUpdateCoordinator,
+    registry: er.EntityRegistry,
+    device_id: str,
+    device_name: str,
+    status: dict[str, Any],
+    known_sensor_keys: set[str],
+) -> tuple[list[SensorEntity], set[str]]:
+    """Create or remove the leak-protection profile sensors controlled by getPA1..getPA8.
+
+    If getPAx evaluates to true, the sensors getPVx, getPTx, getPFx, getPMx, getPWx, getPBx
+    and getPRx are created. If getPAx evaluates to false, they are removed from the registry
+    if present.
+
+    Returns:
+        The created sensors and the group keys handled here, which are skipped afterwards.
+    """
+    entities: list[SensorEntity] = []
+    handled_keys: set[str] = set()
+
+    for idx in range(1, 9):
+        pa_key = f"getPA{idx}"
+        pa_val = status.get(pa_key)
+        group_keys = [
+            f"getPA{idx}",
+            f"getPV{idx}",
+            f"getPT{idx}",
+            f"getPF{idx}",
+            f"getPN{idx}",
+            f"getPM{idx}",
+            f"getPW{idx}",
+            f"getPB{idx}",
+            f"getPR{idx}"
+        ]
+
+        try:
+            if is_value_true(pa_val):
+                # Create entities for group keys — only if the key is actually present in
+                # status AND allowed for this model (per-model allowlist takes precedence).
+                for gk in group_keys:
+                    # Avoid duplicates when iterating over status later
+                    handled_keys.add(gk)
+                    if gk not in known_sensor_keys:
+                        _LOGGER.debug("Skipping PA group sensor (not in allowlist): device=%s key=%s", device_id, gk)
+                        continue
+                    if gk not in status:
+                        _LOGGER.debug("Skipping PA group sensor (not in status): device=%s key=%s", device_id, gk)
+                        continue
+                    _LOGGER.debug("Creating sensor (PA group): device=%s key=%s", device_id, gk)
+                    entities.append(
+                        SyrConnectSensor(
+                            coordinator,
+                            device_id,
+                            device_name,
+                            gk,
+                        )
+                    )
+            elif status:
+                # Remove group sensors from entity registry when the PA flag is false or missing
+                # (Pontos Base reports the profile keys without any getPAx; they are not shown).
+                # Skipped for an empty status: it was not fetched yet (temporary failure at
+                # startup), which says nothing about the profiles, like in registry_cleanup.
+                for gk in group_keys:
+                    try:
+                        # Found by unique_id, so a renamed or "_2"-suffixed sensor is removed as well
+                        stale_entity_id = find_entity_id(registry, "sensor", coordinator.entry_id, device_id, gk)
+                        if stale_entity_id is not None:
+                            _LOGGER.debug("Removing sensor due to getPA=false: %s", stale_entity_id)
+                            registry.async_remove(stale_entity_id)
+                    except RuntimeError:
+                        _LOGGER.exception("Failed to remove sensor %s for device %s", gk, device_id)
+                    # Ensure group keys are marked as handled so they are not recreated
+                    # later when iterating over status.items().
+                    handled_keys.add(gk)
+        except (ValueError, KeyError, AttributeError, TypeError):
+            _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
+
+    return entities, handled_keys
+
+
+def _to_float(value: Any) -> float | None:
+    """Return the value as float, or None if it is missing or not a number."""
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def _is_sensor_wanted(
+    status: dict[str, Any],
+    key: str,
+    value: Any,
+    known_sensor_keys: set[str],
+    handled_keys: set[str],
+) -> bool:
+    """Return True if the status value gets a regular sensor entity."""
+    # Allowlist check: the definitive list of keys this integration handles.
+    # Anything not listed here is ignored unconditionally, regardless of
+    # what other checks follow. This takes precedence over all other logic.
+    if key not in known_sensor_keys:
+        _LOGGER.debug("Skipping unknown sensor key %s (not in allowlist)", key)
+        return False
+
+    # Exclusion check: skip keys that are explicitly excluded.
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED:
+        _LOGGER.debug("Skipping excluded sensor key %s", key)
+        return False
+
+    # Skip keys that are handled as binary sensors, dst (a dedicated
+    # SyrConnectConnectionStateSensor) and keys already handled by the getPA group logic.
+    # getLOT/getOHW are mutually exclusive depending on getCRT and are handled
+    # dynamically (_async_setup_muco_conditional_sensors) so the applicable
+    # one can be added/removed live without an integration reload.
+    if (
+        key in _SYR_CONNECT_SENSOR_BINARY
+        or key == "dst"
+        or key in handled_keys
+        or key in ("getLOT", "getOHW")
+    ):
+        return False
+
+    # Centralized visibility check
+    if not is_sensor_visible(status, key, value):
+        return False
+
+    # Special: only create getSRO sensor when the reported value is an integer
+    if key == "getSRO":
+        number = _to_float(value)
+        if number is None or not number.is_integer():
+            return False
+
+    # Special: only create getFFM sensor when the reported value is >= 1
+    if key == "getFFM":
+        number = _to_float(value)
+        if number is None or number < 1:
+            return False
+
+    return isinstance(value, int | float | str)
 
 
 def _async_setup_muco_conditional_sensors(
@@ -423,10 +452,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             value = value * 10
         elif self._sensor_key == 'getVOL':
             # API provides total volume in liters; convert to cubic meters (m³)
-            try:
+            with contextlib.suppress(ZeroDivisionError, TypeError):
                 value = value / 1000
-            except (ZeroDivisionError, TypeError):
-                pass
 
         # Apply configured precision if available
         precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key)
@@ -441,6 +468,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         return value
 
     @property
+    @override
     def icon(self) -> str | None:
         """Return the getBAT icon; all other icons and state icons come from icons.json.
 
@@ -460,6 +488,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         return "mdi:battery"
 
     @property
+    @override
     def native_value(self) -> str | int | float | datetime | None:
         """Return the state of the sensor.
 
@@ -524,7 +553,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if isinstance(value, int | float):
             return self._apply_numeric_conversion(float(value))
 
-        return value
+        # None, or a type a sensor cannot show (e.g. a list)
+        return None
 
     # --- Value handlers -------------------------------------------------------------
     # Each handler gets the device status and the raw value of the sensor key and returns
@@ -538,7 +568,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         try:
             mapped, raw_code = mapper(status, raw)
             if mapped:
-                return mapped
+                return str(mapped)
             # Model unknown or no mapping found: return the raw value 1:1
             sval = str(raw_code)
             return sval if sval.strip() != "" else None
@@ -798,7 +828,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 return None
         return None
 
-    _SYR_CONNECT_SENSOR_VALUE_HANDLERS: dict[str, Callable[[SyrConnectSensor, dict[str, Any], Any], Any]] = {
+    _SYR_CONNECT_SENSOR_VALUE_HANDLERS: dict[
+        str, Callable[[SyrConnectSensor, dict[str, Any], Any], str | int | float | datetime | None]
+    ] = {
         'getAB': _value_ab,
         'getALA': _value_ala,
         'getALM': _value_alm,
@@ -846,6 +878,7 @@ class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
         super().__init__(coordinator, device_id, device_name, "sensor", "dst")
 
     @property
+    @override
     def native_value(self) -> str | None:
         """Return the raw dst value as a string (translation key)."""
         dst = self._status.get('dst')
@@ -857,6 +890,7 @@ class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
             return str(dst)
 
     @property
+    @override
     def available(self) -> bool:
         """Always available so the connection state is always shown."""
         return True

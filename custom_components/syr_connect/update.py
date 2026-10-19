@@ -2,7 +2,7 @@
 
 import logging
 from time import monotonic
-from typing import Any
+from typing import Any, override
 
 from homeassistant.components.update import (
     UpdateDeviceClass,
@@ -115,6 +115,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
+    @override
     def available(self) -> bool:
         """Return if entity is available."""
         # The device goes offline while flashing; stay available so the progress bar remains visible.
@@ -123,12 +124,14 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         return super().available
 
     @property
+    @override
     def installed_version(self) -> str | None:
         """Return the currently installed firmware version (getVER)."""
         version = self._status.get("getVER")
         return str(version) if version else None
 
     @property
+    @override
     def latest_version(self) -> str | None:
         """Return the latest available firmware version.
 
@@ -148,11 +151,13 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         return self._install_started is not None and monotonic() - self._install_started >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS
 
     @property
+    @override
     def in_progress(self) -> bool:
         """Return True from install trigger until getNOT reports "04" or the timeout expires."""
         return self._install_started is not None and not self._install_timed_out()
 
     @callback
+    @override
     def _handle_coordinator_update(self) -> None:
         """Finish the progress state on getNOT == "04" (new_software_installed) or timeout."""
         if self._install_started is not None:
@@ -171,6 +176,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
                 self._install_started = None
         super()._handle_coordinator_update()
 
+    @override
     async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
         """Trigger a firmware update by sending setUPG (always with an empty value)."""
         _LOGGER.debug("Triggering firmware update for %s (getNOT=%s)", self._device_id, self._status.get("getNOT"))

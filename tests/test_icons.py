@@ -98,5 +98,5 @@ def test_valve_state_icons() -> None:
 
 
 def test_battery_icon_is_set_in_code() -> None:
-    """getBAT must not be in icons.json, otherwise it would override the battery device class."""
+    """The getBAT must not be in icons.json, otherwise it would override the battery device class."""
     assert "getbat" not in ICONS["sensor"]

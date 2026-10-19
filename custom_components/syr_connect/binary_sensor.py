@@ -1,6 +1,7 @@
 """Binary sensor platform for SYR Connect."""
 
 import logging
+from typing import override
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -110,6 +111,7 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
+    @override
     def is_on(self) -> bool | None:
         """Return true if the binary sensor is on.
 

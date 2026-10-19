@@ -316,12 +316,12 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getNOT",   # Current notification code
     "getWRN",   # Current warning code
     # --- Pressure ---
-    "getBAR",   # Inlet pressure – mbar sensor (Safe-T+)
-    "getBAR2",  # Outlet pressure – mbar sensor (SYR TRIO Lock Connect)
-    "getPRS",   # Inlet pressure – bar sensor (LEXplus10SL)
+    "getBAR",   # Inlet pressure - mbar sensor (Safe-T+)
+    "getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
+    "getPRS",   # Inlet pressure - bar sensor (LEXplus10SL)
     # --- Voltage / Battery ---
     "getBAP",   # Battery level (%)
-    "getBAT",   # Battery voltage (V) or battery level (%) – unit depends on device type
+    "getBAT",   # Battery voltage (V) or battery level (%) - unit depends on device type
     "getNET",   # Mains (AC) voltage (V)
     # --- Water Quality ---
     "getCEL",   # Temperature (°C)
@@ -341,20 +341,20 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getDFM",   # Device feature mode (device function type)
     "getSTA",   # Device operating status
     # --- Resin Capacity ---
-    "getCS1",   # Remaining resin capacity – tank 1 (%)
-    "getCS2",   # Remaining resin capacity – tank 2 (%)
-    "getCS3",   # Remaining resin capacity – tank 3 (%)
+    "getCS1",   # Remaining resin capacity - tank 1 (%)
+    "getCS2",   # Remaining resin capacity - tank 2 (%)
+    "getCS3",   # Remaining resin capacity - tank 3 (%)
     # --- Salt ---
     "getRDO",   # Salt dosing (g/l)
-    "getRE1",   # Reserve capacity – bottle 1 (l)
-    "getRE2",   # Reserve capacity – bottle 2 (l)
+    "getRE1",   # Reserve capacity - bottle 1 (l)
+    "getRE2",   # Reserve capacity - bottle 2 (l)
     "getRES",   # Remaining softening capacity (l)
-    "getSS1",   # Salt supply – container 1 (weeks)
-    "getSS2",   # Salt supply – container 2 (weeks)
-    "getSS3",   # Salt supply – container 3 (weeks)
-    "getSV1",   # Salt amount – container 1 (kg)
-    "getSV2",   # Salt amount – container 2 (kg)
-    "getSV3",   # Salt amount – container 3 (kg)
+    "getSS1",   # Salt supply - container 1 (weeks)
+    "getSS2",   # Salt supply - container 2 (weeks)
+    "getSS3",   # Salt supply - container 3 (weeks)
+    "getSV1",   # Salt amount - container 1 (kg)
+    "getSV2",   # Salt amount - container 2 (kg)
+    "getSV3",   # Salt amount - container 3 (kg)
     # --- Regeneration ---
     "getCYN",   # Regeneration cycle counter
     "getCYT",   # Regeneration cycle time (remaining)
@@ -362,8 +362,8 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getLAR",   # Timestamp of last regeneration
     "getNOR",   # Regeneration count (normal operation)
     "getRG1",   # Regeneration status (which tank is regenerating)
-    "getRG2",   # Regeneration running – tank 2 flag
-    "getRG3",   # Regeneration running – tank 3 flag
+    "getRG2",   # Regeneration running - tank 2 flag
+    "getRG3",   # Regeneration running - tank 3 flag
     "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
     "getRPD",   # Regeneration interval (days)
     "getRPW",   # Regeneration permitted weekdays (bitmask)
@@ -387,12 +387,12 @@ _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     "getDTT",   # Microleakage test duration / time
     "getNPS",   # No turbine pulses since (s)
     # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
-    "getLE",    # Leak protection volume limit – present profile (l)
-    "getT1",    # Max. flow duration – present profile (h, 0.5 h steps)
-    "getT2",    # Max. flow duration – absent profile (h, 0.5 h steps)
-    "getTMP",   # Leak protection temporarily deactivated – remaining time (s)
-    "getUL",    # Leak protection volume limit – absent profile (l)
-    # --- Leak Protection Profiles 1–8 (LEXplus10SL) ---
+    "getLE",    # Leak protection volume limit - present profile (l)
+    "getT1",    # Max. flow duration - present profile (h, 0.5 h steps)
+    "getT2",    # Max. flow duration - absent profile (h, 0.5 h steps)
+    "getTMP",   # Leak protection temporarily deactivated - remaining time (s)
+    "getUL",    # Leak protection volume limit - absent profile (l)
+    # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
     "getPA1",   # Profile 1 active flag (true/false)
     "getPA2",   # Profile 2 active flag (true/false)
     "getPA3",   # Profile 3 active flag (true/false)
@@ -643,8 +643,8 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getLAR",   # Timestamp of last regeneration
     "getNOR",   # Regeneration count (normal operation)
     "getRG1",   # Regeneration status (which tank is regenerating)
-    "getRG2",   # Regeneration running – tank 2 flag
-    "getRG3",   # Regeneration running – tank 3 flag
+    "getRG2",   # Regeneration running - tank 2 flag
+    "getRG3",   # Regeneration running - tank 3 flag
     "getRTH",   # Regeneration scheduled hour
     "getRTI",   # Total regeneration cycle duration
     "getSCR",   # Service regeneration cycle count
@@ -665,13 +665,13 @@ _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     "getDTT",   # Microleakage test duration / time
     "getNPS",   # No turbine pulses since (s)
     # --- Leak Protection Settings ---
-    "getLE",    # Leak protection volume limit – present profile (l)
+    "getLE",    # Leak protection volume limit - present profile (l)
     "getPST",   # Pressure sensor installed (1=not available, 2=available)
-    "getT1",    # Max. flow duration – present profile (h)
-    "getT2",    # Max. flow duration – absent profile (h)
-    "getTMP",   # Leak protection temporarily deactivated – remaining time (s)
-    "getUL",    # Leak protection volume limit – absent profile (l)
-    # --- Leak Protection Profiles 1–8 (LEXplus10SL) ---
+    "getT1",    # Max. flow duration - present profile (h)
+    "getT2",    # Max. flow duration - absent profile (h)
+    "getTMP",   # Leak protection temporarily deactivated - remaining time (s)
+    "getUL",    # Leak protection volume limit - absent profile (l)
+    # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
     "getPA1", "getPA2", "getPA3", "getPA4", "getPA5", "getPA6", "getPA7", "getPA8",
     "getPB1", "getPB2", "getPB3", "getPB4", "getPB5", "getPB6", "getPB7", "getPB8",
     "getPF1", "getPF2", "getPF3", "getPF4", "getPF5", "getPF6", "getPF7", "getPF8",
@@ -971,8 +971,8 @@ _SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
 # Device type codes (getTYP) that report getBAT as battery percentage (%) rather than voltage (V).
 # To add support for a new device, append its getTYP value as a string.
 _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE = {
-    "120",  # SafeFloor – reports e.g. "40" = 40%
-    "122",  # SafeFloor – reports e.g. "40" = 40%
+    "120",  # SafeFloor - reports e.g. "40" = 40%
+    "122",  # SafeFloor - reports e.g. "40" = 40%
 }
 
 # Mapping for getLE sensor values (Leakage protection - Present level)

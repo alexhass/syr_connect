@@ -1,6 +1,7 @@
 """Switch platform for SYR Connect integration."""
 
 import logging
+from typing import Any, override
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -98,8 +99,8 @@ async def async_setup_entry(
                     getattr(entity, "entity_id", None),
                     getattr(entity, "_attr_unique_id", None),
                 )
-            except Exception as err:
-                _LOGGER.error("Failed to instantiate SyrConnectBooleanSwitch for device %s: %s", device_id, err)
+            except Exception:
+                _LOGGER.exception("Failed to instantiate SyrConnectBooleanSwitch for device %s", device_id)
     if entities:
         async_add_entities(entities)
         try:
@@ -156,6 +157,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
             self._attr_entity_category = EntityCategory.CONFIG
 
     @property
+    @override
     def is_on(self) -> bool | None:
         """Return True if the setting is enabled."""
         if self._device is None:
@@ -166,11 +168,13 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         # A reported but unknown value (e.g. empty) is shown as off
         return is_value_true(value)
 
-    async def async_turn_on(self, **kwargs):
+    @override
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the setting on."""
         await self._set_value(True)
 
-    async def async_turn_off(self, **kwargs):
+    @override
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the setting off."""
         await self._set_value(False)
 

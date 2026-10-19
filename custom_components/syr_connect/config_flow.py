@@ -1,7 +1,7 @@
 """Config flow for SYR Connect integration."""
 
 import logging
-from typing import Any
+from typing import Any, override
 
 import probatio
 
@@ -12,6 +12,8 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api_json import SyrConnectJsonAPI
+from .api_xml import SyrConnectXmlAPI
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
@@ -33,6 +35,8 @@ from .exceptions import (
     HostInvalidError,
     HostWithPortError,
     InvalidAuthError,
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
 )
 from .helpers import (
     get_api_locale,
@@ -114,11 +118,6 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
         CannotConnectError: If connection to API fails
         InvalidAuthError: If authentication fails
     """
-
-    # Import here so tests can patch the API class via its module
-    from .api_xml import SyrConnectXmlAPI
-    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
-
     _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
 
@@ -160,6 +159,47 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
     return {"title": f"{title_label} ({data[CONF_USERNAME]})"}
 
 
+async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
+    """Log in to the local device and check that it answers like a SYR device.
+
+    Args:
+        api: JSON API client for the device
+
+    Raises:
+        CannotConnectError: If the device returns no usable data
+    """
+    await api.login()
+
+    # Use the public API methods to retrieve devices and status. This
+    # avoids calling private methods and keeps encapsulation intact.
+    devices = await api.get_devices("local")
+    if not devices:
+        _LOGGER.error("JSON API: no devices returned from get_devices()")
+        raise CannotConnectError
+
+    # get_devices() returns a list of device dicts; take the first device
+    device = devices[0]
+    device_id = device.get("id")
+    if not device_id:
+        _LOGGER.error("JSON API: device entry missing id")
+        raise CannotConnectError
+
+    # Fetch full status for the device. get_device_status() will reuse the
+    # cached /get/all response set by get_devices(), avoiding an extra API call.
+    data_result = await api.get_device_status(device_id)
+    if not data_result:
+        _LOGGER.error("JSON API: returned empty status from get_device_status()")
+        raise CannotConnectError
+
+    # Verify this is a SYR device by checking for serial number fields and extract serial
+    serial = data_result.get("getSRN") or data_result.get("getFRN")
+    if not serial:
+        _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
+        raise CannotConnectError
+
+    _LOGGER.debug("JSON API: Successfully validated SYR device with serial %s and %d status keys", serial, len(data_result))
+
+
 async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input for Local/JSON API.
 
@@ -174,10 +214,6 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         CannotConnectError: If connection to API fails
     """
     host = data[CONF_HOST]
-
-    # Import here so tests can patch the API class via its module
-    from .api_json import SyrConnectJsonAPI
-    from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 
     # Use central helper for IP/hostname validation
     if not is_valid_host(host):
@@ -209,37 +245,7 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     # Test connection by attempting login and fetching device data via public API
     _LOGGER.debug("Testing JSON API connection...")
     try:
-        await api.login()
-
-        # Use the public API methods to retrieve devices and status. This
-        # avoids calling private methods and keeps encapsulation intact.
-        devices = await api.get_devices("local")
-        if not devices:
-            _LOGGER.error("JSON API: no devices returned from get_devices()")
-            raise CannotConnectError
-
-        # get_devices() returns a list of device dicts; take the first device
-        device = devices[0]
-        device_id = device.get("id")
-        if not device_id:
-            _LOGGER.error("JSON API: device entry missing id")
-            raise CannotConnectError
-
-        # Fetch full status for the device. get_device_status() will reuse the
-        # cached /get/all response set by get_devices(), avoiding an extra API call.
-        data_result = await api.get_device_status(device_id)
-        if not data_result:
-            _LOGGER.error("JSON API: returned empty status from get_device_status()")
-            raise CannotConnectError
-
-        # Verify this is a SYR device by checking for serial number fields and extract serial
-        serial = data_result.get("getSRN") or data_result.get("getFRN")
-        if not serial:
-            _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
-            raise CannotConnectError
-
-        _LOGGER.debug("JSON API: Successfully validated SYR device with serial %s and %d status keys", serial, len(data_result))
-
+        await _async_validate_json_device(api)
     except SyrConnectAuthError as err:
         _LOGGER.error("JSON API: authentication failed: %s", err)
         raise InvalidAuthError from err
@@ -321,6 +327,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
+    @override
     def async_get_options_flow(
         config_entry: config_entries.ConfigEntry,
     ) -> SyrConnectOptionsFlow:
@@ -473,8 +480,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "host_no_port"
             except HostInvalidError:
                 errors[CONF_HOST] = "host_invalid"
-            except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected error during reauth: %s", err)
+            except Exception:
+                _LOGGER.exception("Unexpected error during reauth")
                 errors["base"] = "unknown"
 
         # Show appropriate form based on API type
@@ -549,8 +556,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "host_no_port"
             except HostInvalidError:
                 errors[CONF_HOST] = "host_invalid"
-            except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected error during reconfiguration: %s", err)
+            except Exception:
+                _LOGGER.exception("Unexpected error during reconfiguration")
                 errors["base"] = "unknown"
 
         # Determine API type from entry (or default to XML if entry is None)
@@ -599,6 +606,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    @override
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step - show menu to select API type.
 
@@ -630,8 +638,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
-            except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected error during Cloud/XML API config flow: %s", err)
+            except Exception:
+                _LOGGER.exception("Unexpected error during Cloud/XML API config flow")
                 errors["base"] = "unknown"
             else:
                 # Set unique ID based on username and API type
@@ -686,8 +694,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors[CONF_HOST] = "host_no_port"
             except HostInvalidError:
                 errors[CONF_HOST] = "host_invalid"
-            except Exception as err:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected error during Local/JSON API config flow: %s", err)
+            except Exception:
+                _LOGGER.exception("Unexpected error during Local/JSON API config flow")
                 errors["base"] = "unknown"
             else:
                 # Set unique ID based on host and API type

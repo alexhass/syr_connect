@@ -2,7 +2,7 @@
 
 from collections.abc import Callable, Mapping
 import logging
-from typing import Any, cast
+from typing import Any, cast, override
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
@@ -126,6 +126,71 @@ def _unit_options(key: str, values: list[int]) -> list[str]:
     return [f"{v} {unit}" for v in values]
 
 
+class _SyrConnectSelectBuilder:
+    """Collect the select entities of one device.
+
+    Holds the device's coordinator, id, name and status, so each block in the
+    `_add_*_selects` functions only names what differs (key, range or option map).
+    """
+
+    def __init__(self, coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]) -> None:
+        """Initialize the builder for one device from the coordinator data."""
+        self.coordinator = coordinator
+        # cast only types the values for the entity constructors; they are not converted
+        self.device_id = cast(str, device.get("id"))
+        self.device_name = cast(str, device.get("name", self.device_id))
+        self.status: dict[str, Any] = device.get("status", {})
+        # Scope to the detected model (falls back to the global allowlist for
+        # models that haven't opted into per-model key lists).
+        self.model_info = detect_model(self.status)
+        self.known_select_keys = get_model_known_keys(self.model_info, "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+        self.entities: list[SelectEntity] = []
+
+    def allowed(self, key: str, is_valid: Callable[[Any], bool] = _is_number) -> bool:
+        """Return True if the model lists `key` and the device reports a valid value for it.
+
+        Args:
+            key: Status key, e.g. "getRMN"
+            is_valid: Check for the raw value; default `_is_number`
+        """
+        return key in self.known_select_keys and is_valid(self.status.get(key))
+
+    def add_discrete(self, key: str, options_map: Mapping[str, int | None]) -> None:
+        """Add a select with a fixed option map (option key -> raw value).
+
+        Args:
+            key: Status key, e.g. "getCRT"
+            options_map: Option keys as shown (or translated) mapped to raw device values
+        """
+        self.entities.append(
+            SyrConnectDiscreteSelect(self.coordinator, self.device_id, self.device_name, key, options_map)
+        )
+
+    def add_numeric(self, key: str, min_value: int, max_value: int, **kwargs: Any) -> None:
+        """Add a select with the raw values min_value..max_value in steps of 1.
+
+        Args:
+            key: Status key, e.g. "getRMN"
+            min_value: Lowest raw value
+            max_value: Highest raw value
+            **kwargs: Passed to SyrConnectNumericSelect (`scale`, `options`)
+        """
+        self.entities.append(
+            SyrConnectNumericSelect(
+                self.coordinator, self.device_id, self.device_name, key, min_value, max_value, 1, **kwargs
+            )
+        )
+
+    def add_numeric_steps(self, key: str, values: list[int]) -> None:
+        """Add a numeric select with a non-uniform list of steps, labelled with the unit.
+
+        Args:
+            key: Status key, e.g. "getRMT"
+            values: Raw values in ascending order (e.g. `_SYR_CONNECT_SELECT_RMT_OPTIONS`)
+        """
+        self.add_numeric(key, values[0], values[-1], options=_unit_options(key, values))
+
+
 def _build_device_selects(coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]) -> list[SelectEntity]:
     """Return the selects of one device (except the conditional getLOT/getOHW).
 
@@ -140,143 +205,108 @@ def _build_device_selects(coordinator: SyrConnectDataUpdateCoordinator, device: 
     Returns:
         The select entities to add for this device
     """
-    # cast only types the values for the entity constructors; they are not converted
-    device_id = cast(str, device.get("id"))
-    device_name = cast(str, device.get("name", device_id))
-    status = device.get("status", {})
-    # Scope to the detected model (falls back to the global allowlist for
-    # models that haven't opted into per-model key lists).
-    model_info = detect_model(status)
-    known_select_keys = get_model_known_keys(model_info, "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
-    entities: list[SelectEntity] = []
+    builder = _SyrConnectSelectBuilder(coordinator, device)
+    _add_softener_selects(builder)
+    _add_muco_selects(builder)
+    _add_safefloor_selects(builder)
+    return builder.entities
 
-    # Local helpers for the blocks below; they share this device's coordinator, id, name
-    # and status, so each block only names what differs (key, range or option map).
 
-    def allowed(key: str, is_valid: Callable[[Any], bool] = _is_number) -> bool:
-        """Return True if the model lists `key` and the device reports a valid value for it.
-
-        Args:
-            key: Status key, e.g. "getRMN"
-            is_valid: Check for the raw value; default `_is_number`
-        """
-        return key in known_select_keys and is_valid(status.get(key))
-
-    def add_discrete(key: str, options_map: Mapping[str, int | None]) -> None:
-        """Add a select with a fixed option map (option key -> raw value).
-
-        Args:
-            key: Status key, e.g. "getCRT"
-            options_map: Option keys as shown (or translated) mapped to raw device values
-        """
-        entities.append(SyrConnectDiscreteSelect(coordinator, device_id, device_name, key, options_map))
-
-    def add_numeric(key: str, min_value: int, max_value: int, **kwargs: Any) -> None:
-        """Add a select with the raw values min_value..max_value in steps of 1.
-
-        Args:
-            key: Status key, e.g. "getRMN"
-            min_value: Lowest raw value
-            max_value: Highest raw value
-            **kwargs: Passed to SyrConnectNumericSelect (`scale`, `options`)
-        """
-        entities.append(SyrConnectNumericSelect(coordinator, device_id, device_name, key, min_value, max_value, 1, **kwargs))
-
-    def add_numeric_steps(key: str, values: list[int]) -> None:
-        """Add a numeric select with a non-uniform list of steps, labelled with the unit.
-
-        Args:
-            key: Status key, e.g. "getRMT"
-            values: Raw values in ascending order (e.g. `_SYR_CONNECT_SELECT_RMT_OPTIONS`)
-        """
-        add_numeric(key, values[0], values[-1], options=_unit_options(key, values))
+def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the selects for regeneration, salt, hardness and the general device settings."""
+    status = b.status
+    known_select_keys = b.known_select_keys
 
     # Regeneration time (getRTM): may contain a combined HH:MM string when `getRTH` is
     # not provided, or act as minutes when `getRTH` is present.
-    if allowed("getRTM", lambda v: v is not None and v != ""):
-        entities.append(SyrConnectRegenerationSelect(coordinator, device_id, device_name))
+    if b.allowed("getRTM", lambda v: v is not None and v != ""):
+        b.entities.append(SyrConnectRegenerationSelect(b.coordinator, b.device_id, b.device_name))
 
     # Active leak-protection profile (getPRF), if any profile getPAx is active (e.g. "true" or "1")
     if "getPRF" in known_select_keys and any(is_value_true(status.get(f"getPA{i}")) for i in range(1, 9)):
-        entities.append(SyrConnectPrfSelect(coordinator, device_id, device_name))
+        b.entities.append(SyrConnectPrfSelect(b.coordinator, b.device_id, b.device_name))
 
     # Display rotation (getSRO): 0, 90, 180, 270; accepts numeric-like values ("90" or "90.0")
-    if allowed("getSRO", _is_integer):
-        entities.append(SyrConnectRotationSelect(coordinator, device_id, device_name))
+    if b.allowed("getSRO", _is_integer):
+        b.entities.append(SyrConnectRotationSelect(b.coordinator, b.device_id, b.device_name))
 
     # Salt amounts (getSV1-3): the maximum depends on the model; models without salt containers have none
-    max_capacity = model_info.get("maximum_salt_volume")
+    max_capacity = b.model_info.get("maximum_salt_volume")
     if max_capacity is not None:
         for sv_key in ("getSV1", "getSV2", "getSV3"):
-            if allowed(sv_key):
-                add_numeric(sv_key, 0, int(max_capacity))
+            if b.allowed(sv_key):
+                b.add_numeric(sv_key, 0, int(max_capacity))
 
     # Regeneration interval in days (getRPD): the maximum depends on the model; models without
     # regeneration have none. 0 means no interval regeneration, so no select is created.
     # Not limited to the allowlist.
-    max_rpd = model_info.get("maximum_regeneration_interval")
+    max_rpd = b.model_info.get("maximum_regeneration_interval")
     if max_rpd is not None and _is_number(status.get("getRPD")) and float(status["getRPD"]) != 0:
-        add_numeric("getRPD", 1, max_rpd)
+        b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
     # family only (see docs/syrconnect-protocol.md). The unit suffix follows the device's getWHU setting.
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
-        if allowed(hardness_key):
-            entities.append(
-                SyrConnectHardnessSelect(coordinator, device_id, device_name, hardness_key, hardness_min, 100, 1)
+        if b.allowed(hardness_key):
+            b.entities.append(
+                SyrConnectHardnessSelect(b.coordinator, b.device_id, b.device_name, hardness_key, hardness_min, 100, 1)
             )
 
     # Filter type (getFFM): types 1-3, only for a value >= 1. Raw numeric options so the frontend
     # translates the state. Not limited to the allowlist.
     if _is_number(status.get("getFFM")) and float(status["getFFM"]) >= 1:
-        add_numeric("getFFM", 1, 3, options=["1", "2", "3"])
+        b.add_numeric("getFFM", 1, 3, options=["1", "2", "3"])
 
     # Regeneration mode (getRMO), only for a value >= 1. Not limited to the allowlist.
     if _is_integer(status.get("getRMO")) and int(float(status["getRMO"])) >= 1:
-        add_discrete("getRMO", _SYR_CONNECT_SELECT_RMO_MAP)
+        b.add_discrete("getRMO", _SYR_CONNECT_SELECT_RMO_MAP)
 
-    # --- MuCo devices: water treatment / filling mode configuration ---
-    # getLOT and getOHW are mutually exclusive depending on cartridge type and are handled
-    # separately (_async_setup_muco_conditional_selects), which adds/removes whichever one
-    # currently applies instead of creating both and showing the other as unavailable.
-    if allowed("getCRS", _is_integer):
-        add_discrete("getCRS", _SYR_CONNECT_SELECT_CRS_MAP)
+
+def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the MuCo selects for the water treatment / filling mode configuration.
+
+    getLOT and getOHW are mutually exclusive depending on cartridge type and are handled
+    separately (_async_setup_muco_conditional_selects), which adds/removes whichever one
+    currently applies instead of creating both and showing the other as unavailable.
+    """
+    if b.allowed("getCRS", _is_integer):
+        b.add_discrete("getCRS", _SYR_CONNECT_SELECT_CRS_MAP)
     # getCRT and getRCD have an option for the empty value, so any reported value counts
-    if "getCRT" in known_select_keys and "getCRT" in status:
-        add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)
-    if "getRCD" in known_select_keys and "getRCD" in status:
-        add_discrete("getRCD", _SYR_CONNECT_SELECT_RCD_MAP)
+    if "getCRT" in b.known_select_keys and "getCRT" in b.status:
+        b.add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)
+    if "getRCD" in b.known_select_keys and "getRCD" in b.status:
+        b.add_discrete("getRCD", _SYR_CONNECT_SELECT_RCD_MAP)
     # Filling processes count (getRMN): 1-10
-    if allowed("getRMN"):
-        add_numeric("getRMN", 1, 10)
+    if b.allowed("getRMN"):
+        b.add_numeric("getRMN", 1, 10)
     # Maximum filling duration (getRMT) and charges (getRVT): non-uniform minute/liter steps
     # (see docs/syrconnect-protocol.md)
-    if allowed("getRMT"):
-        add_numeric_steps("getRMT", _SYR_CONNECT_SELECT_RMT_OPTIONS)
-    if allowed("getRVT"):
-        add_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
+    if b.allowed("getRMT"):
+        b.add_numeric_steps("getRMT", _SYR_CONNECT_SELECT_RMT_OPTIONS)
+    if b.allowed("getRVT"):
+        b.add_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
     # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)
-    if allowed("getTPR"):
-        add_numeric("getTPR", 5, 50, scale=10)
+    if b.allowed("getTPR"):
+        b.add_numeric("getTPR", 5, 50, scale=10)
 
-    # --- SafeFloor: alarm/humidity/temperature thresholds and sync/measurement intervals ---
-    if allowed("getMIH"):
-        add_discrete("getMIH", _SYR_CONNECT_SELECT_MIH_MAP)
-    if allowed("getMXH"):
-        add_discrete("getMXH", _SYR_CONNECT_SELECT_MXH_MAP)
-    if allowed("getMIT"):
-        add_discrete("getMIT", _SYR_CONNECT_SELECT_MIT_MAP)
-    if allowed("getMXT"):
-        add_discrete("getMXT", _SYR_CONNECT_SELECT_MXT_MAP)
+
+def _add_safefloor_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the SafeFloor selects: alarm/humidity/temperature thresholds and sync/measurement intervals."""
+    if b.allowed("getMIH"):
+        b.add_discrete("getMIH", _SYR_CONNECT_SELECT_MIH_MAP)
+    if b.allowed("getMXH"):
+        b.add_discrete("getMXH", _SYR_CONNECT_SELECT_MXH_MAP)
+    if b.allowed("getMIT"):
+        b.add_discrete("getMIT", _SYR_CONNECT_SELECT_MIT_MAP)
+    if b.allowed("getMXT"):
+        b.add_discrete("getMXT", _SYR_CONNECT_SELECT_MXT_MAP)
     # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md)
-    if allowed("getALD"):
-        add_numeric_steps("getALD", _SYR_CONNECT_SELECT_ALD_OPTIONS)
-    if allowed("getWMP"):
-        add_discrete("getWMP", _SYR_CONNECT_SELECT_WMP_MAP)
-    if allowed("getRCP"):
-        add_discrete("getRCP", _SYR_CONNECT_SELECT_RCP_MAP)
-
-    return entities
+    if b.allowed("getALD"):
+        b.add_numeric_steps("getALD", _SYR_CONNECT_SELECT_ALD_OPTIONS)
+    if b.allowed("getWMP"):
+        b.add_discrete("getWMP", _SYR_CONNECT_SELECT_WMP_MAP)
+    if b.allowed("getRCP"):
+        b.add_discrete("getRCP", _SYR_CONNECT_SELECT_RCP_MAP)
 
 
 async def async_setup_entry(
@@ -404,6 +434,7 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         device_id: str,
         device_name: str,
     ) -> None:
+        """Initialize the select entity."""
         # Translation key "getrtm" for the human-friendly name; the select is backed by `getRTM`
         super().__init__(coordinator, device_id, device_name, "select", "getRTM", unique_key="getRTM_select")
 
@@ -425,16 +456,20 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         )
 
     @property
+    @override
     def options(self) -> list[str]:
+        """Return the selectable options."""
         return self._options
 
     @property
+    @override
     def current_option(self) -> str | None:
         """Return the currently configured regeneration time as HH:MM."""
         if self._device is None:
             return None
         return get_sensor_rtm_value(self._status)
 
+    @override
     async def async_select_option(self, option: str) -> None:
         """Called when user selects a time option from the UI."""
         coordinator = self.coordinator
@@ -486,6 +521,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         scale: int = 1,
         options: list[str] | None = None,
     ) -> None:
+        """Initialize the select entity."""
         super().__init__(coordinator, device_id, device_name, "select", sensor_key, unique_key=f"{sensor_key}_select")
         self._sensor_key = sensor_key
         # Raw device values are divided by `scale` for display and multiplied back when writing
@@ -530,11 +566,15 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         )
 
     @property
+    @override
     def options(self) -> list[str]:
+        """Return the selectable options."""
         return self._options
 
     @property
+    @override
     def current_option(self) -> str | None:
+        """Return the currently selected option."""
         if self._device is None:
             return None
         val = self._status.get(self._sensor_key)
@@ -549,16 +589,19 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             for opt in self._options:
                 if opt.split(" ", 1)[0] == label:
                     return opt
-            return label
         except (ValueError, TypeError, AttributeError):
             return None
+        else:
+            return label
 
+    @override
     async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the device."""
         try:
             # Option may include a unit suffix (e.g., '2 days'), so parse first token
             token = str(option).split()[0]
-            val = int(round(float(token) * self._scale))
-        except Exception as err:
+            val = round(float(token) * self._scale)
+        except (IndexError, OverflowError, ValueError) as err:
             _LOGGER.error("Invalid option for %s: %s", self._sensor_key, err)
             return
 
@@ -590,12 +633,16 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
         return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
 
     @property
+    @override
     def options(self) -> list[str]:
+        """Return the selectable options."""
         unit = self._unit_label()
         return [f"{opt} {unit}" if unit else opt for opt in self._options]
 
     @property
+    @override
     def current_option(self) -> str | None:
+        """Return the currently selected option."""
         value = super().current_option
         if value is None:
             return None
@@ -615,6 +662,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         device_id: str,
         device_name: str,
     ) -> None:
+        """Initialize the select entity."""
         super().__init__(coordinator, device_id, device_name, "select", "getSRO", unique_key="getSRO_select")
 
         # Use raw state keys so the frontend will translate them via the translation files
@@ -634,11 +682,15 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         )
 
     @property
+    @override
     def options(self) -> list[str]:
+        """Return the selectable options."""
         return self._options
 
     @property
+    @override
     def current_option(self) -> str | None:
+        """Return the currently selected option."""
         if self._device is None:
             return None
         val = self._status.get("getSRO")
@@ -654,11 +706,13 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         except (ValueError, TypeError, AttributeError):
             return None
 
+    @override
     async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the device."""
         try:
             token = str(option).rstrip("°").strip()
             val = int(token)
-        except Exception as err:
+        except ValueError as err:
             _LOGGER.error("Invalid option for getSRO: %s", err)
             return
 
@@ -684,6 +738,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
         sensor_key: str,
         options_map: Mapping[str, int | None],
     ) -> None:
+        """Initialize the select entity."""
         super().__init__(coordinator, device_id, device_name, "select", sensor_key, unique_key=f"{sensor_key}_select")
         self._sensor_key = sensor_key
         self._options_map = options_map
@@ -707,11 +762,15 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
         )
 
     @property
+    @override
     def options(self) -> list[str]:
+        """Return the selectable options."""
         return self._options
 
     @property
+    @override
     def current_option(self) -> str | None:
+        """Return the currently selected option."""
         if self._device is None:
             return None
         val = self._status.get(self._sensor_key)
@@ -731,7 +790,9 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                 return opt
         return None
 
+    @override
     async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the device."""
         if option not in self._options_map:
             _LOGGER.error("Invalid option for %s: %s", self._sensor_key, option)
             return
@@ -764,6 +825,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         device_id: str,
         device_name: str,
     ) -> None:
+        """Initialize the select entity."""
         super().__init__(coordinator, device_id, device_name, "select", "getPRF", unique_key="getPRF_select")
 
         # Set entity category according to central sensor mappings
@@ -774,7 +836,9 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
             self._attr_entity_registry_enabled_default = False
 
     @property
+    @override
     def options(self) -> list[str]:
+        """Return the selectable options."""
         status = self._status
         opts: list[str] = []
         for i in range(1, 9):
@@ -786,7 +850,9 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         return opts
 
     @property
+    @override
     def current_option(self) -> str | None:
+        """Return the currently selected option."""
         if self._device is None:
             return None
         status = self._status
@@ -797,10 +863,11 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
             idx = int(float(val))
         except (ValueError, TypeError):
             return None
-        name = status.get(f"getPN{idx}")
-        return name
+        return status.get(f"getPN{idx}")
 
+    @override
     async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the device."""
         # Find index corresponding to selected option
         coordinator = self.coordinator
         status = self._status

@@ -21,7 +21,7 @@ setNOT and setWRN always send "FF" via the standard set command.
 """
 
 import logging
-from typing import cast
+from typing import cast, override
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
@@ -191,6 +191,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
 
         self._command = command
 
+    @override
     async def async_press(self) -> None:
         """Press the button.
 
@@ -313,6 +314,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                 return
 
             # Default: no action for commands not explicitly handled above.
-            return
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err
+        else:
+            return

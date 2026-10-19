@@ -1,5 +1,7 @@
 """Test the SYR Connect exceptions."""
 
+import pytest
+
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -50,7 +52,6 @@ def test_exception_with_cause():
     """Test exceptions with cause."""
     original = ValueError("Original error")
 
-    try:
+    with pytest.raises(SyrConnectAuthError) as excinfo:
         raise SyrConnectAuthError("Auth failed") from original
-    except SyrConnectAuthError as e:
-        assert e.__cause__ == original
+    assert excinfo.value.__cause__ == original

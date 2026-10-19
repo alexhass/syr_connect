@@ -1,5 +1,8 @@
 """Test the SYR Connect payload builder."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch

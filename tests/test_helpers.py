@@ -1,5 +1,9 @@
 """Tests for helpers module."""
 
+# The unit tests in this module check private helpers and attributes directly.
+# ruff: noqa: SLF001
+
+import logging
 import re
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -7,10 +11,27 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from custom_components.syr_connect import helpers
-from custom_components.syr_connect.const import API_TYPE_JSON, DOMAIN
+from custom_components.syr_connect.const import (
+    _SYR_CONNECT_SENSOR_EXCLUDED,
+    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
+    API_TYPE_JSON,
+    DOMAIN,
+)
+from custom_components.syr_connect.devices import (
+    lex,
+    muco_connectioncentre,
+    muco_filling,
+    muco_leakprotect,
+    safefloor,
+    safetech,
+    safetechplus,
+    safetplus,
+    trio,
+)
 from custom_components.syr_connect.helpers import (
     build_device_info,
     build_entity_id,
+    build_set_ab_command,
     build_unique_id,
     get_current_mac,
     get_sensor_ab_value,
@@ -21,19 +42,25 @@ from custom_components.syr_connect.helpers import (
     get_sensor_lng_value,
     get_sensor_net_value,
     get_sensor_not_map,
+    get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
     is_sensor_visible,
     is_valid_host,
     mask_ug_value,
+    set_sensor_rtm_value,
 )
+from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.payload_builder import PayloadBuilder
 
 
 def test_get_default_scan_interval_for_entry_none():
+    """Test get default scan interval for entry none."""
     assert helpers.get_default_scan_interval_for_entry(None) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
 
 
 def test_get_default_scan_interval_for_entry_options_and_data():
+    """Test get default scan interval for entry options and data."""
     # Use an object with attributes (ConfigEntry-like) rather than a plain dict
     entry = SimpleNamespace(options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, data={helpers.CONF_API_TYPE: API_TYPE_JSON})
     assert helpers.get_default_scan_interval_for_entry(entry) == 30
@@ -59,6 +86,7 @@ def test_get_default_scan_interval_for_entry_attribute_access_error_fallback():
     assert helpers.get_default_scan_interval_for_entry(entry) == 45
 
 def test_build_device_info_fallback_and_entity_id_additional():
+    """Test build device info fallback and entity id additional."""
     # No device info in coordinator -> fallback model
     coord = {"devices": []}
     di = helpers.build_device_info("dev123", "My Dev", coord)
@@ -70,6 +98,7 @@ def test_build_device_info_fallback_and_entity_id_additional():
 
 
 def test_registry_cleanup_handles_exception():
+    """Test registry cleanup handles exception."""
     hass = MagicMock()
     # Make er.async_get raise
     with patch("custom_components.syr_connect.helpers.er.async_get", side_effect=RuntimeError("boom")):
@@ -124,6 +153,7 @@ def test_cleanup_removed_devices_handles_exception() -> None:
 
 
 def test_get_current_mac_priorities_additional():
+    """Test get current mac priorities additional."""
     # Primary IP -> getMAC
     s = {"getIPA": "192.168.1.2", "getMAC": "AA:BB:CC"}
     assert helpers.get_current_mac(s) == "AA:BB:CC"
@@ -141,6 +171,7 @@ def test_get_current_mac_priorities_additional():
 
 
 def test_get_sensor_avo_value_variants_additional():
+    """Test get sensor avo value variants additional."""
     assert helpers.get_sensor_avo_value(None) is None
     assert helpers.get_sensor_avo_value(1655) == 1.655
     assert helpers.get_sensor_avo_value("1655mL") == 1.655
@@ -149,6 +180,7 @@ def test_get_sensor_avo_value_variants_additional():
 
 
 def test_get_sensor_vol_value_additional():
+    """Test get sensor vol value additional."""
     assert helpers.get_sensor_vol_value(6530) == 6530
     assert helpers.get_sensor_vol_value("") is None
     assert helpers.get_sensor_vol_value("Vol[L]6530") == "6530"
@@ -156,6 +188,7 @@ def test_get_sensor_vol_value_additional():
 
 
 def test_get_sensor_bat_value_formats_additional():
+    """Test get sensor bat value formats additional."""
     assert helpers.get_sensor_bat_value(None) is None
     assert helpers.get_sensor_bat_value(363) == 3.63
     assert helpers.get_sensor_bat_value("6,11 4,38 3,90") == 6.11
@@ -164,6 +197,7 @@ def test_get_sensor_bat_value_formats_additional():
 
 
 def test_get_sensor_rtm_and_set_additional():
+    """Test get sensor rtm and set additional."""
     # Combined string representation
     status = {"getRTH": "", "getRTM": "07:30"}
     assert helpers.get_sensor_rtm_value(status) == "07:30"
@@ -179,6 +213,7 @@ def test_get_sensor_rtm_and_set_additional():
 
 
 def test_get_sensor_ab_and_build_set_additional():
+    """Test get sensor ab and build set additional."""
     assert helpers.get_sensor_ab_value(None) is None
     assert helpers.get_sensor_ab_value({"getAB": True}) is True
     assert helpers.get_sensor_ab_value({"getAB": 2}) is True
@@ -194,6 +229,7 @@ def test_get_sensor_ab_and_build_set_additional():
 
 
 def test_get_sensor_maps_and_visibility_additional():
+    """Test get sensor maps and visibility additional."""
     # NOT/WRN mapping
     assert helpers.get_sensor_not_map({}, "01")[0] == "new_software_available"
     assert helpers.get_sensor_wrn_map({}, "01")[0] == "power_outage"
@@ -453,56 +489,66 @@ def test_get_sensor_net_value_numeric_int() -> None:
 
 
 def test_get_sensor_iwh_returns_int_when_getiwh_int():
+    """Test get sensor iwh returns int when getIWH int."""
     status = {"getIWH": 10, "getWHU": 0}
     assert get_sensor_iwh_value(status) == 10
 
 
 def test_get_sensor_iwh_returns_float_when_getiwh_string_float():
+    """Test get sensor iwh returns float when getIWH string float."""
     status = {"getIWH": "12.5", "getWHU": 0}
     assert get_sensor_iwh_value(status) == 12.5
 
 
 def test_get_sensor_iwh_derived_from_getcnd_integer_result():
+    """Test get sensor iwh derived from getCND integer result."""
     status = {"getCND": 540}
     # 540 / 33 == 16.363636... -> float
     assert get_sensor_iwh_value(status) == 540 / 33
 
 
 def test_get_sensor_iwh_derived_from_getcnd_float_result():
+    """Test get sensor iwh derived from getCND float result."""
     status = {"getCND": "378"}
     # 378 / 33 == 11.454545... -> float
     assert get_sensor_iwh_value(status) == 378 / 33
 
 
 def test_get_sensor_iwh_returns_none_on_invalid_getcnd():
+    """Test get sensor iwh returns none on invalid getCND."""
     status = {"getCND": "not-a-number"}
     assert get_sensor_iwh_value(status) is None
 
 
 def test_get_sensor_iwh_missing_both_returns_none():
+    """Test get sensor iwh missing both returns none."""
     status = {}
     assert get_sensor_iwh_value(status) is None
 
 
 def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive():
+    """Test get sensor iwh whu missing defaults to zero and derive."""
     status = {"getCND": 300, "getWHU": ""}
     # 300 / 33 == 9.090909... -> float
     assert get_sensor_iwh_value(status) == 300 / 33
 
 
 def test_get_sensor_iwh_derived_from_getcnd_zero():
+    """Test get sensor iwh derived from getCND zero."""
     status = {"getCND": 0}
     # 0 / 30 == 0 -> int
     assert get_sensor_iwh_value(status) == 0
 
 
 def test_get_sensor_iwh_derived_from_getcnd_empty_string():
+    """Test get sensor iwh derived from getCND empty string."""
     status = {"getCND": ""}
     # empty string treated as missing -> None
     assert get_sensor_iwh_value(status) is None
 
 
 def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive():
+    """Test get sensor iwh whu key missing defaults to zero and derive."""
     status = {"getCND": 30}
     # getWHU missing -> default 0; 30 / 33 == 0.909090... -> float
     assert get_sensor_iwh_value(status) == 30 / 33
@@ -612,13 +658,13 @@ def test_clean_sensor_vol_value() -> None:
 
 
 def test_get_sensor_lng_value_with_annotation() -> None:
-    """getLNG value with trailing annotation is stripped to the leading integer."""
+    """The getLNG value with trailing annotation is stripped to the leading integer."""
     assert get_sensor_lng_value("0 (0=Deutsch 1=English)") == "0"
     assert get_sensor_lng_value("1 (0=Deutsch 1=English)") == "1"
 
 
 def test_get_sensor_lng_value_plain() -> None:
-    """getLNG plain integer string is returned unchanged."""
+    """The getLNG plain integer string is returned unchanged."""
     assert get_sensor_lng_value("0") == "0"
     assert get_sensor_lng_value("1") == "1"
 
@@ -642,10 +688,6 @@ def test_get_sensor_lng_value_non_integer_token() -> None:
 
 def test_get_sensor_rtm_and_setters() -> None:
     """Test parsing and building of regeneration time values."""
-    from custom_components.syr_connect.helpers import (
-        get_sensor_rtm_value,
-        set_sensor_rtm_value,
-    )
 
     # Combined representation: getRTM contains HH:MM
     status_combined = {"getRTM": "02:05", "getRTH": None}
@@ -672,10 +714,6 @@ def test_get_sensor_rtm_and_setters() -> None:
 
 def test_get_sensor_ab_and_build_command(caplog) -> None:
     """Test parsing of getAB and building set commands."""
-    from custom_components.syr_connect.helpers import (
-        build_set_ab_command,
-        get_sensor_ab_value,
-    )
 
     # Numeric values
     assert get_sensor_ab_value({"getAB": 2}) is True
@@ -706,7 +744,6 @@ def test_get_sensor_ab_and_build_command(caplog) -> None:
     assert build_set_ab_command({"getAB": "1"}, closed=True) == ("setAB", 2)
     assert build_set_ab_command({"getAB": "2"}, closed=False) == ("setAB", 1)
     # absent getAB key or explicit None → logs error and returns None
-    import logging
     with caplog.at_level(logging.ERROR, logger="custom_components.syr_connect.helpers"):
         result = build_set_ab_command({}, closed=True)
     assert result is None
@@ -810,11 +847,7 @@ def _registry_entry(
 
 
 def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
-    """getCNO (registration code on the device label) is no longer a known key: an existing sensor is removed."""
-    from custom_components.syr_connect.const import (
-        _SYR_CONNECT_SENSOR_EXCLUDED,
-        _SYR_CONNECT_SENSOR_KNOWN_KEYS,
-    )
+    """The getCNO (registration code on the device label) is no longer a known key: an existing sensor is removed."""
 
     registry = MagicMock()
     registry.async_get = MagicMock(return_value=None)
@@ -1011,7 +1044,7 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
-    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING – registry entry exists but device reports ""
+    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING - registry entry exists but device reports ""
     entity_id = build_entity_id("sensor", device_id, "getTYP")
     registry.entities.values.return_value = []
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
@@ -1097,7 +1130,7 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
-    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING – device reports a real value
+    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING - device reports a real value
     entity_id = build_entity_id("sensor", device_id, "getTYP")
     registry.entities.values.return_value = []
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
@@ -1118,7 +1151,7 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
-    # getTYP is conditionally hidden – but domain is "binary_sensor", so no removal expected
+    # getTYP is conditionally hidden - but domain is "binary_sensor", so no removal expected
     entity_id = build_entity_id("binary_sensor", device_id, "getTYP")
     registry.entities.values.return_value = []
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
@@ -1225,7 +1258,6 @@ def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
 
 def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
     """Every signature using a MuCo/NeoSoft/SafeTech/Trio/LEX/Safe-T+ device_file gets a mapping."""
-    from custom_components.syr_connect.models import MODEL_SIGNATURES
 
     families = ("muco_", "neosoft_", "safetech", "trio", "lex", "safetplus")
     checked = 0
@@ -1249,6 +1281,7 @@ def test_get_sensor_ala_map_models_without_device_file() -> None:
 
 
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
+    """Test get sensor not and wrn map unmapped and none."""
     # unmapped code
     mapped_not, raw_not = get_sensor_not_map({}, "ZZ")
     assert mapped_not is None and raw_not == "ZZ"
@@ -1262,6 +1295,7 @@ def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
 
 
 def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
+    """Test is sensor visible empty string and value exclusions."""
     # Use a key from the empty-string exclusion set
     key_es = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING))
     assert not is_sensor_visible({}, key_es, None)
@@ -1285,12 +1319,14 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
 
 
 def test_get_sensor_ab_value_string_variants() -> None:
+    """Test get sensor ab value string variants."""
     # String boolean-like values accepted by helpers
     assert get_sensor_ab_value({"getAB": "true"}) is True
     assert get_sensor_ab_value({"getAB": "false"}) is False
 
 
 def test_get_sensor_bat_value_first_token_unparseable() -> None:
+    """Test get sensor bat value first token unparseable."""
     # First token is non-numeric -> should return None
     assert get_sensor_bat_value("bad 4,38 3,90") is None
 
@@ -1386,7 +1422,7 @@ def test_get_sensor_bat_value_digit_only_exception() -> None:
 def test_get_sensor_rtm_combined_mode_exception_in_parse() -> None:
     """RTM combined-mode parse exception branch (lines 490-492).
 
-    A match is found by the regex but int() on the group raises – this is
+    A match is found by the regex but int() on the group raises - this is
     only reachable via the except block since int/IndexError are caught.
     Force by patching int() on the re match groups via a bad match object.
     """
@@ -1460,7 +1496,7 @@ def test_is_value_true_str_numeric_parse() -> None:
 
 
 def test_is_sensor_visible_cs_value_none_returns_false() -> None:
-    """getCS with None value and non-zero getSVx falls through to value is None check (line 826)."""
+    """The getCS with None value and non-zero getSVx falls through to value is None check (line 826)."""
     # getSV1 is non-zero so the early True is NOT triggered (sv_val is zero string),
     # then value=None hits the 'if value is None: return False' branch.
     status = {"getSV1": "0"}
@@ -1477,9 +1513,7 @@ def test_get_sensor_avo_value_ml_pattern_except() -> None:
     Patch re.match so the first call ('^(<digits>)mL$') returns a mock whose
     group(1) raises ValueError, triggering the inner except branch.
     """
-    from unittest.mock import MagicMock, patch
 
-    from custom_components.syr_connect.helpers import get_sensor_avo_value
 
     bad_match = MagicMock()
     bad_match.group = MagicMock(side_effect=ValueError("bad group"))
@@ -1501,9 +1535,7 @@ def test_get_sensor_avo_value_fallback_pattern_except() -> None:
     Make the first re.match (mL pattern) return None so the code falls
     through to the ^(<digits>) fallback, then patch that match's group(1) to raise.
     """
-    from unittest.mock import MagicMock, patch
 
-    from custom_components.syr_connect.helpers import get_sensor_avo_value
 
     bad_match = MagicMock()
     bad_match.group = MagicMock(side_effect=ValueError("bad group"))
@@ -1546,7 +1578,6 @@ def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
 @pytest.mark.parametrize("password", ["secret", 'a" v="x', "p>w<d", 'v="', ""])
 def test_mask_login_password(password: str):
     """Only the password is masked; username, locale and the rest of the payload stay readable."""
-    from custom_components.syr_connect.payload_builder import PayloadBuilder
 
     builder = PayloadBuilder("1.0", MagicMock(), language="en-DE")
     with patch.object(PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"):
@@ -1569,6 +1600,7 @@ def test_mask_login_password_non_string_and_empty():
 
 
 def test_mask_ug_value_basic():
+    """Test mask ug value basic."""
     payload = '<sc ug="SECRET_TOKEN"><payload>data</payload></sc>'
 
     masked = mask_ug_value(payload)
@@ -1579,6 +1611,7 @@ def test_mask_ug_value_basic():
 
 
 def test_mask_ug_value_multiple_occurrences():
+    """Test mask ug value multiple occurrences."""
     payload = '<r ug="T1"><a ug="T2"/></r>'
 
     masked = mask_ug_value(payload)
@@ -1588,6 +1621,7 @@ def test_mask_ug_value_multiple_occurrences():
 
 
 def test_mask_ug_value_handles_empty_value():
+    """Test mask ug value handles empty value."""
     payload = '<r ug=""><child ug=""/></r>'
 
     masked = mask_ug_value(payload)
@@ -1649,7 +1683,7 @@ def test_mask_ug_value_re_error_returns_original():
 
 
 # ---------------------------------------------------------------------------
-# is_sensor_visible – getBAP firmware-bug suppression (lines 1077-1088)
+# is_sensor_visible - getBAP firmware-bug suppression (lines 1077-1088)
 # ---------------------------------------------------------------------------
 
 def test_is_sensor_visible_getbap_suppressed_when_zero_and_bat_positive() -> None:
@@ -1683,7 +1717,7 @@ def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() 
 
 
 # ---------------------------------------------------------------------------
-# get_model_known_keys – per-model devices/<name>.py override resolution
+# get_model_known_keys - per-model devices/<name>.py override resolution
 # ---------------------------------------------------------------------------
 
 def test_get_model_known_keys_falls_back_when_name_missing() -> None:
@@ -1693,9 +1727,10 @@ def test_get_model_known_keys_falls_back_when_name_missing() -> None:
 
 
 def test_get_model_known_keys_uses_device_override_when_defined() -> None:
-    """A model with a matching devices/<name>.py file that defines the platform's
-    allowlist uses it verbatim instead of the global set (lines 254, 257-259)."""
-    from custom_components.syr_connect.devices import muco_filling
+    """A devices/<name>.py file that defines the platform's allowlist is used verbatim.
+
+    It replaces the global set (lines 254, 257-259).
+    """
 
     global_keys = {"getBAR", "getVOL"}
     result = helpers.get_model_known_keys({"name": "muco_filling"}, "sensor", global_keys)
@@ -1703,7 +1738,6 @@ def test_get_model_known_keys_uses_device_override_when_defined() -> None:
     assert result != global_keys
     assert {"getCFT", "getCFV"} <= result
 
-    from custom_components.syr_connect.devices import muco_connectioncentre
 
     result = helpers.get_model_known_keys({"name": "muco_connectioncentre"}, "sensor", global_keys)
     assert result == muco_connectioncentre.SENSOR_KNOWN_KEYS
@@ -1711,8 +1745,10 @@ def test_get_model_known_keys_uses_device_override_when_defined() -> None:
 
 
 def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
-    """A matching devices/<name>.py file that does NOT define this platform's allowlist
-    falls back to the global set (line 258)."""
+    """A devices/<name>.py file without this platform's allowlist falls back to the global set.
+
+    Covers line 258.
+    """
     global_keys = {"getBUZ"}
     # A device module that defines no <PLATFORM>_KNOWN_KEYS at all (every real device file defines
     # all of them), so the global set is returned unchanged.
@@ -1723,7 +1759,6 @@ def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
 
 def test_get_model_known_keys_uses_device_file_over_name() -> None:
     """The 'device_file' field takes priority over 'name' when both are present."""
-    from custom_components.syr_connect.devices import muco_leakprotect
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys(
@@ -1734,7 +1769,6 @@ def test_get_model_known_keys_uses_device_file_over_name() -> None:
 
 def test_get_model_known_keys_safetplus_device_override() -> None:
     """The safetplus model resolves its own devices/safetplus.py override file."""
-    from custom_components.syr_connect.devices import safetplus
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys({"name": "safetplus"}, "sensor", global_keys)
@@ -1746,8 +1780,6 @@ def test_get_model_known_keys_safetplus_device_override() -> None:
 
 def test_get_model_known_keys_safetech_device_override() -> None:
     """SafeTech and SafeTech+ models use their distinct allowlists."""
-    from custom_components.syr_connect.devices import safetech, safetechplus
-    from custom_components.syr_connect.models import MODEL_SIGNATURES
 
     safetech_names = {
         "safetech",
@@ -1788,9 +1820,10 @@ def test_get_model_known_keys_safetech_device_override() -> None:
 
 
 def test_get_model_known_keys_lex_device_override() -> None:
-    """The lex model (shared by all l10-l100/lex10-lex100 signatures) resolves
-    its own devices/lex.py override file."""
-    from custom_components.syr_connect.devices import lex
+    """The lex model resolves its own devices/lex.py override file.
+
+    The file is shared by all l10-l100/lex10-lex100 signatures.
+    """
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys({"name": "lex"}, "sensor", global_keys)
@@ -1802,7 +1835,6 @@ def test_get_model_known_keys_lex_device_override() -> None:
 
 def test_get_model_known_keys_safefloor_device_override() -> None:
     """The safefloor model resolves its own devices/safefloor.py override file."""
-    from custom_components.syr_connect.devices import safefloor
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys({"name": "safefloor"}, "sensor", global_keys)
@@ -1816,7 +1848,6 @@ def test_get_model_known_keys_safefloor_device_override() -> None:
 
 def test_get_model_known_keys_trio_device_override() -> None:
     """The trio model (Trio DFR/LS) resolves its own devices/trio.py override file."""
-    from custom_components.syr_connect.devices import trio
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys({"name": "trio"}, "sensor", global_keys)
@@ -1869,7 +1900,7 @@ def test_is_valid_host_rejects(host: str) -> None:
     [("0", True), ("1", True), (" 1 ", True), (1, True), ("2", False), ("3", False), ("", False), (None, False)],
 )
 def test_is_device_offline(dst, expected) -> None:
-    """dst 0 (never online) and 1 (offline) mean offline; everything else does not."""
+    """The dst values 0 (never online) and 1 (offline) mean offline; everything else does not."""
     assert helpers.is_device_offline(dst) is expected
 
 

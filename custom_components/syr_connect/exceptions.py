@@ -34,6 +34,7 @@ class SyrConnectHTTPError(SyrConnectConnectionError):
     """
 
     def __init__(self, msg: str | None = None, status: int | None = None) -> None:
+        """Initialize the error with a message and an optional HTTP status code."""
         super().__init__(msg or "HTTP error")
         self.status = status
 

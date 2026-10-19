@@ -154,6 +154,16 @@ class SyrConnectXmlAPI:
         # HTTP client with SYR-specific User-Agent
         self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT, language=language)
 
+    @property
+    def device_get_status_url(self) -> str:
+        """Return the URL of the device status request."""
+        return self._device_get_status_url
+
+    @property
+    def device_list_url(self) -> str:
+        """Return the URL of the device list request."""
+        return self._device_list_url
+
     def is_session_valid(self) -> bool:
         """Return True if a session token from a previous login is available.
 
@@ -269,8 +279,6 @@ class SyrConnectXmlAPI:
             for project in self.projects:
                 _LOGGER.debug("Project: %s (ID: %s)", project['name'], project['id'])
 
-            return True
-
         # --- Error Handling ---
         except SyrConnectAuthError as err:
             # The server rejected the credentials (see parse_decrypted_login): re-authentication needed
@@ -291,6 +299,8 @@ class SyrConnectXmlAPI:
             error_representation = repr(err)
             _LOGGER.error("Login failed with unexpected error: %s", error_representation)
             raise SyrConnectConnectionError(f"Login failed: {error_representation}") from err
+        else:
+            return True
 
     async def get_devices(self, project_id: str) -> list[dict[str, Any]]:
         """Fetch all devices in a project.
@@ -356,10 +366,11 @@ class SyrConnectXmlAPI:
                 )
 
             _LOGGER.debug("Found %d device(s) in project %s", len(devices), project_id)
-            return devices
 
         except (aiohttp.ClientError, TimeoutError) as err:
             raise SyrConnectConnectionError(f"Failed to get devices: {err}") from err
+        else:
+            return devices
 
     async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Fetch current status and parameters of a device.
@@ -410,7 +421,6 @@ class SyrConnectXmlAPI:
                 return None
 
             _LOGGER.debug("Status data parsed: %d attributes", len(status_data))
-            return status_data
 
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors after all retries: wrap them like login()/get_devices() so callers
@@ -420,6 +430,8 @@ class SyrConnectXmlAPI:
         except Exception as err:
             _LOGGER.error("Failed to get device status: %s", err)
             raise
+        else:
+            return status_data
 
     async def set_device_status(
         self,
@@ -467,7 +479,6 @@ class SyrConnectXmlAPI:
                 len(commands),
                 device_id,
             )
-            return True
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors after all retries: wrapped so the entity turns them into a
             # HomeAssistantError for the user instead of an unhandled exception
@@ -476,6 +487,8 @@ class SyrConnectXmlAPI:
         except Exception as err:
             _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
             raise
+        else:
+            return True
 
     async def get_statistics(self, device_id: str, statistic_type: str = "water") -> dict[str, Any]:
         """Fetch historical consumption statistics for a device.
@@ -526,7 +539,6 @@ class SyrConnectXmlAPI:
             # Statistics format depends on device model and statistic type
             stats_data = self.response_parser.parse_statistics_response(xml_response)
             _LOGGER.debug("Statistics data parsed: %d attributes", len(stats_data))
-            return stats_data
 
         except (aiohttp.ClientError, TimeoutError) as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
@@ -534,3 +546,5 @@ class SyrConnectXmlAPI:
         except Exception as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
             raise
+        else:
+            return stats_data

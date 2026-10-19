@@ -1,8 +1,12 @@
+"""Fixtures for the SYR Connect tests."""
+
 from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
@@ -40,7 +44,7 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 @pytest.fixture
 def mock_syr_api():
     """Mock SyrConnectXmlAPI."""
-    with patch("custom_components.syr_connect.api_xml.SyrConnectXmlAPI") as mock_api:
+    with patch("custom_components.syr_connect.config_flow.SyrConnectXmlAPI") as mock_api:
         api_instance = MagicMock()
         api_instance.login = AsyncMock(return_value=True)
         api_instance.session_data = "test_session_id"
@@ -48,8 +52,6 @@ def mock_syr_api():
         api_instance.get_devices = AsyncMock(return_value=[])
         api_instance.get_device_status = AsyncMock(return_value={})
         api_instance.is_session_valid = MagicMock(return_value=True)
-        # Prevent accidental async mock creation
-        api_instance._is_coroutine = False
         mock_api.return_value = api_instance
         yield api_instance
 
@@ -66,9 +68,6 @@ def mock_config_entry():
 @pytest.fixture
 def create_mock_coordinator():
     """Create a mock coordinator with given data."""
-    from custom_components.syr_connect.coordinator import (
-        SyrConnectDataUpdateCoordinator,
-    )
 
     def _create(data: dict | None = None) -> MagicMock:
         mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -85,7 +84,6 @@ def create_mock_coordinator():
 @pytest.fixture
 def create_mock_entry_with_coordinator(create_mock_coordinator):
     """Create a mock config entry with coordinator."""
-    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
     def _create(data: dict | None = None) -> tuple[MockConfigEntry, MagicMock]:
         mock_config_entry = MockConfigEntry()

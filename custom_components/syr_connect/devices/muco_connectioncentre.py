@@ -1,5 +1,6 @@
-"""Entity allowlist override for the muco_connectioncentre model (SYR AC 3200
-Connect, dkv=506, getDFM=2, "Connection centre"/"Anschlusscenter" role).
+"""Entity allowlist override for the muco_connectioncentre model.
+
+SYR AC 3200 Connect (dkv=506, getDFM=2), "Connection centre"/"Anschlusscenter" role.
 
 Model type: Connection Centre / "Anschlusscenter"
 
