@@ -153,4 +153,4 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run mypy
-        run: mypy custom_components/syr_connect
+        run: mypy

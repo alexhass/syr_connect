@@ -94,7 +94,7 @@
     {
       "label": "Mypy Type Check",
       "type": "shell",
-      "command": "${command:python.interpreterPath} -m mypy custom_components/syr_connect",
+      "command": "${command:python.interpreterPath} -m mypy",
       "group": {
         "kind": "test",
         "isDefault": true

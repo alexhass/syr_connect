@@ -22,7 +22,7 @@ All of these files apply. Read the matching ones before changing code.
 - Tests (WSL only): `wsl.exe bash -lc 'cd <repo path in WSL> && <WSL venv>/bin/python -m pytest --timeout=10 -q -p no:cacheprovider tests'`, or the VS Code task "Pytest (WSL)".
 - Coverage (WSL only): add `--cov=custom_components.syr_connect --cov-report=term-missing:skip-covered` to the test command. It must report 100 %; every uncovered line needs a test.
 - Format (Windows): `.venv/Scripts/ruff.exe format .` after every change to Python code, before linting. `.venv/Scripts/ruff.exe format --check .` must report no changes.
-- Lint and types (Windows): `.venv/Scripts/ruff.exe check .` and `.venv/Scripts/mypy.exe custom_components/syr_connect`.
+- Lint and types (Windows): `.venv/Scripts/ruff.exe check .` and `.venv/Scripts/mypy.exe` (checks the integration and `scripts/`, see `files` in `mypy.ini`).
 - Git: use the Windows git only. WSL git reports nearly every file as modified because of line endings.
 
 ## Deliberate Decisions
