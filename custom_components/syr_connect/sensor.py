@@ -102,19 +102,25 @@ async def async_setup_entry(
 
     entities: list[SensorEntity] = []
 
-    _LOGGER.debug("Setting up sensors for %d device(s)", len(coordinator.data.get('devices', [])))
+    _LOGGER.debug(
+        "Setting up sensors for %d device(s)", len(coordinator.data.get("devices", []))
+    )
 
-    for device in coordinator.data.get('devices', []):
-        device_id = device['id']
-        device_name = device['name']
-        status = device.get('status', {})
+    for device in coordinator.data.get("devices", []):
+        device_id = device["id"]
+        device_name = device["name"]
+        status = device.get("status", {})
 
         # Scope the sensor allowlist to the detected model (falls back to the
         # global allowlist for models that haven't opted into per-model key lists).
         model_info = detect_model(status)
-        known_sensor_keys = get_model_known_keys(model_info, "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS)
+        known_sensor_keys = get_model_known_keys(
+            model_info, "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS
+        )
 
-        _LOGGER.debug("Device %s (%s) has %d status values", device_name, device_id, len(status))
+        _LOGGER.debug(
+            "Device %s (%s) has %d status values", device_name, device_id, len(status)
+        )
 
         # Only create the connection state sensor when the API provides a "dst" value
         if status.get("dst") is not None:
@@ -135,9 +141,13 @@ async def async_setup_entry(
 
         # Create sensors for all status values
         for key, value in status.items():
-            if not _is_sensor_wanted(status, key, value, known_sensor_keys, handled_keys):
+            if not _is_sensor_wanted(
+                status, key, value, known_sensor_keys, handled_keys
+            ):
                 continue
-            _LOGGER.debug("Creating sensor: device=%s key=%s value=%r", device_id, key, value)
+            _LOGGER.debug(
+                "Creating sensor: device=%s key=%s value=%r", device_id, key, value
+            )
             entities.append(
                 SyrConnectSensor(
                     coordinator,
@@ -188,7 +198,7 @@ def _build_pa_group_sensors(
             f"getPM{idx}",
             f"getPW{idx}",
             f"getPB{idx}",
-            f"getPR{idx}"
+            f"getPR{idx}",
         ]
 
         try:
@@ -199,12 +209,22 @@ def _build_pa_group_sensors(
                     # Avoid duplicates when iterating over status later
                     handled_keys.add(gk)
                     if gk not in known_sensor_keys:
-                        _LOGGER.debug("Skipping PA group sensor (not in allowlist): device=%s key=%s", device_id, gk)
+                        _LOGGER.debug(
+                            "Skipping PA group sensor (not in allowlist): device=%s key=%s",
+                            device_id,
+                            gk,
+                        )
                         continue
                     if gk not in status:
-                        _LOGGER.debug("Skipping PA group sensor (not in status): device=%s key=%s", device_id, gk)
+                        _LOGGER.debug(
+                            "Skipping PA group sensor (not in status): device=%s key=%s",
+                            device_id,
+                            gk,
+                        )
                         continue
-                    _LOGGER.debug("Creating sensor (PA group): device=%s key=%s", device_id, gk)
+                    _LOGGER.debug(
+                        "Creating sensor (PA group): device=%s key=%s", device_id, gk
+                    )
                     entities.append(
                         SyrConnectSensor(
                             coordinator,
@@ -221,17 +241,26 @@ def _build_pa_group_sensors(
                 for gk in group_keys:
                     try:
                         # Found by unique_id, so a renamed or "_2"-suffixed sensor is removed as well
-                        stale_entity_id = find_entity_id(registry, "sensor", coordinator.entry_id, device_id, gk)
+                        stale_entity_id = find_entity_id(
+                            registry, "sensor", coordinator.entry_id, device_id, gk
+                        )
                         if stale_entity_id is not None:
-                            _LOGGER.debug("Removing sensor due to getPA=false: %s", stale_entity_id)
+                            _LOGGER.debug(
+                                "Removing sensor due to getPA=false: %s",
+                                stale_entity_id,
+                            )
                             registry.async_remove(stale_entity_id)
                     except RuntimeError:
-                        _LOGGER.exception("Failed to remove sensor %s for device %s", gk, device_id)
+                        _LOGGER.exception(
+                            "Failed to remove sensor %s for device %s", gk, device_id
+                        )
                     # Ensure group keys are marked as handled so they are not recreated
                     # later when iterating over status.items().
                     handled_keys.add(gk)
-        except (ValueError, KeyError, AttributeError, TypeError):
-            _LOGGER.exception("Error handling getPA group %s for device %s", pa_key, device_id)
+        except ValueError, KeyError, AttributeError, TypeError:
+            _LOGGER.exception(
+                "Error handling getPA group %s for device %s", pa_key, device_id
+            )
 
     return entities, handled_keys
 
@@ -242,7 +271,7 @@ def _to_float(value: Any) -> float | None:
         return None
     try:
         return float(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
 
@@ -325,7 +354,9 @@ def _async_setup_muco_conditional_sensors(
             return None
         # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
         # also report getCRT/getLOT/getOHW but deliberately do not expose them.
-        known_sensor_keys = get_model_known_keys(detect_model(status), "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS)
+        known_sensor_keys = get_model_known_keys(
+            detect_model(status), "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS
+        )
         return key if key in known_sensor_keys else None
 
     @callback
@@ -344,14 +375,21 @@ def _async_setup_muco_conditional_sensors(
                 wanted_set = {wanted} if wanted else set()
 
                 for key in current - wanted_set:
-                    stale_entity_id = find_entity_id(registry, "sensor", coordinator.entry_id, device_id, key)
+                    stale_entity_id = find_entity_id(
+                        registry, "sensor", coordinator.entry_id, device_id, key
+                    )
                     if stale_entity_id is not None:
-                        _LOGGER.debug("Removing conditionally hidden sensor from registry: %s", stale_entity_id)
+                        _LOGGER.debug(
+                            "Removing conditionally hidden sensor from registry: %s",
+                            stale_entity_id,
+                        )
                         registry.async_remove(stale_entity_id)
                     current.discard(key)
 
                 for key in wanted_set - current:
-                    new_entities.append(SyrConnectSensor(coordinator, device_id, device_name, key))
+                    new_entities.append(
+                        SyrConnectSensor(coordinator, device_id, device_name, key)
+                    )
                     current.add(key)
         except Exception:
             _LOGGER.exception("Failed to sync conditional MuCo sensor(s)")
@@ -391,11 +429,13 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # Set unit of measurement for water hardness sensors dynamically
         if sensor_key in ("getIWH", "getOWH"):
             # Try to get WHU value from device status
-            whu_value = self._status.get('getWHU')
+            whu_value = self._status.get("getWHU")
             if whu_value is not None:
                 try:
-                    self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(whu_value), None)
-                except (ValueError, TypeError):
+                    self._attr_native_unit_of_measurement = (
+                        _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(whu_value), None)
+                    )
+                except ValueError, TypeError:
                     self._attr_native_unit_of_measurement = None
             else:
                 self._attr_native_unit_of_measurement = None
@@ -404,7 +444,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
         # Set suggested display precision if available
         if sensor_key in _SYR_CONNECT_SENSOR_UNIT_PRECISION:
-            self._attr_suggested_display_precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION[sensor_key]
+            self._attr_suggested_display_precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION[
+                sensor_key
+            ]
 
         # Set device class if available
         if sensor_key in _SYR_CONNECT_SENSOR_DEVICE_CLASS:
@@ -417,7 +459,10 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # Disable sensors by default based on configuration
         # Also disable sensors that are represented by control entities so they
         # are available if users explicitly enable them, but do not clutter the UI.
-        if sensor_key in ("getIPA", "getDGW", "getMAC") or sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+        if (
+            sensor_key in ("getIPA", "getDGW", "getMAC")
+            or sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
+        ):
             self._attr_entity_registry_enabled_default = False
 
         # Override getBAT attributes for devices that report battery as percentage (e.g. SafeFloor TYP=120)
@@ -441,16 +486,16 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             The converted value with appropriate precision
         """
         # Apply sensor-specific conversions
-        if self._sensor_key in ('getCEL', 'getMIT', 'getMXT'):
+        if self._sensor_key in ("getCEL", "getMIT", "getMXT"):
             # Values are provided as 1/10 °C (e.g. 110 -> 11.0°C, -40 -> -4.0°C)
             value = value / 10
-        elif self._sensor_key in ('getPRS', 'getTPR'):
+        elif self._sensor_key in ("getPRS", "getTPR"):
             # Values are provided in 1/10 units (e.g. dbar to bar)
             value = value / 10
-        elif self._sensor_key == 'getLOT':
+        elif self._sensor_key == "getLOT":
             # Value is in steps of 10 µS/cm (e.g. 7 -> 70 µS/cm)
             value = value * 10
-        elif self._sensor_key == 'getVOL':
+        elif self._sensor_key == "getVOL":
             # API provides total volume in liters; convert to cubic meters (m³)
             with contextlib.suppress(ZeroDivisionError, TypeError):
                 value = value / 1000
@@ -462,7 +507,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 value = round(value, precision)
                 if precision == 0:
                     return int(value)
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 pass
 
         return value
@@ -475,7 +520,10 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         In percentage mode the BATTERY device class provides the icon, in voltage mode a
         dead battery (0 V) is flagged.
         """
-        if self._sensor_key != "getBAT" or self._attr_device_class == SensorDeviceClass.BATTERY:
+        if (
+            self._sensor_key != "getBAT"
+            or self._attr_device_class == SensorDeviceClass.BATTERY
+        ):
             return None
 
         val = self.native_value
@@ -483,7 +531,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             try:
                 if float(str(val).strip()) == 0:
                     return "mdi:battery-alert-variant-outline"
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 pass
         return "mdi:battery"
 
@@ -513,7 +561,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         device = self._device
         if device is None:
             return None
-        status = device.get('status', {})
+        status = device.get("status", {})
         value = status.get(self._sensor_key)
 
         # Log missing sensor data (API omitted field or returned None/empty)
@@ -527,13 +575,15 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             )
 
         handler = self._SYR_CONNECT_SENSOR_VALUE_HANDLERS.get(self._sensor_key)
-        if handler is None and _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG.match(self._sensor_key):
+        if handler is None and _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG.match(
+            self._sensor_key
+        ):
             handler = SyrConnectSensor._value_leak_protection_flag
         if handler is not None:
             return handler(self, status, value)
 
         # Clean prefix like 'Vol[L]6530' -> '6530', then continue as a number
-        if self._sensor_key == 'getVOL' and value is not None:
+        if self._sensor_key == "getVOL" and value is not None:
             value = get_sensor_vol_value(value)
 
         # Keep certain sensors as strings (version, serial, MAC, etc.)
@@ -546,7 +596,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             try:
                 numeric_value = float(value)
                 return self._apply_numeric_conversion(numeric_value)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return value
 
         # Handle numeric values directly
@@ -572,7 +622,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             # Model unknown or no mapping found: return the raw value 1:1
             sval = str(raw_code)
             return sval if sval.strip() != "" else None
-        except (ValueError, KeyError, AttributeError, TypeError):
+        except ValueError, KeyError, AttributeError, TypeError:
             return None
 
     def _value_ab(self, status: dict[str, Any], value: Any) -> Any:
@@ -599,7 +649,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         raw_str = str(value) if value is not None else ""
         try:
             ala_mapped, _ = get_sensor_ala_map(status or {}, value)
-        except (ValueError, KeyError, AttributeError, TypeError):
+        except ValueError, KeyError, AttributeError, TypeError:
             ala_mapped = None
         std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
         mapped = ala_mapped or std_mapped
@@ -617,13 +667,13 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if value is None or value == "":
             return None
         try:
-            match = re.search(r'\d+', str(value))
+            match = re.search(r"\d+", str(value))
             if not match:
                 return None
             pressure_bar = float(match.group()) / 1000
             precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 3)
             return round(pressure_bar, precision)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
     def _value_bat(self, status: dict[str, Any], value: Any) -> Any:
@@ -640,7 +690,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if self._attr_native_unit_of_measurement == PERCENTAGE:
             try:
                 return int(float(str(value).strip()))
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return None
         return get_sensor_bat_value(value)
 
@@ -655,7 +705,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             pressure_bar = float(match.group()) / 10.0
             precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 1)
             return round(pressure_bar, precision)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
     def _value_iwh(self, status: dict[str, Any], value: Any) -> Any:
@@ -681,7 +731,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         try:
             # Home Assistant formats it according to the user's timezone/locale.
             return datetime.fromtimestamp(int(float(value)), UTC)
-        except (ValueError, TypeError, OverflowError):
+        except ValueError, TypeError, OverflowError:
             return None
 
     @staticmethod
@@ -694,7 +744,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         """
         try:
             return value_map.get(int(value or default))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
     def _value_le(self, status: dict[str, Any], value: Any) -> Any:
@@ -730,10 +780,10 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             return None
         try:
             mask = int(float(value))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             try:
                 mask = int(str(value).strip())
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return None
 
         if mask == 0:
@@ -752,7 +802,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 day = ref_monday + timedelta(days=idx)
                 try:
                     name = format_datetime(day, "EEE", locale=locale)
-                except (ValueError, KeyError, AttributeError, TypeError):
+                except ValueError, KeyError, AttributeError, TypeError:
                     # Fallback to system short name if Babel/localization fails
                     name = day.strftime("%a")
                 parts.append(name)
@@ -768,18 +818,36 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer (0=Standby);
         # check for None explicitly so a genuine 0 is kept.
         raw = str(value) if value is not None else ""
-        _LOGGER.debug("getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw)
+        _LOGGER.debug(
+            "getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw
+        )
 
         m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
         if m_match:
-            mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get("Płukanie regenerantem", "status_regenerant_rinse"))
-            _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"resistance_value": str(m_match.group(1) or "")})
+            mapped = str(
+                _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
+                    "Płukanie regenerantem", "status_regenerant_rinse"
+                )
+            )
+            _LOGGER.debug(
+                "getSTA mapped=%s placeholders=%s",
+                mapped,
+                {"resistance_value": str(m_match.group(1) or "")},
+            )
             return mapped
 
         m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
         if m2_match:
-            mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get("Płukanie rapide", "status_fast_rinse"))
-            _LOGGER.debug("getSTA mapped=%s placeholders=%s", mapped, {"rinse_round": str(m2_match.group(1) or "")})
+            mapped = str(
+                _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
+                    "Płukanie rapide", "status_fast_rinse"
+                )
+            )
+            _LOGGER.debug(
+                "getSTA mapped=%s placeholders=%s",
+                mapped,
+                {"rinse_round": str(m2_match.group(1) or "")},
+            )
             return mapped
 
         # Fallback: use the raw string as mapping key
@@ -801,7 +869,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             return None
         try:
             raw = int(float(value))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
         return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
 
@@ -824,38 +892,41 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if isinstance(value, str):
             try:
                 return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return None
         return None
 
     _SYR_CONNECT_SENSOR_VALUE_HANDLERS: dict[
-        str, Callable[[SyrConnectSensor, dict[str, Any], Any], str | int | float | datetime | None]
+        str,
+        Callable[
+            [SyrConnectSensor, dict[str, Any], Any], str | int | float | datetime | None
+        ],
     ] = {
-        'getAB': _value_ab,
-        'getALA': _value_ala,
-        'getALM': _value_alm,
-        'getAVO': _value_avo,
-        'getBAR': _value_bar,
-        'getBAR2': _value_bar,
-        'getBAT': _value_bat,
-        'getCRS': _value_crs,
-        'getCRT': _value_crt,
-        'getDBD': _value_dbd,
-        'getIWH': _value_iwh,
-        'getLAR': _value_lar,
-        'getLE': _value_le,
-        'getLNG': _value_lng,
-        'getNET': _value_net,
-        'getNOT': _value_not,
-        'getRCD': _value_rcd,
-        'getRPW': _value_rpw,
-        'getRTM': _value_rtm,
-        'getSTA': _value_sta,
-        'getT1': _value_t,
-        'getT2': _value_t,
-        'getUL': _value_ul,
-        'getWHU': _value_whu,
-        'getWRN': _value_wrn,
+        "getAB": _value_ab,
+        "getALA": _value_ala,
+        "getALM": _value_alm,
+        "getAVO": _value_avo,
+        "getBAR": _value_bar,
+        "getBAR2": _value_bar,
+        "getBAT": _value_bat,
+        "getCRS": _value_crs,
+        "getCRT": _value_crt,
+        "getDBD": _value_dbd,
+        "getIWH": _value_iwh,
+        "getLAR": _value_lar,
+        "getLE": _value_le,
+        "getLNG": _value_lng,
+        "getNET": _value_net,
+        "getNOT": _value_not,
+        "getRCD": _value_rcd,
+        "getRPW": _value_rpw,
+        "getRTM": _value_rtm,
+        "getSTA": _value_sta,
+        "getT1": _value_t,
+        "getT2": _value_t,
+        "getUL": _value_ul,
+        "getWHU": _value_whu,
+        "getWRN": _value_wrn,
     }
 
 
@@ -881,12 +952,12 @@ class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
     @override
     def native_value(self) -> str | None:
         """Return the raw dst value as a string (translation key)."""
-        dst = self._status.get('dst')
+        dst = self._status.get("dst")
         if dst is None:
             return None
         try:
             return str(int(dst))
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return str(dst)
 
     @property
@@ -894,4 +965,3 @@ class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
     def available(self) -> bool:
         """Always available so the connection state is always shown."""
         return True
-

@@ -123,7 +123,9 @@ class SyrConnectXmlAPI:
         self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
         self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
         self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
-        self._device_get_statistics_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
+        self._device_get_statistics_url = (
+            _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
+        )
 
         # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
         # The app sends the phone's language here; use the HA locale.
@@ -140,19 +142,27 @@ class SyrConnectXmlAPI:
         # These handle the low-level details of the SYR protocol
 
         # AES encryption for login response decryption
-        self.encryption = SyrEncryption(_SYR_CONNECT_CLIENT_ENCRYPTION_KEY, _SYR_CONNECT_CLIENT_ENCRYPTION_IV)
+        self.encryption = SyrEncryption(
+            _SYR_CONNECT_CLIENT_ENCRYPTION_KEY, _SYR_CONNECT_CLIENT_ENCRYPTION_IV
+        )
 
         # Request checksum required by the webservice (proprietary, two keys; not an HMAC)
-        self.checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
+        self.checksum = SyrChecksum(
+            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
+        )
 
         # XML payload construction with embedded checksums
-        self.payload_builder = PayloadBuilder(_app_version, self.checksum, _app_name, language)
+        self.payload_builder = PayloadBuilder(
+            _app_version, self.checksum, _app_name, language
+        )
 
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
 
         # HTTP client with SYR-specific User-Agent
-        self.http_client = HTTPClient(session, _SYR_CONNECT_CLIENT_USER_AGENT, language=language)
+        self.http_client = HTTPClient(
+            session, _SYR_CONNECT_CLIENT_USER_AGENT, language=language
+        )
 
     @property
     def device_get_status_url(self) -> str:
@@ -194,7 +204,9 @@ class SyrConnectXmlAPI:
                 return
             await self.login()
 
-    async def _post_with_session(self, url: str, build_payload: Callable[[str], str], name: str) -> str:
+    async def _post_with_session(
+        self, url: str, build_payload: Callable[[str], str], name: str
+    ) -> str:
         """Post a request built with the current session token; re-login once if it is rejected.
 
         The webservice answers a rejected (invalid or expired) token with HTTP 200 and
@@ -220,7 +232,9 @@ class SyrConnectXmlAPI:
             _LOGGER.info("%s: %s; logging in again", name, err)
             await self._relogin(token)
             payload = build_payload(self.session_data)
-            _LOGGER.debug("%s payload (after re-login): %s", name, mask_ug_value(payload))
+            _LOGGER.debug(
+                "%s payload (after re-login): %s", name, mask_ug_value(payload)
+            )
             xml_response = await self.http_client.post(url, {"xml": payload})
             self.response_parser.raise_if_session_expired(xml_response)
         return xml_response
@@ -250,16 +264,16 @@ class SyrConnectXmlAPI:
 
         # --- Build Login Request ---
         # Payload includes username, password, and checksum for integrity
-        xml_data = self.payload_builder.build_login_payload(self.username, self.password)
+        xml_data = self.payload_builder.build_login_payload(
+            self.username, self.password
+        )
         _LOGGER.debug("Login payload prepared: %s", mask_login_password(xml_data))
 
         try:
             # --- Make HTTP Request ---
             # Login uses direct XML POST (not form-encoded like other endpoints)
             xml_response = await self.http_client.post(
-                self._login_url,
-                xml_data,
-                content_type='text/xml'
+                self._login_url, xml_data, content_type="text/xml"
             )
             _LOGGER.debug("Login XML response received")
 
@@ -271,13 +285,15 @@ class SyrConnectXmlAPI:
 
             # --- Extract Session and Projects ---
             # Decrypted data contains session token and list of accessible projects
-            self.session_data, self.projects = self.response_parser.parse_decrypted_login(decrypted)
+            self.session_data, self.projects = (
+                self.response_parser.parse_decrypted_login(decrypted)
+            )
 
             _LOGGER.info("Login successful, found %d project(s)", len(self.projects))
 
             # Log available projects for debugging
             for project in self.projects:
-                _LOGGER.debug("Project: %s (ID: %s)", project['name'], project['id'])
+                _LOGGER.debug("Project: %s (ID: %s)", project["name"], project["id"])
 
         # --- Error Handling ---
         except SyrConnectAuthError as err:
@@ -293,12 +309,18 @@ class SyrConnectXmlAPI:
             # Network errors (DNS, connection timeout, etc.)
             error_representation = repr(err)
             _LOGGER.error("Connection failed: %s", error_representation)
-            raise SyrConnectConnectionError(f"Connection failed: {error_representation}") from err
+            raise SyrConnectConnectionError(
+                f"Connection failed: {error_representation}"
+            ) from err
         except Exception as err:
             # Catch-all for unexpected errors (encryption failures, etc.)
             error_representation = repr(err)
-            _LOGGER.error("Login failed with unexpected error: %s", error_representation)
-            raise SyrConnectConnectionError(f"Login failed: {error_representation}") from err
+            _LOGGER.error(
+                "Login failed with unexpected error: %s", error_representation
+            )
+            raise SyrConnectConnectionError(
+                f"Login failed: {error_representation}"
+            ) from err
         else:
             return True
 
@@ -336,7 +358,9 @@ class SyrConnectXmlAPI:
             # Device list endpoint uses form-encoded XML
             xml_response = await self._post_with_session(
                 self._device_list_url,
-                lambda token: self.payload_builder.build_device_get_list_payload(token, project_id),
+                lambda token: self.payload_builder.build_device_get_list_payload(
+                    token, project_id
+                ),
                 "Device list",
             )
             _LOGGER.debug("Device list XML response: %s", xml_response)
@@ -349,20 +373,22 @@ class SyrConnectXmlAPI:
             # Add project context and normalize ID fields
             for device in devices:
                 # Associate device with its parent project
-                device['project_id'] = project_id
+                device["project_id"] = project_id
 
                 # Ensure 'id' field exists (parser may use 'serial_number')
                 # This normalizes the interface for the coordinator
-                if 'id' not in device and 'serial_number' in device:
+                if "id" not in device and "serial_number" in device:
                     _LOGGER.debug(
                         "Device missing 'id' field; falling back to 'serial_number' for id: %s",
-                        device['serial_number'],
+                        device["serial_number"],
                     )
-                    device['id'] = device['serial_number']
+                    device["id"] = device["serial_number"]
 
                 _LOGGER.debug(
                     "Device found: %s (ID: %s, DCLG: %s)",
-                    device['name'], device.get('id'), device.get('dclg')
+                    device["name"],
+                    device.get("id"),
+                    device.get("dclg"),
                 )
 
             _LOGGER.debug("Found %d device(s) in project %s", len(devices), project_id)
@@ -406,7 +432,9 @@ class SyrConnectXmlAPI:
             # --- Make HTTP Request ---
             xml_response = await self._post_with_session(
                 self._device_get_status_url,
-                lambda token: self.payload_builder.build_device_get_status_payload(token, device_id),
+                lambda token: self.payload_builder.build_device_get_status_payload(
+                    token, device_id
+                ),
                 "Status request",
             )
             _LOGGER.debug("Status XML response: %s", xml_response)
@@ -415,7 +443,9 @@ class SyrConnectXmlAPI:
             # Parser returns None if response doesn't have expected structure
             # This is intentional: allows coordinator to keep previous state
             # rather than failing completely on malformed responses
-            status_data = self.response_parser.parse_device_status_response(xml_response)
+            status_data = self.response_parser.parse_device_status_response(
+                xml_response
+            )
             if status_data is None:
                 _LOGGER.debug("Status parser returned None for device %s", device_id)
                 return None
@@ -426,7 +456,9 @@ class SyrConnectXmlAPI:
             # Network errors after all retries: wrap them like login()/get_devices() so callers
             # only need to handle SyrConnectError
             _LOGGER.error("Failed to get device status: %s", err)
-            raise SyrConnectConnectionError(f"Failed to get device status: {err}") from err
+            raise SyrConnectConnectionError(
+                f"Failed to get device status: {err}"
+            ) from err
         except Exception as err:
             _LOGGER.error("Failed to get device status: %s", err)
             raise
@@ -470,7 +502,9 @@ class SyrConnectXmlAPI:
         try:
             xml_response = await self._post_with_session(
                 self._device_set_status_url,
-                lambda token: self.payload_builder.build_device_set_status_payload(token, device_id, normalized),
+                lambda token: self.payload_builder.build_device_set_status_payload(
+                    token, device_id, normalized
+                ),
                 "Set status",
             )
             _LOGGER.debug("Set status XML response: %s", xml_response)
@@ -483,14 +517,18 @@ class SyrConnectXmlAPI:
             # Network errors after all retries: wrapped so the entity turns them into a
             # HomeAssistantError for the user instead of an unhandled exception
             _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
-            raise SyrConnectConnectionError(f"Failed to set device status: {err}") from err
+            raise SyrConnectConnectionError(
+                f"Failed to set device status: {err}"
+            ) from err
         except Exception as err:
             _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
             raise
         else:
             return True
 
-    async def get_statistics(self, device_id: str, statistic_type: str = "water") -> dict[str, Any]:
+    async def get_statistics(
+        self, device_id: str, statistic_type: str = "water"
+    ) -> dict[str, Any]:
         """Fetch historical consumption statistics for a device.
 
         This endpoint is primarily used by LEXplus devices that track:
@@ -530,7 +568,9 @@ class SyrConnectXmlAPI:
             # --- Make HTTP Request ---
             xml_response = await self._post_with_session(
                 self._device_get_statistics_url,
-                lambda token: self.payload_builder.build_device_get_statistics_payload(token, device_id, statistic_type),
+                lambda token: self.payload_builder.build_device_get_statistics_payload(
+                    token, device_id, statistic_type
+                ),
                 "Statistics",
             )
             _LOGGER.debug("Statistics XML response: %s", xml_response)
@@ -542,7 +582,9 @@ class SyrConnectXmlAPI:
 
         except (aiohttp.ClientError, TimeoutError) as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
-            raise SyrConnectConnectionError(f"Failed to get {statistic_type} statistics: {err}") from err
+            raise SyrConnectConnectionError(
+                f"Failed to get {statistic_type} statistics: {err}"
+            ) from err
         except Exception as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
             raise

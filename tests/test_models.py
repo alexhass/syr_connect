@@ -367,11 +367,20 @@ def test_attrs_match_multiple_attributes_all_match():
             "name": "testmodel",
             "cna_equals": None,
             "ver_prefix": None,
-            "attrs_equals": {"getATTR1": "val1", "getATTR2": "val2", "getATTR3": "val3"},
+            "attrs_equals": {
+                "getATTR1": "val1",
+                "getATTR2": "val2",
+                "getATTR3": "val3",
+            },
         }
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getATTR1": "val1", "getATTR2": "val2", "getATTR3": "val3", "getVER": "TEST"}
+        flat = {
+            "getATTR1": "val1",
+            "getATTR2": "val2",
+            "getATTR3": "val3",
+            "getVER": "TEST",
+        }
         result = detect_model(flat)
         assert result["name"] == "testmodel"
 
@@ -385,12 +394,21 @@ def test_attrs_match_multiple_attributes_one_mismatch():
             "name": "testmodel",
             "cna_equals": None,
             "ver_prefix": None,
-            "attrs_equals": {"getATTR1": "val1", "getATTR2": "val2", "getATTR3": "val3"},
+            "attrs_equals": {
+                "getATTR1": "val1",
+                "getATTR2": "val2",
+                "getATTR3": "val3",
+            },
         }
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # ATTR2 has wrong value
-        flat = {"getATTR1": "val1", "getATTR2": "wrong", "getATTR3": "val3", "getVER": "TEST"}
+        flat = {
+            "getATTR1": "val1",
+            "getATTR2": "wrong",
+            "getATTR3": "val3",
+            "getVER": "TEST",
+        }
         result = detect_model(flat)
         assert result["name"] == "unknown"
 
@@ -491,7 +509,12 @@ def test_attrs_match_with_v_keys():
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # All conditions satisfied: attrs, version, and v_keys
-        flat = {"getATTR": "value", "getVER": "TEST-1.0", "getKEY1": "1", "getKEY2": "2"}
+        flat = {
+            "getATTR": "value",
+            "getVER": "TEST-1.0",
+            "getKEY1": "1",
+            "getKEY2": "2",
+        }
         result = detect_model(flat)
         assert result["name"] == "testmodel"
 
@@ -622,6 +645,7 @@ def test_v_keys_version_constraints_not_satisfied_logs_debug(caplog):
 # Manufacturer field tests
 # ---------------------------------------------------------------------------
 
+
 def test_manufacturer_syr_via_cna():
     """SYR devices detected by cna_equals should return manufacturer 'SYR'."""
     for cna, expected_name in [
@@ -630,7 +654,9 @@ def test_manufacturer_syr_via_cna():
         ("LEXplus10SL", "lexplus10sl"),
     ]:
         result = detect_model({"getCNA": cna})
-        assert result["manufacturer"] == "SYR", f"Expected SYR for {cna}, got {result['manufacturer']}"
+        assert result["manufacturer"] == "SYR", (
+            f"Expected SYR for {cna}, got {result['manufacturer']}"
+        )
         assert result["name"] == expected_name
 
 
@@ -642,7 +668,9 @@ def test_manufacturer_syr_via_srn_prefix():
         ("113AAA00001", "trio"),
     ]:
         result = detect_model({"getSRN": srn})
-        assert result["manufacturer"] == "SYR", f"Expected SYR for SRN {srn}, got {result['manufacturer']}"
+        assert result["manufacturer"] == "SYR", (
+            f"Expected SYR for SRN {srn}, got {result['manufacturer']}"
+        )
         assert result["name"] == expected_name
 
 
@@ -658,7 +686,9 @@ def test_manufacturer_syr_via_ver_prefix():
             flat["getRE1"] = "1"
             flat["getRE2"] = "2"
         result = detect_model(flat)
-        assert result["manufacturer"] == "SYR", f"Expected SYR for VER {ver!r}, got {result['manufacturer']}"
+        assert result["manufacturer"] == "SYR", (
+            f"Expected SYR for VER {ver!r}, got {result['manufacturer']}"
+        )
         assert result["name"] == expected_name
 
 
@@ -678,7 +708,9 @@ def test_manufacturer_sanibel_via_srn_prefix():
         ("207AAA00001", {}, "sanibelsoftwateruno"),
     ]:
         result = detect_model({"getSRN": srn, **extra_attrs})
-        assert result["manufacturer"] == "Sanibel", f"Expected Sanibel for SRN {srn}, got {result['manufacturer']}"
+        assert result["manufacturer"] == "Sanibel", (
+            f"Expected Sanibel for SRN {srn}, got {result['manufacturer']}"
+        )
         assert result["name"] == expected_name
 
 
@@ -692,16 +724,18 @@ def test_manufacturer_unknown_for_undetected_model():
 def test_manufacturer_field_present_in_all_return_paths():
     """Every detect_model return value must contain a non-None 'manufacturer' key."""
     test_cases = [
-        {"getCNA": "LEXplus10"},         # cna_equals path
-        {"getSRN": "113AAA00001"},        # srn_prefix path
-        {"getVER": "Safe-T+ V2.00e"},         # ver_prefix path
+        {"getCNA": "LEXplus10"},  # cna_equals path
+        {"getSRN": "113AAA00001"},  # srn_prefix path
+        {"getVER": "Safe-T+ V2.00e"},  # ver_prefix path
         {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"},  # v_keys path
-        {},                               # unknown fallback
+        {},  # unknown fallback
     ]
     for flat in test_cases:
         result = detect_model(flat)
         assert "manufacturer" in result, f"'manufacturer' key missing for input {flat}"
-        assert result["manufacturer"] is not None, f"'manufacturer' is None for input {flat}"
+        assert result["manufacturer"] is not None, (
+            f"'manufacturer' is None for input {flat}"
+        )
 
 
 def test_manufacturer_via_xml_fixtures():
@@ -710,8 +744,16 @@ def test_manufacturer_via_xml_fixtures():
     parser = ResponseParser()
 
     expected = [
-        ("SanibelLeakProtectionModuleA25_GetDeviceCollectionStatus.xml", "sanibelleakprotect", "Sanibel"),
-        ("SanibelSoftwaterUNOA25_GetDeviceCollectionStatus.xml", "sanibelsoftwateruno", "Sanibel"),
+        (
+            "SanibelLeakProtectionModuleA25_GetDeviceCollectionStatus.xml",
+            "sanibelleakprotect",
+            "Sanibel",
+        ),
+        (
+            "SanibelSoftwaterUNOA25_GetDeviceCollectionStatus.xml",
+            "sanibelsoftwateruno",
+            "Sanibel",
+        ),
         ("SyrSafeTechPlus_GetDeviceCollectionStatus.xml", "safetechplus", "SYR"),
     ]
     for filename, expected_name, expected_manufacturer in expected:
@@ -727,10 +769,16 @@ def test_manufacturer_via_xml_fixtures():
 
 def test_manufacturer_via_json_fixture_pontosbase():
     """Verify manufacturer 'Hansgrohe' when detecting from Pontos Base JSON fixture."""
-    fixture_path = Path(__file__).parent / "fixtures/json/HansgrohePontosBase_get_all.json"
+    fixture_path = (
+        Path(__file__).parent / "fixtures/json/HansgrohePontosBase_get_all.json"
+    )
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
     # The JSON fixture is a flat status dict already
-    flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
+    flat = (
+        data
+        if any(k.startswith("get") for k in data)
+        else next(iter(data.values()), data)
+    )
     result = detect_model(flat)
     assert result["name"] == "pontosbase"
     assert result["manufacturer"] == "Hansgrohe"
@@ -740,7 +788,11 @@ def test_safetech_detection_via_json_fixture():
     """Verify SafeTech Connect is detected from the SyrSafeTech_get_all.json fixture."""
     fixture_path = Path(__file__).parent / "fixtures/json/SyrSafeTech_get_all.json"
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
-    flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
+    flat = (
+        data
+        if any(k.startswith("get") for k in data)
+        else next(iter(data.values()), data)
+    )
     result = detect_model(flat)
     assert result["name"] == "safetech"
     assert result["display_name"] == "SafeTech Connect"
@@ -779,6 +831,7 @@ def test_safetech_v4_not_shadowed_by_v3():
 # ---------------------------------------------------------------------------
 # CONEL CLEAR PRO SOFT tests
 # ---------------------------------------------------------------------------
+
 
 def test_conelclearprosoft_detection_synthetic():
     """CONEL CLEAR PRO SOFT is detected by SRN prefix '215AAA'."""
@@ -820,9 +873,15 @@ def test_manufacturer_conel_via_srn_prefix():
 
 def test_conelclearprosoft_detection_via_json_fixture():
     """Verify CONEL CLEAR PRO SOFT is detected from the JSON get_all fixture."""
-    fixture_path = Path(__file__).parent / "fixtures/json/ConelClearProSoft_get_all.json"
+    fixture_path = (
+        Path(__file__).parent / "fixtures/json/ConelClearProSoft_get_all.json"
+    )
     data = json.loads(fixture_path.read_text(encoding="utf-8"))
-    flat = data if any(k.startswith("get") for k in data) else next(iter(data.values()), data)
+    flat = (
+        data
+        if any(k.startswith("get") for k in data)
+        else next(iter(data.values()), data)
+    )
     result = detect_model(flat)
     assert result["name"] == "conelclearprosoft"
     assert result["display_name"] == "CLEAR PRO SOFT"

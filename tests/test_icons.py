@@ -9,7 +9,9 @@ from custom_components.syr_connect.sensor import SyrConnectSensor
 
 COMPONENT_DIR = Path(__file__).parent.parent / "custom_components" / "syr_connect"
 ICONS = json.loads((COMPONENT_DIR / "icons.json").read_text(encoding="utf-8"))["entity"]
-TRANSLATIONS = json.loads((COMPONENT_DIR / "translations" / "en.json").read_text(encoding="utf-8"))["entity"]
+TRANSLATIONS = json.loads(
+    (COMPONENT_DIR / "translations" / "en.json").read_text(encoding="utf-8")
+)["entity"]
 
 
 def _all_icons() -> list[tuple[str, str, str]]:
@@ -17,7 +19,9 @@ def _all_icons() -> list[tuple[str, str, str]]:
     for platform, entities in ICONS.items():
         for key, spec in entities.items():
             result.append((platform, key, spec["default"]))
-            result.extend((platform, key, icon) for icon in spec.get("state", {}).values())
+            result.extend(
+                (platform, key, icon) for icon in spec.get("state", {}).values()
+            )
     return result
 
 
@@ -52,7 +56,11 @@ def test_connection_state_icons() -> None:
 
 
 def _sensor_state(create_mock_coordinator, key: str, raw: str) -> str:
-    data = {"devices": [{"id": "d1", "name": "D1", "project_id": "p1", "status": {key: raw}}]}
+    data = {
+        "devices": [
+            {"id": "d1", "name": "D1", "project_id": "p1", "status": {key: raw}}
+        ]
+    }
     sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
     return str(sensor.native_value)
 
@@ -74,7 +82,9 @@ def _sensor_state(create_mock_coordinator, key: str, raw: str) -> str:
         ("getALA", "FF", "mdi:bell-outline"),
     ],
 )
-def test_state_icons_match_sensor_state(create_mock_coordinator, key: str, raw: str, icon: str) -> None:
+def test_state_icons_match_sensor_state(
+    create_mock_coordinator, key: str, raw: str, icon: str
+) -> None:
     """The state a sensor reports is a key of its state map in icons.json."""
     spec = ICONS["sensor"][key.lower()]
     state = _sensor_state(create_mock_coordinator, key, raw)

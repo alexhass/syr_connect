@@ -93,7 +93,7 @@ def is_value_true(val: object) -> bool:
     if isinstance(val, (int | float)):
         try:
             return int(float(val)) != 0
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return False
     if isinstance(val, str):
         sval = val.strip().lower()
@@ -103,7 +103,7 @@ def is_value_true(val: object) -> bool:
             return False
         try:
             return int(float(sval)) != 0
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return False
     return False
 
@@ -132,7 +132,7 @@ def get_default_scan_interval_for_entry(entry: ConfigEntry | dict | None) -> int
     if _SYR_CONNECT_SCAN_INTERVAL_CONF in options:
         try:
             return int(options[_SYR_CONNECT_SCAN_INTERVAL_CONF])
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             pass
 
     # Otherwise use per-API default (default to XML for legacy)
@@ -187,9 +187,9 @@ def build_device_info(
     configuration_url: str | None = None
 
     # Extract device information from coordinator data
-    for device in coordinator_data.get('devices', []):
-        if device['id'] == device_id:
-            status = device.get('status', {})
+    for device in coordinator_data.get("devices", []):
+        if device["id"] == device_id:
+            status = device.get("status", {})
 
             # Get human-friendly model display name and manufacturer
             detected = detect_model(status)
@@ -200,12 +200,12 @@ def build_device_info(
             configuration_url = coordinator_data.get("configuration_url")
 
             # Get software version from getVER
-            if status.get('getVER'):
-                sw_version = str(status['getVER'])
+            if status.get("getVER"):
+                sw_version = str(status["getVER"])
 
             # Get hardware version from getFIR
-            if status.get('getFIR'):
-                hw_version = str(status['getFIR'])
+            if status.get("getFIR"):
+                hw_version = str(status["getFIR"])
 
             # Get MAC address using prioritized helper
             detected_mac = get_current_mac(status)
@@ -272,7 +272,13 @@ def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
     return f"{device_id}_{key}"
 
 
-def find_entity_id(registry: er.EntityRegistry, domain: str, entry_id: str | None, device_id: str, key: str) -> str | None:
+def find_entity_id(
+    registry: er.EntityRegistry,
+    domain: str,
+    entry_id: str | None,
+    device_id: str,
+    key: str,
+) -> str | None:
     """Return the entity_id registered for an entity of this integration, or None.
 
     Looks the entity up by its unique_id (see build_unique_id), not by the entity_id
@@ -288,10 +294,14 @@ def find_entity_id(registry: er.EntityRegistry, domain: str, entry_id: str | Non
         key: Entity key as passed to build_unique_id, including any platform
             suffix (e.g. "getOHW_select").
     """
-    return registry.async_get_entity_id(domain, DOMAIN, build_unique_id(entry_id, device_id, key))
+    return registry.async_get_entity_id(
+        domain, DOMAIN, build_unique_id(entry_id, device_id, key)
+    )
 
 
-def get_model_known_keys(model_info: dict[str, Any], platform: str, global_known_keys: set[str]) -> set[str]:
+def get_model_known_keys(
+    model_info: dict[str, Any], platform: str, global_known_keys: set[str]
+) -> set[str]:
     """Return the known-keys allowlist for a platform, scoped to the detected model.
 
     Looks for an optional `devices/<name>.py` module (matching the detected
@@ -358,16 +368,26 @@ def cleanup_removed_devices(
         entry_id: Owning config entry ID.
     """
     try:
-        current_ids = {d["id"] for d in (coordinator_data or {}).get("devices", []) if d.get("id")}
+        current_ids = {
+            d["id"] for d in (coordinator_data or {}).get("devices", []) if d.get("id")
+        }
         device_registry = dr.async_get(hass)
-        for device_entry in dr.async_entries_for_config_entry(device_registry, entry_id):
+        for device_entry in dr.async_entries_for_config_entry(
+            device_registry, entry_id
+        ):
             device_id = next(
-                (identifier for domain, identifier in device_entry.identifiers if domain == DOMAIN),
+                (
+                    identifier
+                    for domain, identifier in device_entry.identifiers
+                    if domain == DOMAIN
+                ),
                 None,
             )
             if device_id is not None and device_id not in current_ids:
                 _LOGGER.debug("Removing stale device from registry: %s", device_id)
-                device_registry.async_update_device(device_entry.id, remove_config_entry_id=entry_id)
+                device_registry.async_update_device(
+                    device_entry.id, remove_config_entry_id=entry_id
+                )
     except Exception:
         _LOGGER.exception("Failed to cleanup removed devices from registry")
 
@@ -429,7 +449,11 @@ def registry_cleanup(
             # entities now would drop their registry customizations (name, area, ...).
             status = device.get("status", {})
             if not status:
-                _LOGGER.debug("No status for device %s yet; skipping %s registry cleanup", device_id, domain)
+                _LOGGER.debug(
+                    "No status for device %s yet; skipping %s registry cleanup",
+                    device_id,
+                    domain,
+                )
                 continue
 
             # While the cloud reports the device offline (dst 0/1, available=False) its status
@@ -437,7 +461,11 @@ def registry_cleanup(
             # (docs/known_issues_xml_api.md, issue 2), and a never-online device reports little
             # more than getSRN, so detect_model may pick the wrong model and key list.
             if not device.get("available", True):
-                _LOGGER.debug("Device %s is offline; skipping %s registry cleanup", device_id, domain)
+                _LOGGER.debug(
+                    "Device %s is offline; skipping %s registry cleanup",
+                    device_id,
+                    domain,
+                )
                 continue
 
             # Scope the allowlist to the detected model (falls back to allowed_keys
@@ -480,7 +508,9 @@ def registry_cleanup(
                 # What remains is the key. Some platforms add their own suffix to keep
                 # unique_ids distinct from a sensor with the same key: "getRTM_select",
                 # "getbuz_switch", "getnot_update". Strip it to get the plain key ("getrtm").
-                key_lower = unique_id[len(unique_id_prefix):].removesuffix(f"_{domain}")
+                key_lower = unique_id[len(unique_id_prefix) :].removesuffix(
+                    f"_{domain}"
+                )
                 if key_lower not in allowed_lower:
                     _LOGGER.debug(
                         "Removing unlisted %s from registry: %s",
@@ -509,9 +539,13 @@ def registry_cleanup(
                             try:
                                 registry.async_remove(entity_id)
                             except Exception:
-                                _LOGGER.exception("Failed to remove entity %s", entity_id)
+                                _LOGGER.exception(
+                                    "Failed to remove entity %s", entity_id
+                                )
     except Exception:
-        _LOGGER.exception("Failed to cleanup excluded %s entities from registry", domain)
+        _LOGGER.exception(
+            "Failed to cleanup excluded %s entities from registry", domain
+        )
 
 
 def get_current_mac(status: dict[str, Any]) -> str | None:
@@ -541,7 +575,6 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
             return True
         return True
 
-
     # Priority selection for MAC address:
     # 1. If getIPA (primary IP) is set and not empty, use getMAC (primary MAC)
     if is_not_empty_ip("getIPA"):
@@ -563,7 +596,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
         if wfs_val is not None:
             try:
                 wfs_int = int(wfs_val)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 wfs_int = None
         else:
             wfs_int = None
@@ -610,24 +643,24 @@ def get_sensor_avo_value(value: Any) -> float | None:
 
     # Pattern to match values like '1655mL', '0mL', etc.
     # Extract the numeric part before 'mL'
-    match = re.match(r'^(\d+)mL$', value)
+    match = re.match(r"^(\d+)mL$", value)
     if match:
         try:
             flow_ml = int(match.group(1))
             flow_l = flow_ml / 1000  # Convert mL to L
             _LOGGER.debug("Extracted flow value from '%s' to %.3f L", value, flow_l)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
         else:
             return flow_l
 
     # If pattern doesn't match, try to extract any number at the start and convert
-    match = re.match(r'^(\d+)', value)
+    match = re.match(r"^(\d+)", value)
     if match:
         try:
             flow_ml = int(match.group(1))
             return flow_ml / 1000  # Convert mL to L
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
     return None
@@ -664,7 +697,7 @@ def get_sensor_vol_value(value: str | float) -> str | int | float | None:
 
     # Pattern to match values like 'Vol[L]6530', 'Temp[C]25', etc.
     # Format: word characters, optional brackets with content, then the actual value
-    match = re.match(r'^[A-Za-z]+\[[^\]]+\](.+)$', value)
+    match = re.match(r"^[A-Za-z]+\[[^\]]+\](.+)$", value)
     if match:
         cleaned = match.group(1).strip()
         _LOGGER.debug("Cleaned sensor value from '%s' to '%s'", value, cleaned)
@@ -728,7 +761,7 @@ def get_sensor_net_value(value: Any) -> float | None:
     if isinstance(value, (int | float)):
         try:
             return round(float(value) / 100.0, 2)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
 
     if not isinstance(value, str):
@@ -744,23 +777,23 @@ def get_sensor_net_value(value: Any) -> float | None:
             if token.upper().endswith("V"):
                 raw = token[:-1]  # strip trailing 'V'
                 try:
-                    return round(float(raw.replace(',', '.')), 2)
-                except (ValueError, TypeError):
+                    return round(float(raw.replace(",", ".")), 2)
+                except ValueError, TypeError:
                     return None
         return None
 
     # Safe-Tech+ format with comma decimal, e.g. "11,86"
-    if ',' in s:
+    if "," in s:
         try:
-            return round(float(s.replace(',', '.')), 2)
-        except (ValueError, TypeError):
+            return round(float(s.replace(",", ".")), 2)
+        except ValueError, TypeError:
             return None
 
     # Digits-only Trio DFR/LS format "363" -> divide by 100
     if s.isdigit():
         try:
             return round(int(s) / 100.0, 2)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
     return None
@@ -838,7 +871,7 @@ def get_sensor_bat_value(value: Any) -> float | None:
     if isinstance(value, (int | float)):
         try:
             return round(float(value) / 100.0, 2)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
 
     if not isinstance(value, str):
@@ -852,22 +885,22 @@ def get_sensor_bat_value(value: Any) -> float | None:
     if " " in s:
         first = s.split()[0]
         try:
-            return round(float(first.replace(',', '.')), 2)
-        except (ValueError, TypeError):
+            return round(float(first.replace(",", ".")), 2)
+        except ValueError, TypeError:
             return None
 
     # Single-token Safe-Tech+ format with comma decimal, e.g. "9,36"
-    if ',' in s:
+    if "," in s:
         try:
-            return round(float(s.replace(',', '.')), 2)
-        except (ValueError, TypeError):
+            return round(float(s.replace(",", ".")), 2)
+        except ValueError, TypeError:
             return None
 
     # Digits-only Trio DFR/LS format "363" -> divide by 100
     if s.isdigit():
         try:
             return round(int(s) / 100.0, 2)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
     # No other variants supported. Return None.
@@ -960,7 +993,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
                 status["getIWH"] = int(val) if val.is_integer() else val
             # Return int when it's an exact whole number
             return int(val) if val.is_integer() else val
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             # Fall through to fallback derivation
             pass
 
@@ -970,14 +1003,14 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
         return None
     try:
         cnd = float(raw_cnd)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return None
 
     # Normalize/ensure getWHU exists; default to 0 when missing or invalid
     raw_whu = status.get("getWHU")
     try:
         whu = int(float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         whu = 0
     with contextlib.suppress(Exception):
         status["getWHU"] = whu
@@ -1012,7 +1045,11 @@ def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str,
     if status is not None:
         raw_rth = status.get("getRTH")
         raw_rtm = status.get("getRTM")
-        if (raw_rth is None or raw_rth == "") and isinstance(raw_rtm, str) and ":" in raw_rtm:
+        if (
+            (raw_rth is None or raw_rth == "")
+            and isinstance(raw_rtm, str)
+            and ":" in raw_rtm
+        ):
             combined_mode = True
 
     if combined_mode:
@@ -1129,11 +1166,15 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
 
     # Model-specific families take precedence; every other model (including unknown ones) uses the generic codes.
     model = str(model_info.get("name") or "")
-    codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(model_info.get("device_file") or model)
+    codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(
+        model_info.get("device_file") or model
+    )
     if codes is None:
         # Callers may pass a bare {"name": ...}; resolve its device_file from the signature.
         signature = next((s for s in MODEL_SIGNATURES if s["name"] == model), None)
-        codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get((signature or {}).get("device_file") or model)
+        codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(
+            (signature or {}).get("device_file") or model
+        )
     if codes is None:
         codes = _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC
 
@@ -1181,7 +1222,9 @@ def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     return (mapped, code) if mapped is not None else (None, code)
 
 
-def build_set_ab_command(status: dict[str, Any], closed: bool) -> tuple[str, Any] | None:
+def build_set_ab_command(
+    status: dict[str, Any], closed: bool
+) -> tuple[str, Any] | None:
     """Build the appropriate (`setAB`, value) command for desired closed state.
 
     This function mirrors the device's own format for `getAB` when sending `setAB`:
@@ -1308,7 +1351,7 @@ def _is_non_zero_number(value: Any) -> bool:
         return False
     try:
         return float(value) != 0
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False
 
 
@@ -1330,7 +1373,7 @@ def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
     """
     try:
         bap_zero = float(value) == 0
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         bap_zero = value is None or str(value).strip() == ""
     if not bap_zero:
         return False
@@ -1339,7 +1382,7 @@ def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
         return False
     try:
         return float(bat_val) > 0
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False
 
 
@@ -1351,11 +1394,14 @@ def _is_excluded_when_empty(key: str, value: Any) -> bool:
     ):
         return True
     # Exclude when empty value (0 or "")
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE and _is_empty_or_zero(value):
+    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE and _is_empty_or_zero(
+        value
+    ):
         return True
     # Exclude empty IPs
     return key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS and (
-        value is None or (isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"))
+        value is None
+        or (isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"))
     )
 
 

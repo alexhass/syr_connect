@@ -44,24 +44,29 @@ class SyrChecksum:
         Returns:
             Computed numeric checksum contribution
         """
-        normalized = (value or '').strip()
+        normalized = (value or "").strip()
         if not normalized:
             return 0
 
         # Step 1 is standard Base32: each character stands for one 5-bit chunk of the
         # UTF-8 bytes, the last chunk zero-padded. The "=" padding is not a chunk.
-        encoded = base64.b32encode(normalized.encode('utf-8')).decode('ascii').rstrip('=')
+        encoded = (
+            base64.b32encode(normalized.encode("utf-8")).decode("ascii").rstrip("=")
+        )
 
         contribution = 0
         for chunk_index, char in enumerate(encoded):
             # Shift the chunk by the key character for this position (Vigenère-like)
-            index = _SYR_CONNECT_BASE32_ALPHABET.index(char) + self._key_offsets[chunk_index % len(self._key_offsets)]
+            index = (
+                _SYR_CONNECT_BASE32_ALPHABET.index(char)
+                + self._key_offsets[chunk_index % len(self._key_offsets)]
+            )
 
             # SYR wraps to 1, not 0 (not a modulo); the checksums depend on this quirk
             if index >= len(self.base_characters):
                 index -= len(self.base_characters) - 1
 
-            contribution += ord(self.base_characters[index]) & 0xff
+            contribution += ord(self.base_characters[index]) & 0xFF
 
         return contribution
 
@@ -80,7 +85,7 @@ class SyrChecksum:
         try:
             root = etree.fromstring(xml_string)
         except etree.ParseError:
-            return format(0, 'X')
+            return format(0, "X")
         return self.compute_element_checksum(root)
 
     def compute_element_checksum(self, root: Element) -> str:
@@ -100,6 +105,6 @@ class SyrChecksum:
             self.compute_checksum_value(str(value))
             for element in root.iter()
             for key, value in element.attrib.items()
-            if key != 'n'
+            if key != "n"
         )
-        return format(checksum_value, 'X')
+        return format(checksum_value, "X")

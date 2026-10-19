@@ -42,12 +42,16 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+        with patch.object(
+            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
+        ) as mock_forward:
             mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
 
@@ -69,9 +73,13 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
     config_entry.add_to_hass(hass)
 
     with (
-        patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class,
+        patch(
+            "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+        ) as mock_coordinator_class,
         patch("custom_components.syr_connect.cleanup_removed_devices") as mock_cleanup,
-        patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+        patch.object(
+            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
+        ),
     ):
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
@@ -83,7 +91,9 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
     assert mock_cleanup.called is complete
 
 
-async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_json_api_identifier_and_clamp(
+    hass: HomeAssistant,
+) -> None:
     """Test JSON API path uses host identifier and clamps scan interval below minimum."""
 
     # Create entry with JSON API and very small scan_interval to trigger clamp
@@ -105,12 +115,16 @@ async def test_async_setup_entry_json_api_identifier_and_clamp(hass: HomeAssista
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+        with patch.object(
+            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
+        ) as mock_forward:
             mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
 
@@ -185,14 +199,18 @@ async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock(
             side_effect=Exception("Connection failed")
         )
         mock_coordinator_class.return_value = mock_coordinator
 
-        with pytest.raises(ConfigEntryNotReady, match="Unable to connect to SYR Connect"):
+        with pytest.raises(
+            ConfigEntryNotReady, match="Unable to connect to SYR Connect"
+        ):
             await async_setup_entry(hass, config_entry)
 
 
@@ -211,12 +229,16 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+        with patch.object(
+            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
+        ) as mock_forward:
             mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
 
@@ -224,7 +246,9 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
     # Verify coordinator was created with custom scan interval
     mock_coordinator_class.assert_called_once()
     call_args = mock_coordinator_class.call_args
-    assert call_args[0][3] == 120  # scan_interval is now 4th positional argument (index 3)
+    assert (
+        call_args[0][3] == 120
+    )  # scan_interval is now 4th positional argument (index 3)
 
 
 async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
@@ -240,7 +264,9 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
         unique_id="test_unique_id",
     )
 
-    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+    with patch.object(
+        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock
+    ) as mock_unload:
         mock_unload.return_value = True
         result = await async_unload_entry(hass, config_entry)
 
@@ -260,14 +286,18 @@ async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
         unique_id="test_unique_id",
     )
 
-    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+    with patch.object(
+        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock
+    ) as mock_unload:
         mock_unload.return_value = False
         result = await async_unload_entry(hass, config_entry)
 
     assert result is False
 
 
-async def test_async_options_update_listener_interval_changed(hass: HomeAssistant) -> None:
+async def test_async_options_update_listener_interval_changed(
+    hass: HomeAssistant,
+) -> None:
     """Test options update listener when scan interval changes."""
     config_entry = MockConfigEntry(
         version=1,
@@ -293,7 +323,9 @@ async def test_async_options_update_listener_interval_changed(hass: HomeAssistan
     mock_coordinator.async_request_refresh.assert_called_once()
 
 
-async def test_async_options_update_listener_interval_unchanged(hass: HomeAssistant) -> None:
+async def test_async_options_update_listener_interval_unchanged(
+    hass: HomeAssistant,
+) -> None:
     """Test options update listener when scan interval unchanged."""
     config_entry = MockConfigEntry(
         version=1,
@@ -318,7 +350,9 @@ async def test_async_options_update_listener_interval_unchanged(hass: HomeAssist
     mock_coordinator.async_request_refresh.assert_not_called()
 
 
-async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssistant, caplog) -> None:
+async def test_async_options_update_listener_clamps_minimum_json(
+    hass: HomeAssistant, caplog
+) -> None:
     """Test options update listener clamps scan interval below minimum for JSON API."""
 
     config_entry = MockConfigEntry(
@@ -351,7 +385,9 @@ async def test_async_options_update_listener_clamps_minimum_json(hass: HomeAssis
     assert "clamping to" in caplog.text or "below minimum" in caplog.text
 
 
-async def test_async_setup_entry_clamps_scan_interval_and_logs(hass: HomeAssistant, caplog) -> None:
+async def test_async_setup_entry_clamps_scan_interval_and_logs(
+    hass: HomeAssistant, caplog
+) -> None:
     """Test JSON API clamps scan interval below minimum and logs a warning."""
 
     config_entry = MockConfigEntry(
@@ -372,13 +408,17 @@ async def test_async_setup_entry_clamps_scan_interval_and_logs(hass: HomeAssista
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
         caplog.set_level(logging.WARNING)
-        with patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock) as mock_forward:
+        with patch.object(
+            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
+        ) as mock_forward:
             mock_forward.return_value = None
             result = await async_setup_entry(hass, config_entry)
 
@@ -400,7 +440,9 @@ async def test_async_unload_entry_logs(hass: HomeAssistant, caplog) -> None:
     )
 
     caplog.set_level(logging.INFO)
-    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload:
+    with patch.object(
+        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock
+    ) as mock_unload:
         mock_unload.return_value = True
         result = await async_unload_entry(hass, config_entry)
 
@@ -409,7 +451,9 @@ async def test_async_unload_entry_logs(hass: HomeAssistant, caplog) -> None:
 
     caplog.clear()
     caplog.set_level(logging.WARNING)
-    with patch.object(hass.config_entries, "async_unload_platforms", new_callable=AsyncMock) as mock_unload2:
+    with patch.object(
+        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock
+    ) as mock_unload2:
         mock_unload2.return_value = False
         result2 = await async_unload_entry(hass, config_entry)
 
@@ -430,7 +474,9 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         unique_id="test_unique_id",
     )
 
-    with patch.object(hass.config_entries, "async_reload", new_callable=AsyncMock) as mock_reload:
+    with patch.object(
+        hass.config_entries, "async_reload", new_callable=AsyncMock
+    ) as mock_reload:
         await async_reload_entry(hass, config_entry)
 
         mock_reload.assert_called_once_with("test_entry_id")
@@ -451,14 +497,20 @@ async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> 
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
         caplog.set_level(logging.INFO)
         with (
-            patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+            patch.object(
+                hass.config_entries,
+                "async_forward_entry_setups",
+                new_callable=AsyncMock,
+            ),
             patch.object(
                 hass.config_entries,
                 "async_update_entry",
@@ -472,7 +524,9 @@ async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> 
     mock_update.assert_not_called()
 
 
-async def test_mask_sensitive_data_masks_password_and_does_not_mutate_original() -> None:
+async def test_mask_sensitive_data_masks_password_and_does_not_mutate_original() -> (
+    None
+):
     """Ensure `_mask_sensitive_data` masks passwords and deep-copies input."""
     original = {"data": {"password": "secret", "other": "x"}}
     out = _mask_sensitive_data(original)
@@ -497,9 +551,13 @@ async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
-        mock_coordinator.async_config_entry_first_refresh = AsyncMock(side_effect=ConfigEntryAuthFailed("bad auth"))
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock(
+            side_effect=ConfigEntryAuthFailed("bad auth")
+        )
         mock_coordinator_class.return_value = mock_coordinator
 
         with pytest.raises(ConfigEntryAuthFailed):
@@ -553,7 +611,9 @@ async def test_async_migrate_entry_v2_to_v3(hass: HomeAssistant) -> None:
     mock_update.assert_called_once_with(config_entry, version=3)
 
 
-async def test_async_options_update_listener_logs_unchanged(hass: HomeAssistant, caplog) -> None:
+async def test_async_options_update_listener_logs_unchanged(
+    hass: HomeAssistant, caplog
+) -> None:
     """Ensure options update listener logs when scan interval is unchanged."""
     config_entry = MockConfigEntry(
         version=1,
@@ -602,13 +662,19 @@ async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
         with (
-            patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
+            patch.object(
+                hass.config_entries,
+                "async_forward_entry_setups",
+                new_callable=AsyncMock,
+            ),
             patch.object(
                 hass.config_entries,
                 "async_update_entry",
@@ -622,7 +688,9 @@ async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:
     mock_update.assert_not_called()
 
 
-async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_skips_migration_for_new_entries(
+    hass: HomeAssistant,
+) -> None:
     """Test that async_setup_entry never calls async_update_entry for any entry."""
 
     config_entry = MockConfigEntry(
@@ -641,17 +709,21 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
     )
     config_entry.add_to_hass(hass)
 
-    with patch("custom_components.syr_connect.SyrConnectDataUpdateCoordinator") as mock_coordinator_class:
+    with patch(
+        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+    ) as mock_coordinator_class:
         mock_coordinator = MagicMock()
         mock_coordinator.async_config_entry_first_refresh = AsyncMock()
         mock_coordinator_class.return_value = mock_coordinator
 
         with (
-            patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
             patch.object(
                 hass.config_entries,
-                "async_update_entry",
-                new_callable=MagicMock
+                "async_forward_entry_setups",
+                new_callable=AsyncMock,
+            ),
+            patch.object(
+                hass.config_entries, "async_update_entry", new_callable=MagicMock
             ) as mock_update,
         ):
             result = await async_setup_entry(hass, config_entry)
@@ -661,4 +733,3 @@ async def test_async_setup_entry_skips_migration_for_new_entries(hass: HomeAssis
 
     # Verify migration was NOT called (entry already has API_TYPE)
     mock_update.assert_not_called()
-

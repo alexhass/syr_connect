@@ -51,7 +51,9 @@ class HTTPClient:
         primary = lang_tag.split("-")[0]
         return f"{lang_tag},{primary};q=0.9"
 
-    def _get_headers(self, content_type: str = "application/x-www-form-urlencoded") -> dict[str, str]:
+    def _get_headers(
+        self, content_type: str = "application/x-www-form-urlencoded"
+    ) -> dict[str, str]:
         """Get standard headers for API requests."""
         return {
             "Content-Type": content_type,
@@ -65,7 +67,7 @@ class HTTPClient:
         self,
         url: str,
         data: dict[str, Any] | str,
-        content_type: str = 'application/x-www-form-urlencoded',
+        content_type: str = "application/x-www-form-urlencoded",
     ) -> str:
         """Make POST request with retry logic.
 
@@ -85,7 +87,12 @@ class HTTPClient:
 
         for attempt in range(self.max_retries):
             try:
-                _LOGGER.debug("Making POST request to %s (attempt %d/%d)", url, attempt + 1, self.max_retries)
+                _LOGGER.debug(
+                    "Making POST request to %s (attempt %d/%d)",
+                    url,
+                    attempt + 1,
+                    self.max_retries,
+                )
 
                 async with self.session.post(
                     url, data=data, headers=headers, timeout=timeout
@@ -98,8 +105,13 @@ class HTTPClient:
 
             except (TimeoutError, aiohttp.ClientError) as err:
                 # If this is an HTTP auth failure (401/403), do not retry — re-raise immediately
-                if isinstance(err, aiohttp.ClientResponseError) and err.status in (401, 403):
-                    _LOGGER.error("Authentication error %s for %s; not retrying", err.status, url)
+                if isinstance(err, aiohttp.ClientResponseError) and err.status in (
+                    401,
+                    403,
+                ):
+                    _LOGGER.error(
+                        "Authentication error %s for %s; not retrying", err.status, url
+                    )
                     raise
 
                 is_last_attempt = attempt == self.max_retries - 1
@@ -110,10 +122,12 @@ class HTTPClient:
                 if is_last_attempt:
                     _LOGGER.error("%s", error_msg)
                     # Re-raise a ClientError with a clear message so callers see details
-                    raise aiohttp.ClientError(f"Request failed after {self.max_retries} attempts to {url}: {err!r}") from err
+                    raise aiohttp.ClientError(
+                        f"Request failed after {self.max_retries} attempts to {url}: {err!r}"
+                    ) from err
 
                 # Calculate backoff time (exponential: 1s, 2s, 4s, ...)
-                backoff_time = 2 ** attempt
+                backoff_time = 2**attempt
                 _LOGGER.warning(
                     "%s. Retrying in %ds...",
                     error_msg,

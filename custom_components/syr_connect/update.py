@@ -49,7 +49,9 @@ async def async_setup_entry(
         return
 
     registry_cleanup(
-        hass, coordinator.data, "update",
+        hass,
+        coordinator.data,
+        "update",
         allowed_keys=_SYR_CONNECT_UPDATE_KNOWN_KEYS,
         entry_id=coordinator.entry_id,
     )
@@ -62,7 +64,9 @@ async def async_setup_entry(
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        known_update_keys = get_model_known_keys(detect_model(status), "update", _SYR_CONNECT_UPDATE_KNOWN_KEYS)
+        known_update_keys = get_model_known_keys(
+            detect_model(status), "update", _SYR_CONNECT_UPDATE_KNOWN_KEYS
+        )
         if "getNOT" not in known_update_keys or "getNOT" not in status:
             continue
 
@@ -90,7 +94,9 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
     """
 
     _attr_device_class = UpdateDeviceClass.FIRMWARE
-    _attr_supported_features = UpdateEntityFeature.INSTALL | UpdateEntityFeature.PROGRESS
+    _attr_supported_features = (
+        UpdateEntityFeature.INSTALL | UpdateEntityFeature.PROGRESS
+    )
 
     def __init__(
         self,
@@ -103,7 +109,12 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         # with "<model> (<serial>)" when no real device name is available - that's what
         # shows as the heading in the Settings > Updates overview.
         super().__init__(
-            coordinator, device_id, device_name, "update", "getNOT", translation_key="getnot_update"
+            coordinator,
+            device_id,
+            device_name,
+            "update",
+            "getNOT",
+            translation_key="getnot_update",
         )
 
         self._install_started: float | None = None
@@ -111,7 +122,9 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         # "_update" suffix keeps this apart from the existing getNOT sensor's
         # unique_id, mirroring switch.py's "_switch" suffix convention. Built in lowercase,
         # unlike the base class; must stay unchanged to keep existing registry entries.
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id.lower(), "getNOT_update".lower())
+        self._attr_unique_id = build_unique_id(
+            coordinator.entry_id, device_id.lower(), "getNOT_update".lower()
+        )
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
@@ -148,7 +161,11 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         return self.installed_version
 
     def _install_timed_out(self) -> bool:
-        return self._install_started is not None and monotonic() - self._install_started >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS
+        return (
+            self._install_started is not None
+            and monotonic() - self._install_started
+            >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS
+        )
 
     @property
     @override
@@ -163,9 +180,15 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         if self._install_started is not None:
             status = self._status
             mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
-            _LOGGER.debug("Firmware update %s in progress, getNOT=%s", self._device_id, status.get("getNOT"))
+            _LOGGER.debug(
+                "Firmware update %s in progress, getNOT=%s",
+                self._device_id,
+                status.get("getNOT"),
+            )
             if mapped == "new_software_installed":
-                _LOGGER.debug("Firmware update %s finished (getNOT=04)", self._device_id)
+                _LOGGER.debug(
+                    "Firmware update %s finished (getNOT=04)", self._device_id
+                )
                 self._install_started = None
             elif self._install_timed_out():
                 _LOGGER.warning(
@@ -177,12 +200,20 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         super()._handle_coordinator_update()
 
     @override
-    async def async_install(self, version: str | None, backup: bool, **kwargs: Any) -> None:
+    async def async_install(
+        self, version: str | None, backup: bool, **kwargs: Any
+    ) -> None:
         """Trigger a firmware update by sending setUPG (always with an empty value)."""
-        _LOGGER.debug("Triggering firmware update for %s (getNOT=%s)", self._device_id, self._status.get("getNOT"))
+        _LOGGER.debug(
+            "Triggering firmware update for %s (getNOT=%s)",
+            self._device_id,
+            self._status.get("getNOT"),
+        )
         self._install_started = monotonic()
         try:
             await self.coordinator.async_set_device_value(self._device_id, "setUPG", "")
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             self._install_started = None
-            raise HomeAssistantError(f"Failed to trigger firmware update: {err}") from err
+            raise HomeAssistantError(
+                f"Failed to trigger firmware update: {err}"
+            ) from err

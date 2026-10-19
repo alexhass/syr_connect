@@ -60,8 +60,10 @@ class SyrEncryption:
             # Standard PKCS7 unpadding would fail, so we manually strip:
             # 1. Null bytes (\x00) - may be present at the end
             # 2. Whitespace - may be used as additional padding
-            result = decrypted.decode('utf-8').rstrip('\x00').rstrip()
-            _LOGGER.debug("Decryption successful (result length: %d chars)", len(result))
+            result = decrypted.decode("utf-8").rstrip("\x00").rstrip()
+            _LOGGER.debug(
+                "Decryption successful (result length: %d chars)", len(result)
+            )
         except Exception as err:
             _LOGGER.error("Decryption failed: %s", err)
             raise ValueError(f"Failed to decrypt payload: {err}") from err

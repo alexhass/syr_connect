@@ -141,9 +141,17 @@ class SyrConnectJsonAPI:
             return result
 
         # Option 2: Construct from host + base_path (standard production use)
-        _LOGGER.debug("JSON API: Attempting to build base URL - host=%r, base_path=%r", self._host, self._base_path)
+        _LOGGER.debug(
+            "JSON API: Attempting to build base URL - host=%r, base_path=%r",
+            self._host,
+            self._base_path,
+        )
         if not self._host or not self._base_path:
-            _LOGGER.error("JSON API: Cannot build base URL - host=%r, base_path=%r", self._host, self._base_path)
+            _LOGGER.error(
+                "JSON API: Cannot build base URL - host=%r, base_path=%r",
+                self._host,
+                self._base_path,
+            )
             return None
 
         host = _format_host_for_url(self._host)
@@ -169,10 +177,9 @@ class SyrConnectJsonAPI:
         Returns:
             True if session is valid and doesn't need re-login, False otherwise
         """
-        return (
-            self._last_login is not None
-            and datetime.now(UTC) < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
-        )
+        return self._last_login is not None and datetime.now(
+            UTC
+        ) < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
 
     async def _ensure_session(self) -> None:
         """Ensure a valid session exists before making an API request.
@@ -185,12 +192,21 @@ class SyrConnectJsonAPI:
         Calls ``login()`` when the session is expired or login status is unknown.
         """
         if self._base_url or self.is_session_valid():
-            _LOGGER.debug("JSON API: ADM session still valid; skipping login for %s", self._build_base_url())
+            _LOGGER.debug(
+                "JSON API: ADM session still valid; skipping login for %s",
+                self._build_base_url(),
+            )
             return
         if self._login_required is False:
-            _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
+            _LOGGER.debug(
+                "JSON API: ADM login not required; skipping login for %s",
+                self._build_base_url(),
+            )
         else:
-            _LOGGER.debug("JSON API: ADM login required or unknown; calling login for %s", self._build_base_url())
+            _LOGGER.debug(
+                "JSON API: ADM login required or unknown; calling login for %s",
+                self._build_base_url(),
+            )
             await self.login()
 
     def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
@@ -227,7 +243,11 @@ class SyrConnectJsonAPI:
 
         # Encode each path component if requested (quote() encodes special chars like :, /, etc.)
         # Otherwise use path parts as-is (needed for login URL with literal parentheses)
-        parts = [quote(str(part), safe='') for part in path_parts] if encode else [str(part) for part in path_parts]
+        parts = (
+            [quote(str(part), safe="") for part in path_parts]
+            if encode
+            else [str(part) for part in path_parts]
+        )
         url_string = f"{base.rstrip('/')}/{'/'.join(parts)}"
 
         # Use encoded=True to tell yarl "this URL is already encoded, don't decode it"
@@ -298,7 +318,9 @@ class SyrConnectJsonAPI:
         try:
             timeout_obj = aiohttp.ClientTimeout(total=timeout)
             async with self._session.get(url, timeout=timeout_obj) as resp:
-                _LOGGER.debug("JSON API: %s - Response status: %s", operation, resp.status)
+                _LOGGER.debug(
+                    "JSON API: %s - Response status: %s", operation, resp.status
+                )
 
                 # --- Error Response Debugging ---
                 # Read response body BEFORE raise_for_status() so we can log it
@@ -306,9 +328,17 @@ class SyrConnectJsonAPI:
                 if resp.status >= 400:
                     try:
                         response_text = await resp.text()
-                        _LOGGER.debug("JSON API: %s - Error response: %r", operation, response_text)
+                        _LOGGER.debug(
+                            "JSON API: %s - Error response: %r",
+                            operation,
+                            response_text,
+                        )
                     except Exception:
-                        _LOGGER.debug("JSON API: %s - Could not read error response", operation, exc_info=True)
+                        _LOGGER.debug(
+                            "JSON API: %s - Could not read error response",
+                            operation,
+                            exc_info=True,
+                        )
 
                 # Raise exception on HTTP errors (4xx, 5xx)
                 resp.raise_for_status()
@@ -322,17 +352,40 @@ class SyrConnectJsonAPI:
         except aiohttp.ClientResponseError as err:
             # 404: Endpoint doesn't exist (wrong base_path or device model?)
             if err.status == 404:
-                _LOGGER.error("JSON API: %s - Endpoint not found: %s (HTTP %s)", operation, url, err.status)
+                _LOGGER.error(
+                    "JSON API: %s - Endpoint not found: %s (HTTP %s)",
+                    operation,
+                    url,
+                    err.status,
+                )
                 # Raise an HTTP-specific exception carrying the numeric status
-                raise SyrConnectHTTPError(f"{operation.capitalize()} failed: Endpoint not found (HTTP 404)", status=err.status) from err
+                raise SyrConnectHTTPError(
+                    f"{operation.capitalize()} failed: Endpoint not found (HTTP 404)",
+                    status=err.status,
+                ) from err
             # 401/403: Authentication failed (login required or invalid credentials)
             if err.status in (401, 403):
-                _LOGGER.error("JSON API: %s - Authentication failed: %s (HTTP %s)", operation, url, err.status)
-                raise SyrConnectAuthError(f"Authentication failed: {err.message}") from err
+                _LOGGER.error(
+                    "JSON API: %s - Authentication failed: %s (HTTP %s)",
+                    operation,
+                    url,
+                    err.status,
+                )
+                raise SyrConnectAuthError(
+                    f"Authentication failed: {err.message}"
+                ) from err
             # Other HTTP errors (400, 500, etc.)
-            _LOGGER.error("JSON API: %s - HTTP error: %s (HTTP %s - %s)", operation, url, err.status, err.message)
+            _LOGGER.error(
+                "JSON API: %s - HTTP error: %s (HTTP %s - %s)",
+                operation,
+                url,
+                err.status,
+                err.message,
+            )
             # Raise an HTTP-specific exception carrying the numeric status
-            raise SyrConnectHTTPError(f"HTTP {err.status}: {err.message}", status=err.status) from err
+            raise SyrConnectHTTPError(
+                f"HTTP {err.status}: {err.message}", status=err.status
+            ) from err
 
         # --- Network/Connection Errors ---
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -381,7 +434,10 @@ class SyrConnectJsonAPI:
 
         # If we've already determined login is not required, skip network call
         if self._login_required is False:
-            _LOGGER.debug("JSON API: ADM login not required; skipping login for %s", self._build_base_url())
+            _LOGGER.debug(
+                "JSON API: ADM login not required; skipping login for %s",
+                self._build_base_url(),
+            )
             # Mark session as valid for the timeout period so callers won't retry
             self._last_login = datetime.now(UTC)
             self.projects = [{"id": "local", "name": "Local JSON API"}]
@@ -437,7 +493,9 @@ class SyrConnectJsonAPI:
         _LOGGER.info("JSON API: Logged in at %s", self._build_base_url())
         return True
 
-    async def request_json_data(self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT) -> dict[str, Any]:
+    async def request_json_data(
+        self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT
+    ) -> dict[str, Any]:
         """Fetch JSON data from a relative path.
 
         Convenience wrapper around _execute_http_get() for GET requests that
@@ -447,7 +505,9 @@ class SyrConnectJsonAPI:
         url = self._construct_encoded_url(path.lstrip("/"), encode=False)
 
         # Make request with JSON parsing enabled
-        data = await self._execute_http_get(url, timeout=timeout, operation=f"fetch {path}")
+        data = await self._execute_http_get(
+            url, timeout=timeout, operation=f"fetch {path}"
+        )
         if data is None:
             raise SyrConnectInvalidResponseError(f"No data returned from {path}")
         return data
@@ -507,7 +567,14 @@ class SyrConnectJsonAPI:
         )
         # "project_id" is not used by the JSON API but is included in the returned dict for compatibility
         # with coordinator expectations and potential future use cases where it might be relevant.
-        return [{"id": str(device_id), "dclg": str(device_id), "name": str(name), "project_id": str(project_id)}]
+        return [
+            {
+                "id": str(device_id),
+                "dclg": str(device_id),
+                "name": str(name),
+                "project_id": str(project_id),
+            }
+        ]
 
     async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Return the device status dictionary parsed from JSON.
@@ -536,24 +603,33 @@ class SyrConnectJsonAPI:
                 # This path is used when:
                 # 1. get_device_status() is called directly without get_devices() first
                 # 2. In direct testing scenarios
-                _LOGGER.debug("JSON API: No cached response, fetching /get/all for device_id=%s", device_id)
+                _LOGGER.debug(
+                    "JSON API: No cached response, fetching /get/all for device_id=%s",
+                    device_id,
+                )
 
                 # Ensure we have a valid session before fetching
                 await self._ensure_session()
 
                 # Fetch fresh data
-                status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
+                status = await self.request_json_data(
+                    _SYR_CONNECT_JSON_ENDPOINT_GET_ALL
+                )
 
             # --- Return Status Dictionary ---
             # The JSON API returns a flat dict with getXYZ keys (getSRN, getAB, etc.)
             # Return as-is so the rest of the integration can process it like XML parser output
-            _LOGGER.debug("JSON API: Returning status with %d keys for device_id=%s", len(status), device_id)
+            _LOGGER.debug(
+                "JSON API: Returning status with %d keys for device_id=%s",
+                len(status),
+                device_id,
+            )
             return dict(status)
 
         # --- Error Handling ---
         # Return None on parsing errors to let coordinator keep previous state
         # (same behavior as XML client for graceful degradation)
-        except (ValueError, KeyError, TypeError, AttributeError):
+        except ValueError, KeyError, TypeError, AttributeError:
             _LOGGER.exception("Failed to parse JSON device status for %s", device_id)
             return None
 
@@ -600,7 +676,9 @@ class SyrConnectJsonAPI:
         # --- Build URL and Fetch ---
         # Format: /get/{cmd} (e.g., /get/FLO)
         path = f"/get/{cmd}"
-        _LOGGER.debug("JSON API: Fetching single value for cmd=%s (path=%s)", command, path)
+        _LOGGER.debug(
+            "JSON API: Fetching single value for cmd=%s (path=%s)", command, path
+        )
 
         # Fetch data using existing request infrastructure
         data = await self.request_json_data(path)
@@ -615,12 +693,16 @@ class SyrConnectJsonAPI:
                 command,
                 data,
             )
-            raise SyrConnectInvalidResponseError(f"Response missing expected key '{expected_key}'")
+            raise SyrConnectInvalidResponseError(
+                f"Response missing expected key '{expected_key}'"
+            )
 
         _LOGGER.debug("JSON API: Retrieved %s=%s", expected_key, data[expected_key])
         return data
 
-    async def set_device_status(self, device_id: str, commands: list[tuple[str, Any]]) -> bool:
+    async def set_device_status(
+        self, device_id: str, commands: list[tuple[str, Any]]
+    ) -> bool:
         """Attempt to set one or more device values using the JSON API.
 
         Args:
@@ -641,7 +723,9 @@ class SyrConnectJsonAPI:
             await self._set_device_status_single(device_id, command, value)
         return True
 
-    async def _set_device_status_single(self, device_id: str, command: str, value: Any) -> None:
+    async def _set_device_status_single(
+        self, device_id: str, command: str, value: Any
+    ) -> None:
         """Send a single set command to the JSON API."""
         # --- Normalize Command Name ---
         # Some callers send "setAB", others send "AB" - normalize to base
@@ -651,7 +735,9 @@ class SyrConnectJsonAPI:
         # Build URL with Path Encoding using helper (handles ADM exception)
         url = self._build_set_url(base_cmd, value)
 
-        _LOGGER.debug("JSON API: Setting %s=%s for device %s", base_cmd, value, device_id)
+        _LOGGER.debug(
+            "JSON API: Setting %s=%s for device %s", base_cmd, value, device_id
+        )
 
         # --- Make Request ---
         # Response format: {"set{cmd}{value}": "OK"} or {"set{cmd}{value}": "MIMA"}
@@ -662,7 +748,9 @@ class SyrConnectJsonAPI:
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
         self._validate_set_response(response, base_cmd, value, device_id)
 
-        _LOGGER.info("JSON API: Set %s=%s for device %s (status: OK)", base_cmd, value, device_id)
+        _LOGGER.info(
+            "JSON API: Set %s=%s for device %s (status: OK)", base_cmd, value, device_id
+        )
 
     def _validate_set_response(
         self,
@@ -705,18 +793,24 @@ class SyrConnectJsonAPI:
         #
         # Perform a case-insensitive lookup for the response key so that
         # devices returning e.g. 'setala255' or 'setALA255' are accepted.
-        found_key = next((k for k in response if k.lower() == response_key.lower()), None)
+        found_key = next(
+            (k for k in response if k.lower() == response_key.lower()), None
+        )
 
         # Some devices (e.g. Floorsensor) omit the "set" prefix in the response key:
         # {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
         # Fall back to a prefix-less lookup: cmd+value (case-insensitive).
         if not found_key:
             bare_key = f"{str(cmd).upper()}{value}"
-            found_key = next((k for k in response if k.lower() == bare_key.lower()), None)
+            found_key = next(
+                (k for k in response if k.lower() == bare_key.lower()), None
+            )
 
         if not found_key:
             msg = f"Response missing expected key '{response_key}'"
-            _LOGGER.warning("JSON API: %s for device %s (response: %s)", msg, device_id, response)
+            _LOGGER.warning(
+                "JSON API: %s for device %s (response: %s)", msg, device_id, response
+            )
             # For login, missing key is a failure
             if is_login:
                 raise SyrConnectInvalidResponseError(msg)
@@ -798,18 +892,18 @@ class SyrConnectJsonAPI:
                 continue
 
             # Exact uppercase match: log a warning
-            if (msg := error_messages.get(val)):
+            if msg := error_messages.get(val):
                 _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
                 continue
 
             # Accept 'ERROR: {CODE}' variants (older firmware may return this)
-            if isinstance(val, str) and ':' in val:
+            if isinstance(val, str) and ":" in val:
                 try:
-                    _, code = val.split(':', 1)
+                    _, code = val.split(":", 1)
                     code = code.strip()
                 except ValueError:
-                    code = ''
-                if (msg := error_messages.get(code)):
+                    code = ""
+                if msg := error_messages.get(code):
                     _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
                     continue
 

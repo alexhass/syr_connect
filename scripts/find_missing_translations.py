@@ -5,15 +5,18 @@ from pathlib import Path
 from typing import Any
 
 base = Path(__file__).parents[1] / "custom_components" / "syr_connect" / "translations"
-files = list(base.glob('*.json'))
+files = list(base.glob("*.json"))
+
 
 def load(path: Path) -> Any:
     """Load a translation file."""
-    return json.loads(path.read_text(encoding='utf8'))
+    return json.loads(path.read_text(encoding="utf8"))
 
-de = load(base / 'de.json')
 
-def collect_keys(obj: Any, prefix: str = '') -> set[str]:
+de = load(base / "de.json")
+
+
+def collect_keys(obj: Any, prefix: str = "") -> set[str]:
     """Return the dotted paths of all keys in a nested translation dict."""
     keys: set[str] = set()
     if isinstance(obj, dict):
@@ -23,11 +26,12 @@ def collect_keys(obj: Any, prefix: str = '') -> set[str]:
             keys |= collect_keys(v, new_prefix)
     return keys
 
+
 base_keys = collect_keys(de)
 
 results = {}
 for f in files:
-    if f.name == 'de.json':
+    if f.name == "de.json":
         continue
     data = load(f)
     keys = collect_keys(data)

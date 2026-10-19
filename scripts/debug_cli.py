@@ -63,7 +63,9 @@ def _exit_missing_dependency(err: ModuleNotFoundError) -> NoReturn:
     """Explain how to run the script with the project's virtualenv, then exit."""
     if sys.platform == "win32":
         venv_python = _REPO_ROOT / ".venv" / "Scripts" / "python.exe"
-        activate = r".venv\Scripts\activate.bat  (PowerShell: .venv\Scripts\Activate.ps1)"
+        activate = (
+            r".venv\Scripts\activate.bat  (PowerShell: .venv\Scripts\Activate.ps1)"
+        )
     else:
         venv_python = _REPO_ROOT / ".venv" / "bin" / "python"
         activate = "source .venv/bin/activate"
@@ -120,6 +122,7 @@ except ModuleNotFoundError as err:
 # Logging setup -- maximum verbosity on every relevant logger
 # ---------------------------------------------------------------------------
 
+
 def _setup_logging(log_file: str | None = None) -> None:
     fmt = "%(asctime)s  %(levelname)-8s  %(name)s  %(message)s"
     root = logging.getLogger()
@@ -160,6 +163,7 @@ _LOGGER = logging.getLogger("debug_cli")
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _parse_set_value(raw: str) -> Any:
     """Parse a CLI --set-value string into the most appropriate Python type.
 
@@ -182,6 +186,7 @@ def _parse_set_value(raw: str) -> Any:
 # ---------------------------------------------------------------------------
 # Inline API client that accepts custom URLs and constants
 # ---------------------------------------------------------------------------
+
 
 class DebugXmlClient:
     """Stripped-down XML API client with configurable endpoints for debugging."""
@@ -207,7 +212,9 @@ class DebugXmlClient:
         self.show_password = show_password
 
         # Derived URLs -- same path segments as production, keyed by operation
-        self.login_url = f"{base_url}/WebServices/Api/SyrApiService.svc/REST/GetProjects"
+        self.login_url = (
+            f"{base_url}/WebServices/Api/SyrApiService.svc/REST/GetProjects"
+        )
         self.device_list_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
         self.device_status_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
         self.device_set_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
@@ -250,7 +257,9 @@ class DebugXmlClient:
         _LOGGER.info("=== LOGIN ===")
         _LOGGER.info("Username: %s", self.username)
 
-        xml_data = self.payload_builder.build_login_payload(self.username, self.password)
+        xml_data = self.payload_builder.build_login_payload(
+            self.username, self.password
+        )
         # Guard against replace("", ...) corrupting the XML when password is empty
         if self.show_password or not self.password:
             log_payload = xml_data
@@ -268,22 +277,30 @@ class DebugXmlClient:
         except aiohttp.ClientResponseError as exc:
             _LOGGER.error(
                 "HTTP %s %s\n  URL : %s\n  Hint: check --base-url",
-                exc.status, exc.message, exc.request_info.url,
+                exc.status,
+                exc.message,
+                exc.request_info.url,
             )
             _LOGGER.debug("Full HTTP error details", exc_info=True)
             raise
         except aiohttp.ClientError as exc:
-            _LOGGER.error("Connection error: %s\n  Hint: check --base-url and network", exc)
+            _LOGGER.error(
+                "Connection error: %s\n  Hint: check --base-url and network", exc
+            )
             _LOGGER.debug("Full connection error details", exc_info=True)
             raise
 
         _LOGGER.debug("--- Raw login response ---\n%s", raw_response)
         if self.skip_decrypt:
-            _LOGGER.warning("--no-decrypt flag set -- skipping decryption, cannot extract session.")
+            _LOGGER.warning(
+                "--no-decrypt flag set -- skipping decryption, cannot extract session."
+            )
             return False
 
         _LOGGER.info("Parsing login response ...")
-        encrypted_text, raw_parsed = self.response_parser.parse_login_response(raw_response)
+        encrypted_text, raw_parsed = self.response_parser.parse_login_response(
+            raw_response
+        )
         _LOGGER.debug("Encrypted session text length: %d chars", len(encrypted_text))
         _LOGGER.debug("parse_login_response extras: %s", raw_parsed)
 
@@ -292,7 +309,9 @@ class DebugXmlClient:
         _LOGGER.debug("--- Decrypted session payload ---\n%s", decrypted)
 
         _LOGGER.info("Parsing decrypted session ...")
-        self.session_data, self.projects = self.response_parser.parse_decrypted_login(decrypted)
+        self.session_data, self.projects = self.response_parser.parse_decrypted_login(
+            decrypted
+        )
         _LOGGER.info("Session token (first 20 chars): %s...", self.session_data[:20])
         _LOGGER.info("Projects found: %d", len(self.projects))
         for p in self.projects:
@@ -318,10 +337,14 @@ class DebugXmlClient:
         _LOGGER.info("Setting %s on device %s to %r", command, device_id, value)
 
         if self.skip_decrypt:
-            _LOGGER.warning("--no-decrypt flag set -- cannot perform set operation without a valid session.")
+            _LOGGER.warning(
+                "--no-decrypt flag set -- cannot perform set operation without a valid session."
+            )
             return False
 
-        payload = self.payload_builder.build_device_set_status_payload(self.session_data, device_id, [(command, value)])
+        payload = self.payload_builder.build_device_set_status_payload(
+            self.session_data, device_id, [(command, value)]
+        )
         try:
             resp = await self.http_client.post(self.device_set_url, {"xml": payload})
             _LOGGER.debug("Set response: %s", resp)
@@ -341,7 +364,9 @@ class DebugXmlClient:
         """Fetch and log the devices of a project."""
         _LOGGER.info("=== GET DEVICES  project_id=%s ===", project_id)
 
-        payload = self.payload_builder.build_device_get_list_payload(self.session_data, project_id)
+        payload = self.payload_builder.build_device_get_list_payload(
+            self.session_data, project_id
+        )
         _LOGGER.debug("--- Device list payload ---\n%s", payload)
 
         _LOGGER.info("POST %s", self.device_list_url)
@@ -351,7 +376,9 @@ class DebugXmlClient:
         )
         _LOGGER.debug("--- Raw device list response ---\n%s", raw_response)
 
-        devices: list[dict[str, Any]] = self.response_parser.parse_device_list_response(raw_response)
+        devices: list[dict[str, Any]] = self.response_parser.parse_device_list_response(
+            raw_response
+        )
         for dev in devices:
             dev["project_id"] = project_id
             if "id" not in dev and "serial_number" in dev:
@@ -381,7 +408,9 @@ class DebugXmlClient:
 
         _LOGGER.info("=== GET STATUS  device=%s  dclg=%s ===", device_id, dclg)
 
-        payload = self.payload_builder.build_device_get_status_payload(self.session_data, dclg)
+        payload = self.payload_builder.build_device_get_status_payload(
+            self.session_data, dclg
+        )
         _LOGGER.debug("--- Status request payload ---\n%s", payload)
 
         _LOGGER.info("POST %s", self.device_status_url)
@@ -389,7 +418,9 @@ class DebugXmlClient:
             self.device_status_url,
             {"xml": payload},
         )
-        _LOGGER.debug("--- Raw status response (first 2000 chars) ---\n%s", raw_response[:2000])
+        _LOGGER.debug(
+            "--- Raw status response (first 2000 chars) ---\n%s", raw_response[:2000]
+        )
 
         status = self.response_parser.parse_device_status_response(raw_response)
         if status is None:
@@ -422,7 +453,9 @@ def _parse_args() -> argparse.Namespace:
         epilog=_EXAMPLES_EPILOG,
     )
     parser.add_argument("--username", required=True, help="SYR Connect account e-mail")
-    parser.add_argument("--password", required=True, help="SYR Connect account password")
+    parser.add_argument(
+        "--password", required=True, help="SYR Connect account password"
+    )
     parser.add_argument(
         "--show-password",
         action="store_true",
@@ -581,14 +614,23 @@ async def _run(args: argparse.Namespace) -> None:
 
             target = next(
                 (
-                    d for d in all_devices
-                    if args.identity in (d.get("id"), d.get("dclg"), d.get("serial_number"), d.get("name"))
+                    d
+                    for d in all_devices
+                    if args.identity
+                    in (
+                        d.get("id"),
+                        d.get("dclg"),
+                        d.get("serial_number"),
+                        d.get("name"),
+                    )
                 ),
                 None,
             )
 
             if not target:
-                _LOGGER.error("Device '%s' not found. Available devices:", args.identity)
+                _LOGGER.error(
+                    "Device '%s' not found. Available devices:", args.identity
+                )
                 for d in all_devices:
                     _LOGGER.info(
                         "  id=%s  dclg=%s  name=%s  dk=%s  dkv=%s  sbt=%s",
@@ -609,7 +651,12 @@ async def _run(args: argparse.Namespace) -> None:
 
             success = await client.set_device_status(dclg, args.set_command, value)
             if success:
-                _LOGGER.info("Set command succeeded: %s -> %s=%r", target.get("id"), args.set_command, value)
+                _LOGGER.info(
+                    "Set command succeeded: %s -> %s=%r",
+                    target.get("id"),
+                    args.set_command,
+                    value,
+                )
                 return
             _LOGGER.error("Set command failed for device %s", target.get("id"))
             sys.exit(1)
@@ -625,7 +672,11 @@ async def _run(args: argparse.Namespace) -> None:
                     try:
                         await client.get_status(device)
                     except Exception as exc:
-                        _LOGGER.error("Failed to get status for device %s: %s", device.get("id"), exc)
+                        _LOGGER.error(
+                            "Failed to get status for device %s: %s",
+                            device.get("id"),
+                            exc,
+                        )
                         _LOGGER.debug("Device status traceback", exc_info=True)
 
     _LOGGER.info("Done.")

@@ -51,11 +51,18 @@ _LOGGER = logging.getLogger(__name__)
 # Schema for Cloud/XML API initial setup (backend selector + username + password)
 STEP_CLOUD_XML_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_SERVICE, default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER): selector.SelectSelector(
+        probatio.Required(
+            CONF_SERVICE, default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
+        ): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
-                    selector.SelectOptionDict(value=svc["cf_bundle_identifier"], label=svc["display_name"])
-                    for svc in sorted(_SYR_CONNECT_API_SERVICES.values(), key=lambda s: s["display_name"].casefold())
+                    selector.SelectOptionDict(
+                        value=svc["cf_bundle_identifier"], label=svc["display_name"]
+                    )
+                    for svc in sorted(
+                        _SYR_CONNECT_API_SERVICES.values(),
+                        key=lambda s: s["display_name"].casefold(),
+                    )
                 ],
                 mode=selector.SelectSelectorMode.DROPDOWN,
             )
@@ -104,7 +111,9 @@ STEP_LOCAL_JSON_DATA_SCHEMA = probatio.Schema(
 )
 
 
-async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input_xml(
+    hass: HomeAssistant, data: dict[str, Any]
+) -> dict[str, Any]:
     """Validate the user input for Cloud/XML API.
 
     Args:
@@ -127,7 +136,7 @@ async def validate_input_xml(hass: HomeAssistant, data: dict[str, Any]) -> dict[
     api_app_name = svc["api_app_name"] if svc else None
     api_base_url = svc["api_base_url"] if svc else None
     cf_bundle_identifier = svc["cf_bundle_identifier"] if svc else None
-    display_name = (svc["display_name"] if svc else None)
+    display_name = svc["display_name"] if svc else None
 
     api = SyrConnectXmlAPI(
         session,
@@ -197,10 +206,16 @@ async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
         _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
         raise CannotConnectError
 
-    _LOGGER.debug("JSON API: Successfully validated SYR device with serial %s and %d status keys", serial, len(data_result))
+    _LOGGER.debug(
+        "JSON API: Successfully validated SYR device with serial %s and %d status keys",
+        serial,
+        len(data_result),
+    )
 
 
-async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input_json(
+    hass: HomeAssistant, data: dict[str, Any]
+) -> dict[str, Any]:
     """Validate the user input for Local/JSON API.
 
     Args:
@@ -221,7 +236,9 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
         if host_has_port(host):
             _LOGGER.error("Host field must not include a port. Received: %s", host)
             raise HostWithPortError("Host must not include a port.")
-        _LOGGER.error("Host field is not a valid IP address or hostname. Received: %s", host)
+        _LOGGER.error(
+            "Host field is not a valid IP address or hostname. Received: %s", host
+        )
         raise HostInvalidError("Host must be a valid IP address or hostname.")
 
     model = data[CONF_MODEL]
@@ -259,7 +276,10 @@ async def validate_input_json(hass: HomeAssistant, data: dict[str, Any]) -> dict
     _LOGGER.info("JSON API: connection successful to host: %s", host)
 
     # Return whether the device required login so the config flow can persist it
-    return {"title": f"SYR Connect Local ({host})", "login_required": api.login_required}
+    return {
+        "title": f"SYR Connect Local ({host})",
+        "login_required": api.login_required,
+    }
 
 
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
@@ -270,7 +290,9 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
         # Avoid assigning to the read-only `config_entry` property; store privately.
         self._config_entry = config_entry
 
-    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Manage the options for scan interval configuration.
 
         Args:
@@ -286,7 +308,9 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 
             # Scan interval
             if _SYR_CONNECT_SCAN_INTERVAL_CONF in user_input:
-                options[_SYR_CONNECT_SCAN_INTERVAL_CONF] = user_input[_SYR_CONNECT_SCAN_INTERVAL_CONF]
+                options[_SYR_CONNECT_SCAN_INTERVAL_CONF] = user_input[
+                    _SYR_CONNECT_SCAN_INTERVAL_CONF
+                ]
 
             return self.async_create_entry(title="", data=options)
 
@@ -304,7 +328,11 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
                     # Minimum depends on API type: JSON devices can poll faster
                     min=(
                         _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM
-                        if (self._config_entry and self._config_entry.data.get(CONF_API_TYPE) == API_TYPE_JSON)
+                        if (
+                            self._config_entry
+                            and self._config_entry.data.get(CONF_API_TYPE)
+                            == API_TYPE_JSON
+                        )
                         else _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM
                     ),
                     max=_SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
@@ -364,7 +392,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return {**user_input, CONF_HOST: host.strip()}
         return user_input
 
-    def _unique_id_used_by_other_entry(self, entry: ConfigEntry, unique_id: str) -> bool:
+    def _unique_id_used_by_other_entry(
+        self, entry: ConfigEntry, unique_id: str
+    ) -> bool:
         """Return True if another config entry already uses this unique_id.
 
         Reauth and reconfigure may change the username or host. Without this check
@@ -400,7 +430,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         new_unique_id = self._entry_unique_id(api_type, new_data)
         if self._unique_id_used_by_other_entry(entry, new_unique_id):
             return self.async_abort(reason="already_configured")
-        self.hass.config_entries.async_update_entry(entry, data=new_data, unique_id=new_unique_id)
+        self.hass.config_entries.async_update_entry(
+            entry, data=new_data, unique_id=new_unique_id
+        )
 
         # Reload the config entry
         await self.hass.config_entries.async_reload(entry.entry_id)
@@ -418,7 +450,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         return await self.async_step_reauth_confirm()
 
-    async def async_step_reauth_confirm(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle reauth confirmation step.
 
         Args:
@@ -431,12 +465,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         # Get the existing config entry for API type determination
         entry_id = self.context.get("entry_id")
-        entry = self.hass.config_entries.async_get_entry(entry_id) if entry_id is not None else None
+        entry = (
+            self.hass.config_entries.async_get_entry(entry_id)
+            if entry_id is not None
+            else None
+        )
         if entry is None and user_input is not None:
             return self.async_abort(reason="reauth_failed")
 
         # Determine API type for this entry (default to XML for backward compatibility)
-        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
+        api_type = (
+            entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
+        )
 
         if user_input is not None:
             # At this point, if we reached here after the check above, `entry` must not be None
@@ -459,10 +499,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 else:
                     # Default/XML flow — pass existing conf_service so the correct endpoint is tested
-                    await validate_input_xml(self.hass, {
-                        **user_input,
-                        CONF_SERVICE: entry.data.get(CONF_SERVICE),
-                    })
+                    await validate_input_xml(
+                        self.hass,
+                        {
+                            **user_input,
+                            CONF_SERVICE: entry.data.get(CONF_SERVICE),
+                        },
+                    )
                     new_data = {
                         **entry.data,
                         CONF_API_TYPE: API_TYPE_XML,
@@ -470,10 +513,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                return await self._async_update_entry_and_reload(entry, api_type, new_data, "reauth_successful")
+                return await self._async_update_entry_and_reload(
+                    entry, api_type, new_data, "reauth_successful"
+                )
 
             except CannotConnectError:
-                errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
+                errors["base"] = (
+                    "cannot_connect_local"
+                    if api_type == API_TYPE_JSON
+                    else "cannot_connect"
+                )
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except HostWithPortError:
@@ -490,17 +539,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 step_id="reauth_confirm",
                 data_schema=STEP_LOCAL_JSON_DATA_SCHEMA,
                 errors=errors,
-                description_placeholders={"host": str(entry.data.get(CONF_HOST, "")) if entry else ""},
+                description_placeholders={
+                    "host": str(entry.data.get(CONF_HOST, "")) if entry else ""
+                },
             )
 
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=_STEP_REAUTH_XML_DATA_SCHEMA,
             errors=errors,
-            description_placeholders={"username": str(self.context.get("username", ""))},
+            description_placeholders={
+                "username": str(self.context.get("username", ""))
+            },
         )
 
-    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle reconfiguration of the integration.
 
         Args:
@@ -511,7 +566,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
         errors: dict[str, str] = {}
         entry_id = self.context.get("entry_id")
-        entry = self.hass.config_entries.async_get_entry(entry_id) if entry_id is not None else None
+        entry = (
+            self.hass.config_entries.async_get_entry(entry_id)
+            if entry_id is not None
+            else None
+        )
 
         if user_input is not None:
             # Check if entry still exists during submission
@@ -536,7 +595,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else:
                     # Use the existing configured service; do not allow changing it here.
                     service = entry.data.get(CONF_SERVICE)
-                    await validate_input_xml(self.hass, {**user_input, CONF_SERVICE: service})
+                    await validate_input_xml(
+                        self.hass, {**user_input, CONF_SERVICE: service}
+                    )
                     new_data = {
                         CONF_API_TYPE: API_TYPE_XML,
                         CONF_SERVICE: service,
@@ -544,12 +605,22 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                return await self._async_update_entry_and_reload(entry, api_type, new_data, "reconfigure_successful")
+                return await self._async_update_entry_and_reload(
+                    entry, api_type, new_data, "reconfigure_successful"
+                )
 
             except CannotConnectError:
                 # Use appropriate error message based on API type
-                api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
-                errors["base"] = "cannot_connect_local" if api_type == API_TYPE_JSON else "cannot_connect"
+                api_type = (
+                    entry.data.get(CONF_API_TYPE, API_TYPE_XML)
+                    if entry
+                    else API_TYPE_XML
+                )
+                errors["base"] = (
+                    "cannot_connect_local"
+                    if api_type == API_TYPE_JSON
+                    else "cannot_connect"
+                )
             except InvalidAuthError:
                 errors["base"] = "invalid_auth"
             except HostWithPortError:
@@ -561,7 +632,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
         # Determine API type from entry (or default to XML if entry is None)
-        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
+        api_type = (
+            entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
+        )
 
         # Show appropriate form based on API type
         if api_type == API_TYPE_JSON:
@@ -572,7 +645,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {
                         probatio.Required(
                             CONF_MODEL,
-                            default=entry.data.get(CONF_MODEL, "") if entry else ""
+                            default=entry.data.get(CONF_MODEL, "") if entry else "",
                         ): selector.SelectSelector(
                             selector.SelectSelectorConfig(
                                 options=[
@@ -584,7 +657,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         ),
                         probatio.Required(
                             CONF_HOST,
-                            default=entry.data.get(CONF_HOST, "") if entry else ""
+                            default=entry.data.get(CONF_HOST, "") if entry else "",
                         ): str,
                     }
                 ),
@@ -598,7 +671,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     probatio.Required(
                         CONF_USERNAME,
-                        default=entry.data.get(CONF_USERNAME, "") if entry else ""
+                        default=entry.data.get(CONF_USERNAME, "") if entry else "",
                     ): str,
                     probatio.Required(CONF_PASSWORD): str,
                 }
@@ -607,7 +680,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     @override
-    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step - show menu to select API type.
 
         Returns:
@@ -618,7 +693,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             menu_options=["api_xml", "api_json"],
         )
 
-    async def async_step_api_xml(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_api_xml(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle Cloud/XML API configuration (username + password).
 
         Args:
@@ -630,7 +707,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            _LOGGER.debug("Processing Cloud/XML API config flow for user: %s", user_input[CONF_USERNAME])
+            _LOGGER.debug(
+                "Processing Cloud/XML API config flow for user: %s",
+                user_input[CONF_USERNAME],
+            )
             try:
                 info = await validate_input_xml(self.hass, user_input)
                 _LOGGER.debug("Validation successful")
@@ -665,7 +745,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_api_json(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_api_json(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle Local/JSON API configuration (host + model).
 
         Args:

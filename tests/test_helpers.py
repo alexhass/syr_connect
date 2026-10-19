@@ -56,34 +56,50 @@ from custom_components.syr_connect.payload_builder import PayloadBuilder
 
 def test_get_default_scan_interval_for_entry_none():
     """Test get default scan interval for entry none."""
-    assert helpers.get_default_scan_interval_for_entry(None) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+    assert (
+        helpers.get_default_scan_interval_for_entry(None)
+        == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+    )
 
 
 def test_get_default_scan_interval_for_entry_options_and_data():
     """Test get default scan interval for entry options and data."""
     # Use an object with attributes (ConfigEntry-like) rather than a plain dict
-    entry = SimpleNamespace(options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, data={helpers.CONF_API_TYPE: API_TYPE_JSON})
+    entry = SimpleNamespace(
+        options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"},
+        data={helpers.CONF_API_TYPE: API_TYPE_JSON},
+    )
     assert helpers.get_default_scan_interval_for_entry(entry) == 30
 
     # invalid option falls back to API default
-    entry = SimpleNamespace(options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "bad"}, data={helpers.CONF_API_TYPE: API_TYPE_JSON})
-    assert helpers.get_default_scan_interval_for_entry(entry) == helpers._SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
+    entry = SimpleNamespace(
+        options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "bad"},
+        data={helpers.CONF_API_TYPE: API_TYPE_JSON},
+    )
+    assert (
+        helpers.get_default_scan_interval_for_entry(entry)
+        == helpers._SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
+    )
 
 
 def test_get_default_scan_interval_for_entry_attribute_access_error_fallback():
     """When attribute access raises, fallback to mapping access must be used."""
+
     class BrokenDict(dict):
         def __getattribute__(self, name):
             if name in ("options", "data"):
                 raise TypeError("boom")
             return super().__getattribute__(name)
 
-    entry = BrokenDict({
-        "options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "45"},
-        "data": {helpers.CONF_API_TYPE: API_TYPE_JSON},
-    })
+    entry = BrokenDict(
+        {
+            "options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "45"},
+            "data": {helpers.CONF_API_TYPE: API_TYPE_JSON},
+        }
+    )
 
     assert helpers.get_default_scan_interval_for_entry(entry) == 45
+
 
 def test_build_device_info_fallback_and_entity_id_additional():
     """Test build device info fallback and entity id additional."""
@@ -101,25 +117,37 @@ def test_registry_cleanup_handles_exception():
     """Test registry cleanup handles exception."""
     hass = MagicMock()
     # Make er.async_get raise
-    with patch("custom_components.syr_connect.helpers.er.async_get", side_effect=RuntimeError("boom")):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get",
+        side_effect=RuntimeError("boom"),
+    ):
         # Should not raise
-        helpers.registry_cleanup(hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys={"getPRS"})
+        helpers.registry_cleanup(
+            hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys={"getPRS"}
+        )
 
 
 def test_cleanup_removed_devices_detaches_stale_device() -> None:
     """A registry device whose id no longer appears in coordinator data is detached."""
     hass = MagicMock()
     device_registry = MagicMock()
-    stale_entry = SimpleNamespace(id="registry_entry_id", identifiers={(helpers.DOMAIN, "STALE_DEV")})
+    stale_entry = SimpleNamespace(
+        id="registry_entry_id", identifiers={(helpers.DOMAIN, "STALE_DEV")}
+    )
 
     with (
-        patch("custom_components.syr_connect.helpers.dr.async_get", return_value=device_registry),
+        patch(
+            "custom_components.syr_connect.helpers.dr.async_get",
+            return_value=device_registry,
+        ),
         patch(
             "custom_components.syr_connect.helpers.dr.async_entries_for_config_entry",
             return_value=[stale_entry],
         ),
     ):
-        helpers.cleanup_removed_devices(hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1")
+        helpers.cleanup_removed_devices(
+            hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1"
+        )
 
     device_registry.async_update_device.assert_called_once_with(
         "registry_entry_id", remove_config_entry_id="entry1"
@@ -130,16 +158,23 @@ def test_cleanup_removed_devices_keeps_current_device() -> None:
     """A registry device still present in coordinator data must not be detached."""
     hass = MagicMock()
     device_registry = MagicMock()
-    current_entry = SimpleNamespace(id="registry_entry_id", identifiers={(helpers.DOMAIN, "CURRENT_DEV")})
+    current_entry = SimpleNamespace(
+        id="registry_entry_id", identifiers={(helpers.DOMAIN, "CURRENT_DEV")}
+    )
 
     with (
-        patch("custom_components.syr_connect.helpers.dr.async_get", return_value=device_registry),
+        patch(
+            "custom_components.syr_connect.helpers.dr.async_get",
+            return_value=device_registry,
+        ),
         patch(
             "custom_components.syr_connect.helpers.dr.async_entries_for_config_entry",
             return_value=[current_entry],
         ),
     ):
-        helpers.cleanup_removed_devices(hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1")
+        helpers.cleanup_removed_devices(
+            hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1"
+        )
 
     device_registry.async_update_device.assert_not_called()
 
@@ -147,7 +182,10 @@ def test_cleanup_removed_devices_keeps_current_device() -> None:
 def test_cleanup_removed_devices_handles_exception() -> None:
     """Any error while scanning/detaching devices must not propagate."""
     hass = MagicMock()
-    with patch("custom_components.syr_connect.helpers.dr.async_get", side_effect=RuntimeError("boom")):
+    with patch(
+        "custom_components.syr_connect.helpers.dr.async_get",
+        side_effect=RuntimeError("boom"),
+    ):
         # Should not raise
         helpers.cleanup_removed_devices(hass, {"devices": []}, "entry1")
 
@@ -206,7 +244,10 @@ def test_get_sensor_rtm_and_set_additional():
     # Separate numeric representation
     status = {"getRTH": "7", "getRTM": "30"}
     assert helpers.get_sensor_rtm_value(status) == "07:30"
-    assert helpers.set_sensor_rtm_value(status, "09:45") == [("setRTH", 9), ("setRTM", 45)]
+    assert helpers.set_sensor_rtm_value(status, "09:45") == [
+        ("setRTH", 9),
+        ("setRTM", 45),
+    ]
 
     # Invalid option
     assert helpers.set_sensor_rtm_value(status, "bad") == []
@@ -828,13 +869,20 @@ def test_mapping_none_inputs() -> None:
 
 def test_get_default_scan_interval_for_entry_with_dict() -> None:
     """Entry provided as plain dict should be handled like a mapping."""
-    entry = {"options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"}, "data": {helpers.CONF_API_TYPE: API_TYPE_JSON}}
+    entry = {
+        "options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"},
+        "data": {helpers.CONF_API_TYPE: API_TYPE_JSON},
+    }
     # Implementation handles plain dicts: reads scan_interval from options directly.
     assert helpers.get_default_scan_interval_for_entry(entry) == 30
 
 
 def _registry_entry(
-    domain: str, device_id: str, key: str, config_entry_id: str | None = None, entity_id: str | None = None
+    domain: str,
+    device_id: str,
+    key: str,
+    config_entry_id: str | None = None,
+    entity_id: str | None = None,
 ) -> SimpleNamespace:
     """Return an entity registry entry as created by this integration (entity_id defaults to the standard one)."""
     return SimpleNamespace(
@@ -852,11 +900,20 @@ def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
     registry = MagicMock()
     registry.async_get = MagicMock(return_value=None)
     stale = _registry_entry("sensor", "DEV", "getCNO")
-    registry.entities.values.return_value = [stale, _registry_entry("sensor", "DEV", "getSRN")]
+    registry.entities.values.return_value = [
+        stale,
+        _registry_entry("sensor", "DEV", "getSRN"),
+    ]
 
     # SafeFloor has its own per-model allowlist, which listed getCNO before
-    status = {"getVER": "Syr Floorsensor 2.23", "getSRN": "123", "getCNO": "XXXXXXXXXXXXXXX"}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    status = {
+        "getVER": "Syr Floorsensor 2.23",
+        "getSRN": "123",
+        "getCNO": "XXXXXXXXXXXXXXX",
+    }
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         helpers.registry_cleanup(
             MagicMock(),
             {"devices": [{"id": "DEV", "status": status}]},
@@ -881,7 +938,9 @@ def test_registry_cleanup_remove_called() -> None:
     # No conditional entities exist in the registry for this test.
     registry.async_get = MagicMock(return_value=None)
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getPRS"})
 
@@ -900,7 +959,9 @@ def test_registry_cleanup_skips_device_with_empty_status() -> None:
     # A conditionally hidden sensor that would be removed if the empty status were trusted
     registry.async_get = MagicMock(return_value=SimpleNamespace(config_entry_id=None))
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": device_id, "status": {}}]}
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getPRS"})
 
@@ -923,7 +984,9 @@ def test_registry_cleanup_entry_id_scoping_ignores_other_hub() -> None:
     registry.async_remove = MagicMock()
     registry.async_get = MagicMock(return_value=None)
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
             hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
@@ -944,7 +1007,9 @@ def test_registry_cleanup_entry_id_scoping_removes_own_hub() -> None:
     registry.async_remove = MagicMock()
     registry.async_get = MagicMock(return_value=None)
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
             hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
@@ -959,11 +1024,15 @@ def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
     registry = MagicMock()
     device_id = "DEV2"
     unlisted_entity_id = build_entity_id("sensor", device_id, "getFOO")
-    registry.entities.values.return_value = [_registry_entry("sensor", device_id, "getFOO")]
+    registry.entities.values.return_value = [
+        _registry_entry("sensor", device_id, "getFOO")
+    ]
     registry.async_get = MagicMock(return_value=None)
     registry.async_remove.side_effect = RuntimeError("boom")
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         # Should not raise despite async_remove throwing
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys=set())
@@ -983,12 +1052,22 @@ def test_registry_cleanup_uses_unique_id_not_entity_id(entity_id: str) -> None:
     registry = MagicMock()
     registry.async_get = MagicMock(return_value=None)
     registry.entities.values.return_value = [
-        _registry_entry("sensor", "206AAA12345", "getFLO", config_entry_id="hub2", entity_id=entity_id),
+        _registry_entry(
+            "sensor",
+            "206AAA12345",
+            "getFLO",
+            config_entry_id="hub2",
+            entity_id=entity_id,
+        ),
     ]
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": "206AAA12345", "status": {"getFLO": "5"}}]}
-        helpers.registry_cleanup(MagicMock(), coordinator, "sensor", allowed_keys={"getFLO"}, entry_id="hub2")
+        helpers.registry_cleanup(
+            MagicMock(), coordinator, "sensor", allowed_keys={"getFLO"}, entry_id="hub2"
+        )
 
     registry.async_remove.assert_not_called()
 
@@ -1002,12 +1081,23 @@ def test_registry_cleanup_strips_platform_suffix_and_ignores_other_platforms() -
         _registry_entry("select", "DEV", "getRTM_select", config_entry_id="hub"),
         stale,
         _registry_entry("sensor", "DEV", "getFOO", config_entry_id="hub"),
-        SimpleNamespace(**{**vars(_registry_entry("select", "DEV", "getBAR", config_entry_id="hub")), "platform": "other"}),
+        SimpleNamespace(
+            **{
+                **vars(
+                    _registry_entry("select", "DEV", "getBAR", config_entry_id="hub")
+                ),
+                "platform": "other",
+            }
+        ),
     ]
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         coordinator = {"devices": [{"id": "DEV", "status": {"getRTM": "02:00"}}]}
-        helpers.registry_cleanup(MagicMock(), coordinator, "select", allowed_keys={"getRTM"}, entry_id="hub")
+        helpers.registry_cleanup(
+            MagicMock(), coordinator, "select", allowed_keys={"getRTM"}, entry_id="hub"
+        )
 
     registry.async_remove.assert_called_once_with(stale.entity_id)
 
@@ -1016,7 +1106,9 @@ def test_registry_cleanup_allowed_keys_none_is_noop() -> None:
     """registry_cleanup with allowed_keys=None must return immediately without accessing registry."""
     hass = MagicMock()
     with patch("custom_components.syr_connect.helpers.er.async_get") as mock_get:
-        helpers.registry_cleanup(hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys=None)
+        helpers.registry_cleanup(
+            hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys=None
+        )
         mock_get.assert_not_called()
 
 
@@ -1027,7 +1119,9 @@ def test_registry_cleanup_skips_device_with_no_id() -> None:
     registry.entities.values.return_value = []
     registry.async_remove = MagicMock()
 
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         # One device with no id, one with empty-string id
         helpers.registry_cleanup(
             hass,
@@ -1051,10 +1145,16 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     registry.async_remove = MagicMock()
 
     # Only return an entity entry for the specific entity_id under test.
-    registry.async_get = MagicMock(side_effect=lambda eid: SimpleNamespace(entity_id=eid) if eid == entity_id else None)
+    registry.async_get = MagicMock(
+        side_effect=lambda eid: (
+            SimpleNamespace(entity_id=eid) if eid == entity_id else None
+        )
+    )
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
 
     registry.async_remove.assert_called_once_with(entity_id)
@@ -1064,14 +1164,25 @@ def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
     """An offline device (dst 0/1) reports empty measurements; that must not remove its sensors."""
     registry = MagicMock()
     registry.entities.values.return_value = []
-    registry.async_get = MagicMock(side_effect=lambda eid: SimpleNamespace(entity_id=eid, config_entry_id=None))
+    registry.async_get = MagicMock(
+        side_effect=lambda eid: SimpleNamespace(entity_id=eid, config_entry_id=None)
+    )
     registry.async_remove = MagicMock()
 
     # Offline as marked by the coordinator; measurements are empty strings
-    device = {"id": "DEV", "available": False, "status": {"dst": "1", "getCEL": "", "getBAR": "", "getWIP": ""}}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    device = {
+        "id": "DEV",
+        "available": False,
+        "status": {"dst": "1", "getCEL": "", "getBAR": "", "getWIP": ""},
+    }
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         helpers.registry_cleanup(
-            MagicMock(), {"devices": [device]}, "sensor", allowed_keys={"getCEL", "getBAR", "getWIP"}
+            MagicMock(),
+            {"devices": [device]},
+            "sensor",
+            allowed_keys={"getCEL", "getBAR", "getWIP"},
         )
 
     registry.async_remove.assert_not_called()
@@ -1093,10 +1204,20 @@ def test_registry_cleanup_keeps_unlisted_entities_of_offline_device() -> None:
     registry.async_remove = MagicMock()
 
     # getDFM is not in the allowlist, but the device is offline: skip the cleanup
-    device = {"id": "DEV", "available": False, "status": {"dst": "0", "getSRN": "123456789"}}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    device = {
+        "id": "DEV",
+        "available": False,
+        "status": {"dst": "0", "getSRN": "123456789"},
+    }
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         helpers.registry_cleanup(
-            MagicMock(), {"devices": [device]}, "sensor", allowed_keys={"getSRN"}, entry_id="entry"
+            MagicMock(),
+            {"devices": [device]},
+            "sensor",
+            allowed_keys={"getSRN"},
+            entry_id="entry",
         )
 
     registry.async_remove.assert_not_called()
@@ -1111,13 +1232,17 @@ def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> Non
     registry.entities.values.return_value = []
     registry.async_remove = MagicMock()
     registry.async_get = MagicMock(
-        side_effect=lambda eid: SimpleNamespace(entity_id=eid, config_entry_id="other_hub")
-        if eid == entity_id
-        else None
+        side_effect=lambda eid: (
+            SimpleNamespace(entity_id=eid, config_entry_id="other_hub")
+            if eid == entity_id
+            else None
+        )
     )
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         helpers.registry_cleanup(
             hass, coordinator, "sensor", allowed_keys={"getTYP"}, entry_id="this_hub"
         )
@@ -1137,10 +1262,16 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     registry.async_remove = MagicMock()
 
     # Only return an entity entry for the specific entity_id under test.
-    registry.async_get = MagicMock(side_effect=lambda eid: SimpleNamespace(entity_id=eid) if eid == entity_id else None)
+    registry.async_get = MagicMock(
+        side_effect=lambda eid: (
+            SimpleNamespace(entity_id=eid) if eid == entity_id else None
+        )
+    )
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": "SafeTech"}}]}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
         helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
 
     registry.async_remove.assert_not_called()
@@ -1158,11 +1289,14 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
     registry.async_remove = MagicMock()
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
-    with patch("custom_components.syr_connect.helpers.er.async_get", return_value=registry):
-        helpers.registry_cleanup(hass, coordinator, "binary_sensor", allowed_keys={"getTYP"})
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
+        helpers.registry_cleanup(
+            hass, coordinator, "binary_sensor", allowed_keys={"getTYP"}
+        )
 
     registry.async_remove.assert_not_called()
-
 
     # Wi-Fi present but WFS indicates not connected
     status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}
@@ -1181,7 +1315,10 @@ def test_get_sensor_rtm_invalid_values() -> None:
 
 def test_get_sensor_ala_map_detect_model_raises() -> None:
     """If detect_model raises an exception, get_sensor_ala_map should return (None, raw)."""
-    with patch("custom_components.syr_connect.helpers.detect_model", side_effect=ValueError("boom")):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        side_effect=ValueError("boom"),
+    ):
         mapped, raw = helpers.get_sensor_ala_map({}, "A1")
         assert mapped is None and raw == "A1"
 
@@ -1214,31 +1351,49 @@ def test_get_default_scan_interval_entry_getattr_raises() -> None:
             raise AttributeError("no data")
 
     be = BadEntry()
-    assert helpers.get_default_scan_interval_for_entry(be) == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT  # type: ignore[arg-type]
+    assert (
+        helpers.get_default_scan_interval_for_entry(be)
+        == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
+    )  # type: ignore[arg-type]
 
 
 def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
     """Known models but with unmapped raw codes should return (None, raw)."""
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "lexplus10"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "lexplus10"},
+    ):
         mapped, raw = get_sensor_ala_map({"getCNA": "LEXplus10"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safetplus"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "safetplus"},
+    ):
         mapped, raw = get_sensor_ala_map({"getVER": "Safe-T+ V2"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "neosoft2500"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "neosoft2500"},
+    ):
         mapped, raw = get_sensor_ala_map({"getVER": "NSS"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safefloor"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "safefloor"},
+    ):
         mapped, raw = get_sensor_ala_map({}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
 
 def test_get_sensor_ala_map_safefloor_known_codes() -> None:
     """SafeFloor model maps its alarm codes correctly."""
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safefloor"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "safefloor"},
+    ):
         mapped, raw = get_sensor_ala_map({}, "A0X0000")
         assert mapped == "no_alarm" and raw == "A0X0000"
 
@@ -1248,11 +1403,17 @@ def test_get_sensor_ala_map_safefloor_known_codes() -> None:
 
 def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
     """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "safetplus"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "safetplus"},
+    ):
         assert get_sensor_ala_map({}, "LowBat") == ("alarm_battery_low", "LowBat")
         assert get_sensor_ala_map({}, "weakbat") == ("alarm_battery_weak", "weakbat")
 
-    with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": "neosoft2500"}):
+    with patch(
+        "custom_components.syr_connect.helpers.detect_model",
+        return_value={"name": "neosoft2500"},
+    ):
         assert get_sensor_ala_map({}, "a1")[0] == "alarm_end_switch"
 
 
@@ -1266,7 +1427,10 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
         if not device_file.startswith(families):
             continue
         code = "0" if device_file.startswith("lex") else "FF"
-        with patch("custom_components.syr_connect.helpers.detect_model", return_value=dict(signature)):
+        with patch(
+            "custom_components.syr_connect.helpers.detect_model",
+            return_value=dict(signature),
+        ):
             mapped, _raw = get_sensor_ala_map({}, code)
         assert mapped == "no_alarm", signature["name"]
         checked += 1
@@ -1276,7 +1440,10 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
 def test_get_sensor_ala_map_models_without_device_file() -> None:
     """Models that have no device_file are mapped by their name."""
     for name in ("conelmuco", "takemuco", "triols", "pontosbase", "syrmuco"):
-        with patch("custom_components.syr_connect.helpers.detect_model", return_value={"name": name}):
+        with patch(
+            "custom_components.syr_connect.helpers.detect_model",
+            return_value={"name": name},
+        ):
             assert get_sensor_ala_map({}, "A1")[0] == "alarm_end_switch", name
 
 
@@ -1304,11 +1471,17 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
     # Use a key from the empty-value exclusion set that is NOT a CS key,
     # so the generic EXCLUDED_WHEN_EMPTY_VALUE branch (including int/float zero)
     # is exercised rather than the CS special-case block.
-    non_cs_ev_keys = helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE - {"getCS1", "getCS2", "getCS3"}
+    non_cs_ev_keys = helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE - {
+        "getCS1",
+        "getCS2",
+        "getCS3",
+    }
     key_ev = next(iter(non_cs_ev_keys))
     assert not is_sensor_visible({}, key_ev, None)
-    assert not is_sensor_visible({}, key_ev, 0)      # hits int/float zero branch (line 1055)
-    assert not is_sensor_visible({}, key_ev, 0.0)    # hits float zero branch
+    assert not is_sensor_visible(
+        {}, key_ev, 0
+    )  # hits int/float zero branch (line 1055)
+    assert not is_sensor_visible({}, key_ev, 0.0)  # hits float zero branch
     assert not is_sensor_visible({}, key_ev, "0")
 
     # Empty IP exclusion set
@@ -1368,6 +1541,7 @@ def test_is_sensor_visible_cs_sv_non_numeric_falls_back() -> None:
 # ---------------------------------------------------------------------------
 # Coverage fill-ins
 # ---------------------------------------------------------------------------
+
 
 def test_get_current_mac_wip_present_wfs_none() -> None:
     """When getWIP is set but getWFS key is absent, wfs_int stays None (line 246)."""
@@ -1429,7 +1603,9 @@ def test_get_sensor_rtm_combined_mode_exception_in_parse() -> None:
     # Patch re.match to return a match whose group() raises ValueError
     mock_match = MagicMock()
     mock_match.group.side_effect = ValueError("bad group")
-    with patch("custom_components.syr_connect.helpers.re.match", return_value=mock_match):
+    with patch(
+        "custom_components.syr_connect.helpers.re.match", return_value=mock_match
+    ):
         result = helpers.get_sensor_rtm_value({"getRTH": None, "getRTM": "12:30"})
     assert result is None
 
@@ -1507,6 +1683,7 @@ def test_is_sensor_visible_cs_value_none_returns_false() -> None:
 # Lines 297-298 — get_sensor_avo_value: mL-pattern except branch
 # ---------------------------------------------------------------------------
 
+
 def test_get_sensor_avo_value_ml_pattern_except() -> None:
     """Lines 297-298: except(ValueError, TypeError) in the mL pattern block.
 
@@ -1514,12 +1691,13 @@ def test_get_sensor_avo_value_ml_pattern_except() -> None:
     group(1) raises ValueError, triggering the inner except branch.
     """
 
-
     bad_match = MagicMock()
     bad_match.group = MagicMock(side_effect=ValueError("bad group"))
 
     # Only intercept the first re.match call (the mL pattern)
-    with patch("custom_components.syr_connect.helpers.re.match", return_value=bad_match):
+    with patch(
+        "custom_components.syr_connect.helpers.re.match", return_value=bad_match
+    ):
         result = get_sensor_avo_value("1655mL")
 
     assert result is None
@@ -1529,13 +1707,13 @@ def test_get_sensor_avo_value_ml_pattern_except() -> None:
 # Lines 306-307 — get_sensor_avo_value: fallback-pattern except branch
 # ---------------------------------------------------------------------------
 
+
 def test_get_sensor_avo_value_fallback_pattern_except() -> None:
     """Lines 306-307: except(ValueError, TypeError) in the fallback pattern block.
 
     Make the first re.match (mL pattern) return None so the code falls
     through to the ^(<digits>) fallback, then patch that match's group(1) to raise.
     """
-
 
     bad_match = MagicMock()
     bad_match.group = MagicMock(side_effect=ValueError("bad group"))
@@ -1546,10 +1724,12 @@ def test_get_sensor_avo_value_fallback_pattern_except() -> None:
         nonlocal call_count
         call_count += 1
         if call_count == 1:
-            return None        # mL pattern misses → fall through
-        return bad_match       # fallback pattern → group(1) raises
+            return None  # mL pattern misses → fall through
+        return bad_match  # fallback pattern → group(1) raises
 
-    with patch("custom_components.syr_connect.helpers.re.match", side_effect=_match_side_effect):
+    with patch(
+        "custom_components.syr_connect.helpers.re.match", side_effect=_match_side_effect
+    ):
         result = get_sensor_avo_value("1655")
 
     assert result is None
@@ -1559,12 +1739,14 @@ def test_get_sensor_avo_value_fallback_pattern_except() -> None:
 # Lines 793-794 — is_sensor_visible is_value_true: int/float except branch
 # ---------------------------------------------------------------------------
 
+
 def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
     """Lines 793-794: is_value_true except(ValueError, TypeError) for int|float branch.
 
     Use an int subclass whose __float__ raises ValueError so the except path
     fires and is_value_true returns False, hiding the getPA group sensor.
     """
+
     class _BadFloat(int):
         def __float__(self):
             raise ValueError("bad float")
@@ -1580,7 +1762,9 @@ def test_mask_login_password(password: str):
     """Only the password is masked; username, locale and the rest of the payload stay readable."""
 
     builder = PayloadBuilder("1.0", MagicMock(), language="en-DE")
-    with patch.object(PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"):
+    with patch.object(
+        PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"
+    ):
         payload = builder.build_login_payload("user@example.com", password)
         expected = builder.build_login_payload("user@example.com", "***")
 
@@ -1606,7 +1790,7 @@ def test_mask_ug_value_basic():
     masked = mask_ug_value(payload)
 
     assert 'ug="***"' in masked
-    assert 'SECRET_TOKEN' not in masked
+    assert "SECRET_TOKEN" not in masked
     assert masked.count('ug="***"') == 1
 
 
@@ -1617,7 +1801,7 @@ def test_mask_ug_value_multiple_occurrences():
     masked = mask_ug_value(payload)
 
     assert masked.count('ug="***"') == 2
-    assert 'T1' not in masked and 'T2' not in masked
+    assert "T1" not in masked and "T2" not in masked
 
 
 def test_mask_ug_value_handles_empty_value():
@@ -1636,7 +1820,10 @@ def test_mask_ug_value_handles_empty_value():
         ('<dcl a="x>y" ug="SECRET"/>', '<dcl a="x>y" ug="***"/>'),  # raw `>` in a value
         ('error: ug="SECRET"', 'error: ug="***"'),  # outside any tag
         ('<a UG = "SECRET"/>', '<a UG = "***"/>'),  # case and spacing
-        ('<a xug="keep" ug="SECRET"/>', '<a xug="keep" ug="***"/>'),  # longer names untouched
+        (
+            '<a xug="keep" ug="SECRET"/>',
+            '<a xug="keep" ug="***"/>',
+        ),  # longer names untouched
     ],
 )
 def test_mask_ug_value_masks_outside_complete_tags(payload: str, expected: str):
@@ -1678,7 +1865,9 @@ def test_mask_ug_value_non_string_returns_input():
 def test_mask_ug_value_re_error_returns_original():
     """If re.sub raises re.error, the original payload must be returned."""
     payload = '<sc ug="SECRET"></sc>'
-    with patch("custom_components.syr_connect.helpers.re.sub", side_effect=re.error("boom")):
+    with patch(
+        "custom_components.syr_connect.helpers.re.sub", side_effect=re.error("boom")
+    ):
         assert mask_ug_value(payload) == payload
 
 
@@ -1686,12 +1875,15 @@ def test_mask_ug_value_re_error_returns_original():
 # is_sensor_visible - getBAP firmware-bug suppression (lines 1077-1088)
 # ---------------------------------------------------------------------------
 
+
 def test_is_sensor_visible_getbap_suppressed_when_zero_and_bat_positive() -> None:
     """getBAP=0 with getBAT>0 is suppressed (firmware exposes spurious % field)."""
     assert is_sensor_visible({"getBAT": 4.5}, "getBAP", 0) is False
 
 
-def test_is_sensor_visible_getbap_suppressed_when_string_zero_and_bat_positive() -> None:
+def test_is_sensor_visible_getbap_suppressed_when_string_zero_and_bat_positive() -> (
+    None
+):
     """getBAP='0' (string) with getBAT>0 is also suppressed."""
     assert is_sensor_visible({"getBAT": "3.7"}, "getBAP", "0") is False
 
@@ -1720,6 +1912,7 @@ def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() 
 # get_model_known_keys - per-model devices/<name>.py override resolution
 # ---------------------------------------------------------------------------
 
+
 def test_get_model_known_keys_falls_back_when_name_missing() -> None:
     """No 'device_file'/'name' on model_info returns the global allowlist unchanged (line 249)."""
     global_keys = {"getBAR", "getVOL"}
@@ -1733,13 +1926,16 @@ def test_get_model_known_keys_uses_device_override_when_defined() -> None:
     """
 
     global_keys = {"getBAR", "getVOL"}
-    result = helpers.get_model_known_keys({"name": "muco_filling"}, "sensor", global_keys)
+    result = helpers.get_model_known_keys(
+        {"name": "muco_filling"}, "sensor", global_keys
+    )
     assert result == muco_filling.SENSOR_KNOWN_KEYS
     assert result != global_keys
     assert {"getCFT", "getCFV"} <= result
 
-
-    result = helpers.get_model_known_keys({"name": "muco_connectioncentre"}, "sensor", global_keys)
+    result = helpers.get_model_known_keys(
+        {"name": "muco_connectioncentre"}, "sensor", global_keys
+    )
     assert result == muco_connectioncentre.SENSOR_KNOWN_KEYS
     assert {"getCFT", "getCFV"} <= result
 
@@ -1753,7 +1949,9 @@ def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
     # A device module that defines no <PLATFORM>_KNOWN_KEYS at all (every real device file defines
     # all of them), so the global set is returned unchanged.
     with patch.dict(helpers._DEVICE_MODULES, {"no_platform_sets": SimpleNamespace()}):
-        result = helpers.get_model_known_keys({"name": "no_platform_sets"}, "binary_sensor", global_keys)
+        result = helpers.get_model_known_keys(
+            {"name": "no_platform_sets"}, "binary_sensor", global_keys
+        )
     assert result is global_keys
 
 
@@ -1762,7 +1960,9 @@ def test_get_model_known_keys_uses_device_file_over_name() -> None:
 
     global_keys = {"getBAR"}
     result = helpers.get_model_known_keys(
-        {"name": "sanibelleakprotect", "device_file": "muco_leakprotect"}, "sensor", global_keys
+        {"name": "sanibelleakprotect", "device_file": "muco_leakprotect"},
+        "sensor",
+        global_keys,
     )
     assert result == muco_leakprotect.SENSOR_KNOWN_KEYS
 
@@ -1775,7 +1975,10 @@ def test_get_model_known_keys_safetplus_device_override() -> None:
     assert result == safetplus.SENSOR_KNOWN_KEYS
     # Explicit empty-set override (no select-worthy keys) must be honored, not
     # treated as "not defined".
-    assert helpers.get_model_known_keys({"name": "safetplus"}, "select", global_keys) == set()
+    assert (
+        helpers.get_model_known_keys({"name": "safetplus"}, "select", global_keys)
+        == set()
+    )
 
 
 def test_get_model_known_keys_safetech_device_override() -> None:
@@ -1811,9 +2014,22 @@ def test_get_model_known_keys_safetech_device_override() -> None:
         for name in names:
             signature = signatures[name]
             assert signature.get("device_file") == device_file
-            assert helpers.get_model_known_keys(signature, "sensor", global_keys) == module.SENSOR_KNOWN_KEYS
-        assert helpers.get_model_known_keys(signatures[next(iter(names))], "select", global_keys) == module.SELECT_KNOWN_KEYS
-        assert helpers.get_model_known_keys(signatures[next(iter(names))], "button", global_keys) == module.BUTTON_KNOWN_KEYS
+            assert (
+                helpers.get_model_known_keys(signature, "sensor", global_keys)
+                == module.SENSOR_KNOWN_KEYS
+            )
+        assert (
+            helpers.get_model_known_keys(
+                signatures[next(iter(names))], "select", global_keys
+            )
+            == module.SELECT_KNOWN_KEYS
+        )
+        assert (
+            helpers.get_model_known_keys(
+                signatures[next(iter(names))], "button", global_keys
+            )
+            == module.BUTTON_KNOWN_KEYS
+        )
 
     assert "getBAR" in safetech.SENSOR_KNOWN_KEYS
     assert "getBAR" not in safetechplus.SENSOR_KNOWN_KEYS
@@ -1842,8 +2058,14 @@ def test_get_model_known_keys_safefloor_device_override() -> None:
     # This model has no display rotation, filling, or salt config selects, but its
     # alarm/humidity/temperature thresholds and sync/measurement intervals are
     # user-adjustable settings represented as select entities.
-    assert helpers.get_model_known_keys({"name": "safefloor"}, "select", global_keys) == safefloor.SELECT_KNOWN_KEYS
-    assert helpers.get_model_known_keys({"name": "safefloor"}, "valve", global_keys) == set()
+    assert (
+        helpers.get_model_known_keys({"name": "safefloor"}, "select", global_keys)
+        == safefloor.SELECT_KNOWN_KEYS
+    )
+    assert (
+        helpers.get_model_known_keys({"name": "safefloor"}, "valve", global_keys)
+        == set()
+    )
 
 
 def test_get_model_known_keys_trio_device_override() -> None:
@@ -1856,7 +2078,9 @@ def test_get_model_known_keys_trio_device_override() -> None:
     assert "getSLF" in result
 
 
-def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_positive() -> None:
+def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_positive() -> (
+    None
+):
     """getBAP='' triggers the ValueError branch; bap_zero=True → suppressed when getBAT>0."""
     assert is_sensor_visible({"getBAT": 4.5}, "getBAP", "") is False
 
@@ -1888,7 +2112,16 @@ def test_is_valid_host_accepts(host: str) -> None:
 
 @pytest.mark.parametrize(
     "host",
-    ["", "   ", "host:80", "192.168.1.5:5333", "[fe80::1]", "bad host", "-bad.local", "a..b"],
+    [
+        "",
+        "   ",
+        "host:80",
+        "192.168.1.5:5333",
+        "[fe80::1]",
+        "bad host",
+        "-bad.local",
+        "a..b",
+    ],
 )
 def test_is_valid_host_rejects(host: str) -> None:
     """Empty values, whitespace, explicit ports and malformed names are invalid."""
@@ -1897,7 +2130,16 @@ def test_is_valid_host_rejects(host: str) -> None:
 
 @pytest.mark.parametrize(
     ("dst", "expected"),
-    [("0", True), ("1", True), (" 1 ", True), (1, True), ("2", False), ("3", False), ("", False), (None, False)],
+    [
+        ("0", True),
+        ("1", True),
+        (" 1 ", True),
+        (1, True),
+        ("2", False),
+        ("3", False),
+        ("", False),
+        (None, False),
+    ],
 )
 def test_is_device_offline(dst, expected) -> None:
     """The dst values 0 (never online) and 1 (offline) mean offline; everything else does not."""

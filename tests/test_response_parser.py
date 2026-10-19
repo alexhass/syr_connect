@@ -14,14 +14,28 @@ from custom_components.syr_connect.exceptions import (
 )
 from custom_components.syr_connect.response_parser import ResponseParser
 
-FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrLEXplus10S_GetProjectDeviceCollections.xml")
-FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrLEXplus10S_GetDeviceCollectionStatus.xml")
-FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrLEXplus10SL_GetDeviceCollectionStatus.xml")
+FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(
+    os.path.dirname(__file__),
+    "fixtures/xml",
+    "SyrLEXplus10S_GetProjectDeviceCollections.xml",
+)
+FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(
+    os.path.dirname(__file__),
+    "fixtures/xml",
+    "SyrLEXplus10S_GetDeviceCollectionStatus.xml",
+)
+FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(
+    os.path.dirname(__file__),
+    "fixtures/xml",
+    "SyrLEXplus10SL_GetDeviceCollectionStatus.xml",
+)
+
 
 @pytest.fixture
 def parser():
     """Return a response parser."""
     return ResponseParser()
+
 
 @pytest.fixture
 def lexplus10s_project_collections_xml():
@@ -29,11 +43,13 @@ def lexplus10s_project_collections_xml():
     with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
         return f.read()
 
+
 @pytest.fixture
 def lexplus10s_xml():
     """Return the LEXplus10S device status XML fixture."""
     with open(FIXTURE_PATH_10S_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
+
 
 @pytest.fixture
 def lexplus10sl_xml():
@@ -93,6 +109,7 @@ def test_parse_device_status_response_10s(lexplus10s_xml):
     # Check alarm meta
     # The parser should expose alarm meta if implemented
     # If not, this can be extended
+
 
 def test_parse_device_status_response_10sl(lexplus10sl_xml):
     """Test parsing of LEXplus10SL device status XML."""
@@ -169,7 +186,7 @@ def test_parse_login_response_dict_api(parser):
 
 def test_parse_login_response_string_api(parser):
     """Test parsing login response with string api element."""
-    xml = '<sc><api>encrypted_data</api></sc>'
+    xml = "<sc><api>encrypted_data</api></sc>"
     encrypted, _ = parser.parse_login_response(xml)
     assert encrypted == "encrypted_data"
 
@@ -220,8 +237,10 @@ def test_parse_decrypted_login_rejected_credentials_response(parser, server_mess
 
 def test_parse_decrypted_login_no_session(parser):
     """Rejected credentials: the decrypted answer has no session, which is an auth error."""
-    xml = '<invalid>data</invalid>'
-    with pytest.raises(SyrConnectAuthError, match="Invalid credentials or session data"):
+    xml = "<invalid>data</invalid>"
+    with pytest.raises(
+        SyrConnectAuthError, match="Invalid credentials or session data"
+    ):
         parser.parse_decrypted_login(xml)
 
 
@@ -445,11 +464,7 @@ def test_flatten_attributes_text_content(parser):
 
 def test_flatten_attributes_nested_dict(parser):
     """Test flattening attributes with nested dictionaries."""
-    data = {
-        "nested": {
-            "c": {"@n": "inner", "@v": "val"}
-        }
-    }
+    data = {"nested": {"c": {"@n": "inner", "@v": "val"}}}
     result = parser._flatten_attributes(data)
     assert "inner" in result
     assert result["inner"] == "val"
@@ -482,7 +497,6 @@ def test_flatten_attributes_c_missing_n_or_v(parser):
             {"@n": "valid", "@v": "100"},
             {"@n": "no_value"},  # Missing @v
             {"@v": "no_name"},  # Missing @n
-
         ]
     }
     result = parser._flatten_attributes(data)
@@ -515,7 +529,7 @@ def test_parse_decrypted_login_single_project_not_list(parser):
 
 def test_parse_device_status_list_no_c_children(parser):
     """Test parsing device status when device_list is a list without c children."""
-    xml = '<sc><dvs><d><name>Device1</name></d><d><name>Device2</name></d></dvs></sc>'
+    xml = "<sc><dvs><d><name>Device1</name></d><d><name>Device2</name></d></dvs></sc>"
     result = parser.parse_device_status_response(xml)
     # Should return None because no device has 'c' children
     assert result is None
@@ -523,7 +537,7 @@ def test_parse_device_status_list_no_c_children(parser):
 
 def test_parse_device_status_empty_device_list(parser):
     """Test parsing device status when device_list evaluates to empty/falsy."""
-    xml = '<sc><dvs></dvs></sc>'
+    xml = "<sc><dvs></dvs></sc>"
     result = parser.parse_device_status_response(xml)
     # Empty dvs should return None
     assert result is None
@@ -531,29 +545,45 @@ def test_parse_device_status_empty_device_list(parser):
 
 def test_parse_device_list_no_sc(parser):
     """Test parsing device list without sc element."""
-    xml = '<root><invalid/></root>'
+    xml = "<root><invalid/></root>"
     with pytest.raises(ValueError, match="no project"):
         parser.parse_device_list_response(xml)
 
 
 def test_parse_device_list_project_without_devices_fixture(parser):
     """A valid answer for a project without devices yields an empty list (devices get removed)."""
-    path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml")
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "fixtures/xml",
+        "SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml",
+    )
     with open(path, encoding="utf-8") as f:
         assert parser.parse_device_list_response(f.read()) == []
 
 
-INVALID_TOKEN_XML_PATH =os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_InvalidSessionResponse.xml")
+INVALID_TOKEN_XML_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "fixtures/xml",
+    "SyrTestDevice_InvalidSessionResponse.xml",
+)
 
 
 @pytest.mark.parametrize(
-    "method", ["parse_device_list_response", "parse_device_status_response", "parse_statistics_response", "raise_if_session_expired"]
+    "method",
+    [
+        "parse_device_list_response",
+        "parse_device_status_response",
+        "parse_statistics_response",
+        "raise_if_session_expired",
+    ],
 )
 def test_invalid_token_response_raises_session_expired(parser, method):
     """The real "invalid token" answer (HTTP 200, <msg mtid="1">) is recognized by all request parsers."""
     with open(INVALID_TOKEN_XML_PATH, encoding="utf-8") as f:
         xml = f.read()
-    with pytest.raises(SyrConnectSessionExpiredError, match="Access-Token ist ungültig"):
+    with pytest.raises(
+        SyrConnectSessionExpiredError, match="Access-Token ist ungültig"
+    ):
         getattr(parser, method)(xml)
 
 
@@ -586,7 +616,9 @@ def test_parse_device_list_without_project_raises(parser, xml):
 
 def test_element_to_dict_multiple_same_tag(parser):
     """Test _element_to_dict with multiple children of same tag name."""
-    element = ElementTree.fromstring("<parent><item>val1</item><item>val2</item><item>val3</item></parent>")
+    element = ElementTree.fromstring(
+        "<parent><item>val1</item><item>val2</item><item>val3</item></parent>"
+    )
     result = parser._element_to_dict(element)
     # Should create a list for multiple children with same tag
     assert isinstance(result["item"], list)
@@ -668,7 +700,7 @@ def test_element_to_dict_text_with_attributes_no_children(parser):
 def test_element_to_dict_whitespace_only_text(parser):
     """Test element with whitespace-only text (should be ignored)."""
 
-    element = ElementTree.fromstring('<item>   \n\t   </item>')
+    element = ElementTree.fromstring("<item>   \n\t   </item>")
     result = parser._element_to_dict(element)
     # Whitespace-only text should be stripped and result in empty dict
     assert result == {}
@@ -676,7 +708,7 @@ def test_element_to_dict_whitespace_only_text(parser):
 
 def test_parse_device_list_multiple_dcl_aliases(parser):
     """Test parsing device list with multiple dcl aliases."""
-    xml = '''<sc><prs><pr pg="p1"/></prs>
+    xml = """<sc><prs><pr pg="p1"/></prs>
         <col>
             <dcl dclg="id1" ali="Device1"/>
             <dcl dclg="id2" ali="Device2"/>
@@ -687,7 +719,7 @@ def test_parse_device_list_multiple_dcl_aliases(parser):
             <d dclg="id2" sn="SN2"/>
             <d dclg="id3" sn="SN3"/>
         </dvs>
-    </sc>'''
+    </sc>"""
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 3
     assert devices[0]["name"] == "Device1"
@@ -697,7 +729,9 @@ def test_parse_device_list_multiple_dcl_aliases(parser):
 
 def test_parse_device_list_alias_not_found_fallback_to_serial(parser):
     """Test parsing device list when alias not found, falls back to serial."""
-    xml = '<sc><prs><pr pg="p1"/></prs><dvs><d dclg="unknown_id" sn="SN123"/></dvs></sc>'
+    xml = (
+        '<sc><prs><pr pg="p1"/></prs><dvs><d dclg="unknown_id" sn="SN123"/></dvs></sc>'
+    )
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 1
     # Should use serial number as name when alias not found
@@ -706,10 +740,10 @@ def test_parse_device_list_alias_not_found_fallback_to_serial(parser):
 
 def test_parse_device_list_col_with_single_dcl(parser):
     """Test parsing device list when col contains single dcl (not a list)."""
-    xml = '''<sc><prs><pr pg="p1"/></prs>
+    xml = """<sc><prs><pr pg="p1"/></prs>
         <col><dcl dclg="xyz" ali="SingleDevice"/></col>
         <dvs><d dclg="xyz" sn="SN001"/></dvs>
-    </sc>'''
+    </sc>"""
     devices = parser.parse_device_list_response(xml)
     assert len(devices) == 1
     assert devices[0]["name"] == "SingleDevice"
@@ -737,11 +771,7 @@ def test_parse_device_status_dvs_is_list_directly(parser):
 
 def test_flatten_attributes_dict_with_attribute_prefix(parser):
     """Test flattening dict with @-prefixed keys (should extract attribute)."""
-    data = {
-        "@attr1": "value1",
-        "@attr2": "value2",
-        "regular_key": "regular_value"
-    }
+    data = {"@attr1": "value1", "@attr2": "value2", "regular_key": "regular_value"}
     result = parser._flatten_attributes(data)
     # @-prefixed keys should have @ stripped
     assert result["attr1"] == "value1"
@@ -751,10 +781,10 @@ def test_flatten_attributes_dict_with_attribute_prefix(parser):
 
 def test_parse_device_status_device_list_as_list_all_have_c(parser):
     """Test device status when device_list is list and all devices have 'c'."""
-    xml = '''<sc><dvs>
+    xml = """<sc><dvs>
         <d><c n="sensor1" v="100"/></d>
         <d><c n="sensor2" v="200"/></d>
-    </dvs></sc>'''
+    </dvs></sc>"""
     result = parser.parse_device_status_response(xml)
     assert result is not None
     # Both sensors should be flattened
@@ -764,7 +794,7 @@ def test_parse_device_status_device_list_as_list_all_have_c(parser):
 
 def test_parse_statistics_response_no_c_elements(parser):
     """Test parsing statistics response with no c elements."""
-    xml = '<sc><other>data</other></sc>'
+    xml = "<sc><other>data</other></sc>"
     result = parser.parse_statistics_response(xml)
     # Should return dict with 'other' key
     assert "other" in result
@@ -774,10 +804,10 @@ def test_parse_statistics_response_no_c_elements(parser):
 def test_element_to_dict_nested_elements_same_tag(parser):
     """Test _element_to_dict with nested elements having same tag converted to list."""
 
-    element = ElementTree.fromstring('''<root>
+    element = ElementTree.fromstring("""<root>
         <item><sub>a</sub></item>
         <item><sub>b</sub></item>
-    </root>''')
+    </root>""")
     result = parser._element_to_dict(element)
     # item should be a list
     assert isinstance(result["item"], list)
@@ -857,7 +887,7 @@ def test_parse_login_response_api_dict_no_text_key(parser):
 def test_element_to_dict_child_converted_to_list_multiple_appends(parser):
     """Test that multiple children with same tag are properly appended to list."""
 
-    element = ElementTree.fromstring('<root><x>1</x><x>2</x><x>3</x><x>4</x></root>')
+    element = ElementTree.fromstring("<root><x>1</x><x>2</x><x>3</x><x>4</x></root>")
     result = parser._element_to_dict(element)
     assert isinstance(result["x"], list)
     assert result["x"] == ["1", "2", "3", "4"]
@@ -943,7 +973,11 @@ def test_never_online_device_minimal_status_is_parsed(parser):
 
     Parsed (instead of returning None) so the coordinator sees dst="0" and marks the device unavailable.
     """
-    path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTestDevice_GetDeviceCollectionStatus_NewDevice.xml")
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "fixtures/xml",
+        "SyrTestDevice_GetDeviceCollectionStatus_NewDevice.xml",
+    )
     with open(path, encoding="utf-8") as f:
         status = parser.parse_device_status_response(f.read())
 
@@ -971,7 +1005,11 @@ def test_offline_device_minimal_status_is_parsed(parser):
 
 def test_trio_minimal_status_of_online_device_is_still_ignored(parser):
     """The Trio DFR/LS glitch (online device, dst="2", only getSRN/getALA/getNOT/getWRN) is still discarded."""
-    path = os.path.join(os.path.dirname(__file__), "fixtures/xml", "SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml")
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "fixtures/xml",
+        "SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml",
+    )
     with open(path, encoding="utf-8") as f:
         assert parser.parse_device_status_response(f.read()) is None
 
@@ -979,7 +1017,11 @@ def test_trio_minimal_status_of_online_device_is_still_ignored(parser):
 def test_offline_device_does_not_exempt_glitching_online_device(parser):
     """The offline exemption is per device: an offline device must not let an online Trio glitch through."""
     offline = {"@dclg": "a", "@dst": "1", "c": {"@n": "getSRN", "@v": "1"}}
-    glitch = {"@dclg": "b", "@dst": "2", "c": [{"@n": "getSRN", "@v": "2"}, {"@n": "getALA", "@v": "0"}]}
+    glitch = {
+        "@dclg": "b",
+        "@dst": "2",
+        "c": [{"@n": "getSRN", "@v": "2"}, {"@n": "getALA", "@v": "0"}],
+    }
 
     assert parser._ignore_broken_response([offline, glitch]) is True
     assert parser._ignore_broken_response([offline]) is False

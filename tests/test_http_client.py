@@ -41,19 +41,25 @@ def test_build_accept_language_computes_value() -> None:
 async def test_post_raises_on_auth_error_immediately() -> None:
     """If response raises ClientResponseError 401/403, it should not retry and re-raise immediately."""
     # Create a ClientResponseError to be raised from the context manager
-    exc = aiohttp.ClientResponseError(request_info=MagicMock(), history=(), status=401, message="Unauthorized")
+    exc = aiohttp.ClientResponseError(
+        request_info=MagicMock(), history=(), status=401, message="Unauthorized"
+    )
 
     # Create a fake session whose post returns an async context manager that raises on __aenter__
     fake_cm = AsyncMock()
+
     async def enter():
         raise exc
+
     fake_cm.__aenter__.side_effect = enter
     fake_cm.__aexit__.return_value = AsyncMock()
 
     fake_session = MagicMock()
     fake_session.post.return_value = fake_cm
 
-    client = HTTPClient(session=fake_session, user_agent="test-agent", max_retries=3, timeout=1)
+    client = HTTPClient(
+        session=fake_session, user_agent="test-agent", max_retries=3, timeout=1
+    )
 
     with pytest.raises(aiohttp.ClientResponseError):
         await client.post("http://example", data={})
@@ -164,7 +170,9 @@ async def test_http_client_post_retry_on_client_error() -> None:
     mock_response_success.raise_for_status = MagicMock()
 
     mock_context_fail = AsyncMock()
-    mock_context_fail.__aenter__ = AsyncMock(side_effect=aiohttp.ClientError("Connection error"))
+    mock_context_fail.__aenter__ = AsyncMock(
+        side_effect=aiohttp.ClientError("Connection error")
+    )
 
     mock_context_success = AsyncMock()
     mock_context_success.__aenter__ = AsyncMock(return_value=mock_response_success)
@@ -187,7 +195,9 @@ async def test_http_client_post_max_retries_exceeded() -> None:
 
     # All attempts fail
     mock_context_fail = AsyncMock()
-    mock_context_fail.__aenter__ = AsyncMock(side_effect=aiohttp.ClientError("Connection error"))
+    mock_context_fail.__aenter__ = AsyncMock(
+        side_effect=aiohttp.ClientError("Connection error")
+    )
 
     mock_session.post = MagicMock(return_value=mock_context_fail)
 
@@ -239,7 +249,9 @@ async def test_http_client_post_exponential_backoff() -> None:
     mock_context_success.__aenter__ = AsyncMock(return_value=mock_response_success)
     mock_context_success.__aexit__ = AsyncMock(return_value=None)
 
-    mock_session.post = MagicMock(side_effect=[mock_context_fail, mock_context_fail, mock_context_success])
+    mock_session.post = MagicMock(
+        side_effect=[mock_context_fail, mock_context_fail, mock_context_success]
+    )
 
     client = HTTPClient(mock_session, "TestAgent/1.0", max_retries=3)
 

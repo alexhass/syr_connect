@@ -30,17 +30,37 @@ SENSOR_KNOWN_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Alarm / Notification / Warning ---
-    "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
+    "getALA",
+    "getALM",
+    "getALN",
+    "getALW",
+    "getNOT",
+    "getWRN",
     # --- Device Status ---
     "getDFM",
     # --- Voltage / Battery ---
     "getBAT",
     # --- Automatic Backwash (RSA) ---
-    "getCOA", "getCOM", "getRSA", "getRSD", "getRSE",
+    "getCOA",
+    "getCOM",
+    "getRSA",
+    "getRSD",
+    "getRSE",
     # --- Device Info & Diagnostics ---
-    "getEGW", "getEIP", "getLNG", "getMAC1", "getMAC2", "getSRN", "getVER",
+    "getEGW",
+    "getEIP",
+    "getLNG",
+    "getMAC1",
+    "getMAC2",
+    "getSRN",
+    "getVER",
     # --- Wi-Fi ---
-    "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
+    "getAPT",
+    "getWFC",
+    "getWFR",
+    "getWFS",
+    "getWGW",
+    "getWIP",
 }
 
 # getRSA/getRSD/getRSE deliberately excluded from SELECT_KNOWN_KEYS: their
@@ -49,7 +69,9 @@ SENSOR_KNOWN_KEYS = {
 SELECT_KNOWN_KEYS: set[str] = set()
 
 SWITCH_KNOWN_KEYS = {
-    "getBUZ", "getSSA", "getSSE",
+    "getBUZ",
+    "getSSA",
+    "getSSE",
 }
 
 BINARY_SENSOR_KNOWN_KEYS = {
@@ -57,7 +79,9 @@ BINARY_SENSOR_KNOWN_KEYS = {
 }
 
 BUTTON_KNOWN_KEYS = {
-    "setALA", "setNOT", "setWRN",
+    "setALA",
+    "setNOT",
+    "setWRN",
 }
 
 # No shutoff valve on this model - it only automates backwash scheduling.

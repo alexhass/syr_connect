@@ -36,7 +36,9 @@ def expected_lingering_timers() -> bool:
 @pytest.fixture
 def mock_setup_entry() -> Generator[AsyncMock]:
     """Override async_setup_entry."""
-    with patch("custom_components.syr_connect.async_setup_entry", new_callable=AsyncMock) as mock_setup_entry:
+    with patch(
+        "custom_components.syr_connect.async_setup_entry", new_callable=AsyncMock
+    ) as mock_setup_entry:
         mock_setup_entry.return_value = True
         yield mock_setup_entry
 
@@ -44,7 +46,9 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 @pytest.fixture
 def mock_syr_api():
     """Mock SyrConnectXmlAPI."""
-    with patch("custom_components.syr_connect.config_flow.SyrConnectXmlAPI") as mock_api:
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI"
+    ) as mock_api:
         api_instance = MagicMock()
         api_instance.login = AsyncMock(return_value=True)
         api_instance.session_data = "test_session_id"

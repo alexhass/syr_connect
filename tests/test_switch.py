@@ -54,7 +54,9 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
     mock_add_entities.assert_not_called()
 
 
-async def test_async_setup_entry_no_coordinator_data_logs_warning(hass: HomeAssistant, caplog) -> None:
+async def test_async_setup_entry_no_coordinator_data_logs_warning(
+    hass: HomeAssistant, caplog
+) -> None:
     """When `entry.runtime_data.data` is falsy, setup should warn and return."""
 
     config_entry = ConfigEntry(
@@ -87,8 +89,18 @@ async def test_async_setup_entry_no_coordinator_data_logs_warning(hass: HomeAssi
 async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     """Test SyrConnectBooleanSwitch behavior: is_on, turn_on, turn_off."""
 
-    device_on = {"id": "SN123", "name": "DeviceOn", "status": {"getBUZ": "1"}, "available": True}
-    device_off = {"id": "SN124", "name": "DeviceOff", "status": {"getBUZ": "0"}, "available": True}
+    device_on = {
+        "id": "SN123",
+        "name": "DeviceOn",
+        "status": {"getBUZ": "1"},
+        "available": True,
+    }
+    device_off = {
+        "id": "SN124",
+        "name": "DeviceOff",
+        "status": {"getBUZ": "0"},
+        "available": True,
+    }
 
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device_on, device_off]}
@@ -110,7 +122,9 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     async def fake_set_device_value(device_id, cmd, value):
         assert cmd == "setBUZ"
 
-    mock_coordinator.async_set_device_value = AsyncMock(side_effect=fake_set_device_value)
+    mock_coordinator.async_set_device_value = AsyncMock(
+        side_effect=fake_set_device_value
+    )
 
     # call turn on/off
     await sw_off.async_turn_on()
@@ -132,7 +146,9 @@ async def test_switch_unique_id_preserves_entry_id_casing() -> None:
 
     mock_coordinator = MagicMock()
     mock_coordinator.entry_id = "01M196XPFB9GY9Z1KZ7SATCN9C"
-    mock_coordinator.data = {"devices": [{"id": "SN123", "name": "DeviceOn", "status": {"getBUZ": "1"}}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN123", "name": "DeviceOn", "status": {"getBUZ": "1"}}]
+    }
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN123", "DeviceOn", "getBUZ")
 
@@ -183,7 +199,9 @@ def test_is_on_boolean_and_string_values() -> None:
     mock_coordinator.data = {"devices": [dev_bool_true, dev_bool_false, dev_str_true]}
 
     sw_bool_true = SyrConnectBooleanSwitch(mock_coordinator, "SN500", "BTrue", "getBUZ")
-    sw_bool_false = SyrConnectBooleanSwitch(mock_coordinator, "SN501", "BFalse", "getBUZ")
+    sw_bool_false = SyrConnectBooleanSwitch(
+        mock_coordinator, "SN501", "BFalse", "getBUZ"
+    )
     sw_str_true = SyrConnectBooleanSwitch(mock_coordinator, "SN502", "STrue", "getBUZ")
 
     assert sw_bool_true.is_on is True
@@ -216,9 +234,10 @@ def test_entity_category_is_config() -> None:
     assert sw.entity_category == EntityCategory.CONFIG
 
 
-async def test_async_setup_entry_handles_instantiation_error(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_handles_instantiation_error(
+    hass: HomeAssistant,
+) -> None:
     """If creating SyrConnectBooleanSwitch raises, async_setup_entry should log and continue."""
-
 
     config_entry = ConfigEntry(
         version=1,
@@ -314,7 +333,9 @@ async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
     device = {"id": "SN300", "name": "DeviceErr", "status": {"getBUZ": "0"}}
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
-    mock_coordinator.async_set_device_value = AsyncMock(side_effect=SyrConnectConnectionError("no answer"))
+    mock_coordinator.async_set_device_value = AsyncMock(
+        side_effect=SyrConnectConnectionError("no answer")
+    )
     mock_coordinator.async_request_refresh = AsyncMock()
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN300", "DeviceErr", "getBUZ")
@@ -324,12 +345,16 @@ async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
 
     with pytest.raises(HomeAssistantError, match="Failed to set getBUZ: no answer"):
         await sw.async_turn_on()
-    mock_coordinator.async_set_device_value.assert_awaited_once_with("SN300", "setBUZ", "1")
+    mock_coordinator.async_set_device_value.assert_awaited_once_with(
+        "SN300", "setBUZ", "1"
+    )
     # The coordinator already restored the previous value; no refresh needed
     mock_coordinator.async_request_refresh.assert_not_awaited()
 
 
-async def test_async_setup_entry_uses_existing_registry_entity_id(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_uses_existing_registry_entity_id(
+    hass: HomeAssistant,
+) -> None:
     """If registry already has entity for unique_id, use its entity_id."""
 
     config_entry = ConfigEntry(
@@ -368,7 +393,9 @@ async def test_async_setup_entry_uses_existing_registry_entity_id(hass: HomeAssi
     assert getattr(entities[0], "entity_id", None) == "switch.existing_buz"
 
 
-async def test_async_setup_entry_detects_missing_registry_entries(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_detects_missing_registry_entries(
+    hass: HomeAssistant,
+) -> None:
     """When registry reports no entry for created entity, verification logic runs."""
 
     config_entry = ConfigEntry(
@@ -408,7 +435,9 @@ async def test_async_setup_entry_detects_missing_registry_entries(hass: HomeAssi
     mock_registry.async_get_entity_id.assert_called()
 
 
-async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_handles_registry_exceptions(
+    hass: HomeAssistant,
+) -> None:
     """If entity registry access raises, setup should continue and add entities."""
 
     config_entry = ConfigEntry(
@@ -445,7 +474,9 @@ async def test_async_setup_entry_handles_registry_exceptions(hass: HomeAssistant
     assert len(entities) == 1
 
 
-async def test_async_setup_entry_missing_registry_no_unique_id(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_missing_registry_no_unique_id(
+    hass: HomeAssistant,
+) -> None:
     """Line 103: entity without unique_id and not found by entity_id goes to else-missing branch."""
 
     config_entry = ConfigEntry(
@@ -506,7 +537,9 @@ async def test_set_buz_bool_current_uses_bool_value() -> None:
     await sw.async_turn_on()
 
     # bool branch → value = True (state)
-    mock_coordinator.async_set_device_value.assert_awaited_once_with("SN1001", "setBUZ", True)
+    mock_coordinator.async_set_device_value.assert_awaited_once_with(
+        "SN1001", "setBUZ", True
+    )
 
 
 async def test_set_buz_int_current_uses_int_value() -> None:
@@ -522,7 +555,9 @@ async def test_set_buz_int_current_uses_int_value() -> None:
     await sw.async_turn_on()
 
     # int branch → value = 1
-    mock_coordinator.async_set_device_value.assert_awaited_once_with("SN1002", "setBUZ", 1)
+    mock_coordinator.async_set_device_value.assert_awaited_once_with(
+        "SN1002", "setBUZ", 1
+    )
 
 
 async def test_set_buz_else_fallback_uses_string_true_false() -> None:
@@ -539,13 +574,20 @@ async def test_set_buz_else_fallback_uses_string_true_false() -> None:
     await sw.async_turn_on()
 
     # else branch → value = "True"
-    mock_coordinator.async_set_device_value.assert_awaited_once_with("SN1003", "setBUZ", "True")
+    mock_coordinator.async_set_device_value.assert_awaited_once_with(
+        "SN1003", "setBUZ", "True"
+    )
 
 
 def test_available_returns_false_when_last_update_failed() -> None:
     """The available property returns False when last_update_success is False (line 167)."""
 
-    device = {"id": "SN2001", "name": "Dev", "status": {"getBUZ": "1"}, "available": True}
+    device = {
+        "id": "SN2001",
+        "name": "Dev",
+        "status": {"getBUZ": "1"},
+        "available": True,
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.last_update_success = False
@@ -558,7 +600,12 @@ def test_available_returns_false_when_last_update_failed() -> None:
 def test_available_returns_device_available_flag() -> None:
     """The available property returns device.available when device is found (lines 168-170)."""
 
-    device_unavailable = {"id": "SN2002", "name": "Dev", "status": {"getBUZ": "1"}, "available": False}
+    device_unavailable = {
+        "id": "SN2002",
+        "name": "Dev",
+        "status": {"getBUZ": "1"},
+        "available": False,
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device_unavailable]}
     mock_coordinator.last_update_success = True
@@ -584,7 +631,9 @@ def test_is_on_missing_value_returns_none() -> None:
     """A device that does not report the key gives None (unknown), not off."""
 
     mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [{"id": "SN700", "name": "Missing", "status": {}}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN700", "name": "Missing", "status": {}}]
+    }
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN700", "Missing", "getBUZ")
     assert sw.is_on is None

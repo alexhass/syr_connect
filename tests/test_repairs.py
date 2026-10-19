@@ -10,7 +10,9 @@ from homeassistant.helpers import issue_registry as ir
 
 async def test_create_issue(hass: HomeAssistant) -> None:
     """Test creating a repair issue."""
-    with patch("homeassistant.helpers.issue_registry.async_create_issue") as mock_create:
+    with patch(
+        "homeassistant.helpers.issue_registry.async_create_issue"
+    ) as mock_create:
         create_issue(
             hass,
             "test_issue",
@@ -30,7 +32,9 @@ async def test_create_issue(hass: HomeAssistant) -> None:
 
 async def test_create_issue_with_kwargs(hass: HomeAssistant) -> None:
     """Test creating a repair issue with additional kwargs."""
-    with patch("homeassistant.helpers.issue_registry.async_create_issue") as mock_create:
+    with patch(
+        "homeassistant.helpers.issue_registry.async_create_issue"
+    ) as mock_create:
         create_issue(
             hass,
             "test_issue_2",
@@ -54,7 +58,9 @@ async def test_create_issue_with_kwargs(hass: HomeAssistant) -> None:
 
 async def test_delete_issue(hass: HomeAssistant) -> None:
     """Test deleting a repair issue."""
-    with patch("homeassistant.helpers.issue_registry.async_delete_issue") as mock_delete:
+    with patch(
+        "homeassistant.helpers.issue_registry.async_delete_issue"
+    ) as mock_delete:
         delete_issue(hass, "test_issue_to_delete")
 
         mock_delete.assert_called_once_with(hass, DOMAIN, "test_issue_to_delete")

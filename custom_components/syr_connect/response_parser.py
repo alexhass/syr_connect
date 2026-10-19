@@ -97,7 +97,7 @@ class ResponseParser:
             if not children and not element.attrib:
                 return text
             # Otherwise add it as #text key
-            result['#text'] = text
+            result["#text"] = text
 
         return result or {}
 
@@ -110,10 +110,12 @@ class ResponseParser:
         mtid="1" /></sc>` instead of any data (see docs/known_issues_xml_api.md, issue 4).
         `mtid="1"` is used for detection because the texts are localized.
         """
-        sc = parsed.get('sc')
-        msg = sc.get('msg') if isinstance(sc, dict) else None
-        if isinstance(msg, dict) and str(msg.get('@mtid', '')).strip() == '1':
-            raise SyrConnectSessionExpiredError(f"Session token rejected: {msg.get('@v', '')}")
+        sc = parsed.get("sc")
+        msg = sc.get("msg") if isinstance(sc, dict) else None
+        if isinstance(msg, dict) and str(msg.get("@mtid", "")).strip() == "1":
+            raise SyrConnectSessionExpiredError(
+                f"Session token rejected: {msg.get('@v', '')}"
+            )
 
     def raise_if_session_expired(self, xml_response: str) -> None:
         """Raise SyrConnectSessionExpiredError if a response rejects the session token.
@@ -142,21 +144,23 @@ class ResponseParser:
         parsed = self.parse_xml(xml_response)
 
         # Validate response structure
-        if not self.validate_structure(parsed, ['sc', 'api']):
+        if not self.validate_structure(parsed, ["sc", "api"]):
             raise ValueError("Authentication failed: Invalid login response structure")
 
         # The api element contains the encrypted session data as a string
-        api_data = parsed['sc']['api']
+        api_data = parsed["sc"]["api"]
         if isinstance(api_data, dict):
             # If it has attributes, the text is in #text
-            encrypted_text = api_data.get('#text', '')
+            encrypted_text = api_data.get("#text", "")
         else:
             # Otherwise it's a direct string
             encrypted_text = api_data
 
         return encrypted_text, parsed
 
-    def parse_decrypted_login(self, decrypted_xml: str) -> tuple[str, list[dict[str, Any]]]:
+    def parse_decrypted_login(
+        self, decrypted_xml: str
+    ) -> tuple[str, list[dict[str, Any]]]:
         """Parse decrypted login data.
 
         Args:
@@ -169,7 +173,7 @@ class ResponseParser:
             SyrConnectAuthError: If the server rejected the credentials
             ValueError: If structure is invalid
         """
-        wrapped_xml = f'<xml>{decrypted_xml}</xml>'
+        wrapped_xml = f"<xml>{decrypted_xml}</xml>"
         parsed = self.parse_xml(wrapped_xml)
 
         # Wrong username or password: the server still answers with HTTP 200 and a valid
@@ -177,24 +181,30 @@ class ResponseParser:
         # the only reliable sign of rejected credentials; every other parser error is a
         # malformed or unexpected answer and must not trigger a re-authentication.
         # See docs/known_issues_xml_api.md, issue 3.
-        if not self.validate_structure(parsed, ['xml', 'usr', '@id']):
+        if not self.validate_structure(parsed, ["xml", "usr", "@id"]):
             # Safe to log: without a session there is no token to leak, and the content
             # shows what the server answered instead.
             _LOGGER.debug("Decrypted login response without session: %s", decrypted_xml)
             # The server's <msg v="..."> names the cause only for a known user with a
             # wrong password; it is added for the log but not used for detection.
-            msg = parsed['xml'].get('msg') if isinstance(parsed.get('xml'), dict) else None
-            server_message = msg.get('@v') if isinstance(msg, dict) else None
+            msg = (
+                parsed["xml"].get("msg")
+                if isinstance(parsed.get("xml"), dict)
+                else None
+            )
+            server_message = msg.get("@v") if isinstance(msg, dict) else None
             detail = f" Message: {server_message}" if server_message else ""
             raise SyrConnectAuthError(f"Invalid credentials or session data.{detail}")
 
-        session_id = parsed['xml']['usr']['@id']
+        session_id = parsed["xml"]["usr"]["@id"]
 
         # Validate projects structure
-        if not self.validate_structure(parsed, ['xml', 'prs', 'pre']):
-            raise ValueError("Authentication succeeded but no projects found in account")
+        if not self.validate_structure(parsed, ["xml", "prs", "pre"]):
+            raise ValueError(
+                "Authentication succeeded but no projects found in account"
+            )
 
-        projects_data = parsed['xml']['prs']['pre']
+        projects_data = parsed["xml"]["prs"]["pre"]
 
         # Ensure projects is a list
         if not isinstance(projects_data, list):
@@ -203,8 +213,8 @@ class ResponseParser:
         # Parse projects
         projects = [
             {
-                'id': project['@id'],
-                'name': project['@n'],
+                "id": project["@id"],
+                "name": project["@n"],
             }
             for project in projects_data
         ]
@@ -230,35 +240,35 @@ class ResponseParser:
         # (see SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml). Anything else
         # (error answer, maintenance page) must not be mistaken for an empty project,
         # because devices missing from the list are removed from Home Assistant.
-        if not self.validate_structure(parsed, ['sc', 'prs', 'pr']):
+        if not self.validate_structure(parsed, ["sc", "prs", "pr"]):
             raise ValueError("Device list response contains no project.")
 
         devices: list[dict[str, Any]] = []
         device_aliases: dict[str, str] = {}
 
         # Extract device aliases
-        if self.validate_structure(parsed, ['sc', 'col']):
-            col = parsed['sc']['col']
-            if 'dcl' in col:
-                dcl_list = col['dcl'] if isinstance(col['dcl'], list) else [col['dcl']]
+        if self.validate_structure(parsed, ["sc", "col"]):
+            col = parsed["sc"]["col"]
+            if "dcl" in col:
+                dcl_list = col["dcl"] if isinstance(col["dcl"], list) else [col["dcl"]]
                 for dcl in dcl_list:
-                    if '@dclg' in dcl and '@ali' in dcl:
+                    if "@dclg" in dcl and "@ali" in dcl:
                         # URL-decode the alias (replace + with space and decode %XX sequences)
-                        device_aliases[dcl['@dclg']] = unquote_plus(dcl['@ali'])
+                        device_aliases[dcl["@dclg"]] = unquote_plus(dcl["@ali"])
 
         # Extract devices
-        if not self.validate_structure(parsed, ['sc', 'dvs']):
+        if not self.validate_structure(parsed, ["sc", "dvs"]):
             _LOGGER.debug("No 'dvs' element found in device list response")
             return devices
 
-        dvs = parsed['sc']['dvs']
+        dvs = parsed["sc"]["dvs"]
 
         # Check if dvs contains 'd' element(s)
-        if 'd' in dvs:
-            device_list = dvs['d']
+        if "d" in dvs:
+            device_list = dvs["d"]
             if not isinstance(device_list, list):
                 device_list = [device_list]
-        elif isinstance(dvs, dict) and '@dclg' in dvs:
+        elif isinstance(dvs, dict) and "@dclg" in dvs:
             # dvs itself is a device
             device_list = [dvs]
         else:
@@ -268,25 +278,35 @@ class ResponseParser:
         _LOGGER.debug("Found %d device(s) in response", len(device_list))
 
         for device in device_list:
-            if '@dclg' in device:
-                dclg_id = device['@dclg']
-                serial_number = device.get('@sn', 'Unknown')
+            if "@dclg" in device:
+                dclg_id = device["@dclg"]
+                serial_number = device.get("@sn", "Unknown")
                 device_name = device_aliases.get(dclg_id, serial_number)
-                dk = int(device.get('@dk') or 0)
-                dkv = int(device.get('@dkv') or 0)
-                sbt = int(device.get('@sbt') or 0)
+                dk = int(device.get("@dk") or 0)
+                dkv = int(device.get("@dkv") or 0)
+                sbt = int(device.get("@sbt") or 0)
 
-                _LOGGER.debug("Adding device: %s (DCLG: %s, SN: %s, DK=%s, DKV=%s, SBT=%s)", device_name, dclg_id, serial_number, dk, dkv, sbt)
+                _LOGGER.debug(
+                    "Adding device: %s (DCLG: %s, SN: %s, DK=%s, DKV=%s, SBT=%s)",
+                    device_name,
+                    dclg_id,
+                    serial_number,
+                    dk,
+                    dkv,
+                    sbt,
+                )
 
-                devices.append({
-                    'id': serial_number,  # Use serial number as device ID
-                    'dclg': dclg_id,
-                    'serial_number': serial_number,
-                    'name': device_name,
-                    'dk': dk,
-                    'dkv': dkv,
-                    'sbt': sbt,
-                })
+                devices.append(
+                    {
+                        "id": serial_number,  # Use serial number as device ID
+                        "dclg": dclg_id,
+                        "serial_number": serial_number,
+                        "name": device_name,
+                        "dk": dk,
+                        "dkv": dkv,
+                        "sbt": sbt,
+                    }
+                )
             else:
                 _LOGGER.debug("Skipping device without @dclg: %s", device)
 
@@ -304,7 +324,7 @@ class ResponseParser:
         parsed = self.parse_xml(xml_response)
         self._raise_if_session_expired(parsed)
 
-        if 'sc' not in parsed:
+        if "sc" not in parsed:
             _LOGGER.warning("No 'sc' element in status response")
             return None
 
@@ -312,23 +332,29 @@ class ResponseParser:
         # <dvs><d>...<c n="..." v="..."/>...</d></dvs>. If that detailed
         # structure is missing (e.g. response only contains <col><dcl .../>),
         # treat the response as incomplete and skip updating sensors.
-        sc = parsed['sc']
-        if 'dvs' not in sc:
-            _LOGGER.debug("Status response missing 'dvs' element; treating as incomplete: %s", sc.get('col'))
+        sc = parsed["sc"]
+        if "dvs" not in sc:
+            _LOGGER.debug(
+                "Status response missing 'dvs' element; treating as incomplete: %s",
+                sc.get("col"),
+            )
             return None
 
-        dvs = sc['dvs']
+        dvs = sc["dvs"]
         # Normalize device list
         device_list = None
-        if isinstance(dvs, dict) and 'd' in dvs:
-            device_list = dvs['d']
+        if isinstance(dvs, dict) and "d" in dvs:
+            device_list = dvs["d"]
         elif isinstance(dvs, list):
             device_list = dvs
-        elif isinstance(dvs, dict) and '@dclg' in dvs:
+        elif isinstance(dvs, dict) and "@dclg" in dvs:
             device_list = [dvs]
 
         if not device_list:
-            _LOGGER.warning("Status response 'dvs' element contains no device entries; skipping update: %s", dvs)
+            _LOGGER.warning(
+                "Status response 'dvs' element contains no device entries; skipping update: %s",
+                dvs,
+            )
             return None
         # A single <d> element is parsed as a dict, several as a list
         if not isinstance(device_list, list):
@@ -339,11 +365,13 @@ class ResponseParser:
             return None
 
         # Ensure at least one device entry contains detailed <c> children
-        if not any(isinstance(d, dict) and 'c' in d for d in device_list):
-            _LOGGER.warning("Device entries in 'dvs' lack <c> children; skipping update")
+        if not any(isinstance(d, dict) and "c" in d for d in device_list):
+            _LOGGER.warning(
+                "Device entries in 'dvs' lack <c> children; skipping update"
+            )
             return None
 
-        return self._flatten_attributes(parsed['sc'])
+        return self._flatten_attributes(parsed["sc"])
 
     def _ignore_broken_response(self, device_list: Any) -> bool:
         """Ignore broken responses.
@@ -384,15 +412,15 @@ class ResponseParser:
             names: set = set()
             if not isinstance(d, dict):
                 return names
-            c = d.get('c')
+            c = d.get("c")
             if not c:
                 return names
             if isinstance(c, list):
                 for item in c:
-                    if isinstance(item, dict) and '@n' in item:
-                        names.add(item['@n'])
-            elif isinstance(c, dict) and '@n' in c:
-                names.add(c['@n'])
+                    if isinstance(item, dict) and "@n" in item:
+                        names.add(item["@n"])
+            elif isinstance(c, dict) and "@n" in c:
+                names.add(c["@n"])
             return names
 
         devices = device_list if isinstance(device_list, list) else [device_list]
@@ -403,7 +431,9 @@ class ResponseParser:
         # mark the device unavailable instead of keeping it "available" with no status.
         # Exempt only the offline devices, so an online one in the same response is still checked.
         online_devices = [
-            d for d in devices if not (isinstance(d, dict) and is_device_offline(d.get('@dst')))
+            d
+            for d in devices
+            if not (isinstance(d, dict) and is_device_offline(d.get("@dst")))
         ]
         if not online_devices:
             return False
@@ -413,8 +443,12 @@ class ResponseParser:
 
         # If every device has at least one c-name and all names are a subset
         # of the minimal broken set, ignore the response.
-        if c_names_list and all(names and names.issubset(broken_names) for names in c_names_list):
-            _LOGGER.debug("Ignoring status response: incomplete c-names present %s", c_names_list)
+        if c_names_list and all(
+            names and names.issubset(broken_names) for names in c_names_list
+        ):
+            _LOGGER.debug(
+                "Ignoring status response: incomplete c-names present %s", c_names_list
+            )
             return True
 
         # Only treat as broken when minimal c-names are present.
@@ -433,16 +467,16 @@ class ResponseParser:
         self._raise_if_session_expired(parsed)
 
         # Guard: require top-level 'sc' element before any further access
-        if 'sc' not in parsed:
+        if "sc" not in parsed:
             _LOGGER.warning("No 'sc' element in statistics response")
             return {}
 
         # Check for API-level error message returned inside <sc>
-        if self.validate_structure(parsed, ['sc', 'msg']):
-            _LOGGER.warning("Statistics API returned message: %s", parsed['sc']['msg'])
+        if self.validate_structure(parsed, ["sc", "msg"]):
+            _LOGGER.warning("Statistics API returned message: %s", parsed["sc"]["msg"])
             return {}
 
-        return self._flatten_attributes(parsed['sc'])
+        return self._flatten_attributes(parsed["sc"])
 
     @staticmethod
     def _flatten_attributes(data: dict | list, prefix: str = "") -> dict[str, Any]:
@@ -460,39 +494,41 @@ class ResponseParser:
         if isinstance(data, dict):
             for key, value in data.items():
                 # Skip checksum
-                if key == 'cs':
+                if key == "cs":
                     continue
 
                 # Handle attributes (starting with @)
-                if key.startswith('@'):
+                if key.startswith("@"):
                     result[key[1:]] = value
 
                 # Handle text content
-                elif key == '#text':
-                    result['_text'] = value
+                elif key == "#text":
+                    result["_text"] = value
 
                 # Handle 'c' tags which contain actual data
-                elif key == 'c':
+                elif key == "c":
                     if isinstance(value, list):
                         for item in value:
                             # By design: '@v' is required by the API spec on every <c>
                             # element. Elements that lack '@v' are malformed fragments
                             # and are silently skipped. When '@s' (shadow/pending value)
                             # is also present, it takes priority over '@v' in the result.
-                            if isinstance(item, dict) and '@n' in item and '@v' in item:
-                                name = item['@n']
+                            if isinstance(item, dict) and "@n" in item and "@v" in item:
+                                name = item["@n"]
                                 # If a shadow/pending value 's' is present, the device has
                                 # received a new setting but not yet applied it. Display 's'
                                 # until it disappears (at which point 'v' holds the new value).
-                                result[name] = item['@s'] if '@s' in item else item['@v']
+                                result[name] = (
+                                    item["@s"] if "@s" in item else item["@v"]
+                                )
                                 for extra in ("dt", "m", "acd", "ih"):
                                     if f"@{extra}" in item:
                                         result[f"{name}_{extra}"] = item[f"@{extra}"]
                     # Single (non-list) <c> element: same design contract — '@v' required,
                     # malformed elements silently skipped, '@s' takes priority when present.
-                    elif isinstance(value, dict) and '@n' in value and '@v' in value:
-                        name = value['@n']
-                        result[name] = value['@s'] if '@s' in value else value['@v']
+                    elif isinstance(value, dict) and "@n" in value and "@v" in value:
+                        name = value["@n"]
+                        result[name] = value["@s"] if "@s" in value else value["@v"]
                         for extra in ("dt", "m", "acd", "ih"):
                             if f"@{extra}" in value:
                                 result[f"{name}_{extra}"] = value[f"@{extra}"]

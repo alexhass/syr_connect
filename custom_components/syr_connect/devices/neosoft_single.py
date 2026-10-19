@@ -45,32 +45,64 @@ SENSOR_KNOWN_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Flow ---
-    "getAVO", "getFLO",
+    "getAVO",
+    "getFLO",
     # --- Alarm / Notification / Warning ---
-    "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
+    "getALA",
+    "getALM",
+    "getALN",
+    "getALW",
+    "getNOT",
+    "getWRN",
     # --- Water Quality ---
-    "getIWH", "getOWH", "getWHU",
+    "getIWH",
+    "getOWH",
+    "getWHU",
     # --- Water Consumption & Volume ---
-    "getLTV", "getVOL",
+    "getLTV",
+    "getVOL",
     # --- Salt / Reserve Capacity ---
-    "getRE1", "getSS1", "getSV1",
+    "getRE1",
+    "getSS1",
+    "getSV1",
     # --- Regeneration ---
-    "getCYN", "getCYT", "getLAR", "getRG1", "getRMO", "getRPD", "getRPW", "getRTI",
+    "getCYN",
+    "getCYT",
+    "getLAR",
+    "getRG1",
+    "getRMO",
+    "getRPD",
+    "getRPW",
+    "getRTI",
     "getRTM",
     # --- Maintenance ---
-    "getSRH", "getSRV",
+    "getSRH",
+    "getSRV",
     # --- Turbine / Pulse Monitoring ---
     "getVPS1",
     # --- Device Info & Diagnostics ---
-    "getMAC1", "getMAC2", "getSRN", "getTYP", "getVER",
+    "getMAC1",
+    "getMAC2",
+    "getSRN",
+    "getTYP",
+    "getVER",
     # --- Wi-Fi ---
-    "getAPT", "getEGW", "getEIP", "getWFC", "getWFL", "getWFR", "getWFS", "getWGW",
+    "getAPT",
+    "getEGW",
+    "getEIP",
+    "getWFC",
+    "getWFL",
+    "getWFR",
+    "getWFS",
+    "getWGW",
     "getWIP",
 }
 
 # getSV1 excluded - built-in salt level sensor, not a manual setting (see module docstring).
 SELECT_KNOWN_KEYS = {
-    "getRPD", "getRMO", "getRTM",
+    "getRPD",
+    "getRMO",
+    "getRTM",
 }
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - no filling
@@ -85,7 +117,10 @@ BINARY_SENSOR_KNOWN_KEYS = {
 
 # setDEX excluded - no microleakage-test hardware on this model.
 BUTTON_KNOWN_KEYS = {
-    "setSIR", "setALA", "setNOT", "setWRN",
+    "setSIR",
+    "setALA",
+    "setNOT",
+    "setWRN",
 }
 
 # No shutoff valve on this model (a conventional softener).

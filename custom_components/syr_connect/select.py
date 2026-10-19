@@ -86,7 +86,7 @@ def _is_number(value: Any) -> bool:
         return False
     try:
         float(value)
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False
     return True
 
@@ -107,7 +107,7 @@ def _is_integer(value: Any) -> bool:
         return False
     try:
         int(float(value))
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False
     return True
 
@@ -133,7 +133,9 @@ class _SyrConnectSelectBuilder:
     `_add_*_selects` functions only names what differs (key, range or option map).
     """
 
-    def __init__(self, coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]) -> None:
+    def __init__(
+        self, coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]
+    ) -> None:
         """Initialize the builder for one device from the coordinator data."""
         self.coordinator = coordinator
         # cast only types the values for the entity constructors; they are not converted
@@ -143,7 +145,9 @@ class _SyrConnectSelectBuilder:
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
         self.model_info = detect_model(self.status)
-        self.known_select_keys = get_model_known_keys(self.model_info, "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+        self.known_select_keys = get_model_known_keys(
+            self.model_info, "select", _SYR_CONNECT_SELECT_KNOWN_KEYS
+        )
         self.entities: list[SelectEntity] = []
 
     def allowed(self, key: str, is_valid: Callable[[Any], bool] = _is_number) -> bool:
@@ -163,10 +167,14 @@ class _SyrConnectSelectBuilder:
             options_map: Option keys as shown (or translated) mapped to raw device values
         """
         self.entities.append(
-            SyrConnectDiscreteSelect(self.coordinator, self.device_id, self.device_name, key, options_map)
+            SyrConnectDiscreteSelect(
+                self.coordinator, self.device_id, self.device_name, key, options_map
+            )
         )
 
-    def add_numeric(self, key: str, min_value: int, max_value: int, **kwargs: Any) -> None:
+    def add_numeric(
+        self, key: str, min_value: int, max_value: int, **kwargs: Any
+    ) -> None:
         """Add a select with the raw values min_value..max_value in steps of 1.
 
         Args:
@@ -177,7 +185,14 @@ class _SyrConnectSelectBuilder:
         """
         self.entities.append(
             SyrConnectNumericSelect(
-                self.coordinator, self.device_id, self.device_name, key, min_value, max_value, 1, **kwargs
+                self.coordinator,
+                self.device_id,
+                self.device_name,
+                key,
+                min_value,
+                max_value,
+                1,
+                **kwargs,
             )
         )
 
@@ -191,7 +206,9 @@ class _SyrConnectSelectBuilder:
         self.add_numeric(key, values[0], values[-1], options=_unit_options(key, values))
 
 
-def _build_device_selects(coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]) -> list[SelectEntity]:
+def _build_device_selects(
+    coordinator: SyrConnectDataUpdateCoordinator, device: dict[str, Any]
+) -> list[SelectEntity]:
     """Return the selects of one device (except the conditional getLOT/getOHW).
 
     A select is only created when the detected model lists its key and the device
@@ -220,15 +237,23 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
     # Regeneration time (getRTM): may contain a combined HH:MM string when `getRTH` is
     # not provided, or act as minutes when `getRTH` is present.
     if b.allowed("getRTM", lambda v: v is not None and v != ""):
-        b.entities.append(SyrConnectRegenerationSelect(b.coordinator, b.device_id, b.device_name))
+        b.entities.append(
+            SyrConnectRegenerationSelect(b.coordinator, b.device_id, b.device_name)
+        )
 
     # Active leak-protection profile (getPRF), if any profile getPAx is active (e.g. "true" or "1")
-    if "getPRF" in known_select_keys and any(is_value_true(status.get(f"getPA{i}")) for i in range(1, 9)):
-        b.entities.append(SyrConnectPrfSelect(b.coordinator, b.device_id, b.device_name))
+    if "getPRF" in known_select_keys and any(
+        is_value_true(status.get(f"getPA{i}")) for i in range(1, 9)
+    ):
+        b.entities.append(
+            SyrConnectPrfSelect(b.coordinator, b.device_id, b.device_name)
+        )
 
     # Display rotation (getSRO): 0, 90, 180, 270; accepts numeric-like values ("90" or "90.0")
     if b.allowed("getSRO", _is_integer):
-        b.entities.append(SyrConnectRotationSelect(b.coordinator, b.device_id, b.device_name))
+        b.entities.append(
+            SyrConnectRotationSelect(b.coordinator, b.device_id, b.device_name)
+        )
 
     # Salt amounts (getSV1-3): the maximum depends on the model; models without salt containers have none
     max_capacity = b.model_info.get("maximum_salt_volume")
@@ -241,7 +266,11 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
     # regeneration have none. 0 means no interval regeneration, so no select is created.
     # Not limited to the allowlist.
     max_rpd = b.model_info.get("maximum_regeneration_interval")
-    if max_rpd is not None and _is_number(status.get("getRPD")) and float(status["getRPD"]) != 0:
+    if (
+        max_rpd is not None
+        and _is_number(status.get("getRPD"))
+        and float(status["getRPD"]) != 0
+    ):
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
@@ -249,7 +278,15 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
         if b.allowed(hardness_key):
             b.entities.append(
-                SyrConnectHardnessSelect(b.coordinator, b.device_id, b.device_name, hardness_key, hardness_min, 100, 1)
+                SyrConnectHardnessSelect(
+                    b.coordinator,
+                    b.device_id,
+                    b.device_name,
+                    hardness_key,
+                    hardness_min,
+                    100,
+                    1,
+                )
             )
 
     # Filter type (getFFM): types 1-3, only for a value >= 1. Raw numeric options so the frontend
@@ -323,7 +360,9 @@ async def async_setup_entry(
         return
 
     registry_cleanup(
-        hass, coordinator.data, "select",
+        hass,
+        coordinator.data,
+        "select",
         allowed_keys=_SYR_CONNECT_SELECT_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
@@ -370,15 +409,23 @@ def _async_setup_muco_conditional_selects(
         # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
         # also report getCRT/getLOT/getOHW but deliberately do not expose them; a select there
         # would even write setOHW/setLOT.
-        known_select_keys = get_model_known_keys(detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS)
+        known_select_keys = get_model_known_keys(
+            detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS
+        )
         return key if key in known_select_keys else None
 
-    def _build_entity(device_id: str, device_name: str, key: str) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
+    def _build_entity(
+        device_id: str, device_name: str, key: str
+    ) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
         if key == "getLOT":
             lot_unit = _SYR_CONNECT_SENSOR_UNIT["getLOT"]
             lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(21)}
-            return SyrConnectDiscreteSelect(coordinator, device_id, device_name, "getLOT", lot_map)
-        return SyrConnectNumericSelect(coordinator, device_id, device_name, "getOHW", 0, 12, 1)
+            return SyrConnectDiscreteSelect(
+                coordinator, device_id, device_name, "getLOT", lot_map
+            )
+        return SyrConnectNumericSelect(
+            coordinator, device_id, device_name, "getOHW", 0, 12, 1
+        )
 
     @callback
     def _sync() -> None:
@@ -398,10 +445,17 @@ def _async_setup_muco_conditional_selects(
                 for key in current - wanted_set:
                     # Selects use the "<key>_select" unique_id suffix (see SyrConnectDiscreteSelect/NumericSelect)
                     stale_entity_id = find_entity_id(
-                        registry, "select", coordinator.entry_id, device_id, f"{key}_select"
+                        registry,
+                        "select",
+                        coordinator.entry_id,
+                        device_id,
+                        f"{key}_select",
                     )
                     if stale_entity_id is not None:
-                        _LOGGER.debug("Removing conditionally hidden select from registry: %s", stale_entity_id)
+                        _LOGGER.debug(
+                            "Removing conditionally hidden select from registry: %s",
+                            stale_entity_id,
+                        )
                         registry.async_remove(stale_entity_id)
                     current.discard(key)
 
@@ -436,7 +490,14 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
     ) -> None:
         """Initialize the select entity."""
         # Translation key "getrtm" for the human-friendly name; the select is backed by `getRTM`
-        super().__init__(coordinator, device_id, device_name, "select", "getRTM", unique_key="getRTM_select")
+        super().__init__(
+            coordinator,
+            device_id,
+            device_name,
+            "select",
+            "getRTM",
+            unique_key="getRTM_select",
+        )
 
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
@@ -475,17 +536,31 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         coordinator = self.coordinator
         commands = set_sensor_rtm_value(self._status, option)
         if not commands:
-            _LOGGER.error("Invalid time option selected for device %s: %s", self._device_id, option)
+            _LOGGER.error(
+                "Invalid time option selected for device %s: %s",
+                self._device_id,
+                option,
+            )
             return
 
         try:
             # setRTH + setRTM in one call: with the XML API a single request, so the time
             # is never left half-changed (new hour, old minute) when the request fails
             await coordinator.async_set_device_values(self._device_id, commands)
-            _LOGGER.debug("Requested regeneration time set commands for device %s: %s", self._device_id, commands)
-            _LOGGER.debug("Regeneration time select changed for %s to %s", self._device_id, option)
+            _LOGGER.debug(
+                "Requested regeneration time set commands for device %s: %s",
+                self._device_id,
+                commands,
+            )
+            _LOGGER.debug(
+                "Regeneration time select changed for %s to %s", self._device_id, option
+            )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.error("Failed to set regeneration time for device %s: %s", self._device_id, err)
+            _LOGGER.error(
+                "Failed to set regeneration time for device %s: %s",
+                self._device_id,
+                err,
+            )
             raise HomeAssistantError(f"Failed to set regeneration time: {err}") from err
 
 
@@ -522,7 +597,14 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         options: list[str] | None = None,
     ) -> None:
         """Initialize the select entity."""
-        super().__init__(coordinator, device_id, device_name, "select", sensor_key, unique_key=f"{sensor_key}_select")
+        super().__init__(
+            coordinator,
+            device_id,
+            device_name,
+            "select",
+            sensor_key,
+            unique_key=f"{sensor_key}_select",
+        )
         self._sensor_key = sensor_key
         # Raw device values are divided by `scale` for display and multiplied back when writing
         # (e.g. getTPR is stored as 1/10 bar, so scale=10 shows "1.8 bar" for the raw value 18).
@@ -539,7 +621,9 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             try:
                 unit_label = str(unit)
             except (ValueError, TypeError) as err:
-                _LOGGER.debug("Failed to convert unit to string for %s: %s", self._sensor_key, err)
+                _LOGGER.debug(
+                    "Failed to convert unit to string for %s: %s", self._sensor_key, err
+                )
                 unit_label = None
 
         opts: list[str] = []
@@ -589,7 +673,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             for opt in self._options:
                 if opt.split(" ", 1)[0] == label:
                     return opt
-        except (ValueError, TypeError, AttributeError):
+        except ValueError, TypeError, AttributeError:
             return None
         else:
             return label
@@ -610,7 +694,9 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         set_key = f"set{self._sensor_key[3:]}"
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
-            _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
+            _LOGGER.debug(
+                "Requested %s for device %s (value=%s)", set_key, self._device_id, val
+            )
             _LOGGER.debug(
                 "Select %s changed for device %s to %s",
                 self._sensor_key,
@@ -618,8 +704,12 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
                 option,
             )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
-            raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
+            _LOGGER.error(
+                "Failed to set %s for device %s: %s", set_key, self._device_id, err
+            )
+            raise HomeAssistantError(
+                f"Failed to set {self._sensor_key}: {err}"
+            ) from err
 
 
 class SyrConnectHardnessSelect(SyrConnectNumericSelect):
@@ -628,7 +718,7 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
     def _unit_label(self) -> str:
         try:
             whu = int(float(self._status.get("getWHU")))  # type: ignore[arg-type]
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return ""
         return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
 
@@ -663,7 +753,14 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         device_name: str,
     ) -> None:
         """Initialize the select entity."""
-        super().__init__(coordinator, device_id, device_name, "select", "getSRO", unique_key="getSRO_select")
+        super().__init__(
+            coordinator,
+            device_id,
+            device_name,
+            "select",
+            "getSRO",
+            unique_key="getSRO_select",
+        )
 
         # Use raw state keys so the frontend will translate them via the translation files
         self._options = ["0", "90", "180", "270"]
@@ -703,7 +800,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
                 if opt.startswith(f"{num}"):
                     return opt
             return str(num)
-        except (ValueError, TypeError, AttributeError):
+        except ValueError, TypeError, AttributeError:
             return None
 
     @override
@@ -720,10 +817,16 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         set_key = "setSRO"
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
-            _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
-            _LOGGER.debug("Select getSRO changed for device %s to %s", self._device_id, option)
+            _LOGGER.debug(
+                "Requested %s for device %s (value=%s)", set_key, self._device_id, val
+            )
+            _LOGGER.debug(
+                "Select getSRO changed for device %s to %s", self._device_id, option
+            )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
+            _LOGGER.error(
+                "Failed to set %s for device %s: %s", set_key, self._device_id, err
+            )
             raise HomeAssistantError(f"Failed to set getSRO: {err}") from err
 
 
@@ -739,7 +842,14 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
         options_map: Mapping[str, int | None],
     ) -> None:
         """Initialize the select entity."""
-        super().__init__(coordinator, device_id, device_name, "select", sensor_key, unique_key=f"{sensor_key}_select")
+        super().__init__(
+            coordinator,
+            device_id,
+            device_name,
+            "select",
+            sensor_key,
+            unique_key=f"{sensor_key}_select",
+        )
         self._sensor_key = sensor_key
         self._options_map = options_map
 
@@ -783,7 +893,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
             return None
         try:
             num = int(float(val))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
         for opt, mapped in self._options_map.items():
             if mapped == num:
@@ -798,17 +908,32 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
             return
         val = self._options_map[option]
         if val is None:
-            _LOGGER.error("Option %s for %s has no underlying raw value and cannot be selected", option, self._sensor_key)
+            _LOGGER.error(
+                "Option %s for %s has no underlying raw value and cannot be selected",
+                option,
+                self._sensor_key,
+            )
             return
         coordinator = self.coordinator
         set_key = f"set{self._sensor_key[3:]}"
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
-            _LOGGER.debug("Requested %s for device %s (value=%s)", set_key, self._device_id, val)
-            _LOGGER.debug("Select %s changed for device %s to %s", self._sensor_key, self._device_id, option)
+            _LOGGER.debug(
+                "Requested %s for device %s (value=%s)", set_key, self._device_id, val
+            )
+            _LOGGER.debug(
+                "Select %s changed for device %s to %s",
+                self._sensor_key,
+                self._device_id,
+                option,
+            )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
-            raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
+            _LOGGER.error(
+                "Failed to set %s for device %s: %s", set_key, self._device_id, err
+            )
+            raise HomeAssistantError(
+                f"Failed to set {self._sensor_key}: {err}"
+            ) from err
 
 
 class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
@@ -826,7 +951,14 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         device_name: str,
     ) -> None:
         """Initialize the select entity."""
-        super().__init__(coordinator, device_id, device_name, "select", "getPRF", unique_key="getPRF_select")
+        super().__init__(
+            coordinator,
+            device_id,
+            device_name,
+            "select",
+            "getPRF",
+            unique_key="getPRF_select",
+        )
 
         # Set entity category according to central sensor mappings
         if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:
@@ -861,7 +993,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
             return None
         try:
             idx = int(float(val))
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
         return status.get(f"getPN{idx}")
 
@@ -882,12 +1014,20 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
                 break
 
         if selected_idx is None:
-            _LOGGER.error("Selected profile not found for device %s: %s", self._device_id, option)
+            _LOGGER.error(
+                "Selected profile not found for device %s: %s", self._device_id, option
+            )
             return
 
         try:
-            await coordinator.async_set_device_value(self._device_id, "setPRF", selected_idx)
-            _LOGGER.debug("Requested setPRF for device %s (profile=%s)", self._device_id, selected_idx)
+            await coordinator.async_set_device_value(
+                self._device_id, "setPRF", selected_idx
+            )
+            _LOGGER.debug(
+                "Requested setPRF for device %s (profile=%s)",
+                self._device_id,
+                selected_idx,
+            )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.error("Failed to set PRF for device %s: %s", self._device_id, err)
             raise HomeAssistantError(f"Failed to set profile: {err}") from err

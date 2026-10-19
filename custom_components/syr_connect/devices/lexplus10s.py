@@ -31,34 +31,77 @@ SENSOR_KNOWN_KEYS = {
     # --- Flow ---
     "getFLO",
     # --- Alarm / Notification (alarm_style_alm: getALM/getNOT, no getALA/getWRN) ---
-    "getALM", "getNOT",
+    "getALM",
+    "getNOT",
     # --- Pressure ---
     "getPRS",
     # --- Water Quality ---
-    "getIWH", "getOWH", "getWHU",
+    "getIWH",
+    "getOWH",
+    "getWHU",
     # --- Device Status ---
     "getDEN",
     # --- Resin Capacity ---
-    "getCS1", "getCS2", "getCS3",
+    "getCS1",
+    "getCS2",
+    "getCS3",
     # --- Salt ---
-    "getRDO", "getRES", "getSS1", "getSV1",
+    "getRDO",
+    "getRES",
+    "getSS1",
+    "getSV1",
     # --- Regeneration ---
-    "getCYN", "getCYT", "getINR", "getLAR", "getNOR", "getRG1",
-    "getRPD", "getRPW", "getRTH", "getRTI", "getRTM", "getSCR", "getTOR",
+    "getCYN",
+    "getCYT",
+    "getINR",
+    "getLAR",
+    "getNOR",
+    "getRG1",
+    "getRPD",
+    "getRPW",
+    "getRTH",
+    "getRTI",
+    "getRTM",
+    "getSCR",
+    "getTOR",
     # --- Maintenance ---
-    "getDWF", "getVS1", "getVS2", "getVS3",
+    "getDWF",
+    "getVS1",
+    "getVS2",
+    "getVS3",
     # --- Filter ---
-    "getFCO", "getPST",
+    "getFCO",
+    "getPST",
     # --- Device Info & Diagnostics ---
-    "getCDE", "getCNA", "getDGW", "getFIR", "getIPA", "getMAC", "getMAN", "getSRN",
-    "getTYP", "getVER",
+    "getCDE",
+    "getCNA",
+    "getDGW",
+    "getFIR",
+    "getIPA",
+    "getMAC",
+    "getMAN",
+    "getSRN",
+    "getTYP",
+    "getVER",
     # --- Wi-Fi (optional module, same as the plain "lex" family) ---
-    "getAPT", "getEGW", "getEIP", "getMAC1", "getMAC2", "getWFC", "getWFR", "getWFS",
-    "getWGW", "getWIP",
+    "getAPT",
+    "getEGW",
+    "getEIP",
+    "getMAC1",
+    "getMAC2",
+    "getWFC",
+    "getWFR",
+    "getWFS",
+    "getWGW",
+    "getWIP",
 }
 
 SELECT_KNOWN_KEYS = {
-    "getIWH", "getOWH", "getRPD", "getRTM", "getSV1",
+    "getIWH",
+    "getOWH",
+    "getRPD",
+    "getRTM",
+    "getSV1",
 }
 
 # No buzzer on this model.
@@ -70,7 +113,9 @@ BINARY_SENSOR_KNOWN_KEYS: set[str] = set()
 # setWRN excluded - no getWRN in the fixture. setDEX excluded - no
 # microleakage-test hardware on this model.
 BUTTON_KNOWN_KEYS = {
-    "setSIR", "setALA", "setNOT",
+    "setSIR",
+    "setALA",
+    "setNOT",
 }
 
 # No shutoff valve on this model (a conventional column softener).

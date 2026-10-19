@@ -33,19 +33,35 @@ def api_client(mock_session):
 
 def test_request_urls_use_the_base_url(mock_session):
     """The device list and status URLs are built from the configured base URL."""
-    api = SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword", api_base_url="https://example.invalid/")
+    api = SyrConnectXmlAPI(
+        mock_session,
+        "test@example.com",
+        "testpassword",
+        api_base_url="https://example.invalid/",
+    )
 
-    assert api.device_list_url == "https://example.invalid/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+    assert (
+        api.device_list_url
+        == "https://example.invalid/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+    )
     assert api.device_get_status_url.startswith("https://example.invalid/WebServices/")
 
 
-async def test_login_logs_payload_with_locale_but_without_password(mock_session, caplog):
+async def test_login_logs_payload_with_locale_but_without_password(
+    mock_session, caplog
+):
     """The login payload is logged (to check lng/reg), with the password masked."""
-    api = SyrConnectXmlAPI(mock_session, "user@example.com", "s3cr3t!", language="en-DE")
+    api = SyrConnectXmlAPI(
+        mock_session, "user@example.com", "s3cr3t!", language="en-DE"
+    )
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
 
-    with patch.object(api.http_client, "post", side_effect=aiohttp.ClientError("offline")), \
-         pytest.raises(SyrConnectConnectionError):
+    with (
+        patch.object(
+            api.http_client, "post", side_effect=aiohttp.ClientError("offline")
+        ),
+        pytest.raises(SyrConnectConnectionError),
+    ):
         await api.login()
 
     assert 'lng="en" reg="DE"' in caplog.text
@@ -55,7 +71,9 @@ async def test_login_logs_payload_with_locale_but_without_password(mock_session,
 
 def test_language_is_passed_to_payload_builder_and_http_client(mock_session):
     """The locale reaches the login/statistics payloads and the Accept-Language header."""
-    api = SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword", language="en-DE")
+    api = SyrConnectXmlAPI(
+        mock_session, "test@example.com", "testpassword", language="en-DE"
+    )
 
     assert api.payload_builder.app_version.startswith("App-3.9.7-en-DE-iOS-")
     assert api.payload_builder._compute_locale_lang_reg() == ("en", "DE")
@@ -69,7 +87,9 @@ def test_language_defaults(api_client):
     assert api_client.http_client._build_accept_language() == "en-US,en;q=0.9"
 
 
-INVALID_TOKEN_XML = (Path(__file__).parent / "fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml").read_text(encoding="utf-8")
+INVALID_TOKEN_XML = (
+    Path(__file__).parent / "fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml"
+).read_text(encoding="utf-8")
 
 
 async def test_session_valid_check(api_client):
@@ -121,7 +141,9 @@ async def test_parallel_rejections_relogin_only_once(api_client):
         ("get_statistics", ("dclg1", "water"), "parse_statistics_response"),
     ],
 )
-async def test_rejected_token_relogs_in_and_retries_once(api_client, method, args, parser):
+async def test_rejected_token_relogs_in_and_retries_once(
+    api_client, method, args, parser
+):
     """The real "invalid token" answer triggers one re-login and a retry with the new token."""
     api_client.session_data = "old"
     posted_payloads: list[str] = []
@@ -134,10 +156,16 @@ async def test_rejected_token_relogs_in_and_retries_once(api_client, method, arg
         api_client.session_data = "new"
         return True
 
-    with patch.object(api_client.http_client, "post", side_effect=_post), \
-         patch.object(api_client, "login", side_effect=_login) as login:
+    with (
+        patch.object(api_client.http_client, "post", side_effect=_post),
+        patch.object(api_client, "login", side_effect=_login) as login,
+    ):
         if parser:
-            with patch.object(api_client.response_parser, parser, return_value=[] if method == "get_devices" else {}):
+            with patch.object(
+                api_client.response_parser,
+                parser,
+                return_value=[] if method == "get_devices" else {},
+            ):
                 await getattr(api_client, method)(*args)
         else:
             await getattr(api_client, method)(*args)
@@ -158,7 +186,9 @@ async def test_rejected_token_twice_raises_session_expired(api_client):
         return True
 
     with (
-        patch.object(api_client.http_client, "post", return_value=INVALID_TOKEN_XML) as post,
+        patch.object(
+            api_client.http_client, "post", return_value=INVALID_TOKEN_XML
+        ) as post,
         patch.object(api_client, "login", side_effect=_login) as login,
         pytest.raises(SyrConnectSessionExpiredError) as excinfo,
     ):
@@ -173,9 +203,17 @@ async def test_valid_response_does_not_relogin(api_client):
     """A normal answer is used as is, without any login."""
     api_client.session_data = "token"
 
-    with patch.object(api_client.http_client, "post", return_value="<sc><ok /></sc>") as post, \
-         patch.object(api_client, "login") as login, \
-         patch.object(api_client.response_parser, "parse_device_status_response", return_value={"getFLO": "5"}):
+    with (
+        patch.object(
+            api_client.http_client, "post", return_value="<sc><ok /></sc>"
+        ) as post,
+        patch.object(api_client, "login") as login,
+        patch.object(
+            api_client.response_parser,
+            "parse_device_status_response",
+            return_value={"getFLO": "5"},
+        ),
+    ):
         assert await api_client.get_device_status("dclg1") == {"getFLO": "5"}
 
     login.assert_not_called()
@@ -186,11 +224,24 @@ async def test_login_success(api_client):
     """Test successful login."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
-    with patch.object(api_client.http_client, 'post', return_value=mock_response), \
-         patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})), \
-         patch.object(api_client.encryption, 'decrypt', return_value='<usr id="123"/><prs><pre id="p1" n="Project1"/></prs>'), \
-         patch.object(api_client.response_parser, 'parse_decrypted_login', return_value=("123", [{"id": "p1", "name": "Project1"}])):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value=mock_response),
+        patch.object(
+            api_client.response_parser,
+            "parse_login_response",
+            return_value=("encrypted", {}),
+        ),
+        patch.object(
+            api_client.encryption,
+            "decrypt",
+            return_value='<usr id="123"/><prs><pre id="p1" n="Project1"/></prs>',
+        ),
+        patch.object(
+            api_client.response_parser,
+            "parse_decrypted_login",
+            return_value=("123", [{"id": "p1", "name": "Project1"}]),
+        ),
+    ):
         result = await api_client.login()
 
         assert result is True
@@ -201,9 +252,19 @@ async def test_login_success(api_client):
 async def test_login_auth_error(api_client):
     """Wrong credentials: valid encrypted answer whose decrypted content has no session -> re-auth."""
     with (
-        patch.object(api_client.http_client, 'post', return_value="<sc><api>encrypted</api></sc>"),
-        patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})),
-        patch.object(api_client.encryption, 'decrypt', return_value='<prs><pre id="p1" n="P1"/></prs>'),
+        patch.object(
+            api_client.http_client, "post", return_value="<sc><api>encrypted</api></sc>"
+        ),
+        patch.object(
+            api_client.response_parser,
+            "parse_login_response",
+            return_value=("encrypted", {}),
+        ),
+        patch.object(
+            api_client.encryption,
+            "decrypt",
+            return_value='<prs><pre id="p1" n="P1"/></prs>',
+        ),
         pytest.raises(SyrConnectAuthError, match="Invalid credentials"),
     ):
         await api_client.login()
@@ -212,7 +273,11 @@ async def test_login_auth_error(api_client):
 async def test_login_connection_error(api_client):
     """Test login with connection error."""
     with (
-        patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")),
+        patch.object(
+            api_client.http_client,
+            "post",
+            side_effect=aiohttp.ClientError("Connection failed"),
+        ),
         pytest.raises(SyrConnectConnectionError),
     ):
         await api_client.login()
@@ -223,10 +288,13 @@ async def test_get_device_status_with_valid_session(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client, 'login', return_value=True) as mock_login, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_status_response', return_value={}):
-
+    with (
+        patch.object(api_client, "login", return_value=True) as mock_login,
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser, "parse_device_status_response", return_value={}
+        ),
+    ):
         await api_client.get_device_status("device1")
 
         # Should NOT have called login
@@ -238,18 +306,22 @@ async def test_set_device_status_value_conversion(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>') as mock_post:
+    with patch.object(
+        api_client.http_client, "post", return_value="<sc></sc>"
+    ) as mock_post:
         await api_client.set_device_status("device1", [("setSIR", 0)])
 
         # Verify the payload contains '1' not 'True'
         call_args = mock_post.call_args
-        assert '1' in str(call_args)
+        assert "1" in str(call_args)
 
 
 async def test_login_timeout_error(api_client):
     """Test login with timeout error."""
     with (
-        patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")),
+        patch.object(
+            api_client.http_client, "post", side_effect=TimeoutError("Request timeout")
+        ),
         pytest.raises(SyrConnectConnectionError, match="Connection failed"),
     ):
         await api_client.login()
@@ -258,7 +330,9 @@ async def test_login_timeout_error(api_client):
 async def test_login_generic_exception(api_client):
     """Test login with generic unexpected exception."""
     with (
-        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Unexpected error")),
+        patch.object(
+            api_client.http_client, "post", side_effect=RuntimeError("Unexpected error")
+        ),
         pytest.raises(SyrConnectConnectionError, match="Login failed"),
     ):
         await api_client.login()
@@ -270,7 +344,9 @@ async def test_get_devices_exception_handling(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("API error")),
+        patch.object(
+            api_client.http_client, "post", side_effect=RuntimeError("API error")
+        ),
         pytest.raises(RuntimeError, match="API error"),
     ):
         await api_client.get_devices("project1")
@@ -282,7 +358,11 @@ async def test_get_devices_connection_client_error(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, 'post', side_effect=aiohttp.ClientError("Connection failed")),
+        patch.object(
+            api_client.http_client,
+            "post",
+            side_effect=aiohttp.ClientError("Connection failed"),
+        ),
         pytest.raises(SyrConnectConnectionError),
     ):
         await api_client.get_devices("project1")
@@ -294,7 +374,9 @@ async def test_get_devices_connection_timeout_error(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, 'post', side_effect=TimeoutError("Request timeout")),
+        patch.object(
+            api_client.http_client, "post", side_effect=TimeoutError("Request timeout")
+        ),
         pytest.raises(SyrConnectConnectionError),
     ):
         await api_client.get_devices("project1")
@@ -311,13 +393,18 @@ async def test_get_devices_id_fallback(api_client):
         "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     }
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_list_response', return_value=[device_without_id]):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_device_list_response",
+            return_value=[device_without_id],
+        ),
+    ):
         devices = await api_client.get_devices("project1")
 
         assert len(devices) == 1
-        assert devices[0]['id'] == "SN12345"  # Should use serial_number as id
+        assert devices[0]["id"] == "SN12345"  # Should use serial_number as id
 
 
 async def test_get_device_status_returns_none(api_client):
@@ -325,9 +412,14 @@ async def test_get_device_status_returns_none(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_status_response', return_value=None):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_device_status_response",
+            return_value=None,
+        ),
+    ):
         result = await api_client.get_device_status("device1")
 
         assert result is None
@@ -339,7 +431,9 @@ async def test_get_device_status_exception_handling(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Status error")),
+        patch.object(
+            api_client.http_client, "post", side_effect=RuntimeError("Status error")
+        ),
         pytest.raises(RuntimeError, match="Status error"),
     ):
         await api_client.get_device_status("device1")
@@ -350,9 +444,14 @@ async def test_set_device_status_boolean_false(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.payload_builder, 'build_device_set_status_payload', return_value="<payload/>") as mock_build, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
-
+    with (
+        patch.object(
+            api_client.payload_builder,
+            "build_device_set_status_payload",
+            return_value="<payload/>",
+        ) as mock_build,
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+    ):
         await api_client.set_device_status("device1", [("setSIR", False)])
 
         # Verify boolean False was converted to 0
@@ -365,9 +464,14 @@ async def test_set_device_status_boolean_true(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.payload_builder, 'build_device_set_status_payload', return_value="<payload/>") as mock_build, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
-
+    with (
+        patch.object(
+            api_client.payload_builder,
+            "build_device_set_status_payload",
+            return_value="<payload/>",
+        ) as mock_build,
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+    ):
         await api_client.set_device_status("device1", [("setSIR", True)])
 
         # Verify boolean True was converted to 1
@@ -381,7 +485,9 @@ async def test_set_device_status_exception_handling(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Set error")),
+        patch.object(
+            api_client.http_client, "post", side_effect=RuntimeError("Set error")
+        ),
         pytest.raises(RuntimeError, match="Set error"),
     ):
         await api_client.set_device_status("device1", [("setSIR", 1)])
@@ -394,9 +500,14 @@ async def test_get_statistics_water(api_client):
 
     mock_stats = {"daily": "100", "weekly": "700", "monthly": "3000"}
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_statistics_response', return_value=mock_stats):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_statistics_response",
+            return_value=mock_stats,
+        ),
+    ):
         result = await api_client.get_statistics("device1", "water")
 
         assert result == mock_stats
@@ -409,9 +520,14 @@ async def test_get_statistics_salt(api_client):
 
     mock_stats = {"consumed": "50", "remaining": "150"}
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_statistics_response', return_value=mock_stats):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_statistics_response",
+            return_value=mock_stats,
+        ),
+    ):
         result = await api_client.get_statistics("device1", "salt")
 
         assert result == mock_stats
@@ -423,7 +539,9 @@ async def test_get_statistics_exception_handling(api_client):
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, 'post', side_effect=RuntimeError("Stats error")),
+        patch.object(
+            api_client.http_client, "post", side_effect=RuntimeError("Stats error")
+        ),
         pytest.raises(RuntimeError, match="Stats error"),
     ):
         await api_client.get_statistics("device1", "water")
@@ -434,8 +552,12 @@ async def test_login_with_parser_value_error(api_client):
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
     with (
-        patch.object(api_client.http_client, 'post', return_value=mock_response),
-        patch.object(api_client.response_parser, 'parse_login_response', side_effect=ValueError("Invalid response structure")),
+        patch.object(api_client.http_client, "post", return_value=mock_response),
+        patch.object(
+            api_client.response_parser,
+            "parse_login_response",
+            side_effect=ValueError("Invalid response structure"),
+        ),
         pytest.raises(SyrConnectConnectionError, match="Invalid login response"),
     ):
         await api_client.login()
@@ -446,10 +568,18 @@ async def test_login_with_decryption_parser_error(api_client):
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
     with (
-        patch.object(api_client.http_client, 'post', return_value=mock_response),
-        patch.object(api_client.response_parser, 'parse_login_response', return_value=("encrypted", {})),
-        patch.object(api_client.encryption, 'decrypt', return_value='<invalid>'),
-        patch.object(api_client.response_parser, 'parse_decrypted_login', side_effect=ValueError("Invalid decrypted data")),
+        patch.object(api_client.http_client, "post", return_value=mock_response),
+        patch.object(
+            api_client.response_parser,
+            "parse_login_response",
+            return_value=("encrypted", {}),
+        ),
+        patch.object(api_client.encryption, "decrypt", return_value="<invalid>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_decrypted_login",
+            side_effect=ValueError("Invalid decrypted data"),
+        ),
         pytest.raises(SyrConnectConnectionError, match="Invalid login response"),
     ):
         await api_client.login()
@@ -469,8 +599,14 @@ async def test_network_errors_are_wrapped_in_connection_error(api_client, method
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
-        patch.object(api_client.http_client, "post", side_effect=aiohttp.ClientError("Request failed after 3 attempts")),
-        pytest.raises(SyrConnectConnectionError, match="Request failed after 3 attempts") as excinfo,
+        patch.object(
+            api_client.http_client,
+            "post",
+            side_effect=aiohttp.ClientError("Request failed after 3 attempts"),
+        ),
+        pytest.raises(
+            SyrConnectConnectionError, match="Request failed after 3 attempts"
+        ) as excinfo,
     ):
         await getattr(api_client, method)(*args)
 
@@ -489,13 +625,18 @@ async def test_get_devices_adds_project_id(api_client):
         "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     }
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_list_response', return_value=[device_data]):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_device_list_response",
+            return_value=[device_data],
+        ),
+    ):
         devices = await api_client.get_devices("project123")
 
         assert len(devices) == 1
-        assert devices[0]['project_id'] == "project123"
+        assert devices[0]["project_id"] == "project123"
 
 
 async def test_get_statistics_default_type(api_client):
@@ -505,9 +646,14 @@ async def test_get_statistics_default_type(api_client):
 
     mock_stats = {"daily": "100"}
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_statistics_response', return_value=mock_stats):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_statistics_response",
+            return_value=mock_stats,
+        ),
+    ):
         # Call without explicit statistic_type (should default to "water")
         result = await api_client.get_statistics("device1")
 
@@ -519,9 +665,14 @@ async def test_set_device_status_non_boolean_value(api_client):
     api_client.session_data = "valid_session"
     api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
-    with patch.object(api_client.payload_builder, 'build_device_set_status_payload', return_value="<payload/>") as mock_build, \
-         patch.object(api_client.http_client, 'post', return_value='<sc></sc>'):
-
+    with (
+        patch.object(
+            api_client.payload_builder,
+            "build_device_set_status_payload",
+            return_value="<payload/>",
+        ) as mock_build,
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+    ):
         await api_client.set_device_status("device1", [("setSV1", 10)])
 
         # Verify value is passed as-is (not converted)
@@ -541,11 +692,16 @@ async def test_get_devices_with_device_already_has_id(api_client):
         "dclg": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     }
 
-    with patch.object(api_client.http_client, 'post', return_value='<sc></sc>'), \
-         patch.object(api_client.response_parser, 'parse_device_list_response', return_value=[device_with_id]):
-
+    with (
+        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.response_parser,
+            "parse_device_list_response",
+            return_value=[device_with_id],
+        ),
+    ):
         devices = await api_client.get_devices("project1")
 
         assert len(devices) == 1
         # Should keep existing id, not overwrite with serial_number
-        assert devices[0]['id'] == "EXISTING_ID"
+        assert devices[0]["id"] == "EXISTING_ID"

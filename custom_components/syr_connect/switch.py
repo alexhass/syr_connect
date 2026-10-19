@@ -44,7 +44,9 @@ async def async_setup_entry(
         return
 
     registry_cleanup(
-        hass, coordinator.data, "switch",
+        hass,
+        coordinator.data,
+        "switch",
         allowed_keys=_SYR_CONNECT_SWITCH_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
@@ -56,17 +58,30 @@ async def async_setup_entry(
         device_id = device.get("id")
         device_name = device.get("name", device_id)
         status = device.get("status", {})
-        _LOGGER.debug("Checking device: id=%s, name=%s, status_keys=%s", device_id, device_name, list(status.keys()))
+        _LOGGER.debug(
+            "Checking device: id=%s, name=%s, status_keys=%s",
+            device_id,
+            device_name,
+            list(status.keys()),
+        )
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        known_switch_keys = get_model_known_keys(detect_model(status), "switch", _SYR_CONNECT_SWITCH_KNOWN_KEYS)
+        known_switch_keys = get_model_known_keys(
+            detect_model(status), "switch", _SYR_CONNECT_SWITCH_KNOWN_KEYS
+        )
 
         for sensor_key in sorted(known_switch_keys):
             if sensor_key not in status:
-                _LOGGER.debug("%s not found in status for device %s.", sensor_key, device_id)
+                _LOGGER.debug(
+                    "%s not found in status for device %s.", sensor_key, device_id
+                )
                 continue
-            _LOGGER.debug("%s found in status for device %s. Creating SyrConnectBooleanSwitch.", sensor_key, device_id)
+            _LOGGER.debug(
+                "%s found in status for device %s. Creating SyrConnectBooleanSwitch.",
+                sensor_key,
+                device_id,
+            )
             try:
                 entity = SyrConnectBooleanSwitch(
                     coordinator,
@@ -81,7 +96,9 @@ async def async_setup_entry(
                     registry = er.async_get(hass)
                     uid = getattr(entity, "_attr_unique_id", None)
                     if uid:
-                        existing_entity_id = registry.async_get_entity_id("switch", DOMAIN, uid)
+                        existing_entity_id = registry.async_get_entity_id(
+                            "switch", DOMAIN, uid
+                        )
                         if existing_entity_id:
                             entity.entity_id = existing_entity_id
                             _LOGGER.debug(
@@ -90,7 +107,9 @@ async def async_setup_entry(
                                 uid,
                             )
                 except Exception:
-                    _LOGGER.exception("Failed to check entity registry for existing switch entity")
+                    _LOGGER.exception(
+                        "Failed to check entity registry for existing switch entity"
+                    )
 
                 entities.append(entity)
                 _LOGGER.debug(
@@ -100,7 +119,10 @@ async def async_setup_entry(
                     getattr(entity, "_attr_unique_id", None),
                 )
             except Exception:
-                _LOGGER.exception("Failed to instantiate SyrConnectBooleanSwitch for device %s", device_id)
+                _LOGGER.exception(
+                    "Failed to instantiate SyrConnectBooleanSwitch for device %s",
+                    device_id,
+                )
     if entities:
         async_add_entities(entities)
         try:
@@ -113,7 +135,9 @@ async def async_setup_entry(
                 if entity_id and registry.async_get(entity_id) is None:
                     # Try lookup by unique_id
                     if unique_id:
-                        found = registry.async_get_entity_id("switch", DOMAIN, unique_id)
+                        found = registry.async_get_entity_id(
+                            "switch", DOMAIN, unique_id
+                        )
                         if found is None:
                             missing.append((entity_id, unique_id))
                     else:
@@ -124,7 +148,9 @@ async def async_setup_entry(
                     missing,
                 )
         except Exception:
-            _LOGGER.exception("Failed to verify entity registry for created switch entities")
+            _LOGGER.exception(
+                "Failed to verify entity registry for created switch entities"
+            )
     else:
         _LOGGER.debug("No boolean switch entities found for any device.")
 
@@ -140,7 +166,12 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         sensor_key: str,
     ) -> None:
         """Initialize the switch."""
-        _LOGGER.debug("Initializing SyrConnectBooleanSwitch: device_id=%s, name=%s, sensor_key=%s", device_id, device_name, sensor_key)
+        _LOGGER.debug(
+            "Initializing SyrConnectBooleanSwitch: device_id=%s, name=%s, sensor_key=%s",
+            device_id,
+            device_name,
+            sensor_key,
+        )
         super().__init__(coordinator, device_id, device_name, "switch", sensor_key)
 
         self._sensor_key = sensor_key
@@ -150,7 +181,9 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         # Only lowercase device_id/key, not entry_id (a case-sensitive ULID) -
         # otherwise this would never match the entry_id casing written by the
         # v6->v7 registry migration.
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id.lower(), f"{sensor_key}_switch".lower())
+        self._attr_unique_id = build_unique_id(
+            coordinator.entry_id, device_id.lower(), f"{sensor_key}_switch".lower()
+        )
 
         # Set entity category if this key is a config entity
         if sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
@@ -196,11 +229,17 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         set_key = f"set{self._sensor_key[3:]}"
         try:
             # Use coordinator.async_set_device_value so the DCLG is resolved correctly
-            await self.coordinator.async_set_device_value(self._device_id, set_key, value)
+            await self.coordinator.async_set_device_value(
+                self._device_id, set_key, value
+            )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             # Report the failure to the caller (UI, automation) like valve/select/button do;
             # swallowing it would make the service call look successful. The coordinator has
             # already restored the previous value.
-            _LOGGER.error("Failed to set %s for device %s: %s", set_key, self._device_id, err)
-            raise HomeAssistantError(f"Failed to set {self._sensor_key}: {err}") from err
+            _LOGGER.error(
+                "Failed to set %s for device %s: %s", set_key, self._device_id, err
+            )
+            raise HomeAssistantError(
+                f"Failed to set {self._sensor_key}: {err}"
+            ) from err
         await self.coordinator.async_request_refresh()

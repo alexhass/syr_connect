@@ -5,7 +5,8 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 ## Language and Tooling
 
 - Target is Python 3.14 (`pyproject.toml`, `mypy.ini`). Every module starts with a docstring.
-- Ruff is the linter. Its rules are taken over 1:1 from Home Assistant core. Run it from the Windows virtualenv: `.venv/Scripts/ruff.exe check custom_components tests`.
+- Ruff is the linter. Its rules are taken over 1:1 from Home Assistant core. Run it from the Windows virtualenv: `.venv/Scripts/ruff.exe check .`.
+- Ruff is also the formatter, with the settings of Home Assistant core (line length 88, double quotes). Run `.venv/Scripts/ruff.exe format .` after every change to Python code; unformatted code is not accepted. VS Code formats on save with the shared settings in `.vscode/settings.default.jsonc`.
 - mypy checks `custom_components/syr_connect` with the strict settings of Home Assistant core: `.venv/Scripts/mypy.exe custom_components/syr_connect`. Every function needs complete type hints, and methods that override a base class method are marked with `@override` (directly above `def`, below `@property`).
 - Pytest only runs in WSL, see `.github/instructions/tests.instructions.md`.
 - Use the dedicated libraries already in `manifest.json`: `defusedxml` for parsing XML, `pycryptodomex` for AES. Do not add dependencies without asking.
@@ -21,7 +22,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 ## Formatting for Small Diffs
 
-- Write lists, sets, dicts and long argument lists with one entry per line and a trailing comma, so that adding or removing an entry changes exactly one line in the commit. Do not pack several entries on one line. This applies to values such as constants and maps. Imports follow the Home Assistant core rules, Ruff decides their layout.
+- Write lists, sets, dicts and long argument lists with one entry per line and a trailing comma, so that adding or removing an entry changes exactly one line in the commit. Do not pack several entries on one line. This applies to values such as constants and maps. Imports follow the Home Assistant core rules, Ruff decides their layout. The formatter keeps a collection with a trailing comma at one entry per line, but joins a short collection without it into one line, so always write the trailing comma.
 - Keep values that are maintained by hand (option maps, key lists, step lists) as literal entries. Generate them (`range`, comprehensions) only when they follow a documented rule, such as "0-95 in steps of 5", so that a change is a one-line change of that rule.
 - When refactoring, keep existing code where it is and change only what the refactoring needs. Do not reformat, reorder or rewrite unrelated lines.
 

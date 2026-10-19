@@ -70,15 +70,17 @@ async def async_setup_entry(
         return
 
     registry_cleanup(
-        hass, coordinator.data, "button",
+        hass,
+        coordinator.data,
+        "button",
         allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
 
-    for device in coordinator.data.get('devices', []):
-        device_id = device['id']
-        device_name = device['name']
-        status = device.get('status', {})
+    for device in coordinator.data.get("devices", []):
+        device_id = device["id"]
+        device_name = device["name"]
+        status = device.get("status", {})
 
         # Add action buttons
         action_buttons = [
@@ -95,7 +97,9 @@ async def async_setup_entry(
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        known_button_keys = get_model_known_keys(model_info, "button", _SYR_CONNECT_BUTTON_KNOWN_KEYS)
+        known_button_keys = get_model_known_keys(
+            model_info, "button", _SYR_CONNECT_BUTTON_KNOWN_KEYS
+        )
 
         for command, _name in action_buttons:
             if command not in known_button_keys:
@@ -125,7 +129,10 @@ async def async_setup_entry(
             # setSIR (manual regeneration trigger) is only meaningful for
             # softener models that actually support scheduled regeneration.
             # Workaround for https://github.com/alexhass/syr_connect/issues/24
-            if command == "setSIR" and model_info.get("maximum_regeneration_interval") is None:
+            if (
+                command == "setSIR"
+                and model_info.get("maximum_regeneration_interval") is None
+            ):
                 continue
 
             entities.append(
@@ -153,13 +160,19 @@ async def async_setup_entry(
                 if command in created_commands:
                     continue
                 # Found by unique_id, so a renamed or "_2"-suffixed button is removed as well
-                stale_entity_id = find_entity_id(registry, "button", coordinator.entry_id, device_id, command)
+                stale_entity_id = find_entity_id(
+                    registry, "button", coordinator.entry_id, device_id, command
+                )
                 if stale_entity_id is not None:
-                    _LOGGER.debug("Removing conditionally-skipped button from registry: %s", stale_entity_id)
+                    _LOGGER.debug(
+                        "Removing conditionally-skipped button from registry: %s",
+                        stale_entity_id,
+                    )
                     registry.async_remove(stale_entity_id)
         except Exception:
             _LOGGER.exception(
-                "Failed to remove conditionally-skipped buttons for device %s", device_id
+                "Failed to remove conditionally-skipped buttons for device %s",
+                device_id,
             )
 
     if entities:
@@ -210,7 +223,9 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
             HomeAssistantError: If the button press fails or no reset is required
         """
         # Avoid accessing possibly unset internal name attribute; use translation key or unique id
-        button_id = getattr(self, "_attr_translation_key", None) or getattr(self, "_attr_unique_id", None)
+        button_id = getattr(self, "_attr_translation_key", None) or getattr(
+            self, "_attr_unique_id", None
+        )
         _LOGGER.debug("Button pressed: %s (device: %s)", button_id, self._device_id)
 
         coordinator = self.coordinator
@@ -222,15 +237,20 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
             if self._command == "setDEX":
                 raw_dsv = status.get("getDSV")
                 if str(raw_dsv).strip() == "1":
-                    _LOGGER.warning("Microleakage test already running on %s, skipping setDEX", self._device_id)
+                    _LOGGER.warning(
+                        "Microleakage test already running on %s, skipping setDEX",
+                        self._device_id,
+                    )
                     return
                 # Determine value encoding from getTYP (JSON devices only).
                 typ = status.get("getTYP")
                 try:
                     dex_value: int | str = 1 if int(typ) < 100 else "true"  # type: ignore[arg-type]
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     dex_value = "true"  # getTYP absent or non-numeric → boolean
-                await coordinator.async_set_device_value(self._device_id, self._command, dex_value)
+                await coordinator.async_set_device_value(
+                    self._device_id, self._command, dex_value
+                )
                 return
 
             # Handle setSIR: initiate regeneration with the appropriate value.
@@ -246,7 +266,9 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     value_sir = "true"
                 else:
                     value_sir = 0
-                await coordinator.async_set_device_value(self._device_id, self._command, value_sir)
+                await coordinator.async_set_device_value(
+                    self._device_id, self._command, value_sir
+                )
                 return
 
             # Reset buttons (setALA, setNOT, setWRN): read the current alarm/notification/
@@ -267,7 +289,9 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                         model_info = {}
 
                     alarm_style_alm: bool = bool(model_info.get("alarm_style_alm"))
-                    alarm_clear_via_set: bool = bool(model_info.get("alarm_clear_via_set"))
+                    alarm_clear_via_set: bool = bool(
+                        model_info.get("alarm_clear_via_set")
+                    )
                     field = "alm" if alarm_style_alm else "ala"
                     get_key = f"get{field.upper()}"
 
@@ -275,7 +299,11 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     # depending on the device firmware.
                     raw = status.get(get_key)
                     # Sentinel values that indicate no active alarm (see module docstring).
-                    if raw is None or str(raw).strip().upper() in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+                    if (
+                        raw is None
+                        or str(raw).strip().upper()
+                        in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
+                    ):
                         raise HomeAssistantError(
                             f"No reset required for {get_key} on {self._device_id}"
                         )
@@ -283,11 +311,15 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     if alarm_clear_via_set:
                         # Device resets the alarm via a standard set command with value "FF".
                         set_cmd = f"set{field.upper()}"
-                        await coordinator.async_set_device_value(self._device_id, set_cmd, "FF")
+                        await coordinator.async_set_device_value(
+                            self._device_id, set_cmd, "FF"
+                        )
                     else:
                         # Active alarm confirmed above via getALA / getALM;
                         # send dedicated clear command (clrALA / clrALM).
-                        await coordinator.async_clear_device_alarm(self._device_id, field)
+                        await coordinator.async_clear_device_alarm(
+                            self._device_id, field
+                        )
                     return
 
                 # setNOT / setWRN: determine the corresponding get key, check for an
@@ -304,13 +336,21 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                 raw = status.get(get_key)
 
                 # Sentinel values that indicate no active notification / warning.
-                if raw is None or str(raw).strip().upper() in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+                if (
+                    raw is None
+                    or str(raw).strip().upper()
+                    in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
+                ):
                     raise HomeAssistantError(
                         f"No reset required for {get_key} on {self._device_id}"
                     )
 
-                reset_value: int | str = 255 if isinstance(coordinator.api, SyrConnectJsonAPI) else "FF"
-                await coordinator.async_set_device_value(self._device_id, self._command, reset_value)
+                reset_value: int | str = (
+                    255 if isinstance(coordinator.api, SyrConnectJsonAPI) else "FF"
+                )
+                await coordinator.async_set_device_value(
+                    self._device_id, self._command, reset_value
+                )
                 return
 
             # Default: no action for commands not explicitly handled above.

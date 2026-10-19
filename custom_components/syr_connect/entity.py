@@ -45,11 +45,15 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         self._device_id = device_id
         self._device_name = device_name
 
-        self._attr_unique_id = build_unique_id(coordinator.entry_id, device_id, unique_key or key)
+        self._attr_unique_id = build_unique_id(
+            coordinator.entry_id, device_id, unique_key or key
+        )
         self._attr_translation_key = translation_key or key.lower()
         # Technical entity_id from the serial number, independent of the display name
         self.entity_id = build_entity_id(platform, device_id, key)
-        self._attr_device_info = build_device_info(device_id, device_name, coordinator.data)
+        self._attr_device_info = build_device_info(
+            device_id, device_name, coordinator.data
+        )
 
     @property
     def _device(self) -> dict[str, Any] | None:

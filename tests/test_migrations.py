@@ -80,7 +80,9 @@ def test_v1_to_v2_no_migration_when_already_v2_and_api_matches() -> None:
     assert result is None
 
 
-async def test_v2_to_v3_resets_flo_unit_override_legacy_field(hass: HomeAssistant) -> None:
+async def test_v2_to_v3_resets_flo_unit_override_legacy_field(
+    hass: HomeAssistant,
+) -> None:
     """v2_to_v3_fix_flo_unit should clear L/min stored in legacy unit_of_measurement field."""
     entry = MockConfigEntry(
         version=2,
@@ -109,7 +111,9 @@ async def test_v2_to_v3_resets_flo_unit_override_legacy_field(hass: HomeAssistan
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -123,7 +127,9 @@ async def test_v2_to_v3_resets_flo_unit_override_legacy_field(hass: HomeAssistan
     mock_reg.async_update_entity_options.assert_not_called()
 
 
-async def test_v2_to_v3_resets_flo_unit_override_options_field(hass: HomeAssistant) -> None:
+async def test_v2_to_v3_resets_flo_unit_override_options_field(
+    hass: HomeAssistant,
+) -> None:
     """v2_to_v3_fix_flo_unit should clear L/min stored in sensor options (modern HA path)."""
     entry = MockConfigEntry(
         version=2,
@@ -140,11 +146,15 @@ async def test_v2_to_v3_resets_flo_unit_override_options_field(hass: HomeAssista
     mock_entity.unique_id = "device_id_getFLO"
     mock_entity.domain = "sensor"
     mock_entity.unit_of_measurement = None  # Legacy field NOT set
-    mock_entity.options = {"sensor": {"unit_of_measurement": UnitOfVolumeFlowRate.LITERS_PER_MINUTE}}
+    mock_entity.options = {
+        "sensor": {"unit_of_measurement": UnitOfVolumeFlowRate.LITERS_PER_MINUTE}
+    }
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -158,7 +168,9 @@ async def test_v2_to_v3_resets_flo_unit_override_options_field(hass: HomeAssista
     )
 
 
-async def test_v2_to_v3_resets_flo_suggested_unit_in_options(hass: HomeAssistant) -> None:
+async def test_v2_to_v3_resets_flo_suggested_unit_in_options(
+    hass: HomeAssistant,
+) -> None:
     """v2_to_v3_fix_flo_unit clears suggested_unit_of_measurement in sensor.private namespace."""
     entry = MockConfigEntry(
         version=2,
@@ -175,11 +187,17 @@ async def test_v2_to_v3_resets_flo_suggested_unit_in_options(hass: HomeAssistant
     mock_entity.unique_id = "device_id_getFLO"
     mock_entity.domain = "sensor"
     mock_entity.unit_of_measurement = None
-    mock_entity.options = {"sensor.private": {"suggested_unit_of_measurement": UnitOfVolumeFlowRate.LITERS_PER_MINUTE}}
+    mock_entity.options = {
+        "sensor.private": {
+            "suggested_unit_of_measurement": UnitOfVolumeFlowRate.LITERS_PER_MINUTE
+        }
+    }
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -218,13 +236,17 @@ async def test_v2_to_v3_real_world_snapshot(hass: HomeAssistant) -> None:
     mock_entity.unit_of_measurement = UnitOfVolumeFlowRate.LITERS_PER_MINUTE
     mock_entity.options = {
         "conversation": {"should_expose": False},
-        "sensor.private": {"suggested_unit_of_measurement": UnitOfVolumeFlowRate.LITERS_PER_MINUTE},
+        "sensor.private": {
+            "suggested_unit_of_measurement": UnitOfVolumeFlowRate.LITERS_PER_MINUTE
+        },
         "sensor": {"suggested_display_precision": 1},
     }
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -264,7 +286,9 @@ async def test_v2_to_v3_skips_flo_with_different_unit(hass: HomeAssistant) -> No
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -297,7 +321,9 @@ async def test_v2_to_v3_skips_flo_with_no_unit_stored(hass: HomeAssistant) -> No
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -315,7 +341,11 @@ def test_v3_to_v4_adds_default_service_to_xml_entry() -> None:
         version=3,
         domain="syr_connect",
         title="Legacy",
-        data={CONF_API_TYPE: API_TYPE_XML, "username": "user@example.com", "password": "pw"},
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            "username": "user@example.com",
+            "password": "pw",
+        },
         entry_id="legacy_xml",
         unique_id="xml_user@example.com",
     )
@@ -384,7 +414,9 @@ async def test_v4_to_v5_removes_sta_binary_sensor(hass: HomeAssistant) -> None:
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -395,7 +427,9 @@ async def test_v4_to_v5_removes_sta_binary_sensor(hass: HomeAssistant) -> None:
     mock_reg.async_remove.assert_called_once_with("binary_sensor.syr_connect_123_sta")
 
 
-async def test_v4_to_v5_also_removes_sensor_domain_sta_entries(hass: HomeAssistant) -> None:
+async def test_v4_to_v5_also_removes_sensor_domain_sta_entries(
+    hass: HomeAssistant,
+) -> None:
     """v4_to_v5 also removes sensor.* entries with unique_id ending '_sta' (field renamed to dst)."""
     entry = MockConfigEntry(
         version=4,
@@ -414,7 +448,9 @@ async def test_v4_to_v5_also_removes_sensor_domain_sta_entries(hass: HomeAssista
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -439,7 +475,9 @@ async def test_v4_to_v5_no_entries(hass: HomeAssistant) -> None:
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -450,7 +488,9 @@ async def test_v4_to_v5_no_entries(hass: HomeAssistant) -> None:
     mock_reg.async_remove.assert_not_called()
 
 
-async def test_v5_to_v6_resets_nps_unit_override_legacy_field(hass: HomeAssistant) -> None:
+async def test_v5_to_v6_resets_nps_unit_override_legacy_field(
+    hass: HomeAssistant,
+) -> None:
     """v5_to_v6_fix_nps_unit should clear empty-string stored in legacy unit_of_measurement field."""
     entry = MockConfigEntry(
         version=5,
@@ -478,7 +518,9 @@ async def test_v5_to_v6_resets_nps_unit_override_legacy_field(hass: HomeAssistan
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -492,7 +534,9 @@ async def test_v5_to_v6_resets_nps_unit_override_legacy_field(hass: HomeAssistan
     mock_reg.async_update_entity_options.assert_not_called()
 
 
-async def test_v5_to_v6_resets_nps_unit_override_options_field(hass: HomeAssistant) -> None:
+async def test_v5_to_v6_resets_nps_unit_override_options_field(
+    hass: HomeAssistant,
+) -> None:
     """v5_to_v6_fix_nps_unit should clear empty-string stored in sensor options (modern HA path)."""
     entry = MockConfigEntry(
         version=5,
@@ -513,7 +557,9 @@ async def test_v5_to_v6_resets_nps_unit_override_options_field(hass: HomeAssista
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -527,7 +573,9 @@ async def test_v5_to_v6_resets_nps_unit_override_options_field(hass: HomeAssista
     )
 
 
-async def test_v5_to_v6_resets_nps_suggested_unit_in_options(hass: HomeAssistant) -> None:
+async def test_v5_to_v6_resets_nps_suggested_unit_in_options(
+    hass: HomeAssistant,
+) -> None:
     """v5_to_v6_fix_nps_unit clears suggested_unit_of_measurement in sensor.private namespace."""
     entry = MockConfigEntry(
         version=5,
@@ -548,7 +596,9 @@ async def test_v5_to_v6_resets_nps_suggested_unit_in_options(hass: HomeAssistant
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -583,7 +633,9 @@ async def test_v5_to_v6_skips_nps_with_different_unit(hass: HomeAssistant) -> No
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -616,7 +668,9 @@ async def test_v5_to_v6_skips_nps_with_no_unit_stored(hass: HomeAssistant) -> No
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -642,7 +696,9 @@ async def test_v5_to_v6_no_entries(hass: HomeAssistant) -> None:
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -672,7 +728,9 @@ async def test_v6_to_v7_prefixes_unique_id_with_entry_id(hass: HomeAssistant) ->
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -703,7 +761,9 @@ async def test_v6_to_v7_skips_already_prefixed_unique_id(hass: HomeAssistant) ->
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg
@@ -728,7 +788,9 @@ async def test_v6_to_v7_no_entries(hass: HomeAssistant) -> None:
 
     with (
         patch("custom_components.syr_connect.migrations.er.async_get") as mock_er_get,
-        patch("custom_components.syr_connect.migrations.er.async_entries_for_config_entry") as mock_entries,
+        patch(
+            "custom_components.syr_connect.migrations.er.async_entries_for_config_entry"
+        ) as mock_entries,
     ):
         mock_reg = MagicMock()
         mock_er_get.return_value = mock_reg

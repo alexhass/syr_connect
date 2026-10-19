@@ -16,7 +16,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 
-def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+def _build_coordinator(
+    hass: HomeAssistant, data: dict
+) -> SyrConnectDataUpdateCoordinator:
     config_data = {
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
@@ -99,7 +101,9 @@ async def test_binary_sensor_available(hass: HomeAssistant) -> None:
     assert sensor.available is True
 
 
-async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+async def test_async_setup_entry(
+    hass: HomeAssistant, create_mock_entry_with_coordinator
+) -> None:
     """Test async_setup_entry creates binary sensors."""
     data = {
         "devices": [
@@ -133,10 +137,22 @@ async def test_async_setup_entry(hass: HomeAssistant, create_mock_entry_with_coo
     ids=["safefloor", "lexplus10sl"],
 )
 async def test_async_setup_entry_skips_models_without_buzzer(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, status: dict
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+    status: dict,
 ) -> None:
     """Models whose device file declares no buzzer get no getBUZ binary sensor, even if the key is present."""
-    data = {"devices": [{"id": "device1", "name": "Test Device", "project_id": "project1", "status": status}]}
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
@@ -155,7 +171,9 @@ def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
         assert ("getBUZ" in switch_keys) == ("getBUZ" in (binary_keys or set())), name
 
 
-async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+async def test_async_setup_entry_multiple_devices(
+    hass: HomeAssistant, create_mock_entry_with_coordinator
+) -> None:
     """Test async_setup_entry with multiple devices."""
     data = {
         "devices": [
@@ -181,7 +199,10 @@ async def test_async_setup_entry_multiple_devices(hass: HomeAssistant, create_mo
     async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
 
     # Patch the binary sensors list to include our test sensor
-    with patch("custom_components.syr_connect.binary_sensor._SYR_CONNECT_SENSOR_BINARY", {"testSensor": None}):
+    with patch(
+        "custom_components.syr_connect.binary_sensor._SYR_CONNECT_SENSOR_BINARY",
+        {"testSensor": None},
+    ):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     # Should create one sensor for device1
@@ -452,7 +473,9 @@ async def test_binary_sensor_none_value(hass: HomeAssistant) -> None:
     assert sensor.is_on is False
 
 
-async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+async def test_async_setup_entry_no_data(
+    hass: HomeAssistant, create_mock_entry_with_coordinator
+) -> None:
     """Test async_setup_entry with no coordinator data."""
     mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(None)
 
@@ -465,7 +488,9 @@ async def test_async_setup_entry_no_data(hass: HomeAssistant, create_mock_entry_
     async_add_entities.assert_not_called()
 
 
-async def test_async_setup_entry_registry_cleanup(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+async def test_async_setup_entry_registry_cleanup(
+    hass: HomeAssistant, create_mock_entry_with_coordinator
+) -> None:
     """Test async_setup_entry cleans up excluded sensors from registry."""
 
     # Create registry entry for an excluded sensor
@@ -500,7 +525,9 @@ async def test_async_setup_entry_registry_cleanup(hass: HomeAssistant, create_mo
     assert entry_to_remove is not None
 
 
-async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_mock_entry_with_coordinator) -> None:
+async def test_async_setup_entry_registry_exception(
+    hass: HomeAssistant, create_mock_entry_with_coordinator
+) -> None:
     """Test async_setup_entry handles registry exceptions gracefully."""
     data = {
         "devices": [
@@ -521,7 +548,10 @@ async def test_async_setup_entry_registry_exception(hass: HomeAssistant, create_
     def raise_registry_error(*args, **kwargs):
         raise RuntimeError("Registry error")
 
-    with patch("homeassistant.helpers.entity_registry.async_get", side_effect=raise_registry_error):
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get",
+        side_effect=raise_registry_error,
+    ):
         # Should not raise exception, continues setup
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 

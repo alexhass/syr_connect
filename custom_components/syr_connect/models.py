@@ -73,7 +73,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "safetplus",
         "ver_prefix": "Safe-T+",
     },
-
     # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
     {
         "base_path": None,
@@ -115,7 +114,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "safetcomm",
         # TODO: Untested model.
     },
-
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
     {
         "base_path": None,
@@ -126,7 +124,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "hva",
         # TODO: Untested model.
     },
-
     # ── Inliner-HWA 3300 (dk=25) ─────────────────────────────────────────────────
     {
         "base_path": None,
@@ -137,7 +134,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "inlinerhwa3300",
         # TODO: Untested model.
     },
-
     # ── i-LEX / LEX (dk=40, dkv=16) ─────────────────────────────────────────────
     {
         "alarm_style_alm": True,
@@ -422,7 +418,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "lex100",
         "ver_prefix": None,
     },
-
     # ── Hygiene module (dk=60-63) ────────────────────────────────────────────────
     {
         "base_path": None,
@@ -460,7 +455,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "hygienemodulcoldwarm",
         # TODO: Untested model.
     },
-
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────
     {
         "alarm_style_alm": True,
@@ -509,7 +503,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "sbt": 7,
         "ver_prefix": None,
     },
-
     # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
     {
         "base_path": None,
@@ -520,7 +513,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "controlicmini",
         # TODO: Untested model.
     },
-
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     {
         # dk=120/dkv=34 is shared by multiple vendors.
@@ -560,7 +552,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "safefloor122",
         # TODO: Untested model.
     },
-
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
     {
         "base_path": "/trio",
@@ -598,7 +589,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         # POLYGONVATRO (today POLYGON Deutschland) sold these "SYR Safe-Tech Connect" devices together
         # with the AXA building insurance, called "Wasserwächter". Order.-No.: 2422.25.003
         "base_path": None,
-        #"base_path": "/safe-tec",
+        # "base_path": "/safe-tec",
         "device_file": "safetech",
         "display_name": "Water Monitor",
         "dk": 140,
@@ -606,9 +597,9 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "manufacturer": "POLYGONVATRO",
         "name": "safetechpolygonvatro",
         # TODO: Untested model.
-        #"srn_prefix": "38",
+        # "srn_prefix": "38",
         # Version string: "Safe-Tech V3.53", see https://www.youtube.com/watch?v=apdL8SLZ64Q&t=585s
-        #"ver_prefix": "Safe-Tech V3",
+        # "ver_prefix": "Safe-Tech V3",
     },
     {
         "base_path": "/safe-tec",
@@ -633,7 +624,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        #"base_path": "/safe-tec",
+        # "base_path": "/safe-tec",
         "device_file": "safetech",
         "display_name": "SafeTech Connect",
         "dk": 141,
@@ -655,7 +646,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
     },
     {
         "base_path": None,
-        #"base_path": "/safe-tec",
+        # "base_path": "/safe-tec",
         "device_file": "safetech",
         "display_name": "SafeTech Connect",
         "dk": 145,
@@ -664,7 +655,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "safetech145",
         # TODO: Untested model.
     },
-
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
     {
         "base_path": "/all-in-one",
@@ -698,7 +688,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         # Unverified serial prefix from documentation, missing infix 'AAA' and match condition.
         "srn_prefix": "2031",
     },
-
     # ── Trio LS platform (dk=1100-1113) ──────────────────────────────────────────
     {
         "alarm_clear_via_set": True,
@@ -755,7 +744,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "name": "trio",
         "srn_prefix": "113",
     },
-
     # ── NeoSoft platform (dk=1200-1222) ──────────────────────────────────────────
     {
         "alarm_clear_via_set": True,
@@ -1019,7 +1007,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         # TODO: Untested model.
         "srn_prefix": "222",
     },
-
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
     # The "... MultiController" / "... Multicontroller" signatures in this section
     # (conelmuco, sanibelmuco, ditechmuco, takemuco, conceptmuco, optimamuco, syrmuco)
@@ -1310,7 +1297,9 @@ def detect_model(flat: object) -> dict[str, Any]:
     def _sig_to_result(sig: dict, method: str) -> dict:
         """Return a full copy of sig."""
         out = dict(sig)
-        _LOGGER.debug("detect_model: detected model %s (%s)", out.get("display_name"), method)
+        _LOGGER.debug(
+            "detect_model: detected model %s (%s)", out.get("display_name"), method
+        )
         return out
 
     # Step 1: Check all serial number prefix/contains matches first (highest priority)
@@ -1319,10 +1308,19 @@ def detect_model(flat: object) -> dict[str, Any]:
     # Signatures that also define 'attrs_equals' are more specific and are checked first, so a
     # generic srn-only signature does not shadow a more specific variant sharing the same prefix.
     for sig in MODEL_SIGNATURES:
-        if sig.get("attrs_equals") and (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig) and attrs_match(sig):
+        if (
+            sig.get("attrs_equals")
+            and (sig.get("srn_prefix") or sig.get("srn_contains"))
+            and srn_match(sig)
+            and attrs_match(sig)
+        ):
             return _sig_to_result(sig, "srn_equals+attrs_equals")
     for sig in MODEL_SIGNATURES:
-        if not sig.get("attrs_equals") and (sig.get("srn_prefix") or sig.get("srn_contains")) and srn_match(sig):
+        if (
+            not sig.get("attrs_equals")
+            and (sig.get("srn_prefix") or sig.get("srn_contains"))
+            and srn_match(sig)
+        ):
             return _sig_to_result(sig, "srn_equals")
 
     # Step 2: Check all getCNA (model name) exact matches
@@ -1346,11 +1344,20 @@ def detect_model(flat: object) -> dict[str, Any]:
             matches = len(v_keys & keys)
             required = int(sig.get("v_keys_required", 1))
             if matches < required:
-                _LOGGER.debug("detect_model: signature %s v_keys matched %d < %d", name, matches, required)
+                _LOGGER.debug(
+                    "detect_model: signature %s v_keys matched %d < %d",
+                    name,
+                    matches,
+                    required,
+                )
                 continue
             # If version constraints are present, require them to match as well.
             if not ver_match(sig):
-                _LOGGER.debug("detect_model: signature %s version constraints not satisfied (ver=%s)", name, ver)
+                _LOGGER.debug(
+                    "detect_model: signature %s version constraints not satisfied (ver=%s)",
+                    name,
+                    ver,
+                )
                 continue
             return _sig_to_result(sig, "v_keys")
 

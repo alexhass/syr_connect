@@ -85,7 +85,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         return False
 
-    _LOGGER.debug("Migrating config entry '%s' from version %d", entry.title, entry.version)
+    _LOGGER.debug(
+        "Migrating config entry '%s' from version %d", entry.title, entry.version
+    )
 
     # Delegate migration steps to helpers in migrations.py
     # Migrate v1 -> v2
@@ -95,13 +97,20 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if update_kwargs:
             # Mask sensitive fields for logging only;
             safe_update = _mask_sensitive_data(update_kwargs)
-            _LOGGER.debug("Applying v1->v2 migration for entry %s: %s", entry.entry_id, safe_update)
+            _LOGGER.debug(
+                "Applying v1->v2 migration for entry %s: %s",
+                entry.entry_id,
+                safe_update,
+            )
             hass.config_entries.async_update_entry(entry, **update_kwargs)
 
     # Migrate v2 -> v3
     # Integration version 1.21.0 -> 1.22.0
     if entry.version == 2:
-        _LOGGER.debug("Applying v2->v3 migration for entry %s: resetting getFLO unit override", entry.entry_id)
+        _LOGGER.debug(
+            "Applying v2->v3 migration for entry %s: resetting getFLO unit override",
+            entry.entry_id,
+        )
         v2_to_v3_fix_flo_unit(hass, entry)
         hass.config_entries.async_update_entry(entry, version=3)
 
@@ -111,7 +120,11 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_kwargs = v3_to_v4_add_service(entry)
         if update_kwargs:
             safe_update = _mask_sensitive_data(update_kwargs)
-            _LOGGER.debug("Applying v3->v4 migration for entry %s: %s", entry.entry_id, safe_update)
+            _LOGGER.debug(
+                "Applying v3->v4 migration for entry %s: %s",
+                entry.entry_id,
+                safe_update,
+            )
             hass.config_entries.async_update_entry(entry, **update_kwargs)
         else:
             hass.config_entries.async_update_entry(entry, version=4)
@@ -119,21 +132,30 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Migrate v4 -> v5
     # Integration version: sta entity moved from binary_sensor to sensor
     if entry.version == 4:
-        _LOGGER.debug("Applying v4->v5 migration for entry %s: removing stale sta binary_sensor", entry.entry_id)
+        _LOGGER.debug(
+            "Applying v4->v5 migration for entry %s: removing stale sta binary_sensor",
+            entry.entry_id,
+        )
         v4_to_v5_remove_sta_binary_sensor(hass, entry)
         hass.config_entries.async_update_entry(entry, version=5)
 
     # Migrate v5 -> v6
     # Integration version: getNPS native_unit_of_measurement changed from "" to "s"
     if entry.version == 5:
-        _LOGGER.debug("Applying v5->v6 migration for entry %s: resetting getNPS unit override", entry.entry_id)
+        _LOGGER.debug(
+            "Applying v5->v6 migration for entry %s: resetting getNPS unit override",
+            entry.entry_id,
+        )
         v5_to_v6_fix_nps_unit(hass, entry)
         hass.config_entries.async_update_entry(entry, version=6)
 
     # Migrate v6 -> v7
     # Integration version: unique_id scoped per config entry to avoid cross-hub collisions
     if entry.version == 6:
-        _LOGGER.debug("Applying v6->v7 migration for entry %s: scoping unique_ids by entry", entry.entry_id)
+        _LOGGER.debug(
+            "Applying v6->v7 migration for entry %s: scoping unique_ids by entry",
+            entry.entry_id,
+        )
         v6_to_v7_scope_unique_id_by_entry(hass, entry)
         hass.config_entries.async_update_entry(entry, version=7)
 
@@ -144,9 +166,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
     api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
     api_identifier = (
-        entry.data.get(CONF_HOST) if api_type == API_TYPE_JSON else entry.data.get(CONF_USERNAME, "unknown")
+        entry.data.get(CONF_HOST)
+        if api_type == API_TYPE_JSON
+        else entry.data.get(CONF_USERNAME, "unknown")
     )
-    _LOGGER.info("Setting up SYR Connect integration (%s API) for: %s", api_type.upper(), api_identifier)
+    _LOGGER.info(
+        "Setting up SYR Connect integration (%s API) for: %s",
+        api_type.upper(),
+        api_identifier,
+    )
 
     session = async_get_clientsession(hass)
 
@@ -229,7 +257,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def async_options_update_listener(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> None:
     """Handle options update (scan_interval changes)."""
     old_scan_interval = entry.runtime_data.update_interval.total_seconds()
     new_scan_interval = get_default_scan_interval_for_entry(entry)

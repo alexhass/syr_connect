@@ -41,17 +41,29 @@ SENSOR_KNOWN_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
-    "getFLO", "getVLV",
+    "getFLO",
+    "getVLV",
     # --- Alarm / Notification / Warning ---
-    "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
+    "getALA",
+    "getALM",
+    "getALN",
+    "getALW",
+    "getNOT",
+    "getWRN",
     # --- Pressure ---
-    "getBAR", "getBAR2",
+    "getBAR",
+    "getBAR2",
     # --- Voltage / Battery ---
-    "getBAP", "getBAT", "getNET",
+    "getBAP",
+    "getBAT",
+    "getNET",
     # --- Alarm Duration ---
     "getALD",
     # --- Water Quality ---
-    "getCND", "getIWH", "getOHW", "getWHU",
+    "getCND",
+    "getIWH",
+    "getOHW",
+    "getWHU",
     # --- Device Status ---
     "getDFM",
     # --- Filter ---
@@ -59,25 +71,62 @@ SENSOR_KNOWN_KEYS = {
     # --- Display ---
     "getSRO",
     # --- Device Info & Diagnostics ---
-    "getEGW", "getEIP", "getLNG", "getMAC1", "getMAC2", "getSRN", "getVER",
+    "getEGW",
+    "getEIP",
+    "getLNG",
+    "getMAC1",
+    "getMAC2",
+    "getSRN",
+    "getVER",
     # --- Wi-Fi ---
-    "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
+    "getAPT",
+    "getWFC",
+    "getWFR",
+    "getWFS",
+    "getWGW",
+    "getWIP",
     # --- Water treatment / Filling ---
-    "getCRS", "getCRT", "getLOT", "getLRC", "getPRC", "getRCC", "getRCD", "getRCN", "getRMN", "getRMT",
-    "getRVT", "getTPR",
+    "getCRS",
+    "getCRT",
+    "getLOT",
+    "getLRC",
+    "getPRC",
+    "getRCC",
+    "getRCD",
+    "getRCN",
+    "getRMN",
+    "getRMT",
+    "getRVT",
+    "getTPR",
     # --- Lock / Connection Centre ---
-    "getCFT", "getCFV", "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
+    "getCFT",
+    "getCFV",
+    "getLFT",
+    "getLFV",
+    "getNRT",
+    "getTRT",
+    "getTRV",
 }
 
 # getRTM, getPRF, getSV1-3, getRPD, getRMO deliberately excluded: this is a filling
 # controller with no regeneration/resin/salt containers and no leak-protection profiles.
 SELECT_KNOWN_KEYS = {
-    "getSRO", "getFFM",
-    "getCRS", "getCRT", "getLOT", "getOHW", "getRCD", "getRMN", "getRMT", "getRVT", "getTPR",
+    "getSRO",
+    "getFFM",
+    "getCRS",
+    "getCRT",
+    "getLOT",
+    "getOHW",
+    "getRCD",
+    "getRMN",
+    "getRMT",
+    "getRVT",
+    "getTPR",
 }
 
 SWITCH_KNOWN_KEYS = {
-    "getBUZ", "getDFI",
+    "getBUZ",
+    "getDFI",
 }
 
 BINARY_SENSOR_KNOWN_KEYS = {
@@ -87,11 +136,11 @@ BINARY_SENSOR_KNOWN_KEYS = {
 # setSIR (no regeneration) and setDEX (Trio DFR/LS microleakage test, not applicable
 # despite getDSV being present in the fixture) deliberately excluded.
 BUTTON_KNOWN_KEYS = {
-    "setALA", "setNOT", "setWRN",
+    "setALA",
+    "setNOT",
+    "setWRN",
 }
 
 # getAB (valve shutoff control) deliberately excluded on request; getVLV (read-only
 # valve position, handled by the sensor platform) is unaffected.
 VALVE_KNOWN_KEYS: set[str] = set()
-
-

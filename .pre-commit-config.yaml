@@ -1,8 +1,11 @@
 repos:
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: main
     hooks:
-      - id: ruff
+      - id: ruff-check
+        args:
+          - --fix
+      - id: ruff-format
   - repo: local
     hooks:
       - id: ruff-local
@@ -12,3 +15,10 @@ repos:
         additional_dependencies: ["ruff"]
         pass_filenames: false
         args: ["check", "."]
+      - id: ruff-format-local
+        name: ruff format (venv)
+        entry: ruff
+        language: python
+        additional_dependencies: ["ruff"]
+        pass_filenames: false
+        args: ["format", "--check", "."]

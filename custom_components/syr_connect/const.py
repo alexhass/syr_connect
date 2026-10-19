@@ -44,13 +44,23 @@ _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 # API URLs (internal)
 _SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"
-_SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
-_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
-_SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
-_SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = "WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+_SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL = (
+    "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+)
+_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = (
+    "WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
+)
+_SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = (
+    "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
+)
+_SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = (
+    "WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
+)
 
 # Encryption keys (from original adapter) - internal
-_SYR_CONNECT_CLIENT_ENCRYPTION_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
+_SYR_CONNECT_CLIENT_ENCRYPTION_KEY = (
+    "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
+)
 _SYR_CONNECT_CLIENT_ENCRYPTION_IV = "408a42beb8a1cefad990098584ed51a5"
 
 # Checksum keys - internal
@@ -60,7 +70,9 @@ _SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 # Device info - internal
 # CF = Core Foundation (iOS/macOS framework)
 # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
-_SYR_CONNECT_CLIENT_OS_LANGUAGE = "en-US"  # Default; the integration passes the HA locale instead
+_SYR_CONNECT_CLIENT_OS_LANGUAGE = (
+    "en-US"  # Default; the integration passes the HA locale instead
+)
 _SYR_CONNECT_CLIENT_OS_NAME = "iOS"
 _SYR_CONNECT_CLIENT_OS_VERSION = "27.0.0"
 _SYR_CONNECT_CLIENT_OS_MODEL = "iPhone"
@@ -160,7 +172,7 @@ _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM = {
     "00",
     "FF",
     "A0X0000",
-    "255"
+    "255",
 }
 
 # Alarm codes for SafeFloor devices (raw API getALA -> internal translation key)
@@ -293,7 +305,7 @@ _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC = {
 
 # Binary sensors mapping with their device classes - internal
 _SYR_CONNECT_SENSOR_BINARY = {
-    "getBUZ": BinarySensorDeviceClass.POWER,    # Buzzer on/off
+    "getBUZ": BinarySensorDeviceClass.POWER,  # Buzzer on/off
 }
 
 # Allowlist of known sensor keys.
@@ -302,432 +314,497 @@ _SYR_CONNECT_SENSOR_BINARY = {
 # a firmware update that is not listed here is silently ignored.
 _SYR_CONNECT_SENSOR_KNOWN_KEYS = {
     # --- Connectivity (virtual, always created) ---
-    "dst",      # Device connection state (0=never online, 1=offline, 2=online, 3=standby)
+    "dst",  # Device connection state (0=never online, 1=offline, 2=online, 3=standby)
     # --- Valve & Flow ---
-    "getAB",    # Valve shutoff state (open / closed)
-    "getAVO",   # Current instantaneous flow rate
-    "getFLO",   # Water flow rate (l/h)
-    "getVLV",   # Valve position (10=closed, 11=closing, 20=open, 21=opening)
+    "getAB",  # Valve shutoff state (open / closed)
+    "getAVO",  # Current instantaneous flow rate
+    "getFLO",  # Water flow rate (l/h)
+    "getVLV",  # Valve position (10=closed, 11=closing, 20=open, 21=opening)
     # --- Alarm / Notification / Warning ---
-    "getALA",   # Current alarm code
-    "getALM",   # List of last alarms (e.g. low salt level)
-    "getALN",   # List of last 8 notifications
-    "getALW",   # List of last 8 warnings
-    "getNOT",   # Current notification code
-    "getWRN",   # Current warning code
+    "getALA",  # Current alarm code
+    "getALM",  # List of last alarms (e.g. low salt level)
+    "getALN",  # List of last 8 notifications
+    "getALW",  # List of last 8 warnings
+    "getNOT",  # Current notification code
+    "getWRN",  # Current warning code
     # --- Pressure ---
-    "getBAR",   # Inlet pressure - mbar sensor (Safe-T+)
+    "getBAR",  # Inlet pressure - mbar sensor (Safe-T+)
     "getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
-    "getPRS",   # Inlet pressure - bar sensor (LEXplus10SL)
+    "getPRS",  # Inlet pressure - bar sensor (LEXplus10SL)
     # --- Voltage / Battery ---
-    "getBAP",   # Battery level (%)
-    "getBAT",   # Battery voltage (V) or battery level (%) - unit depends on device type
-    "getNET",   # Mains (AC) voltage (V)
+    "getBAP",  # Battery level (%)
+    "getBAT",  # Battery voltage (V) or battery level (%) - unit depends on device type
+    "getNET",  # Mains (AC) voltage (V)
     # --- Water Quality ---
-    "getCEL",   # Temperature (°C)
-    "getCFT",   # Current filling duration (s)
-    "getCND",   # Water conductivity (µS/cm)
-    "getCFV",   # Current filling volume (l)
-    "getHMD",   # Ambient humidity (%)
-    "getIWH",   # Incoming (raw) water hardness
-    "getOWH",   # Outgoing (softened) water hardness
-    "getWHU",   # Water hardness unit (°dH / °fH / ppm / mmol/l)
+    "getCEL",  # Temperature (°C)
+    "getCFT",  # Current filling duration (s)
+    "getCND",  # Water conductivity (µS/cm)
+    "getCFV",  # Current filling volume (l)
+    "getHMD",  # Ambient humidity (%)
+    "getIWH",  # Incoming (raw) water hardness
+    "getOWH",  # Outgoing (softened) water hardness
+    "getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
     # --- Water Consumption & Volume ---
-    "getCOF",   # Total water consumption counter (l)
-    "getLTV",   # Last dispensed (tapped) volume (l)
-    "getVOL",   # Total volume (m³)
+    "getCOF",  # Total water consumption counter (l)
+    "getLTV",  # Last dispensed (tapped) volume (l)
+    "getVOL",  # Total volume (m³)
     # --- Device Status ---
-    "getDEN",   # Device enabled flag
-    "getDFM",   # Device feature mode (device function type)
-    "getSTA",   # Device operating status
+    "getDEN",  # Device enabled flag
+    "getDFM",  # Device feature mode (device function type)
+    "getSTA",  # Device operating status
     # --- Resin Capacity ---
-    "getCS1",   # Remaining resin capacity - tank 1 (%)
-    "getCS2",   # Remaining resin capacity - tank 2 (%)
-    "getCS3",   # Remaining resin capacity - tank 3 (%)
+    "getCS1",  # Remaining resin capacity - tank 1 (%)
+    "getCS2",  # Remaining resin capacity - tank 2 (%)
+    "getCS3",  # Remaining resin capacity - tank 3 (%)
     # --- Salt ---
-    "getRDO",   # Salt dosing (g/l)
-    "getRE1",   # Reserve capacity - bottle 1 (l)
-    "getRE2",   # Reserve capacity - bottle 2 (l)
-    "getRES",   # Remaining softening capacity (l)
-    "getSS1",   # Salt supply - container 1 (weeks)
-    "getSS2",   # Salt supply - container 2 (weeks)
-    "getSS3",   # Salt supply - container 3 (weeks)
-    "getSV1",   # Salt amount - container 1 (kg)
-    "getSV2",   # Salt amount - container 2 (kg)
-    "getSV3",   # Salt amount - container 3 (kg)
+    "getRDO",  # Salt dosing (g/l)
+    "getRE1",  # Reserve capacity - bottle 1 (l)
+    "getRE2",  # Reserve capacity - bottle 2 (l)
+    "getRES",  # Remaining softening capacity (l)
+    "getSS1",  # Salt supply - container 1 (weeks)
+    "getSS2",  # Salt supply - container 2 (weeks)
+    "getSS3",  # Salt supply - container 3 (weeks)
+    "getSV1",  # Salt amount - container 1 (kg)
+    "getSV2",  # Salt amount - container 2 (kg)
+    "getSV3",  # Salt amount - container 3 (kg)
     # --- Regeneration ---
-    "getCYN",   # Regeneration cycle counter
-    "getCYT",   # Regeneration cycle time (remaining)
-    "getINR",   # Incomplete regeneration count
-    "getLAR",   # Timestamp of last regeneration
-    "getNOR",   # Regeneration count (normal operation)
-    "getRG1",   # Regeneration status (which tank is regenerating)
-    "getRG2",   # Regeneration running - tank 2 flag
-    "getRG3",   # Regeneration running - tank 3 flag
-    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
-    "getRPD",   # Regeneration interval (days)
-    "getRPW",   # Regeneration permitted weekdays (bitmask)
-    "getRTH",   # Regeneration scheduled hour
-    "getRTI",   # Total regeneration cycle duration
-    "getRTM",   # Regeneration time (combined HH:MM string)
-    "getSCR",   # Service regeneration cycle count
-    #"getSRE",   # Regeneration active flag - Disabled - Not clear what value 3/5 means.
-    "getTOR",   # Total regeneration count (all time)
+    "getCYN",  # Regeneration cycle counter
+    "getCYT",  # Regeneration cycle time (remaining)
+    "getINR",  # Incomplete regeneration count
+    "getLAR",  # Timestamp of last regeneration
+    "getNOR",  # Regeneration count (normal operation)
+    "getRG1",  # Regeneration status (which tank is regenerating)
+    "getRG2",  # Regeneration running - tank 2 flag
+    "getRG3",  # Regeneration running - tank 3 flag
+    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
+    "getRPD",  # Regeneration interval (days)
+    "getRPW",  # Regeneration permitted weekdays (bitmask)
+    "getRTH",  # Regeneration scheduled hour
+    "getRTI",  # Total regeneration cycle duration
+    "getRTM",  # Regeneration time (combined HH:MM string)
+    "getSCR",  # Service regeneration cycle count
+    # "getSRE",   # Regeneration active flag - Disabled - Not clear what value 3/5 means.
+    "getTOR",  # Total regeneration count (all time)
     # --- Self-Learning Phase (Trio DFR/LS) ---
-    "getSLE",   # Remaining time in active self-learning phase (s)
-    "getSLF",   # Flow rate during self-learning phase (l/h)
-    "getSLP",   # Duration of self-learning phase
-    "getSLT",   # Elapsed time in self-learning phase (s)
-    "getSLV",   # Volume accumulated in self-learning phase (l)
+    "getSLE",  # Remaining time in active self-learning phase (s)
+    "getSLF",  # Flow rate during self-learning phase (l/h)
+    "getSLP",  # Duration of self-learning phase
+    "getSLT",  # Elapsed time in self-learning phase (s)
+    "getSLV",  # Volume accumulated in self-learning phase (l)
     # --- Microleakage Test (Trio DFR/LS, SafeTech) ---
-    "getDBD",   # Microleakage test pressure drop
-    "getDMA",   # Microleakage alarm mode (1=Warning, 2=Alarm)
-    "getDRP",   # Microleakage test interval (daily / weekly / monthly)
-    "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
-    "getDTT",   # Microleakage test duration / time
-    "getNPS",   # No turbine pulses since (s)
+    "getDBD",  # Microleakage test pressure drop
+    "getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
+    "getDRP",  # Microleakage test interval (daily / weekly / monthly)
+    "getDSV",  # Microleakage test status (inactive / active / aborted / skipped)
+    "getDTT",  # Microleakage test duration / time
+    "getNPS",  # No turbine pulses since (s)
     # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
-    "getLE",    # Leak protection volume limit - present profile (l)
-    "getT1",    # Max. flow duration - present profile (h, 0.5 h steps)
-    "getT2",    # Max. flow duration - absent profile (h, 0.5 h steps)
-    "getTMP",   # Leak protection temporarily deactivated - remaining time (s)
-    "getUL",    # Leak protection volume limit - absent profile (l)
+    "getLE",  # Leak protection volume limit - present profile (l)
+    "getT1",  # Max. flow duration - present profile (h, 0.5 h steps)
+    "getT2",  # Max. flow duration - absent profile (h, 0.5 h steps)
+    "getTMP",  # Leak protection temporarily deactivated - remaining time (s)
+    "getUL",  # Leak protection volume limit - absent profile (l)
     # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
-    "getPA1",   # Profile 1 active flag (true/false)
-    "getPA2",   # Profile 2 active flag (true/false)
-    "getPA3",   # Profile 3 active flag (true/false)
-    "getPA4",   # Profile 4 active flag (true/false)
-    "getPA5",   # Profile 5 active flag (true/false)
-    "getPA6",   # Profile 6 active flag (true/false)
-    "getPA7",   # Profile 7 active flag (true/false)
-    "getPA8",   # Profile 8 active flag (true/false)
-    "getPB1",   # Profile 1 buzzer alert (true/false)
-    "getPB2",   # Profile 2 buzzer alert (true/false)
-    "getPB3",   # Profile 3 buzzer alert (true/false)
-    "getPB4",   # Profile 4 buzzer alert (true/false)
-    "getPB5",   # Profile 5 buzzer alert (true/false)
-    "getPB6",   # Profile 6 buzzer alert (true/false)
-    "getPB7",   # Profile 7 buzzer alert (true/false)
-    "getPB8",   # Profile 8 buzzer alert (true/false)
-    "getPF1",   # Profile 1 flow leak threshold (l/h)
-    "getPF2",   # Profile 2 flow leak threshold (l/h)
-    "getPF3",   # Profile 3 flow leak threshold (l/h)
-    "getPF4",   # Profile 4 flow leak threshold (l/h)
-    "getPF5",   # Profile 5 flow leak threshold (l/h)
-    "getPF6",   # Profile 6 flow leak threshold (l/h)
-    "getPF7",   # Profile 7 flow leak threshold (l/h)
-    "getPF8",   # Profile 8 flow leak threshold (l/h)
-    "getPM1",   # Profile 1 microleakage test enabled (true/false)
-    "getPM2",   # Profile 2 microleakage test enabled (true/false)
-    "getPM3",   # Profile 3 microleakage test enabled (true/false)
-    "getPM4",   # Profile 4 microleakage test enabled (true/false)
-    "getPM5",   # Profile 5 microleakage test enabled (true/false)
-    "getPM6",   # Profile 6 microleakage test enabled (true/false)
-    "getPM7",   # Profile 7 microleakage test enabled (true/false)
-    "getPM8",   # Profile 8 microleakage test enabled (true/false)
-    "getPN1",   # Profile 1 name
-    "getPN2",   # Profile 2 name
-    "getPN3",   # Profile 3 name
-    "getPN4",   # Profile 4 name
-    "getPN5",   # Profile 5 name
-    "getPN6",   # Profile 6 name
-    "getPN7",   # Profile 7 name
-    "getPN8",   # Profile 8 name
-    "getPR1",   # Profile 1 return time to present profile (h)
-    "getPR2",   # Profile 2 return time to present profile (h)
-    "getPR3",   # Profile 3 return time to present profile (h)
-    "getPR4",   # Profile 4 return time to present profile (h)
-    "getPR5",   # Profile 5 return time to present profile (h)
-    "getPR6",   # Profile 6 return time to present profile (h)
-    "getPR7",   # Profile 7 return time to present profile (h)
-    "getPR8",   # Profile 8 return time to present profile (h)
-    "getPT1",   # Profile 1 max. leak duration (min)
-    "getPT2",   # Profile 2 max. leak duration (min)
-    "getPT3",   # Profile 3 max. leak duration (min)
-    "getPT4",   # Profile 4 max. leak duration (min)
-    "getPT5",   # Profile 5 max. leak duration (min)
-    "getPT6",   # Profile 6 max. leak duration (min)
-    "getPT7",   # Profile 7 max. leak duration (min)
-    "getPT8",   # Profile 8 max. leak duration (min)
-    "getPV1",   # Profile 1 max. leak volume (l)
-    "getPV2",   # Profile 2 max. leak volume (l)
-    "getPV3",   # Profile 3 max. leak volume (l)
-    "getPV4",   # Profile 4 max. leak volume (l)
-    "getPV5",   # Profile 5 max. leak volume (l)
-    "getPV6",   # Profile 6 max. leak volume (l)
-    "getPV7",   # Profile 7 max. leak volume (l)
-    "getPV8",   # Profile 8 max. leak volume (l)
-    "getPW1",   # Profile 1 leak warning enabled (true/false)
-    "getPW2",   # Profile 2 leak warning enabled (true/false)
-    "getPW3",   # Profile 3 leak warning enabled (true/false)
-    "getPW4",   # Profile 4 leak warning enabled (true/false)
-    "getPW5",   # Profile 5 leak warning enabled (true/false)
-    "getPW6",   # Profile 6 leak warning enabled (true/false)
-    "getPW7",   # Profile 7 leak warning enabled (true/false)
-    "getPW8",   # Profile 8 leak warning enabled (true/false)
-    "getPRF",   # Currently active leak protection profile index
-    "getPST",   # Pressure sensor installed (1=not available, 2=available)
+    "getPA1",  # Profile 1 active flag (true/false)
+    "getPA2",  # Profile 2 active flag (true/false)
+    "getPA3",  # Profile 3 active flag (true/false)
+    "getPA4",  # Profile 4 active flag (true/false)
+    "getPA5",  # Profile 5 active flag (true/false)
+    "getPA6",  # Profile 6 active flag (true/false)
+    "getPA7",  # Profile 7 active flag (true/false)
+    "getPA8",  # Profile 8 active flag (true/false)
+    "getPB1",  # Profile 1 buzzer alert (true/false)
+    "getPB2",  # Profile 2 buzzer alert (true/false)
+    "getPB3",  # Profile 3 buzzer alert (true/false)
+    "getPB4",  # Profile 4 buzzer alert (true/false)
+    "getPB5",  # Profile 5 buzzer alert (true/false)
+    "getPB6",  # Profile 6 buzzer alert (true/false)
+    "getPB7",  # Profile 7 buzzer alert (true/false)
+    "getPB8",  # Profile 8 buzzer alert (true/false)
+    "getPF1",  # Profile 1 flow leak threshold (l/h)
+    "getPF2",  # Profile 2 flow leak threshold (l/h)
+    "getPF3",  # Profile 3 flow leak threshold (l/h)
+    "getPF4",  # Profile 4 flow leak threshold (l/h)
+    "getPF5",  # Profile 5 flow leak threshold (l/h)
+    "getPF6",  # Profile 6 flow leak threshold (l/h)
+    "getPF7",  # Profile 7 flow leak threshold (l/h)
+    "getPF8",  # Profile 8 flow leak threshold (l/h)
+    "getPM1",  # Profile 1 microleakage test enabled (true/false)
+    "getPM2",  # Profile 2 microleakage test enabled (true/false)
+    "getPM3",  # Profile 3 microleakage test enabled (true/false)
+    "getPM4",  # Profile 4 microleakage test enabled (true/false)
+    "getPM5",  # Profile 5 microleakage test enabled (true/false)
+    "getPM6",  # Profile 6 microleakage test enabled (true/false)
+    "getPM7",  # Profile 7 microleakage test enabled (true/false)
+    "getPM8",  # Profile 8 microleakage test enabled (true/false)
+    "getPN1",  # Profile 1 name
+    "getPN2",  # Profile 2 name
+    "getPN3",  # Profile 3 name
+    "getPN4",  # Profile 4 name
+    "getPN5",  # Profile 5 name
+    "getPN6",  # Profile 6 name
+    "getPN7",  # Profile 7 name
+    "getPN8",  # Profile 8 name
+    "getPR1",  # Profile 1 return time to present profile (h)
+    "getPR2",  # Profile 2 return time to present profile (h)
+    "getPR3",  # Profile 3 return time to present profile (h)
+    "getPR4",  # Profile 4 return time to present profile (h)
+    "getPR5",  # Profile 5 return time to present profile (h)
+    "getPR6",  # Profile 6 return time to present profile (h)
+    "getPR7",  # Profile 7 return time to present profile (h)
+    "getPR8",  # Profile 8 return time to present profile (h)
+    "getPT1",  # Profile 1 max. leak duration (min)
+    "getPT2",  # Profile 2 max. leak duration (min)
+    "getPT3",  # Profile 3 max. leak duration (min)
+    "getPT4",  # Profile 4 max. leak duration (min)
+    "getPT5",  # Profile 5 max. leak duration (min)
+    "getPT6",  # Profile 6 max. leak duration (min)
+    "getPT7",  # Profile 7 max. leak duration (min)
+    "getPT8",  # Profile 8 max. leak duration (min)
+    "getPV1",  # Profile 1 max. leak volume (l)
+    "getPV2",  # Profile 2 max. leak volume (l)
+    "getPV3",  # Profile 3 max. leak volume (l)
+    "getPV4",  # Profile 4 max. leak volume (l)
+    "getPV5",  # Profile 5 max. leak volume (l)
+    "getPV6",  # Profile 6 max. leak volume (l)
+    "getPV7",  # Profile 7 max. leak volume (l)
+    "getPV8",  # Profile 8 max. leak volume (l)
+    "getPW1",  # Profile 1 leak warning enabled (true/false)
+    "getPW2",  # Profile 2 leak warning enabled (true/false)
+    "getPW3",  # Profile 3 leak warning enabled (true/false)
+    "getPW4",  # Profile 4 leak warning enabled (true/false)
+    "getPW5",  # Profile 5 leak warning enabled (true/false)
+    "getPW6",  # Profile 6 leak warning enabled (true/false)
+    "getPW7",  # Profile 7 leak warning enabled (true/false)
+    "getPW8",  # Profile 8 leak warning enabled (true/false)
+    "getPRF",  # Currently active leak protection profile index
+    "getPST",  # Pressure sensor installed (1=not available, 2=available)
     # --- Filter (NeoSoft) ---
-    #"getFCD",   # Filter flush interval (Disabled Issue #23)
-    "getFCO",   # Iron content (ppm)
-    "getFFM",   # Filter type (backwash / replaceable / none)
+    # "getFCD",   # Filter flush interval (Disabled Issue #23)
+    "getFCO",  # Iron content (ppm)
+    "getFFM",  # Filter type (backwash / replaceable / none)
     # --- Alarm / Thresholds (SafeFloor) ---
-    "getALD",   # Duration of alarm (s)
-    "getMIH",   # Minimum humidity threshold (%)
-    "getMXH",   # Maximum humidity threshold (%)
-    "getMIT",   # Minimum temperature threshold (1/10 °C)
-    "getMXT",   # Maximum temperature threshold (1/10 °C)
+    "getALD",  # Duration of alarm (s)
+    "getMIH",  # Minimum humidity threshold (%)
+    "getMXH",  # Maximum humidity threshold (%)
+    "getMIT",  # Minimum temperature threshold (1/10 °C)
+    "getMXT",  # Maximum temperature threshold (1/10 °C)
     # --- Intervals ---
-    "getRCP",   # Synchronisation interval (s)
-    "getWMP",   # Measurement interval (s)
+    "getRCP",  # Synchronisation interval (s)
+    "getWMP",  # Measurement interval (s)
     # --- Maintenance ---
-    "getDWF",   # Expected daily water consumption (l)
-    "getSRH",   # Next semi-annual maintenance (timestamp)
-    "getSRV",   # Next annual maintenance (timestamp)
-    "getVS1",   # Volume threshold 1 (l)
-    "getVS2",   # Volume threshold 2 (l)
-    "getVS3",   # Volume threshold 3 (l)
+    "getDWF",  # Expected daily water consumption (l)
+    "getSRH",  # Next semi-annual maintenance (timestamp)
+    "getSRV",  # Next annual maintenance (timestamp)
+    "getVS1",  # Volume threshold 1 (l)
+    "getVS2",  # Volume threshold 2 (l)
+    "getVS3",  # Volume threshold 3 (l)
     # --- Automatic Backwash (RSA) ---
-    "getCOA",   # Counter of automatic backwashes
-    "getCOM",   # Counter of manual backwashes
-    "getRSA",   # Backwash interval (days)
-    "getRSD",   # Backwash duration (s)
-    "getRSE",   # Backwash reminder interval (days)
+    "getCOA",  # Counter of automatic backwashes
+    "getCOM",  # Counter of manual backwashes
+    "getRSA",  # Backwash interval (days)
+    "getRSD",  # Backwash duration (s)
+    "getRSE",  # Backwash reminder interval (days)
     # --- Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228) ---
-    "getLFT",   # Last refill duration (s)
-    "getLFV",   # Last refilled volume (l)
-    "getNMS",   # No valve movement since (s)
-    "getNMT",   # Time until valve self-test becomes active (days)
-    "getNPT",   # Time until alarm A8 "flow sensor fault" becomes active (days)
-    "getNRT",   # No refill since (s)
-    "getTRT",   # Cumulative refill time (s)
-    "getTRV",   # Cumulative refilled volume (l)
+    "getLFT",  # Last refill duration (s)
+    "getLFV",  # Last refilled volume (l)
+    "getNMS",  # No valve movement since (s)
+    "getNMT",  # Time until valve self-test becomes active (days)
+    "getNPT",  # Time until alarm A8 "flow sensor fault" becomes active (days)
+    "getNRT",  # No refill since (s)
+    "getTRT",  # Cumulative refill time (s)
+    "getTRV",  # Cumulative refilled volume (l)
     # --- Display ---
-    "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+    "getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
     # --- Device Info & Diagnostics ---
-    "getCDE",   # Configuration code
-    "getCNA",   # Device name
-    "getDGW",   # Gateway IP address
-    "getEGW",   # Ethernet (LAN) gateway
-    "getEIP",   # Ethernet (LAN) IP address
-    "getFIR",   # Firmware model identifier
-    "getIPA",   # IP address
-    "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
-    "getLNG",   # Device language (0=Deutsch, 1=English) - other models
-    "getMAC",   # MAC address
+    "getCDE",  # Configuration code
+    "getCNA",  # Device name
+    "getDGW",  # Gateway IP address
+    "getEGW",  # Ethernet (LAN) gateway
+    "getEIP",  # Ethernet (LAN) IP address
+    "getFIR",  # Firmware model identifier
+    "getIPA",  # IP address
+    "getLAN",  # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+    "getLNG",  # Device language (0=Deutsch, 1=English) - other models
+    "getMAC",  # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
-    "getMAN",   # Manufacturer name
-    "getSRN",   # Device serial number
-    "getTYP",   # Device type code
-    "getVER",   # Firmware version string
+    "getMAN",  # Manufacturer name
+    "getSRN",  # Device serial number
+    "getTYP",  # Device type code
+    "getVER",  # Firmware version string
     # --- Turbine / Pulse Monitoring (NeoSoft) ---
     "getVPS1",  # No turbine pulses on control head 1 since (s)
     "getVPS2",  # No turbine pulses on control head 2 since (s)
     # --- Wi-Fi ---
-    "getAPT",   # Access point timeout (s)
-    "getWFC",   # Wi-Fi SSID
-    "getWFL",   # Nearby Wi-Fi networks with signal strength
-    "getWFR",   # Wi-Fi signal strength (%)
-    "getWFS",   # Wi-Fi connection status (not connected / connecting / connected)
-    "getWGW",   # Wi-Fi gateway
-    "getWIP",   # Wi-Fi IP address
+    "getAPT",  # Access point timeout (s)
+    "getWFC",  # Wi-Fi SSID
+    "getWFL",  # Nearby Wi-Fi networks with signal strength
+    "getWFR",  # Wi-Fi signal strength (%)
+    "getWFS",  # Wi-Fi connection status (not connected / connecting / connected)
+    "getWGW",  # Wi-Fi gateway
+    "getWIP",  # Wi-Fi IP address
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
-    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Maximum output conductivity (raw x10 µS/cm)
-    "getLRC",   # Liter(s) remaining softening capacity
-    "getOHW",   # Soft water hardness (°dH)
-    "getPRC",   # Percent remaining softening capacity
-    "getRCC",   # Number of filling cycles in the current period (AC 3200, AC 3228)
-    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRCN",   # Counter of all refills (AC 3200, AC 3228)
-    "getRMN",   # Filling processes count
-    "getRMT",   # Maximum filling duration (min)
-    "getRVT",   # Maximum filling charges
-    "getTPR",   # Target pressure (1/10 bar)
+    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",  # Maximum output conductivity (raw x10 µS/cm)
+    "getLRC",  # Liter(s) remaining softening capacity
+    "getOHW",  # Soft water hardness (°dH)
+    "getPRC",  # Percent remaining softening capacity
+    "getRCC",  # Number of filling cycles in the current period (AC 3200, AC 3228)
+    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRCN",  # Counter of all refills (AC 3200, AC 3228)
+    "getRMN",  # Filling processes count
+    "getRMT",  # Maximum filling duration (min)
+    "getRVT",  # Maximum filling charges
+    "getTPR",  # Target pressure (1/10 bar)
 }
 
 # Configuration sensors - settings users do not need for daily use
 _SYR_CONNECT_SENSOR_CONFIG = {
-    "getBUZ",   # Buzzer on/off - also represented as switch entity
-    "getRPD",   # Regeneration interval - also represented as select entity
-    "getRMO",   # Regeneration mode - also represented as select entity
-    "getRTM",   # Regeneration time (minutes or combined) - represented as select entity
-    "getSRO",   # Display rotation - also represented as select entity
-    "getSV1", "getSV2", "getSV3",  # Salt amount (kg) - also represented as select entity
-    "getFCD",   # Filter change
-    "getFFM",   # Filter fouling level
+    "getBUZ",  # Buzzer on/off - also represented as switch entity
+    "getRPD",  # Regeneration interval - also represented as select entity
+    "getRMO",  # Regeneration mode - also represented as select entity
+    "getRTM",  # Regeneration time (minutes or combined) - represented as select entity
+    "getSRO",  # Display rotation - also represented as select entity
+    "getSV1",
+    "getSV2",
+    "getSV3",  # Salt amount (kg) - also represented as select entity
+    "getFCD",  # Filter change
+    "getFFM",  # Filter fouling level
     # --- Water treatment / Filling (Conel Clear Pro Fill) - also represented as select entity ---
-    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
-    "getOHW",   # Soft water hardness (°dH) - only when getCRT is HWE
-    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRMN",   # Filling processes count
-    "getRMT",   # Maximum filling duration (min)
-    "getRVT",   # Maximum filling charges
-    "getTPR",   # Target pressure (1/10 bar)
-    "getDFI",   # Filling mode enabled flag - also represented as switch entity
+    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",  # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getOHW",  # Soft water hardness (°dH) - only when getCRT is HWE
+    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",  # Filling processes count
+    "getRMT",  # Maximum filling duration (min)
+    "getRVT",  # Maximum filling charges
+    "getTPR",  # Target pressure (1/10 bar)
+    "getDFI",  # Filling mode enabled flag - also represented as switch entity
     # --- Automatic Backwash (RSA) - also represented as switch entity ---
-    "getSSA",   # Automatic backwash enabled flag
-    "getSSE",   # Backwash reminder enabled flag
+    "getSSA",  # Automatic backwash enabled flag
+    "getSSE",  # Backwash reminder enabled flag
     # --- Water hardness (plain LEX family only) - also represented as select entity ---
-    "getIWH",   # Raw water hardness (1-100)
-    "getOWH",   # Outlet (soft) water hardness (0-100)
+    "getIWH",  # Raw water hardness (1-100)
+    "getOWH",  # Outlet (soft) water hardness (0-100)
     # --- SafeFloor Thresholds / Intervals - also represented as select entity ---
-    "getALD",   # Duration of alarm (s)
-    "getMIH",   # Minimum humidity threshold (%)
-    "getMXH",   # Maximum humidity threshold (%)
-    "getMIT",   # Minimum temperature threshold (1/10 °C)
-    "getMXT",   # Maximum temperature threshold (1/10 °C)
-    "getRCP",   # Synchronisation interval (s)
-    "getWMP",   # Measurement interval (s)
+    "getALD",  # Duration of alarm (s)
+    "getMIH",  # Minimum humidity threshold (%)
+    "getMXH",  # Maximum humidity threshold (%)
+    "getMIT",  # Minimum temperature threshold (1/10 °C)
+    "getMXT",  # Maximum temperature threshold (1/10 °C)
+    "getRCP",  # Synchronisation interval (s)
+    "getWMP",  # Measurement interval (s)
 }
 
 # Diagnostic sensors (configuration, technical info, firmware) - internal
 _SYR_CONNECT_SENSOR_DIAGNOSTIC = {
     # --- Connectivity ---
-    "dst",      # Device connection state
+    "dst",  # Device connection state
     # --- Device Info ---
-    "getCNA",   # Device name
-    "getDFM",   # Device feature mode (device function type)
-    "getFIR",   # Firmware model identifier
-    "getLAN",   # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
-    "getLNG",   # Device language (0=Deutsch, 1=English) - other models
-    "getMAC",   # MAC address
+    "getCNA",  # Device name
+    "getDFM",  # Device feature mode (device function type)
+    "getFIR",  # Firmware model identifier
+    "getLAN",  # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+    "getLNG",  # Device language (0=Deutsch, 1=English) - other models
+    "getMAC",  # MAC address
     "getMAC1",  # Wi-Fi MAC address
     "getMAC2",  # LAN MAC address
-    "getMAN",   # Manufacturer name
-    "getSRN",   # Device serial number
-    "getTYP",   # Device type code
-    "getVER",   # Firmware version string
+    "getMAN",  # Manufacturer name
+    "getSRN",  # Device serial number
+    "getTYP",  # Device type code
+    "getVER",  # Firmware version string
     # --- Network ---
-    "getAPT",   # Access point timeout (s)
-    "getDGW",   # Cloud gateway address
-    "getEGW",   # Ethernet (LAN) gateway
-    "getEIP",   # Ethernet (LAN) IP address
-    "getIPA",   # IP address
+    "getAPT",  # Access point timeout (s)
+    "getDGW",  # Cloud gateway address
+    "getEGW",  # Ethernet (LAN) gateway
+    "getEIP",  # Ethernet (LAN) IP address
+    "getIPA",  # IP address
     "getVPS1",  # No turbine pulses on control head 1 since (s)
     "getVPS2",  # No turbine pulses on control head 2 since (s)
-    "getWFC",   # Wi-Fi SSID
-    "getWFL",   # Nearby Wi-Fi networks with signal strength
-    "getWFR",   # Wi-Fi signal strength (%)
-    "getWFS",   # Wi-Fi connection status (not connected / connecting / connected)
-    "getWGW",   # Wi-Fi gateway
-    "getWIP",   # Wi-Fi IP address
+    "getWFC",  # Wi-Fi SSID
+    "getWFL",  # Nearby Wi-Fi networks with signal strength
+    "getWFR",  # Wi-Fi signal strength (%)
+    "getWFS",  # Wi-Fi connection status (not connected / connecting / connected)
+    "getWGW",  # Wi-Fi gateway
+    "getWIP",  # Wi-Fi IP address
     # --- Alarm / Notification / Warning ---
-    "getALM",   # List of last alarms
-    "getALN",   # List of last 8 notifications
-    "getALW",   # List of last 8 warnings
+    "getALM",  # List of last alarms
+    "getALN",  # List of last 8 notifications
+    "getALW",  # List of last 8 warnings
     # --- Water Quality ---
-    "getCND",   # Water conductivity (µS/cm)
-    "getIWH",   # Incoming (raw) water hardness
-    "getOWH",   # Outgoing (softened) water hardness
-    "getWHU",   # Water hardness unit (°dH / °fH / ppm / mmol/l)
+    "getCND",  # Water conductivity (µS/cm)
+    "getIWH",  # Incoming (raw) water hardness
+    "getOWH",  # Outgoing (softened) water hardness
+    "getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
     # --- Device Status ---
-    "getBUZ",   # Buzzer on/off
-    "getDEN",   # Device enabled flag
+    "getBUZ",  # Buzzer on/off
+    "getDEN",  # Device enabled flag
     # --- Salt ---
-    "getRDO",   # Salt dosing (g/l)
+    "getRDO",  # Salt dosing (g/l)
     # --- Regeneration Settings ---
-    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
-    "getRPD",   # Regeneration interval (days)
-    "getRPW",   # Regeneration permitted weekdays (bitmask)
-    "getRTM",   # Regeneration time (combined HH:MM string)
-    "getSRE",   # Regeneration active flag
+    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
+    "getRPD",  # Regeneration interval (days)
+    "getRPW",  # Regeneration permitted weekdays (bitmask)
+    "getRTM",  # Regeneration time (combined HH:MM string)
+    "getSRE",  # Regeneration active flag
     # --- Regeneration Counters / Technical ---
-    "getCYN",   # Regeneration cycle counter
-    "getCYT",   # Regeneration cycle time (remaining)
-    "getINR",   # Incomplete regeneration count
-    "getLAR",   # Timestamp of last regeneration
-    "getNOR",   # Regeneration count (normal operation)
-    "getRG1",   # Regeneration status (which tank is regenerating)
-    "getRG2",   # Regeneration running - tank 2 flag
-    "getRG3",   # Regeneration running - tank 3 flag
-    "getRTH",   # Regeneration scheduled hour
-    "getRTI",   # Total regeneration cycle duration
-    "getSCR",   # Service regeneration cycle count
-    "getSRH",   # Next semi-annual maintenance (timestamp)
-    "getSRV",   # Next annual maintenance (timestamp)
-    "getTOR",   # Total regeneration count (all time)
+    "getCYN",  # Regeneration cycle counter
+    "getCYT",  # Regeneration cycle time (remaining)
+    "getINR",  # Incomplete regeneration count
+    "getLAR",  # Timestamp of last regeneration
+    "getNOR",  # Regeneration count (normal operation)
+    "getRG1",  # Regeneration status (which tank is regenerating)
+    "getRG2",  # Regeneration running - tank 2 flag
+    "getRG3",  # Regeneration running - tank 3 flag
+    "getRTH",  # Regeneration scheduled hour
+    "getRTI",  # Total regeneration cycle duration
+    "getSCR",  # Service regeneration cycle count
+    "getSRH",  # Next semi-annual maintenance (timestamp)
+    "getSRV",  # Next annual maintenance (timestamp)
+    "getTOR",  # Total regeneration count (all time)
     # --- Self-Learning Phase (Trio DFR/LS) ---
-    "getSLE",   # Remaining time in active self-learning phase (s)
-    "getSLF",   # Flow rate during self-learning phase (l/h)
-    "getSLP",   # Duration of self-learning phase
-    "getSLT",   # Elapsed time in self-learning phase (s)
-    "getSLV",   # Volume accumulated in self-learning phase (l)
+    "getSLE",  # Remaining time in active self-learning phase (s)
+    "getSLF",  # Flow rate during self-learning phase (l/h)
+    "getSLP",  # Duration of self-learning phase
+    "getSLT",  # Elapsed time in self-learning phase (s)
+    "getSLV",  # Volume accumulated in self-learning phase (l)
     # --- Microleakage Technical ---
-    "getDBD",   # Microleakage test pressure drop
-    "getDMA",   # Microleakage alarm mode (1=Warning, 2=Alarm)
-    "getDRP",   # Microleakage test interval (daily / weekly / monthly)
-    "getDSV",   # Microleakage test status (inactive / active / aborted / skipped)
-    "getDTT",   # Microleakage test duration / time
-    "getNPS",   # No turbine pulses since (s)
+    "getDBD",  # Microleakage test pressure drop
+    "getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
+    "getDRP",  # Microleakage test interval (daily / weekly / monthly)
+    "getDSV",  # Microleakage test status (inactive / active / aborted / skipped)
+    "getDTT",  # Microleakage test duration / time
+    "getNPS",  # No turbine pulses since (s)
     # --- Leak Protection Settings ---
-    "getLE",    # Leak protection volume limit - present profile (l)
-    "getPST",   # Pressure sensor installed (1=not available, 2=available)
-    "getT1",    # Max. flow duration - present profile (h)
-    "getT2",    # Max. flow duration - absent profile (h)
-    "getTMP",   # Leak protection temporarily deactivated - remaining time (s)
-    "getUL",    # Leak protection volume limit - absent profile (l)
+    "getLE",  # Leak protection volume limit - present profile (l)
+    "getPST",  # Pressure sensor installed (1=not available, 2=available)
+    "getT1",  # Max. flow duration - present profile (h)
+    "getT2",  # Max. flow duration - absent profile (h)
+    "getTMP",  # Leak protection temporarily deactivated - remaining time (s)
+    "getUL",  # Leak protection volume limit - absent profile (l)
     # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
-    "getPA1", "getPA2", "getPA3", "getPA4", "getPA5", "getPA6", "getPA7", "getPA8",
-    "getPB1", "getPB2", "getPB3", "getPB4", "getPB5", "getPB6", "getPB7", "getPB8",
-    "getPF1", "getPF2", "getPF3", "getPF4", "getPF5", "getPF6", "getPF7", "getPF8",
-    "getPM1", "getPM2", "getPM3", "getPM4", "getPM5", "getPM6", "getPM7", "getPM8",
-    "getPN1", "getPN2", "getPN3", "getPN4", "getPN5", "getPN6", "getPN7", "getPN8",
-    "getPR1", "getPR2", "getPR3", "getPR4", "getPR5", "getPR6", "getPR7", "getPR8",
-    "getPT1", "getPT2", "getPT3", "getPT4", "getPT5", "getPT6", "getPT7", "getPT8",
-    "getPV1", "getPV2", "getPV3", "getPV4", "getPV5", "getPV6", "getPV7", "getPV8",
-    "getPW1", "getPW2", "getPW3", "getPW4", "getPW5", "getPW6", "getPW7", "getPW8",
+    "getPA1",
+    "getPA2",
+    "getPA3",
+    "getPA4",
+    "getPA5",
+    "getPA6",
+    "getPA7",
+    "getPA8",
+    "getPB1",
+    "getPB2",
+    "getPB3",
+    "getPB4",
+    "getPB5",
+    "getPB6",
+    "getPB7",
+    "getPB8",
+    "getPF1",
+    "getPF2",
+    "getPF3",
+    "getPF4",
+    "getPF5",
+    "getPF6",
+    "getPF7",
+    "getPF8",
+    "getPM1",
+    "getPM2",
+    "getPM3",
+    "getPM4",
+    "getPM5",
+    "getPM6",
+    "getPM7",
+    "getPM8",
+    "getPN1",
+    "getPN2",
+    "getPN3",
+    "getPN4",
+    "getPN5",
+    "getPN6",
+    "getPN7",
+    "getPN8",
+    "getPR1",
+    "getPR2",
+    "getPR3",
+    "getPR4",
+    "getPR5",
+    "getPR6",
+    "getPR7",
+    "getPR8",
+    "getPT1",
+    "getPT2",
+    "getPT3",
+    "getPT4",
+    "getPT5",
+    "getPT6",
+    "getPT7",
+    "getPT8",
+    "getPV1",
+    "getPV2",
+    "getPV3",
+    "getPV4",
+    "getPV5",
+    "getPV6",
+    "getPV7",
+    "getPV8",
+    "getPW1",
+    "getPW2",
+    "getPW3",
+    "getPW4",
+    "getPW5",
+    "getPW6",
+    "getPW7",
+    "getPW8",
     # --- Filter (NeoSoft) ---
-    "getFCD",   # Filter flush interval
-    "getFCO",   # Iron content (ppm)
-    "getFFM",   # Filter type (backwash / replaceable / none)
+    "getFCD",  # Filter flush interval
+    "getFCO",  # Iron content (ppm)
+    "getFFM",  # Filter type (backwash / replaceable / none)
     # --- SafeFloor Thresholds ---
-    "getALD",   # Duration of alarm (s)
-    "getMIH",   # Minimum humidity threshold (%)
-    "getMIT",   # Minimum temperature threshold (1/10 °C)
-    "getMXH",   # Maximum humidity threshold (%)
-    "getMXT",   # Maximum temperature threshold (1/10 °C)
+    "getALD",  # Duration of alarm (s)
+    "getMIH",  # Minimum humidity threshold (%)
+    "getMIT",  # Minimum temperature threshold (1/10 °C)
+    "getMXH",  # Maximum humidity threshold (%)
+    "getMXT",  # Maximum temperature threshold (1/10 °C)
     # --- System Settings ---
-    "getDWF",   # Expected daily water consumption (l)
-    "getRCP",   # Synchronisation interval (s)
-    "getSRO",   # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
-    "getVS1",   # Volume threshold 1 (l)
-    "getVS2",   # Volume threshold 2 (l)
-    "getVS3",   # Volume threshold 3 (l)
-    "getWMP",   # Measurement interval (s)
+    "getDWF",  # Expected daily water consumption (l)
+    "getRCP",  # Synchronisation interval (s)
+    "getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+    "getVS1",  # Volume threshold 1 (l)
+    "getVS2",  # Volume threshold 2 (l)
+    "getVS3",  # Volume threshold 3 (l)
+    "getWMP",  # Measurement interval (s)
     # --- Automatic Backwash (RSA) ---
-    "getCOA",   # Counter of automatic backwashes
-    "getCOM",   # Counter of manual backwashes
-    "getRSA",   # Backwash interval (days)
-    "getRSD",   # Backwash duration (s)
-    "getRSE",   # Backwash reminder interval (days)
+    "getCOA",  # Counter of automatic backwashes
+    "getCOM",  # Counter of manual backwashes
+    "getRSA",  # Backwash interval (days)
+    "getRSD",  # Backwash duration (s)
+    "getRSE",  # Backwash reminder interval (days)
     # --- Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228) ---
-    "getLFT",   # Last refill duration (s)
-    "getLFV",   # Last refilled volume (l)
-    "getNMS",   # No valve movement since (s)
-    "getNMT",   # Time until valve self-test becomes active (days)
-    "getNPT",   # Time until alarm A8 "flow sensor fault" becomes active (days)
-    "getNRT",   # No refill since (s)
-    "getTRT",   # Cumulative refill time (s)
-    "getTRV",   # Cumulative refilled volume (l)
+    "getLFT",  # Last refill duration (s)
+    "getLFV",  # Last refilled volume (l)
+    "getNMS",  # No valve movement since (s)
+    "getNMT",  # Time until valve self-test becomes active (days)
+    "getNPT",  # Time until alarm A8 "flow sensor fault" becomes active (days)
+    "getNRT",  # No refill since (s)
+    "getTRT",  # Cumulative refill time (s)
+    "getTRV",  # Cumulative refilled volume (l)
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
-    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Maximum output conductivity (raw x10 µS/cm)
-    "getLRC",   # Liter(s) remaining softening capacity
-    "getOHW",   # Soft water hardness (°dH)
-    "getPRC",   # Percent remaining softening capacity
-    "getRCC",   # Number of filling cycles in the current period (AC 3200, AC 3228)
-    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRCN",   # Counter of all refills (AC 3200, AC 3228)
-    "getRMN",   # Filling processes count
-    "getRMT",   # Maximum filling duration (min)
-    "getRVT",   # Maximum filling charges
-    "getTPR",   # Target pressure (1/10 bar)
+    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",  # Maximum output conductivity (raw x10 µS/cm)
+    "getLRC",  # Liter(s) remaining softening capacity
+    "getOHW",  # Soft water hardness (°dH)
+    "getPRC",  # Percent remaining softening capacity
+    "getRCC",  # Number of filling cycles in the current period (AC 3200, AC 3228)
+    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRCN",  # Counter of all refills (AC 3200, AC 3228)
+    "getRMN",  # Filling processes count
+    "getRMT",  # Maximum filling duration (min)
+    "getRVT",  # Maximum filling charges
+    "getTPR",  # Target pressure (1/10 bar)
 }
 
 # Sensors that are disabled by default (less frequently used) - internal
@@ -735,55 +812,94 @@ _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
     # Sensors exits in devices:
     # - LEXplus10S
     # - LEXplus10SL
-
-    "getCYN",   # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
-    "getCYT",   # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
-    "getDWF",   # Flow Warning Value - advanced setting
-    "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
-    "getLNG",   # Device language (0=Deutsch, 1=English)
-    "getNOT",   # Retrieving the current notification
-    "getSRE",   # Regeneration active
-    "getDFM",   # Device feature mode - diagnostic/informational
-    "getTYP",   # Device type code
-    "getRG2", "getRG3",  # Regeneration running for tank
-    "getRPD",   # Regeneration interval (days)
-    "getRPW",   # Regeneration permitted weekdays as bit mask
-    "getPST",   # Pressure sensor installed: 1 = not available, 2 = available
-    "getVS1", "getVS2", "getVS3",  # Volume thresholds - advanced config
-    "getSS2", "getSS3",  # Salt storage (weeks) in containers 2/3 - not present on all devices
-    "getSV2", "getSV3",  # Salt amount (kg) in containers 2/3 - not present on all devices
-    "getWHU",   # Water hardness unit
-
+    "getCYN",  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
+    "getCYT",  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
+    "getDWF",  # Flow Warning Value - advanced setting
+    "getLAN",  # Device language (0=English, 1=German, 3=Spanish)
+    "getLNG",  # Device language (0=Deutsch, 1=English)
+    "getNOT",  # Retrieving the current notification
+    "getSRE",  # Regeneration active
+    "getDFM",  # Device feature mode - diagnostic/informational
+    "getTYP",  # Device type code
+    "getRG2",
+    "getRG3",  # Regeneration running for tank
+    "getRPD",  # Regeneration interval (days)
+    "getRPW",  # Regeneration permitted weekdays as bit mask
+    "getPST",  # Pressure sensor installed: 1 = not available, 2 = available
+    "getVS1",
+    "getVS2",
+    "getVS3",  # Volume thresholds - advanced config
+    "getSS2",
+    "getSS3",  # Salt storage (weeks) in containers 2/3 - not present on all devices
+    "getSV2",
+    "getSV3",  # Salt amount (kg) in containers 2/3 - not present on all devices
+    "getWHU",  # Water hardness unit
     # Sensors exits in devices:
     # - LEXplus10SL
-
     # Leak protection profiles (expert setting)
-    "getPA1", "getPA2", "getPA3", "getPA4", "getPA5", "getPA6", "getPA7", "getPA8",
-    "getPF1", "getPF2", "getPF3", "getPF4", "getPF5", "getPF6", "getPF7", "getPF8",
-    "getPT1", "getPT2", "getPT3", "getPT4", "getPT5", "getPT6", "getPT7", "getPT8",
-    "getPV1", "getPV2", "getPV3", "getPV4", "getPV5", "getPV6", "getPV7", "getPV8",
-    "getPN1", "getPN2", "getPN3", "getPN4", "getPN5", "getPN6", "getPN7", "getPN8",
-    "getPRN",   # Duplicate of getPRF
-    "getPW1", "getPW2", "getPW3", "getPW4", "getPW5", "getPW6", "getPW7", "getPW8",
-
+    "getPA1",
+    "getPA2",
+    "getPA3",
+    "getPA4",
+    "getPA5",
+    "getPA6",
+    "getPA7",
+    "getPA8",
+    "getPF1",
+    "getPF2",
+    "getPF3",
+    "getPF4",
+    "getPF5",
+    "getPF6",
+    "getPF7",
+    "getPF8",
+    "getPT1",
+    "getPT2",
+    "getPT3",
+    "getPT4",
+    "getPT5",
+    "getPT6",
+    "getPT7",
+    "getPT8",
+    "getPV1",
+    "getPV2",
+    "getPV3",
+    "getPV4",
+    "getPV5",
+    "getPV6",
+    "getPV7",
+    "getPV8",
+    "getPN1",
+    "getPN2",
+    "getPN3",
+    "getPN4",
+    "getPN5",
+    "getPN6",
+    "getPN7",
+    "getPN8",
+    "getPRN",  # Duplicate of getPRF
+    "getPW1",
+    "getPW2",
+    "getPW3",
+    "getPW4",
+    "getPW5",
+    "getPW6",
+    "getPW7",
+    "getPW8",
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000
-
     "getVPS1",  # No turbine pulses on control head 1 since (s) - technical metric for flow measurement, not useful for most users
     "getVPS2",  # No turbine pulses on control head 2 since (s) - technical metric for flow measurement, not useful for most users
-
     # Sensors exits in devices:
     # - NeoSoft 2500 / 5000 / Trio DFR/LS
-
-    "getALN",   # List of last 8 notifications
-    "getALM",   # List of last 8 alarms
-    "getALW",   # List of last 8 warnings
-
+    "getALN",  # List of last 8 notifications
+    "getALM",  # List of last 8 alarms
+    "getALW",  # List of last 8 warnings
     # Sensors exits in devices:
     # - SafeTech+
     # - Sanibel Leak Protection Module A25
-    "getDBD",   # Microleakage test pressure drop (tenths of bar)
-    "getSRO",   # Display rotation (in degrees, e.g 270=270°) - only relevant for devices with display
+    "getDBD",  # Microleakage test pressure drop (tenths of bar)
+    "getSRO",  # Display rotation (in degrees, e.g 270=270°) - only relevant for devices with display
 }
 
 # Sensor device classes (for Home Assistant) - internal
@@ -808,58 +924,58 @@ _SYR_CONNECT_SENSOR_DEVICE_CLASS = {
 
 # Known keys for the select platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_SELECT_KNOWN_KEYS = {
-    "getRTM",   # Regeneration time (HH:MM combined or minutes)
-    "getPRF",   # Active leak-protection profile
-    "getSRO",   # Display rotation (0 / 90 / 180 / 270 °)
-    #"getFCD",   # Filter backwash interval
-    "getSV1",   # Salt amount container 1
-    "getSV2",   # Salt amount container 2
-    "getSV3",   # Salt amount container 3
-    "getRPD",   # Regeneration interval (days)
-    "getFFM",   # Filter type (1..3)
-    "getRMO",   # Regeneration mode (Standard / ECO / Power / Automatic)
+    "getRTM",  # Regeneration time (HH:MM combined or minutes)
+    "getPRF",  # Active leak-protection profile
+    "getSRO",  # Display rotation (0 / 90 / 180 / 270 °)
+    # "getFCD",   # Filter backwash interval
+    "getSV1",  # Salt amount container 1
+    "getSV2",  # Salt amount container 2
+    "getSV3",  # Salt amount container 3
+    "getRPD",  # Regeneration interval (days)
+    "getFFM",  # Filter type (1..3)
+    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
-    "getCRS",   # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",   # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",   # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
-    "getOHW",   # Soft water hardness (°dH) - only when getCRT is HWE
-    "getRCD",   # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRMN",   # Filling processes count
-    "getRMT",   # Maximum filling duration (min)
-    "getRVT",   # Maximum filling charges
-    "getTPR",   # Target pressure (1/10 bar)
+    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",  # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getOHW",  # Soft water hardness (°dH) - only when getCRT is HWE
+    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",  # Filling processes count
+    "getRMT",  # Maximum filling duration (min)
+    "getRVT",  # Maximum filling charges
+    "getTPR",  # Target pressure (1/10 bar)
 }
 
 # Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
-    "getBUZ",   # Buzzer on/off
+    "getBUZ",  # Buzzer on/off
 }
 
 # Known keys for the valve platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_VALVE_KNOWN_KEYS = {
-    "getAB",    # Valve shutoff control / state
+    "getAB",  # Valve shutoff control / state
 }
 
 # Known keys for the switch platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_SWITCH_KNOWN_KEYS = {
-    "getBUZ",   # Buzzer on/off
-    "getDFI",   # Filling mode enabled flag (Conel Clear Pro Fill)
-    "getSSA",   # Automatic backwash enabled flag (RSA)
-    "getSSE",   # Backwash reminder enabled flag (RSA)
+    "getBUZ",  # Buzzer on/off
+    "getDFI",  # Filling mode enabled flag (Conel Clear Pro Fill)
+    "getSSA",  # Automatic backwash enabled flag (RSA)
+    "getSSE",  # Backwash reminder enabled flag (RSA)
 }
 
 # Known keys for the button platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BUTTON_KNOWN_KEYS = {
-    "setSIR",   # Trigger manual regeneration
-    "setALA",   # Reset alarm
-    "setDEX",   # Start microleakage test
-    "setNOT",   # Reset notification
-    "setWRN",   # Reset warning
+    "setSIR",  # Trigger manual regeneration
+    "setALA",  # Reset alarm
+    "setDEX",  # Start microleakage test
+    "setNOT",  # Reset notification
+    "setWRN",  # Reset warning
 }
 
 # Known keys for the update platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_UPDATE_KNOWN_KEYS = {
-    "getNOT",   # Notification code; "01" == new_software_available
+    "getNOT",  # Notification code; "01" == new_software_available
 }
 
 # Sensors to always exclude — parameters returned by the API that must not be
@@ -870,17 +986,13 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # Keys that are in KNOWN_KEYS but must not become sensor entities because
     # they are handled by another entity type, superseded by a derived entity,
     # or have no practical value for users.
-
     # --- Overridden by a different entity type ---
     "getDEN",  # Boolean flag — handled as binary_sensor; no regular sensor needed
-
     # --- Superseded by a derived / combined entity ---
     "getRTH",  # Regeneration hour — combined HH:MM representation handled by getRTM
-
     # --- Always zero / constant / no practical user value ---
     "getFCO",  # Iron content — always 0, not useful
     "getRTI",  # Regeneration cycle duration — always "00:00", no useful value
-
     # --- Deliberately suppressed despite being in KNOWN_KEYS ---
     "getCDE",  # Configuration code — opaque device identifier, not useful for users
     "getSCR",  # Service regeneration cycle count — function unclear
@@ -891,25 +1003,25 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
 
 # Sensors to exclude only when value is empty (0 or "") - internal
 _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE = {
-    "getCS1", "getCS2", "getCS3",  # Remaining resin capacity (percent)
-    "getVS1", "getVS2", "getVS3",  # Volume thresholds
+    "getCS1",
+    "getCS2",
+    "getCS3",  # Remaining resin capacity (percent)
+    "getVS1",
+    "getVS2",
+    "getVS3",  # Volume thresholds
     "getTYP",  # Device type code - value "" means sensor does not exists, type "0" may not exists.
-
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
     "getCYT",  # Regeneration cycle time - value "0" means no active regeneration, should be "00:00" to show a time.
     "getLAR",  # Last regeneration (timestamp) - if 0 means no regeneration has happened yet, so not useful to show.
     "getWFR",  # Wi-Fi frequency - "0": "Not connected"
-
     # Sensors exits in devices only:
     # - NeoSoft 5000
-
     # NOT TESTED
     # RPD and RTM have no influence on the NeoSoft 5000, as this system initiates regeneration automatically as soon
     # as a pillar is exhausted. Softened water is available at all times.
-    #"getRPD",   # Regeneration interval (days) - value "0" means no interval configured.
-    #"getRTM",   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
-
+    # "getRPD",   # Regeneration interval (days) - value "0" means no interval configured.
+    # "getRTM",   # Regeneration time (minutes) - value "0" means no active regeneration, should be "00:00" to show a time.
     # Sensors exits in devices only:
     # - Trio DFR/LS
     "getCND",  # Conductivity in µS/cm - value "" means sensor does not exists or not measured.
@@ -922,27 +1034,23 @@ _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING = {
     # - Safe-T+
     # - NeoSoft 2500 / 5000
     # - SafeFloor
-    "getALD",   # Duration of alarm (s) - value "" means sensor is broken, should be "0" to show 0s.
-    "getCEL",   # Temperature - value "" means sensor does not exists or not measured.
-    "getLAN",   # Device language (0=English, 1=German, 3=Spanish)
-    "getLNG",   # Device language (0=Deutsch, 1=English)
-    "getNPS",   # No turbine pulses since (s) - value "" means sensor does not exist.
-
+    "getALD",  # Duration of alarm (s) - value "" means sensor is broken, should be "0" to show 0s.
+    "getCEL",  # Temperature - value "" means sensor does not exists or not measured.
+    "getLAN",  # Device language (0=English, 1=German, 3=Spanish)
+    "getLNG",  # Device language (0=Deutsch, 1=English)
+    "getNPS",  # No turbine pulses since (s) - value "" means sensor does not exist.
     # Sensors exits in devices only:
     # - NeoSoft 2500 / 5000
     "getBAR",  # Pressure at inlet - value "" means sensor does not exists or not measured
-    "getVPS1", # No turbine pulses on control head 1 since (s). Value "" means sensor does not exist.
-    "getVPS2", # No turbine pulses on control head 2 since (s). Value "" means sensor does not exist.
+    "getVPS1",  # No turbine pulses on control head 1 since (s). Value "" means sensor does not exist.
+    "getVPS2",  # No turbine pulses on control head 2 since (s). Value "" means sensor does not exist.
     "getWFC",  # Wi-Fi channel
-
     # Sensors exits in devices only:
     # - SafeTech Plus
     "getTMP",  # Leakage protection deactivated - value "" means sensor does not exists.
-
     # Sensors exits in devices only:
     # - Trio DFR/LS
     "getSRV",  # Next annual maintenance (timestamp) - if "" means no maintenance required, so not useful to show.
-
     # Sensors exits in devices:
     # - Safe-T+, Safe-Tech+, Trio DFR/LS
     "getNET",  # Mains voltage - value "" means no mains voltage sensor present.
@@ -978,12 +1086,35 @@ _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE = {
 # Mapping for getLE sensor values (Leakage protection - Present level)
 # Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
-    2: 100, 3: 150, 4: 200, 5: 250, 6: 300,
-    7: 350, 8: 400, 9: 450, 10: 500, 11: 550,
-    12: 600, 13: 650, 14: 700, 15: 750, 16: 800,
-    17: 850, 18: 900, 19: 950, 20: 1000, 21: 1050,
-    22: 1100, 23: 1150, 24: 1200, 25: 1250, 26: 1300,
-    27: 1350, 28: 1400, 29: 1450, 30: 1500,
+    2: 100,
+    3: 150,
+    4: 200,
+    5: 250,
+    6: 300,
+    7: 350,
+    8: 400,
+    9: 450,
+    10: 500,
+    11: 550,
+    12: 600,
+    13: 650,
+    14: 700,
+    15: 750,
+    16: 800,
+    17: 850,
+    18: 900,
+    19: 950,
+    20: 1000,
+    21: 1050,
+    22: 1100,
+    23: 1150,
+    24: 1200,
+    25: 1250,
+    26: 1300,
+    27: 1350,
+    28: 1400,
+    29: 1450,
+    30: 1500,
 }
 
 # getRPW: Days on which regeneration is allowed, stored as a bit mask.
@@ -995,20 +1126,24 @@ _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
 # Use this mapping to decode device `getRPW` bitmasks where each bit
 # represents a weekday. Documentation only.
 _SYR_CONNECT_SENSOR_RPW_VALUE_MAP = {
-    0: None,    # No days configured
-    1: 0,       # Monday
-    2: 1,       # Tuesday
-    4: 2,       # Wednesday
-    8: 3,       # Thursday
-    16: 4,      # Friday
-    32: 5,      # Saturday
-    64: 6,      # Sunday
+    0: None,  # No days configured
+    1: 0,  # Monday
+    2: 1,  # Tuesday
+    4: 2,  # Wednesday
+    8: 3,  # Thursday
+    16: 4,  # Friday
+    32: 5,  # Saturday
+    64: 6,  # Sunday
 }
 
 # Mapping for getCRS sensor values (Cartridge size)
 # Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_CRS_VALUE_MAP = {
-    1: 2.5, 2: 4, 3: 7, 4: 14, 5: 30,
+    1: 2.5,
+    2: 4,
+    3: 7,
+    4: 14,
+    5: 30,
 }
 
 # Mapping for getSTA / status values -> Polish values
@@ -1033,87 +1168,135 @@ _SYR_CONNECT_SENSOR_STA_VALUE_MAP = {
 # Mapping for getT1, getT2 sensor values (Time leakage)
 # Maps raw API value (integer) -> display value in hours (float)
 _SYR_CONNECT_SENSOR_T1_VALUE_MAP = {
-    1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 2.5,
-    6: 3.0, 7: 3.5, 8: 4.0, 9: 4.5, 10: 5.0,
-    11: 5.5, 12: 6.0, 13: 6.5, 14: 7.0, 15: 7.5,
-    16: 8.0, 17: 8.5, 18: 9.0, 19: 9.5, 20: 10.0,
-    21: 10.5, 22: 11.0, 23: 11.5, 24: 12.0, 25: 12.5,
-    26: 13.0, 27: 13.5, 28: 14.0, 29: 14.5, 30: 15.0,
-    31: 15.5, 32: 16.0, 33: 16.5, 34: 17.0, 35: 17.5,
-    36: 18.0, 37: 18.5, 38: 19.0, 39: 19.5, 40: 20.0,
-    41: 20.5, 42: 21.0, 43: 21.5, 44: 22.0, 45: 22.5,
-    46: 23.0, 47: 23.5, 48: 24.0, 49: 24.5, 50: 25.0,
+    1: 0.5,
+    2: 1.0,
+    3: 1.5,
+    4: 2.0,
+    5: 2.5,
+    6: 3.0,
+    7: 3.5,
+    8: 4.0,
+    9: 4.5,
+    10: 5.0,
+    11: 5.5,
+    12: 6.0,
+    13: 6.5,
+    14: 7.0,
+    15: 7.5,
+    16: 8.0,
+    17: 8.5,
+    18: 9.0,
+    19: 9.5,
+    20: 10.0,
+    21: 10.5,
+    22: 11.0,
+    23: 11.5,
+    24: 12.0,
+    25: 12.5,
+    26: 13.0,
+    27: 13.5,
+    28: 14.0,
+    29: 14.5,
+    30: 15.0,
+    31: 15.5,
+    32: 16.0,
+    33: 16.5,
+    34: 17.0,
+    35: 17.5,
+    36: 18.0,
+    37: 18.5,
+    38: 19.0,
+    39: 19.5,
+    40: 20.0,
+    41: 20.5,
+    42: 21.0,
+    43: 21.5,
+    44: 22.0,
+    45: 22.5,
+    46: 23.0,
+    47: 23.5,
+    48: 24.0,
+    49: 24.5,
+    50: 25.0,
 }
 
 # Mapping for getUL sensor values (Leakage protection - Absent level)
 # Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_UL_VALUE_MAP = {
-    1: 10, 2: 20, 3: 30, 4: 40, 5: 50,
-    6: 60, 7: 70, 8: 80, 9: 90, 10: 100,
+    1: 10,
+    2: 20,
+    3: 30,
+    4: 40,
+    5: 50,
+    6: 60,
+    7: 70,
+    8: 80,
+    9: 90,
+    10: 100,
 }
 
 # Water hardness unit mapping (for getWHU)
 # According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
 _SYR_CONNECT_SENSOR_WHU_VALUE_MAP = {
-    0: "°dH",       # German degree of water hardness (Grad deutsche Härte)
-    1: "°fH",       # French degree of water hardness (degré français de dureté)
-    2: "ppm",       # Parts per million (mg/L), common international unit
-    3: "mmol/l",    # Millimoles per liter, SI unit for water hardness
+    0: "°dH",  # German degree of water hardness (Grad deutsche Härte)
+    1: "°fH",  # French degree of water hardness (degré français de dureté)
+    2: "ppm",  # Parts per million (mg/L), common international unit
+    3: "mmol/l",  # Millimoles per liter, SI unit for water hardness
 }
 
 # Sensor state classes (for Home Assistant) - internal
 _SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getALD": SensorStateClass.MEASUREMENT,        # Alarm duration
-    "getAPT": SensorStateClass.MEASUREMENT,        # Access point timeout
-    "getAVO": SensorStateClass.MEASUREMENT,        # Current flow rate
-    "getBAP": SensorStateClass.MEASUREMENT,        # Battery level (%)
-    "getBAR": SensorStateClass.MEASUREMENT,        # Inlet pressure (mbar sensor), reported by Safe-T+
-    "getBAR2": SensorStateClass.MEASUREMENT,       # Outlet pressure (mbar sensor), reported by SYR TRIO Lock Connect
-    "getBAT": SensorStateClass.MEASUREMENT,        # Battery voltage
-    "getCEL": SensorStateClass.MEASUREMENT,        # Temperature
-    "getCFT": SensorStateClass.MEASUREMENT,        # Current filling duration
-    "getCFV": SensorStateClass.MEASUREMENT,        # Current filling volume
-    "getCOA": SensorStateClass.TOTAL_INCREASING,   # Counter of automatic backwashes
-    "getCOF": SensorStateClass.TOTAL_INCREASING,   # Total water consumption counter
-    "getCOM": SensorStateClass.TOTAL_INCREASING,   # Counter of manual backwashes
-    "getCYN": SensorStateClass.MEASUREMENT,        # Regeneration cycle number/time
-    "getFLO": SensorStateClass.MEASUREMENT,        # Flow rate
-    "getHMD": SensorStateClass.MEASUREMENT,        # Ambient humidity
-    "getINR": SensorStateClass.TOTAL_INCREASING,   # Incomplete regenerations
-    "getIWH": SensorStateClass.MEASUREMENT,        # Incoming water hardness
-    "getMIH": SensorStateClass.MEASUREMENT,        # Minimum humidity threshold
-    "getMIT": SensorStateClass.MEASUREMENT,        # Minimum temperature threshold
-    "getMXH": SensorStateClass.MEASUREMENT,        # Maximum humidity threshold
-    "getMXT": SensorStateClass.MEASUREMENT,        # Maximum temperature threshold
-    "getNOR": SensorStateClass.TOTAL_INCREASING,   # Regenerations (normal operation)
-    "getNPS": SensorStateClass.MEASUREMENT,        # No turbine pulses since (s)
-    "getOWH": SensorStateClass.MEASUREMENT,        # Outgoing water hardness
-    "getPRS": SensorStateClass.MEASUREMENT,        # Inlet pressure, reported by LEXplus10SL
-    "getRCP": SensorStateClass.MEASUREMENT,        # Synchronisation interval
-    "getRDO": SensorStateClass.MEASUREMENT,        # Salt dosing (g/L)
-    "getRES": SensorStateClass.MEASUREMENT,        # Remaining capacity
-    "getSS1": SensorStateClass.MEASUREMENT,        # Salt container supply 1 (weeks)
-    "getSS2": SensorStateClass.MEASUREMENT,        # Salt container supply 2 (weeks)
-    "getSS3": SensorStateClass.MEASUREMENT,        # Salt container supply 3 (weeks)
-    "getSV1": SensorStateClass.MEASUREMENT,        # Salt container amount 1
-    "getSV2": SensorStateClass.MEASUREMENT,        # Salt container amount 2
-    "getSV3": SensorStateClass.MEASUREMENT,        # Salt container amount 3
-    "getTMP": SensorStateClass.MEASUREMENT,        # Deactivate leakage protection for n seconds
-    "getTOR": SensorStateClass.TOTAL_INCREASING,   # Total regenerations
-    "getTRT": SensorStateClass.TOTAL_INCREASING,   # Cumulative refill time
-    "getTRV": SensorStateClass.TOTAL_INCREASING,   # Cumulative refilled volume
-    "getLOT": SensorStateClass.MEASUREMENT,        # Maximum output conductivity
-    "getLRC": SensorStateClass.MEASUREMENT,        # Liter(s) remaining softening capacity
-    "getOHW": SensorStateClass.MEASUREMENT,        # Soft water hardness
-    "getPRC": SensorStateClass.MEASUREMENT,        # Percent remaining softening capacity
-    "getRCC": SensorStateClass.MEASUREMENT,        # Number of filling cycles in the current period
-    "getRCN": SensorStateClass.TOTAL_INCREASING,   # Counter of all refills
-    "getTPR": SensorStateClass.MEASUREMENT,        # Target pressure
-    "getVOL": SensorStateClass.TOTAL_INCREASING,   # Total capacity (cumulative)
-    "getVS1": SensorStateClass.MEASUREMENT,        # Volume threshold 1
-    "getVS2": SensorStateClass.MEASUREMENT,        # Volume threshold 2
-    "getVS3": SensorStateClass.MEASUREMENT,        # Volume threshold 3
-    "getWMP": SensorStateClass.MEASUREMENT,        # Measurement interval
+    "getALD": SensorStateClass.MEASUREMENT,  # Alarm duration
+    "getAPT": SensorStateClass.MEASUREMENT,  # Access point timeout
+    "getAVO": SensorStateClass.MEASUREMENT,  # Current flow rate
+    "getBAP": SensorStateClass.MEASUREMENT,  # Battery level (%)
+    "getBAR": SensorStateClass.MEASUREMENT,  # Inlet pressure (mbar sensor), reported by Safe-T+
+    "getBAR2": SensorStateClass.MEASUREMENT,  # Outlet pressure (mbar sensor), reported by SYR TRIO Lock Connect
+    "getBAT": SensorStateClass.MEASUREMENT,  # Battery voltage
+    "getCEL": SensorStateClass.MEASUREMENT,  # Temperature
+    "getCFT": SensorStateClass.MEASUREMENT,  # Current filling duration
+    "getCFV": SensorStateClass.MEASUREMENT,  # Current filling volume
+    "getCOA": SensorStateClass.TOTAL_INCREASING,  # Counter of automatic backwashes
+    "getCOF": SensorStateClass.TOTAL_INCREASING,  # Total water consumption counter
+    "getCOM": SensorStateClass.TOTAL_INCREASING,  # Counter of manual backwashes
+    "getCYN": SensorStateClass.MEASUREMENT,  # Regeneration cycle number/time
+    "getFLO": SensorStateClass.MEASUREMENT,  # Flow rate
+    "getHMD": SensorStateClass.MEASUREMENT,  # Ambient humidity
+    "getINR": SensorStateClass.TOTAL_INCREASING,  # Incomplete regenerations
+    "getIWH": SensorStateClass.MEASUREMENT,  # Incoming water hardness
+    "getMIH": SensorStateClass.MEASUREMENT,  # Minimum humidity threshold
+    "getMIT": SensorStateClass.MEASUREMENT,  # Minimum temperature threshold
+    "getMXH": SensorStateClass.MEASUREMENT,  # Maximum humidity threshold
+    "getMXT": SensorStateClass.MEASUREMENT,  # Maximum temperature threshold
+    "getNOR": SensorStateClass.TOTAL_INCREASING,  # Regenerations (normal operation)
+    "getNPS": SensorStateClass.MEASUREMENT,  # No turbine pulses since (s)
+    "getOWH": SensorStateClass.MEASUREMENT,  # Outgoing water hardness
+    "getPRS": SensorStateClass.MEASUREMENT,  # Inlet pressure, reported by LEXplus10SL
+    "getRCP": SensorStateClass.MEASUREMENT,  # Synchronisation interval
+    "getRDO": SensorStateClass.MEASUREMENT,  # Salt dosing (g/L)
+    "getRES": SensorStateClass.MEASUREMENT,  # Remaining capacity
+    "getSS1": SensorStateClass.MEASUREMENT,  # Salt container supply 1 (weeks)
+    "getSS2": SensorStateClass.MEASUREMENT,  # Salt container supply 2 (weeks)
+    "getSS3": SensorStateClass.MEASUREMENT,  # Salt container supply 3 (weeks)
+    "getSV1": SensorStateClass.MEASUREMENT,  # Salt container amount 1
+    "getSV2": SensorStateClass.MEASUREMENT,  # Salt container amount 2
+    "getSV3": SensorStateClass.MEASUREMENT,  # Salt container amount 3
+    "getTMP": SensorStateClass.MEASUREMENT,  # Deactivate leakage protection for n seconds
+    "getTOR": SensorStateClass.TOTAL_INCREASING,  # Total regenerations
+    "getTRT": SensorStateClass.TOTAL_INCREASING,  # Cumulative refill time
+    "getTRV": SensorStateClass.TOTAL_INCREASING,  # Cumulative refilled volume
+    "getLOT": SensorStateClass.MEASUREMENT,  # Maximum output conductivity
+    "getLRC": SensorStateClass.MEASUREMENT,  # Liter(s) remaining softening capacity
+    "getOHW": SensorStateClass.MEASUREMENT,  # Soft water hardness
+    "getPRC": SensorStateClass.MEASUREMENT,  # Percent remaining softening capacity
+    "getRCC": SensorStateClass.MEASUREMENT,  # Number of filling cycles in the current period
+    "getRCN": SensorStateClass.TOTAL_INCREASING,  # Counter of all refills
+    "getTPR": SensorStateClass.MEASUREMENT,  # Target pressure
+    "getVOL": SensorStateClass.TOTAL_INCREASING,  # Total capacity (cumulative)
+    "getVS1": SensorStateClass.MEASUREMENT,  # Volume threshold 1
+    "getVS2": SensorStateClass.MEASUREMENT,  # Volume threshold 2
+    "getVS3": SensorStateClass.MEASUREMENT,  # Volume threshold 3
+    "getWMP": SensorStateClass.MEASUREMENT,  # Measurement interval
 }
 
 # Sensors that should remain as strings (not converted to numbers) - internal
@@ -1139,145 +1322,129 @@ _SYR_CONNECT_SENSOR_UNIT = {
     # Sensors exits in devices:
     # - LEXplus10S
     # - LEXplus10SL
-
     # getIWH and getOWH units are set dynamically from getWHU
-    "getAVO": UnitOfVolume.LITERS,                          # Current flow in Liters (e.g. "1655mL" -> 1.655 L)
-    "getDWF": UnitOfVolume.LITERS,                          # Expected daily water consumption
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_HOUR,         # Flow rate
-    "getFCO": "ppm",                                        # Iron content (parts per million)
-    "getRES": UnitOfVolume.LITERS,                          # Remaining capacity
+    "getAVO": UnitOfVolume.LITERS,  # Current flow in Liters (e.g. "1655mL" -> 1.655 L)
+    "getDWF": UnitOfVolume.LITERS,  # Expected daily water consumption
+    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Flow rate
+    "getFCO": "ppm",  # Iron content (parts per million)
+    "getRES": UnitOfVolume.LITERS,  # Remaining capacity
     "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
-    "getRPD": UnitOfTime.DAYS,                              # Regeneration interval
-    "getRSA": UnitOfTime.DAYS,                              # Backwash interval (RSA)
-    "getRSD": UnitOfTime.SECONDS,                           # Backwash duration (RSA)
-    "getRSE": UnitOfTime.DAYS,                              # Backwash reminder interval (RSA)
-    "getCFT": UnitOfTime.SECONDS,                           # Current filling duration
-    "getCFV": UnitOfVolume.LITERS,                          # Current filling volume
-    "getLFT": UnitOfTime.SECONDS,                           # Last refill duration
-    "getLFV": UnitOfVolume.LITERS,                          # Last refilled volume
-    "getNMS": UnitOfTime.SECONDS,                           # No valve movement since
-    "getNMT": UnitOfTime.DAYS,                              # Time until valve self-test becomes active
-    "getNPT": UnitOfTime.DAYS,                              # Time until alarm A8 becomes active
-    "getNRT": UnitOfTime.SECONDS,                           # No refill since
-    "getTRT": UnitOfTime.SECONDS,                           # Cumulative refill time
-    "getTRV": UnitOfVolume.LITERS,                          # Cumulative refilled volume
-    "getRTH": UnitOfTime.HOURS,                             # Regeneration time (Hour)
-    "getPRS": UnitOfPressure.BAR,                           # Pressure
-    "getSV1": UnitOfMass.KILOGRAMS,                         # Salt container amount 1
-    "getSV2": UnitOfMass.KILOGRAMS,                         # Salt container amount 2
-    "getSV3": UnitOfMass.KILOGRAMS,                         # Salt container amount 3
-    "getSS1": UnitOfTime.WEEKS,                             # Salt container supply 1
-    "getSS2": UnitOfTime.WEEKS,                             # Salt container supply 2
-    "getSS3": UnitOfTime.WEEKS,                             # Salt container supply 3
-    "getVOL": UnitOfVolume.CUBIC_METERS,                    # Total capacity (m³)
-
+    "getRPD": UnitOfTime.DAYS,  # Regeneration interval
+    "getRSA": UnitOfTime.DAYS,  # Backwash interval (RSA)
+    "getRSD": UnitOfTime.SECONDS,  # Backwash duration (RSA)
+    "getRSE": UnitOfTime.DAYS,  # Backwash reminder interval (RSA)
+    "getCFT": UnitOfTime.SECONDS,  # Current filling duration
+    "getCFV": UnitOfVolume.LITERS,  # Current filling volume
+    "getLFT": UnitOfTime.SECONDS,  # Last refill duration
+    "getLFV": UnitOfVolume.LITERS,  # Last refilled volume
+    "getNMS": UnitOfTime.SECONDS,  # No valve movement since
+    "getNMT": UnitOfTime.DAYS,  # Time until valve self-test becomes active
+    "getNPT": UnitOfTime.DAYS,  # Time until alarm A8 becomes active
+    "getNRT": UnitOfTime.SECONDS,  # No refill since
+    "getTRT": UnitOfTime.SECONDS,  # Cumulative refill time
+    "getTRV": UnitOfVolume.LITERS,  # Cumulative refilled volume
+    "getRTH": UnitOfTime.HOURS,  # Regeneration time (Hour)
+    "getPRS": UnitOfPressure.BAR,  # Pressure
+    "getSV1": UnitOfMass.KILOGRAMS,  # Salt container amount 1
+    "getSV2": UnitOfMass.KILOGRAMS,  # Salt container amount 2
+    "getSV3": UnitOfMass.KILOGRAMS,  # Salt container amount 3
+    "getSS1": UnitOfTime.WEEKS,  # Salt container supply 1
+    "getSS2": UnitOfTime.WEEKS,  # Salt container supply 2
+    "getSS3": UnitOfTime.WEEKS,  # Salt container supply 3
+    "getVOL": UnitOfVolume.CUBIC_METERS,  # Total capacity (m³)
     # Sensors exits in devices:
     # - SafeFloor
-
-    "getALD": UnitOfTime.SECONDS,                           # Alarm duration (s)
-    "getAPT": UnitOfTime.SECONDS,                           # Access point timeout (s)
-    "getHMD": PERCENTAGE,                                   # Ambient humidity (%)
-    "getMIH": PERCENTAGE,                                   # Minimum humidity threshold (%)
-    "getMIT": UnitOfTemperature.CELSIUS,                    # Minimum temperature threshold (1/10°C raw)
-    "getMXH": PERCENTAGE,                                   # Maximum humidity threshold (%)
-    "getMXT": UnitOfTemperature.CELSIUS,                    # Maximum temperature threshold (1/10°C raw)
-    "getRCP": UnitOfTime.SECONDS,                           # Synchronisation interval (s)
-    "getWMP": UnitOfTime.SECONDS,                           # Measurement interval (s)
-
+    "getALD": UnitOfTime.SECONDS,  # Alarm duration (s)
+    "getAPT": UnitOfTime.SECONDS,  # Access point timeout (s)
+    "getHMD": PERCENTAGE,  # Ambient humidity (%)
+    "getMIH": PERCENTAGE,  # Minimum humidity threshold (%)
+    "getMIT": UnitOfTemperature.CELSIUS,  # Minimum temperature threshold (1/10°C raw)
+    "getMXH": PERCENTAGE,  # Maximum humidity threshold (%)
+    "getMXT": UnitOfTemperature.CELSIUS,  # Maximum temperature threshold (1/10°C raw)
+    "getRCP": UnitOfTime.SECONDS,  # Synchronisation interval (s)
+    "getWMP": UnitOfTime.SECONDS,  # Measurement interval (s)
     # Configuration/resin capacity sensors are percentage values
-    "getCS1": PERCENTAGE,                                 # Remaining resin capacity 1 (percent)
-    "getCS2": PERCENTAGE,                                 # Remaining resin capacity 2 (percent)
-    "getCS3": PERCENTAGE,                                 # Remaining resin capacity 3 (percent)
-
+    "getCS1": PERCENTAGE,  # Remaining resin capacity 1 (percent)
+    "getCS2": PERCENTAGE,  # Remaining resin capacity 2 (percent)
+    "getCS3": PERCENTAGE,  # Remaining resin capacity 3 (percent)
     # Sensors exits in devices:
     # - LEXplus10SL
-
     # Leak protection profile sensors
-    "getCEL": UnitOfTemperature.CELSIUS,                # Temperature
-    "getCOF": UnitOfVolume.LITERS,                      # Total water consumption counter
-    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 1
-    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 2
-    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 3
-    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 4
-    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 5
-    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 6
-    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 7
-    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Leak protection flow rate 8
-    "getPR1": UnitOfTime.HOURS,                         # Return time to profile 1
-    "getPR2": UnitOfTime.HOURS,                         # Return time to profile 2
-    "getPR3": UnitOfTime.HOURS,                         # Return time to profile 3
-    "getPR4": UnitOfTime.HOURS,                         # Return time to profile 4
-    "getPR5": UnitOfTime.HOURS,                         # Return time to profile 5
-    "getPR6": UnitOfTime.HOURS,                         # Return time to profile 6
-    "getPR7": UnitOfTime.HOURS,                         # Return time to profile 7
-    "getPR8": UnitOfTime.HOURS,                         # Return time to profile 8
-    "getPT1": UnitOfTime.MINUTES,                       # Leak protection time 1
-    "getPT2": UnitOfTime.MINUTES,                       # Leak protection time 2
-    "getPT3": UnitOfTime.MINUTES,                       # Leak protection time 3
-    "getPT4": UnitOfTime.MINUTES,                       # Leak protection time 4
-    "getPT5": UnitOfTime.MINUTES,                       # Leak protection time 5
-    "getPT6": UnitOfTime.MINUTES,                       # Leak protection time 6
-    "getPT7": UnitOfTime.MINUTES,                       # Leak protection time 7
-    "getPT8": UnitOfTime.MINUTES,                       # Leak protection time 8
-    "getPV1": UnitOfVolume.LITERS,                      # Leak protection volume 1
-    "getPV2": UnitOfVolume.LITERS,                      # Leak protection volume 2
-    "getPV3": UnitOfVolume.LITERS,                      # Leak protection volume 3
-    "getPV4": UnitOfVolume.LITERS,                      # Leak protection volume 4
-    "getPV5": UnitOfVolume.LITERS,                      # Leak protection volume 5
-    "getPV6": UnitOfVolume.LITERS,                      # Leak protection volume 6
-    "getPV7": UnitOfVolume.LITERS,                      # Leak protection volume 7
-    "getPV8": UnitOfVolume.LITERS,                      # Leak protection volume 8
-
+    "getCEL": UnitOfTemperature.CELSIUS,  # Temperature
+    "getCOF": UnitOfVolume.LITERS,  # Total water consumption counter
+    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 1
+    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 2
+    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 3
+    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 4
+    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 5
+    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 6
+    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 7
+    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 8
+    "getPR1": UnitOfTime.HOURS,  # Return time to profile 1
+    "getPR2": UnitOfTime.HOURS,  # Return time to profile 2
+    "getPR3": UnitOfTime.HOURS,  # Return time to profile 3
+    "getPR4": UnitOfTime.HOURS,  # Return time to profile 4
+    "getPR5": UnitOfTime.HOURS,  # Return time to profile 5
+    "getPR6": UnitOfTime.HOURS,  # Return time to profile 6
+    "getPR7": UnitOfTime.HOURS,  # Return time to profile 7
+    "getPR8": UnitOfTime.HOURS,  # Return time to profile 8
+    "getPT1": UnitOfTime.MINUTES,  # Leak protection time 1
+    "getPT2": UnitOfTime.MINUTES,  # Leak protection time 2
+    "getPT3": UnitOfTime.MINUTES,  # Leak protection time 3
+    "getPT4": UnitOfTime.MINUTES,  # Leak protection time 4
+    "getPT5": UnitOfTime.MINUTES,  # Leak protection time 5
+    "getPT6": UnitOfTime.MINUTES,  # Leak protection time 6
+    "getPT7": UnitOfTime.MINUTES,  # Leak protection time 7
+    "getPT8": UnitOfTime.MINUTES,  # Leak protection time 8
+    "getPV1": UnitOfVolume.LITERS,  # Leak protection volume 1
+    "getPV2": UnitOfVolume.LITERS,  # Leak protection volume 2
+    "getPV3": UnitOfVolume.LITERS,  # Leak protection volume 3
+    "getPV4": UnitOfVolume.LITERS,  # Leak protection volume 4
+    "getPV5": UnitOfVolume.LITERS,  # Leak protection volume 5
+    "getPV6": UnitOfVolume.LITERS,  # Leak protection volume 6
+    "getPV7": UnitOfVolume.LITERS,  # Leak protection volume 7
+    "getPV8": UnitOfVolume.LITERS,  # Leak protection volume 8
     # Sensors exits in devices:
     # - Safe-T+
-
-    "getBAR": UnitOfPressure.BAR,                       # Pressure (mbar sensor)
-    "getBAR2": UnitOfPressure.BAR,                      # Outlet pressure (mbar sensor)
-    "getBAT": UnitOfElectricPotential.VOLT,             # Battery voltage
-    "getDBD": UnitOfPressure.BAR,                       # Leak test pressure drop
-    "getNET": UnitOfElectricPotential.VOLT,             # Mains voltage
-    "getLE": UnitOfVolume.LITERS,                       # Leakage protection - Present level
-    "getT1": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
-    "getT2": UnitOfTime.HOURS,                          # Time leakage (mapped from 0.5h steps)
-    "getTMP": UnitOfTime.SECONDS,                       # Deactivate leakage protection for n seconds
-    "getUL": UnitOfVolume.LITERS,                       # Leakage protection - Absent level
-
+    "getBAR": UnitOfPressure.BAR,  # Pressure (mbar sensor)
+    "getBAR2": UnitOfPressure.BAR,  # Outlet pressure (mbar sensor)
+    "getBAT": UnitOfElectricPotential.VOLT,  # Battery voltage
+    "getDBD": UnitOfPressure.BAR,  # Leak test pressure drop
+    "getNET": UnitOfElectricPotential.VOLT,  # Mains voltage
+    "getLE": UnitOfVolume.LITERS,  # Leakage protection - Present level
+    "getT1": UnitOfTime.HOURS,  # Time leakage (mapped from 0.5h steps)
+    "getT2": UnitOfTime.HOURS,  # Time leakage (mapped from 0.5h steps)
+    "getTMP": UnitOfTime.SECONDS,  # Deactivate leakage protection for n seconds
+    "getUL": UnitOfVolume.LITERS,  # Leakage protection - Absent level
     # Sensors exits in devices:
     # - NeoSoft 2500
-
-    "getLTV": UnitOfVolume.LITERS,                      # Last volume tapped
-    "getRE1": UnitOfVolume.LITERS,                      # Reserve capacity bottle 1
-    "getWFR": PERCENTAGE,                               # Wi-Fi signal strength 0-100%
-    "getVPS1": UnitOfTime.SECONDS,                      # No turbine pulses Control head 1 since
-    "getVPS2": UnitOfTime.SECONDS,                      # No turbine pulses Control head 2 since
-
+    "getLTV": UnitOfVolume.LITERS,  # Last volume tapped
+    "getRE1": UnitOfVolume.LITERS,  # Reserve capacity bottle 1
+    "getWFR": PERCENTAGE,  # Wi-Fi signal strength 0-100%
+    "getVPS1": UnitOfTime.SECONDS,  # No turbine pulses Control head 1 since
+    "getVPS2": UnitOfTime.SECONDS,  # No turbine pulses Control head 2 since
     # Sensors exits in devices:
     # - NeoSoft 5000
-
-    "getRE2": UnitOfVolume.LITERS,                      # Reserve capacity bottle 2^
-
+    "getRE2": UnitOfVolume.LITERS,  # Reserve capacity bottle 2^
     # Sensors exits in devices:
     # - Trio DFR/LS
-
-    "getBAP": PERCENTAGE,                               # Battery level (%)
-    "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Water conductivity (µS/cm)
-    "getNPS": UnitOfTime.SECONDS,                       # No turbine pulses since (s)
-    "getSLE": UnitOfTime.SECONDS,                       # Remaining time in seconds of an active self-learning phase
-    "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,     # Self-learning phase volume (l/h)
-    "getSLT": UnitOfTime.SECONDS,                       # Time in self-learning phase (seconds)
-    "getSLV": UnitOfVolume.LITERS,                      # Self-learning phase volume (l)
-
+    "getBAP": PERCENTAGE,  # Battery level (%)
+    "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,  # Water conductivity (µS/cm)
+    "getNPS": UnitOfTime.SECONDS,  # No turbine pulses since (s)
+    "getSLE": UnitOfTime.SECONDS,  # Remaining time in seconds of an active self-learning phase
+    "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Self-learning phase volume (l/h)
+    "getSLT": UnitOfTime.SECONDS,  # Time in self-learning phase (seconds)
+    "getSLV": UnitOfVolume.LITERS,  # Self-learning phase volume (l)
     # Sensors exits in devices:
     # - Conel Clear Pro Fill
-
-    "getCRS": UnitOfVolume.LITERS,                      # Cartridge size (mapped to liters)
-    "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,   # Maximum output conductivity (µS/cm)
-    "getLRC": UnitOfVolume.LITERS,                      # Liter(s) remaining softening capacity
-    "getOHW": "°dH",                                    # Soft water hardness
-    "getPRC": PERCENTAGE,                               # Percent remaining softening capacity
-    "getRMT": UnitOfTime.MINUTES,                       # Maximum filling duration
-    "getRVT": UnitOfVolume.LITERS,                      # Maximum filling charges
-    "getTPR": UnitOfPressure.BAR,                       # Target pressure
+    "getCRS": UnitOfVolume.LITERS,  # Cartridge size (mapped to liters)
+    "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,  # Maximum output conductivity (µS/cm)
+    "getLRC": UnitOfVolume.LITERS,  # Liter(s) remaining softening capacity
+    "getOHW": "°dH",  # Soft water hardness
+    "getPRC": PERCENTAGE,  # Percent remaining softening capacity
+    "getRMT": UnitOfTime.MINUTES,  # Maximum filling duration
+    "getRVT": UnitOfVolume.LITERS,  # Maximum filling charges
+    "getTPR": UnitOfPressure.BAR,  # Target pressure
 }
 
 # Sensor display precision mapping (number of decimals to show)
@@ -1285,127 +1452,146 @@ _SYR_CONNECT_SENSOR_UNIT = {
 # This allows configuring how many decimals Home Assistant should show
 # for specific sensors when the integration formats the value.
 _SYR_CONNECT_SENSOR_UNIT_PRECISION = {
-    "getALD": 0,    # Alarm duration: show as whole number of seconds
-    "getAPT": 0,    # Access point timeout: show as whole number of seconds
-    "getAVO": 1,    # Current flow: show with 2 decimal places
-    "getBAP": 0,    # Battery level (%): show as whole number by default
-    "getBAR": 1,    # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
-    "getBAR2": 1,   # Outlet pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
-    "getDBD": 1,    # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
-    "getBAT": 2,    # Battery voltage: show with 2 decimal places
-    "getCEL": 1,    # Temperature, e.g. 110 = 11.0°C
-    "getCFT": 0,    # Current filling duration: whole seconds
-    "getCFV": 0,    # Current filling volume: whole liters
-    "getCFO": 0,    # Cycle flow offset: show as whole number by default
-    "getCND": 0,    # Conductivity in µS/cm: show as whole number by default
-    "getCOF": 0,    # Total water consumption counter: show as whole number by default
-    "getCS1": 0,    # Remaining resin capacity 1: show as whole number by default
-    "getCS2": 0,    # Remaining resin capacity 2: show as whole number by default
-    "getCS3": 0,    # Remaining resin capacity 3: show as whole number by default
-    "getCYN": 0,    # Regeneration cycle counter: show as whole number by default
-    "getDFM": 0,    # Device feature mode: show as whole number by default
-    "getDMA": 0,    # Microleakage alarm mode: show as whole number by default
-    "getDRP": 0,    # Microleakage test interval: show as whole number by default
-    "getDSV": 0,    # Microleakage test: show as whole number by default
-    "getDWF": 0,    # Expected daily water consumption: show as whole number by default
-    "getFCD": 0,    # Filter change: show as whole number by default
-    "getFFM": 0,    # Filter fouling level: show as whole number by default
-    "getFCO": 0,    # Iron content: show as whole number by default
-    "getFLO": 0,    # Flow rate: show as whole number by default
-    "getHMD": 0,    # Ambient humidity: show as whole number by default
-    "getINR": 0,    # Incomplete regenerations: show as whole number by default
-    "getIWH": 0,    # Incoming water hardness: show as whole number by default
-    "getLAN": 0,    # Device language: show as whole number by default (0=English, 1=German, 3=Spanish)
-    "getLE": 0,     # Leakage protection - Present level: show as whole number by default
-    "getLNG": 0,    # Device language: show as whole number by default (0=Deutsch, 1=English)
-    "getLTV": 0,    # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
-    "getMIH": 0,    # Minimum humidity threshold: show as whole number
-    "getMIT": 0,    # Minimum temperature threshold: e.g. -40 -> -4 °C
-    "getMXH": 0,    # Maximum humidity threshold: show as whole number
-    "getMXT": 0,    # Maximum temperature threshold: e.g. 490 -> 49 °C
-    "getNET": 2,    # Mains voltage: show with 2 decimal places
-    "getNOR": 0,    # Regenerations (normal operation): show as whole number by default
-    "getNPS": 0,    # No turbine pulses since: show as whole number of seconds
-    "getOWH": 0,    # Outgoing water hardness: show as whole number by default
-    "getPRF": 0,    # Active leak protection profile
-    "getPR1": 0,    # Return time to profile 1
-    "getPR2": 0,    # Return time to profile 2
-    "getPR3": 0,    # Return time to profile 3
-    "getPR4": 0,    # Return time to profile 4
-    "getPR5": 0,    # Return time to profile 5
-    "getPR6": 0,    # Return time to profile 6
-    "getPR7": 0,    # Return time to profile 7
-    "getPR8": 0,    # Return time to profile 8
-    "getPRS": 1,    # Pressure: show with 1 decimal place by default
-    "getPST": 0,    # Pressure sensor installed: show as whole number by default
-    "getRCP": 0,    # Synchronisation interval: show as whole number of seconds
-    "getRDO": 0,    # Salt dosing: show as whole number by default
-    "getRMO": 0,    # Regeneration mode (1=Standard, 2=ECO, 3=Power, 4=Automatik)
-    "getRPD": 0,    # Regeneration interval: show as whole days by default
-    "getRE1": 0,    # Reserve capacity bottle 1: show as whole number by default
-    "getRE2": 0,    # Reserve capacity bottle 2: show as whole number by default
-    "getRES": 0,    # Remaining capacity: show as whole number by default
-    "getCOA": 0,    # Counter of automatic backwashes: show as whole number by default
-    "getCOM": 0,    # Counter of manual backwashes: show as whole number by default
-    "getRSA": 0,    # Backwash interval: show as whole days by default
-    "getRSD": 0,    # Backwash duration: show as whole seconds by default
-    "getRSE": 0,    # Backwash reminder interval: show as whole days by default
-    "getLFT": 0,    # Last refill duration: show as whole number of seconds
-    "getLFV": 0,    # Last refilled volume: show as whole number by default
-    "getNMS": 0,    # No valve movement since: show as whole number of seconds
-    "getNMT": 0,    # Time until valve self-test becomes active: show as whole days by default
-    "getNPT": 0,    # Time until alarm A8 becomes active: show as whole days by default
-    "getNRT": 0,    # No refill since: show as whole number of seconds
-    "getTRT": 0,    # Cumulative refill time: show as whole number of seconds
-    "getTRV": 0,    # Cumulative refilled volume: show as whole number by default
-    "getRG1": 0,    # Regeneration 1: show as whole number by default
-    "getRG2": 0,    # Regeneration 2: show as whole number by default
-    "getRG3": 0,    # Regeneration 3: show as whole number by default
-    "getSLE": 0,    # Remaining time in seconds of an active self-learning phase: show as whole number by default
-    "getSLF": 0,    # Self-learning phase volume (l/h)
-    "getSLT": 0,    # Time in self-learning phase (seconds)
-    "getSLV": 0,    # Self-learning phase volume (l)
-    "getSRE": 0,    # Regeneration active flag: values unclear
-    "getSRO": 0,    # Display rotation: show as whole number by default
-    "getSS1": 0,    # Salt container supply 1: show as whole number by default
-    "getSS2": 0,    # Salt container supply 2: show as whole number by default
-    "getSS3": 0,    # Salt container supply 3: show as whole number by default
-    "getSV1": 0,    # Salt container volume 1: show as whole number by default
-    "getSV2": 0,    # Salt container volume 2: show as whole number by default
-    "getSV3": 0,    # Salt container volume 3: show as whole number by default
-    "getTYP": 0,    # Device type: show as whole number by default
-    "getTMP": 0,    # Deactivate leakage protection for n seconds: show as whole number by default
-    "getTOR": 0,    # Total regenerations: show as whole number by default
-    "getT1": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
-    "getT2": 1,     # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
-    "getUL": 0,     # Leakage protection - Absent level: show as whole number by default
-    "getVLV": 0,    # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
-    "getVPS1": 0,   # No turbine pulses on control head 1 since: show as whole number of seconds by default
-    "getVPS2": 0,   # No turbine pulses on control head 2 since: show as whole number of seconds by default
-    "getVOL": 3,    # Total water volume: show in cubic meters (m³) with 3 decimals by default
-    "getWFR": 0,    # Wi-Fi signal strength: show as whole number by default
-    "getWFS": 0,    # Wi-Fi connection status
-    "getWMP": 0,    # Measurement interval: show as whole number of seconds
-
+    "getALD": 0,  # Alarm duration: show as whole number of seconds
+    "getAPT": 0,  # Access point timeout: show as whole number of seconds
+    "getAVO": 1,  # Current flow: show with 2 decimal places
+    "getBAP": 0,  # Battery level (%): show as whole number by default
+    "getBAR": 1,  # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
+    "getBAR2": 1,  # Outlet pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
+    "getDBD": 1,  # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
+    "getBAT": 2,  # Battery voltage: show with 2 decimal places
+    "getCEL": 1,  # Temperature, e.g. 110 = 11.0°C
+    "getCFT": 0,  # Current filling duration: whole seconds
+    "getCFV": 0,  # Current filling volume: whole liters
+    "getCFO": 0,  # Cycle flow offset: show as whole number by default
+    "getCND": 0,  # Conductivity in µS/cm: show as whole number by default
+    "getCOF": 0,  # Total water consumption counter: show as whole number by default
+    "getCS1": 0,  # Remaining resin capacity 1: show as whole number by default
+    "getCS2": 0,  # Remaining resin capacity 2: show as whole number by default
+    "getCS3": 0,  # Remaining resin capacity 3: show as whole number by default
+    "getCYN": 0,  # Regeneration cycle counter: show as whole number by default
+    "getDFM": 0,  # Device feature mode: show as whole number by default
+    "getDMA": 0,  # Microleakage alarm mode: show as whole number by default
+    "getDRP": 0,  # Microleakage test interval: show as whole number by default
+    "getDSV": 0,  # Microleakage test: show as whole number by default
+    "getDWF": 0,  # Expected daily water consumption: show as whole number by default
+    "getFCD": 0,  # Filter change: show as whole number by default
+    "getFFM": 0,  # Filter fouling level: show as whole number by default
+    "getFCO": 0,  # Iron content: show as whole number by default
+    "getFLO": 0,  # Flow rate: show as whole number by default
+    "getHMD": 0,  # Ambient humidity: show as whole number by default
+    "getINR": 0,  # Incomplete regenerations: show as whole number by default
+    "getIWH": 0,  # Incoming water hardness: show as whole number by default
+    "getLAN": 0,  # Device language: show as whole number by default (0=English, 1=German, 3=Spanish)
+    "getLE": 0,  # Leakage protection - Present level: show as whole number by default
+    "getLNG": 0,  # Device language: show as whole number by default (0=Deutsch, 1=English)
+    "getLTV": 0,  # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
+    "getMIH": 0,  # Minimum humidity threshold: show as whole number
+    "getMIT": 0,  # Minimum temperature threshold: e.g. -40 -> -4 °C
+    "getMXH": 0,  # Maximum humidity threshold: show as whole number
+    "getMXT": 0,  # Maximum temperature threshold: e.g. 490 -> 49 °C
+    "getNET": 2,  # Mains voltage: show with 2 decimal places
+    "getNOR": 0,  # Regenerations (normal operation): show as whole number by default
+    "getNPS": 0,  # No turbine pulses since: show as whole number of seconds
+    "getOWH": 0,  # Outgoing water hardness: show as whole number by default
+    "getPRF": 0,  # Active leak protection profile
+    "getPR1": 0,  # Return time to profile 1
+    "getPR2": 0,  # Return time to profile 2
+    "getPR3": 0,  # Return time to profile 3
+    "getPR4": 0,  # Return time to profile 4
+    "getPR5": 0,  # Return time to profile 5
+    "getPR6": 0,  # Return time to profile 6
+    "getPR7": 0,  # Return time to profile 7
+    "getPR8": 0,  # Return time to profile 8
+    "getPRS": 1,  # Pressure: show with 1 decimal place by default
+    "getPST": 0,  # Pressure sensor installed: show as whole number by default
+    "getRCP": 0,  # Synchronisation interval: show as whole number of seconds
+    "getRDO": 0,  # Salt dosing: show as whole number by default
+    "getRMO": 0,  # Regeneration mode (1=Standard, 2=ECO, 3=Power, 4=Automatik)
+    "getRPD": 0,  # Regeneration interval: show as whole days by default
+    "getRE1": 0,  # Reserve capacity bottle 1: show as whole number by default
+    "getRE2": 0,  # Reserve capacity bottle 2: show as whole number by default
+    "getRES": 0,  # Remaining capacity: show as whole number by default
+    "getCOA": 0,  # Counter of automatic backwashes: show as whole number by default
+    "getCOM": 0,  # Counter of manual backwashes: show as whole number by default
+    "getRSA": 0,  # Backwash interval: show as whole days by default
+    "getRSD": 0,  # Backwash duration: show as whole seconds by default
+    "getRSE": 0,  # Backwash reminder interval: show as whole days by default
+    "getLFT": 0,  # Last refill duration: show as whole number of seconds
+    "getLFV": 0,  # Last refilled volume: show as whole number by default
+    "getNMS": 0,  # No valve movement since: show as whole number of seconds
+    "getNMT": 0,  # Time until valve self-test becomes active: show as whole days by default
+    "getNPT": 0,  # Time until alarm A8 becomes active: show as whole days by default
+    "getNRT": 0,  # No refill since: show as whole number of seconds
+    "getTRT": 0,  # Cumulative refill time: show as whole number of seconds
+    "getTRV": 0,  # Cumulative refilled volume: show as whole number by default
+    "getRG1": 0,  # Regeneration 1: show as whole number by default
+    "getRG2": 0,  # Regeneration 2: show as whole number by default
+    "getRG3": 0,  # Regeneration 3: show as whole number by default
+    "getSLE": 0,  # Remaining time in seconds of an active self-learning phase: show as whole number by default
+    "getSLF": 0,  # Self-learning phase volume (l/h)
+    "getSLT": 0,  # Time in self-learning phase (seconds)
+    "getSLV": 0,  # Self-learning phase volume (l)
+    "getSRE": 0,  # Regeneration active flag: values unclear
+    "getSRO": 0,  # Display rotation: show as whole number by default
+    "getSS1": 0,  # Salt container supply 1: show as whole number by default
+    "getSS2": 0,  # Salt container supply 2: show as whole number by default
+    "getSS3": 0,  # Salt container supply 3: show as whole number by default
+    "getSV1": 0,  # Salt container volume 1: show as whole number by default
+    "getSV2": 0,  # Salt container volume 2: show as whole number by default
+    "getSV3": 0,  # Salt container volume 3: show as whole number by default
+    "getTYP": 0,  # Device type: show as whole number by default
+    "getTMP": 0,  # Deactivate leakage protection for n seconds: show as whole number by default
+    "getTOR": 0,  # Total regenerations: show as whole number by default
+    "getT1": 1,  # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
+    "getT2": 1,  # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
+    "getUL": 0,  # Leakage protection - Absent level: show as whole number by default
+    "getVLV": 0,  # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
+    "getVPS1": 0,  # No turbine pulses on control head 1 since: show as whole number of seconds by default
+    "getVPS2": 0,  # No turbine pulses on control head 2 since: show as whole number of seconds by default
+    "getVOL": 3,  # Total water volume: show in cubic meters (m³) with 3 decimals by default
+    "getWFR": 0,  # Wi-Fi signal strength: show as whole number by default
+    "getWFS": 0,  # Wi-Fi connection status
+    "getWMP": 0,  # Measurement interval: show as whole number of seconds
     # Leak protection numeric precisions (integers)
-    "getPF1": 0, "getPF2": 0, "getPF3": 0, "getPF4": 0, "getPF5": 0, "getPF6": 0, "getPF7": 0, "getPF8": 0,
-    "getPT1": 0, "getPT2": 0, "getPT3": 0, "getPT4": 0, "getPT5": 0, "getPT6": 0, "getPT7": 0, "getPT8": 0,
-    "getPV1": 0, "getPV2": 0, "getPV3": 0, "getPV4": 0, "getPV5": 0, "getPV6": 0, "getPV7": 0, "getPV8": 0,
-
+    "getPF1": 0,
+    "getPF2": 0,
+    "getPF3": 0,
+    "getPF4": 0,
+    "getPF5": 0,
+    "getPF6": 0,
+    "getPF7": 0,
+    "getPF8": 0,
+    "getPT1": 0,
+    "getPT2": 0,
+    "getPT3": 0,
+    "getPT4": 0,
+    "getPT5": 0,
+    "getPT6": 0,
+    "getPT7": 0,
+    "getPT8": 0,
+    "getPV1": 0,
+    "getPV2": 0,
+    "getPV3": 0,
+    "getPV4": 0,
+    "getPV5": 0,
+    "getPV6": 0,
+    "getPV7": 0,
+    "getPV8": 0,
     # Water treatment / Filling (Conel Clear Pro Fill)
-    "getCRS": 1,    # Cartridge size (liters): show with 1 decimal place (e.g., 2.5 L)
-    "getCRT": 0,    # Cartridge type: show as whole number by default
-    "getLOT": 0,    # Maximum output conductivity: show as whole number by default
-    "getLRC": 0,    # Liter(s) remaining softening capacity: show as whole number by default
-    "getOHW": 0,    # Soft water hardness: show as whole number by default
-    "getPRC": 0,    # Percent remaining softening capacity: show as whole number by default
-    "getRCD": 0,    # Filling processes period: show as whole number by default
-    "getRCC": 0,    # Number of filling cycles in the current period: show as whole number by default
-    "getRCN": 0,    # Counter of all refills: show as whole number by default
-    "getRMN": 0,    # Filling processes count: show as whole number by default
-    "getRMT": 0,    # Maximum filling duration: show as whole number of minutes
-    "getRVT": 0,    # Maximum filling charges: show as whole number by default
-    "getTPR": 1,    # Target pressure: show with 1 decimal place (e.g., 1.8 bar)
+    "getCRS": 1,  # Cartridge size (liters): show with 1 decimal place (e.g., 2.5 L)
+    "getCRT": 0,  # Cartridge type: show as whole number by default
+    "getLOT": 0,  # Maximum output conductivity: show as whole number by default
+    "getLRC": 0,  # Liter(s) remaining softening capacity: show as whole number by default
+    "getOHW": 0,  # Soft water hardness: show as whole number by default
+    "getPRC": 0,  # Percent remaining softening capacity: show as whole number by default
+    "getRCD": 0,  # Filling processes period: show as whole number by default
+    "getRCC": 0,  # Number of filling cycles in the current period: show as whole number by default
+    "getRCN": 0,  # Counter of all refills: show as whole number by default
+    "getRMN": 0,  # Filling processes count: show as whole number by default
+    "getRMT": 0,  # Maximum filling duration: show as whole number of minutes
+    "getRVT": 0,  # Maximum filling charges: show as whole number by default
+    "getTPR": 1,  # Target pressure: show with 1 decimal place (e.g., 1.8 bar)
 }
 
 # Select options, sorted by name:
@@ -1428,7 +1614,8 @@ _SYR_CONNECT_SELECT_ALD_OPTIONS = [
 # Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
 # _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
 _SYR_CONNECT_SELECT_CRS_MAP = {
-    f"{v:g} {_SYR_CONNECT_SENSOR_UNIT['getCRS']}": k for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
+    f"{v:g} {_SYR_CONNECT_SENSOR_UNIT['getCRS']}": k
+    for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
 }
 
 # Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
@@ -1521,21 +1708,25 @@ _SYR_CONNECT_SELECT_RMO_MAP = {
 }
 
 # Maximum filling duration (getRMT) in minutes: 1-5 (step 1), 10, 15-60 (step 15), 60-720 (step 30)
-_SYR_CONNECT_SELECT_RMT_OPTIONS = sorted({
-    *range(1, 6),
-    10,
-    *range(15, 61, 15),
-    *range(60, 721, 30),
-})
+_SYR_CONNECT_SELECT_RMT_OPTIONS = sorted(
+    {
+        *range(1, 6),
+        10,
+        *range(15, 61, 15),
+        *range(60, 721, 30),
+    }
+)
 
 # Maximum filling charges (getRVT) in liters: 0=off, 10-100 in steps of 10,
 # 100-1000 in steps of 50, 1000-9900 in steps of 100
-_SYR_CONNECT_SELECT_RVT_OPTIONS = sorted({
-    0,
-    *range(10, 101, 10),
-    *range(100, 1001, 50),
-    *range(1000, 9901, 100),
-})
+_SYR_CONNECT_SELECT_RVT_OPTIONS = sorted(
+    {
+        0,
+        *range(10, 101, 10),
+        *range(100, 1001, 50),
+        *range(1000, 9901, 100),
+    }
+)
 
 # Measurement interval (getWMP) in seconds: non-uniform duration steps as documented in
 # docs/syrconnect-protocol.md. Display labels come from the select.getwmp translation "state" map.

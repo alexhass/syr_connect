@@ -35,7 +35,12 @@ SENSOR_KNOWN_KEYS = {
     # --- Flow ---
     "getFLO",
     # --- Alarm / Notification / Warning ---
-    "getALA", "getALM", "getALN", "getALW", "getNOT", "getWRN",
+    "getALA",
+    "getALM",
+    "getALN",
+    "getALW",
+    "getNOT",
+    "getWRN",
     # --- Pressure ---
     "getBAR2",
     # --- Voltage / Battery ---
@@ -45,11 +50,28 @@ SENSOR_KNOWN_KEYS = {
     # --- Device Status ---
     "getDFM",
     # --- Device Info & Diagnostics ---
-    "getEGW", "getEIP", "getLNG", "getMAC1", "getMAC2", "getSRN", "getVER",
+    "getEGW",
+    "getEIP",
+    "getLNG",
+    "getMAC1",
+    "getMAC2",
+    "getSRN",
+    "getVER",
     # --- Wi-Fi ---
-    "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
+    "getAPT",
+    "getWFC",
+    "getWFR",
+    "getWFS",
+    "getWGW",
+    "getWIP",
     # --- Lock / Connection Centre ---
-    "getCFT", "getCFV", "getLFT", "getLFV", "getNRT", "getTRT", "getTRV",
+    "getCFT",
+    "getCFV",
+    "getLFT",
+    "getLFV",
+    "getNRT",
+    "getTRT",
+    "getTRV",
 }
 
 SELECT_KNOWN_KEYS: set[str] = set()
@@ -63,7 +85,9 @@ BINARY_SENSOR_KNOWN_KEYS = {
 }
 
 BUTTON_KNOWN_KEYS = {
-    "setALA", "setNOT", "setWRN",
+    "setALA",
+    "setNOT",
+    "setWRN",
 }
 
 # No shutoff valve confirmed for this "Connection centre" role.

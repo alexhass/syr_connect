@@ -84,7 +84,9 @@ def test_compute_xml_checksum_with_attributes():
 
     # Must produce a non-zero hex string, and 'n' attribute must be ignored
     assert result != "0"
-    result_without_n = checksum.compute_xml_checksum('<root><element a="value1" b="value2"/></root>')
+    result_without_n = checksum.compute_xml_checksum(
+        '<root><element a="value1" b="value2"/></root>'
+    )
     assert result == result_without_n
 
 
@@ -93,7 +95,9 @@ def test_compute_element_checksum_matches_xml_checksum():
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     xml_string = '<sc><si v="1.2.3"/><us ug="a &amp; &lt;b&gt;"/><col><dcl dclg="d" fref="1"><c n="x" v="1"/></dcl></col></sc>'
 
-    assert checksum.compute_element_checksum(DefusedET.fromstring(xml_string)) == checksum.compute_xml_checksum(xml_string)
+    assert checksum.compute_element_checksum(
+        DefusedET.fromstring(xml_string)
+    ) == checksum.compute_xml_checksum(xml_string)
 
 
 def test_compute_xml_checksum_invalid_xml():
@@ -106,7 +110,7 @@ def test_compute_xml_checksum_invalid_xml():
 def test_compute_checksum_next_byte_and_offset_negative() -> None:
     """A key character missing from base_characters uses offset 0."""
     # base characters long enough for wrapping logic and indexing
-    base = ''.join(chr(65 + i) for i in range(64))
+    base = "".join(chr(65 + i) for i in range(64))
 
     # Use a key character that is NOT present in base to trigger the offset 0 fallback
     checksum = SyrChecksum(base, "!")
@@ -119,7 +123,7 @@ def test_compute_checksum_next_byte_and_offset_negative() -> None:
 def test_compute_checksum_with_high_offset_key() -> None:
     """Use a key with a high offset to exercise the wrapping branch."""
     # Create a 32-length base so offsets can be large and wrapping can occur
-    base32 = ''.join(chr(65 + i) for i in range(32))
+    base32 = "".join(chr(65 + i) for i in range(32))
     # pick last char to maximize offset
     key = base32[-1]
     checksum = SyrChecksum(base32, key)
@@ -151,5 +155,7 @@ def test_fixture_checksum_is_valid(fixture: Path) -> None:
     for cs in cs_elements:
         root.remove(cs)
 
-    checksum = SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2)
+    checksum = SyrChecksum(
+        _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
+    )
     assert checksum.compute_element_checksum(root) == expected

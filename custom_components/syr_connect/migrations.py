@@ -63,11 +63,15 @@ def v2_to_v3_fix_flo_unit(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """
     ent_reg = er.async_get(hass)
     for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
-        if entity_entry.domain != "sensor" or not entity_entry.unique_id.endswith("_getFLO"):
+        if entity_entry.domain != "sensor" or not entity_entry.unique_id.endswith(
+            "_getFLO"
+        ):
             continue
         # Legacy field: set directly on entity (older HA versions / manual UI override)
         if entity_entry.unit_of_measurement == UnitOfVolumeFlowRate.LITERS_PER_MINUTE:
-            ent_reg.async_update_entity(entity_entry.entity_id, unit_of_measurement=None)
+            ent_reg.async_update_entity(
+                entity_entry.entity_id, unit_of_measurement=None
+            )
         # HA stores the suggested unit in "sensor.private" (set automatically on first
         # registration) and the user-selected unit in "sensor" (set via UI).
         # Both namespaces must be cleared so HA picks up the new native unit from code.
@@ -124,10 +128,14 @@ def v5_to_v6_fix_nps_unit(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """
     ent_reg = er.async_get(hass)
     for entity_entry in er.async_entries_for_config_entry(ent_reg, entry.entry_id):
-        if entity_entry.domain != "sensor" or not entity_entry.unique_id.endswith("_getNPS"):
+        if entity_entry.domain != "sensor" or not entity_entry.unique_id.endswith(
+            "_getNPS"
+        ):
             continue
         if entity_entry.unit_of_measurement == "":
-            ent_reg.async_update_entity(entity_entry.entity_id, unit_of_measurement=None)
+            ent_reg.async_update_entity(
+                entity_entry.entity_id, unit_of_measurement=None
+            )
         for namespace in ("sensor.private", "sensor"):
             ns_opts = dict(entity_entry.options.get(namespace, {}))
             changed = False

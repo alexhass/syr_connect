@@ -66,7 +66,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if scan_interval is None:
             # Pass a mapping-like object to the helper so it can inspect
             # `data` (config_data) and `options` consistently.
-            scan_interval = get_default_scan_interval_for_entry({"data": config_data, "options": {}})
+            scan_interval = get_default_scan_interval_for_entry(
+                {"data": config_data, "options": {}}
+            )
 
         super().__init__(
             hass,
@@ -101,8 +103,12 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 login_required=config_data.get(CONF_LOGIN_REQUIRED),
             )
             self._username = None  # Not used for JSON API
-            self._configuration_url: str | None = None  # No cloud service URL for local JSON API
-            _LOGGER.info("Coordinator initialized with JSON API (host=%s, model=%s)", host, model)
+            self._configuration_url: str | None = (
+                None  # No cloud service URL for local JSON API
+            )
+            _LOGGER.info(
+                "Coordinator initialized with JSON API (host=%s, model=%s)", host, model
+            )
         else:
             # Cloud XML API (default)
             username = config_data[CONF_USERNAME]
@@ -152,7 +158,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             raise
         except SyrConnectAuthError as err:
             _LOGGER.error("Authentication failed: %s", err)
-            raise ConfigEntryAuthFailed("Authentication failed. Please reconfigure the integration.") from err
+            raise ConfigEntryAuthFailed(
+                "Authentication failed. Please reconfigure the integration."
+            ) from err
         except SyrConnectConnectionError as err:
             # Temporary failures happen (cloud outage, maintenance page, device reboot), e.g. when
             # the re-login after a rejected session token fails. Keep the data of the last update
@@ -160,7 +168,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # The coordinator data is None until the first successful refresh
             previous: dict[str, Any] | None = self.data
             if previous is not None:
-                _LOGGER.warning("Connection failed, keeping the data of the last update: %s", err)
+                _LOGGER.warning(
+                    "Connection failed, keeping the data of the last update: %s", err
+                )
                 self.device_list_complete = False
                 return previous
             # First refresh: nothing to keep, setup is retried (ConfigEntryNotReady)
@@ -196,7 +206,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         all_devices = []
 
         # Get devices from all projects in parallel
-        device_tasks = [self.api.get_devices(project["id"]) for project in self.api.projects]
+        device_tasks = [
+            self.api.get_devices(project["id"]) for project in self.api.projects
+        ]
 
         # Gather device lists for all projects. We use `return_exceptions=True`
         # so asyncio.gather will never raise; any per-project failures are
@@ -219,14 +231,18 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 previous = self._previous_project_devices(project["id"])
                 _LOGGER.warning(
                     "Failed to get devices for project %s, keeping %d device(s) from the last update: %s",
-                    project["name"], len(previous), result,
+                    project["name"],
+                    len(previous),
+                    result,
                 )
                 all_devices.extend(previous)
                 failed_projects += 1
                 continue
             devices: list[dict[str, Any]] = result
 
-            _LOGGER.debug("Found %d device(s) in project %s", len(devices), project["name"])
+            _LOGGER.debug(
+                "Found %d device(s) in project %s", len(devices), project["name"]
+            )
 
             # Get status for all devices in parallel
             status_tasks = [self._fetch_device_status(device) for device in devices]
@@ -246,7 +262,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
 
         # On the first refresh there is nothing to keep: without any device list,
         # setup is retried (ConfigEntryNotReady) instead of showing an empty account.
-        if failed_projects and failed_projects == len(projects_devices) and self.data is None:
+        if (
+            failed_projects
+            and failed_projects == len(projects_devices)
+            and self.data is None
+        ):
             raise SyrConnectConnectionError(
                 f"Failed to get the device list of all {failed_projects} project(s)"
             )
@@ -259,9 +279,13 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """Return the devices of a project from the last successful update."""
         if not self.data:
             return []
-        return [d for d in self.data.get("devices", []) if d.get("project_id") == project_id]
+        return [
+            d for d in self.data.get("devices", []) if d.get("project_id") == project_id
+        ]
 
-    async def _fetch_device_status(self, device: dict[str, Any]) -> dict[str, Any] | None:
+    async def _fetch_device_status(
+        self, device: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Fetch status for a single device.
 
         Args:
@@ -274,7 +298,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # DCLG remains the device identifier for XML API calls
             dclg = device.get("dclg", device["id"])
 
-            _LOGGER.debug("Device %s: Fetching status via %s API", device.get("id"), self._api_type.upper())
+            _LOGGER.debug(
+                "Device %s: Fetching status via %s API",
+                device.get("id"),
+                self._api_type.upper(),
+            )
             status = await self.api.get_device_status(dclg)
 
             # If parser signalled that the response did not contain the
@@ -299,7 +327,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             # dst=0 (never online) or dst=1 (offline) means the device is not reachable via the cloud.
             # Mark it unavailable so all entities show as "Unavailable" in HA.
             if is_device_offline(status.get("dst")):
-                _LOGGER.debug("Device %s is offline (dst=%s); marking unavailable", device.get("id"), status.get("dst"))
+                _LOGGER.debug(
+                    "Device %s is offline (dst=%s); marking unavailable",
+                    device.get("id"),
+                    status.get("dst"),
+                )
                 device["available"] = False
             else:
                 device["available"] = True
@@ -310,7 +342,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             try:
                 get_sensor_iwh_value(status)
             except (ValueError, TypeError) as err:
-                _LOGGER.warning("Failed to compute derived sensor values for device %s: %s", device.get("id"), err)
+                _LOGGER.warning(
+                    "Failed to compute derived sensor values for device %s: %s",
+                    device.get("id"),
+                    err,
+                )
 
             # Remove "device offline" repair issues left over from older versions,
             # which created one on every failed status poll
@@ -322,7 +358,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         except Exception as err:  # noqa: BLE001
             # Temporary failures happen (routing, timeouts). Only log them and keep the
             # previous values; no unavailable state and no repair issue.
-            _LOGGER.warning("Failed to get status for device %s, keeping previous status: %s", device["id"], err)
+            _LOGGER.warning(
+                "Failed to get status for device %s, keeping previous status: %s",
+                device["id"],
+                err,
+            )
             return self._previous_device_or_empty(device)
         else:
             return device
@@ -338,9 +378,14 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             previous_devices: list[dict[str, Any]] = self.data.get("devices", [])
             for prev in previous_devices:
                 if prev.get("id") == device.get("id"):
-                    _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
+                    _LOGGER.debug(
+                        "Reusing previous status for device %s", device.get("id")
+                    )
                     return prev
-        _LOGGER.debug("No previous status for device %s; keeping device available with empty status", device.get("id"))
+        _LOGGER.debug(
+            "No previous status for device %s; keeping device available with empty status",
+            device.get("id"),
+        )
         device["status"] = {}
         device["available"] = True
         return device
@@ -369,7 +414,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                 return dclg
         return None
 
-    async def async_set_device_value(self, device_id: str, command: str, value: Any) -> None:
+    async def async_set_device_value(
+        self, device_id: str, command: str, value: Any
+    ) -> None:
         """Set a device value.
 
         Args:
@@ -382,7 +429,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """
         await self.async_set_device_values(device_id, [(command, value)])
 
-    async def async_set_device_values(self, device_id: str, commands: list[tuple[str, Any]]) -> None:
+    async def async_set_device_values(
+        self, device_id: str, commands: list[tuple[str, Any]]
+    ) -> None:
         """Set several device values together.
 
         The XML API sends all commands in a single request, so they are applied
@@ -413,7 +462,14 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
-                device = next((dev for dev in new_data.get("devices", []) if dev.get("id") == device_id), None)
+                device = next(
+                    (
+                        dev
+                        for dev in new_data.get("devices", [])
+                        if dev.get("id") == device_id
+                    ),
+                    None,
+                )
                 applied = False
                 for command, value in commands:
                     # "clrXYZ" clears an alarm; it has no value to show optimistically
@@ -432,7 +488,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                         )
                         continue
                     if device is not None:
-                        device.setdefault("status", {})[f"get{command[3:]}"] = str(value)
+                        device.setdefault("status", {})[f"get{command[3:]}"] = str(
+                            value
+                        )
                         device["available"] = True
                     applied = True
                 if applied:
@@ -440,18 +498,24 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
                     optimistic_data = new_data
 
         except (KeyError, AttributeError, TypeError, ValueError) as err:
-            _LOGGER.warning("Failed to apply optimistic update to coordinator data: %s", err)
+            _LOGGER.warning(
+                "Failed to apply optimistic update to coordinator data: %s", err
+            )
 
         try:
             await self.api.set_device_status(dclg, commands)
         except Exception:
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
-            _LOGGER.debug("Failed to set device %s via API, re-raising to caller", device_id)
+            _LOGGER.debug(
+                "Failed to set device %s via API, re-raising to caller", device_id
+            )
             self._rollback_optimistic_update(previous_data, optimistic_data)
             raise
 
-    def _rollback_optimistic_update(self, previous_data: Any, optimistic_data: dict[str, Any] | None) -> None:
+    def _rollback_optimistic_update(
+        self, previous_data: Any, optimistic_data: dict[str, Any] | None
+    ) -> None:
         """Restore the data from before an optimistic update whose command failed.
 
         Without this, the entity keeps showing a value the device never received
@@ -462,7 +526,9 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         if optimistic_data is not None and self.data is optimistic_data:
             self.async_set_updated_data(previous_data)
 
-    async def async_clear_device_alarm(self, device_id: str, field: str = "ala") -> None:
+    async def async_clear_device_alarm(
+        self, device_id: str, field: str = "ala"
+    ) -> None:
         """Clear active alarm via the /clr/{field} endpoint (JSON API) or clr command (XML API).
 
         Args:
@@ -474,13 +540,21 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
         """
         if isinstance(self.api, SyrConnectJsonAPI):
             await self.api.request_json_data(f"clr/{field}")
-            _LOGGER.info("Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id)
+            _LOGGER.info(
+                "Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id
+            )
         else:
             dclg = self._get_device_dclg_from_srn(device_id) or device_id
             await self.api.set_device_status(dclg, [(f"clr{field.upper()}", "")])
-            _LOGGER.info("Coordinator: Cleared alarm via clr%s for device %s", field.upper(), device_id)
+            _LOGGER.info(
+                "Coordinator: Cleared alarm via clr%s for device %s",
+                field.upper(),
+                device_id,
+            )
 
-    async def async_open_valve(self, device_id: str, set_key: str, set_val: Any) -> None:
+    async def async_open_valve(
+        self, device_id: str, set_key: str, set_val: Any
+    ) -> None:
         """Open the valve, prepending an alarm-clear command when an alarm is active.
 
         When an active alarm is detected in the device status the clear command
@@ -528,7 +602,11 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             field = "alm" if alarm_style_alm else "ala"
             get_key = f"get{field.upper()}"
             raw = status.get(get_key)
-            if raw is not None and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+            if (
+                raw is not None
+                and str(raw).strip().upper()
+                not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
+            ):
                 if alarm_clear_via_set:
                     clear_prefix = (f"set{field.upper()}", "FF")
                 else:
@@ -555,13 +633,17 @@ class SyrConnectDataUpdateCoordinator(DataUpdateCoordinator):
             return
 
         # --- Active alarm: send clear + open together (optimistic update and rollback included) ---
-        if isinstance(self.api, SyrConnectJsonAPI) and clear_prefix[0].startswith("clr"):
+        if isinstance(self.api, SyrConnectJsonAPI) and clear_prefix[0].startswith(
+            "clr"
+        ):
             # The JSON API clears alarms via its own /clr/<field> endpoint, not via set
             await self.api.request_json_data(f"clr/{clear_prefix[0][3:].lower()}")
             await self.async_set_device_values(device_id, [(set_key, set_val)])
         else:
             # XML API: clear + open in a single request. JSON API (setALA=FF): sent one after another.
-            await self.async_set_device_values(device_id, [clear_prefix, (set_key, set_val)])
+            await self.async_set_device_values(
+                device_id, [clear_prefix, (set_key, set_val)]
+            )
         _LOGGER.info(
             "Valve open with alarm clear: sent %s and %s=%s for device %s",
             clear_prefix[0],

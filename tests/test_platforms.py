@@ -18,7 +18,9 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 
-def _build_coordinator(hass: HomeAssistant, data: dict) -> SyrConnectDataUpdateCoordinator:
+def _build_coordinator(
+    hass: HomeAssistant, data: dict
+) -> SyrConnectDataUpdateCoordinator:
     config_data = {
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",

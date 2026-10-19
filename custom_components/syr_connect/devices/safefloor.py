@@ -26,26 +26,46 @@ SENSOR_KNOWN_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Alarm ---
-    "getALA", "getALD",
+    "getALA",
+    "getALD",
     # --- Voltage / Battery ---
     "getBAT",
     # --- Water Quality / Ambient ---
-    "getCEL", "getHMD",
+    "getCEL",
+    "getHMD",
     # --- Alarm Thresholds (SafeFloor) ---
-    "getMIH", "getMXH", "getMIT", "getMXT",
+    "getMIH",
+    "getMXH",
+    "getMIT",
+    "getMXT",
     # --- Intervals ---
-    "getRCP", "getWMP",
+    "getRCP",
+    "getWMP",
     # --- Device Info & Diagnostics ---
-    "getMAC", "getSRN", "getTYP", "getVER",
+    "getMAC",
+    "getSRN",
+    "getTYP",
+    "getVER",
     # --- Wi-Fi ---
-    "getAPT", "getWFC", "getWFR", "getWFS", "getWGW", "getWIP",
+    "getAPT",
+    "getWFC",
+    "getWFR",
+    "getWFS",
+    "getWGW",
+    "getWIP",
 }
 
 # No display rotation, no regeneration/filling/salt configuration, no
 # leak-protection profiles - but the alarm/humidity/temperature thresholds and
 # sync/measurement intervals are user-adjustable settings on this model.
 SELECT_KNOWN_KEYS = {
-    "getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP",
+    "getALD",
+    "getMIH",
+    "getMXH",
+    "getMIT",
+    "getMXT",
+    "getRCP",
+    "getWMP",
 }
 
 # No buzzer/switch on this model.

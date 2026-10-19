@@ -42,7 +42,9 @@ def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:
     return entry
 
 
-async def test_async_setup_entry_no_coordinator_data_logs_warning(hass: HomeAssistant, caplog) -> None:
+async def test_async_setup_entry_no_coordinator_data_logs_warning(
+    hass: HomeAssistant, caplog
+) -> None:
     """When `entry.runtime_data.data` is falsy, setup should warn and return."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = None
@@ -57,7 +59,9 @@ async def test_async_setup_entry_no_coordinator_data_logs_warning(hass: HomeAssi
     assert "No coordinator data available for update platform" in caplog.text
 
 
-async def test_async_setup_entry_no_entities_when_getnot_missing(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_no_entities_when_getnot_missing(
+    hass: HomeAssistant,
+) -> None:
     """No update entity is created for a device without a getNOT key."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [{"id": "SN1", "name": "Dev1", "status": {}}]}
@@ -69,11 +73,15 @@ async def test_async_setup_entry_no_entities_when_getnot_missing(hass: HomeAssis
     mock_add_entities.assert_not_called()
 
 
-async def test_async_setup_entry_creates_entity_when_getnot_present(hass: HomeAssistant) -> None:
+async def test_async_setup_entry_creates_entity_when_getnot_present(
+    hass: HomeAssistant,
+) -> None:
     """An update entity is created for a device reporting getNOT."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = {
-        "devices": [{"id": "SN2", "name": "Dev2", "status": {"getNOT": "FF", "getVER": "1.0"}}]
+        "devices": [
+            {"id": "SN2", "name": "Dev2", "status": {"getNOT": "FF", "getVER": "1.0"}}
+        ]
     }
     config_entry = _build_entry("entry_creates", mock_coordinator)
 
@@ -88,7 +96,11 @@ async def test_async_setup_entry_creates_entity_when_getnot_present(hass: HomeAs
 
 def test_update_entity_no_update_pending() -> None:
     """installed_version == latest_version when getNOT does not signal a new update."""
-    device = {"id": "SN3", "name": "Dev3", "status": {"getNOT": "FF", "getVER": "MuCo V.2.14"}}
+    device = {
+        "id": "SN3",
+        "name": "Dev3",
+        "status": {"getNOT": "FF", "getVER": "MuCo V.2.14"},
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
@@ -100,7 +112,11 @@ def test_update_entity_no_update_pending() -> None:
 
 def test_update_entity_update_available() -> None:
     """latest_version differs from installed_version when getNOT == '01'."""
-    device = {"id": "SN4", "name": "Dev4", "status": {"getNOT": "01", "getVER": "MuCo V.2.14"}}
+    device = {
+        "id": "SN4",
+        "name": "Dev4",
+        "status": {"getNOT": "01", "getVER": "MuCo V.2.14"},
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
@@ -181,7 +197,9 @@ async def test_update_entity_in_progress_until_getnot_04() -> None:
     """in_progress is True after install until getNOT switches to '04'."""
     status = {"getNOT": "01", "getVER": "MuCo V.2.14"}
     mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [{"id": "SN9", "name": "Dev9", "status": status}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN9", "name": "Dev9", "status": status}]
+    }
     mock_coordinator.async_set_device_value = AsyncMock()
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN9", "Dev9")
@@ -204,7 +222,9 @@ async def test_update_entity_in_progress_until_getnot_04() -> None:
 async def test_update_entity_in_progress_times_out() -> None:
     """in_progress ends after _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS even if getNOT never reaches '04'."""
     mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]
+    }
     mock_coordinator.async_set_device_value = AsyncMock()
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12")
@@ -214,10 +234,16 @@ async def test_update_entity_in_progress_times_out() -> None:
         await entity.async_install(version=None, backup=False)
         assert entity.in_progress is True
 
-    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS - 1):
+    with patch(
+        "custom_components.syr_connect.update.monotonic",
+        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS - 1,
+    ):
         assert entity.in_progress is True
 
-    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS):
+    with patch(
+        "custom_components.syr_connect.update.monotonic",
+        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
+    ):
         assert entity.in_progress is False
         entity._handle_coordinator_update()
 
@@ -227,7 +253,9 @@ async def test_update_entity_in_progress_times_out() -> None:
 def test_update_entity_not_in_progress_without_install() -> None:
     """The getNOT == '01' alone does not show progress; only a triggered install does."""
     mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [{"id": "SN10", "name": "Dev10", "status": {"getNOT": "01"}}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN10", "name": "Dev10", "status": {"getNOT": "01"}}]
+    }
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN10", "Dev10")
     entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
@@ -238,7 +266,12 @@ def test_update_entity_not_in_progress_without_install() -> None:
 
 def test_update_entity_available_while_installing_even_if_device_offline() -> None:
     """The device is offline while flashing; the entity must stay available during install."""
-    device = {"id": "SN13", "name": "Dev13", "status": {"getNOT": "01"}, "available": False}
+    device = {
+        "id": "SN13",
+        "name": "Dev13",
+        "status": {"getNOT": "01"},
+        "available": False,
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.last_update_success = False
@@ -252,7 +285,12 @@ def test_update_entity_available_while_installing_even_if_device_offline() -> No
 
 def test_update_entity_available_property() -> None:
     """The available property reflects coordinator.last_update_success and per-device availability."""
-    device = {"id": "SN7", "name": "Dev7", "status": {"getNOT": "FF"}, "available": False}
+    device = {
+        "id": "SN7",
+        "name": "Dev7",
+        "status": {"getNOT": "FF"},
+        "available": False,
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
     mock_coordinator.last_update_success = True
@@ -289,7 +327,9 @@ def test_update_entity_unique_id_has_update_suffix() -> None:
     """unique_id gets a '_update' suffix to avoid colliding with the getNOT sensor."""
     mock_coordinator = MagicMock()
     mock_coordinator.entry_id = "entry123"
-    mock_coordinator.data = {"devices": [{"id": "SN8", "name": "Dev8", "status": {"getNOT": "FF"}}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN8", "name": "Dev8", "status": {"getNOT": "FF"}}]
+    }
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN8", "Dev8")
 
@@ -300,9 +340,10 @@ def test_update_entity_category_is_diagnostic() -> None:
     """entity_category is DIAGNOSTIC so it doesn't show under the device page's Controls section."""
 
     mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [{"id": "SN11", "name": "Dev11", "status": {"getNOT": "01"}}]}
+    mock_coordinator.data = {
+        "devices": [{"id": "SN11", "name": "Dev11", "status": {"getNOT": "01"}}]
+    }
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN11", "Dev11")
 
     assert entity.entity_category is EntityCategory.DIAGNOSTIC
-

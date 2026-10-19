@@ -159,7 +159,12 @@ def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
 
 def test_add_checksum_is_idempotent() -> None:
     """Adding the checksum twice to the same root gives one <cs> and the same payload."""
-    pb = PayloadBuilder("1.2.3", SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2))
+    pb = PayloadBuilder(
+        "1.2.3",
+        SyrChecksum(
+            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
+        ),
+    )
     root = pb._new_request("sess")
 
     first = pb._add_checksum(root)
@@ -190,18 +195,26 @@ def _build_reference_payloads() -> dict[str, str]:
     )
     pb = PayloadBuilder(
         "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect",
-        SyrChecksum(_SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2),
+        SyrChecksum(
+            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
+        ),
     )
     with (
-        patch.object(PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"),
+        patch.object(
+            PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"
+        ),
         patch.object(PayloadBuilder, "_compute_local_tzo", return_value="02:00:00"),
-        patch.object(PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")),
+        patch.object(
+            PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")
+        ),
     ):
         return {
             "login": pb.build_login_payload("user@example.com", "secret"),
             "list": pb.build_device_get_list_payload(session, project),
             "status": pb.build_device_get_status_payload(session, device),
-            "set": pb.build_device_set_status_payload(session, device, [("setAB", 1), ("setSIR", "")]),
+            "set": pb.build_device_set_status_payload(
+                session, device, [("setAB", 1), ("setSIR", "")]
+            ),
             "water": pb.build_device_get_statistics_payload(session, device, "water"),
             "salt": pb.build_device_get_statistics_payload(session, device, "salt"),
         }
@@ -210,9 +223,13 @@ def _build_reference_payloads() -> dict[str, str]:
 @pytest.mark.parametrize("name", list(_REQUEST_FIXTURES))
 def test_payloads_match_request_fixtures(name: str) -> None:
     """Payloads equal the fixture (canonical XML, incl. real checksum, which pins attribute order)."""
-    expected = (REQUEST_FIXTURE_DIR / _REQUEST_FIXTURES[name]).read_text(encoding="utf-8")
+    expected = (REQUEST_FIXTURE_DIR / _REQUEST_FIXTURES[name]).read_text(
+        encoding="utf-8"
+    )
     actual = _build_reference_payloads()[name]
-    assert canonicalize(actual, strip_text=True) == canonicalize(expected, strip_text=True)
+    assert canonicalize(actual, strip_text=True) == canonicalize(
+        expected, strip_text=True
+    )
 
 
 def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
@@ -221,8 +238,11 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
-    with patch.object(PayloadBuilder, "_compute_local_tzo", return_value="01:00:00"), patch.object(
-        PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")
+    with (
+        patch.object(PayloadBuilder, "_compute_local_tzo", return_value="01:00:00"),
+        patch.object(
+            PayloadBuilder, "_compute_locale_lang_reg", return_value=("de", "DE")
+        ),
     ):
         payload = pb.build_login_payload("user<&>", "pwd<&>")
 
@@ -234,15 +254,23 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     assert 'lng="de"' in payload and 'reg="DE"' in payload
 
 
-def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lang(caplog) -> None:
+def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lang(
+    caplog,
+) -> None:
     """Statistics payload branches for salt and water include correct units and checksum."""
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
 
-    with patch.object(PayloadBuilder, "_compute_locale_lang_reg", return_value=("it", "IT")):
-        salt_payload = pb.build_device_get_statistics_payload("sess", "dev", statistic_type="salt")
-        water_payload = pb.build_device_get_statistics_payload("sess", "dev", statistic_type="water")
+    with patch.object(
+        PayloadBuilder, "_compute_locale_lang_reg", return_value=("it", "IT")
+    ):
+        salt_payload = pb.build_device_get_statistics_payload(
+            "sess", "dev", statistic_type="salt"
+        )
+        water_payload = pb.build_device_get_statistics_payload(
+            "sess", "dev", statistic_type="water"
+        )
 
     # Checksum added
     assert DefusedET.fromstring(salt_payload).find("cs").attrib["v"] == "CHK"
@@ -267,10 +295,14 @@ def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lan
         ("America/St_Johns", 1, "-03:30:00"),
     ],
 )
-def test_compute_local_tzo_uses_ha_time_zone(time_zone: str, month: int, expected: str) -> None:
+def test_compute_local_tzo_uses_ha_time_zone(
+    time_zone: str, month: int, expected: str
+) -> None:
     """The offset comes from the HA time zone incl. DST; positive offsets have no sign."""
     now = datetime(2026, month, 15, 12, 0, tzinfo=ZoneInfo(time_zone))
-    with patch("custom_components.syr_connect.payload_builder.dt_util.now", return_value=now):
+    with patch(
+        "custom_components.syr_connect.payload_builder.dt_util.now", return_value=now
+    ):
         assert PayloadBuilder._compute_local_tzo() == expected
 
 
@@ -294,10 +326,7 @@ def test_compute_locale_lang_reg_dash_and_single() -> None:
 @pytest.fixture
 def payload_builder():
     """Create a payload builder instance."""
-    checksum = SyrChecksum(
-        "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP",
-        "KHGK5X29LVNZU56T"
-    )
+    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     return PayloadBuilder("App-3.9.7-de-DE-iOS-iPhone", checksum)
 
 
@@ -341,12 +370,14 @@ def test_build_device_get_status_payload(payload_builder):
 
     assert "session123" in payload
     assert "device789" in payload
-    assert "fref=\"1\"" in payload
+    assert 'fref="1"' in payload
 
 
 def test_build_device_set_status_payload(payload_builder):
     """Test building set status payload."""
-    payload = payload_builder.build_device_set_status_payload("session123", "device789", [("setSIR", 0)])
+    payload = payload_builder.build_device_set_status_payload(
+        "session123", "device789", [("setSIR", 0)]
+    )
 
     assert "session123" in payload
     assert "device789" in payload
@@ -356,14 +387,18 @@ def test_build_device_set_status_payload(payload_builder):
 
 def test_build_device_set_status_payload_with_string_value(payload_builder):
     """Test building set status payload with string value."""
-    payload = payload_builder.build_device_set_status_payload("session123", "device789", [("setCNA", "NewName")])
+    payload = payload_builder.build_device_set_status_payload(
+        "session123", "device789", [("setCNA", "NewName")]
+    )
 
     assert "NewName" in payload
 
 
 def test_build_device_get_statistics_payload_water(payload_builder):
     """Test building statistics payload for water."""
-    payload = payload_builder.build_device_get_statistics_payload("session123", "device789", "water")
+    payload = payload_builder.build_device_get_statistics_payload(
+        "session123", "device789", "water"
+    )
 
     assert "session123" in payload
     assert "device789" in payload
@@ -373,7 +408,9 @@ def test_build_device_get_statistics_payload_water(payload_builder):
 
 def test_build_device_get_statistics_payload_salt(payload_builder):
     """Test building statistics payload for salt."""
-    payload = payload_builder.build_device_get_statistics_payload("session123", "device789", "salt")
+    payload = payload_builder.build_device_get_statistics_payload(
+        "session123", "device789", "salt"
+    )
 
     assert "session123" in payload
     assert "device789" in payload
@@ -410,7 +447,9 @@ def test_special_characters_escaping(payload_builder):
     special_chars_user = 'user&name"with<special>chars'
     special_chars_pass = "pass'word&test"
 
-    payload = payload_builder.build_login_payload(special_chars_user, special_chars_pass)
+    payload = payload_builder.build_login_payload(
+        special_chars_user, special_chars_pass
+    )
 
     # All special characters should be escaped
     assert "&amp;" in payload
@@ -448,7 +487,7 @@ def test_build_device_set_status_payload_escaping(payload_builder):
     payload = payload_builder.build_device_set_status_payload(
         "session&123",
         "device<456>",
-        [("command\"test", "value'123")],
+        [('command"test', "value'123")],
     )
 
     # Special characters should be escaped
@@ -461,7 +500,9 @@ def test_build_device_get_statistics_payload_escaping(payload_builder):
     session = "session&test"
     device = "device<test>"
 
-    payload = payload_builder.build_device_get_statistics_payload(session, device, "water")
+    payload = payload_builder.build_device_get_statistics_payload(
+        session, device, "water"
+    )
 
     # Special characters should be escaped
     assert "&amp;" in payload
@@ -470,7 +511,9 @@ def test_build_device_get_statistics_payload_escaping(payload_builder):
 
 def test_build_device_get_statistics_payload_default_type(payload_builder):
     """Test building statistics payload with default type (water)."""
-    payload = payload_builder.build_device_get_statistics_payload("session123", "device789")
+    payload = payload_builder.build_device_get_statistics_payload(
+        "session123", "device789"
+    )
 
     # Should default to water
     assert 't="1"' in payload
@@ -483,12 +526,14 @@ def test_add_checksum_integration(payload_builder):
 
     # Checksum should be at the end before closing tag
     assert '<cs v="' in payload
-    assert payload.index('<cs v="') < payload.index('</sc>')
+    assert payload.index('<cs v="') < payload.index("</sc>")
 
 
 def test_build_device_set_status_payload_int_value(payload_builder):
     """Test set status payload with integer value."""
-    payload = payload_builder.build_device_set_status_payload("sess", "dev", [("cmd", 42)])
+    payload = payload_builder.build_device_set_status_payload(
+        "sess", "dev", [("cmd", 42)]
+    )
 
     # Integer should be converted to string
     assert 'v="42"' in payload

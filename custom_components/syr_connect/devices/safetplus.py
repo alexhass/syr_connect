@@ -29,23 +29,37 @@ SENSOR_KNOWN_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
-    "getAB", "getAVO", "getVLV",
+    "getAB",
+    "getAVO",
+    "getVLV",
     # --- Alarm / Notification / Warning ---
-    "getALA", "getALM",
+    "getALA",
+    "getALM",
     # --- Pressure ---
     "getBAR",
     # --- Voltage / Battery ---
-    "getBAT", "getNET",
+    "getBAT",
+    "getNET",
     # --- Water Quality ---
     "getCEL",
     # --- Water Consumption & Volume ---
     "getVOL",
     # --- Microleakage Test ---
-    "getDBD", "getDMA", "getDRP", "getNPS",
+    "getDBD",
+    "getDMA",
+    "getDRP",
+    "getNPS",
     # --- Leak Protection (single profile only, no numbered profile family) ---
-    "getLE", "getT1", "getT2", "getTMP", "getUL",
+    "getLE",
+    "getT1",
+    "getT2",
+    "getTMP",
+    "getUL",
     # --- Device Info & Diagnostics ---
-    "getLNG", "getSRN", "getTYP", "getVER",
+    "getLNG",
+    "getSRN",
+    "getTYP",
+    "getVER",
 }
 
 # No select-worthy keys present for this model (no display rotation, no
