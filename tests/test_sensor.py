@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from dataclasses import replace
 from datetime import UTC, datetime
 import json
 from pathlib import Path
@@ -13,12 +14,11 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_SENSOR_DEVICE_CLASS,
+    _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
     _SYR_CONNECT_SENSOR_KNOWN_KEYS,
-    _SYR_CONNECT_SENSOR_STATE_CLASS,
-    _SYR_CONNECT_SENSOR_UNIT,
+    _SYR_CONNECT_SENSOR_TYPES,
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -67,13 +67,22 @@ def _build_entry(coordinator: SyrConnectDataUpdateCoordinator) -> MockConfigEntr
     return entry
 
 
+def test_sensor_descriptions_have_unique_keys() -> None:
+    """Every key is described once; a duplicate would silently replace the first one."""
+    keys = [description.key for description in _SYR_CONNECT_SENSOR_TYPES]
+    assert len(keys) == len(set(keys))
+    assert set(keys) == _SYR_CONNECT_SENSOR_KNOWN_KEYS
+
+
 def test_filling_status_sensor_metadata() -> None:
     """CFT and CFV expose their documented units as measurements."""
     assert {"getCFT", "getCFV"} <= _SYR_CONNECT_SENSOR_KNOWN_KEYS
-    assert _SYR_CONNECT_SENSOR_UNIT["getCFT"] == UnitOfTime.SECONDS
-    assert _SYR_CONNECT_SENSOR_UNIT["getCFV"] == UnitOfVolume.LITERS
-    assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCFT"] == "measurement"
-    assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCFV"] == "measurement"
+    cft = _SYR_CONNECT_SENSOR_DESCRIPTIONS["getCFT"]
+    cfv = _SYR_CONNECT_SENSOR_DESCRIPTIONS["getCFV"]
+    assert cft.native_unit_of_measurement == UnitOfTime.SECONDS
+    assert cfv.native_unit_of_measurement == UnitOfVolume.LITERS
+    assert cft.state_class == "measurement"
+    assert cfv.state_class == "measurement"
 
 
 @pytest.mark.parametrize(
@@ -666,7 +675,14 @@ async def test_async_setup_entry_preprocessing_device_get_raises(
 def test_getdbd_rounding_precision_typeerror(monkeypatch):
     """If precision is invalid and round() raises, getDBD returns None."""
 
-    monkeypatch.setitem(sensor_mod._SYR_CONNECT_SENSOR_UNIT_PRECISION, "getDBD", "bad")
+    monkeypatch.setitem(
+        sensor_mod._SYR_CONNECT_SENSOR_DESCRIPTIONS,
+        "getDBD",
+        replace(
+            sensor_mod._SYR_CONNECT_SENSOR_DESCRIPTIONS["getDBD"],
+            suggested_display_precision="bad",
+        ),
+    )
 
     # Create a coordinator-like object for the sensor
     data = {
@@ -1223,13 +1239,13 @@ async def test_sensor_icon_exception_handling(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getSWS": "invalid",  # Will cause exception in conversion
+                    "getCDE": "invalid",  # Will cause exception in conversion
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSWS")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCDE")
 
     # Should return base icon without crashing
     icon = sensor.icon
@@ -1716,13 +1732,13 @@ async def test_sensor_precision_without_config(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getXYZ": 123.456,  # Sensor without configured precision
+                    "getCYT": 123.456,  # Sensor without configured precision
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getXYZ")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCYT")
 
     # Without precision config, value should be returned as-is
     assert sensor.native_value == 123.456
@@ -1743,8 +1759,8 @@ async def test_sensor_native_value_none_status_key(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    # Create sensor for key that doesn't exist
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getMISSING")
+    # Create sensor for a known key that is missing from the status
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRES")
 
     # Should return None when key doesn't exist
     assert sensor.native_value is None
@@ -3379,12 +3395,10 @@ async def test_sensor_numeric_conversion_precision_type_error(
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
     # Mock precision to None and test
-    with patch.dict(
-        "custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION",
-        {"getPRS": None},
-    ):
-        value = sensor.native_value
-        assert value == 5.0
+    sensor.entity_description = replace(
+        sensor.entity_description, suggested_display_precision=None
+    )
+    assert sensor.native_value == 5.0
 
 
 async def test_sensor_available_device_not_available(hass: HomeAssistant) -> None:
@@ -4522,15 +4536,14 @@ async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
 # Tests merged from test_getcof_water_consumption.py
 def test_getcof_has_water_device_class():
     """Test that getCOF sensor has device_class=water for Energy Dashboard."""
-    assert "getCOF" in _SYR_CONNECT_SENSOR_DEVICE_CLASS
-
-    assert _SYR_CONNECT_SENSOR_DEVICE_CLASS["getCOF"] == SensorDeviceClass.WATER
+    cof = _SYR_CONNECT_SENSOR_DESCRIPTIONS["getCOF"]
+    assert cof.device_class == SensorDeviceClass.WATER
 
 
 def test_getcof_has_total_increasing_state_class():
     """Test that getCOF sensor has state_class=total_increasing for statistics."""
-    assert "getCOF" in _SYR_CONNECT_SENSOR_STATE_CLASS
-    assert _SYR_CONNECT_SENSOR_STATE_CLASS["getCOF"] == "total_increasing"
+    cof = _SYR_CONNECT_SENSOR_DESCRIPTIONS["getCOF"]
+    assert cof.state_class == "total_increasing"
 
 
 def test_getcof_returns_correct_value():
@@ -6131,15 +6144,14 @@ async def test_sensor_apply_numeric_conversion_exception(hass: HomeAssistant) ->
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
 
-    # Mock _SYR_CONNECT_SENSOR_UNIT_PRECISION to return value and test exception path
-    with patch(
-        "custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION",
-        {"getPRS": 2},
-    ):
-        # Manually test with value that causes exception during round
-        result = sensor._apply_numeric_conversion(5.0)
-        # Should return the value without precision when exception occurs
-        assert result == 0.5  # getPRS divides by 10
+    # Mock the precision to return value and test exception path
+    sensor.entity_description = replace(
+        sensor.entity_description, suggested_display_precision=2
+    )
+    # Manually test with value that causes exception during round
+    result = sensor._apply_numeric_conversion(5.0)
+    # Should return the value without precision when exception occurs
+    assert result == 0.5  # getPRS divides by 10
 
 
 async def test_sensor_native_value_vol_exception(hass: HomeAssistant) -> None:
@@ -7327,13 +7339,12 @@ def test_apply_numeric_conversion_precision_zero_returns_int(create_mock_coordin
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D", "getPRS")
 
-    with patch(
-        "custom_components.syr_connect.sensor._SYR_CONNECT_SENSOR_UNIT_PRECISION",
-        {"getPRS": 0},
-    ):
-        result = sensor._apply_numeric_conversion(50.0)
-        assert isinstance(result, int)
-        assert result == 5
+    sensor.entity_description = replace(
+        sensor.entity_description, suggested_display_precision=0
+    )
+    result = sensor._apply_numeric_conversion(50.0)
+    assert isinstance(result, int)
+    assert result == 5
 
 
 async def test_sensor_available_coordinator_fails(hass: HomeAssistant) -> None:

@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from dataclasses import replace
 import json
 from pathlib import Path
 from typing import Any
@@ -12,10 +13,6 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
-from custom_components.syr_connect.const import (
-    _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
-    _SYR_CONNECT_SENSOR_UNIT,
-)
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -32,6 +29,12 @@ from custom_components.syr_connect.select import (
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+
+
+def _patch_description(key: str, **changes: Any) -> Any:
+    """Patch fields of the sensor description of `key` that the selects read."""
+    descriptions = select_module._SYR_CONNECT_SENSOR_DESCRIPTIONS
+    return patch.dict(descriptions, {key: replace(descriptions[key], **changes)})
 
 
 def _build_coordinator(hass: HomeAssistant, data: dict) -> Any:
@@ -496,7 +499,7 @@ async def test_numeric_select_without_unit(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     # getRPD typically has "days" unit, but test without
-    with patch("custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNIT", {}):
+    with _patch_description("getRPD", native_unit_of_measurement=None):
         select = SyrConnectNumericSelect(
             coordinator, "device1", "Device 1", "getRPD", 1, 4, 1
         )
@@ -1587,10 +1590,7 @@ async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> No
         def __str__(self):
             raise ValueError("Cannot convert to string")
 
-    with patch(
-        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_UNIT",
-        {"getSV1": BadUnit()},
-    ):
+    with _patch_description("getSV1", native_unit_of_measurement=BadUnit()):
         select = SyrConnectNumericSelect(
             coordinator, "device1", "Device 1", "getSV1", 0, 25, 1
         )
@@ -3430,10 +3430,7 @@ def test_regeneration_select_disabled_by_default_when_in_set(hass):
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
-    with patch(
-        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT",
-        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT | {"getRTM"},
-    ):
+    with _patch_description("getRTM", entity_registry_enabled_default=False):
         select = SyrConnectRegenerationSelect(coordinator, "dev1", "D1")
 
     assert select.entity_registry_enabled_default is False
@@ -3445,10 +3442,7 @@ def test_discrete_select_disabled_by_default_when_in_set(hass):
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
     rmo_map = {"1": 1, "2": 2}
-    with patch(
-        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT",
-        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT | {"getRMO"},
-    ):
+    with _patch_description("getRMO", entity_registry_enabled_default=False):
         select = SyrConnectDiscreteSelect(coordinator, "dev1", "D1", "getRMO", rmo_map)
 
     assert select.entity_registry_enabled_default is False
@@ -3459,10 +3453,7 @@ def test_prf_select_disabled_by_default_when_in_set(hass):
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
-    with patch(
-        "custom_components.syr_connect.select._SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT",
-        _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT | {"getPRF"},
-    ):
+    with _patch_description("getPRF", entity_registry_enabled_default=False):
         select = SyrConnectPrfSelect(coordinator, "dev1", "D1")
 
     assert select.entity_registry_enabled_default is False
@@ -3819,7 +3810,7 @@ async def test_rmt_select_options_use_ha_minutes_unit(
 async def test_muco_select_option_units_come_from_central_unit_map(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
 ) -> None:
-    """Unit text of getCRS/getRVT/getLOT options comes from _SYR_CONNECT_SENSOR_UNIT, not hard-coded strings."""
+    """Unit text of getCRS/getRVT/getLOT options comes from the sensor descriptions, not hard-coded strings."""
 
     status = {"getCRS": "3", "getCRT": "1", "getRVT": "100", "getLOT": "7"}
     data = {
@@ -3839,7 +3830,9 @@ async def test_muco_select_option_units_come_from_central_unit_map(
 
     by_key = {e._sensor_key: e for e in entities if hasattr(e, "_sensor_key")}
     for key, value in {"getCRS": "7", "getRVT": "100", "getLOT": "70"}.items():
-        unit = _SYR_CONNECT_SENSOR_UNIT[key]
+        unit = select_module._SYR_CONNECT_SENSOR_DESCRIPTIONS[
+            key
+        ].native_unit_of_measurement
         assert by_key[key].options, key
         assert all(opt.endswith(f" {unit}") for opt in by_key[key].options), key
         assert by_key[key].current_option == f"{value} {unit}", key

@@ -14,7 +14,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
-    _SYR_CONNECT_SELECT_CRS_MAP,
     _SYR_CONNECT_SELECT_CRT_MAP,
     _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SELECT_MIH_MAP,
@@ -28,9 +27,9 @@ from .const import (
     _SYR_CONNECT_SELECT_RVT_OPTIONS,
     _SYR_CONNECT_SELECT_WMP_MAP,
     _SYR_CONNECT_SENSOR_CONFIG,
-    _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_UNIT,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -51,6 +50,13 @@ _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+# Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
+# _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
+_SYR_CONNECT_SELECT_CRS_MAP = {
+    f"{v:g} {_SYR_CONNECT_SENSOR_DESCRIPTIONS['getCRS'].native_unit_of_measurement}": k
+    for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
+}
 
 
 def _build_time_options(step_minutes: int = 15) -> list[str]:
@@ -117,13 +123,13 @@ def _unit_options(key: str, values: list[int]) -> list[str]:
     """Return option labels with the key's unit suffix, e.g. "30 min".
 
     Args:
-        key: Status key whose unit is used (from `_SYR_CONNECT_SENSOR_UNIT`)
+        key: Status key whose unit is used (from its sensor description)
         values: Raw option values
 
     Returns:
         One label per value, in the same order
     """
-    unit = _SYR_CONNECT_SENSOR_UNIT[key]
+    unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[key].native_unit_of_measurement
     return [f"{v} {unit}" for v in values]
 
 
@@ -418,7 +424,9 @@ def _async_setup_muco_conditional_selects(
         device_id: str, device_name: str, key: str
     ) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
         if key == "getLOT":
-            lot_unit = _SYR_CONNECT_SENSOR_UNIT["getLOT"]
+            lot_unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+                "getLOT"
+            ].native_unit_of_measurement
             lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(21)}
             return SyrConnectDiscreteSelect(
                 coordinator, device_id, device_name, "getLOT", lot_map
@@ -508,7 +516,9 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         if "getRTM" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
-        if "getRTM" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+            "getRTM"
+        ].entity_registry_enabled_default:
             self._attr_entity_registry_enabled_default = False
 
         _LOGGER.debug(
@@ -613,12 +623,16 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         self._scale = scale
 
         # Disable by default if key is in the disabled-by-default set
-        if sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+            sensor_key
+        ].entity_registry_enabled_default:
             self._attr_entity_registry_enabled_default = False
 
         # Determine unit label (if available) and build options (append unit for readability)
         unit_label = None
-        unit = _SYR_CONNECT_SENSOR_UNIT.get(self._sensor_key)
+        unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+            self._sensor_key
+        ].native_unit_of_measurement
         if unit is not None:
             try:
                 unit_label = str(unit)
@@ -770,7 +784,9 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         if "getSRO" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
-        if "getSRO" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+            "getSRO"
+        ].entity_registry_enabled_default:
             self._attr_entity_registry_enabled_default = False
 
         _LOGGER.debug(
@@ -863,7 +879,9 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
         if self._sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
-        if self._sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+        # A discrete select does not need a sensor for the same key
+        description = _SYR_CONNECT_SENSOR_DESCRIPTIONS.get(self._sensor_key)
+        if description is not None and not description.entity_registry_enabled_default:
             self._attr_entity_registry_enabled_default = False
 
         _LOGGER.debug(
@@ -966,7 +984,9 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:
             self._attr_entity_category = EntityCategory.CONFIG
 
-        if "getPRF" in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT:
+        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+            "getPRF"
+        ].entity_registry_enabled_default:
             self._attr_entity_registry_enabled_default = False
 
     @property

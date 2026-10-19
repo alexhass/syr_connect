@@ -5,7 +5,7 @@ applyTo: "custom_components/syr_connect/{const.py,sensor.py,select.py,translatio
 
 # New keys and translations
 
-- A new `getXXX` sensor key needs entries in `const.py`: known keys, device class, icon, state class, unit and precision. Mirror an existing similar key (for example `getBAR`). Check `sensor.py` for special-cased parsing by `_sensor_key`.
+- A new `getXXX` sensor key needs one `SyrConnectSensorEntityDescription` in `_SYR_CONNECT_SENSOR_TYPES` (`const.py`) with all its properties (device class, state class, unit, precision, entity category, enabled by default, `keep_as_string`) and an icon in `icons.json`. Mirror an existing similar key (for example `getBAR`). Check `sensor.py` for special-cased parsing by `_sensor_key`.
 - Keys without known meaning are not added, even if present in a fixture.
 - Add lowercase keys (`getxxx`) to all files in `translations/*.json`. Keep keys alphabetically sorted inside each object and use 2-space indentation.
 - `entity.select.<key>` translations are separate from `entity.sensor.<key>`. Duplicate `name` (and `state` for enum selects) for every select.

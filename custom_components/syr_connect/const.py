@@ -2,8 +2,14 @@
 
 # Configuration URL for device info
 
+from dataclasses import dataclass
+
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.const import (
     PERCENTAGE,
     UnitOfConductivity,
@@ -15,6 +21,7 @@ from homeassistant.const import (
     UnitOfVolume,
     UnitOfVolumeFlowRate,
 )
+from homeassistant.helpers.entity import EntityCategory
 
 DOMAIN = "syr_connect"
 
@@ -308,257 +315,1297 @@ _SYR_CONNECT_SENSOR_BINARY = {
     "getBUZ": BinarySensorDeviceClass.POWER,  # Buzzer on/off
 }
 
-# Allowlist of known sensor keys.
+
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectSensorEntityDescription(SensorEntityDescription):
+    """Describes a SYR Connect sensor; `key` is the status key (e.g. "getFLO")."""
+
+    # Return the value as string instead of converting it to a number (version, serial, MAC, ...)
+    keep_as_string: bool = False
+
+
+# Descriptions of all known sensor keys.
 #
 # Only API keys listed here will become sensor entities. Any key returned by
 # a firmware update that is not listed here is silently ignored.
-_SYR_CONNECT_SENSOR_KNOWN_KEYS = {
+_SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     # --- Connectivity (virtual, always created) ---
-    "dst",  # Device connection state (0=never online, 1=offline, 2=online, 3=standby)
+    SyrConnectSensorEntityDescription(
+        key="dst",  # Device connection state (0=never online, 1=offline, 2=online, 3=standby)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Valve & Flow ---
-    "getAB",  # Valve shutoff state (open / closed)
-    "getAVO",  # Current instantaneous flow rate
-    "getFLO",  # Water flow rate (l/h)
-    "getVLV",  # Valve position (10=closed, 11=closing, 20=open, 21=opening)
+    SyrConnectSensorEntityDescription(
+        key="getAB",  # Valve shutoff state (open / closed)
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getAVO",  # Current instantaneous flow rate
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=1,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getFLO",  # Water flow rate (l/h)
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVLV",  # Valve position (10=closed, 11=closing, 20=open, 21=opening)
+        suggested_display_precision=0,
+    ),
+    # getCFO is not listed: Cycle flow offset
+    # Its previous settings: suggested_display_precision=0.
     # --- Alarm / Notification / Warning ---
-    "getALA",  # Current alarm code
-    "getALM",  # List of last alarms (e.g. low salt level)
-    "getALN",  # List of last 8 notifications
-    "getALW",  # List of last 8 warnings
-    "getNOT",  # Current notification code
-    "getWRN",  # Current warning code
+    SyrConnectSensorEntityDescription(
+        key="getALA",  # Current alarm code
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getALM",  # List of last alarms (e.g. low salt level)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getALN",  # List of last 8 notifications
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getALW",  # List of last 8 warnings
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNOT",  # Current notification code
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWRN",  # Current warning code
+    ),
     # --- Pressure ---
-    "getBAR",  # Inlet pressure - mbar sensor (Safe-T+)
-    "getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
-    "getPRS",  # Inlet pressure - bar sensor (LEXplus10SL)
+    SyrConnectSensorEntityDescription(
+        key="getBAR",  # Inlet pressure - mbar sensor (Safe-T+)
+        device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPressure.BAR,
+        suggested_display_precision=1,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
+        device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPressure.BAR,
+        suggested_display_precision=1,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPRS",  # Inlet pressure - bar sensor (LEXplus10SL)
+        device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPressure.BAR,
+        suggested_display_precision=1,
+    ),
     # --- Voltage / Battery ---
-    "getBAP",  # Battery level (%)
-    "getBAT",  # Battery voltage (V) or battery level (%) - unit depends on device type
-    "getNET",  # Mains (AC) voltage (V)
+    SyrConnectSensorEntityDescription(
+        key="getBAP",  # Battery level (%)
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getBAT",  # Battery voltage (V) or battery level (%) - unit depends on device type
+        device_class=SensorDeviceClass.VOLTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        suggested_display_precision=2,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNET",  # Mains (AC) voltage (V)
+        device_class=SensorDeviceClass.VOLTAGE,
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        suggested_display_precision=2,
+    ),
     # --- Water Quality ---
-    "getCEL",  # Temperature (°C)
-    "getCFT",  # Current filling duration (s)
-    "getCND",  # Water conductivity (µS/cm)
-    "getCFV",  # Current filling volume (l)
-    "getHMD",  # Ambient humidity (%)
-    "getIWH",  # Incoming (raw) water hardness
-    "getOWH",  # Outgoing (softened) water hardness
-    "getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
+    SyrConnectSensorEntityDescription(
+        key="getCEL",  # Temperature (°C)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=1,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCFT",  # Current filling duration (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCND",  # Water conductivity (µS/cm)
+        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCFV",  # Current filling volume (l)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getHMD",  # Ambient humidity (%)
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getIWH",  # Incoming (raw) water hardness
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getOWH",  # Outgoing (softened) water hardness
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        keep_as_string=True,
+    ),
     # --- Water Consumption & Volume ---
-    "getCOF",  # Total water consumption counter (l)
-    "getLTV",  # Last dispensed (tapped) volume (l)
-    "getVOL",  # Total volume (m³)
+    SyrConnectSensorEntityDescription(
+        key="getCOF",  # Total water consumption counter (l)
+        device_class=SensorDeviceClass.WATER,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLTV",  # Last dispensed (tapped) volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVOL",  # Total volume (m³)
+        device_class=SensorDeviceClass.WATER,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
+        suggested_display_precision=3,
+    ),
     # --- Device Status ---
-    "getDEN",  # Device enabled flag
-    "getDFM",  # Device feature mode (device function type)
-    "getSTA",  # Device operating status
+    SyrConnectSensorEntityDescription(
+        key="getDEN",  # Device enabled flag
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDFM",  # Device feature mode (device function type)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSTA",  # Device operating status
+    ),
     # --- Resin Capacity ---
-    "getCS1",  # Remaining resin capacity - tank 1 (%)
-    "getCS2",  # Remaining resin capacity - tank 2 (%)
-    "getCS3",  # Remaining resin capacity - tank 3 (%)
+    SyrConnectSensorEntityDescription(
+        key="getCS1",  # Remaining resin capacity - tank 1 (%)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCS2",  # Remaining resin capacity - tank 2 (%)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCS3",  # Remaining resin capacity - tank 3 (%)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+    ),
     # --- Salt ---
-    "getRDO",  # Salt dosing (g/l)
-    "getRE1",  # Reserve capacity - bottle 1 (l)
-    "getRE2",  # Reserve capacity - bottle 2 (l)
-    "getRES",  # Remaining softening capacity (l)
-    "getSS1",  # Salt supply - container 1 (weeks)
-    "getSS2",  # Salt supply - container 2 (weeks)
-    "getSS3",  # Salt supply - container 3 (weeks)
-    "getSV1",  # Salt amount - container 1 (kg)
-    "getSV2",  # Salt amount - container 2 (kg)
-    "getSV3",  # Salt amount - container 3 (kg)
+    SyrConnectSensorEntityDescription(
+        key="getRDO",  # Salt dosing (g/l)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRE1",  # Reserve capacity - bottle 1 (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRE2",  # Reserve capacity - bottle 2 (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRES",  # Remaining softening capacity (l)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSS1",  # Salt supply - container 1 (weeks)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.WEEKS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSS2",  # Salt supply - container 2 (weeks)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.WEEKS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSS3",  # Salt supply - container 3 (weeks)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.WEEKS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSV1",  # Salt amount - container 1 (kg)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSV2",  # Salt amount - container 2 (kg)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSV3",  # Salt amount - container 3 (kg)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
+        suggested_display_precision=0,
+        entity_registry_enabled_default=False,
+    ),
     # --- Regeneration ---
-    "getCYN",  # Regeneration cycle counter
-    "getCYT",  # Regeneration cycle time (remaining)
-    "getINR",  # Incomplete regeneration count
-    "getLAR",  # Timestamp of last regeneration
-    "getNOR",  # Regeneration count (normal operation)
-    "getRG1",  # Regeneration status (which tank is regenerating)
-    "getRG2",  # Regeneration running - tank 2 flag
-    "getRG3",  # Regeneration running - tank 3 flag
-    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
-    "getRPD",  # Regeneration interval (days)
-    "getRPW",  # Regeneration permitted weekdays (bitmask)
-    "getRTH",  # Regeneration scheduled hour
-    "getRTI",  # Total regeneration cycle duration
-    "getRTM",  # Regeneration time (combined HH:MM string)
-    "getSCR",  # Service regeneration cycle count
-    # "getSRE",   # Regeneration active flag - Disabled - Not clear what value 3/5 means.
-    "getTOR",  # Total regeneration count (all time)
+    SyrConnectSensorEntityDescription(
+        key="getCYN",  # Regeneration cycle counter
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCYT",  # Regeneration cycle time (remaining)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getINR",  # Incomplete regeneration count
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLAR",  # Timestamp of last regeneration
+        device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNOR",  # Regeneration count (normal operation)
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRG1",  # Regeneration status (which tank is regenerating)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRG2",  # Regeneration running - tank 2 flag
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRG3",  # Regeneration running - tank 3 flag
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRPD",  # Regeneration interval (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRPW",  # Regeneration permitted weekdays (bitmask)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRTH",  # Regeneration scheduled hour
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRTI",  # Total regeneration cycle duration
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRTM",  # Regeneration time (combined HH:MM string)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSCR",  # Service regeneration cycle count
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    # getSRE is not listed: Regeneration active flag - Disabled - Not clear what value 3/5 means.
+    # Its previous settings: suggested_display_precision=0, entity_category=DIAGNOSTIC,
+    # entity_registry_enabled_default=False.
+    SyrConnectSensorEntityDescription(
+        key="getTOR",  # Total regeneration count (all time)
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Self-Learning Phase (Trio DFR/LS) ---
-    "getSLE",  # Remaining time in active self-learning phase (s)
-    "getSLF",  # Flow rate during self-learning phase (l/h)
-    "getSLP",  # Duration of self-learning phase
-    "getSLT",  # Elapsed time in self-learning phase (s)
-    "getSLV",  # Volume accumulated in self-learning phase (l)
+    SyrConnectSensorEntityDescription(
+        key="getSLE",  # Remaining time in active self-learning phase (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSLF",  # Flow rate during self-learning phase (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSLP",  # Duration of self-learning phase
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSLT",  # Elapsed time in self-learning phase (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSLV",  # Volume accumulated in self-learning phase (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Microleakage Test (Trio DFR/LS, SafeTech) ---
-    "getDBD",  # Microleakage test pressure drop
-    "getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
-    "getDRP",  # Microleakage test interval (daily / weekly / monthly)
-    "getDSV",  # Microleakage test status (inactive / active / aborted / skipped)
-    "getDTT",  # Microleakage test duration / time
-    "getNPS",  # No turbine pulses since (s)
+    SyrConnectSensorEntityDescription(
+        key="getDBD",  # Microleakage test pressure drop
+        native_unit_of_measurement=UnitOfPressure.BAR,
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDRP",  # Microleakage test interval (daily / weekly / monthly)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDSV",  # Microleakage test status (inactive / active / aborted / skipped)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDTT",  # Microleakage test duration / time
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNPS",  # No turbine pulses since (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
-    "getLE",  # Leak protection volume limit - present profile (l)
-    "getT1",  # Max. flow duration - present profile (h, 0.5 h steps)
-    "getT2",  # Max. flow duration - absent profile (h, 0.5 h steps)
-    "getTMP",  # Leak protection temporarily deactivated - remaining time (s)
-    "getUL",  # Leak protection volume limit - absent profile (l)
+    SyrConnectSensorEntityDescription(
+        key="getLE",  # Leak protection volume limit - present profile (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getT1",  # Max. flow duration - present profile (h, 0.5 h steps)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getT2",  # Max. flow duration - absent profile (h, 0.5 h steps)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTMP",  # Leak protection temporarily deactivated - remaining time (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getUL",  # Leak protection volume limit - absent profile (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
-    "getPA1",  # Profile 1 active flag (true/false)
-    "getPA2",  # Profile 2 active flag (true/false)
-    "getPA3",  # Profile 3 active flag (true/false)
-    "getPA4",  # Profile 4 active flag (true/false)
-    "getPA5",  # Profile 5 active flag (true/false)
-    "getPA6",  # Profile 6 active flag (true/false)
-    "getPA7",  # Profile 7 active flag (true/false)
-    "getPA8",  # Profile 8 active flag (true/false)
-    "getPB1",  # Profile 1 buzzer alert (true/false)
-    "getPB2",  # Profile 2 buzzer alert (true/false)
-    "getPB3",  # Profile 3 buzzer alert (true/false)
-    "getPB4",  # Profile 4 buzzer alert (true/false)
-    "getPB5",  # Profile 5 buzzer alert (true/false)
-    "getPB6",  # Profile 6 buzzer alert (true/false)
-    "getPB7",  # Profile 7 buzzer alert (true/false)
-    "getPB8",  # Profile 8 buzzer alert (true/false)
-    "getPF1",  # Profile 1 flow leak threshold (l/h)
-    "getPF2",  # Profile 2 flow leak threshold (l/h)
-    "getPF3",  # Profile 3 flow leak threshold (l/h)
-    "getPF4",  # Profile 4 flow leak threshold (l/h)
-    "getPF5",  # Profile 5 flow leak threshold (l/h)
-    "getPF6",  # Profile 6 flow leak threshold (l/h)
-    "getPF7",  # Profile 7 flow leak threshold (l/h)
-    "getPF8",  # Profile 8 flow leak threshold (l/h)
-    "getPM1",  # Profile 1 microleakage test enabled (true/false)
-    "getPM2",  # Profile 2 microleakage test enabled (true/false)
-    "getPM3",  # Profile 3 microleakage test enabled (true/false)
-    "getPM4",  # Profile 4 microleakage test enabled (true/false)
-    "getPM5",  # Profile 5 microleakage test enabled (true/false)
-    "getPM6",  # Profile 6 microleakage test enabled (true/false)
-    "getPM7",  # Profile 7 microleakage test enabled (true/false)
-    "getPM8",  # Profile 8 microleakage test enabled (true/false)
-    "getPN1",  # Profile 1 name
-    "getPN2",  # Profile 2 name
-    "getPN3",  # Profile 3 name
-    "getPN4",  # Profile 4 name
-    "getPN5",  # Profile 5 name
-    "getPN6",  # Profile 6 name
-    "getPN7",  # Profile 7 name
-    "getPN8",  # Profile 8 name
-    "getPR1",  # Profile 1 return time to present profile (h)
-    "getPR2",  # Profile 2 return time to present profile (h)
-    "getPR3",  # Profile 3 return time to present profile (h)
-    "getPR4",  # Profile 4 return time to present profile (h)
-    "getPR5",  # Profile 5 return time to present profile (h)
-    "getPR6",  # Profile 6 return time to present profile (h)
-    "getPR7",  # Profile 7 return time to present profile (h)
-    "getPR8",  # Profile 8 return time to present profile (h)
-    "getPT1",  # Profile 1 max. leak duration (min)
-    "getPT2",  # Profile 2 max. leak duration (min)
-    "getPT3",  # Profile 3 max. leak duration (min)
-    "getPT4",  # Profile 4 max. leak duration (min)
-    "getPT5",  # Profile 5 max. leak duration (min)
-    "getPT6",  # Profile 6 max. leak duration (min)
-    "getPT7",  # Profile 7 max. leak duration (min)
-    "getPT8",  # Profile 8 max. leak duration (min)
-    "getPV1",  # Profile 1 max. leak volume (l)
-    "getPV2",  # Profile 2 max. leak volume (l)
-    "getPV3",  # Profile 3 max. leak volume (l)
-    "getPV4",  # Profile 4 max. leak volume (l)
-    "getPV5",  # Profile 5 max. leak volume (l)
-    "getPV6",  # Profile 6 max. leak volume (l)
-    "getPV7",  # Profile 7 max. leak volume (l)
-    "getPV8",  # Profile 8 max. leak volume (l)
-    "getPW1",  # Profile 1 leak warning enabled (true/false)
-    "getPW2",  # Profile 2 leak warning enabled (true/false)
-    "getPW3",  # Profile 3 leak warning enabled (true/false)
-    "getPW4",  # Profile 4 leak warning enabled (true/false)
-    "getPW5",  # Profile 5 leak warning enabled (true/false)
-    "getPW6",  # Profile 6 leak warning enabled (true/false)
-    "getPW7",  # Profile 7 leak warning enabled (true/false)
-    "getPW8",  # Profile 8 leak warning enabled (true/false)
-    "getPRF",  # Currently active leak protection profile index
-    "getPST",  # Pressure sensor installed (1=not available, 2=available)
+    SyrConnectSensorEntityDescription(
+        key="getPA1",  # Profile 1 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA2",  # Profile 2 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA3",  # Profile 3 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA4",  # Profile 4 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA5",  # Profile 5 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA6",  # Profile 6 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA7",  # Profile 7 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPA8",  # Profile 8 active flag (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB1",  # Profile 1 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB2",  # Profile 2 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB3",  # Profile 3 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB4",  # Profile 4 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB5",  # Profile 5 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB6",  # Profile 6 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB7",  # Profile 7 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPB8",  # Profile 8 buzzer alert (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF1",  # Profile 1 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF2",  # Profile 2 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF3",  # Profile 3 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF4",  # Profile 4 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF5",  # Profile 5 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF6",  # Profile 6 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF7",  # Profile 7 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPF8",  # Profile 8 flow leak threshold (l/h)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM1",  # Profile 1 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM2",  # Profile 2 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM3",  # Profile 3 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM4",  # Profile 4 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM5",  # Profile 5 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM6",  # Profile 6 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM7",  # Profile 7 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPM8",  # Profile 8 microleakage test enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN1",  # Profile 1 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN2",  # Profile 2 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN3",  # Profile 3 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN4",  # Profile 4 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN5",  # Profile 5 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN6",  # Profile 6 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN7",  # Profile 7 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPN8",  # Profile 8 name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR1",  # Profile 1 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR2",  # Profile 2 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR3",  # Profile 3 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR4",  # Profile 4 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR5",  # Profile 5 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR6",  # Profile 6 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR7",  # Profile 7 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPR8",  # Profile 8 return time to present profile (h)
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT1",  # Profile 1 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT2",  # Profile 2 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT3",  # Profile 3 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT4",  # Profile 4 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT5",  # Profile 5 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT6",  # Profile 6 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT7",  # Profile 7 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPT8",  # Profile 8 max. leak duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV1",  # Profile 1 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV2",  # Profile 2 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV3",  # Profile 3 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV4",  # Profile 4 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV5",  # Profile 5 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV6",  # Profile 6 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV7",  # Profile 7 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPV8",  # Profile 8 max. leak volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW1",  # Profile 1 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW2",  # Profile 2 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW3",  # Profile 3 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW4",  # Profile 4 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW5",  # Profile 5 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW6",  # Profile 6 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW7",  # Profile 7 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPW8",  # Profile 8 leak warning enabled (true/false)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPRF",  # Currently active leak protection profile index
+        suggested_display_precision=0,
+    ),
+    # getPRN is not listed: Duplicate of getPRF
+    # Its previous settings: entity_registry_enabled_default=False.
+    SyrConnectSensorEntityDescription(
+        key="getPST",  # Pressure sensor installed (1=not available, 2=available)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
     # --- Filter (NeoSoft) ---
-    # "getFCD",   # Filter flush interval (Disabled Issue #23)
-    "getFCO",  # Iron content (ppm)
-    "getFFM",  # Filter type (backwash / replaceable / none)
+    # getFCD is not listed: Filter flush interval (Disabled Issue #23)
+    # Its previous settings: suggested_display_precision=0, entity_category=DIAGNOSTIC.
+    SyrConnectSensorEntityDescription(
+        key="getFCO",  # Iron content (ppm)
+        native_unit_of_measurement="ppm",
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getFFM",  # Filter type (backwash / replaceable / none)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Alarm / Thresholds (SafeFloor) ---
-    "getALD",  # Duration of alarm (s)
-    "getMIH",  # Minimum humidity threshold (%)
-    "getMXH",  # Maximum humidity threshold (%)
-    "getMIT",  # Minimum temperature threshold (1/10 °C)
-    "getMXT",  # Maximum temperature threshold (1/10 °C)
+    SyrConnectSensorEntityDescription(
+        key="getALD",  # Duration of alarm (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMIH",  # Minimum humidity threshold (%)
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMXH",  # Maximum humidity threshold (%)
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMIT",  # Minimum temperature threshold (1/10 °C)
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMXT",  # Maximum temperature threshold (1/10 °C)
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Intervals ---
-    "getRCP",  # Synchronisation interval (s)
-    "getWMP",  # Measurement interval (s)
+    SyrConnectSensorEntityDescription(
+        key="getRCP",  # Synchronisation interval (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWMP",  # Measurement interval (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Maintenance ---
-    "getDWF",  # Expected daily water consumption (l)
-    "getSRH",  # Next semi-annual maintenance (timestamp)
-    "getSRV",  # Next annual maintenance (timestamp)
-    "getVS1",  # Volume threshold 1 (l)
-    "getVS2",  # Volume threshold 2 (l)
-    "getVS3",  # Volume threshold 3 (l)
+    SyrConnectSensorEntityDescription(
+        key="getDWF",  # Expected daily water consumption (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSRH",  # Next semi-annual maintenance (timestamp)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSRV",  # Next annual maintenance (timestamp)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVS1",  # Volume threshold 1 (l)
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVS2",  # Volume threshold 2 (l)
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVS3",  # Volume threshold 3 (l)
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
     # --- Automatic Backwash (RSA) ---
-    "getCOA",  # Counter of automatic backwashes
-    "getCOM",  # Counter of manual backwashes
-    "getRSA",  # Backwash interval (days)
-    "getRSD",  # Backwash duration (s)
-    "getRSE",  # Backwash reminder interval (days)
+    SyrConnectSensorEntityDescription(
+        key="getCOA",  # Counter of automatic backwashes
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCOM",  # Counter of manual backwashes
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRSA",  # Backwash interval (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRSD",  # Backwash duration (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRSE",  # Backwash reminder interval (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228) ---
-    "getLFT",  # Last refill duration (s)
-    "getLFV",  # Last refilled volume (l)
-    "getNMS",  # No valve movement since (s)
-    "getNMT",  # Time until valve self-test becomes active (days)
-    "getNPT",  # Time until alarm A8 "flow sensor fault" becomes active (days)
-    "getNRT",  # No refill since (s)
-    "getTRT",  # Cumulative refill time (s)
-    "getTRV",  # Cumulative refilled volume (l)
+    SyrConnectSensorEntityDescription(
+        key="getLFT",  # Last refill duration (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLFV",  # Last refilled volume (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNMS",  # No valve movement since (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNMT",  # Time until valve self-test becomes active (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNPT",  # Time until alarm A8 "flow sensor fault" becomes active (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getNRT",  # No refill since (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTRT",  # Cumulative refill time (s)
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTRV",  # Cumulative refilled volume (l)
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Display ---
-    "getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+    SyrConnectSensorEntityDescription(
+        key="getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
     # --- Device Info & Diagnostics ---
-    "getCDE",  # Configuration code
-    "getCNA",  # Device name
-    "getDGW",  # Gateway IP address
-    "getEGW",  # Ethernet (LAN) gateway
-    "getEIP",  # Ethernet (LAN) IP address
-    "getFIR",  # Firmware model identifier
-    "getIPA",  # IP address
-    "getLAN",  # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
-    "getLNG",  # Device language (0=Deutsch, 1=English) - other models
-    "getMAC",  # MAC address
-    "getMAC1",  # Wi-Fi MAC address
-    "getMAC2",  # LAN MAC address
-    "getMAN",  # Manufacturer name
-    "getSRN",  # Device serial number
-    "getTYP",  # Device type code
-    "getVER",  # Firmware version string
+    SyrConnectSensorEntityDescription(
+        key="getCDE",  # Configuration code
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCNA",  # Device name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDGW",  # Gateway IP address
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getEGW",  # Ethernet (LAN) gateway
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getEIP",  # Ethernet (LAN) IP address
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getFIR",  # Firmware model identifier
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getIPA",  # IP address
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLAN",  # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLNG",  # Device language (0=Deutsch, 1=English) - other models
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMAC",  # MAC address
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMAC1",  # Wi-Fi MAC address
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMAC2",  # LAN MAC address
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMAN",  # Manufacturer name
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSRN",  # Device serial number
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTYP",  # Device type code
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVER",  # Firmware version string
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
     # --- Turbine / Pulse Monitoring (NeoSoft) ---
-    "getVPS1",  # No turbine pulses on control head 1 since (s)
-    "getVPS2",  # No turbine pulses on control head 2 since (s)
+    SyrConnectSensorEntityDescription(
+        key="getVPS1",  # No turbine pulses on control head 1 since (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getVPS2",  # No turbine pulses on control head 2 since (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
     # --- Wi-Fi ---
-    "getAPT",  # Access point timeout (s)
-    "getWFC",  # Wi-Fi SSID
-    "getWFL",  # Nearby Wi-Fi networks with signal strength
-    "getWFR",  # Wi-Fi signal strength (%)
-    "getWFS",  # Wi-Fi connection status (not connected / connecting / connected)
-    "getWGW",  # Wi-Fi gateway
-    "getWIP",  # Wi-Fi IP address
+    SyrConnectSensorEntityDescription(
+        key="getAPT",  # Access point timeout (s)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWFC",  # Wi-Fi SSID
+        entity_category=EntityCategory.DIAGNOSTIC,
+        keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWFL",  # Nearby Wi-Fi networks with signal strength
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWFR",  # Wi-Fi signal strength (%)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWFS",  # Wi-Fi connection status (not connected / connecting / connected)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWGW",  # Wi-Fi gateway
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWIP",  # Wi-Fi IP address
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
-    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",  # Maximum output conductivity (raw x10 µS/cm)
-    "getLRC",  # Liter(s) remaining softening capacity
-    "getOHW",  # Soft water hardness (°dH)
-    "getPRC",  # Percent remaining softening capacity
-    "getRCC",  # Number of filling cycles in the current period (AC 3200, AC 3228)
-    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRCN",  # Counter of all refills (AC 3200, AC 3228)
-    "getRMN",  # Filling processes count
-    "getRMT",  # Maximum filling duration (min)
-    "getRVT",  # Maximum filling charges
-    "getTPR",  # Target pressure (1/10 bar)
+    SyrConnectSensorEntityDescription(
+        key="getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLOT",  # Maximum output conductivity (raw x10 µS/cm)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLRC",  # Liter(s) remaining softening capacity
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getOHW",  # Soft water hardness (°dH)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="°dH",
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getPRC",  # Percent remaining softening capacity
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRCC",  # Number of filling cycles in the current period (AC 3200, AC 3228)
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRCN",  # Counter of all refills (AC 3200, AC 3228)
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRMN",  # Filling processes count
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRMT",  # Maximum filling duration (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getRVT",  # Maximum filling charges
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTPR",  # Target pressure (1/10 bar)
+        device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPressure.BAR,
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+_SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_SENSOR_TYPES
 }
+
+# Allowlist of known sensor keys, the global fallback for get_model_known_keys()
+_SYR_CONNECT_SENSOR_KNOWN_KEYS = set(_SYR_CONNECT_SENSOR_DESCRIPTIONS)
+
 
 # Configuration sensors - settings users do not need for daily use
 _SYR_CONNECT_SENSOR_CONFIG = {
@@ -597,329 +1644,6 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     "getMXT",  # Maximum temperature threshold (1/10 °C)
     "getRCP",  # Synchronisation interval (s)
     "getWMP",  # Measurement interval (s)
-}
-
-# Diagnostic sensors (configuration, technical info, firmware) - internal
-_SYR_CONNECT_SENSOR_DIAGNOSTIC = {
-    # --- Connectivity ---
-    "dst",  # Device connection state
-    # --- Device Info ---
-    "getCNA",  # Device name
-    "getDFM",  # Device feature mode (device function type)
-    "getFIR",  # Firmware model identifier
-    "getLAN",  # Device language (0=English, 1=German, 3=Spanish) - Lex10 models only
-    "getLNG",  # Device language (0=Deutsch, 1=English) - other models
-    "getMAC",  # MAC address
-    "getMAC1",  # Wi-Fi MAC address
-    "getMAC2",  # LAN MAC address
-    "getMAN",  # Manufacturer name
-    "getSRN",  # Device serial number
-    "getTYP",  # Device type code
-    "getVER",  # Firmware version string
-    # --- Network ---
-    "getAPT",  # Access point timeout (s)
-    "getDGW",  # Cloud gateway address
-    "getEGW",  # Ethernet (LAN) gateway
-    "getEIP",  # Ethernet (LAN) IP address
-    "getIPA",  # IP address
-    "getVPS1",  # No turbine pulses on control head 1 since (s)
-    "getVPS2",  # No turbine pulses on control head 2 since (s)
-    "getWFC",  # Wi-Fi SSID
-    "getWFL",  # Nearby Wi-Fi networks with signal strength
-    "getWFR",  # Wi-Fi signal strength (%)
-    "getWFS",  # Wi-Fi connection status (not connected / connecting / connected)
-    "getWGW",  # Wi-Fi gateway
-    "getWIP",  # Wi-Fi IP address
-    # --- Alarm / Notification / Warning ---
-    "getALM",  # List of last alarms
-    "getALN",  # List of last 8 notifications
-    "getALW",  # List of last 8 warnings
-    # --- Water Quality ---
-    "getCND",  # Water conductivity (µS/cm)
-    "getIWH",  # Incoming (raw) water hardness
-    "getOWH",  # Outgoing (softened) water hardness
-    "getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
-    # --- Device Status ---
-    "getBUZ",  # Buzzer on/off
-    "getDEN",  # Device enabled flag
-    # --- Salt ---
-    "getRDO",  # Salt dosing (g/l)
-    # --- Regeneration Settings ---
-    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
-    "getRPD",  # Regeneration interval (days)
-    "getRPW",  # Regeneration permitted weekdays (bitmask)
-    "getRTM",  # Regeneration time (combined HH:MM string)
-    "getSRE",  # Regeneration active flag
-    # --- Regeneration Counters / Technical ---
-    "getCYN",  # Regeneration cycle counter
-    "getCYT",  # Regeneration cycle time (remaining)
-    "getINR",  # Incomplete regeneration count
-    "getLAR",  # Timestamp of last regeneration
-    "getNOR",  # Regeneration count (normal operation)
-    "getRG1",  # Regeneration status (which tank is regenerating)
-    "getRG2",  # Regeneration running - tank 2 flag
-    "getRG3",  # Regeneration running - tank 3 flag
-    "getRTH",  # Regeneration scheduled hour
-    "getRTI",  # Total regeneration cycle duration
-    "getSCR",  # Service regeneration cycle count
-    "getSRH",  # Next semi-annual maintenance (timestamp)
-    "getSRV",  # Next annual maintenance (timestamp)
-    "getTOR",  # Total regeneration count (all time)
-    # --- Self-Learning Phase (Trio DFR/LS) ---
-    "getSLE",  # Remaining time in active self-learning phase (s)
-    "getSLF",  # Flow rate during self-learning phase (l/h)
-    "getSLP",  # Duration of self-learning phase
-    "getSLT",  # Elapsed time in self-learning phase (s)
-    "getSLV",  # Volume accumulated in self-learning phase (l)
-    # --- Microleakage Technical ---
-    "getDBD",  # Microleakage test pressure drop
-    "getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
-    "getDRP",  # Microleakage test interval (daily / weekly / monthly)
-    "getDSV",  # Microleakage test status (inactive / active / aborted / skipped)
-    "getDTT",  # Microleakage test duration / time
-    "getNPS",  # No turbine pulses since (s)
-    # --- Leak Protection Settings ---
-    "getLE",  # Leak protection volume limit - present profile (l)
-    "getPST",  # Pressure sensor installed (1=not available, 2=available)
-    "getT1",  # Max. flow duration - present profile (h)
-    "getT2",  # Max. flow duration - absent profile (h)
-    "getTMP",  # Leak protection temporarily deactivated - remaining time (s)
-    "getUL",  # Leak protection volume limit - absent profile (l)
-    # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
-    "getPA1",
-    "getPA2",
-    "getPA3",
-    "getPA4",
-    "getPA5",
-    "getPA6",
-    "getPA7",
-    "getPA8",
-    "getPB1",
-    "getPB2",
-    "getPB3",
-    "getPB4",
-    "getPB5",
-    "getPB6",
-    "getPB7",
-    "getPB8",
-    "getPF1",
-    "getPF2",
-    "getPF3",
-    "getPF4",
-    "getPF5",
-    "getPF6",
-    "getPF7",
-    "getPF8",
-    "getPM1",
-    "getPM2",
-    "getPM3",
-    "getPM4",
-    "getPM5",
-    "getPM6",
-    "getPM7",
-    "getPM8",
-    "getPN1",
-    "getPN2",
-    "getPN3",
-    "getPN4",
-    "getPN5",
-    "getPN6",
-    "getPN7",
-    "getPN8",
-    "getPR1",
-    "getPR2",
-    "getPR3",
-    "getPR4",
-    "getPR5",
-    "getPR6",
-    "getPR7",
-    "getPR8",
-    "getPT1",
-    "getPT2",
-    "getPT3",
-    "getPT4",
-    "getPT5",
-    "getPT6",
-    "getPT7",
-    "getPT8",
-    "getPV1",
-    "getPV2",
-    "getPV3",
-    "getPV4",
-    "getPV5",
-    "getPV6",
-    "getPV7",
-    "getPV8",
-    "getPW1",
-    "getPW2",
-    "getPW3",
-    "getPW4",
-    "getPW5",
-    "getPW6",
-    "getPW7",
-    "getPW8",
-    # --- Filter (NeoSoft) ---
-    "getFCD",  # Filter flush interval
-    "getFCO",  # Iron content (ppm)
-    "getFFM",  # Filter type (backwash / replaceable / none)
-    # --- SafeFloor Thresholds ---
-    "getALD",  # Duration of alarm (s)
-    "getMIH",  # Minimum humidity threshold (%)
-    "getMIT",  # Minimum temperature threshold (1/10 °C)
-    "getMXH",  # Maximum humidity threshold (%)
-    "getMXT",  # Maximum temperature threshold (1/10 °C)
-    # --- System Settings ---
-    "getDWF",  # Expected daily water consumption (l)
-    "getRCP",  # Synchronisation interval (s)
-    "getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
-    "getVS1",  # Volume threshold 1 (l)
-    "getVS2",  # Volume threshold 2 (l)
-    "getVS3",  # Volume threshold 3 (l)
-    "getWMP",  # Measurement interval (s)
-    # --- Automatic Backwash (RSA) ---
-    "getCOA",  # Counter of automatic backwashes
-    "getCOM",  # Counter of manual backwashes
-    "getRSA",  # Backwash interval (days)
-    "getRSD",  # Backwash duration (s)
-    "getRSE",  # Backwash reminder interval (days)
-    # --- Lock / Connection Centre (TRIO Lock, SafeTech Lock, AC 3200, AC 3228) ---
-    "getLFT",  # Last refill duration (s)
-    "getLFV",  # Last refilled volume (l)
-    "getNMS",  # No valve movement since (s)
-    "getNMT",  # Time until valve self-test becomes active (days)
-    "getNPT",  # Time until alarm A8 "flow sensor fault" becomes active (days)
-    "getNRT",  # No refill since (s)
-    "getTRT",  # Cumulative refill time (s)
-    "getTRV",  # Cumulative refilled volume (l)
-    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
-    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",  # Maximum output conductivity (raw x10 µS/cm)
-    "getLRC",  # Liter(s) remaining softening capacity
-    "getOHW",  # Soft water hardness (°dH)
-    "getPRC",  # Percent remaining softening capacity
-    "getRCC",  # Number of filling cycles in the current period (AC 3200, AC 3228)
-    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRCN",  # Counter of all refills (AC 3200, AC 3228)
-    "getRMN",  # Filling processes count
-    "getRMT",  # Maximum filling duration (min)
-    "getRVT",  # Maximum filling charges
-    "getTPR",  # Target pressure (1/10 bar)
-}
-
-# Sensors that are disabled by default (less frequently used) - internal
-_SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT = {
-    # Sensors exits in devices:
-    # - LEXplus10S
-    # - LEXplus10SL
-    "getCYN",  # Regeneration cycle counter - technical metric - Shows remaining time during regeneration runs
-    "getCYT",  # Regeneration cycle time - technical metric - Shows remaining process cycles during regeneration runs
-    "getDWF",  # Flow Warning Value - advanced setting
-    "getLAN",  # Device language (0=English, 1=German, 3=Spanish)
-    "getLNG",  # Device language (0=Deutsch, 1=English)
-    "getNOT",  # Retrieving the current notification
-    "getSRE",  # Regeneration active
-    "getDFM",  # Device feature mode - diagnostic/informational
-    "getTYP",  # Device type code
-    "getRG2",
-    "getRG3",  # Regeneration running for tank
-    "getRPD",  # Regeneration interval (days)
-    "getRPW",  # Regeneration permitted weekdays as bit mask
-    "getPST",  # Pressure sensor installed: 1 = not available, 2 = available
-    "getVS1",
-    "getVS2",
-    "getVS3",  # Volume thresholds - advanced config
-    "getSS2",
-    "getSS3",  # Salt storage (weeks) in containers 2/3 - not present on all devices
-    "getSV2",
-    "getSV3",  # Salt amount (kg) in containers 2/3 - not present on all devices
-    "getWHU",  # Water hardness unit
-    # Sensors exits in devices:
-    # - LEXplus10SL
-    # Leak protection profiles (expert setting)
-    "getPA1",
-    "getPA2",
-    "getPA3",
-    "getPA4",
-    "getPA5",
-    "getPA6",
-    "getPA7",
-    "getPA8",
-    "getPF1",
-    "getPF2",
-    "getPF3",
-    "getPF4",
-    "getPF5",
-    "getPF6",
-    "getPF7",
-    "getPF8",
-    "getPT1",
-    "getPT2",
-    "getPT3",
-    "getPT4",
-    "getPT5",
-    "getPT6",
-    "getPT7",
-    "getPT8",
-    "getPV1",
-    "getPV2",
-    "getPV3",
-    "getPV4",
-    "getPV5",
-    "getPV6",
-    "getPV7",
-    "getPV8",
-    "getPN1",
-    "getPN2",
-    "getPN3",
-    "getPN4",
-    "getPN5",
-    "getPN6",
-    "getPN7",
-    "getPN8",
-    "getPRN",  # Duplicate of getPRF
-    "getPW1",
-    "getPW2",
-    "getPW3",
-    "getPW4",
-    "getPW5",
-    "getPW6",
-    "getPW7",
-    "getPW8",
-    # Sensors exits in devices:
-    # - NeoSoft 2500 / 5000
-    "getVPS1",  # No turbine pulses on control head 1 since (s) - technical metric for flow measurement, not useful for most users
-    "getVPS2",  # No turbine pulses on control head 2 since (s) - technical metric for flow measurement, not useful for most users
-    # Sensors exits in devices:
-    # - NeoSoft 2500 / 5000 / Trio DFR/LS
-    "getALN",  # List of last 8 notifications
-    "getALM",  # List of last 8 alarms
-    "getALW",  # List of last 8 warnings
-    # Sensors exits in devices:
-    # - SafeTech+
-    # - Sanibel Leak Protection Module A25
-    "getDBD",  # Microleakage test pressure drop (tenths of bar)
-    "getSRO",  # Display rotation (in degrees, e.g 270=270°) - only relevant for devices with display
-}
-
-# Sensor device classes (for Home Assistant) - internal
-_SYR_CONNECT_SENSOR_DEVICE_CLASS = {
-    "getBAP": SensorDeviceClass.BATTERY,
-    "getBAR": SensorDeviceClass.PRESSURE,
-    "getBAR2": SensorDeviceClass.PRESSURE,
-    "getBAT": SensorDeviceClass.VOLTAGE,
-    "getCOF": SensorDeviceClass.WATER,
-    "getHMD": SensorDeviceClass.HUMIDITY,
-    "getMIH": SensorDeviceClass.HUMIDITY,
-    "getMIT": SensorDeviceClass.TEMPERATURE,
-    "getMXH": SensorDeviceClass.HUMIDITY,
-    "getMXT": SensorDeviceClass.TEMPERATURE,
-    "getFLO": SensorDeviceClass.VOLUME_FLOW_RATE,
-    "getNET": SensorDeviceClass.VOLTAGE,
-    "getLAR": SensorDeviceClass.TIMESTAMP,
-    "getPRS": SensorDeviceClass.PRESSURE,
-    "getTPR": SensorDeviceClass.PRESSURE,
-    "getVOL": SensorDeviceClass.WATER,
 }
 
 # Known keys for the select platform — used by registry_cleanup to remove stale entries.
@@ -1244,356 +1968,6 @@ _SYR_CONNECT_SENSOR_WHU_VALUE_MAP = {
     3: "mmol/l",  # Millimoles per liter, SI unit for water hardness
 }
 
-# Sensor state classes (for Home Assistant) - internal
-_SYR_CONNECT_SENSOR_STATE_CLASS = {
-    "getALD": SensorStateClass.MEASUREMENT,  # Alarm duration
-    "getAPT": SensorStateClass.MEASUREMENT,  # Access point timeout
-    "getAVO": SensorStateClass.MEASUREMENT,  # Current flow rate
-    "getBAP": SensorStateClass.MEASUREMENT,  # Battery level (%)
-    "getBAR": SensorStateClass.MEASUREMENT,  # Inlet pressure (mbar sensor), reported by Safe-T+
-    "getBAR2": SensorStateClass.MEASUREMENT,  # Outlet pressure (mbar sensor), reported by SYR TRIO Lock Connect
-    "getBAT": SensorStateClass.MEASUREMENT,  # Battery voltage
-    "getCEL": SensorStateClass.MEASUREMENT,  # Temperature
-    "getCFT": SensorStateClass.MEASUREMENT,  # Current filling duration
-    "getCFV": SensorStateClass.MEASUREMENT,  # Current filling volume
-    "getCOA": SensorStateClass.TOTAL_INCREASING,  # Counter of automatic backwashes
-    "getCOF": SensorStateClass.TOTAL_INCREASING,  # Total water consumption counter
-    "getCOM": SensorStateClass.TOTAL_INCREASING,  # Counter of manual backwashes
-    "getCYN": SensorStateClass.MEASUREMENT,  # Regeneration cycle number/time
-    "getFLO": SensorStateClass.MEASUREMENT,  # Flow rate
-    "getHMD": SensorStateClass.MEASUREMENT,  # Ambient humidity
-    "getINR": SensorStateClass.TOTAL_INCREASING,  # Incomplete regenerations
-    "getIWH": SensorStateClass.MEASUREMENT,  # Incoming water hardness
-    "getMIH": SensorStateClass.MEASUREMENT,  # Minimum humidity threshold
-    "getMIT": SensorStateClass.MEASUREMENT,  # Minimum temperature threshold
-    "getMXH": SensorStateClass.MEASUREMENT,  # Maximum humidity threshold
-    "getMXT": SensorStateClass.MEASUREMENT,  # Maximum temperature threshold
-    "getNOR": SensorStateClass.TOTAL_INCREASING,  # Regenerations (normal operation)
-    "getNPS": SensorStateClass.MEASUREMENT,  # No turbine pulses since (s)
-    "getOWH": SensorStateClass.MEASUREMENT,  # Outgoing water hardness
-    "getPRS": SensorStateClass.MEASUREMENT,  # Inlet pressure, reported by LEXplus10SL
-    "getRCP": SensorStateClass.MEASUREMENT,  # Synchronisation interval
-    "getRDO": SensorStateClass.MEASUREMENT,  # Salt dosing (g/L)
-    "getRES": SensorStateClass.MEASUREMENT,  # Remaining capacity
-    "getSS1": SensorStateClass.MEASUREMENT,  # Salt container supply 1 (weeks)
-    "getSS2": SensorStateClass.MEASUREMENT,  # Salt container supply 2 (weeks)
-    "getSS3": SensorStateClass.MEASUREMENT,  # Salt container supply 3 (weeks)
-    "getSV1": SensorStateClass.MEASUREMENT,  # Salt container amount 1
-    "getSV2": SensorStateClass.MEASUREMENT,  # Salt container amount 2
-    "getSV3": SensorStateClass.MEASUREMENT,  # Salt container amount 3
-    "getTMP": SensorStateClass.MEASUREMENT,  # Deactivate leakage protection for n seconds
-    "getTOR": SensorStateClass.TOTAL_INCREASING,  # Total regenerations
-    "getTRT": SensorStateClass.TOTAL_INCREASING,  # Cumulative refill time
-    "getTRV": SensorStateClass.TOTAL_INCREASING,  # Cumulative refilled volume
-    "getLOT": SensorStateClass.MEASUREMENT,  # Maximum output conductivity
-    "getLRC": SensorStateClass.MEASUREMENT,  # Liter(s) remaining softening capacity
-    "getOHW": SensorStateClass.MEASUREMENT,  # Soft water hardness
-    "getPRC": SensorStateClass.MEASUREMENT,  # Percent remaining softening capacity
-    "getRCC": SensorStateClass.MEASUREMENT,  # Number of filling cycles in the current period
-    "getRCN": SensorStateClass.TOTAL_INCREASING,  # Counter of all refills
-    "getTPR": SensorStateClass.MEASUREMENT,  # Target pressure
-    "getVOL": SensorStateClass.TOTAL_INCREASING,  # Total capacity (cumulative)
-    "getVS1": SensorStateClass.MEASUREMENT,  # Volume threshold 1
-    "getVS2": SensorStateClass.MEASUREMENT,  # Volume threshold 2
-    "getVS3": SensorStateClass.MEASUREMENT,  # Volume threshold 3
-    "getWMP": SensorStateClass.MEASUREMENT,  # Measurement interval
-}
-
-# Sensors that should remain as strings (not converted to numbers) - internal
-_SYR_CONNECT_SENSOR_STRING = {
-    # Note: getBAT is handled specially - extracts first numeric value from space-separated string
-    "getCNA",  # Device name
-    "getDGW",  # Gateway
-    "getDTT",  # Microleakage test time
-    "getFIR",  # Firmware
-    "getIPA",  # IP address
-    "getMAC",  # MAC address
-    "getMAN",  # Manufacturer
-    "getRTI",  # Regeneration time
-    "getRPW",  # Regeneration permitted weekdays as bit mask (handled specially to decode bitmask)
-    "getSRN",  # Serial number
-    "getVER",  # Version
-    "getWFC",  # Wi-Fi SSID
-    "getWHU",  # Water hardness unit
-}
-
-# Sensor units mapping (units are standardized and not translated) - internal
-_SYR_CONNECT_SENSOR_UNIT = {
-    # Sensors exits in devices:
-    # - LEXplus10S
-    # - LEXplus10SL
-    # getIWH and getOWH units are set dynamically from getWHU
-    "getAVO": UnitOfVolume.LITERS,  # Current flow in Liters (e.g. "1655mL" -> 1.655 L)
-    "getDWF": UnitOfVolume.LITERS,  # Expected daily water consumption
-    "getFLO": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Flow rate
-    "getFCO": "ppm",  # Iron content (parts per million)
-    "getRES": UnitOfVolume.LITERS,  # Remaining capacity
-    "getRDO": f"{UnitOfMass.GRAMS}/{UnitOfVolume.LITERS}",  # Salt dosing (g/L)
-    "getRPD": UnitOfTime.DAYS,  # Regeneration interval
-    "getRSA": UnitOfTime.DAYS,  # Backwash interval (RSA)
-    "getRSD": UnitOfTime.SECONDS,  # Backwash duration (RSA)
-    "getRSE": UnitOfTime.DAYS,  # Backwash reminder interval (RSA)
-    "getCFT": UnitOfTime.SECONDS,  # Current filling duration
-    "getCFV": UnitOfVolume.LITERS,  # Current filling volume
-    "getLFT": UnitOfTime.SECONDS,  # Last refill duration
-    "getLFV": UnitOfVolume.LITERS,  # Last refilled volume
-    "getNMS": UnitOfTime.SECONDS,  # No valve movement since
-    "getNMT": UnitOfTime.DAYS,  # Time until valve self-test becomes active
-    "getNPT": UnitOfTime.DAYS,  # Time until alarm A8 becomes active
-    "getNRT": UnitOfTime.SECONDS,  # No refill since
-    "getTRT": UnitOfTime.SECONDS,  # Cumulative refill time
-    "getTRV": UnitOfVolume.LITERS,  # Cumulative refilled volume
-    "getRTH": UnitOfTime.HOURS,  # Regeneration time (Hour)
-    "getPRS": UnitOfPressure.BAR,  # Pressure
-    "getSV1": UnitOfMass.KILOGRAMS,  # Salt container amount 1
-    "getSV2": UnitOfMass.KILOGRAMS,  # Salt container amount 2
-    "getSV3": UnitOfMass.KILOGRAMS,  # Salt container amount 3
-    "getSS1": UnitOfTime.WEEKS,  # Salt container supply 1
-    "getSS2": UnitOfTime.WEEKS,  # Salt container supply 2
-    "getSS3": UnitOfTime.WEEKS,  # Salt container supply 3
-    "getVOL": UnitOfVolume.CUBIC_METERS,  # Total capacity (m³)
-    # Sensors exits in devices:
-    # - SafeFloor
-    "getALD": UnitOfTime.SECONDS,  # Alarm duration (s)
-    "getAPT": UnitOfTime.SECONDS,  # Access point timeout (s)
-    "getHMD": PERCENTAGE,  # Ambient humidity (%)
-    "getMIH": PERCENTAGE,  # Minimum humidity threshold (%)
-    "getMIT": UnitOfTemperature.CELSIUS,  # Minimum temperature threshold (1/10°C raw)
-    "getMXH": PERCENTAGE,  # Maximum humidity threshold (%)
-    "getMXT": UnitOfTemperature.CELSIUS,  # Maximum temperature threshold (1/10°C raw)
-    "getRCP": UnitOfTime.SECONDS,  # Synchronisation interval (s)
-    "getWMP": UnitOfTime.SECONDS,  # Measurement interval (s)
-    # Configuration/resin capacity sensors are percentage values
-    "getCS1": PERCENTAGE,  # Remaining resin capacity 1 (percent)
-    "getCS2": PERCENTAGE,  # Remaining resin capacity 2 (percent)
-    "getCS3": PERCENTAGE,  # Remaining resin capacity 3 (percent)
-    # Sensors exits in devices:
-    # - LEXplus10SL
-    # Leak protection profile sensors
-    "getCEL": UnitOfTemperature.CELSIUS,  # Temperature
-    "getCOF": UnitOfVolume.LITERS,  # Total water consumption counter
-    "getPF1": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 1
-    "getPF2": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 2
-    "getPF3": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 3
-    "getPF4": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 4
-    "getPF5": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 5
-    "getPF6": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 6
-    "getPF7": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 7
-    "getPF8": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Leak protection flow rate 8
-    "getPR1": UnitOfTime.HOURS,  # Return time to profile 1
-    "getPR2": UnitOfTime.HOURS,  # Return time to profile 2
-    "getPR3": UnitOfTime.HOURS,  # Return time to profile 3
-    "getPR4": UnitOfTime.HOURS,  # Return time to profile 4
-    "getPR5": UnitOfTime.HOURS,  # Return time to profile 5
-    "getPR6": UnitOfTime.HOURS,  # Return time to profile 6
-    "getPR7": UnitOfTime.HOURS,  # Return time to profile 7
-    "getPR8": UnitOfTime.HOURS,  # Return time to profile 8
-    "getPT1": UnitOfTime.MINUTES,  # Leak protection time 1
-    "getPT2": UnitOfTime.MINUTES,  # Leak protection time 2
-    "getPT3": UnitOfTime.MINUTES,  # Leak protection time 3
-    "getPT4": UnitOfTime.MINUTES,  # Leak protection time 4
-    "getPT5": UnitOfTime.MINUTES,  # Leak protection time 5
-    "getPT6": UnitOfTime.MINUTES,  # Leak protection time 6
-    "getPT7": UnitOfTime.MINUTES,  # Leak protection time 7
-    "getPT8": UnitOfTime.MINUTES,  # Leak protection time 8
-    "getPV1": UnitOfVolume.LITERS,  # Leak protection volume 1
-    "getPV2": UnitOfVolume.LITERS,  # Leak protection volume 2
-    "getPV3": UnitOfVolume.LITERS,  # Leak protection volume 3
-    "getPV4": UnitOfVolume.LITERS,  # Leak protection volume 4
-    "getPV5": UnitOfVolume.LITERS,  # Leak protection volume 5
-    "getPV6": UnitOfVolume.LITERS,  # Leak protection volume 6
-    "getPV7": UnitOfVolume.LITERS,  # Leak protection volume 7
-    "getPV8": UnitOfVolume.LITERS,  # Leak protection volume 8
-    # Sensors exits in devices:
-    # - Safe-T+
-    "getBAR": UnitOfPressure.BAR,  # Pressure (mbar sensor)
-    "getBAR2": UnitOfPressure.BAR,  # Outlet pressure (mbar sensor)
-    "getBAT": UnitOfElectricPotential.VOLT,  # Battery voltage
-    "getDBD": UnitOfPressure.BAR,  # Leak test pressure drop
-    "getNET": UnitOfElectricPotential.VOLT,  # Mains voltage
-    "getLE": UnitOfVolume.LITERS,  # Leakage protection - Present level
-    "getT1": UnitOfTime.HOURS,  # Time leakage (mapped from 0.5h steps)
-    "getT2": UnitOfTime.HOURS,  # Time leakage (mapped from 0.5h steps)
-    "getTMP": UnitOfTime.SECONDS,  # Deactivate leakage protection for n seconds
-    "getUL": UnitOfVolume.LITERS,  # Leakage protection - Absent level
-    # Sensors exits in devices:
-    # - NeoSoft 2500
-    "getLTV": UnitOfVolume.LITERS,  # Last volume tapped
-    "getRE1": UnitOfVolume.LITERS,  # Reserve capacity bottle 1
-    "getWFR": PERCENTAGE,  # Wi-Fi signal strength 0-100%
-    "getVPS1": UnitOfTime.SECONDS,  # No turbine pulses Control head 1 since
-    "getVPS2": UnitOfTime.SECONDS,  # No turbine pulses Control head 2 since
-    # Sensors exits in devices:
-    # - NeoSoft 5000
-    "getRE2": UnitOfVolume.LITERS,  # Reserve capacity bottle 2^
-    # Sensors exits in devices:
-    # - Trio DFR/LS
-    "getBAP": PERCENTAGE,  # Battery level (%)
-    "getCND": UnitOfConductivity.MICROSIEMENS_PER_CM,  # Water conductivity (µS/cm)
-    "getNPS": UnitOfTime.SECONDS,  # No turbine pulses since (s)
-    "getSLE": UnitOfTime.SECONDS,  # Remaining time in seconds of an active self-learning phase
-    "getSLF": UnitOfVolumeFlowRate.LITERS_PER_HOUR,  # Self-learning phase volume (l/h)
-    "getSLT": UnitOfTime.SECONDS,  # Time in self-learning phase (seconds)
-    "getSLV": UnitOfVolume.LITERS,  # Self-learning phase volume (l)
-    # Sensors exits in devices:
-    # - Conel Clear Pro Fill
-    "getCRS": UnitOfVolume.LITERS,  # Cartridge size (mapped to liters)
-    "getLOT": UnitOfConductivity.MICROSIEMENS_PER_CM,  # Maximum output conductivity (µS/cm)
-    "getLRC": UnitOfVolume.LITERS,  # Liter(s) remaining softening capacity
-    "getOHW": "°dH",  # Soft water hardness
-    "getPRC": PERCENTAGE,  # Percent remaining softening capacity
-    "getRMT": UnitOfTime.MINUTES,  # Maximum filling duration
-    "getRVT": UnitOfVolume.LITERS,  # Maximum filling charges
-    "getTPR": UnitOfPressure.BAR,  # Target pressure
-}
-
-# Sensor display precision mapping (number of decimals to show)
-# Use integers for whole-number display (0), or >0 for decimal places.
-# This allows configuring how many decimals Home Assistant should show
-# for specific sensors when the integration formats the value.
-_SYR_CONNECT_SENSOR_UNIT_PRECISION = {
-    "getALD": 0,  # Alarm duration: show as whole number of seconds
-    "getAPT": 0,  # Access point timeout: show as whole number of seconds
-    "getAVO": 1,  # Current flow: show with 2 decimal places
-    "getBAP": 0,  # Battery level (%): show as whole number by default
-    "getBAR": 1,  # Pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
-    "getBAR2": 1,  # Outlet pressure (mbar sensor): show with 1 decimal places (e.g., 4.1 bar)
-    "getDBD": 1,  # Leak test pressure drop (dbar sensor): show with 1 decimal place (e.g., 1.0 bar)
-    "getBAT": 2,  # Battery voltage: show with 2 decimal places
-    "getCEL": 1,  # Temperature, e.g. 110 = 11.0°C
-    "getCFT": 0,  # Current filling duration: whole seconds
-    "getCFV": 0,  # Current filling volume: whole liters
-    "getCFO": 0,  # Cycle flow offset: show as whole number by default
-    "getCND": 0,  # Conductivity in µS/cm: show as whole number by default
-    "getCOF": 0,  # Total water consumption counter: show as whole number by default
-    "getCS1": 0,  # Remaining resin capacity 1: show as whole number by default
-    "getCS2": 0,  # Remaining resin capacity 2: show as whole number by default
-    "getCS3": 0,  # Remaining resin capacity 3: show as whole number by default
-    "getCYN": 0,  # Regeneration cycle counter: show as whole number by default
-    "getDFM": 0,  # Device feature mode: show as whole number by default
-    "getDMA": 0,  # Microleakage alarm mode: show as whole number by default
-    "getDRP": 0,  # Microleakage test interval: show as whole number by default
-    "getDSV": 0,  # Microleakage test: show as whole number by default
-    "getDWF": 0,  # Expected daily water consumption: show as whole number by default
-    "getFCD": 0,  # Filter change: show as whole number by default
-    "getFFM": 0,  # Filter fouling level: show as whole number by default
-    "getFCO": 0,  # Iron content: show as whole number by default
-    "getFLO": 0,  # Flow rate: show as whole number by default
-    "getHMD": 0,  # Ambient humidity: show as whole number by default
-    "getINR": 0,  # Incomplete regenerations: show as whole number by default
-    "getIWH": 0,  # Incoming water hardness: show as whole number by default
-    "getLAN": 0,  # Device language: show as whole number by default (0=English, 1=German, 3=Spanish)
-    "getLE": 0,  # Leakage protection - Present level: show as whole number by default
-    "getLNG": 0,  # Device language: show as whole number by default (0=Deutsch, 1=English)
-    "getLTV": 0,  # Last dispensed volume: show with 0 decimal place (e.g. 5 L)
-    "getMIH": 0,  # Minimum humidity threshold: show as whole number
-    "getMIT": 0,  # Minimum temperature threshold: e.g. -40 -> -4 °C
-    "getMXH": 0,  # Maximum humidity threshold: show as whole number
-    "getMXT": 0,  # Maximum temperature threshold: e.g. 490 -> 49 °C
-    "getNET": 2,  # Mains voltage: show with 2 decimal places
-    "getNOR": 0,  # Regenerations (normal operation): show as whole number by default
-    "getNPS": 0,  # No turbine pulses since: show as whole number of seconds
-    "getOWH": 0,  # Outgoing water hardness: show as whole number by default
-    "getPRF": 0,  # Active leak protection profile
-    "getPR1": 0,  # Return time to profile 1
-    "getPR2": 0,  # Return time to profile 2
-    "getPR3": 0,  # Return time to profile 3
-    "getPR4": 0,  # Return time to profile 4
-    "getPR5": 0,  # Return time to profile 5
-    "getPR6": 0,  # Return time to profile 6
-    "getPR7": 0,  # Return time to profile 7
-    "getPR8": 0,  # Return time to profile 8
-    "getPRS": 1,  # Pressure: show with 1 decimal place by default
-    "getPST": 0,  # Pressure sensor installed: show as whole number by default
-    "getRCP": 0,  # Synchronisation interval: show as whole number of seconds
-    "getRDO": 0,  # Salt dosing: show as whole number by default
-    "getRMO": 0,  # Regeneration mode (1=Standard, 2=ECO, 3=Power, 4=Automatik)
-    "getRPD": 0,  # Regeneration interval: show as whole days by default
-    "getRE1": 0,  # Reserve capacity bottle 1: show as whole number by default
-    "getRE2": 0,  # Reserve capacity bottle 2: show as whole number by default
-    "getRES": 0,  # Remaining capacity: show as whole number by default
-    "getCOA": 0,  # Counter of automatic backwashes: show as whole number by default
-    "getCOM": 0,  # Counter of manual backwashes: show as whole number by default
-    "getRSA": 0,  # Backwash interval: show as whole days by default
-    "getRSD": 0,  # Backwash duration: show as whole seconds by default
-    "getRSE": 0,  # Backwash reminder interval: show as whole days by default
-    "getLFT": 0,  # Last refill duration: show as whole number of seconds
-    "getLFV": 0,  # Last refilled volume: show as whole number by default
-    "getNMS": 0,  # No valve movement since: show as whole number of seconds
-    "getNMT": 0,  # Time until valve self-test becomes active: show as whole days by default
-    "getNPT": 0,  # Time until alarm A8 becomes active: show as whole days by default
-    "getNRT": 0,  # No refill since: show as whole number of seconds
-    "getTRT": 0,  # Cumulative refill time: show as whole number of seconds
-    "getTRV": 0,  # Cumulative refilled volume: show as whole number by default
-    "getRG1": 0,  # Regeneration 1: show as whole number by default
-    "getRG2": 0,  # Regeneration 2: show as whole number by default
-    "getRG3": 0,  # Regeneration 3: show as whole number by default
-    "getSLE": 0,  # Remaining time in seconds of an active self-learning phase: show as whole number by default
-    "getSLF": 0,  # Self-learning phase volume (l/h)
-    "getSLT": 0,  # Time in self-learning phase (seconds)
-    "getSLV": 0,  # Self-learning phase volume (l)
-    "getSRE": 0,  # Regeneration active flag: values unclear
-    "getSRO": 0,  # Display rotation: show as whole number by default
-    "getSS1": 0,  # Salt container supply 1: show as whole number by default
-    "getSS2": 0,  # Salt container supply 2: show as whole number by default
-    "getSS3": 0,  # Salt container supply 3: show as whole number by default
-    "getSV1": 0,  # Salt container volume 1: show as whole number by default
-    "getSV2": 0,  # Salt container volume 2: show as whole number by default
-    "getSV3": 0,  # Salt container volume 3: show as whole number by default
-    "getTYP": 0,  # Device type: show as whole number by default
-    "getTMP": 0,  # Deactivate leakage protection for n seconds: show as whole number by default
-    "getTOR": 0,  # Total regenerations: show as whole number by default
-    "getT1": 1,  # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
-    "getT2": 1,  # Time leakage: show with 1 decimal place (e.g., 1.5 hours) - mapped from 0.5h steps in API
-    "getUL": 0,  # Leakage protection - Absent level: show as whole number by default
-    "getVLV": 0,  # Valve status (10=closed, 11=closing, 20=open, 21=opening): show as whole number by default
-    "getVPS1": 0,  # No turbine pulses on control head 1 since: show as whole number of seconds by default
-    "getVPS2": 0,  # No turbine pulses on control head 2 since: show as whole number of seconds by default
-    "getVOL": 3,  # Total water volume: show in cubic meters (m³) with 3 decimals by default
-    "getWFR": 0,  # Wi-Fi signal strength: show as whole number by default
-    "getWFS": 0,  # Wi-Fi connection status
-    "getWMP": 0,  # Measurement interval: show as whole number of seconds
-    # Leak protection numeric precisions (integers)
-    "getPF1": 0,
-    "getPF2": 0,
-    "getPF3": 0,
-    "getPF4": 0,
-    "getPF5": 0,
-    "getPF6": 0,
-    "getPF7": 0,
-    "getPF8": 0,
-    "getPT1": 0,
-    "getPT2": 0,
-    "getPT3": 0,
-    "getPT4": 0,
-    "getPT5": 0,
-    "getPT6": 0,
-    "getPT7": 0,
-    "getPT8": 0,
-    "getPV1": 0,
-    "getPV2": 0,
-    "getPV3": 0,
-    "getPV4": 0,
-    "getPV5": 0,
-    "getPV6": 0,
-    "getPV7": 0,
-    "getPV8": 0,
-    # Water treatment / Filling (Conel Clear Pro Fill)
-    "getCRS": 1,  # Cartridge size (liters): show with 1 decimal place (e.g., 2.5 L)
-    "getCRT": 0,  # Cartridge type: show as whole number by default
-    "getLOT": 0,  # Maximum output conductivity: show as whole number by default
-    "getLRC": 0,  # Liter(s) remaining softening capacity: show as whole number by default
-    "getOHW": 0,  # Soft water hardness: show as whole number by default
-    "getPRC": 0,  # Percent remaining softening capacity: show as whole number by default
-    "getRCD": 0,  # Filling processes period: show as whole number by default
-    "getRCC": 0,  # Number of filling cycles in the current period: show as whole number by default
-    "getRCN": 0,  # Counter of all refills: show as whole number by default
-    "getRMN": 0,  # Filling processes count: show as whole number by default
-    "getRMT": 0,  # Maximum filling duration: show as whole number of minutes
-    "getRVT": 0,  # Maximum filling charges: show as whole number by default
-    "getTPR": 1,  # Target pressure: show with 1 decimal place (e.g., 1.8 bar)
-}
-
 # Select options, sorted by name:
 # - `*_MAP`: option maps of the discrete selects: option key (translated by the frontend,
 #   or a label with unit) -> raw device value. None marks the option for an empty raw value.
@@ -1610,13 +1984,6 @@ _SYR_CONNECT_SELECT_ALD_OPTIONS = [
     30,
     *range(60, 601, 60),
 ]
-
-# Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
-# _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
-_SYR_CONNECT_SELECT_CRS_MAP = {
-    f"{v:g} {_SYR_CONNECT_SENSOR_UNIT['getCRS']}": k
-    for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
-}
 
 # Cartridge type (getCRT): 0=HWE, 1=HVE, 2=HVE+ (empty value = no cartridge installed)
 _SYR_CONNECT_SELECT_CRT_MAP = {

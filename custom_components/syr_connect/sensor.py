@@ -22,20 +22,15 @@ from .const import (
     _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE,
     _SYR_CONNECT_SENSOR_BINARY,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_DEVICE_CLASS,
-    _SYR_CONNECT_SENSOR_DIAGNOSTIC,
-    _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT,
+    _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_STATE_CLASS,
-    _SYR_CONNECT_SENSOR_STRING,
     _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_UNIT,
-    _SYR_CONNECT_SENSOR_UNIT_PRECISION,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
+    SyrConnectSensorEntityDescription,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
@@ -408,6 +403,8 @@ def _async_setup_muco_conditional_sensors(
 class SyrConnectSensor(SyrConnectEntity, SensorEntity):
     """Representation of a SYR Connect sensor."""
 
+    entity_description: SyrConnectSensorEntityDescription
+
     def __init__(
         self,
         coordinator: SyrConnectDataUpdateCoordinator,
@@ -423,10 +420,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         super().__init__(coordinator, device_id, device_name, "sensor", sensor_key)
 
         self._sensor_key = sensor_key
-
-        # Set entity category for diagnostic sensors
-        if sensor_key in _SYR_CONNECT_SENSOR_DIAGNOSTIC:
-            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self.entity_description = _SYR_CONNECT_SENSOR_DESCRIPTIONS[sensor_key]
 
         # Set unit of measurement for water hardness sensors dynamically
         if sensor_key in ("getIWH", "getOWH"):
@@ -441,31 +435,6 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                     self._attr_native_unit_of_measurement = None
             else:
                 self._attr_native_unit_of_measurement = None
-        elif sensor_key in _SYR_CONNECT_SENSOR_UNIT:
-            self._attr_native_unit_of_measurement = _SYR_CONNECT_SENSOR_UNIT[sensor_key]
-
-        # Set suggested display precision if available
-        if sensor_key in _SYR_CONNECT_SENSOR_UNIT_PRECISION:
-            self._attr_suggested_display_precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION[
-                sensor_key
-            ]
-
-        # Set device class if available
-        if sensor_key in _SYR_CONNECT_SENSOR_DEVICE_CLASS:
-            self._attr_device_class = _SYR_CONNECT_SENSOR_DEVICE_CLASS[sensor_key]
-
-        # Set state class if available
-        if sensor_key in _SYR_CONNECT_SENSOR_STATE_CLASS:
-            self._attr_state_class = _SYR_CONNECT_SENSOR_STATE_CLASS[sensor_key]
-
-        # Disable sensors by default based on configuration
-        # Also disable sensors that are represented by control entities so they
-        # are available if users explicitly enable them, but do not clutter the UI.
-        if (
-            sensor_key in ("getIPA", "getDGW", "getMAC")
-            or sensor_key in _SYR_CONNECT_SENSOR_DISABLED_BY_DEFAULT
-        ):
-            self._attr_entity_registry_enabled_default = False
 
         # Override getBAT attributes for devices that report battery as percentage (e.g. SafeFloor TYP=120)
         if sensor_key == "getBAT":
@@ -503,7 +472,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 value = value / 1000
 
         # Apply configured precision if available
-        precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key)
+        precision = self.entity_description.suggested_display_precision
         if precision is not None:
             try:
                 value = round(value, precision)
@@ -524,7 +493,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         """
         if (
             self._sensor_key != "getBAT"
-            or self._attr_device_class == SensorDeviceClass.BATTERY
+            or self.device_class == SensorDeviceClass.BATTERY
         ):
             return None
 
@@ -558,7 +527,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
         Keys with a special format or a value map have a handler in `_SYR_CONNECT_SENSOR_VALUE_HANDLERS`
         (or are leak-protection flags, see `_SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG`). All other keys are
-        returned as string (`_SYR_CONNECT_SENSOR_STRING`) or as converted number.
+        returned as string (`keep_as_string`) or as converted number.
         """
         device = self._device
         if device is None:
@@ -589,7 +558,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             value = get_sensor_vol_value(value)
 
         # Keep certain sensors as strings (version, serial, MAC, etc.)
-        if self._sensor_key in _SYR_CONNECT_SENSOR_STRING:
+        if self.entity_description.keep_as_string:
             _LOGGER.debug("String sensor key: %s, value: %s", self._sensor_key, value)
             return str(value) if value is not None else None
 
@@ -673,8 +642,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             if not match:
                 return None
             pressure_bar = float(match.group()) / 1000
-            precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 3)
-            return round(pressure_bar, precision)
+            precision = self.entity_description.suggested_display_precision
+            return round(pressure_bar, 3 if precision is None else precision)
         except ValueError, TypeError:
             return None
 
@@ -689,7 +658,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if not isinstance(value, (str | int | float)):
             return None
         # SafeFloor (and similar) report battery as an integer percentage.
-        if self._attr_native_unit_of_measurement == PERCENTAGE:
+        if self.native_unit_of_measurement == PERCENTAGE:
             try:
                 return int(float(str(value).strip()))
             except ValueError, TypeError:
@@ -705,8 +674,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             if not match:
                 return None
             pressure_bar = float(match.group()) / 10.0
-            precision = _SYR_CONNECT_SENSOR_UNIT_PRECISION.get(self._sensor_key, 1)
-            return round(pressure_bar, precision)
+            precision = self.entity_description.suggested_display_precision
+            return round(pressure_bar, 1 if precision is None else precision)
         except ValueError, TypeError:
             return None
 

@@ -15,7 +15,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import (
     _SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_BINARY,
-    _SYR_CONNECT_SENSOR_DIAGNOSTIC,
     _SYR_CONNECT_SENSOR_EXCLUDED,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -27,6 +26,11 @@ _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+# Diagnostic binary sensors
+_SYR_CONNECT_BINARY_SENSOR_DIAGNOSTIC = {
+    "getBUZ",  # Buzzer on/off
+}
 
 
 async def async_setup_entry(
@@ -116,7 +120,7 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
         self._attr_device_class = device_class
 
         # Set entity category for diagnostic sensors
-        if sensor_key in _SYR_CONNECT_SENSOR_DIAGNOSTIC:
+        if sensor_key in _SYR_CONNECT_BINARY_SENSOR_DIAGNOSTIC:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
