@@ -1,0 +1,5 @@
+# Commits that only reformat code; git blame skips them.
+# Enable locally with: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Format the code with the ruff formatter as in Home Assistant core
+8429ec2e2db5d7ad9896816e3609e32c97d60f60
