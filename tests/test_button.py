@@ -1176,7 +1176,7 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
     create_mock_entry_with_coordinator,
     mock_add_entities,
 ) -> None:
-    """A command missing from the model's BUTTON_KNOWN_KEYS override is skipped.
+    """A command missing from the model's BUTTON_SUPPORTED_KEYS override is skipped.
 
     It is skipped before any getXYZ presence check (covers the model-allowlist continue).
 

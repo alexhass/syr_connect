@@ -26,7 +26,7 @@ Deliberately NOT included, pending confirmation on a real device:
   which takes precedence over the A25 fixture's zero values.
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
   a different product (humidity/flood sensor), unrelated to this model.
-  getALD is the one exception (see SENSOR_KNOWN_KEYS below).
+  getALD is the one exception (see SENSOR_SUPPORTED_KEYS below).
 - getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCC, getRCD, getRCN, getRMN,
   getRMT, getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
   feature in const.py - belongs to the muco_filling filling-controller variant, not
@@ -37,17 +37,17 @@ Deliberately NOT included, pending confirmation on a real device:
 - getRCP: generic cloud sync interval, not tied to any specific feature here.
 - getDBD, getDMA, getDRP, getDTT, getNPS: labeled "(Trio DFR/LS, SafeTech)"
   microleakage-test feature in const.py - a different product family. getDSV
-  is the one exception (see BUTTON_KNOWN_KEYS below).
+  is the one exception (see BUTTON_SUPPORTED_KEYS below).
 - getSLE, getSLP, getSLT, getSLV: labeled "(Trio DFR/LS)" self-learning-phase
   feature in const.py; reported as constant 0 in the fixture. getSLF is the
   one exception (reported as a real non-zero value, 3500) but left out here
   too pending confirmation since its siblings are all stub zeros.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
@@ -178,7 +178,7 @@ SENSOR_KNOWN_KEYS = {
     "getNPT",
 }
 
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getPRF",
     "getSRO",
     "getFFM",
@@ -186,11 +186,11 @@ SELECT_KNOWN_KEYS = {
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - belongs to the
 # muco_filling variant, not this leak-protection variant.
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
@@ -198,7 +198,7 @@ BINARY_SENSOR_KNOWN_KEYS = {
 # tentatively included: unlike the muco_filling fixture, getDSV is non-zero (3) here and
 # a microleakage test is thematically consistent with a leak-protection module -
 # verify against a real device before relying on this.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",
     "setWRN",
@@ -206,6 +206,6 @@ BUTTON_KNOWN_KEYS = {
 }
 
 # getAB (valve shutoff control) kept - this model genuinely controls a valve.
-VALVE_KNOWN_KEYS = {
+VALVE_SUPPORTED_KEYS = {
     "getAB",
 }

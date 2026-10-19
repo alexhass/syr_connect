@@ -21,11 +21,11 @@ Deliberately NOT included, pending confirmation on a real device:
   allowlist, meaning not confirmed for use across the integration.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below (after adding them to the
+used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global const.py allowlist first).
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
@@ -64,24 +64,24 @@ SENSOR_KNOWN_KEYS = {
 
 # No select-worthy keys present for this model (no display rotation, no
 # regeneration/filling/salt configuration, no numbered leak-protection profiles).
-SELECT_KNOWN_KEYS: set[str] = set()
+SELECT_SUPPORTED_KEYS: set[str] = set()
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
 # setSIR (regeneration) and setDEX (microleakage test, no getDSV present)
 # deliberately excluded. setNOT/setWRN excluded - no getNOT/getWRN in the
 # fixture for this model.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
 }
 
 # getAB (valve shutoff control) kept - this model genuinely controls a valve.
-VALVE_KNOWN_KEYS = {
+VALVE_SUPPORTED_KEYS = {
     "getAB",
 }

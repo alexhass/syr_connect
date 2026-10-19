@@ -22,10 +22,10 @@ Deliberately NOT included:
   instead, via alarm_style_alm).
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Flow ---
@@ -96,7 +96,7 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getIWH",
     "getOWH",
     "getRPD",
@@ -105,18 +105,18 @@ SELECT_KNOWN_KEYS = {
 }
 
 # No buzzer on this model.
-SWITCH_KNOWN_KEYS: set[str] = set()
+SWITCH_SUPPORTED_KEYS: set[str] = set()
 
 # No buzzer on this model.
-BINARY_SENSOR_KNOWN_KEYS: set[str] = set()
+BINARY_SENSOR_SUPPORTED_KEYS: set[str] = set()
 
 # setWRN excluded - no getWRN in the fixture. setDEX excluded - no
 # microleakage-test hardware on this model.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setSIR",
     "setALA",
     "setNOT",
 }
 
 # No shutoff valve on this model (a conventional column softener).
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()

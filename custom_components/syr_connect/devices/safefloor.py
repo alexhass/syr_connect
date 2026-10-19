@@ -18,11 +18,11 @@ Deliberately NOT included:
   const.py allowlist at all (undocumented/unclear keys).
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below (after adding them to the
+used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global const.py allowlist first).
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Alarm ---
@@ -58,7 +58,7 @@ SENSOR_KNOWN_KEYS = {
 # No display rotation, no regeneration/filling/salt configuration, no
 # leak-protection profiles - but the alarm/humidity/temperature thresholds and
 # sync/measurement intervals are user-adjustable settings on this model.
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getALD",
     "getMIH",
     "getMXH",
@@ -69,15 +69,15 @@ SELECT_KNOWN_KEYS = {
 }
 
 # No buzzer/switch on this model.
-SWITCH_KNOWN_KEYS: set[str] = set()
-BINARY_SENSOR_KNOWN_KEYS: set[str] = set()
+SWITCH_SUPPORTED_KEYS: set[str] = set()
+BINARY_SENSOR_SUPPORTED_KEYS: set[str] = set()
 
 # setSIR (regeneration) and setDEX (microleakage test) excluded - not applicable
 # to a standalone sensor. setNOT/setWRN excluded - no getNOT/getWRN in the
 # fixture for this model.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
 }
 
 # No shutoff valve on this model (a standalone sensor, not a valve controller).
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()

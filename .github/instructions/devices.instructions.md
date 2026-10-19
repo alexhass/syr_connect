@@ -5,7 +5,7 @@ applyTo: "custom_components/syr_connect/{devices/*.py,models.py,helpers.py}"
 
 # Device files and model detection
 
-- Global allowlists live in `const.py`. The sensor allowlist `_SYR_CONNECT_SENSOR_KNOWN_KEYS` is built from the sensor descriptions `_SYR_CONNECT_SENSOR_TYPES`. A model may override them per platform in `devices/<device_file>.py` with `SENSOR_KNOWN_KEYS`, `SELECT_KNOWN_KEYS`, `SWITCH_KNOWN_KEYS`, `BINARY_SENSOR_KNOWN_KEYS`, `BUTTON_KNOWN_KEYS`, `VALVE_KNOWN_KEYS` and `UPDATE_KNOWN_KEYS`. An override replaces the global set completely.
+- Global allowlists live in `const.py`. The sensor allowlist `_SYR_CONNECT_SENSOR_SUPPORTED_KEYS` is built from the sensor descriptions `_SYR_CONNECT_SENSOR_TYPES`. A model may override them per platform in `devices/<device_file>.py` with `SENSOR_SUPPORTED_KEYS`, `SELECT_SUPPORTED_KEYS`, `SWITCH_SUPPORTED_KEYS`, `BINARY_SENSOR_SUPPORTED_KEYS`, `BUTTON_SUPPORTED_KEYS`, `VALVE_SUPPORTED_KEYS` and `UPDATE_SUPPORTED_KEYS`. An override replaces the global set completely.
 - Use positive allowlists only. Do not add exclusion lists to `MODEL_SIGNATURES`.
 - An override must still contain structurally required keys such as `dst`, otherwise `registry_cleanup()` deletes them.
 - An empty override (`set()`) is valid and means "no entities". Always check `is None` when reading an override.

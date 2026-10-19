@@ -276,7 +276,7 @@ async def test_async_setup_entry_no_prf_when_all_pa_false(
 async def test_async_setup_entry_skips_prf_excluded_by_model_allowlist(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
 ) -> None:
-    """No PRF select is created when the model's SELECT_KNOWN_KEYS override excludes getPRF.
+    """No PRF select is created when the model's SELECT_SUPPORTED_KEYS override excludes getPRF.
 
     This holds even though getPA1 is true.
 
@@ -1687,7 +1687,7 @@ async def test_async_setup_entry_removes_excluded_from_registry(
     mock_registry.async_remove = MagicMock()
 
     # Set up entities dict with a previously-registered stale entity whose key
-    # is not in the current SELECT_KNOWN_KEYS allowlist (e.g. a legacy key).
+    # is not in the current SELECT_SUPPORTED_KEYS allowlist (e.g. a legacy key).
     stale_entity_id = f"select.syr_connect_{device_id.lower()}_getrtime"
 
     class FakeEntry:
@@ -2564,7 +2564,7 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
     """Test async_setup_entry creates SV1 select when model is detected via SRN prefix.
 
     Uses a synthetic signature (no `device_file`) instead of a real srn_prefix
-    from models.py, so this stays independent of per-model SELECT_KNOWN_KEYS
+    from models.py, so this stays independent of per-model SELECT_SUPPORTED_KEYS
     overrides in devices/*.py (e.g. neosoft.py deliberately excludes getSV1).
     """
     test_sig = [

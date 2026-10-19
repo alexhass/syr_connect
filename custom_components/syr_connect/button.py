@@ -32,14 +32,14 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api_json import SyrConnectJsonAPI
 from .const import (
-    _SYR_CONNECT_BUTTON_KNOWN_KEYS,
+    _SYR_CONNECT_BUTTON_SUPPORTED_KEYS,
     _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     _SYR_CONNECT_SENSOR_EXCLUDED,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
-from .helpers import find_entity_id, get_model_known_keys, registry_cleanup
+from .helpers import find_entity_id, get_model_supported_keys, registry_cleanup
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "button",
-        allowed_keys=_SYR_CONNECT_BUTTON_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_BUTTON_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
 
@@ -97,12 +97,12 @@ async def async_setup_entry(
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        known_button_keys = get_model_known_keys(
-            model_info, "button", _SYR_CONNECT_BUTTON_KNOWN_KEYS
+        supported_button_keys = get_model_supported_keys(
+            model_info, "button", _SYR_CONNECT_BUTTON_SUPPORTED_KEYS
         )
 
         for command, _name in action_buttons:
-            if command not in known_button_keys:
+            if command not in supported_button_keys:
                 continue
 
             # Derive the corresponding "getXYZ" key from the command name
@@ -148,7 +148,7 @@ async def async_setup_entry(
 
         # Remove any previously-registered button that is no longer being created
         # for this device (e.g. a command whose get-key disappeared from the status).
-        # These buttons are in _SYR_CONNECT_BUTTON_KNOWN_KEYS and therefore survive
+        # These buttons are in _SYR_CONNECT_BUTTON_SUPPORTED_KEYS and therefore survive
         # the global registry_cleanup above; they must be removed individually here.
         # Skipped without a status (not fetched yet): no button was created, but
         # none of them disappeared either.

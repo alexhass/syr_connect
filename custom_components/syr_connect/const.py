@@ -1603,8 +1603,8 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
     description.key: description for description in _SYR_CONNECT_SENSOR_TYPES
 }
 
-# Allowlist of known sensor keys, the global fallback for get_model_known_keys()
-_SYR_CONNECT_SENSOR_KNOWN_KEYS = set(_SYR_CONNECT_SENSOR_DESCRIPTIONS)
+# Allowlist of known sensor keys, the global fallback for get_model_supported_keys()
+_SYR_CONNECT_SENSOR_SUPPORTED_KEYS = set(_SYR_CONNECT_SENSOR_DESCRIPTIONS)
 
 
 # Configuration sensors - settings users do not need for daily use
@@ -1646,8 +1646,8 @@ _SYR_CONNECT_SENSOR_CONFIG = {
     "getWMP",  # Measurement interval (s)
 }
 
-# Known keys for the select platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_SELECT_KNOWN_KEYS = {
+# Supported keys for the select platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     "getRTM",  # Regeneration time (HH:MM combined or minutes)
     "getPRF",  # Active leak-protection profile
     "getSRO",  # Display rotation (0 / 90 / 180 / 270 °)
@@ -1670,26 +1670,26 @@ _SYR_CONNECT_SELECT_KNOWN_KEYS = {
     "getTPR",  # Target pressure (1/10 bar)
 }
 
-# Known keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_BINARY_SENSOR_KNOWN_KEYS = {
+# Supported keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",  # Buzzer on/off
 }
 
-# Known keys for the valve platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_VALVE_KNOWN_KEYS = {
+# Supported keys for the valve platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_VALVE_SUPPORTED_KEYS = {
     "getAB",  # Valve shutoff control / state
 }
 
-# Known keys for the switch platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_SWITCH_KNOWN_KEYS = {
+# Supported keys for the switch platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SWITCH_SUPPORTED_KEYS = {
     "getBUZ",  # Buzzer on/off
     "getDFI",  # Filling mode enabled flag (Conel Clear Pro Fill)
     "getSSA",  # Automatic backwash enabled flag (RSA)
     "getSSE",  # Backwash reminder enabled flag (RSA)
 }
 
-# Known keys for the button platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_BUTTON_KNOWN_KEYS = {
+# Supported keys for the button platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BUTTON_SUPPORTED_KEYS = {
     "setSIR",  # Trigger manual regeneration
     "setALA",  # Reset alarm
     "setDEX",  # Start microleakage test
@@ -1697,17 +1697,17 @@ _SYR_CONNECT_BUTTON_KNOWN_KEYS = {
     "setWRN",  # Reset warning
 }
 
-# Known keys for the update platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_UPDATE_KNOWN_KEYS = {
+# Supported keys for the update platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_UPDATE_SUPPORTED_KEYS = {
     "getNOT",  # Notification code; "01" == new_software_available
 }
 
 # Sensors to always exclude — parameters returned by the API that must not be
 # exposed as sensor entities. Only keys that also appear in
-# _SYR_CONNECT_SENSOR_KNOWN_KEYS need to be listed here; all others are already
-# silently filtered by the KNOWN_KEYS allowlist.
+# _SYR_CONNECT_SENSOR_SUPPORTED_KEYS need to be listed here; all others are already
+# silently filtered by the SUPPORTED_KEYS allowlist.
 _SYR_CONNECT_SENSOR_EXCLUDED = {
-    # Keys that are in KNOWN_KEYS but must not become sensor entities because
+    # Keys that are in SUPPORTED_KEYS but must not become sensor entities because
     # they are handled by another entity type, superseded by a derived entity,
     # or have no practical value for users.
     # --- Overridden by a different entity type ---
@@ -1717,7 +1717,7 @@ _SYR_CONNECT_SENSOR_EXCLUDED = {
     # --- Always zero / constant / no practical user value ---
     "getFCO",  # Iron content — always 0, not useful
     "getRTI",  # Regeneration cycle duration — always "00:00", no useful value
-    # --- Deliberately suppressed despite being in KNOWN_KEYS ---
+    # --- Deliberately suppressed despite being in SUPPORTED_KEYS ---
     "getCDE",  # Configuration code — opaque device identifier, not useful for users
     "getSCR",  # Service regeneration cycle count — function unclear
     "getDWF",  # Expected daily water consumption — internal regeneration-trigger threshold

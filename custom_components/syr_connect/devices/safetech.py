@@ -10,7 +10,7 @@ they are present with value 0 in every SafeTech fixture and are associated
 with the Trio DFR/LS feature set, not SafeTech.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve, flow, and volume ---
@@ -140,27 +140,27 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getFFM",
     "getPRF",
     "getSRO",
 }
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setDEX",
     "setNOT",
     "setWRN",
 }
 
-VALVE_KNOWN_KEYS = {
+VALVE_SUPPORTED_KEYS = {
     "getAB",
 }

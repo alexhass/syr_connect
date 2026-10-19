@@ -13,7 +13,7 @@ import pytest
 from custom_components.syr_connect import helpers
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
+    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     API_TYPE_JSON,
     DOMAIN,
 )
@@ -906,7 +906,7 @@ def _registry_entry(
 
 
 def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
-    """The getCNO (registration code on the device label) is no longer a known key: an existing sensor is removed."""
+    """The getCNO (registration code on the device label) is no longer a supported key: an existing sensor is removed."""
 
     registry = MagicMock()
     registry.async_get = MagicMock(return_value=None)
@@ -929,7 +929,8 @@ def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
             MagicMock(),
             {"devices": [{"id": "DEV", "status": status}]},
             "sensor",
-            allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+            allowed_keys=_SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+            - _SYR_CONNECT_SENSOR_EXCLUDED,
         )
 
     registry.async_remove.assert_called_once_with(stale.entity_id)
@@ -1920,79 +1921,81 @@ def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() 
 
 
 # ---------------------------------------------------------------------------
-# get_model_known_keys - per-model devices/<name>.py override resolution
+# get_model_supported_keys - per-model devices/<name>.py override resolution
 # ---------------------------------------------------------------------------
 
 
-def test_get_model_known_keys_falls_back_when_name_missing() -> None:
+def test_get_model_supported_keys_falls_back_when_name_missing() -> None:
     """No 'device_file'/'name' on model_info returns the global allowlist unchanged (line 249)."""
     global_keys = {"getBAR", "getVOL"}
-    assert helpers.get_model_known_keys({}, "sensor", global_keys) == global_keys
+    assert helpers.get_model_supported_keys({}, "sensor", global_keys) == global_keys
 
 
-def test_get_model_known_keys_uses_device_override_when_defined() -> None:
+def test_get_model_supported_keys_uses_device_override_when_defined() -> None:
     """A devices/<name>.py file that defines the platform's allowlist is used verbatim.
 
     It replaces the global set (lines 254, 257-259).
     """
 
     global_keys = {"getBAR", "getVOL"}
-    result = helpers.get_model_known_keys(
+    result = helpers.get_model_supported_keys(
         {"name": "muco_filling"}, "sensor", global_keys
     )
-    assert result == muco_filling.SENSOR_KNOWN_KEYS
+    assert result == muco_filling.SENSOR_SUPPORTED_KEYS
     assert result != global_keys
     assert {"getCFT", "getCFV"} <= result
 
-    result = helpers.get_model_known_keys(
+    result = helpers.get_model_supported_keys(
         {"name": "muco_connectioncentre"}, "sensor", global_keys
     )
-    assert result == muco_connectioncentre.SENSOR_KNOWN_KEYS
+    assert result == muco_connectioncentre.SENSOR_SUPPORTED_KEYS
     assert {"getCFT", "getCFV"} <= result
 
 
-def test_get_model_known_keys_falls_back_when_platform_not_defined() -> None:
+def test_get_model_supported_keys_falls_back_when_platform_not_defined() -> None:
     """A devices/<name>.py file without this platform's allowlist falls back to the global set.
 
     Covers line 258.
     """
     global_keys = {"getBUZ"}
-    # A device module that defines no <PLATFORM>_KNOWN_KEYS at all (every real device file defines
+    # A device module that defines no <PLATFORM>_SUPPORTED_KEYS at all (every real device file defines
     # all of them), so the global set is returned unchanged.
     with patch.dict(helpers._DEVICE_MODULES, {"no_platform_sets": SimpleNamespace()}):
-        result = helpers.get_model_known_keys(
+        result = helpers.get_model_supported_keys(
             {"name": "no_platform_sets"}, "binary_sensor", global_keys
         )
     assert result is global_keys
 
 
-def test_get_model_known_keys_uses_device_file_over_name() -> None:
+def test_get_model_supported_keys_uses_device_file_over_name() -> None:
     """The 'device_file' field takes priority over 'name' when both are present."""
 
     global_keys = {"getBAR"}
-    result = helpers.get_model_known_keys(
+    result = helpers.get_model_supported_keys(
         {"name": "sanibelleakprotect", "device_file": "muco_leakprotect"},
         "sensor",
         global_keys,
     )
-    assert result == muco_leakprotect.SENSOR_KNOWN_KEYS
+    assert result == muco_leakprotect.SENSOR_SUPPORTED_KEYS
 
 
-def test_get_model_known_keys_safetplus_device_override() -> None:
+def test_get_model_supported_keys_safetplus_device_override() -> None:
     """The safetplus model resolves its own devices/safetplus.py override file."""
 
     global_keys = {"getBAR"}
-    result = helpers.get_model_known_keys({"name": "safetplus"}, "sensor", global_keys)
-    assert result == safetplus.SENSOR_KNOWN_KEYS
+    result = helpers.get_model_supported_keys(
+        {"name": "safetplus"}, "sensor", global_keys
+    )
+    assert result == safetplus.SENSOR_SUPPORTED_KEYS
     # Explicit empty-set override (no select-worthy keys) must be honored, not
     # treated as "not defined".
     assert (
-        helpers.get_model_known_keys({"name": "safetplus"}, "select", global_keys)
+        helpers.get_model_supported_keys({"name": "safetplus"}, "select", global_keys)
         == set()
     )
 
 
-def test_get_model_known_keys_safetech_device_override() -> None:
+def test_get_model_supported_keys_safetech_device_override() -> None:
     """SafeTech and SafeTech+ models use their distinct allowlists."""
 
     safetech_names = {
@@ -2014,10 +2017,10 @@ def test_get_model_known_keys_safetech_device_override() -> None:
 
     assert set(signatures) == model_names
     global_keys = {"getBAR", "getBAR2"}
-    assert "getBAR" in safetech.SENSOR_KNOWN_KEYS
-    assert "getBAR2" not in safetech.SENSOR_KNOWN_KEYS
-    assert "getBAR" not in safetechplus.SENSOR_KNOWN_KEYS
-    assert "getBAR2" in safetechplus.SENSOR_KNOWN_KEYS
+    assert "getBAR" in safetech.SENSOR_SUPPORTED_KEYS
+    assert "getBAR2" not in safetech.SENSOR_SUPPORTED_KEYS
+    assert "getBAR" not in safetechplus.SENSOR_SUPPORTED_KEYS
+    assert "getBAR2" in safetechplus.SENSOR_SUPPORTED_KEYS
     for names, module, device_file in (
         (safetech_names, safetech, "safetech"),
         (safetechplus_names, safetechplus, "safetechplus"),
@@ -2026,65 +2029,72 @@ def test_get_model_known_keys_safetech_device_override() -> None:
             signature = signatures[name]
             assert signature.get("device_file") == device_file
             assert (
-                helpers.get_model_known_keys(signature, "sensor", global_keys)
-                == module.SENSOR_KNOWN_KEYS
+                helpers.get_model_supported_keys(signature, "sensor", global_keys)
+                == module.SENSOR_SUPPORTED_KEYS
             )
         assert (
-            helpers.get_model_known_keys(
+            helpers.get_model_supported_keys(
                 signatures[next(iter(names))], "select", global_keys
             )
-            == module.SELECT_KNOWN_KEYS
+            == module.SELECT_SUPPORTED_KEYS
         )
         assert (
-            helpers.get_model_known_keys(
+            helpers.get_model_supported_keys(
                 signatures[next(iter(names))], "button", global_keys
             )
-            == module.BUTTON_KNOWN_KEYS
+            == module.BUTTON_SUPPORTED_KEYS
         )
 
-    assert "getBAR" in safetech.SENSOR_KNOWN_KEYS
-    assert "getBAR" not in safetechplus.SENSOR_KNOWN_KEYS
+    assert "getBAR" in safetech.SENSOR_SUPPORTED_KEYS
+    assert "getBAR" not in safetechplus.SENSOR_SUPPORTED_KEYS
 
 
-def test_get_model_known_keys_lex_device_override() -> None:
+def test_get_model_supported_keys_lex_device_override() -> None:
     """The lex model resolves its own devices/lex.py override file.
 
     The file is shared by all l10-l100/lex10-lex100 signatures.
     """
 
     global_keys = {"getBAR"}
-    result = helpers.get_model_known_keys({"name": "lex"}, "sensor", global_keys)
-    assert result == lex.SENSOR_KNOWN_KEYS
+    result = helpers.get_model_supported_keys({"name": "lex"}, "sensor", global_keys)
+    assert result == lex.SENSOR_SUPPORTED_KEYS
     # No buzzer/valve on this model - explicit empty-set overrides honored.
-    assert helpers.get_model_known_keys({"name": "lex"}, "switch", global_keys) == set()
-    assert helpers.get_model_known_keys({"name": "lex"}, "valve", global_keys) == set()
+    assert (
+        helpers.get_model_supported_keys({"name": "lex"}, "switch", global_keys)
+        == set()
+    )
+    assert (
+        helpers.get_model_supported_keys({"name": "lex"}, "valve", global_keys) == set()
+    )
 
 
-def test_get_model_known_keys_safefloor_device_override() -> None:
+def test_get_model_supported_keys_safefloor_device_override() -> None:
     """The safefloor model resolves its own devices/safefloor.py override file."""
 
     global_keys = {"getBAR"}
-    result = helpers.get_model_known_keys({"name": "safefloor"}, "sensor", global_keys)
-    assert result == safefloor.SENSOR_KNOWN_KEYS
+    result = helpers.get_model_supported_keys(
+        {"name": "safefloor"}, "sensor", global_keys
+    )
+    assert result == safefloor.SENSOR_SUPPORTED_KEYS
     # This model has no display rotation, filling, or salt config selects, but its
     # alarm/humidity/temperature thresholds and sync/measurement intervals are
     # user-adjustable settings represented as select entities.
     assert (
-        helpers.get_model_known_keys({"name": "safefloor"}, "select", global_keys)
-        == safefloor.SELECT_KNOWN_KEYS
+        helpers.get_model_supported_keys({"name": "safefloor"}, "select", global_keys)
+        == safefloor.SELECT_SUPPORTED_KEYS
     )
     assert (
-        helpers.get_model_known_keys({"name": "safefloor"}, "valve", global_keys)
+        helpers.get_model_supported_keys({"name": "safefloor"}, "valve", global_keys)
         == set()
     )
 
 
-def test_get_model_known_keys_trio_device_override() -> None:
+def test_get_model_supported_keys_trio_device_override() -> None:
     """The trio model (Trio DFR/LS) resolves its own devices/trio.py override file."""
 
     global_keys = {"getBAR"}
-    result = helpers.get_model_known_keys({"name": "trio"}, "sensor", global_keys)
-    assert result == trio.SENSOR_KNOWN_KEYS
+    result = helpers.get_model_supported_keys({"name": "trio"}, "sensor", global_keys)
+    assert result == trio.SENSOR_SUPPORTED_KEYS
     assert "getDSV" in result
     assert "getSLF" in result
 

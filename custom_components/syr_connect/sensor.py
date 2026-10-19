@@ -24,9 +24,9 @@ from .const import (
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
@@ -36,7 +36,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .helpers import (
     find_entity_id,
-    get_model_known_keys,
+    get_model_supported_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -88,7 +88,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "sensor",
-        allowed_keys=_SYR_CONNECT_SENSOR_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_SENSOR_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
 
@@ -109,8 +109,8 @@ async def async_setup_entry(
         # Scope the sensor allowlist to the detected model (falls back to the
         # global allowlist for models that haven't opted into per-model key lists).
         model_info = detect_model(status)
-        known_sensor_keys = get_model_known_keys(
-            model_info, "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS
+        supported_sensor_keys = get_model_supported_keys(
+            model_info, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
         )
 
         _LOGGER.debug(
@@ -129,7 +129,7 @@ async def async_setup_entry(
 
         # Handle leak-protection groups controlled by getPA1..getPA8
         group_entities, handled_keys = _build_pa_group_sensors(
-            coordinator, registry, device_id, device_name, status, known_sensor_keys
+            coordinator, registry, device_id, device_name, status, supported_sensor_keys
         )
         entities.extend(group_entities)
         sensor_count = len(group_entities)
@@ -137,7 +137,7 @@ async def async_setup_entry(
         # Create sensors for all status values
         for key, value in status.items():
             if not _is_sensor_wanted(
-                status, key, value, known_sensor_keys, handled_keys
+                status, key, value, supported_sensor_keys, handled_keys
             ):
                 continue
             _LOGGER.debug(
@@ -167,7 +167,7 @@ def _build_pa_group_sensors(
     device_id: str,
     device_name: str,
     status: dict[str, Any],
-    known_sensor_keys: set[str],
+    supported_sensor_keys: set[str],
 ) -> tuple[list[SensorEntity], set[str]]:
     """Create or remove the leak-protection profile sensors controlled by getPA1..getPA8.
 
@@ -203,7 +203,7 @@ def _build_pa_group_sensors(
                 for gk in group_keys:
                     # Avoid duplicates when iterating over status later
                     handled_keys.add(gk)
-                    if gk not in known_sensor_keys:
+                    if gk not in supported_sensor_keys:
                         _LOGGER.debug(
                             "Skipping PA group sensor (not in allowlist): device=%s key=%s",
                             device_id,
@@ -274,14 +274,14 @@ def _is_sensor_wanted(
     status: dict[str, Any],
     key: str,
     value: Any,
-    known_sensor_keys: set[str],
+    supported_sensor_keys: set[str],
     handled_keys: set[str],
 ) -> bool:
     """Return True if the status value gets a regular sensor entity."""
     # Allowlist check: the definitive list of keys this integration handles.
     # Anything not listed here is ignored unconditionally, regardless of
     # what other checks follow. This takes precedence over all other logic.
-    if key not in known_sensor_keys:
+    if key not in supported_sensor_keys:
         _LOGGER.debug("Skipping unknown sensor key %s (not in allowlist)", key)
         return False
 
@@ -349,10 +349,10 @@ def _async_setup_muco_conditional_sensors(
             return None
         # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
         # also report getCRT/getLOT/getOHW but deliberately do not expose them.
-        known_sensor_keys = get_model_known_keys(
-            detect_model(status), "sensor", _SYR_CONNECT_SENSOR_KNOWN_KEYS
+        supported_sensor_keys = get_model_supported_keys(
+            detect_model(status), "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
         )
-        return key if key in known_sensor_keys else None
+        return key if key in supported_sensor_keys else None
 
     @callback
     def _sync() -> None:

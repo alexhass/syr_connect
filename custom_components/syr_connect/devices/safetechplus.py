@@ -6,7 +6,7 @@ so getBAR is intentionally absent here even though it appears in the captures.
 The base SafeTech family keeps its separate devices/safetech.py allowlist.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve, flow, and volume ---
@@ -136,27 +136,27 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getFFM",
     "getPRF",
     "getSRO",
 }
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setDEX",
     "setNOT",
     "setWRN",
 }
 
-VALVE_KNOWN_KEYS = {
+VALVE_SUPPORTED_KEYS = {
     "getAB",
 }

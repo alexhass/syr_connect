@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import (
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SWITCH_KNOWN_KEYS,
+    _SYR_CONNECT_SWITCH_SUPPORTED_KEYS,
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -22,7 +22,7 @@ from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
-    get_model_known_keys,
+    get_model_supported_keys,
     is_value_true,
     registry_cleanup,
 )
@@ -47,7 +47,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "switch",
-        allowed_keys=_SYR_CONNECT_SWITCH_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_SWITCH_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
 
@@ -67,11 +67,11 @@ async def async_setup_entry(
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        known_switch_keys = get_model_known_keys(
-            detect_model(status), "switch", _SYR_CONNECT_SWITCH_KNOWN_KEYS
+        supported_switch_keys = get_model_supported_keys(
+            detect_model(status), "switch", _SYR_CONNECT_SWITCH_SUPPORTED_KEYS
         )
 
-        for sensor_key in sorted(known_switch_keys):
+        for sensor_key in sorted(supported_switch_keys):
             if sensor_key not in status:
                 _LOGGER.debug(
                     "%s not found in status for device %s.", sensor_key, device_id

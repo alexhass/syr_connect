@@ -15,7 +15,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import (
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
     _SYR_CONNECT_SELECT_CRT_MAP,
-    _SYR_CONNECT_SELECT_KNOWN_KEYS,
     _SYR_CONNECT_SELECT_MIH_MAP,
     _SYR_CONNECT_SELECT_MIT_MAP,
     _SYR_CONNECT_SELECT_MXH_MAP,
@@ -25,6 +24,7 @@ from .const import (
     _SYR_CONNECT_SELECT_RMO_MAP,
     _SYR_CONNECT_SELECT_RMT_OPTIONS,
     _SYR_CONNECT_SELECT_RVT_OPTIONS,
+    _SYR_CONNECT_SELECT_SUPPORTED_KEYS,
     _SYR_CONNECT_SELECT_WMP_MAP,
     _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
@@ -38,7 +38,7 @@ from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
-    get_model_known_keys,
+    get_model_supported_keys,
     get_sensor_rtm_value,
     is_value_true,
     registry_cleanup,
@@ -151,8 +151,8 @@ class _SyrConnectSelectBuilder:
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
         self.model_info = detect_model(self.status)
-        self.known_select_keys = get_model_known_keys(
-            self.model_info, "select", _SYR_CONNECT_SELECT_KNOWN_KEYS
+        self.supported_select_keys = get_model_supported_keys(
+            self.model_info, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
         )
         self.entities: list[SelectEntity] = []
 
@@ -163,7 +163,7 @@ class _SyrConnectSelectBuilder:
             key: Status key, e.g. "getRMN"
             is_valid: Check for the raw value; default `_is_number`
         """
-        return key in self.known_select_keys and is_valid(self.status.get(key))
+        return key in self.supported_select_keys and is_valid(self.status.get(key))
 
     def add_discrete(self, key: str, options_map: Mapping[str, int | None]) -> None:
         """Add a select with a fixed option map (option key -> raw value).
@@ -238,7 +238,7 @@ def _build_device_selects(
 def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the selects for regeneration, salt, hardness and the general device settings."""
     status = b.status
-    known_select_keys = b.known_select_keys
+    supported_select_keys = b.supported_select_keys
 
     # Regeneration time (getRTM): may contain a combined HH:MM string when `getRTH` is
     # not provided, or act as minutes when `getRTH` is present.
@@ -248,7 +248,7 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
         )
 
     # Active leak-protection profile (getPRF), if any profile getPAx is active (e.g. "true" or "1")
-    if "getPRF" in known_select_keys and any(
+    if "getPRF" in supported_select_keys and any(
         is_value_true(status.get(f"getPA{i}")) for i in range(1, 9)
     ):
         b.entities.append(
@@ -315,9 +315,9 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     if b.allowed("getCRS", _is_integer):
         b.add_discrete("getCRS", _SYR_CONNECT_SELECT_CRS_MAP)
     # getCRT and getRCD have an option for the empty value, so any reported value counts
-    if "getCRT" in b.known_select_keys and "getCRT" in b.status:
+    if "getCRT" in b.supported_select_keys and "getCRT" in b.status:
         b.add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)
-    if "getRCD" in b.known_select_keys and "getRCD" in b.status:
+    if "getRCD" in b.supported_select_keys and "getRCD" in b.status:
         b.add_discrete("getRCD", _SYR_CONNECT_SELECT_RCD_MAP)
     # Filling processes count (getRMN): 1-10
     if b.allowed("getRMN"):
@@ -369,7 +369,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "select",
-        allowed_keys=_SYR_CONNECT_SELECT_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_SELECT_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
 
@@ -415,10 +415,10 @@ def _async_setup_muco_conditional_selects(
         # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
         # also report getCRT/getLOT/getOHW but deliberately do not expose them; a select there
         # would even write setOHW/setLOT.
-        known_select_keys = get_model_known_keys(
-            detect_model(status), "select", _SYR_CONNECT_SELECT_KNOWN_KEYS
+        supported_select_keys = get_model_supported_keys(
+            detect_model(status), "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
         )
-        return key if key in known_select_keys else None
+        return key if key in supported_select_keys else None
 
     def _build_entity(
         device_id: str, device_name: str, key: str

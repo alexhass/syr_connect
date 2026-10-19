@@ -34,10 +34,10 @@ Deliberately NOT included, pending confirmation on a real device:
   matrix.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
@@ -110,7 +110,7 @@ SENSOR_KNOWN_KEYS = {
 
 # getRTM, getPRF, getSV1-3, getRPD, getRMO deliberately excluded: this is a filling
 # controller with no regeneration/resin/salt containers and no leak-protection profiles.
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getSRO",
     "getFFM",
     "getCRS",
@@ -124,18 +124,18 @@ SELECT_KNOWN_KEYS = {
     "getTPR",
 }
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
     "getDFI",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
 # setSIR (no regeneration) and setDEX (Trio DFR/LS microleakage test, not applicable
 # despite getDSV being present in the fixture) deliberately excluded.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",
     "setWRN",
@@ -143,4 +143,4 @@ BUTTON_KNOWN_KEYS = {
 
 # getAB (valve shutoff control) deliberately excluded on request; getVLV (read-only
 # valve position, handled by the sensor platform) is unaffected.
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()

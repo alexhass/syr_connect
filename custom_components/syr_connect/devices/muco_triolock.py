@@ -36,10 +36,10 @@ Deliberately NOT included:
   the fixture at all.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
@@ -173,22 +173,22 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getPRF",
     "getSRO",
     "getFFM",
 }
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
 # setDEX (microleakage test) gated on getDSV presence, matching muco_leakprotect.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",
     "setWRN",
@@ -196,6 +196,6 @@ BUTTON_KNOWN_KEYS = {
 }
 
 # getAB (valve shutoff control) kept - this model genuinely controls a valve.
-VALVE_KNOWN_KEYS = {
+VALVE_SUPPORTED_KEYS = {
     "getAB",
 }

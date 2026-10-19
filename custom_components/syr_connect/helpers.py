@@ -52,7 +52,7 @@ from .models import MODEL_SIGNATURES, detect_model
 _LOGGER = logging.getLogger(__name__)
 
 # Statically imported above (instead of importlib.import_module()'d on demand in
-# get_model_known_keys()) so module resolution happens at integration load time
+# get_model_supported_keys()) so module resolution happens at integration load time
 # rather than via a blocking import call from inside the event loop.
 _DEVICE_MODULES: dict[str, ModuleType] = {
     "lex": lex,
@@ -318,23 +318,23 @@ def find_entity_id(
     )
 
 
-def get_model_known_keys(
-    model_info: dict[str, Any], platform: str, global_known_keys: set[str]
+def get_model_supported_keys(
+    model_info: dict[str, Any], platform: str, global_supported_keys: set[str]
 ) -> set[str]:
-    """Return the known-keys allowlist for a platform, scoped to the detected model.
+    """Return the supported-keys allowlist for a platform, scoped to the detected model.
 
     Looks for an optional `devices/<name>.py` module (matching the detected
     model's `device_file`, or its `name` when `device_file` is not set - see
-    `models.MODEL_SIGNATURES`) and, if it defines a `<PLATFORM>_KNOWN_KEYS`
-    set (e.g. `SENSOR_KNOWN_KEYS`), uses that as a POSITIVE, device-specific
-    allowlist instead of `global_known_keys`. `device_file` lets multiple
+    `models.MODEL_SIGNATURES`) and, if it defines a `<PLATFORM>_SUPPORTED_KEYS`
+    set (e.g. `SENSOR_SUPPORTED_KEYS`), uses that as a POSITIVE, device-specific
+    allowlist instead of `global_supported_keys`. `device_file` lets multiple
     model signatures that are largely identical (e.g. rebranded variants of
     the same hardware) share a single override file instead of duplicating
     near-identical content per model `name`.
     This is deliberately an allowlist, not an exclusion list — the global
     const.py lists cover ~90 different models, and new/unexpected keys can
     show up in any device's API response at any time, so only explicitly
-    confirmed keys are trusted per device. Falls back to `global_known_keys`
+    confirmed keys are trusted per device. Falls back to `global_supported_keys`
     unchanged when no override file exists for the model, or it doesn't
     define this platform's set at all (an explicit empty set is honored as
     "no entities of this platform for this model", not a fallback trigger).
@@ -342,22 +342,22 @@ def get_model_known_keys(
     Args:
         model_info: Result of `models.detect_model()`.
         platform: Entity domain string (e.g. "sensor", "select", "switch").
-        global_known_keys: The platform's full/default allowlist.
+        global_supported_keys: The platform's full/default allowlist.
 
     Returns:
         The effective allowlist to use for this device.
     """
     name = model_info.get("device_file") or model_info.get("name")
     if not name:
-        return global_known_keys
+        return global_supported_keys
     device_module = _DEVICE_MODULES.get(name)
     if device_module is None:
-        return global_known_keys
-    device_keys = getattr(device_module, f"{platform.upper()}_KNOWN_KEYS", None)
+        return global_supported_keys
+    device_keys = getattr(device_module, f"{platform.upper()}_SUPPORTED_KEYS", None)
     # None means "not defined" -> fall back. An explicit empty set is a valid
     # override meaning "this model has none of this platform's entities".
     if device_keys is None:
-        return global_known_keys
+        return global_supported_keys
     return set(device_keys)
 
 
@@ -492,7 +492,9 @@ def registry_cleanup(
             # Scope the allowlist to the detected model (falls back to allowed_keys
             # unchanged for models that haven't opted into per-model key lists).
             model_info = detect_model(status)
-            device_allowed_keys = get_model_known_keys(model_info, domain, allowed_keys)
+            device_allowed_keys = get_model_supported_keys(
+                model_info, domain, allowed_keys
+            )
             allowed_lower = {k.lower() for k in device_allowed_keys}
 
             # Remove entities whose key is no longer in the allowed set.

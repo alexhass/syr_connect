@@ -24,11 +24,11 @@ fingerprint required for model detection), so it is NOT treated as proof:
 
 If a real dual-tank device capture confirms getRE2/getSS2/getSV2 (or getRG2,
 the tank-2 regeneration-running flag already in const.py's global
-allowlist) with a genuine non-empty value, move it into SENSOR_KNOWN_KEYS
+allowlist) with a genuine non-empty value, move it into SENSOR_SUPPORTED_KEYS
 below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Flow ---
@@ -91,7 +91,7 @@ SENSOR_KNOWN_KEYS = {
 }
 
 # getSV1 excluded - built-in salt level sensor, not a manual setting (see neosoft_single.py docstring).
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getRPD",
     "getRMO",
     "getRTM",
@@ -99,16 +99,16 @@ SELECT_KNOWN_KEYS = {
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - no filling
 # feature on this model.
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
 # setDEX excluded - no microleakage-test hardware on this model.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setSIR",
     "setALA",
     "setNOT",
@@ -116,4 +116,4 @@ BUTTON_KNOWN_KEYS = {
 }
 
 # No shutoff valve on this model (a conventional softener).
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()

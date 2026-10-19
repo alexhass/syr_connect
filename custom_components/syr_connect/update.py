@@ -15,13 +15,13 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import _SYR_CONNECT_UPDATE_KNOWN_KEYS
+from .const import _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
-    get_model_known_keys,
+    get_model_supported_keys,
     get_sensor_not_map,
     registry_cleanup,
 )
@@ -52,7 +52,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "update",
-        allowed_keys=_SYR_CONNECT_UPDATE_KNOWN_KEYS,
+        allowed_keys=_SYR_CONNECT_UPDATE_SUPPORTED_KEYS,
         entry_id=coordinator.entry_id,
     )
 
@@ -64,10 +64,10 @@ async def async_setup_entry(
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        known_update_keys = get_model_known_keys(
-            detect_model(status), "update", _SYR_CONNECT_UPDATE_KNOWN_KEYS
+        supported_update_keys = get_model_supported_keys(
+            detect_model(status), "update", _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
         )
-        if "getNOT" not in known_update_keys or "getNOT" not in status:
+        if "getNOT" not in supported_update_keys or "getNOT" not in status:
             continue
 
         entities.append(SyrConnectFirmwareUpdate(coordinator, device_id, device_name))

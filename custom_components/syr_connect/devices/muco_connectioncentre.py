@@ -26,10 +26,10 @@ Deliberately NOT included, pending confirmation on a real device:
   "Anschlusscenter"/"Connection centre"), not a leak-protection variant.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Flow ---
@@ -74,21 +74,21 @@ SENSOR_KNOWN_KEYS = {
     "getTRV",
 }
 
-SELECT_KNOWN_KEYS: set[str] = set()
+SELECT_SUPPORTED_KEYS: set[str] = set()
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",
     "setWRN",
 }
 
 # No shutoff valve confirmed for this "Connection centre" role.
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()

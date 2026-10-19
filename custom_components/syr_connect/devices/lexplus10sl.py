@@ -29,14 +29,14 @@ Deliberately NOT included:
 - getCNO: empty ("") in the fixture.
 - No Wi-Fi keys in the fixture (LAN-only via getDGW/getIPA/getMAC), but like
   LEX10 an optional Wi-Fi module is possible - the Wi-Fi keys are included
-  in SENSOR_KNOWN_KEYS below anyway, since they are only ever created when
+  in SENSOR_SUPPORTED_KEYS below anyway, since they are only ever created when
   actually present in a device's status.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Valve & Flow ---
@@ -199,7 +199,7 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getIWH",
     "getOWH",
     "getRPD",
@@ -209,18 +209,18 @@ SELECT_KNOWN_KEYS = {
 }
 
 # getBUZ present but empty in the fixture - no confirmed buzzer on this model.
-SWITCH_KNOWN_KEYS: set[str] = set()
-BINARY_SENSOR_KNOWN_KEYS: set[str] = set()
+SWITCH_SUPPORTED_KEYS: set[str] = set()
+BINARY_SENSOR_SUPPORTED_KEYS: set[str] = set()
 
 # setWRN excluded - no getWRN in the fixture. setDEX excluded - no getDSV in
 # the fixture, despite getDBD/getDRP/getNPS being present.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setSIR",
     "setALA",
     "setNOT",
 }
 
 # getAB (valve shutoff control) kept - this model genuinely controls a valve.
-VALVE_KNOWN_KEYS = {
+VALVE_SUPPORTED_KEYS = {
     "getAB",
 }

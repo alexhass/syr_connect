@@ -33,7 +33,7 @@ UNKNOWN_MODEL: dict[str, Any] = {
 # - `base_path`:                    json api local access base path for the model or None if not applicable
 # - `cna_equals`:                   exact match against `getCNA` value (if present)
 # - `device_file`:                  name of a `devices/<name>.py` override file to use for this model's
-#                                   per-platform entity allowlists (see `helpers.get_model_known_keys()`).
+#                                   per-platform entity allowlists (see `helpers.get_model_supported_keys()`).
 #                                   Optional; defaults to this signature's own `name`. Set this when
 #                                   several signatures are rebranded variants of the same underlying
 #                                   hardware (e.g. the dk=1500-1506 MultiController family) so they can

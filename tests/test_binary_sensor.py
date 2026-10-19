@@ -164,8 +164,8 @@ async def test_async_setup_entry_skips_models_without_buzzer(
 def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
     """Every device file that exposes getBUZ as a switch also lists it for the binary sensor, and vice versa."""
     for name, module in _DEVICE_MODULES.items():
-        switch_keys = getattr(module, "SWITCH_KNOWN_KEYS", None)
-        binary_keys = getattr(module, "BINARY_SENSOR_KNOWN_KEYS", None)
+        switch_keys = getattr(module, "SWITCH_SUPPORTED_KEYS", None)
+        binary_keys = getattr(module, "BINARY_SENSOR_SUPPORTED_KEYS", None)
         if switch_keys is None:
             continue
         assert ("getBUZ" in switch_keys) == ("getBUZ" in (binary_keys or set())), name

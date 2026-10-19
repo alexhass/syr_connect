@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import (
-    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
+    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -519,7 +519,7 @@ def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
     visible_keys: list[str] = [
         k
         for k, v in status.items()
-        if k in _SYR_CONNECT_SENSOR_KNOWN_KEYS and is_sensor_visible(status, k, v)
+        if k in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS and is_sensor_visible(status, k, v)
     ]
 
     device_info = {

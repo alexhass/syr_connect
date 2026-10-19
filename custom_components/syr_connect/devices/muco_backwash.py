@@ -23,10 +23,10 @@ Deliberately NOT included, pending confirmation on a real device:
   set and belong to the other muco_leakprotect/muco_filling variants instead.
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Alarm / Notification / Warning ---
@@ -63,26 +63,26 @@ SENSOR_KNOWN_KEYS = {
     "getWIP",
 }
 
-# getRSA/getRSD/getRSE deliberately excluded from SELECT_KNOWN_KEYS: their
+# getRSA/getRSD/getRSE deliberately excluded from SELECT_SUPPORTED_KEYS: their
 # value ranges (1-365 days, 1-100 s) are too large for a usable select
 # dropdown, same reasoning as getIWH/getMPR/getDWF in const.py.
-SELECT_KNOWN_KEYS: set[str] = set()
+SELECT_SUPPORTED_KEYS: set[str] = set()
 
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
     "getSSA",
     "getSSE",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",
     "setWRN",
 }
 
 # No shutoff valve on this model - it only automates backwash scheduling.
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()

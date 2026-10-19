@@ -17,7 +17,7 @@ from custom_components.syr_connect.const import (
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
-    _SYR_CONNECT_SENSOR_KNOWN_KEYS,
+    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     _SYR_CONNECT_SENSOR_TYPES,
     DOMAIN,
 )
@@ -71,12 +71,12 @@ def test_sensor_descriptions_have_unique_keys() -> None:
     """Every key is described once; a duplicate would silently replace the first one."""
     keys = [description.key for description in _SYR_CONNECT_SENSOR_TYPES]
     assert len(keys) == len(set(keys))
-    assert set(keys) == _SYR_CONNECT_SENSOR_KNOWN_KEYS
+    assert set(keys) == _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
 
 
 def test_filling_status_sensor_metadata() -> None:
     """CFT and CFV expose their documented units as measurements."""
-    assert {"getCFT", "getCFV"} <= _SYR_CONNECT_SENSOR_KNOWN_KEYS
+    assert {"getCFT", "getCFV"} <= _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     cft = _SYR_CONNECT_SENSOR_DESCRIPTIONS["getCFT"]
     cfv = _SYR_CONNECT_SENSOR_DESCRIPTIONS["getCFV"]
     assert cft.native_unit_of_measurement == UnitOfTime.SECONDS
@@ -1056,7 +1056,7 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     entry_to_remove = registry.async_get_or_create(
         "sensor",
         "syr_connect",
-        "device1_getDTY",  # getDTY is not in _SYR_CONNECT_SENSOR_KNOWN_KEYS (allowlist) — will be cleaned up
+        "device1_getDTY",  # getDTY is not in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS (allowlist) — will be cleaned up
         suggested_object_id="device1_getdty",
     )
 
@@ -1759,7 +1759,7 @@ async def test_sensor_native_value_none_status_key(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    # Create sensor for a known key that is missing from the status
+    # Create sensor for a supported key that is missing from the status
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRES")
 
     # Should return None when key doesn't exist
@@ -2726,10 +2726,10 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> None:
-    """Keys in _SYR_CONNECT_SENSOR_EXCLUDED must be skipped even if they are in KNOWN_KEYS."""
+    """Keys in _SYR_CONNECT_SENSOR_EXCLUDED must be skipped even if they are in SUPPORTED_KEYS."""
 
-    # getDEN is in both KNOWN_KEYS and EXCLUDED
-    assert "getDEN" in _SYR_CONNECT_SENSOR_KNOWN_KEYS
+    # getDEN is in both SUPPORTED_KEYS and EXCLUDED
+    assert "getDEN" in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
 
     data = {
         "devices": [
@@ -2738,8 +2738,8 @@ async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> Non
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getDEN": "1",  # In KNOWN_KEYS AND in EXCLUDED → must be skipped
-                    "getRES": "42",  # In KNOWN_KEYS, not excluded → must be created
+                    "getDEN": "1",  # In SUPPORTED_KEYS AND in EXCLUDED → must be skipped
+                    "getRES": "42",  # In SUPPORTED_KEYS, not excluded → must be created
                 },
             }
         ]
@@ -2756,10 +2756,10 @@ async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> Non
     assert any(e._sensor_key == "getRES" for e in entities)
 
 
-async def test_sensor_setup_binary_key_in_known_keys_not_created(
+async def test_sensor_setup_binary_key_in_supported_keys_not_created(
     hass: HomeAssistant,
 ) -> None:
-    """Keys in _SYR_CONNECT_SENSOR_BINARY must be skipped as sensors even if in KNOWN_KEYS."""
+    """Keys in _SYR_CONNECT_SENSOR_BINARY must be skipped as sensors even if in SUPPORTED_KEYS."""
 
     data = {
         "devices": [
@@ -2780,12 +2780,14 @@ async def test_sensor_setup_binary_key_in_known_keys_not_created(
 
     add_entities = Mock()
 
-    # Temporarily add getFAKE to KNOWN_KEYS and BINARY so it reaches the binary-sensor guard
-    patched_known = _SYR_CONNECT_SENSOR_KNOWN_KEYS | {"getFAKE"}
+    # Temporarily add getFAKE to SUPPORTED_KEYS and BINARY so it reaches the binary-sensor guard
+    patched_known = _SYR_CONNECT_SENSOR_SUPPORTED_KEYS | {"getFAKE"}
     patched_binary = {"getFAKE": BinarySensorDeviceClass.RUNNING}
 
     with (
-        patch.object(sensor_module, "_SYR_CONNECT_SENSOR_KNOWN_KEYS", patched_known),
+        patch.object(
+            sensor_module, "_SYR_CONNECT_SENSOR_SUPPORTED_KEYS", patched_known
+        ),
         patch.object(sensor_module, "_SYR_CONNECT_SENSOR_BINARY", patched_binary),
     ):
         await async_setup_entry(hass, entry, add_entities)
@@ -6989,7 +6991,7 @@ async def test_getpa_is_true_bool_false(hass: HomeAssistant) -> None:
 
 
 async def test_getpa_group_key_excluded_by_model_allowlist(hass: HomeAssistant) -> None:
-    """PA-group sensors are skipped when the model's SENSOR_KNOWN_KEYS override excludes them.
+    """PA-group sensors are skipped when the model's SENSOR_SUPPORTED_KEYS override excludes them.
 
     This holds even though getPAx is true.
 

@@ -13,13 +13,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_VALVE_KNOWN_KEYS
+from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_VALVE_SUPPORTED_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     build_set_ab_command,
-    get_model_known_keys,
+    get_model_supported_keys,
     get_sensor_ab_value,
     registry_cleanup,
 )
@@ -52,7 +52,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "valve",
-        allowed_keys=_SYR_CONNECT_VALVE_KNOWN_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_VALVE_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
         entry_id=coordinator.entry_id,
     )
 
@@ -66,10 +66,10 @@ async def async_setup_entry(
         # actual valve control key) AND the model's allowlist permits it.
         # `getVLV` is a read-only status sensor and is handled exclusively
         # by the sensor platform.
-        known_valve_keys = get_model_known_keys(
-            detect_model(status), "valve", _SYR_CONNECT_VALVE_KNOWN_KEYS
+        supported_valve_keys = get_model_supported_keys(
+            detect_model(status), "valve", _SYR_CONNECT_VALVE_SUPPORTED_KEYS
         )
-        ab_value = status.get("getAB") if "getAB" in known_valve_keys else None
+        ab_value = status.get("getAB") if "getAB" in supported_valve_keys else None
         create = False
         # If `getAB` looks like a control value (numeric 1/2 or boolean),
         # treat the device as a valve that can be controlled.

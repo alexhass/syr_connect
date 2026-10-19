@@ -23,8 +23,8 @@ valve (no getAB/getVLV) and NO battery (no getBAT/getBAP).
 
 Unlike models where getSV1 is a manually-configured salt refill amount, this
 platform has a built-in salt level sensor - getSV1 is read-only telemetry
-here, so it stays sensor-only (SENSOR_KNOWN_KEYS) and is deliberately left
-out of SELECT_KNOWN_KEYS to avoid exposing a control nobody should use.
+here, so it stays sensor-only (SENSOR_SUPPORTED_KEYS) and is deliberately left
+out of SELECT_SUPPORTED_KEYS to avoid exposing a control nobody should use.
 
 Deliberately NOT included:
 - getALD: 600 in JSON but empty ("") in XML - inconsistent, and 600 is the
@@ -38,10 +38,10 @@ Deliberately NOT included:
   see neosoft_duo.py, which correctly includes them).
 
 If real-device testing shows any of the above (or other) keys are actually
-used, move them into SENSOR_KNOWN_KEYS below.
+used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-SENSOR_KNOWN_KEYS = {
+SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
     # --- Flow ---
@@ -99,7 +99,7 @@ SENSOR_KNOWN_KEYS = {
 }
 
 # getSV1 excluded - built-in salt level sensor, not a manual setting (see module docstring).
-SELECT_KNOWN_KEYS = {
+SELECT_SUPPORTED_KEYS = {
     "getRPD",
     "getRMO",
     "getRTM",
@@ -107,16 +107,16 @@ SELECT_KNOWN_KEYS = {
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - no filling
 # feature on this model.
-SWITCH_KNOWN_KEYS = {
+SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BINARY_SENSOR_KNOWN_KEYS = {
+BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
 # setDEX excluded - no microleakage-test hardware on this model.
-BUTTON_KNOWN_KEYS = {
+BUTTON_SUPPORTED_KEYS = {
     "setSIR",
     "setALA",
     "setNOT",
@@ -124,4 +124,4 @@ BUTTON_KNOWN_KEYS = {
 }
 
 # No shutoff valve on this model (a conventional softener).
-VALVE_KNOWN_KEYS: set[str] = set()
+VALVE_SUPPORTED_KEYS: set[str] = set()
