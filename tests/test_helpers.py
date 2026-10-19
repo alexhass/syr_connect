@@ -34,6 +34,7 @@ from custom_components.syr_connect.helpers import (
     build_set_ab_command,
     build_unique_id,
     get_current_mac,
+    get_device,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -295,6 +296,16 @@ def test_build_entity_id() -> None:
     entity_id = build_entity_id("sensor", "DEVICE123", "getPRS")
 
     assert entity_id == "sensor.syr_connect_device123_getprs"
+
+
+def test_get_device() -> None:
+    """get_device returns the device with the id, None if it is missing."""
+    device = {"id": "DEVICE123", "dclg": "DCLG123", "name": "Test Device"}
+    coordinator_data = {"devices": [device], "projects": []}
+
+    assert get_device(coordinator_data, "DEVICE123") is device
+    assert get_device(coordinator_data, "OTHER") is None
+    assert get_device(None, "DEVICE123") is None
 
 
 def test_build_device_info() -> None:

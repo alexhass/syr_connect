@@ -29,7 +29,7 @@ from .const import (
     CONF_API_TYPE,
     DOMAIN,
 )
-from .data import SyrConnectCoordinatorData
+from .data import SyrConnectCoordinatorData, SyrConnectDevice
 from .devices import (
     lex,
     lexplus10s,
@@ -145,6 +145,26 @@ def get_default_scan_interval_for_entry(entry: ConfigEntry | dict | None) -> int
     )
 
 
+def get_device(
+    coordinator_data: SyrConnectCoordinatorData | None, device_id: str
+) -> SyrConnectDevice | None:
+    """Return the device with the given id from the coordinator data.
+
+    Args:
+        coordinator_data: Coordinator data, None before the first refresh
+        device_id: Device ID (serial number)
+
+    Returns:
+        The device, or None if it is not in the data
+    """
+    if not coordinator_data:
+        return None
+    for device in coordinator_data.get("devices", []):
+        if device.get("id") == device_id:
+            return device
+    return None
+
+
 def is_device_available(coordinator: Any, device_id: str) -> bool:
     """Return whether the entities of a device are available.
 
@@ -157,10 +177,10 @@ def is_device_available(coordinator: Any, device_id: str) -> bool:
     """
     if not coordinator.last_update_success:
         return False
-    for device in (coordinator.data or {}).get("devices", []):
-        if device.get("id") == device_id:
-            return bool(device.get("available", True))
-    return False
+    device = get_device(coordinator.data, device_id)
+    if device is None:
+        return False
+    return bool(device.get("available", True))
 
 
 def build_device_info(
@@ -188,36 +208,31 @@ def build_device_info(
     configuration_url: str | None = None
 
     # Extract device information from coordinator data
-    devices = coordinator_data.get("devices", []) if coordinator_data else []
-    for device in devices:
-        if device["id"] == device_id:
-            status = device.get("status", {})
+    device = get_device(coordinator_data, device_id)
+    if coordinator_data is not None and device is not None:
+        status = device.get("status", {})
 
-            # Get human-friendly model display name and manufacturer
-            detected = detect_model(status)
-            display_name = detected.get("display_name")
-            if display_name:
-                model = str(display_name)
-            manufacturer = detected.get("manufacturer") or None
-            configuration_url = (
-                coordinator_data.get("configuration_url") if coordinator_data else None
-            )
+        # Get human-friendly model display name and manufacturer
+        detected = detect_model(status)
+        display_name = detected.get("display_name")
+        if display_name:
+            model = str(display_name)
+        manufacturer = detected.get("manufacturer") or None
+        configuration_url = coordinator_data.get("configuration_url")
 
-            # Get software version from getVER
-            if status.get("getVER"):
-                sw_version = str(status["getVER"])
+        # Get software version from getVER
+        if status.get("getVER"):
+            sw_version = str(status["getVER"])
 
-            # Get hardware version from getFIR
-            if status.get("getFIR"):
-                hw_version = str(status["getFIR"])
+        # Get hardware version from getFIR
+        if status.get("getFIR"):
+            hw_version = str(status["getFIR"])
 
-            # Get MAC address using prioritized helper
-            detected_mac = get_current_mac(status)
-            if detected_mac:
-                mac = str(detected_mac)
-                connections.add(("mac", mac))
-
-            break
+        # Get MAC address using prioritized helper
+        detected_mac = get_current_mac(status)
+        if detected_mac:
+            mac = str(detected_mac)
+            connections.add(("mac", mac))
 
     # Use fallback if no model found
     if model is None:

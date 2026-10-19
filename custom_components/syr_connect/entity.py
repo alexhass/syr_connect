@@ -10,6 +10,7 @@ from .helpers import (
     build_device_info,
     build_entity_id,
     build_unique_id,
+    get_device,
     is_device_available,
 )
 
@@ -59,12 +60,7 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
     @property
     def _device(self) -> SyrConnectDevice | None:
         """Return this entity's device from the coordinator data, or None if it is missing."""
-        data = self.coordinator.data
-        devices = data.get("devices", []) if data else []
-        for device in devices:
-            if device.get("id") == self._device_id:
-                return device
-        return None
+        return get_device(self.coordinator.data, self._device_id)
 
     @property
     def _status(self) -> dict[str, Any]:

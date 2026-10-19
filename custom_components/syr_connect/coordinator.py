@@ -32,6 +32,7 @@ from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import (
     get_api_locale,
     get_default_scan_interval_for_entry,
+    get_device,
     get_sensor_iwh_value,
     is_device_offline,
 )
@@ -377,14 +378,10 @@ class SyrConnectDataUpdateCoordinator(
         instead of being cleared. Without previous data the device stays available with
         an empty status.
         """
-        if self.data:
-            previous_devices: list[SyrConnectDevice] = self.data.get("devices", [])
-            for prev in previous_devices:
-                if prev.get("id") == device.get("id"):
-                    _LOGGER.debug(
-                        "Reusing previous status for device %s", device.get("id")
-                    )
-                    return prev
+        prev = get_device(self.data, device["id"])
+        if prev is not None:
+            _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
+            return prev
         _LOGGER.debug(
             "No previous status for device %s; keeping device available with empty status",
             device.get("id"),
@@ -408,14 +405,10 @@ class SyrConnectDataUpdateCoordinator(
             serial number is present in coordinator data (including when coordinator
             data is not yet available).
         """
-        if not self.data:
+        device = get_device(self.data, device_id)
+        if device is None:
             return None
-        devices: list[SyrConnectDevice] = self.data.get("devices", [])
-        for device in devices:
-            if device["id"] == device_id:
-                dclg: str = device.get("dclg", device_id)
-                return dclg
-        return None
+        return device.get("dclg", device_id)
 
     async def async_set_device_value(
         self, device_id: str, command: str, value: Any
@@ -465,14 +458,7 @@ class SyrConnectDataUpdateCoordinator(
         try:
             if isinstance(self.data, dict):
                 new_data = copy.deepcopy(self.data)
-                device = next(
-                    (
-                        dev
-                        for dev in new_data.get("devices", [])
-                        if dev.get("id") == device_id
-                    ),
-                    None,
-                )
+                device = get_device(new_data, device_id)
                 applied = False
                 for command, value in commands:
                     # "clrXYZ" clears an alarm; it has no value to show optimistically
@@ -591,11 +577,8 @@ class SyrConnectDataUpdateCoordinator(
         if dclg is None:
             raise HomeAssistantError(f"Device {device_id} not found")
 
-        status: dict = {}
-        for device in self.data.get("devices", []):
-            if device["id"] == device_id:
-                status = device.get("status", {}) or {}
-                break
+        device = get_device(self.data, device_id)
+        status: dict = (device.get("status") or {}) if device is not None else {}
 
         # --- Detect active alarm and compute clear command ---
         # Returns (command, value) when an alarm must be cleared first, or None.
