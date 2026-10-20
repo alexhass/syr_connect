@@ -301,7 +301,7 @@ class _SyrConnectSelectBuilder:
         """Initialize the builder for one device from the coordinator data."""
         self.coordinator = coordinator
         self.device_id = device["id"]
-        self.device_name = device.get("name", self.device_id)
+        self.device_name = device["name"]
         self.status: dict[str, Any] = device.get("status", {})
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
@@ -598,10 +598,8 @@ def _async_setup_muco_conditional_selects(
             for device in (
                 coordinator.data.get("devices", []) if coordinator.data else []
             ):
-                device_id = device.get("id")
-                if not device_id:
-                    continue
-                device_name = device.get("name", device_id)
+                device_id = device["id"]
+                device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
                 wanted = _wanted_key(status)

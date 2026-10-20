@@ -78,8 +78,8 @@ async def async_setup_entry(
     devices = coordinator.data.get("devices", [])
     _LOGGER.debug("Found %d devices in coordinator data.", len(devices))
     for device in devices:
-        device_id = device.get("id")
-        device_name = device.get("name", device_id)
+        device_id = device["id"]
+        device_name = device["name"]
         status = device.get("status", {})
         _LOGGER.debug(
             "Checking device: id=%s, name=%s, status_keys=%s",

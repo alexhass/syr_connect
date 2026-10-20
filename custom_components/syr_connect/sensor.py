@@ -1666,10 +1666,8 @@ def _async_setup_muco_conditional_sensors(
             for device in (
                 coordinator.data.get("devices", []) if coordinator.data else []
             ):
-                device_id = device.get("id")
-                if not device_id:
-                    continue
-                device_name = device.get("name", device_id)
+                device_id = device["id"]
+                device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
                 wanted = _wanted_key(status)

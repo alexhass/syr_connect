@@ -74,8 +74,8 @@ async def async_setup_entry(
 
     entities: list[UpdateEntity] = []
     for device in coordinator.data.get("devices", []):
-        device_id = device.get("id")
-        device_name = device.get("name", device_id)
+        device_id = device["id"]
+        device_name = device["name"]
         status = device.get("status", {})
 
         # Scope to the detected model (falls back to the global allowlist for

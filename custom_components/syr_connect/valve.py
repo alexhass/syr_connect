@@ -76,8 +76,8 @@ async def async_setup_entry(
 
     entities: list[SyrConnectValve] = []
     for device in coordinator.data.get("devices", []):
-        device_id = device.get("id")
-        device_name = device.get("name", device_id)
+        device_id = device["id"]
+        device_name = device["name"]
         # Per-device status dictionary from the coordinator payload
         status = device.get("status", {})
         # Create a valve entity only when the device exposes `getAB` (the
