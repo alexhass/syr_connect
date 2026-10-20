@@ -17,6 +17,8 @@ from custom_components.syr_connect import (
     select,
     sensor,
     switch,
+    update,
+    valve,
 )
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_SENSOR_EXCLUDED,
@@ -1944,6 +1946,8 @@ _DESCRIBED_KEYS = {
     "switch": set(switch._SYR_CONNECT_SWITCH_DESCRIPTIONS),
     "button": {d.key for d in button._SYR_CONNECT_BUTTON_TYPES},
     "select": set(select._SYR_CONNECT_SELECT_DESCRIPTIONS),
+    "update": set(update._SYR_CONNECT_UPDATE_DESCRIPTIONS),
+    "valve": set(valve._SYR_CONNECT_VALVE_DESCRIPTIONS),
 }
 
 

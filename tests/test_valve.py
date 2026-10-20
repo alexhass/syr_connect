@@ -980,11 +980,11 @@ async def test_valve_initialization_with_sensor_key(hass: HomeAssistant) -> None
     coordinator = _build_coordinator(hass, data)
 
     # Create valve with explicit sensor_key
-    valve = SyrConnectValve(coordinator, "sk1", "SK1", sensor_key="getVLV")
+    valve = SyrConnectValve(coordinator, "sk1", "SK1", sensor_key="getAB")
 
-    assert valve._sensor_key == "getVLV"
-    assert valve.unique_id == "sk1_getVLV"
-    assert valve.translation_key == "getvlv"
+    assert valve._sensor_key == "getAB"
+    assert valve.unique_id == "sk1_getAB"
+    assert valve.translation_key == "getab"
 
 
 async def test_valve_initialization_default_sensor_key(hass: HomeAssistant) -> None:

@@ -7,6 +7,7 @@ from typing import Any, override
 from homeassistant.components.update import (
     UpdateDeviceClass,
     UpdateEntity,
+    UpdateEntityDescription,
     UpdateEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -15,7 +16,6 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -34,6 +34,22 @@ _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS = 600
 
 # Shown as "latest version" because the API never reports the real new version number.
 _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER = "New version available"
+
+# Descriptions of all update entities
+_SYR_CONNECT_UPDATE_TYPES: tuple[UpdateEntityDescription, ...] = (
+    UpdateEntityDescription(
+        key="getNOT",  # Notification code; "01" == new_software_available
+        device_class=UpdateDeviceClass.FIRMWARE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+_SYR_CONNECT_UPDATE_DESCRIPTIONS: dict[str, UpdateEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_UPDATE_TYPES
+}
+
+# Supported keys for the update platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_UPDATE_SUPPORTED_KEYS = set(_SYR_CONNECT_UPDATE_DESCRIPTIONS)
 
 
 async def async_setup_entry(
@@ -93,7 +109,6 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
     "04" (new_software_installed) or _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS have passed.
     """
 
-    _attr_device_class = UpdateDeviceClass.FIRMWARE
     _attr_supported_features = (
         UpdateEntityFeature.INSTALL | UpdateEntityFeature.PROGRESS
     )
@@ -117,6 +132,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
             translation_key="getnot_update",
         )
 
+        self.entity_description = _SYR_CONNECT_UPDATE_DESCRIPTIONS["getNOT"]
         self._install_started: float | None = None
 
         # "_update" suffix keeps this apart from the existing getNOT sensor's
@@ -125,7 +141,6 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         self._attr_unique_id = build_unique_id(
             coordinator.entry_id, device_id.lower(), "getNOT_update".lower()
         )
-        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
     @override

@@ -6,6 +6,7 @@ from typing import override
 from homeassistant.components.valve import (
     ValveDeviceClass,
     ValveEntity,
+    ValveEntityDescription,
     ValveEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -13,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import _SYR_CONNECT_SENSOR_EXCLUDED, _SYR_CONNECT_VALVE_SUPPORTED_KEYS
+from .const import _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -29,6 +30,23 @@ _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+# Descriptions of all valves
+_SYR_CONNECT_VALVE_TYPES: tuple[ValveEntityDescription, ...] = (
+    ValveEntityDescription(
+        key="getAB",  # Valve shutoff control / state
+        device_class=ValveDeviceClass.WATER,
+        # Opening/closing comes from the discrete getVLV codes, there is no position value
+        reports_position=False,
+    ),
+)
+
+_SYR_CONNECT_VALVE_DESCRIPTIONS: dict[str, ValveEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_VALVE_TYPES
+}
+
+# Supported keys for the valve platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_VALVE_SUPPORTED_KEYS = set(_SYR_CONNECT_VALVE_DESCRIPTIONS)
 
 
 async def async_setup_entry(
@@ -129,15 +147,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         # support legacy callers that omit sensor_key
         self._sensor_key = sensor_key or "getAB"
         super().__init__(coordinator, device_id, device_name, "valve", self._sensor_key)
-
-        # Enable valve entities by default
-        self._attr_entity_registry_enabled_default = True
-
-        # This integration does not report a continuous position value
-        # (we expose opening/closing via discrete `getVLV` codes). Set
-        # `reports_position` to False so Home Assistant will not expect
-        # a numeric position attribute.
-        self._attr_reports_position = False
+        self.entity_description = _SYR_CONNECT_VALVE_DESCRIPTIONS[self._sensor_key]
 
         # Advertise supported actions (open and close) as a bitmask
         # using the ValveEntityFeature IntFlag. Home Assistant expects
@@ -145,10 +155,6 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         self._attr_supported_features = (
             ValveEntityFeature.OPEN | ValveEntityFeature.CLOSE
         )
-
-        # Device class: represent this entity as a water valve in the
-        # Home Assistant UI.
-        self._attr_device_class = ValveDeviceClass.WATER
 
     @property
     @override
