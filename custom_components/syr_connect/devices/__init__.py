@@ -7,10 +7,10 @@ constant per platform: `SENSOR_SUPPORTED_KEYS`, `SELECT_SUPPORTED_KEYS`,
 `SWITCH_SUPPORTED_KEYS`, `BINARY_SENSOR_SUPPORTED_KEYS`, `BUTTON_SUPPORTED_KEYS`.
 
 When present, `helpers.get_model_supported_keys()` uses these instead of the
-global allowlists in const.py, so the entities created for a device are
-limited to keys explicitly confirmed for that model rather than the union of
-every model's keys. Models without a file here keep using the global
-const.py allowlists unchanged.
+global allowlists, so the entities created for a device are limited to keys
+explicitly confirmed for that model rather than the union of every model's
+keys. Models without a file here keep using the global allowlists unchanged.
 
-See const.py's `_SYR_CONNECT_<PLATFORM>_SUPPORTED_KEYS` for the global fallback allowlists these override.
+The global fallback allowlists these override are `_SYR_CONNECT_<PLATFORM>_SUPPORTED_KEYS`
+in the platform modules (sensor.py, select.py, ...; valve and update in const.py).
 """

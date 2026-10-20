@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_CONFIG, DOMAIN
+from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 import custom_components.syr_connect.switch as switch_mod
 from custom_components.syr_connect.switch import (
@@ -221,11 +221,7 @@ def test_is_on_unrecognized_type_returns_false() -> None:
 
 
 def test_entity_category_is_config() -> None:
-    """Entity category should be CONFIG for keys in _SYR_CONNECT_SENSOR_CONFIG."""
-
-    # Ensure getBUZ is in the config set (it is by design)
-    assert "getBUZ" in _SYR_CONNECT_SENSOR_CONFIG
-
+    """Switches are configuration entities."""
     dev = {"id": "SN700", "name": "Cfg", "status": {"getBUZ": 0}}
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [dev]}

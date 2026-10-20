@@ -23,7 +23,7 @@ fingerprint required for model detection), so it is NOT treated as proof:
 - getSS2, getSV2: not present at all, even in the synthetic fixture.
 
 If a real dual-tank device capture confirms getRE2/getSS2/getSV2 (or getRG2,
-the tank-2 regeneration-running flag already in const.py's global
+the tank-2 regeneration-running flag already in sensor.py's global
 allowlist) with a genuine non-empty value, move it into SENSOR_SUPPORTED_KEYS
 below.
 """

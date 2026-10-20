@@ -10,10 +10,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from custom_components.syr_connect import helpers
+from custom_components.syr_connect import (
+    binary_sensor,
+    button,
+    helpers,
+    select,
+    sensor,
+    switch,
+)
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     API_TYPE_JSON,
     DOMAIN,
 )
@@ -53,6 +59,7 @@ from custom_components.syr_connect.helpers import (
 )
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.payload_builder import PayloadBuilder
+from custom_components.syr_connect.sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
 
 
 def test_get_default_scan_interval_for_entry_none():
@@ -1929,6 +1936,31 @@ def test_get_model_supported_keys_falls_back_when_name_missing() -> None:
     """No 'device_file'/'name' on model_info returns the global allowlist unchanged (line 249)."""
     global_keys = {"getBAR", "getVOL"}
     assert helpers.get_model_supported_keys({}, "sensor", global_keys) == global_keys
+
+
+_DESCRIBED_KEYS = {
+    "sensor": set(sensor._SYR_CONNECT_SENSOR_DESCRIPTIONS),
+    "binary_sensor": set(binary_sensor._SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS),
+    "switch": set(switch._SYR_CONNECT_SWITCH_DESCRIPTIONS),
+    "button": {d.key for d in button._SYR_CONNECT_BUTTON_TYPES},
+    "select": set(select._SYR_CONNECT_SELECT_DESCRIPTIONS),
+}
+
+
+@pytest.mark.parametrize("platform", sorted(_DESCRIBED_KEYS))
+@pytest.mark.parametrize("device_file", sorted(helpers._DEVICE_MODULES))
+def test_device_file_keys_have_descriptions(device_file: str, platform: str) -> None:
+    """Every key a device file supports has an entity description of its platform.
+
+    The entities look their description up by key, so a key without one would fail
+    when the entity is created.
+    """
+    keys = getattr(
+        helpers._DEVICE_MODULES[device_file],
+        f"{platform.upper()}_SUPPORTED_KEYS",
+        set(),
+    )
+    assert keys <= _DESCRIBED_KEYS[platform]
 
 
 def test_get_model_supported_keys_uses_device_override_when_defined() -> None:

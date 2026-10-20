@@ -6,17 +6,14 @@ from typing import override
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
+    BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS,
-    _SYR_CONNECT_SENSOR_BINARY,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-)
+from .const import _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .helpers import get_model_supported_keys, is_value_true, registry_cleanup
@@ -27,10 +24,22 @@ _LOGGER = logging.getLogger(__name__)
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
 
-# Diagnostic binary sensors
-_SYR_CONNECT_BINARY_SENSOR_DIAGNOSTIC = {
-    "getBUZ",  # Buzzer on/off
+
+# Descriptions of all binary sensors
+_SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[BinarySensorEntityDescription, ...] = (
+    BinarySensorEntityDescription(
+        key="getBUZ",  # Buzzer on/off
+        device_class=BinarySensorDeviceClass.POWER,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+_SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS: dict[str, BinarySensorEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_BINARY_SENSOR_TYPES
 }
+
+# Supported keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS = set(_SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS)
 
 
 async def async_setup_entry(
@@ -74,7 +83,8 @@ async def async_setup_entry(
         )
 
         # Create binary sensors for boolean status values
-        for sensor_key, device_class in _SYR_CONNECT_SENSOR_BINARY.items():
+        for description in _SYR_CONNECT_BINARY_SENSOR_TYPES:
+            sensor_key = description.key
             if (
                 sensor_key in supported_binary_keys
                 and sensor_key in status
@@ -86,7 +96,6 @@ async def async_setup_entry(
                         device_id,
                         device_name,
                         sensor_key,
-                        device_class,
                     )
                 )
 
@@ -103,7 +112,6 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
         device_id: str,
         device_name: str,
         sensor_key: str,
-        device_class: BinarySensorDeviceClass,
     ) -> None:
         """Initialize the binary sensor.
 
@@ -112,18 +120,13 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
             device_id: Device ID (serial number)
             device_name: Device display name
             sensor_key: Sensor key (e.g., 'getBUZ')
-            device_class: Binary sensor device class
         """
         super().__init__(
             coordinator, device_id, device_name, "binary_sensor", sensor_key
         )
 
         self._sensor_key = sensor_key
-        self._attr_device_class = device_class
-
-        # Set entity category for diagnostic sensors
-        if sensor_key in _SYR_CONNECT_BINARY_SENSOR_DIAGNOSTIC:
-            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        self.entity_description = _SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS[sensor_key]
 
     @property
     @override

@@ -8,7 +8,7 @@ Covers both the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
 
 Derived from tests/fixtures/json/SanibelLeakProtectionModuleA25_get_all.json.
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Unlike the muco_filling (filling controller) variant, the leak-protection-profile
@@ -24,22 +24,22 @@ Deliberately NOT included, pending confirmation on a real device:
   validity" matrix (docs/syrconnect-protocol.md) explicitly marks both as X
   (not available) for the SafeTech Lock Connect variant sharing this file,
   which takes precedence over the A25 fixture's zero values.
-- getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
+- getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in sensor.py -
   a different product (humidity/flood sensor), unrelated to this model.
   getALD is the one exception (see SENSOR_SUPPORTED_KEYS below).
 - getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCC, getRCD, getRCN, getRMN,
   getRMT, getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
-  feature in const.py - belongs to the muco_filling filling-controller variant, not
+  feature in sensor.py - belongs to the muco_filling filling-controller variant, not
   this leak-protection variant, despite being present (shared firmware).
-- getSRV: labeled "(Trio DFR/LS)" in const.py and empty ("") in the fixture.
-- getBAR: labeled "(Safe-T+)" in const.py, unrelated product; 0 in fixture.
+- getSRV: labeled "(Trio DFR/LS)" in sensor.py and empty ("") in the fixture.
+- getBAR: labeled "(Safe-T+)" in sensor.py, unrelated product; 0 in fixture.
 - getCEL: temperature reading with no clear tie to leak protection; 0 in fixture.
 - getRCP: generic cloud sync interval, not tied to any specific feature here.
 - getDBD, getDMA, getDRP, getDTT, getNPS: labeled "(Trio DFR/LS, SafeTech)"
-  microleakage-test feature in const.py - a different product family. getDSV
+  microleakage-test feature in sensor.py - a different product family. getDSV
   is the one exception (see BUTTON_SUPPORTED_KEYS below).
 - getSLE, getSLP, getSLT, getSLV: labeled "(Trio DFR/LS)" self-learning-phase
-  feature in const.py; reported as constant 0 in the fixture. getSLF is the
+  feature in sensor.py; reported as constant 0 in the fixture. getSLF is the
   one exception (reported as a real non-zero value, 3500) but left out here
   too pending confirmation since its siblings are all stub zeros.
 

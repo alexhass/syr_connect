@@ -3,7 +3,7 @@
 Derived from tests/fixtures/xml/SyrSafeTPlus_GetDeviceCollectionStatus.xml (this
 model has no JSON API fixture - it is only reachable via the XML API).
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Unlike the LEXplus10SL / SafeTech(+) leak-protection variants, this model has
@@ -15,14 +15,14 @@ getDMA (microleakage alarm mode) is present with a real value and included.
 
 Deliberately NOT included, pending confirmation on a real device:
 - getDST, getDTC, getDBT, getDCM, getDOM, getDPL: present in the fixture but
-  not in the global const.py allowlist at all (undocumented/unclear keys).
+  not in the global sensor.py allowlist at all (undocumented/unclear keys).
 - getBSA, getBSI, getBLT, getUNI, getTC, getTO, getTPA, getTBS, getREL,
   getEXI, getEXT, getFLL, getINT, get71: same as above - not in the global
   allowlist, meaning not confirmed for use across the integration.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
-global const.py allowlist first).
+global sensor.py allowlist first).
 """
 
 SENSOR_SUPPORTED_KEYS = {

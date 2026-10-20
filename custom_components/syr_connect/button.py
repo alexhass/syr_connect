@@ -23,7 +23,7 @@ setNOT and setWRN always send "FF" via the standard set command.
 import logging
 from typing import cast, override
 
-from homeassistant.components.button import ButtonEntity
+from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -31,11 +31,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api_json import SyrConnectJsonAPI
-from .const import (
-    _SYR_CONNECT_BUTTON_SUPPORTED_KEYS,
-    _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-)
+from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -46,6 +42,31 @@ _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+
+# Descriptions of all buttons, in the order they are created
+_SYR_CONNECT_BUTTON_TYPES: tuple[ButtonEntityDescription, ...] = (
+    ButtonEntityDescription(
+        key="setSIR",  # Trigger manual regeneration
+    ),
+    ButtonEntityDescription(
+        key="setALA",  # Reset alarm
+    ),
+    ButtonEntityDescription(
+        key="setNOT",  # Reset notification
+    ),
+    ButtonEntityDescription(
+        key="setWRN",  # Reset warning
+    ),
+    ButtonEntityDescription(
+        key="setDEX",  # Start microleakage test
+    ),
+)
+
+# Supported keys for the button platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BUTTON_SUPPORTED_KEYS = {
+    description.key for description in _SYR_CONNECT_BUTTON_TYPES
+}
 
 
 async def async_setup_entry(
@@ -82,15 +103,6 @@ async def async_setup_entry(
         device_name = device["name"]
         status = device.get("status", {})
 
-        # Add action buttons
-        action_buttons = [
-            ("setSIR", "Regenerate Now"),
-            ("setALA", "Reset alarm"),
-            ("setNOT", "Reset notification"),
-            ("setWRN", "Reset warning"),
-            ("setDEX", "Start microleakage test"),
-        ]
-
         created_commands: set[str] = set()
 
         model_info = detect_model(status)
@@ -101,7 +113,8 @@ async def async_setup_entry(
             model_info, "button", _SYR_CONNECT_BUTTON_SUPPORTED_KEYS
         )
 
-        for command, _name in action_buttons:
+        for description in _SYR_CONNECT_BUTTON_TYPES:
+            command = description.key
             if command not in supported_button_keys:
                 continue
 
@@ -156,7 +169,8 @@ async def async_setup_entry(
             continue
         try:
             registry = er.async_get(hass)
-            for command, _name in action_buttons:
+            for description in _SYR_CONNECT_BUTTON_TYPES:
+                command = description.key
                 if command in created_commands:
                     continue
                 # Found by unique_id, so a renamed or "_2"-suffixed button is removed as well

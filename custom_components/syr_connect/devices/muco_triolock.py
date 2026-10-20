@@ -3,7 +3,7 @@
 Model type: Backwash filter with pressure reducer (DM) + leak protection (LS)
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Derived from tests/fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml,

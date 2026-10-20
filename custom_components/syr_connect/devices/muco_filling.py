@@ -5,7 +5,7 @@ For example Conel Clear Pro Fill, AC 3228 Connect (getDFM=3), filling-controller
 Model type: Filling the Heating System
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Deliberately NOT included, pending confirmation on a real device:
@@ -15,15 +15,15 @@ Deliberately NOT included, pending confirmation on a real device:
   available) for the AC 3228 Connect variant sharing this file, which takes
   precedence over a fixture reading from a different product (Conel Clear
   Pro Fill).
-- getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in const.py -
+- getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in sensor.py -
   a different product (humidity/flood sensor), unrelated to a filling
   controller.
 - getDBD, getDMA, getDRP, getDSV, getDTT: labeled "(Trio DFR/LS, SafeTech)"
-  microleakage-test feature in const.py - a different product family.
+  microleakage-test feature in sensor.py - a different product family.
 - getSLE, getSLF, getSLP, getSLT, getSLV: labeled "(Trio DFR/LS)"
-  self-learning-phase feature in const.py; also reported as constant 0 stub
+  self-learning-phase feature in sensor.py; also reported as constant 0 stub
   values in the fixture.
-- getSRV: labeled "(Trio DFR/LS)" in const.py and empty ("") in the fixture.
+- getSRV: labeled "(Trio DFR/LS)" in sensor.py and empty ("") in the fixture.
 - getPA1-8, getPB1-8, getPF1-8, getPM1-8, getPN1-8, getPR1-8, getPT1-8,
   getPV1-8, getPW1-8, getPRF: leak-protection profiles (LEXplus10SL feature),
   not applicable to this filling controller.

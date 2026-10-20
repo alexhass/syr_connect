@@ -15,16 +15,12 @@ from homeassistant.core import HomeAssistant
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
-from .const import (
-    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
-    API_TYPE_JSON,
-    API_TYPE_XML,
-    CONF_API_TYPE,
-)
+from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .helpers import is_sensor_visible, mask_ug_value
 from .models import detect_model
+from .sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -5,11 +5,11 @@ tests/fixtures/xml/SyrTrioDFRLS_GetDeviceCollectionStatus.xml (XML API) - the tw
 agree on every key discussed below. (SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml
 is a minimal bug-repro capture with only 4 keys and was not used for derivation.)
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Unlike every other device file so far, this model IS the genuine home of the
-"(Trio DFR/LS)"-tagged const.py keys: the full microleakage-test group
+"(Trio DFR/LS)"-tagged sensor.py keys: the full microleakage-test group
 (getDBD/getDMA/getDRP/getDSV/getDTT/getNPS) and self-learning-phase group
 (getSLE/getSLF/getSLP/getSLT/getSLV) are both included outright - getDSV=3 in
 both fixtures, and getSLT/getSLV are non-zero (612/116) in both, proving the

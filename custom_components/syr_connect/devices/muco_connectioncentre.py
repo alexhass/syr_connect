@@ -5,7 +5,7 @@ SYR AC 3200 Connect (dkv=506, getDFM=2), "Connection centre"/"Anschlusscenter" r
 Model type: Connection Centre / "Anschlusscenter"
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 No real-device or fixture capture exists for this variant yet - the keys

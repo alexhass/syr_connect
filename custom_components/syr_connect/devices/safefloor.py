@@ -3,11 +3,11 @@
 Derived from tests/fixtures/xml/SyrSafeFloor_GetDeviceCollectionStatus.xml (this
 model has no JSON API fixture - it is only reachable via the XML API).
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
-are listed, unlike the shared global allowlists in const.py which have to
+are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Unlike every other device file so far, this model IS the genuine home of the
-"(SafeFloor)"-tagged const.py keys (getALD, getHMD, getMIH, getMXH, getMIT,
+"(SafeFloor)"-tagged sensor.py keys (getALD, getHMD, getMIH, getMXH, getMIT,
 getMXT) that muco_leakprotect/muco_filling excluded as "a different product" - it is a
 standalone humidity/temperature/leak sensor with no valve, no flow, no
 buzzer, and no leak-protection-profile family.
@@ -15,11 +15,11 @@ buzzer, and no leak-protection-profile family.
 Deliberately NOT included:
 - getALI, getAOA, getBDE, getBMP, getDEF, getECP, getEMR, getISN, getRTC,
   getSFV, getWAR, getWTD: present in the fixture but not in the global
-  const.py allowlist at all (undocumented/unclear keys).
+  sensor.py allowlist at all (undocumented/unclear keys).
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
-global const.py allowlist first).
+global sensor.py allowlist first).
 """
 
 SENSOR_SUPPORTED_KEYS = {

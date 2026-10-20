@@ -3,7 +3,7 @@
 import logging
 from typing import Any, override
 
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -11,12 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    _SYR_CONNECT_SENSOR_CONFIG,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SWITCH_SUPPORTED_KEYS,
-    DOMAIN,
-)
+from .const import _SYR_CONNECT_SENSOR_EXCLUDED, DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -29,6 +24,34 @@ from .helpers import (
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
+
+
+# Descriptions of all switches (boolean get<KEY>/set<KEY> settings)
+_SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (
+    SwitchEntityDescription(
+        key="getBUZ",  # Buzzer on/off
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SwitchEntityDescription(
+        key="getDFI",  # Filling mode enabled flag (Conel Clear Pro Fill)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SwitchEntityDescription(
+        key="getSSA",  # Automatic backwash enabled flag (RSA)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SwitchEntityDescription(
+        key="getSSE",  # Backwash reminder enabled flag (RSA)
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
+_SYR_CONNECT_SWITCH_DESCRIPTIONS: dict[str, SwitchEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_SWITCH_TYPES
+}
+
+# Supported keys for the switch platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_SWITCH_SUPPORTED_KEYS = set(_SYR_CONNECT_SWITCH_DESCRIPTIONS)
 
 
 async def async_setup_entry(
@@ -175,6 +198,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         super().__init__(coordinator, device_id, device_name, "switch", sensor_key)
 
         self._sensor_key = sensor_key
+        self.entity_description = _SYR_CONNECT_SWITCH_DESCRIPTIONS[sensor_key]
 
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
@@ -184,10 +208,6 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         self._attr_unique_id = build_unique_id(
             coordinator.entry_id, device_id.lower(), f"{sensor_key}_switch".lower()
         )
-
-        # Set entity category if this key is a config entity
-        if sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
-            self._attr_entity_category = EntityCategory.CONFIG
 
     @property
     @override

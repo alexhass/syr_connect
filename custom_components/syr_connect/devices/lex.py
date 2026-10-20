@@ -24,12 +24,12 @@ Deliberately NOT included:
 - getWRN: not present in either fixture (no warning-code feature on this
   family; getNOT/getALM are present and used instead).
 - getHED, getHEM, getHEY, getHSD, getHSM, getHSY, getVAC: present in the
-  fixtures but not in the global const.py allowlist at all (undocumented
+  fixtures but not in the global sensor.py allowlist at all (undocumented
   keys).
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
-global const.py allowlist first).
+global sensor.py allowlist first).
 """
 
 SENSOR_SUPPORTED_KEYS = {

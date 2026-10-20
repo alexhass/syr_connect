@@ -14,21 +14,20 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
-    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
-    _SYR_CONNECT_SENSOR_TYPES,
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
+    _SYR_CONNECT_SENSOR_DESCRIPTIONS,
+    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
+    _SYR_CONNECT_SENSOR_TYPES,
     SyrConnectConnectionStateSensor,
     SyrConnectSensor,
     async_setup_entry,
 )
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import (
     CONF_PASSWORD,
@@ -2759,7 +2758,7 @@ async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> Non
 async def test_sensor_setup_binary_key_in_supported_keys_not_created(
     hass: HomeAssistant,
 ) -> None:
-    """Keys in _SYR_CONNECT_SENSOR_BINARY must be skipped as sensors even if in SUPPORTED_KEYS."""
+    """Binary sensor keys must be skipped as sensors even if in SUPPORTED_KEYS."""
 
     data = {
         "devices": [
@@ -2782,13 +2781,15 @@ async def test_sensor_setup_binary_key_in_supported_keys_not_created(
 
     # Temporarily add getFAKE to SUPPORTED_KEYS and BINARY so it reaches the binary-sensor guard
     patched_known = _SYR_CONNECT_SENSOR_SUPPORTED_KEYS | {"getFAKE"}
-    patched_binary = {"getFAKE": BinarySensorDeviceClass.RUNNING}
+    patched_binary = {"getFAKE"}
 
     with (
         patch.object(
             sensor_module, "_SYR_CONNECT_SENSOR_SUPPORTED_KEYS", patched_known
         ),
-        patch.object(sensor_module, "_SYR_CONNECT_SENSOR_BINARY", patched_binary),
+        patch.object(
+            sensor_module, "_SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS", patched_binary
+        ),
     ):
         await async_setup_entry(hass, entry, add_entities)
 

@@ -1,10 +1,11 @@
 """Select platform for SYR Connect (regeneration time wrapper)."""
 
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 import logging
 from typing import Any, override
 
-from homeassistant.components.select import SelectEntity
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
@@ -24,11 +25,8 @@ from .const import (
     _SYR_CONNECT_SELECT_RMO_MAP,
     _SYR_CONNECT_SELECT_RMT_OPTIONS,
     _SYR_CONNECT_SELECT_RVT_OPTIONS,
-    _SYR_CONNECT_SELECT_SUPPORTED_KEYS,
     _SYR_CONNECT_SELECT_WMP_MAP,
-    _SYR_CONNECT_SENSOR_CONFIG,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
@@ -45,11 +43,168 @@ from .helpers import (
     set_sensor_rtm_value,
 )
 from .models import detect_model
+from .sensor import _SYR_CONNECT_SENSOR_DESCRIPTIONS
 
 _LOGGER = logging.getLogger(__name__)
 
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectSelectEntityDescription(SelectEntityDescription):
+    """Describes a SYR Connect select; `key` is the status key (e.g. "getRMN")."""
+
+
+# Descriptions of all selects. Which ones a device gets is decided in select.py
+# (allowlist of the model and a valid value); options and units are built there.
+# The active leak-protection profile (getPRF) is no configuration entity.
+_SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
+    # --- Softener ---
+    SyrConnectSelectEntityDescription(
+        key="getRTM",  # Regeneration time (combined HH:MM string)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getPRF",  # Currently active leak protection profile index
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSV1",  # Salt amount - container 1 (kg)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSV2",  # Salt amount - container 2 (kg)
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSV3",  # Salt amount - container 3 (kg)
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRPD",  # Regeneration interval (days)
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getIWH",  # Incoming (raw) water hardness
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getOWH",  # Outgoing (softened) water hardness
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getFFM",  # Filter type (backwash / replaceable / none)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
+    SyrConnectSelectEntityDescription(
+        key="getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRMN",  # Filling processes count
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRMT",  # Maximum filling duration (min)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRVT",  # Maximum filling charges
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getTPR",  # Target pressure (1/10 bar)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getLOT",  # Maximum output conductivity (raw x10 µS/cm)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getOHW",  # Soft water hardness (°dH)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # --- SafeFloor ---
+    SyrConnectSelectEntityDescription(
+        key="getMIH",  # Minimum humidity threshold (%)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getMXH",  # Maximum humidity threshold (%)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getMIT",  # Minimum temperature threshold (1/10 °C)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getMXT",  # Maximum temperature threshold (1/10 °C)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getALD",  # Duration of alarm (s)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getWMP",  # Measurement interval (s)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRCP",  # Synchronisation interval (s)
+        entity_category=EntityCategory.CONFIG,
+    ),
+)
+
+_SYR_CONNECT_SELECT_DESCRIPTIONS: dict[str, SyrConnectSelectEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_SELECT_TYPES
+}
+
+# Supported keys for the select platform — used by registry_cleanup to remove stale entries.
+# The global fallback for models without a device file; some selects (SafeFloor thresholds,
+# LEX water hardness) are only enabled by the SELECT_SUPPORTED_KEYS of their device file.
+_SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
+    "getRTM",  # Regeneration time (HH:MM combined or minutes)
+    "getPRF",  # Active leak-protection profile
+    "getSRO",  # Display rotation (0 / 90 / 180 / 270 °)
+    # "getFCD",   # Filter backwash interval
+    "getSV1",  # Salt amount container 1
+    "getSV2",  # Salt amount container 2
+    "getSV3",  # Salt amount container 3
+    "getRPD",  # Regeneration interval (days)
+    "getFFM",  # Filter type (1..3)
+    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
+    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
+    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
+    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getLOT",  # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
+    "getOHW",  # Soft water hardness (°dH) - only when getCRT is HWE
+    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
+    "getRMN",  # Filling processes count
+    "getRMT",  # Maximum filling duration (min)
+    "getRVT",  # Maximum filling charges
+    "getTPR",  # Target pressure (1/10 bar)
+}
 
 # Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
 # _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
@@ -512,14 +667,7 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         # Options: 15 minute steps by default
         self._options = _build_time_options(15)
 
-        # Set entity category according to central sensor mappings
-        if "getRTM" in _SYR_CONNECT_SENSOR_CONFIG:
-            self._attr_entity_category = EntityCategory.CONFIG
-
-        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
-            "getRTM"
-        ].entity_registry_enabled_default:
-            self._attr_entity_registry_enabled_default = False
+        self.entity_description = _SYR_CONNECT_SELECT_DESCRIPTIONS["getRTM"]
 
         _LOGGER.debug(
             "Created SyrConnectRegenerationSelect object: device=%s name=%s unique_id=%s",
@@ -622,11 +770,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         # (e.g. getTPR is stored as 1/10 bar, so scale=10 shows "1.8 bar" for the raw value 18).
         self._scale = scale
 
-        # Disable by default if key is in the disabled-by-default set
-        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
-            sensor_key
-        ].entity_registry_enabled_default:
-            self._attr_entity_registry_enabled_default = False
+        self.entity_description = _SYR_CONNECT_SELECT_DESCRIPTIONS[sensor_key]
 
         # Determine unit label (if available) and build options (append unit for readability)
         unit_label = None
@@ -653,10 +797,6 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             v += step
         # Explicit option labels replace the generated range (e.g. non-uniform steps)
         self._options = options if options is not None else opts
-
-        # Set entity category according to central sensor mappings
-        if self._sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
-            self._attr_entity_category = EntityCategory.CONFIG
 
         _LOGGER.debug(
             "Created SyrConnectNumericSelect object: device=%s key=%s unique_id=%s",
@@ -781,13 +921,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         # Use raw state keys so the frontend will translate them via the translation files
         self._options = ["0", "90", "180", "270"]
 
-        if "getSRO" in _SYR_CONNECT_SENSOR_CONFIG:
-            self._attr_entity_category = EntityCategory.CONFIG
-
-        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
-            "getSRO"
-        ].entity_registry_enabled_default:
-            self._attr_entity_registry_enabled_default = False
+        self.entity_description = _SYR_CONNECT_SELECT_DESCRIPTIONS["getSRO"]
 
         _LOGGER.debug(
             "Created SyrConnectRotationSelect object: device=%s name=%s unique_id=%s",
@@ -875,14 +1009,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
         # can translate the displayed state using the integration translations.
         self._options = list(options_map.keys())
 
-        # Mark as configuration if listed in central mapping
-        if self._sensor_key in _SYR_CONNECT_SENSOR_CONFIG:
-            self._attr_entity_category = EntityCategory.CONFIG
-
-        # A discrete select does not need a sensor for the same key
-        description = _SYR_CONNECT_SENSOR_DESCRIPTIONS.get(self._sensor_key)
-        if description is not None and not description.entity_registry_enabled_default:
-            self._attr_entity_registry_enabled_default = False
+        self.entity_description = _SYR_CONNECT_SELECT_DESCRIPTIONS[sensor_key]
 
         _LOGGER.debug(
             "Created SyrConnectDiscreteSelect object: device=%s key=%s unique_id=%s",
@@ -980,14 +1107,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
             unique_key="getPRF_select",
         )
 
-        # Set entity category according to central sensor mappings
-        if "getPRF" in _SYR_CONNECT_SENSOR_CONFIG:
-            self._attr_entity_category = EntityCategory.CONFIG
-
-        if not _SYR_CONNECT_SENSOR_DESCRIPTIONS[
-            "getPRF"
-        ].entity_registry_enabled_default:
-            self._attr_entity_registry_enabled_default = False
+        self.entity_description = _SYR_CONNECT_SELECT_DESCRIPTIONS["getPRF"]
 
     @property
     @override
