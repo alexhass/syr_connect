@@ -8,6 +8,8 @@
   "python.testing.unittestEnabled": false,
   // https://code.visualstudio.com/docs/python/linting#_general-settings
   "pylint.importStrategy": "fromEnvironment",
+  // Use the mypy of the virtualenv (same version as the CLI and CI), not the one bundled with the extension
+  "mypy-type-checker.importStrategy": "fromEnvironment",
   // Pyright type checking is not compatible with mypy which Home Assistant uses for type checking
   "python.analysis.typeCheckingMode": "off",
   // Auto-save and formatting
