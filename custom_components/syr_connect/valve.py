@@ -14,7 +14,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import _SYR_CONNECT_SENSOR_EXCLUDED
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -70,7 +69,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "valve",
-        allowed_keys=_SYR_CONNECT_VALVE_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_VALVE_SUPPORTED_KEYS,
         entry_id=coordinator.entry_id,
     )
 

@@ -40,7 +40,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getOWH",
     "getWHU",
     # --- Device Status ---
-    "getDEN",
     # --- Resin Capacity ---
     "getCS1",
     "getCS2",
@@ -59,7 +58,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getRG1",
     "getRPD",
     "getRPW",
-    "getRTH",
     "getRTI",
     "getRTM",
     "getSCR",
@@ -73,7 +71,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getFCO",
     "getPST",
     # --- Device Info & Diagnostics ---
-    "getCDE",
     "getCNA",
     "getDGW",
     "getFIR",

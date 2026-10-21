@@ -20,11 +20,7 @@ from custom_components.syr_connect import (
     update,
     valve,
 )
-from custom_components.syr_connect.const import (
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-    API_TYPE_JSON,
-    DOMAIN,
-)
+from custom_components.syr_connect.const import API_TYPE_JSON, DOMAIN
 from custom_components.syr_connect.devices import (
     lex,
     muco_connectioncentre,
@@ -54,14 +50,25 @@ from custom_components.syr_connect.helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
-    is_sensor_visible,
     is_valid_host,
     mask_ug_value,
     set_sensor_rtm_value,
 )
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.payload_builder import PayloadBuilder
-from custom_components.syr_connect.sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+from custom_components.syr_connect.sensor import (
+    _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
+    is_sensor_visible,
+)
+
+
+def _keys_hidden_when(rule: str) -> set[str]:
+    """Return the sensor keys whose description hides them for the given empty rule."""
+    return {
+        description.key
+        for description in sensor._SYR_CONNECT_SENSOR_TYPES
+        if description.hidden_when == rule
+    }
 
 
 def test_get_default_scan_interval_for_entry_none():
@@ -294,10 +301,10 @@ def test_get_sensor_maps_and_visibility_additional():
 
     # Visibility rules
     status = {"getPA1": "true", "getPV1": "5"}
-    assert helpers.is_sensor_visible(status, "getPV1", "1") is True
+    assert is_sensor_visible(status, "getPV1", "1") is True
     # getRTIME is not in the allowlist, so it is never passed to is_sensor_visible;
     # the function only applies visibility rules, not exclusions.
-    assert helpers.is_sensor_visible({}, "getRTIME", "x") is True
+    assert is_sensor_visible({}, "getRTIME", "x") is True
 
 
 def test_build_entity_id() -> None:
@@ -938,8 +945,7 @@ def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
             MagicMock(),
             {"devices": [{"id": "DEV", "status": status}]},
             "sensor",
-            allowed_keys=_SYR_CONNECT_SENSOR_SUPPORTED_KEYS
-            - _SYR_CONNECT_SENSOR_EXCLUDED,
+            allowed_keys=_SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
         )
 
     registry.async_remove.assert_called_once_with(stale.entity_id)
@@ -1159,7 +1165,7 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
-    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING - registry entry exists but device reports ""
+    # getTYP has hidden_when - registry entry exists but device reports ""
     entity_id = build_entity_id("sensor", device_id, "getTYP")
     registry.entities.values.return_value = []
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
@@ -1176,7 +1182,13 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     with patch(
         "custom_components.syr_connect.helpers.er.async_get", return_value=registry
     ):
-        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
+        helpers.registry_cleanup(
+            hass,
+            coordinator,
+            "sensor",
+            allowed_keys={"getTYP"},
+            hidden_keys=sensor._hidden_sensor_keys,
+        )
 
     registry.async_remove.assert_called_once_with(entity_id)
 
@@ -1204,6 +1216,7 @@ def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
             {"devices": [device]},
             "sensor",
             allowed_keys={"getCEL", "getBAR", "getWIP"},
+            hidden_keys=sensor._hidden_sensor_keys,
         )
 
     registry.async_remove.assert_not_called()
@@ -1265,7 +1278,12 @@ def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> Non
         "custom_components.syr_connect.helpers.er.async_get", return_value=registry
     ):
         helpers.registry_cleanup(
-            hass, coordinator, "sensor", allowed_keys={"getTYP"}, entry_id="this_hub"
+            hass,
+            coordinator,
+            "sensor",
+            allowed_keys={"getTYP"},
+            entry_id="this_hub",
+            hidden_keys=sensor._hidden_sensor_keys,
         )
 
     registry.async_remove.assert_not_called()
@@ -1276,7 +1294,7 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     hass = MagicMock()
     registry = MagicMock()
     device_id = "DEV"
-    # getTYP is in EXCLUDED_WHEN_EMPTY_STRING - device reports a real value
+    # getTYP has hidden_when - device reports a real value
     entity_id = build_entity_id("sensor", device_id, "getTYP")
     registry.entities.values.return_value = []
     registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
@@ -1293,7 +1311,13 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     with patch(
         "custom_components.syr_connect.helpers.er.async_get", return_value=registry
     ):
-        helpers.registry_cleanup(hass, coordinator, "sensor", allowed_keys={"getTYP"})
+        helpers.registry_cleanup(
+            hass,
+            coordinator,
+            "sensor",
+            allowed_keys={"getTYP"},
+            hidden_keys=sensor._hidden_sensor_keys,
+        )
 
     registry.async_remove.assert_not_called()
 
@@ -1348,15 +1372,15 @@ def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
     """Test group-controlled visibility, CS special-case, and empty-IP exclusions."""
     # Group-controlled: getPA1 false -> getPV1 hidden
     status = {"getPA1": "0"}
-    assert not helpers.is_sensor_visible(status, "getPV1", "1")
+    assert not is_sensor_visible(status, "getPV1", "1")
 
     # CS1 visible when corresponding getSV1 non-zero even if value is '0'
     status2 = {"getSV1": 5}
-    assert helpers.is_sensor_visible(status2, "getCS1", "0") is True
+    assert is_sensor_visible(status2, "getCS1", "0") is True
 
     # Empty-IP exclusion: pick a key from the exclusion set
-    key_ip = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS))
-    assert helpers.is_sensor_visible({}, key_ip, "0.0.0.0") is False
+    key_ip = next(iter(_keys_hidden_when("empty_ip")))
+    assert is_sensor_visible({}, key_ip, "0.0.0.0") is False
 
 
 def test_get_default_scan_interval_entry_getattr_raises() -> None:
@@ -1485,14 +1509,14 @@ def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
 def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
     """Test is sensor visible empty string and value exclusions."""
     # Use a key from the empty-string exclusion set
-    key_es = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING))
+    key_es = next(iter(_keys_hidden_when("empty")))
     assert not is_sensor_visible({}, key_es, None)
     assert not is_sensor_visible({}, key_es, "   ")
 
     # Use a key from the empty-value exclusion set that is NOT a CS key,
     # so the generic EXCLUDED_WHEN_EMPTY_VALUE branch (including int/float zero)
     # is exercised rather than the CS special-case block.
-    non_cs_ev_keys = helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE - {
+    non_cs_ev_keys = _keys_hidden_when("empty_or_zero") - {
         "getCS1",
         "getCS2",
         "getCS3",
@@ -1506,7 +1530,7 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
     assert not is_sensor_visible({}, key_ev, "0")
 
     # Empty IP exclusion set
-    key_ip = next(iter(helpers._SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS))
+    key_ip = next(iter(_keys_hidden_when("empty_ip")))
     assert not is_sensor_visible({}, key_ip, None)
     assert not is_sensor_visible({}, key_ip, "   ")
     assert not is_sensor_visible({}, key_ip, "0.0.0.0")

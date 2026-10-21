@@ -543,9 +543,6 @@
       "getbat": {
         "name": "Tension de batterie"
       },
-      "getcde": {
-        "name": "Code de configuration"
-      },
       "getcel": {
         "name": "Température"
       },
@@ -599,9 +596,6 @@
       },
       "getdbd": {
         "name": "Baisse de pression lors du test d'étanchéité"
-      },
-      "getden": {
-        "name": "Appareil activé"
       },
       "getdfm": {
         "name": "Fonctionnalités de l'appareil",
@@ -1249,9 +1243,6 @@
       "getrse": {
         "name": "Intervalle de rappel de rinçage inverse"
       },
-      "getrth": {
-        "name": "Heure de régénération (Heure)"
-      },
       "getrti": {
         "name": "Durée totale du cycle de régénération"
       },
@@ -1404,9 +1395,6 @@
       },
       "getwfc": {
         "name": "SSID WLAN"
-      },
-      "getwfl": {
-        "name": "Réseaux disponibles"
       },
       "getwfr": {
         "name": "Puissance du signal WLAN"

@@ -31,7 +31,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api_json import SyrConnectJsonAPI
-from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, _SYR_CONNECT_SENSOR_EXCLUDED
+from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -94,7 +94,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "button",
-        allowed_keys=_SYR_CONNECT_BUTTON_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_BUTTON_SUPPORTED_KEYS,
         entry_id=coordinator.entry_id,
     )
 

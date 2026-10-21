@@ -13,11 +13,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
-from custom_components.syr_connect.const import (
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
-    DOMAIN,
-)
+from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
@@ -1238,13 +1234,13 @@ async def test_sensor_icon_exception_handling(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getCDE": "invalid",  # Will cause exception in conversion
+                    "getRES": "invalid",  # Will cause exception in conversion
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCDE")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRES")
 
     # Should return base icon without crashing
     icon = sensor.icon
@@ -2724,11 +2720,10 @@ async def test_sensor_setup_invalid_value_type(hass: HomeAssistant) -> None:
     assert len(invalid_entities) == 0
 
 
-async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> None:
-    """Keys in _SYR_CONNECT_SENSOR_EXCLUDED must be skipped even if they are in SUPPORTED_KEYS."""
-
-    # getDEN is in both SUPPORTED_KEYS and EXCLUDED
-    assert "getDEN" in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+async def test_sensor_setup_always_hidden_key_not_created(hass: HomeAssistant) -> None:
+    """A key with hidden_when="always" is never created, whatever its value."""
+    assert _SYR_CONNECT_SENSOR_DESCRIPTIONS["getSCR"].hidden_when == "always"
+    assert not sensor_module.is_sensor_visible({}, "getSCR", "5")
 
     data = {
         "devices": [
@@ -2737,8 +2732,38 @@ async def test_sensor_setup_excluded_key_not_created(hass: HomeAssistant) -> Non
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getDEN": "1",  # In SUPPORTED_KEYS AND in EXCLUDED → must be skipped
-                    "getRES": "42",  # In SUPPORTED_KEYS, not excluded → must be created
+                    "getSCR": "5",
+                    "getRES": "42",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    entities = add_entities.call_args.args[0]
+    assert not any(e._sensor_key == "getSCR" for e in entities)
+    assert any(e._sensor_key == "getRES" for e in entities)
+
+
+async def test_sensor_setup_unsupported_key_not_created(hass: HomeAssistant) -> None:
+    """A key the device reports but that has no sensor description is not created."""
+
+    assert "getDEN" not in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getDEN": "1",  # Not in SUPPORTED_KEYS → must be skipped
+                    "getRES": "42",  # In SUPPORTED_KEYS → must be created
                 },
             }
         ]
@@ -4604,12 +4629,6 @@ def test_getcof_handles_string_values():
     assert isinstance(sensor.native_value, int | float)
 
 
-def test_getcof_not_excluded():
-    """Test that getCOF is not in the excluded sensors list."""
-
-    assert "getCOF" not in _SYR_CONNECT_SENSOR_EXCLUDED
-
-
 async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) -> None:
     """Test exception handler in getPA group processing."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -5601,11 +5620,13 @@ async def test_sensor_getwhu_none_value(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None:
-    """Test sensor setup skips sensors in EXCLUDED_WHEN_EMPTY with None value."""
+    """Test sensor setup skips sensors with hidden_when="empty_or_zero" and None value."""
 
     # Pick a sensor from the excluded list that's not getCS1/2/3
     test_key = None
-    for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
+    for key in (
+        d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty_or_zero"
+    ):
         if key not in ("getCS1", "getCS2", "getCS3"):
             test_key = key
             break
@@ -5651,10 +5672,12 @@ async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None
 
 
 async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
-    """Test sensor setup skips sensors in EXCLUDED_WHEN_EMPTY with whitespace string."""
+    """Test sensor setup skips sensors with hidden_when="empty_or_zero" and whitespace string."""
 
     test_key = None
-    for key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE:
+    for key in (
+        d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty_or_zero"
+    ):
         if key not in ("getCS1", "getCS2", "getCS3"):
             test_key = key
             break

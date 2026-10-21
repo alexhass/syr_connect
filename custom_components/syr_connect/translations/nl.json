@@ -543,9 +543,6 @@
       "getbat": {
         "name": "Batterijspanning"
       },
-      "getcde": {
-        "name": "Configuratiecode"
-      },
       "getcel": {
         "name": "Temperatuur"
       },
@@ -599,9 +596,6 @@
       },
       "getdbd": {
         "name": "Drukval bij lektest"
-      },
-      "getden": {
-        "name": "Apparaat ingeschakeld"
       },
       "getdfm": {
         "name": "Apparaatfuncties",
@@ -1249,9 +1243,6 @@
       "getrse": {
         "name": "Terugspoelherinneringsinterval"
       },
-      "getrth": {
-        "name": "Regeneratietijd (uur)"
-      },
       "getrti": {
         "name": "Totale duur van regeneratiecyclus"
       },
@@ -1404,9 +1395,6 @@
       },
       "getwfc": {
         "name": "Wi-Fi SSID"
-      },
-      "getwfl": {
-        "name": "Beschikbare netwerken"
       },
       "getwfr": {
         "name": "Wi-Fi signaalsterkte"

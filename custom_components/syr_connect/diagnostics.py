@@ -18,9 +18,9 @@ from .api_xml import SyrConnectXmlAPI
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
-from .helpers import is_sensor_visible, mask_ug_value
+from .helpers import mask_ug_value
 from .models import detect_model
-from .sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+from .sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS, is_sensor_visible
 
 _LOGGER = logging.getLogger(__name__)
 

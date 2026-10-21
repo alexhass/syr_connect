@@ -58,7 +58,6 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water Consumption & Volume ---
     "getCOF",
     # --- Device Status ---
-    "getDEN",
     # --- Resin Capacity ---
     "getCS1",
     "getCS2",
@@ -77,7 +76,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getRG1",
     "getRPD",
     "getRPW",
-    "getRTH",
     "getRTI",
     "getRTM",
     "getSCR",
@@ -175,7 +173,6 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Maintenance ---
     "getDWF",
     # --- Device Info & Diagnostics (Lex10-only language field confirmed here) ---
-    "getCDE",
     "getCNA",
     "getDGW",
     "getFIR",

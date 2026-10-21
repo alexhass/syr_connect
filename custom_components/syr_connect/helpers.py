@@ -1,5 +1,6 @@
 """Helper functions for SYR Connect integration."""
 
+from collections.abc import Callable
 import contextlib
 import ipaddress
 import logging
@@ -18,10 +19,6 @@ from .const import (
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL,
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING,
-    _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE,
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
     API_TYPE_JSON,
@@ -419,6 +416,7 @@ def registry_cleanup(
     domain: str,
     allowed_keys: set[str] | None = None,
     entry_id: str | None = None,
+    hidden_keys: Callable[[dict[str, Any]], set[str]] | None = None,
 ) -> None:
     """Remove previously-registered entities from the entity registry.
 
@@ -426,11 +424,9 @@ def registry_cleanup(
     any whose key is NOT in allowed_keys. If allowed_keys is None,
     nothing is removed.
 
-    For sensor entities, also removes entries for keys that are conditionally
-    hidden (i.e. listed in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_*) when
-    is_sensor_visible returns False for the current device status. This
-    covers keys that are absent from the device status entirely as well as keys
-    that are present with an empty or zero value.
+    With `hidden_keys`, also removes the entities of the keys it returns for the
+    current device status (the sensor platform passes the conditionally hidden
+    sensors: keys absent from the status as well as keys with an empty value).
 
     Args:
         hass: Home Assistant instance.
@@ -443,21 +439,13 @@ def registry_cleanup(
             belonging to a *different* hub that happens to share the same
             device_id (e.g. the same physical device visible from two hubs)
             could be mistaken for stale entries and removed.
+        hidden_keys: Returns the keys whose entities are hidden for a device
+            status; they are removed as well.
     """
     if allowed_keys is None:
         return
     try:
         registry = er.async_get(hass)
-
-        # Build the set of conditionally visible sensor keys once, outside the device loop.
-        # getLOT/getOHW are added explicitly since their visibility depends on getCRT
-        # (cross-key rule in is_sensor_visible), not on their own value being empty.
-        _conditional_keys = (
-            _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE
-            | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING
-            | _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS
-            | {"getLOT", "getOHW"}
-        ) - _SYR_CONNECT_SENSOR_EXCLUDED
 
         for device in coordinator_data.get("devices", []) if coordinator_data else []:
             device_id = device.get("id")
@@ -545,26 +533,22 @@ def registry_cleanup(
                     except Exception:
                         _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
 
-            # Remove conditionally hidden sensor entities based on current device status.
-            if domain == "sensor":
-                for key in _conditional_keys:
-                    value = status.get(key)
-                    if not is_sensor_visible(status, key, value):
-                        entity_id = f"{prefix}{key.lower()}"
-                        existing = registry.async_get(entity_id)
-                        if existing is not None and (
-                            entry_id is None or existing.config_entry_id == entry_id
-                        ):
-                            _LOGGER.debug(
-                                "Removing conditionally hidden sensor from registry: %s",
-                                entity_id,
-                            )
-                            try:
-                                registry.async_remove(entity_id)
-                            except Exception:
-                                _LOGGER.exception(
-                                    "Failed to remove entity %s", entity_id
-                                )
+            # Remove the entities the platform hides for the current device status.
+            for key in hidden_keys(status) if hidden_keys is not None else ():
+                entity_id = f"{prefix}{key.lower()}"
+                existing = registry.async_get(entity_id)
+                if existing is not None and (
+                    entry_id is None or existing.config_entry_id == entry_id
+                ):
+                    _LOGGER.debug(
+                        "Removing conditionally hidden %s from registry: %s",
+                        domain,
+                        entity_id,
+                    )
+                    try:
+                        registry.async_remove(entity_id)
+                    except Exception:
+                        _LOGGER.exception("Failed to remove entity %s", entity_id)
     except Exception:
         _LOGGER.exception(
             "Failed to cleanup excluded %s entities from registry", domain
@@ -1290,142 +1274,6 @@ def build_set_ab_command(
         type(raw).__name__,
     )
     return None
-
-
-def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
-    """Decide whether a reported status key/value should produce a sensor.
-
-    This function centralizes all visibility/exclusion rules so both the
-    entity-creation code and diagnostics produce the same set of visible
-    sensors. It is intentionally defensive about input types and accepts
-    values that may be strings, numbers, booleans or None.
-
-    Rules (applied in order):
-    - Group-controlled keys: keys matching getPVx, getPTx, getPFx, getPNx,
-        getPMx, getPWx, getPBx, getPRx are only visible when the device's
-        corresponding getPAx flag is truthy (1, "1", True, "true"; see `is_value_true`).
-    - Special-case salt counters (getCS1/2/3): shown if the associated
-        getSVx value is non-zero; otherwise they follow the normal empty
-        value rules (hide when 0, "0", empty or None).
-    - getLOT (Maximum output conductivity): only shown when getCRT (cartridge
-        type) is "1" (HVE) or "2" (HVE+).
-    - getOHW (Soft water hardness): only shown when getCRT (cartridge type)
-        is "0" (HWE).
-    - Empty-string exclusions: keys listed in
-        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING are hidden when the
-        reported value is None or a whitespace-only string.
-    - Empty-value exclusions: keys listed in
-        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE are hidden when the
-        reported value is numeric zero (0), the string "0", an empty string,
-        or None.
-    - Empty-IP exclusions: keys listed in
-        _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IP are hidden when the
-        reported value is None, an empty/whitespace string, or the placeholder
-        IP "0.0.0.0".
-
-    Args:
-            status: The full flattened device status mapping (used for cross-key
-                    checks such as getPAx and getSVx).
-            key: The status key being considered (e.g. getWIP, getPV1).
-            value: The raw value reported by the device for this key.
-
-    Returns:
-            True when the key/value should result in a sensor entity; False when
-            the key should be suppressed according to the rules above.
-
-    Examples:
-            >>> is_sensor_visible(status, 'getWIP', '0.0.0.0')
-            False
-
-            >>> # If getSV1 == 5 then getCS1 is visible even if its own value is '0'
-            >>> is_sensor_visible({'getSV1': 5}, 'getCS1', '0')
-            True
-    """
-    # Group keys controlled by getPAx should be hidden when getPAx is false
-    m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
-    if m and not is_value_true(status.get(f"getPA{m.group(2)}")):
-        return False
-
-    if key == "getBAP" and _is_spurious_bap(status, value):
-        return False
-
-    # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
-    if key in ("getCS1", "getCS2", "getCS3"):
-        if _is_non_zero_number(status.get("getSV" + key[-1])):
-            return True
-        if _is_empty_or_zero(value):
-            return False
-
-    crt_val = status.get("getCRT")
-    crt = None if crt_val is None else str(crt_val).strip()
-    # getLOT (Maximum output conductivity) only applies to HVE / HVE+ cartridges (getCRT 1 or 2).
-    if key == "getLOT" and crt not in ("1", "2"):
-        return False
-    # getOHW (Soft water hardness) only applies to HWE cartridges (getCRT 0).
-    if key == "getOHW" and crt != "0":
-        return False
-
-    return not _is_excluded_when_empty(key, value)
-
-
-def _is_non_zero_number(value: Any) -> bool:
-    """Return True if the value is a number other than zero."""
-    if value is None:
-        return False
-    try:
-        return float(value) != 0
-    except ValueError, TypeError:
-        return False
-
-
-def _is_empty_or_zero(value: Any) -> bool:
-    """Return True for None, numeric zero, the string "0" and empty strings."""
-    if value is None:
-        return True
-    if isinstance(value, int | float) and float(value) == 0:
-        return True
-    return isinstance(value, str) and (value.strip() == "" or value == "0")
-
-
-def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
-    """Return True if getBAP is a spurious field next to a real battery voltage.
-
-    Firmware-bug workaround: getBAP is suppressed only when it is exactly 0/empty
-    AND getBAT reports a non-zero voltage. In that case the device exposes a
-    spurious percentage field alongside the real voltage reading.
-    """
-    try:
-        bap_zero = float(value) == 0
-    except ValueError, TypeError:
-        bap_zero = value is None or str(value).strip() == ""
-    if not bap_zero:
-        return False
-    bat_val = status.get("getBAT")
-    if bat_val is None:
-        return False
-    try:
-        return float(bat_val) > 0
-    except ValueError, TypeError:
-        return False
-
-
-def _is_excluded_when_empty(key: str, value: Any) -> bool:
-    """Return True if the key is hidden because its value counts as empty for this key."""
-    # Exclude when empty string
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_STRING and (
-        value is None or (isinstance(value, str) and value.strip() == "")
-    ):
-        return True
-    # Exclude when empty value (0 or "")
-    if key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_VALUE and _is_empty_or_zero(
-        value
-    ):
-        return True
-    # Exclude empty IPs
-    return key in _SYR_CONNECT_SENSOR_EXCLUDED_WHEN_EMPTY_IPADDRESS and (
-        value is None
-        or (isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0"))
-    )
 
 
 def get_api_locale(language: str | None, country: str | None) -> str:

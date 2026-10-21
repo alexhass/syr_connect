@@ -11,7 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import _SYR_CONNECT_SENSOR_EXCLUDED, DOMAIN
+from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -70,7 +70,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "switch",
-        allowed_keys=_SYR_CONNECT_SWITCH_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_SWITCH_SUPPORTED_KEYS,
         entry_id=coordinator.entry_id,
     )
 

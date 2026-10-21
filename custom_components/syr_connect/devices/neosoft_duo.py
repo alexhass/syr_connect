@@ -83,7 +83,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getEGW",
     "getEIP",
     "getWFC",
-    "getWFL",
     "getWFR",
     "getWFS",
     "getWGW",

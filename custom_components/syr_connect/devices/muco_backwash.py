@@ -65,7 +65,7 @@ SENSOR_SUPPORTED_KEYS = {
 
 # getRSA/getRSD/getRSE deliberately excluded from SELECT_SUPPORTED_KEYS: their
 # value ranges (1-365 days, 1-100 s) are too large for a usable select
-# dropdown, same reasoning as getIWH/getMPR/getDWF in const.py.
+# dropdown, same reasoning as getIWH/getMPR/getDWF.
 SELECT_SUPPORTED_KEYS: set[str] = set()
 
 SWITCH_SUPPORTED_KEYS = {

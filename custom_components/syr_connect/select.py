@@ -27,7 +27,6 @@ from .const import (
     _SYR_CONNECT_SELECT_RVT_OPTIONS,
     _SYR_CONNECT_SELECT_WMP_MAP,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_EXCLUDED,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -524,7 +523,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "select",
-        allowed_keys=_SYR_CONNECT_SELECT_SUPPORTED_KEYS - _SYR_CONNECT_SENSOR_EXCLUDED,
+        allowed_keys=_SYR_CONNECT_SELECT_SUPPORTED_KEYS,
         entry_id=coordinator.entry_id,
     )
 
