@@ -50,6 +50,16 @@ def test_select_descriptions_have_unique_keys() -> None:
     assert set(keys) >= select_module._SYR_CONNECT_SELECT_SUPPORTED_KEYS
 
 
+def test_option_unit_without_unit_raises() -> None:
+    """A select key whose sensor description has no unit fails instead of labelling "30 None"."""
+    assert select_module._option_unit("getRMT") == "min"
+    with (
+        _patch_sensor_description("getRMT", native_unit_of_measurement=None),
+        pytest.raises(ValueError, match="getRMT"),
+    ):
+        select_module._unit_options("getRMT", [30])
+
+
 def _build_coordinator(hass: HomeAssistant, data: dict) -> Any:
     """Build a real coordinator; typed Any because tests replace its methods with mocks."""
     config_data = {

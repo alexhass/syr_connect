@@ -205,10 +205,29 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     "getTPR",  # Target pressure (1/10 bar)
 }
 
+
+def _option_unit(key: str) -> str:
+    """Return the unit of a key for select option labels, from its sensor description.
+
+    Args:
+        key: Status key, e.g. "getRMT"
+
+    Returns:
+        The unit, e.g. "min"
+
+    Raises:
+        ValueError: If the sensor description has no unit; the labels would read "30 None"
+    """
+    unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[key].native_unit_of_measurement
+    if unit is None:
+        raise ValueError(f"No unit for the select options of {key}")
+    return unit
+
+
 # Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
 # _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
 _SYR_CONNECT_SELECT_CRS_MAP = {
-    f"{v:g} {_SYR_CONNECT_SENSOR_DESCRIPTIONS['getCRS'].native_unit_of_measurement}": k
+    f"{v:g} {_option_unit('getCRS')}": k
     for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
 }
 
@@ -283,7 +302,7 @@ def _unit_options(key: str, values: list[int]) -> list[str]:
     Returns:
         One label per value, in the same order
     """
-    unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[key].native_unit_of_measurement
+    unit = _option_unit(key)
     return [f"{v} {unit}" for v in values]
 
 
@@ -578,9 +597,7 @@ def _async_setup_muco_conditional_selects(
         device_id: str, device_name: str, key: str
     ) -> SyrConnectDiscreteSelect | SyrConnectNumericSelect:
         if key == "getLOT":
-            lot_unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[
-                "getLOT"
-            ].native_unit_of_measurement
+            lot_unit = _option_unit("getLOT")
             lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(21)}
             return SyrConnectDiscreteSelect(
                 coordinator, device_id, device_name, "getLOT", lot_map
