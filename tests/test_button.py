@@ -204,30 +204,6 @@ async def test_async_setup_entry_multiple_devices(
     assert len(entities) >= 2
 
 
-async def test_button_press_other_command(hass: HomeAssistant) -> None:
-    """Test button press with non-setSIR command uses value 1."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-
-    # Use a different command that should use value=1
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "setOTHER")
-
-    await button.async_press()
-
-    # Default action is a no-op for commands we don't explicitly handle
-    coordinator.async_set_device_value.assert_not_called()
-
-
 async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
     """Test button press handles unexpected errors."""
     data = {

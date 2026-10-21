@@ -1985,7 +1985,7 @@ _DESCRIBED_KEYS = {
     "sensor": set(sensor._SYR_CONNECT_SENSOR_DESCRIPTIONS),
     "binary_sensor": set(binary_sensor._SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS),
     "switch": set(switch._SYR_CONNECT_SWITCH_DESCRIPTIONS),
-    "button": {d.key for d in button._SYR_CONNECT_BUTTON_TYPES},
+    "button": set(button._SYR_CONNECT_BUTTON_DESCRIPTIONS),
     "select": set(select._SYR_CONNECT_SELECT_DESCRIPTIONS),
     "update": set(update._SYR_CONNECT_UPDATE_DESCRIPTIONS),
     "valve": set(valve._SYR_CONNECT_VALVE_DESCRIPTIONS),

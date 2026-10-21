@@ -329,7 +329,7 @@ def get_model_supported_keys(
     the same hardware) share a single override file instead of duplicating
     near-identical content per model `name`.
     This is deliberately an allowlist, not an exclusion list — the global
-    const.py lists cover ~90 different models, and new/unexpected keys can
+    allowlists of the platform modules cover ~90 different models, and new/unexpected keys can
     show up in any device's API response at any time, so only explicitly
     confirmed keys are trusted per device. Falls back to `global_supported_keys`
     unchanged when no override file exists for the model, or it doesn't

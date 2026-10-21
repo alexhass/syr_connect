@@ -63,10 +63,12 @@ _SYR_CONNECT_BUTTON_TYPES: tuple[ButtonEntityDescription, ...] = (
     ),
 )
 
-# Supported keys for the button platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_BUTTON_SUPPORTED_KEYS = {
-    description.key for description in _SYR_CONNECT_BUTTON_TYPES
+_SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, ButtonEntityDescription] = {
+    description.key: description for description in _SYR_CONNECT_BUTTON_TYPES
 }
+
+# Supported keys for the button platform — used by registry_cleanup to remove stale entries.
+_SYR_CONNECT_BUTTON_SUPPORTED_KEYS = set(_SYR_CONNECT_BUTTON_DESCRIPTIONS)
 
 
 async def async_setup_entry(
@@ -217,6 +219,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         super().__init__(coordinator, device_id, device_name, "button", command)
 
         self._command = command
+        self.entity_description = _SYR_CONNECT_BUTTON_DESCRIPTIONS[command]
 
     @override
     async def async_press(self) -> None:
@@ -366,9 +369,5 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     self._device_id, self._command, reset_value
                 )
                 return
-
-            # Default: no action for commands not explicitly handled above.
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             raise HomeAssistantError(f"Failed to press button: {err}") from err
-        else:
-            return
