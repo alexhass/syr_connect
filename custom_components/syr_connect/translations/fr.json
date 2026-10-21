@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Température"
       },
+      "getcfo": {
+        "name": "Décalage du débit du cycle"
+      },
       "getcft": {
         "name": "Durée actuelle de remplissage"
       },
@@ -1042,6 +1045,9 @@
           "1": "Présent",
           "2": "Absent"
         }
+      },
+      "getprn": {
+        "name": "Profil de protection contre les fuites actif (doublon)"
       },
       "getprs": {
         "name": "Pression"

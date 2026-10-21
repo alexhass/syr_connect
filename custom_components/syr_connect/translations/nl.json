@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperatuur"
       },
+      "getcfo": {
+        "name": "Doorstromingsoffset van de cyclus"
+      },
       "getcft": {
         "name": "Huidige vulduur"
       },
@@ -1042,6 +1045,9 @@
           "1": "Aanwezig",
           "2": "Afwezig"
         }
+      },
+      "getprn": {
+        "name": "Actief lekbeschermingsprofiel (duplicaat)"
       },
       "getprs": {
         "name": "Inlaatdruk"

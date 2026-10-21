@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcfo": {
+        "name": "Offset del flusso del ciclo"
+      },
       "getcft": {
         "name": "Durata attuale del riempimento"
       },
@@ -1042,6 +1045,9 @@
           "1": "Presente",
           "2": "Assente"
         }
+      },
+      "getprn": {
+        "name": "Profilo protezione attivo (duplicato)"
       },
       "getprs": {
         "name": "Pressione"

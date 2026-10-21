@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperature"
       },
+      "getcfo": {
+        "name": "Cycle flow offset"
+      },
       "getcft": {
         "name": "Current filling duration"
       },
@@ -1042,6 +1045,9 @@
           "1": "Present",
           "2": "Absent"
         }
+      },
+      "getprn": {
+        "name": "Active leak protection profile (duplicate)"
       },
       "getprs": {
         "name": "Inlet pressure"

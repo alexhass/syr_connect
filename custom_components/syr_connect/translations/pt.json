@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcfo": {
+        "name": "Desvio do fluxo do ciclo"
+      },
       "getcft": {
         "name": "Duração atual do enchimento"
       },
@@ -1042,6 +1045,9 @@
           "1": "Presente",
           "2": "Ausente"
         }
+      },
+      "getprn": {
+        "name": "Perfil de proteção contra vazamento ativo (duplicado)"
       },
       "getprs": {
         "name": "Pressão de entrada"

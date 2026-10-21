@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcfo": {
+        "name": "Desplazamiento del caudal del ciclo"
+      },
       "getcft": {
         "name": "Duración actual del llenado"
       },
@@ -1042,6 +1045,9 @@
           "1": "Presente",
           "2": "Ausente"
         }
+      },
+      "getprn": {
+        "name": "Perfil de protección contra fugas activo (duplicado)"
       },
       "getprs": {
         "name": "Presión"

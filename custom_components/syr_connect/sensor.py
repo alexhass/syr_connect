@@ -452,8 +452,11 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getVLV",  # Valve position (10=closed, 11=closing, 20=open, 21=opening)
         suggested_display_precision=0,
     ),
-    # getCFO is not listed: Cycle flow offset
-    # Its previous settings: suggested_display_precision=0.
+    SyrConnectSensorEntityDescription(
+        key="getCFO",  # Cycle flow offset, numeric counter
+        suggested_display_precision=0,
+        hidden_when="always",
+    ),
     # --- Alarm / Notification / Warning ---
     SyrConnectSensorEntityDescription(
         key="getALA",  # Current alarm code
@@ -786,9 +789,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_value_rtm,
     ),
-    # getSRE is not listed: Regeneration active flag - Disabled - Not clear what value 3/5 means.
-    # Its previous settings: suggested_display_precision=0, entity_category=DIAGNOSTIC,
-    # entity_registry_enabled_default=False.
+    SyrConnectSensorEntityDescription(
+        key="getSRE",  # Regeneration active flag (0/1; values 3/5 unclear)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        hidden_when="always",
+    ),
     SyrConnectSensorEntityDescription(
         key="getSCR",  # Service regeneration cycle count
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -1341,8 +1348,11 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getPRF",  # Currently active leak protection profile index
         suggested_display_precision=0,
     ),
-    # getPRN is not listed: Duplicate of getPRF
-    # Its previous settings: entity_registry_enabled_default=False.
+    SyrConnectSensorEntityDescription(
+        key="getPRN",  # Duplicate of getPRF
+        entity_registry_enabled_default=False,
+        hidden_when="always",
+    ),
     SyrConnectSensorEntityDescription(
         key="getPST",  # Pressure sensor installed (1=not available, 2=available)
         suggested_display_precision=0,
@@ -1350,8 +1360,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     # --- Filter (NeoSoft) ---
-    # getFCD is not listed: Filter flush interval (Disabled Issue #23)
-    # Its previous settings: suggested_display_precision=0, entity_category=DIAGNOSTIC.
+    SyrConnectSensorEntityDescription(
+        key="getFCD",  # Filter flush interval (issue #23)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="always",
+    ),
     SyrConnectSensorEntityDescription(
         key="getFCO",  # Iron content (ppm)
         native_unit_of_measurement="ppm",

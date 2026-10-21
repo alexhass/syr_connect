@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperatura"
       },
+      "getcfo": {
+        "name": "Przesunięcie przepływu cyklu"
+      },
       "getcft": {
         "name": "Aktualny czas napełniania"
       },
@@ -1042,6 +1045,9 @@
           "1": "Obecny",
           "2": "Nieobecny"
         }
+      },
+      "getprn": {
+        "name": "Aktywny profil ochrony przed wyciekiem (duplikat)"
       },
       "getprs": {
         "name": "Ciśnienie wejściowe"

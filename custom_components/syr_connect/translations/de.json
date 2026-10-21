@@ -546,6 +546,9 @@
       "getcel": {
         "name": "Temperatur"
       },
+      "getcfo": {
+        "name": "Zyklus-Durchflussversatz"
+      },
       "getcft": {
         "name": "Aktuelle Fülldauer"
       },
@@ -1042,6 +1045,9 @@
           "1": "Anwesend",
           "2": "Abwesend"
         }
+      },
+      "getprn": {
+        "name": "Aktives Leckagesschutz-Profil (Duplikat)"
       },
       "getprs": {
         "name": "Eingangsdruck"
