@@ -451,7 +451,6 @@ def registry_cleanup(
             device_id = device.get("id")
             if not device_id:
                 continue
-            prefix = f"{domain}.{DOMAIN}_{device_id.lower()}_"
 
             # An empty status means it could not be fetched yet (e.g. a temporary
             # failure at startup), not that the device lost all its keys. Removing
@@ -533,13 +532,12 @@ def registry_cleanup(
                     except Exception:
                         _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
 
-            # Remove the entities the platform hides for the current device status.
+            # Remove the entities the platform hides for the current device status. Found by
+            # unique_id, so a renamed or "_2"-suffixed entity is removed as well; the unique_id
+            # contains the entry_id, so only entities of this config entry are found.
             for key in hidden_keys(status) if hidden_keys is not None else ():
-                entity_id = f"{prefix}{key.lower()}"
-                existing = registry.async_get(entity_id)
-                if existing is not None and (
-                    entry_id is None or existing.config_entry_id == entry_id
-                ):
+                entity_id = find_entity_id(registry, domain, entry_id, device_id, key)
+                if entity_id is not None:
                     _LOGGER.debug(
                         "Removing conditionally hidden %s from registry: %s",
                         domain,

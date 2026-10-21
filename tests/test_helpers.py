@@ -1160,22 +1160,28 @@ def test_registry_cleanup_skips_device_with_no_id() -> None:
     registry.async_remove.assert_not_called()
 
 
+def _registry_with_unique_id(unique_id: str, entity_id: str) -> MagicMock:
+    """Return a registry mock that knows one entity, found by its unique_id."""
+    registry = MagicMock()
+    registry.entities.values.return_value = []
+    registry.async_get_entity_id = MagicMock(
+        side_effect=lambda domain, platform, uid: (
+            entity_id if uid == unique_id else None
+        )
+    )
+    registry.async_remove = MagicMock()
+    return registry
+
+
 def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
     """Stale registry entry for a conditionally hidden sensor is removed when value is empty."""
     hass = MagicMock()
-    registry = MagicMock()
     device_id = "DEV"
-    # getTYP has hidden_when - registry entry exists but device reports ""
-    entity_id = build_entity_id("sensor", device_id, "getTYP")
-    registry.entities.values.return_value = []
-    registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
-    registry.async_remove = MagicMock()
-
-    # Only return an entity entry for the specific entity_id under test.
-    registry.async_get = MagicMock(
-        side_effect=lambda eid: (
-            SimpleNamespace(entity_id=eid) if eid == entity_id else None
-        )
+    # getTYP has hidden_when - registry entry exists but device reports ""; it is found by
+    # unique_id, so the "_2" suffix of a second hub does not matter
+    entity_id = build_entity_id("sensor", device_id, "getTYP") + "_2"
+    registry = _registry_with_unique_id(
+        build_unique_id(None, device_id, "getTYP"), entity_id
     )
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
@@ -1197,8 +1203,8 @@ def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
     """An offline device (dst 0/1) reports empty measurements; that must not remove its sensors."""
     registry = MagicMock()
     registry.entities.values.return_value = []
-    registry.async_get = MagicMock(
-        side_effect=lambda eid: SimpleNamespace(entity_id=eid, config_entry_id=None)
+    registry.async_get_entity_id = MagicMock(
+        side_effect=lambda domain, platform, uid: f"sensor.{uid.lower()}"
     )
     registry.async_remove = MagicMock()
 
@@ -1260,17 +1266,11 @@ def test_registry_cleanup_keeps_unlisted_entities_of_offline_device() -> None:
 def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> None:
     """Conditionally hidden sensor owned by a DIFFERENT config entry must not be removed."""
     hass = MagicMock()
-    registry = MagicMock()
     device_id = "DEV"
-    entity_id = build_entity_id("sensor", device_id, "getTYP")
-    registry.entities.values.return_value = []
-    registry.async_remove = MagicMock()
-    registry.async_get = MagicMock(
-        side_effect=lambda eid: (
-            SimpleNamespace(entity_id=eid, config_entry_id="other_hub")
-            if eid == entity_id
-            else None
-        )
+    # Only the other hub has the entity; its unique_id contains the other entry_id
+    registry = _registry_with_unique_id(
+        build_unique_id("other_hub", device_id, "getTYP"),
+        build_entity_id("sensor", device_id, "getTYP"),
     )
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
@@ -1292,19 +1292,11 @@ def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> Non
 def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     """Registry entry for a conditionally shown sensor is NOT removed when value is non-empty."""
     hass = MagicMock()
-    registry = MagicMock()
     device_id = "DEV"
     # getTYP has hidden_when - device reports a real value
-    entity_id = build_entity_id("sensor", device_id, "getTYP")
-    registry.entities.values.return_value = []
-    registry.async_get = MagicMock(return_value=SimpleNamespace(entity_id=entity_id))
-    registry.async_remove = MagicMock()
-
-    # Only return an entity entry for the specific entity_id under test.
-    registry.async_get = MagicMock(
-        side_effect=lambda eid: (
-            SimpleNamespace(entity_id=eid) if eid == entity_id else None
-        )
+    registry = _registry_with_unique_id(
+        build_unique_id(None, device_id, "getTYP"),
+        build_entity_id("sensor", device_id, "getTYP"),
     )
 
     coordinator = {"devices": [{"id": device_id, "status": {"getTYP": "SafeTech"}}]}
@@ -1320,6 +1312,31 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
         )
 
     registry.async_remove.assert_not_called()
+
+
+def test_registry_cleanup_removes_always_hidden_sensor_with_suffix() -> None:
+    """A sensor with hidden_when="always" is removed even with a value and a "_2" entity_id."""
+    device_id = "DEV"
+    entity_id = build_entity_id("sensor", device_id, "getDWF") + "_2"
+    registry = _registry_with_unique_id(
+        build_unique_id("entry", device_id, "getDWF"), entity_id
+    )
+
+    # getDWF is supported (allowlist) but must never become an entity
+    coordinator = {"devices": [{"id": device_id, "status": {"getDWF": "350"}}]}
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get", return_value=registry
+    ):
+        helpers.registry_cleanup(
+            MagicMock(),
+            coordinator,
+            "sensor",
+            allowed_keys={"getDWF"},
+            entry_id="entry",
+            hidden_keys=sensor._hidden_sensor_keys,
+        )
+
+    registry.async_remove.assert_called_once_with(entity_id)
 
 
 def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
