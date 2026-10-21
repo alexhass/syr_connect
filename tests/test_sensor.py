@@ -7,6 +7,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -2155,6 +2156,61 @@ async def test_muco_lot_ohw_sensor_only_for_models_listing_it(
 
     keys = {getattr(e, "_sensor_key", None) for e in entities}
     assert keys & {"getLOT", "getOHW"} == expected
+
+
+def _fixture_statuses() -> list[Any]:
+    """Return the device status of every JSON fixture and every XML status fixture."""
+    fixtures = Path(__file__).parent / "fixtures"
+    statuses = [
+        pytest.param(
+            path.name, json.loads(path.read_text(encoding="utf-8")), id=path.name
+        )
+        for path in sorted((fixtures / "json").glob("*.json"))
+    ]
+    statuses.extend(
+        pytest.param(
+            path.name,
+            ResponseParser().parse_device_status_response(
+                path.read_text(encoding="utf-8")
+            ),
+            id=path.name,
+        )
+        for path in sorted((fixtures / "xml").glob("*_GetDeviceCollectionStatus.xml"))
+    )
+    return statuses
+
+
+@pytest.mark.parametrize(("fixture", "status"), _fixture_statuses())
+async def test_sensor_keys_for_status_match_created_sensors(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+    fixture: str,
+    status: dict,
+) -> None:
+    """sensor_keys_for_status (used by diagnostics) lists exactly the sensors the setup creates."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    created = [
+        "dst" if isinstance(e, SyrConnectConnectionStateSensor) else e._sensor_key
+        for e in entities
+    ]
+    assert sorted(sensor_module.sensor_keys_for_status(status)) == sorted(created), (
+        fixture
+    )
 
 
 async def test_getpa_group_empty_status_keeps_registry_entries(

@@ -20,7 +20,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .helpers import mask_ug_value
 from .models import detect_model
-from .sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS, is_sensor_visible
+from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -511,12 +511,8 @@ def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
         model_info.get("display_name") if isinstance(model_info, dict) else None
     )
 
-    # Determine visible status keys using centralized helper
-    visible_keys: list[str] = [
-        k
-        for k, v in status.items()
-        if k in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS and is_sensor_visible(status, k, v)
-    ]
+    # The sensors the integration creates for this status, with the same rules as the setup
+    visible_keys = sensor_keys_for_status(status)
 
     device_info = {
         "id": device.get("id"),

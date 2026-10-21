@@ -3827,9 +3827,9 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
     assert device["hw_version"] == "FW_ST_01"
     assert device["api_type"] == API_TYPE_JSON
     assert device["base_path"] == "/trio"  # JSON API specific
-    assert device["status_count"] == 7
-    assert "getCNA" in device["status_keys"]
-    assert "getPRS" in device["status_keys"]
+    # Only the sensors SafeTech Plus gets: getCNA, getFIR and getPRS are not in its allowlist
+    assert device["status_keys"] == ["getMAC1", "getSRN", "getVER", "getWIP"]
+    assert device["status_count"] == 4
     assert "dclg" not in device  # Should not be present for JSON API
 
 

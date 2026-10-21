@@ -2066,17 +2066,7 @@ def _build_pa_group_sensors(
     for idx in range(1, 9):
         pa_key = f"getPA{idx}"
         pa_val = status.get(pa_key)
-        group_keys = [
-            f"getPA{idx}",
-            f"getPV{idx}",
-            f"getPT{idx}",
-            f"getPF{idx}",
-            f"getPN{idx}",
-            f"getPM{idx}",
-            f"getPW{idx}",
-            f"getPB{idx}",
-            f"getPR{idx}",
-        ]
+        group_keys = _pa_group_keys(idx)
 
         try:
             if is_value_true(pa_val):
@@ -2140,6 +2130,77 @@ def _build_pa_group_sensors(
             )
 
     return entities, handled_keys
+
+
+def _pa_group_keys(idx: int) -> list[str]:
+    """Return the keys of leak-protection profile `idx` (1-8), controlled by getPA<idx>."""
+    return [
+        f"getPA{idx}",
+        f"getPV{idx}",
+        f"getPT{idx}",
+        f"getPF{idx}",
+        f"getPN{idx}",
+        f"getPM{idx}",
+        f"getPW{idx}",
+        f"getPB{idx}",
+        f"getPR{idx}",
+    ]
+
+
+def _muco_conditional_key(status: dict[str, Any]) -> str | None:
+    """Return getLOT or getOHW, whichever applies to the cartridge type (getCRT), or None.
+
+    Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
+    also report getCRT/getLOT/getOHW but deliberately do not expose them.
+    """
+    crt = str(status.get("getCRT") or "").strip()
+    if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
+        key = "getLOT"
+    elif crt == "0" and status.get("getOHW") not in (None, ""):
+        key = "getOHW"
+    else:
+        return None
+    supported_sensor_keys = get_model_supported_keys(
+        detect_model(status), "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+    )
+    return key if key in supported_sensor_keys else None
+
+
+def sensor_keys_for_status(status: dict[str, Any]) -> list[str]:
+    """Return the keys of the sensors the platform creates for a device status.
+
+    Uses the same rules as the setup: the model's allowlist, the connection state (dst),
+    the active leak-protection profiles (getPAx), the visibility and value checks of
+    `_is_sensor_wanted` and the conditional getLOT/getOHW sensor.
+
+    Args:
+        status: The flattened device status
+
+    Returns:
+        The sensor keys, in the order the setup creates them
+    """
+    supported_sensor_keys = get_model_supported_keys(
+        detect_model(status), "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+    )
+    keys = ["dst"] if status.get("dst") is not None else []
+    handled_keys: set[str] = set()
+    for idx in range(1, 9):
+        group_keys = _pa_group_keys(idx)
+        handled_keys.update(group_keys)
+        if is_value_true(status.get(f"getPA{idx}")):
+            keys.extend(
+                key
+                for key in group_keys
+                if key in supported_sensor_keys and key in status
+            )
+    keys.extend(
+        key
+        for key, value in status.items()
+        if _is_sensor_wanted(status, key, value, supported_sensor_keys, handled_keys)
+    )
+    if (conditional_key := _muco_conditional_key(status)) is not None:
+        keys.append(conditional_key)
+    return keys
 
 
 def _to_float(value: Any) -> float | None:
@@ -2216,21 +2277,6 @@ def _async_setup_muco_conditional_sensors(
     """
     live_keys: dict[str, set[str]] = {}
 
-    def _wanted_key(status: dict[str, Any]) -> str | None:
-        crt = str(status.get("getCRT") or "").strip()
-        if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
-            key = "getLOT"
-        elif crt == "0" and status.get("getOHW") not in (None, ""):
-            key = "getOHW"
-        else:
-            return None
-        # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
-        # also report getCRT/getLOT/getOHW but deliberately do not expose them.
-        supported_sensor_keys = get_model_supported_keys(
-            detect_model(status), "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
-        )
-        return key if key in supported_sensor_keys else None
-
     @callback
     def _sync() -> None:
         new_entities: list[SyrConnectSensor] = []
@@ -2243,7 +2289,7 @@ def _async_setup_muco_conditional_sensors(
                 device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
-                wanted = _wanted_key(status)
+                wanted = _muco_conditional_key(status)
                 wanted_set = {wanted} if wanted else set()
 
                 for key in current - wanted_set:
