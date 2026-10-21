@@ -31,6 +31,19 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 - Every module, class and public function has a docstring. Use the Google style with `Args:`, `Returns:` and `Raises:` sections where they apply.
 - The first docstring line is one sentence that says what the function does.
 - Comments and docstrings are in English.
+- A docstring about a device key names the value first and the key in parentheses: `"""Cartridge size (getCRS): raw value -> liters."""`, not `"""getCRS: raw value -> liters."""`.
+- List several value formats or examples one per line, as `- <Model or case>: "<raw value>" -> <result>`, not several on one line:
+
+  ```python
+  """Mains voltage (getNET).
+
+  Formats:
+  - Safe-T+: "ADC:950 6,16V" -> 6.16 V
+  - Safe-Tech+: "11,86" -> 11.86 V
+  - Trio DFR/LS: "363" -> 3.63 V
+  """
+  ```
+
 - Comments explain why something is done, especially protocol quirks and workarounds. Reference the issue in `docs/known_issues_xml_api.md` or `docs/known_issues_json_api.md` when a workaround exists because of one.
 - Do not leave commented-out code or notes about the change history ("changed from …", "new: …").
 

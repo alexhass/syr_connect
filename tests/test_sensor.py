@@ -7736,29 +7736,6 @@ async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Lines 333-334 — getVOL division TypeError in _apply_numeric_conversion
-# ---------------------------------------------------------------------------
-
-
-def test_apply_numeric_conversion_vol_type_error(create_mock_coordinator):
-    """The getVOL division by 1000 TypeError is caught (lines 333-334)."""
-    coord = create_mock_coordinator({"devices": [{"id": "d1", "status": {}}]})
-    sensor = SyrConnectSensor(coord, "d1", "D1", "getVOL")
-
-    class _BadDiv:
-        def __truediv__(self, _other):
-            raise TypeError("nope")
-
-        def __rtruediv__(self, _other):
-            raise TypeError("nope")
-
-    # Should not raise; TypeError caught silently, then round() may also fail
-    result = sensor._apply_numeric_conversion(_BadDiv())
-    # result is still the _BadDiv object (pass-through after caught exception)
-    assert isinstance(result, _BadDiv)
-
-
-# ---------------------------------------------------------------------------
 # Lines 409-410 — getBAT icon ValueError (float(sval) fails)
 # ---------------------------------------------------------------------------
 

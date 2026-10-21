@@ -1,7 +1,6 @@
 """Sensor platform for SYR Connect."""
 
 from collections.abc import Callable
-import contextlib
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 import logging
@@ -69,11 +68,334 @@ from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
-# Leak-protection boolean flags getPAx, getPBx, getPMx, getPWx (not getPRx: numeric return times)
-_SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG = re.compile(r"^getP(?:A|B|M|W)\d$")
-
 # Limit parallel updates to avoid overwhelming the API
 PARALLEL_UPDATES = 1
+
+
+# --- Value handlers -------------------------------------------------------------
+# The `value_fn` of a sensor description. Each handler gets the sensor, the device status
+# and the raw value of the sensor key and returns the native value.
+
+
+def _map_code(status: dict[str, Any], raw: Any, mapper: Any) -> str | None:
+    """Map an alarm/notification/warning code to its translation key, else the raw code."""
+    if raw is None:
+        return None
+    try:
+        mapped, raw_code = mapper(status, raw)
+        if mapped:
+            return str(mapped)
+        # Model unknown or no mapping found: return the raw value 1:1
+        sval = str(raw_code)
+        return sval if sval.strip() != "" else None
+    except ValueError, KeyError, AttributeError, TypeError:
+        return None
+
+
+def _value_ab(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Valve shut-off (getAB): lowercase "true"/"false" for translations."""
+    ab = get_sensor_ab_value(status)
+    if ab is None:
+        return None
+    return "true" if ab else "false"
+
+
+def _value_ala(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Alarm code (getALA): translation key based on the device model."""
+    return _map_code(status, value, get_sensor_ala_map)
+
+
+def _value_not(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Notification code (getNOT): translation key."""
+    return _map_code(status, value, get_sensor_not_map)
+
+
+def _value_wrn(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Warning code (getWRN): translation key."""
+    return _map_code(status, value, get_sensor_wrn_map)
+
+
+def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map."""
+    raw_str = str(value) if value is not None else ""
+    try:
+        ala_mapped, _ = get_sensor_ala_map(status or {}, value)
+    except ValueError, KeyError, AttributeError, TypeError:
+        ala_mapped = None
+    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
+    mapped = ala_mapped or std_mapped
+    # Mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or the raw value as fallback
+    return mapped if mapped is not None else value
+
+
+def _value_avo(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Current flow rate (getAVO): "1655mL" -> numeric value."""
+    if value is None or value == "":
+        return None
+    return get_sensor_avo_value(value)
+
+
+def _value_bar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Pressure (getBAR / getBAR2, Safe-T+ / TRIO Lock): "4077 mbar" -> bar."""
+    if value is None or value == "":
+        return None
+    try:
+        match = re.search(r"\d+", str(value))
+        if not match:
+            return None
+        pressure_bar = float(match.group()) / 1000
+        precision = sensor.entity_description.suggested_display_precision
+        return round(pressure_bar, 3 if precision is None else precision)
+    except ValueError, TypeError:
+        return None
+
+
+def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Battery (getBAT).
+
+    Formats:
+    - Safe-T+: "6,11 4,38 3,90" -> 6.11 V
+    - Trio DFR/LS: "363" -> 3.63 V
+    - SafeFloor TYP=120: "85" -> 85 %
+    """
+    if value is None:
+        return None
+    if not isinstance(value, (str | int | float)):
+        return None
+    # SafeFloor (and similar) report battery as an integer percentage.
+    if sensor.native_unit_of_measurement == PERCENTAGE:
+        try:
+            return int(float(str(value).strip()))
+        except ValueError, TypeError:
+            return None
+    return get_sensor_bat_value(value)
+
+
+def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
+    if value is None or value == "":
+        return None
+    try:
+        match = re.search(r"-?\d+", str(value))
+        if not match:
+            return None
+        pressure_bar = float(match.group()) / 10.0
+        precision = sensor.entity_description.suggested_display_precision
+        return round(pressure_bar, 1 if precision is None else precision)
+    except ValueError, TypeError:
+        return None
+
+
+def _value_iwh(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
+    return get_sensor_iwh_value(status or {})
+
+
+def _value_net(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Mains voltage (getNET).
+
+    Formats:
+    - Safe-T+: "ADC:950 6,16V" -> 6.16 V
+    - Safe-Tech+: "11,86" -> 11.86 V
+    - Trio DFR/LS: "363" -> 3.63 V
+    """
+    if value is None:
+        return None
+    if not isinstance(value, (str | int | float)):
+        return None
+    return get_sensor_net_value(value)
+
+
+def _value_lar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Last regeneration (getLAR): unix seconds -> aware UTC datetime."""
+    if value is None or value == "":
+        return None
+    try:
+        # Home Assistant formats it according to the user's timezone/locale.
+        return datetime.fromtimestamp(int(float(value)), UTC)
+    except ValueError, TypeError, OverflowError:
+        return None
+
+
+def _map_int(value_map: dict[int, Any], value: Any, default: int) -> Any:
+    """Look up a raw integer value in a value map.
+
+    A missing, empty or 0 value uses `default`. A value that is not an integer
+    returns None instead of raising, so a broken device value does not break the
+    sensor update (native_value then keeps the last known value).
+    """
+    try:
+        return value_map.get(int(value or default))
+    except ValueError, TypeError:
+        return None
+
+
+def _value_le(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Leak protection volume limit, present profile (getLE): raw value -> liters."""
+    return _map_int(_SYR_CONNECT_SENSOR_LE_VALUE_MAP, value, 2)
+
+
+def _value_lng(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
+    if value is None or (isinstance(value, str) and value.strip() == ""):
+        return None
+    return get_sensor_lng_value(value)
+
+
+def _value_leak_protection_flag(
+    sensor: SyrConnectSensor, status: dict[str, Any], value: Any
+) -> Any:
+    """Leak-protection flags (getPAx, getPBx, getPMx, getPWx): "true"/"false" like getAB.
+
+    getPRx are numeric return-time values and have no value_fn.
+    """
+    if value is None or (isinstance(value, str) and value.strip() == ""):
+        return None
+    return "true" if is_value_true(value) else "false"
+
+
+def _value_rtm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Regeneration time (getRTM): "HH:MM" from getRTM, or combined from getRTH + getRTM."""
+    return get_sensor_rtm_value(status)
+
+
+def _value_rpw(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Regeneration permitted weekdays (getRPW): bitmask, bit 1 = Monday ... bit 7 = Sunday.
+
+    0 -> "0" ("Not specified" translation key), otherwise comma-separated localized
+    short weekday names.
+    """
+    if value is None or value == "":
+        return None
+    try:
+        mask = int(float(value))
+    except ValueError, TypeError:
+        try:
+            mask = int(str(value).strip())
+        except ValueError, TypeError:
+            return None
+
+    if mask == 0:
+        return "0"
+
+    # Localize with the Home Assistant language; a reference Monday maps the weekday offsets.
+    ref_monday = datetime(2024, 1, 1)
+    try:
+        locale = getattr(sensor.hass.config, "language", None)
+    except AttributeError:
+        locale = None
+
+    parts: list[str] = []
+    for idx in range(7):
+        if mask & (1 << idx):
+            day = ref_monday + timedelta(days=idx)
+            try:
+                name = format_datetime(day, "EEE", locale=locale)
+            except ValueError, KeyError, AttributeError, TypeError:
+                # Fallback to system short name if Babel/localization fails
+                name = day.strftime("%a")
+            parts.append(name)
+    return ",".join(parts)
+
+
+def _value_sta(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Status (getSTA): map the Polish status strings to translation keys.
+
+    Translation placeholders are not supported for entity states in the frontend (only
+    for names/labels), see https://github.com/home-assistant/frontend/issues/29064, so
+    the placeholder values are only logged.
+    """
+    # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer (0=Standby);
+    # check for None explicitly so a genuine 0 is kept.
+    raw = str(value) if value is not None else ""
+    _LOGGER.debug("getSTA entity=%s raw=%s", sensor.entity_id, raw)
+
+    m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
+    if m_match:
+        mapped = str(
+            _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
+                "Płukanie regenerantem", "status_regenerant_rinse"
+            )
+        )
+        _LOGGER.debug(
+            "getSTA mapped=%s placeholders=%s",
+            mapped,
+            {"resistance_value": str(m_match.group(1) or "")},
+        )
+        return mapped
+
+    m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
+    if m2_match:
+        mapped = str(
+            _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
+                "Płukanie rapide", "status_fast_rinse"
+            )
+        )
+        _LOGGER.debug(
+            "getSTA mapped=%s placeholders=%s",
+            mapped,
+            {"rinse_round": str(m2_match.group(1) or "")},
+        )
+        return mapped
+
+    # Fallback: use the raw string as mapping key
+    mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(raw, raw))
+    _LOGGER.debug("getSTA mapped=%s", mapped)
+    return mapped
+
+
+def _value_t(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Maximum flow duration, present / absent profile (getT1 / getT2): raw value -> hours."""
+    return _map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
+
+
+def _value_ul(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Leak protection volume limit, absent profile (getUL): raw value -> liters."""
+    return _map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
+
+
+def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Cartridge size (getCRS): raw value -> liters."""
+    if value is None or value == "":
+        return None
+    try:
+        raw = int(float(value))
+    except ValueError, TypeError:
+        return None
+    return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
+
+
+def _value_crt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Cartridge type (getCRT): empty means "no cartridge"; translation keys cannot be "", so "none"."""
+    if value is None or value == "":
+        return "none"
+    return str(value)
+
+
+def _value_rcd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Filling period (getRCD): empty means "undefined"; translation keys cannot be ""."""
+    if value is None or value == "":
+        return "undefined"
+    return str(value)
+
+
+def _value_whu(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Water hardness unit (getWHU): raw value -> unit."""
+    if isinstance(value, int | float):
+        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
+    if isinstance(value, str):
+        try:
+            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
+        except ValueError, TypeError:
+            return None
+    return None
+
+
+def _value_vol(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Total volume (getVOL): strip a prefix like 'Vol[L]6530', then convert it as a number."""
+    if value is not None:
+        value = get_sensor_vol_value(value)
+    return sensor.numeric_value(value)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -82,6 +404,16 @@ class SyrConnectSensorEntityDescription(SensorEntityDescription):
 
     # Return the value as string instead of converting it to a number (version, serial, MAC, ...)
     keep_as_string: bool = False
+    # Scale a numeric value before rounding, e.g. 1/10 °C -> °C (divide_by=10)
+    divide_by: int = 1
+    multiply_by: int = 1
+    # Compute the native value for keys with a special format or a value map
+    value_fn: (
+        Callable[
+            [SyrConnectSensor, dict[str, Any], Any], str | int | float | datetime | None
+        ]
+        | None
+    ) = None
 
 
 # Descriptions of all known sensor keys.
@@ -97,12 +429,14 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     # --- Valve & Flow ---
     SyrConnectSensorEntityDescription(
         key="getAB",  # Valve shutoff state (open / closed)
+        value_fn=_value_ab,
     ),
     SyrConnectSensorEntityDescription(
         key="getAVO",  # Current instantaneous flow rate
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=1,
+        value_fn=_value_avo,
     ),
     SyrConnectSensorEntityDescription(
         key="getFLO",  # Water flow rate (l/h)
@@ -120,11 +454,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     # --- Alarm / Notification / Warning ---
     SyrConnectSensorEntityDescription(
         key="getALA",  # Current alarm code
+        value_fn=_value_ala,
     ),
     SyrConnectSensorEntityDescription(
         key="getALM",  # List of last alarms (e.g. low salt level)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_alm,
     ),
     SyrConnectSensorEntityDescription(
         key="getALN",  # List of last 8 notifications
@@ -139,9 +475,11 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getNOT",  # Current notification code
         entity_registry_enabled_default=False,
+        value_fn=_value_not,
     ),
     SyrConnectSensorEntityDescription(
         key="getWRN",  # Current warning code
+        value_fn=_value_wrn,
     ),
     # --- Pressure ---
     SyrConnectSensorEntityDescription(
@@ -150,6 +488,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.BAR,
         suggested_display_precision=1,
+        value_fn=_value_bar,
     ),
     SyrConnectSensorEntityDescription(
         key="getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
@@ -157,6 +496,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.BAR,
         suggested_display_precision=1,
+        value_fn=_value_bar,
     ),
     SyrConnectSensorEntityDescription(
         key="getPRS",  # Inlet pressure - bar sensor (LEXplus10SL)
@@ -164,6 +504,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.BAR,
         suggested_display_precision=1,
+        divide_by=10,
     ),
     # --- Voltage / Battery ---
     SyrConnectSensorEntityDescription(
@@ -179,12 +520,14 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         suggested_display_precision=2,
+        value_fn=_value_bat,
     ),
     SyrConnectSensorEntityDescription(
         key="getNET",  # Mains (AC) voltage (V)
         device_class=SensorDeviceClass.VOLTAGE,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         suggested_display_precision=2,
+        value_fn=_value_net,
     ),
     # --- Water Quality ---
     SyrConnectSensorEntityDescription(
@@ -192,6 +535,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=1,
+        divide_by=10,
     ),
     SyrConnectSensorEntityDescription(
         key="getCFT",  # Current filling duration (s)
@@ -223,6 +567,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_iwh,
     ),
     SyrConnectSensorEntityDescription(
         key="getOWH",  # Outgoing (softened) water hardness
@@ -235,6 +580,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         keep_as_string=True,
+        value_fn=_value_whu,
     ),
     # --- Water Consumption & Volume ---
     SyrConnectSensorEntityDescription(
@@ -255,6 +601,8 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         suggested_display_precision=3,
+        divide_by=1000,
+        value_fn=_value_vol,
     ),
     # --- Device Status ---
     SyrConnectSensorEntityDescription(
@@ -269,6 +617,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getSTA",  # Device operating status
+        value_fn=_value_sta,
     ),
     # --- Resin Capacity ---
     SyrConnectSensorEntityDescription(
@@ -373,6 +722,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getLAR",  # Timestamp of last regeneration
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_lar,
     ),
     SyrConnectSensorEntityDescription(
         key="getNOR",  # Regeneration count (normal operation)
@@ -414,6 +764,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         keep_as_string=True,
+        value_fn=_value_rpw,
     ),
     SyrConnectSensorEntityDescription(
         key="getRTH",  # Regeneration scheduled hour
@@ -428,6 +779,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getRTM",  # Regeneration time (combined HH:MM string)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_rtm,
     ),
     SyrConnectSensorEntityDescription(
         key="getSCR",  # Service regeneration cycle count
@@ -478,6 +830,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=1,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_dbd,
     ),
     SyrConnectSensorEntityDescription(
         key="getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
@@ -512,18 +865,21 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_le,
     ),
     SyrConnectSensorEntityDescription(
         key="getT1",  # Max. flow duration - present profile (h, 0.5 h steps)
         native_unit_of_measurement=UnitOfTime.HOURS,
         suggested_display_precision=1,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_t,
     ),
     SyrConnectSensorEntityDescription(
         key="getT2",  # Max. flow duration - absent profile (h, 0.5 h steps)
         native_unit_of_measurement=UnitOfTime.HOURS,
         suggested_display_precision=1,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_t,
     ),
     SyrConnectSensorEntityDescription(
         key="getTMP",  # Leak protection temporarily deactivated - remaining time (s)
@@ -537,79 +893,96 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_ul,
     ),
     # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
     SyrConnectSensorEntityDescription(
         key="getPA1",  # Profile 1 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA2",  # Profile 2 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA3",  # Profile 3 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA4",  # Profile 4 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA5",  # Profile 5 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA6",  # Profile 6 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA7",  # Profile 7 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPA8",  # Profile 8 active flag (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB1",  # Profile 1 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB2",  # Profile 2 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB3",  # Profile 3 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB4",  # Profile 4 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB5",  # Profile 5 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB6",  # Profile 6 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB7",  # Profile 7 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPB8",  # Profile 8 buzzer alert (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPF1",  # Profile 1 flow leak threshold (l/h)
@@ -670,34 +1043,42 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getPM1",  # Profile 1 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM2",  # Profile 2 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM3",  # Profile 3 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM4",  # Profile 4 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM5",  # Profile 5 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM6",  # Profile 6 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM7",  # Profile 7 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPM8",  # Profile 8 microleakage test enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPN1",  # Profile 1 name
@@ -903,41 +1284,49 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getPW1",  # Profile 1 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW2",  # Profile 2 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW3",  # Profile 3 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW4",  # Profile 4 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW5",  # Profile 5 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW6",  # Profile 6 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW7",  # Profile 7 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPW8",  # Profile 8 leak warning enabled (true/false)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_leak_protection_flag,
     ),
     SyrConnectSensorEntityDescription(
         key="getPRF",  # Currently active leak protection profile index
@@ -996,6 +1385,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        divide_by=10,
     ),
     SyrConnectSensorEntityDescription(
         key="getMXT",  # Maximum temperature threshold (1/10 °C)
@@ -1004,6 +1394,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        divide_by=10,
     ),
     # --- Intervals ---
     SyrConnectSensorEntityDescription(
@@ -1188,6 +1579,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_lng,
     ),
     SyrConnectSensorEntityDescription(
         key="getMAC",  # MAC address
@@ -1281,11 +1673,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=1,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_crs,
     ),
     SyrConnectSensorEntityDescription(
         key="getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_crt,
     ),
     SyrConnectSensorEntityDescription(
         key="getLOT",  # Maximum output conductivity (raw x10 µS/cm)
@@ -1293,6 +1687,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        multiply_by=10,
     ),
     SyrConnectSensorEntityDescription(
         key="getLRC",  # Liter(s) remaining softening capacity
@@ -1325,6 +1720,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_rcd,
     ),
     SyrConnectSensorEntityDescription(
         key="getRCN",  # Counter of all refills (AC 3200, AC 3228)
@@ -1356,6 +1752,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPressure.BAR,
         suggested_display_precision=1,
         entity_category=EntityCategory.DIAGNOSTIC,
+        divide_by=10,
     ),
 )
 
@@ -1758,20 +2155,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         Returns:
             The converted value with appropriate precision
         """
-        # Apply sensor-specific conversions
-        if self._sensor_key in ("getCEL", "getMIT", "getMXT"):
-            # Values are provided as 1/10 °C (e.g. 110 -> 11.0°C, -40 -> -4.0°C)
-            value = value / 10
-        elif self._sensor_key in ("getPRS", "getTPR"):
-            # Values are provided in 1/10 units (e.g. dbar to bar)
-            value = value / 10
-        elif self._sensor_key == "getLOT":
-            # Value is in steps of 10 µS/cm (e.g. 7 -> 70 µS/cm)
-            value = value * 10
-        elif self._sensor_key == "getVOL":
-            # API provides total volume in liters; convert to cubic meters (m³)
-            with contextlib.suppress(ZeroDivisionError, TypeError):
-                value = value / 1000
+        # Apply the sensor-specific scale (e.g. 1/10 °C -> °C, liters -> m³)
+        description = self.entity_description
+        value = value / description.divide_by * description.multiply_by
 
         # Apply configured precision if available
         precision = self.entity_description.suggested_display_precision
@@ -1827,9 +2213,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
     def _compute_native_value(self) -> str | int | float | datetime | None:
         """Compute the native value from the device status.
 
-        Keys with a special format or a value map have a handler in `_SYR_CONNECT_SENSOR_VALUE_HANDLERS`
-        (or are leak-protection flags, see `_SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG`). All other keys are
-        returned as string (`keep_as_string`) or as converted number.
+        Keys with a special format or a value map have a `value_fn` in their description. All
+        other keys are returned as string (`keep_as_string`) or as converted number.
         """
         device = self._device
         if device is None:
@@ -1847,24 +2232,27 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 value,
             )
 
-        handler = self._SYR_CONNECT_SENSOR_VALUE_HANDLERS.get(self._sensor_key)
-        if handler is None and _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG.match(
-            self._sensor_key
-        ):
-            handler = SyrConnectSensor._value_leak_protection_flag
-        if handler is not None:
-            return handler(self, status, value)
-
-        # Clean prefix like 'Vol[L]6530' -> '6530', then continue as a number
-        if self._sensor_key == "getVOL" and value is not None:
-            value = get_sensor_vol_value(value)
+        value_fn = self.entity_description.value_fn
+        if value_fn is not None:
+            return value_fn(self, status, value)
 
         # Keep certain sensors as strings (version, serial, MAC, etc.)
         if self.entity_description.keep_as_string:
             _LOGGER.debug("String sensor key: %s, value: %s", self._sensor_key, value)
             return str(value) if value is not None else None
 
-        # Try to convert to number if possible for other sensors
+        return self.numeric_value(value)
+
+    def numeric_value(self, value: Any) -> str | int | float | None:
+        """Convert a raw value to a number with the sensor's scale and precision.
+
+        Args:
+            value: Raw value from the device status
+
+        Returns:
+            The converted number, the text itself if it is no number, or None for
+            a missing value or a type a sensor cannot show (e.g. a list)
+        """
         if isinstance(value, str):
             try:
                 numeric_value = float(value)
@@ -1878,329 +2266,6 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
         # None, or a type a sensor cannot show (e.g. a list)
         return None
-
-    # --- Value handlers -------------------------------------------------------------
-    # Each handler gets the device status and the raw value of the sensor key and returns
-    # the native value.
-
-    @staticmethod
-    def _map_code(status: dict[str, Any], raw: Any, mapper: Any) -> str | None:
-        """Map an alarm/notification/warning code to its translation key, else the raw code."""
-        if raw is None:
-            return None
-        try:
-            mapped, raw_code = mapper(status, raw)
-            if mapped:
-                return str(mapped)
-            # Model unknown or no mapping found: return the raw value 1:1
-            sval = str(raw_code)
-            return sval if sval.strip() != "" else None
-        except ValueError, KeyError, AttributeError, TypeError:
-            return None
-
-    def _value_ab(self, status: dict[str, Any], value: Any) -> Any:
-        """Valve shut-off (getAB): lowercase "true"/"false" for translations."""
-        ab = get_sensor_ab_value(status)
-        if ab is None:
-            return None
-        return "true" if ab else "false"
-
-    def _value_ala(self, status: dict[str, Any], value: Any) -> Any:
-        """Alarm code (getALA): translation key based on the device model."""
-        return self._map_code(status, value, get_sensor_ala_map)
-
-    def _value_not(self, status: dict[str, Any], value: Any) -> Any:
-        """Notification code (getNOT): translation key."""
-        return self._map_code(status, value, get_sensor_not_map)
-
-    def _value_wrn(self, status: dict[str, Any], value: Any) -> Any:
-        """Warning code (getWRN): translation key."""
-        return self._map_code(status, value, get_sensor_wrn_map)
-
-    def _value_alm(self, status: dict[str, Any], value: Any) -> Any:
-        """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map."""
-        raw_str = str(value) if value is not None else ""
-        try:
-            ala_mapped, _ = get_sensor_ala_map(status or {}, value)
-        except ValueError, KeyError, AttributeError, TypeError:
-            ala_mapped = None
-        std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
-        mapped = ala_mapped or std_mapped
-        # Mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or the raw value as fallback
-        return mapped if mapped is not None else value
-
-    def _value_avo(self, status: dict[str, Any], value: Any) -> Any:
-        """Current flow rate (getAVO): "1655mL" -> numeric value."""
-        if value is None or value == "":
-            return None
-        return get_sensor_avo_value(value)
-
-    def _value_bar(self, status: dict[str, Any], value: Any) -> Any:
-        """Pressure (getBAR / getBAR2, Safe-T+ / TRIO Lock): "4077 mbar" -> bar."""
-        if value is None or value == "":
-            return None
-        try:
-            match = re.search(r"\d+", str(value))
-            if not match:
-                return None
-            pressure_bar = float(match.group()) / 1000
-            precision = self.entity_description.suggested_display_precision
-            return round(pressure_bar, 3 if precision is None else precision)
-        except ValueError, TypeError:
-            return None
-
-    def _value_bat(self, status: dict[str, Any], value: Any) -> Any:
-        """Battery (getBAT).
-
-        Formats: Safe-T+ ("6,11 4,38 3,90" -> 6.11 V), Trio DFR/LS ("363" -> 3.63 V),
-        SafeFloor TYP=120 ("85" -> 85 %).
-        """
-        if value is None:
-            return None
-        if not isinstance(value, (str | int | float)):
-            return None
-        # SafeFloor (and similar) report battery as an integer percentage.
-        if self.native_unit_of_measurement == PERCENTAGE:
-            try:
-                return int(float(str(value).strip()))
-            except ValueError, TypeError:
-                return None
-        return get_sensor_bat_value(value)
-
-    def _value_dbd(self, status: dict[str, Any], value: Any) -> Any:
-        """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
-        if value is None or value == "":
-            return None
-        try:
-            match = re.search(r"-?\d+", str(value))
-            if not match:
-                return None
-            pressure_bar = float(match.group()) / 10.0
-            precision = self.entity_description.suggested_display_precision
-            return round(pressure_bar, 1 if precision is None else precision)
-        except ValueError, TypeError:
-            return None
-
-    def _value_iwh(self, status: dict[str, Any], value: Any) -> Any:
-        """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
-        return get_sensor_iwh_value(status or {})
-
-    def _value_net(self, status: dict[str, Any], value: Any) -> Any:
-        """Mains voltage (getNET).
-
-        Formats: Safe-T+ ("ADC:950 6,16V" -> 6.16 V), Safe-Tech+ ("11,86" -> 11.86 V),
-        Trio DFR/LS ("363" -> 3.63 V).
-        """
-        if value is None:
-            return None
-        if not isinstance(value, (str | int | float)):
-            return None
-        return get_sensor_net_value(value)
-
-    def _value_lar(self, status: dict[str, Any], value: Any) -> Any:
-        """Last regeneration (getLAR): unix seconds -> aware UTC datetime."""
-        if value is None or value == "":
-            return None
-        try:
-            # Home Assistant formats it according to the user's timezone/locale.
-            return datetime.fromtimestamp(int(float(value)), UTC)
-        except ValueError, TypeError, OverflowError:
-            return None
-
-    @staticmethod
-    def _map_int(value_map: dict[int, Any], value: Any, default: int) -> Any:
-        """Look up a raw integer value in a value map.
-
-        A missing, empty or 0 value uses `default`. A value that is not an integer
-        returns None instead of raising, so a broken device value does not break the
-        sensor update (native_value then keeps the last known value).
-        """
-        try:
-            return value_map.get(int(value or default))
-        except ValueError, TypeError:
-            return None
-
-    def _value_le(self, status: dict[str, Any], value: Any) -> Any:
-        """getLE: raw value -> display value."""
-        return self._map_int(_SYR_CONNECT_SENSOR_LE_VALUE_MAP, value, 2)
-
-    def _value_lng(self, status: dict[str, Any], value: Any) -> Any:
-        """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
-        if value is None or (isinstance(value, str) and value.strip() == ""):
-            return None
-        return get_sensor_lng_value(value)
-
-    def _value_leak_protection_flag(self, status: dict[str, Any], value: Any) -> Any:
-        """Leak-protection flags (getPAx, getPBx, getPMx, getPWx): "true"/"false" like getAB.
-
-        getPRx are numeric return-time values and are not matched (see _SYR_CONNECT_SENSOR_LEAK_PROTECTION_FLAG).
-        """
-        if value is None or (isinstance(value, str) and value.strip() == ""):
-            return None
-        return "true" if is_value_true(value) else "false"
-
-    def _value_rtm(self, status: dict[str, Any], value: Any) -> Any:
-        """Regeneration time (getRTM): "HH:MM" from getRTM, or combined from getRTH + getRTM."""
-        return get_sensor_rtm_value(status)
-
-    def _value_rpw(self, status: dict[str, Any], value: Any) -> Any:
-        """Regeneration permitted weekdays (getRPW): bitmask, bit 1 = Monday ... bit 7 = Sunday.
-
-        0 -> "0" ("Not specified" translation key), otherwise comma-separated localized
-        short weekday names.
-        """
-        if value is None or value == "":
-            return None
-        try:
-            mask = int(float(value))
-        except ValueError, TypeError:
-            try:
-                mask = int(str(value).strip())
-            except ValueError, TypeError:
-                return None
-
-        if mask == 0:
-            return "0"
-
-        # Localize with the Home Assistant language; a reference Monday maps the weekday offsets.
-        ref_monday = datetime(2024, 1, 1)
-        try:
-            locale = getattr(self.hass.config, "language", None)
-        except AttributeError:
-            locale = None
-
-        parts: list[str] = []
-        for idx in range(7):
-            if mask & (1 << idx):
-                day = ref_monday + timedelta(days=idx)
-                try:
-                    name = format_datetime(day, "EEE", locale=locale)
-                except ValueError, KeyError, AttributeError, TypeError:
-                    # Fallback to system short name if Babel/localization fails
-                    name = day.strftime("%a")
-                parts.append(name)
-        return ",".join(parts)
-
-    def _value_sta(self, status: dict[str, Any], value: Any) -> Any:
-        """Status (getSTA): map the Polish status strings to translation keys.
-
-        Translation placeholders are not supported for entity states in the frontend (only
-        for names/labels), see https://github.com/home-assistant/frontend/issues/29064, so
-        the placeholder values are only logged.
-        """
-        # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer (0=Standby);
-        # check for None explicitly so a genuine 0 is kept.
-        raw = str(value) if value is not None else ""
-        _LOGGER.debug(
-            "getSTA entity=%s device_id=%s raw=%s", self.entity_id, self._device_id, raw
-        )
-
-        m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
-        if m_match:
-            mapped = str(
-                _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
-                    "Płukanie regenerantem", "status_regenerant_rinse"
-                )
-            )
-            _LOGGER.debug(
-                "getSTA mapped=%s placeholders=%s",
-                mapped,
-                {"resistance_value": str(m_match.group(1) or "")},
-            )
-            return mapped
-
-        m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
-        if m2_match:
-            mapped = str(
-                _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
-                    "Płukanie rapide", "status_fast_rinse"
-                )
-            )
-            _LOGGER.debug(
-                "getSTA mapped=%s placeholders=%s",
-                mapped,
-                {"rinse_round": str(m2_match.group(1) or "")},
-            )
-            return mapped
-
-        # Fallback: use the raw string as mapping key
-        mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(raw, raw))
-        _LOGGER.debug("getSTA mapped=%s", mapped)
-        return mapped
-
-    def _value_t(self, status: dict[str, Any], value: Any) -> Any:
-        """getT1 / getT2: raw value -> display value."""
-        return self._map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
-
-    def _value_ul(self, status: dict[str, Any], value: Any) -> Any:
-        """getUL: raw value -> display value."""
-        return self._map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
-
-    def _value_crs(self, status: dict[str, Any], value: Any) -> Any:
-        """Cartridge size (getCRS): raw value -> liters."""
-        if value is None or value == "":
-            return None
-        try:
-            raw = int(float(value))
-        except ValueError, TypeError:
-            return None
-        return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
-
-    def _value_crt(self, status: dict[str, Any], value: Any) -> Any:
-        """Cartridge type (getCRT): empty means "no cartridge"; translation keys cannot be "", so "none"."""
-        if value is None or value == "":
-            return "none"
-        return str(value)
-
-    def _value_rcd(self, status: dict[str, Any], value: Any) -> Any:
-        """Filling period (getRCD): empty means "undefined"; translation keys cannot be ""."""
-        if value is None or value == "":
-            return "undefined"
-        return str(value)
-
-    def _value_whu(self, status: dict[str, Any], value: Any) -> Any:
-        """Water hardness unit (getWHU): raw value -> unit."""
-        if isinstance(value, int | float):
-            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-        if isinstance(value, str):
-            try:
-                return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-            except ValueError, TypeError:
-                return None
-        return None
-
-    _SYR_CONNECT_SENSOR_VALUE_HANDLERS: dict[
-        str,
-        Callable[
-            [SyrConnectSensor, dict[str, Any], Any], str | int | float | datetime | None
-        ],
-    ] = {
-        "getAB": _value_ab,
-        "getALA": _value_ala,
-        "getALM": _value_alm,
-        "getAVO": _value_avo,
-        "getBAR": _value_bar,
-        "getBAR2": _value_bar,
-        "getBAT": _value_bat,
-        "getCRS": _value_crs,
-        "getCRT": _value_crt,
-        "getDBD": _value_dbd,
-        "getIWH": _value_iwh,
-        "getLAR": _value_lar,
-        "getLE": _value_le,
-        "getLNG": _value_lng,
-        "getNET": _value_net,
-        "getNOT": _value_not,
-        "getRCD": _value_rcd,
-        "getRPW": _value_rpw,
-        "getRTM": _value_rtm,
-        "getSTA": _value_sta,
-        "getT1": _value_t,
-        "getT2": _value_t,
-        "getUL": _value_ul,
-        "getWHU": _value_whu,
-        "getWRN": _value_wrn,
-    }
 
 
 class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
