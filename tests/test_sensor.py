@@ -69,6 +69,14 @@ def test_sensor_descriptions_have_unique_keys() -> None:
     assert set(keys) == _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
 
 
+def test_sensor_descriptions_keep_as_string_without_value_fn() -> None:
+    """keep_as_string has no effect next to a value_fn, so the two are never combined."""
+    combined = [
+        d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.keep_as_string and d.value_fn
+    ]
+    assert combined == []
+
+
 def test_filling_status_sensor_metadata() -> None:
     """CFT and CFV expose their documented units as measurements."""
     assert {"getCFT", "getCFV"} <= _SYR_CONNECT_SENSOR_SUPPORTED_KEYS

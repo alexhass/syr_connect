@@ -400,7 +400,8 @@ def _value_vol(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 class SyrConnectSensorEntityDescription(SensorEntityDescription):
     """Describes a SYR Connect sensor; `key` is the status key (e.g. "getFLO")."""
 
-    # Return the value as string instead of converting it to a number (version, serial, MAC, ...)
+    # Return the value as string instead of converting it to a number (version, serial, MAC, ...);
+    # not combined with value_fn, which computes the value itself
     keep_as_string: bool = False
     # Scale a numeric value before rounding, e.g. 1/10 °C -> °C (divide_by=10)
     divide_by: int = 1
@@ -585,7 +586,6 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        keep_as_string=True,
         value_fn=_value_whu,
     ),
     # --- Water Consumption & Volume ---
@@ -773,7 +773,6 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getRPW",  # Regeneration permitted weekdays (bitmask)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        keep_as_string=True,
         value_fn=_value_rpw,
     ),
     SyrConnectSensorEntityDescription(
