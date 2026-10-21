@@ -133,18 +133,15 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         coordinator: SyrConnectDataUpdateCoordinator,
         device_id: str,
         device_name: str,
-        sensor_key: str | None = None,
     ) -> None:
-        """Initialize the valve entity.
+        """Initialize the valve entity for the shut-off valve (getAB).
 
         Args:
             coordinator: Data update coordinator
             device_id: Device ID (serial number)
             device_name: Device display name
-            sensor_key: Sensor key (e.g., 'getBUZ')
         """
-        # support legacy callers that omit sensor_key
-        self._sensor_key = sensor_key or "getAB"
+        self._sensor_key = "getAB"
         super().__init__(coordinator, device_id, device_name, "valve", self._sensor_key)
         self.entity_description = _SYR_CONNECT_VALVE_DESCRIPTIONS[self._sensor_key]
 

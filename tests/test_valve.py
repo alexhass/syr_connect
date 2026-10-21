@@ -974,29 +974,16 @@ async def test_async_setup_entry_boolean_and_boolean_string(
     assert len(entities) == 4
 
 
-async def test_valve_initialization_with_sensor_key(hass: HomeAssistant) -> None:
-    """Test valve initialization with explicit sensor_key parameter."""
-    data = {"devices": [{"id": "sk1", "name": "SK1", "status": {}}]}
-    coordinator = _build_coordinator(hass, data)
-
-    # Create valve with explicit sensor_key
-    valve = SyrConnectValve(coordinator, "sk1", "SK1", sensor_key="getAB")
-
-    assert valve._sensor_key == "getAB"
-    assert valve.unique_id == "sk1_getAB"
-    assert valve.translation_key == "getab"
-
-
-async def test_valve_initialization_default_sensor_key(hass: HomeAssistant) -> None:
-    """Test valve initialization defaults to 'getAB' sensor_key."""
+async def test_valve_initialization_uses_getab(hass: HomeAssistant) -> None:
+    """The valve is always the shut-off valve getAB."""
     data = {"devices": [{"id": "dsk", "name": "DSK", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
 
-    # Create valve without sensor_key (should default to getAB)
     valve = SyrConnectValve(coordinator, "dsk", "DSK")
 
     assert valve._sensor_key == "getAB"
     assert valve.unique_id == "dsk_getAB"
+    assert valve.translation_key == "getab"
 
 
 async def test_async_open_close_with_native_boolean_status(hass: HomeAssistant) -> None:
