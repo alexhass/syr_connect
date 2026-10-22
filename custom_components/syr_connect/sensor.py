@@ -164,7 +164,7 @@ def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if sensor.native_unit_of_measurement == PERCENTAGE:
         try:
             return int(float(str(value).strip()))
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return None
     return get_sensor_bat_value(value)
 
@@ -271,7 +271,7 @@ def _value_rpw(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         return None
     try:
         mask = int(float(value))
-    except ValueError, TypeError:
+    except ValueError, TypeError, OverflowError:
         try:
             mask = int(str(value).strip())
         except ValueError, TypeError:
@@ -362,7 +362,7 @@ def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         return None
     try:
         raw = int(float(value))
-    except ValueError, TypeError:
+    except ValueError, TypeError, OverflowError:
         return None
     return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
 

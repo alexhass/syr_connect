@@ -507,6 +507,42 @@ async def test_async_setup_entry_skips_invalid_values(hass: HomeAssistant) -> No
     add_entities.assert_not_called()
 
 
+async def test_async_setup_entry_skips_infinite_getab(hass: HomeAssistant) -> None:
+    """An infinite getAB (OverflowError in int()) creates no valve instead of failing."""
+    data = {
+        "devices": [
+            {
+                "id": "inf",
+                "name": "Inf",
+                "project_id": "p",
+                "status": {"getAB": "inf"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    add_entities.assert_not_called()
+
+
+async def test_infinite_getvlv_returns_none(hass: HomeAssistant) -> None:
+    """An infinite getVLV (OverflowError in int()) gives no opening/closing state."""
+    data = {
+        "devices": [
+            {"id": "v1", "name": "V1", "status": {"getVLV": "inf", "getAB": "1"}}
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    valve = SyrConnectValve(coordinator, "v1", "V1")
+
+    assert valve.is_opening is None
+    assert valve.is_closing is None
+
+
 async def test_async_open_close_with_boolean_string_status(hass: HomeAssistant) -> None:
     """When device uses boolean-string getAB, setAB should use 'true'/'false'."""
     data = {"devices": [{"id": "b1", "name": "B1", "status": {"getAB": "true"}}]}

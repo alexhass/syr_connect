@@ -287,7 +287,7 @@ def _is_integer(value: Any) -> bool:
         return False
     try:
         int(float(value))
-    except ValueError, TypeError:
+    except ValueError, TypeError, OverflowError:
         return False
     return True
 
@@ -843,7 +843,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             for opt in self._options:
                 if opt.split(" ", 1)[0] == label:
                     return opt
-        except ValueError, TypeError, AttributeError:
+        except ValueError, TypeError, AttributeError, OverflowError:
             return None
         else:
             return label
@@ -888,7 +888,7 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
     def _unit_label(self) -> str:
         try:
             whu = int(float(self._status.get("getWHU")))  # type: ignore[arg-type]
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return ""
         return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
 
@@ -966,7 +966,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
                 if opt.startswith(f"{num}"):
                     return opt
             return str(num)
-        except ValueError, TypeError, AttributeError:
+        except ValueError, TypeError, AttributeError, OverflowError:
             return None
 
     @override
@@ -1054,7 +1054,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
             return None
         try:
             num = int(float(val))
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return None
         for opt, mapped in self._options_map.items():
             if mapped == num:
@@ -1149,7 +1149,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
             return None
         try:
             idx = int(float(val))
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return None
         return status.get(f"getPN{idx}")
 

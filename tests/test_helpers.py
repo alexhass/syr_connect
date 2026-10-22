@@ -1716,6 +1716,14 @@ def test_is_value_true_str_numeric_parse() -> None:
     assert is_sensor_visible({"getPA1": [1, 2]}, "getPV1", "1") is False
 
 
+def test_is_value_true_infinity_returns_false() -> None:
+    """Infinity cannot be converted to int (OverflowError) and counts as not true."""
+    assert helpers.is_value_true(float("inf")) is False
+    assert helpers.is_value_true(float("-inf")) is False
+    assert helpers.is_value_true("inf") is False
+    assert helpers.is_value_true(" -Infinity ") is False
+
+
 # ---------------------------------------------------------------------------
 # Lines 297-298 — get_sensor_avo_value: mL-pattern except branch
 # ---------------------------------------------------------------------------
@@ -2235,3 +2243,11 @@ def test_is_device_offline(dst, expected) -> None:
 def test_host_has_port(host, expected) -> None:
     """A trailing :<port> is detected; plain IPv6 addresses ending in digits are not hosts with port."""
     assert helpers.host_has_port(host) is expected
+
+
+def test_helpers_infinite_values_count_as_invalid() -> None:
+    """Infinity cannot be converted to int (OverflowError) and counts as invalid."""
+    assert helpers.get_sensor_rtm_value({"getRTH": "inf", "getRTM": "30"}) is None
+    # An invalid getWHU defaults to 0
+    assert get_sensor_iwh_value({"getCND": 300, "getWHU": "inf"}) == 300 / 33
+    assert get_sensor_ab_value({"getAB": float("inf")}) is None

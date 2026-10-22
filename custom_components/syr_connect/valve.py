@@ -104,7 +104,7 @@ async def async_setup_entry(
                     or int(float(ab_value)) in (1, 2)
                 ):
                     create = True
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             create = False
 
         if create:
@@ -197,7 +197,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
             return None
         try:
             return int(float(vlv)) == 21
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return None
 
     @property
@@ -215,7 +215,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
             return None
         try:
             return int(float(vlv)) == 11
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return None
 
     async def async_open(self) -> None:

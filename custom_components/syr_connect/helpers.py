@@ -91,7 +91,7 @@ def is_value_true(val: object) -> bool:
     if isinstance(val, (int | float)):
         try:
             return int(float(val)) != 0
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return False
     if isinstance(val, str):
         sval = val.strip().lower()
@@ -101,7 +101,7 @@ def is_value_true(val: object) -> bool:
             return False
         try:
             return int(float(sval)) != 0
-        except ValueError, TypeError:
+        except ValueError, TypeError, OverflowError:
             return False
     return False
 
@@ -954,7 +954,7 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
         # Strict validation: hours 0-23, minutes 0-59
         if 0 <= h <= 23 and 0 <= m <= 59:
             return f"{h:02d}:{m:02d}"
-    except (ValueError, TypeError) as err:
+    except (ValueError, TypeError, OverflowError) as err:
         _LOGGER.debug("Failed to parse regeneration time from separate values: %s", err)
         return None
 
@@ -1015,7 +1015,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     raw_whu = status.get("getWHU")
     try:
         whu = int(float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
-    except ValueError, TypeError:
+    except ValueError, TypeError, OverflowError:
         whu = 0
     with contextlib.suppress(Exception):
         status["getWHU"] = whu
@@ -1138,7 +1138,7 @@ def _parse_ab_raw(val: Any) -> bool | None:
                     return True
                 if ival == 1:
                     return False
-    except (ValueError, TypeError, AttributeError) as err:
+    except (ValueError, TypeError, AttributeError, OverflowError) as err:
         _LOGGER.debug("Failed to parse getAB value: %s", err)
         return None
 

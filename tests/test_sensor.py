@@ -8009,3 +8009,11 @@ def test_mapped_int_sensor_invalid_value_returns_none(key: str, raw) -> None:
     sensor = SyrConnectSensor(coordinator, "dev", "Dev", key)
 
     assert sensor._compute_native_value() is None
+
+
+def test_sensor_value_fns_infinite_value_returns_none() -> None:
+    """Infinity cannot be converted to int (OverflowError) and gives no value."""
+    percentage_sensor = MagicMock(native_unit_of_measurement=PERCENTAGE)
+    assert sensor_module._value_bat(percentage_sensor, {}, "inf") is None
+    assert sensor_module._value_rpw(MagicMock(), {}, "inf") is None
+    assert sensor_module._value_crs(MagicMock(), {}, "inf") is None

@@ -4125,3 +4125,44 @@ async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_de
         "getRCP",
         "getWMP",
     }
+
+
+async def test_selects_infinite_value_counts_as_invalid(hass: HomeAssistant) -> None:
+    """Infinity cannot be converted to int (OverflowError) and gives no option."""
+    assert select_module._is_integer("inf") is False
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "status": {
+                    "getSV1": "inf",
+                    "getIWH": "20",
+                    "getWHU": "inf",
+                    "getSRO": "inf",
+                    "getMIH": "inf",
+                    "getPRF": "inf",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+
+    numeric = SyrConnectNumericSelect(
+        coordinator, "device1", "Device 1", "getSV1", 0, 25, 1
+    )
+    hardness = SyrConnectHardnessSelect(
+        coordinator, "device1", "Device 1", "getIWH", 1, 100, 1
+    )
+    rotation = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
+    discrete = SyrConnectDiscreteSelect(
+        coordinator, "device1", "Device 1", "getMIH", {"opt_one": 1}
+    )
+    prf = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert numeric.current_option is None
+    assert hardness._unit_label() == ""
+    assert rotation.current_option is None
+    assert discrete.current_option is None
+    assert prf.current_option is None
