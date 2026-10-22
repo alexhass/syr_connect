@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Échec de l'authentification auprès de SYR Connect. Veuillez reconfigurer l'intégration"
+    },
+    "button_press_failed": {
+      "message": "Impossible d'exécuter {entity} sur l'appareil {device}"
+    },
+    "coordinator_data_unavailable": {
+      "message": "Aucune donnée d'appareil disponible pour le moment. Veuillez réessayer plus tard"
+    },
+    "device_not_found": {
+      "message": "L'appareil n'est plus disponible dans SYR Connect"
+    },
+    "firmware_update_failed": {
+      "message": "Impossible de lancer la mise à jour du firmware de l'appareil {device}"
+    },
+    "invalid_option": {
+      "message": "{option} n'est pas une option valide pour {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "Un test de microfuite est déjà en cours sur l'appareil {device}"
+    },
+    "no_alarm_to_reset": {
+      "message": "L'appareil {device} n'a aucune alarme active à réinitialiser"
+    },
+    "no_notification_to_reset": {
+      "message": "L'appareil {device} n'a aucune notification active à réinitialiser"
+    },
+    "no_warning_to_reset": {
+      "message": "L'appareil {device} n'a aucun avertissement actif à réinitialiser"
+    },
+    "option_not_selectable": {
+      "message": "{option} ne peut pas être sélectionné pour {entity}"
+    },
+    "set_value_failed": {
+      "message": "Impossible de définir {entity} sur l'appareil {device}"
+    },
+    "setup_cannot_connect": {
+      "message": "Impossible de se connecter à SYR Connect"
+    },
+    "update_connection_error": {
+      "message": "La connexion à SYR Connect a échoué"
+    },
+    "update_failed": {
+      "message": "Erreur de communication avec SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "Impossible de fermer la vanne de l'appareil {device}"
+    },
+    "valve_open_failed": {
+      "message": "Impossible d'ouvrir la vanne de l'appareil {device}"
+    },
+    "valve_unknown_format": {
+      "message": "La vanne de l'appareil {device} ne peut pas être commutée car son état est inconnu"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "L'appareil SYR Connect \"{device_name}\" est actuellement hors ligne et ne peut pas être contacté. Veuillez vérifier :\n\n- L'alimentation électrique de l'appareil\n- La connexion réseau\n- L'état du service cloud SYR Connect\n\nL'appareil se reconnectera automatiquement lorsqu'il sera de nouveau en ligne.",

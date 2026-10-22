@@ -355,7 +355,7 @@ async def test_coordinator_device_not_found_error(
             patch.object(
                 hass, "async_create_task", side_effect=_consume_coro_return_task
             ),
-            pytest.raises(HomeAssistantError, match="Device unknown_device not found"),
+            pytest.raises(HomeAssistantError, match="device_not_found"),
         ):
             await coordinator.async_set_device_value("unknown_device", "setSIR", 0)
 
@@ -385,7 +385,7 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
             patch.object(
                 hass, "async_create_task", side_effect=_consume_coro_return_task
             ),
-            pytest.raises(HomeAssistantError, match="Coordinator data not available"),
+            pytest.raises(HomeAssistantError, match="coordinator_data_unavailable"),
         ):
             await coordinator.async_set_device_value("device1", "setSIR", 0)
 
@@ -780,7 +780,7 @@ async def test_coordinator_auth_error_during_login(
         coordinator.config_entry = setup_in_progress_config_entry
 
         # Should raise ConfigEntryAuthFailed
-        with pytest.raises(ConfigEntryAuthFailed, match="Authentication failed"):
+        with pytest.raises(ConfigEntryAuthFailed, match="auth_failed"):
             await coordinator.async_config_entry_first_refresh()
 
 
@@ -1195,7 +1195,7 @@ async def test_coordinator_unexpected_exception_in_update(
         coordinator.config_entry = setup_in_progress_config_entry
 
         # Should raise ConfigEntryNotReady for unexpected errors during first refresh
-        with pytest.raises(ConfigEntryNotReady, match="Error communicating with API"):
+        with pytest.raises(ConfigEntryNotReady, match="update_failed"):
             await coordinator.async_config_entry_first_refresh()
 
 

@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Falha na autenticação no SYR Connect. Reconfigure a integração"
+    },
+    "button_press_failed": {
+      "message": "Não foi possível executar {entity} no dispositivo {device}"
+    },
+    "coordinator_data_unavailable": {
+      "message": "Ainda não há dados do dispositivo. Tente novamente mais tarde"
+    },
+    "device_not_found": {
+      "message": "O dispositivo já não está disponível no SYR Connect"
+    },
+    "firmware_update_failed": {
+      "message": "Não foi possível iniciar a atualização do firmware do dispositivo {device}"
+    },
+    "invalid_option": {
+      "message": "{option} não é uma opção válida para {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "Já está a decorrer um teste de microfugas no dispositivo {device}"
+    },
+    "no_alarm_to_reset": {
+      "message": "O dispositivo {device} não tem nenhum alarme ativo para repor"
+    },
+    "no_notification_to_reset": {
+      "message": "O dispositivo {device} não tem nenhuma notificação ativa para repor"
+    },
+    "no_warning_to_reset": {
+      "message": "O dispositivo {device} não tem nenhum aviso ativo para repor"
+    },
+    "option_not_selectable": {
+      "message": "{option} não pode ser selecionado para {entity}"
+    },
+    "set_value_failed": {
+      "message": "Não foi possível definir {entity} no dispositivo {device}"
+    },
+    "setup_cannot_connect": {
+      "message": "Não é possível ligar ao SYR Connect"
+    },
+    "update_connection_error": {
+      "message": "A ligação ao SYR Connect falhou"
+    },
+    "update_failed": {
+      "message": "Erro na comunicação com o SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "Não foi possível fechar a válvula do dispositivo {device}"
+    },
+    "valve_open_failed": {
+      "message": "Não foi possível abrir a válvula do dispositivo {device}"
+    },
+    "valve_unknown_format": {
+      "message": "A válvula do dispositivo {device} não pode ser acionada porque o seu estado é desconhecido"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "O dispositivo SYR Connect \"{device_name}\" está atualmente offline e não pode ser alcançado. Verifique:\n\n- Alimentação do dispositivo\n- Conexão de rede\n- Status do serviço em nuvem SYR Connect\n\nO dispositivo reconectará automaticamente quando voltar a ficar online.",

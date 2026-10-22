@@ -28,7 +28,7 @@ from custom_components.syr_connect.select import (
 )
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 
 def _patch_sensor_description(key: str, **changes: Any) -> Any:
@@ -388,7 +388,8 @@ async def test_regeneration_select_invalid_option_format(hass: HomeAssistant) ->
     coordinator.async_set_device_value = AsyncMock()
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
-    await select.async_select_option("invalid")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("invalid")
 
     # Should not call async_set_device_value due to invalid format
     coordinator.async_set_device_value.assert_not_called()
@@ -500,7 +501,8 @@ async def test_numeric_select_invalid_option(hass: HomeAssistant) -> None:
         coordinator, "device1", "Device 1", "getSV1", 0, 25, 1
     )
 
-    await select.async_select_option("invalid")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("invalid")
 
     # Should not call async_set_device_value due to invalid option
     coordinator.async_set_device_value.assert_not_called()
@@ -1021,14 +1023,12 @@ async def test_regeneration_select_handles_coordinator_exception(
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
     # Should raise HomeAssistantError to display error in UI
-    with pytest.raises(
-        HomeAssistantError, match="Failed to set regeneration time: boom"
-    ):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await select.async_select_option("03:45")
 
 
 async def test_regeneration_select_no_commands_returns(hass: HomeAssistant) -> None:
-    """When set_sensor_rtm_value returns no commands, nothing is sent."""
+    """When set_sensor_rtm_value returns no commands, the option is rejected."""
     data = {
         "devices": [
             {
@@ -1046,8 +1046,11 @@ async def test_regeneration_select_no_commands_returns(hass: HomeAssistant) -> N
     coordinator.async_set_device_values = AsyncMock()
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
 
-    with patch(
-        "custom_components.syr_connect.select.set_sensor_rtm_value", return_value=[]
+    with (
+        patch(
+            "custom_components.syr_connect.select.set_sensor_rtm_value", return_value=[]
+        ),
+        pytest.raises(ServiceValidationError),
     ):
         await select.async_select_option("03:45")
 
@@ -1081,7 +1084,7 @@ async def test_numeric_select_handles_coordinator_exception(
     )
 
     # Should raise HomeAssistantError to display error in UI
-    with pytest.raises(HomeAssistantError, match="Failed to set getSV1"):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await select.async_select_option("10 kg")
 
 
@@ -1793,7 +1796,8 @@ async def test_numeric_select_invalid_option_with_mock(create_mock_coordinator):
     coord.async_set_device_value = AsyncMock()
 
     num = SyrConnectNumericSelect(coord, "mdev3", "Device M3", "getSV1", 0, 2, 1)
-    await num.async_select_option("bad-option")
+    with pytest.raises(ServiceValidationError):
+        await num.async_select_option("bad-option")
     coord.async_set_device_value.assert_not_awaited()
 
 
@@ -1861,7 +1865,7 @@ async def test_prf_select_handles_coordinator_exception(hass: HomeAssistant) -> 
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
 
     # Should raise HomeAssistantError to display error in UI
-    with pytest.raises(HomeAssistantError, match="Failed to set profile"):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await select.async_select_option("Profile A")
 
 
@@ -1910,7 +1914,8 @@ async def test_prf_select_profile_not_found(hass: HomeAssistant) -> None:
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
 
     # Try to select a profile that doesn't exist
-    await select.async_select_option("Profile B")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("Profile B")
 
     # Should not call async_set_device_value when profile not found
     coordinator.async_set_device_value.assert_not_called()
@@ -2267,7 +2272,8 @@ async def test_prf_select_async_select_option_with_none_pa(hass: HomeAssistant) 
 
     # Try to select Profile B (should not call because PA2 is None)
     coordinator.async_set_device_value.reset_mock()
-    await select.async_select_option("Profile B")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("Profile B")
     coordinator.async_set_device_value.assert_not_called()
 
 
@@ -2306,7 +2312,8 @@ async def test_rotation_select_invalid_and_exception(hass: HomeAssistant) -> Non
     assert select.current_option is None
 
     coordinator.async_set_device_value = AsyncMock()
-    await select.async_select_option("bad")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("bad")
     coordinator.async_set_device_value.assert_not_called()
 
     async def raiser(*args, **kwargs):
@@ -2317,7 +2324,7 @@ async def test_rotation_select_invalid_and_exception(hass: HomeAssistant) -> Non
     )
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     select = SyrConnectRotationSelect(coordinator, "device1", "Device 1")
-    with pytest.raises(HomeAssistantError, match="Failed to set getSRO"):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await select.async_select_option("90°")
 
 
@@ -2350,14 +2357,15 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
         coordinator, "device1", "Device 1", "getMIH", mapping
     )
 
-    await select.async_select_option("not_there")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("not_there")
     coordinator.async_set_device_value.assert_not_called()
 
     async def raiser(*args, **kwargs):
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
-    with pytest.raises(HomeAssistantError, match="Failed to set getMIH"):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await select.async_select_option("opt_two")
 
 
@@ -3236,7 +3244,7 @@ async def test_discrete_select_current_option_returns_none_sentinel(
 async def test_discrete_select_async_select_option_rejects_none_value(
     hass: HomeAssistant,
 ) -> None:
-    """async_select_option logs and returns for options mapped to None."""
+    """async_select_option rejects options mapped to None."""
     data = {
         "devices": [{"id": "device1", "name": "Device 1", "status": {"getCRT": "1"}}]
     }
@@ -3247,7 +3255,8 @@ async def test_discrete_select_async_select_option_rejects_none_value(
         coordinator, "device1", "Device 1", "getCRT", crt_map
     )
 
-    await select.async_select_option("none")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("none")
 
     coordinator.async_set_device_value.assert_not_called()
 
@@ -3320,7 +3329,7 @@ async def test_rmo_select_option_selection_all_modes(hass: HomeAssistant) -> Non
 
 
 async def test_rmo_select_option_selection_invalid(hass: HomeAssistant) -> None:
-    """Test that selecting an unknown RMO option does not call the coordinator."""
+    """Test that selecting an unknown RMO option is rejected."""
     data = {
         "devices": [{"id": "device1", "name": "Device 1", "status": {"getRMO": "1"}}]
     }
@@ -3331,7 +3340,8 @@ async def test_rmo_select_option_selection_invalid(hass: HomeAssistant) -> None:
         coordinator, "device1", "Device 1", "getRMO", rmo_map
     )
 
-    await select.async_select_option("99")
+    with pytest.raises(ServiceValidationError):
+        await select.async_select_option("99")
 
     coordinator.async_set_device_value.assert_not_called()
 
@@ -3352,7 +3362,7 @@ async def test_rmo_select_error_on_set(hass: HomeAssistant) -> None:
         coordinator, "device1", "Device 1", "getRMO", rmo_map
     )
 
-    with pytest.raises(HomeAssistantError, match="Failed to set getRMO"):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await select.async_select_option("2")
 
 

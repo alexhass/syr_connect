@@ -208,9 +208,7 @@ async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None
         )
         mock_coordinator_class.return_value = mock_coordinator
 
-        with pytest.raises(
-            ConfigEntryNotReady, match="Unable to connect to SYR Connect"
-        ):
+        with pytest.raises(ConfigEntryNotReady, match="setup_cannot_connect"):
             await async_setup_entry(hass, config_entry)
 
 

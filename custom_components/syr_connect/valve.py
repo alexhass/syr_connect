@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -223,7 +224,9 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         ab_cmd = build_set_ab_command(self._status, False)
         if ab_cmd is None:
             raise HomeAssistantError(
-                f"Cannot open valve {self._device_id}: unknown getAB format"
+                translation_domain=DOMAIN,
+                translation_key="valve_unknown_format",
+                translation_placeholders={"device": self._device_name},
             )
         set_key, set_val = ab_cmd
 
@@ -233,7 +236,9 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:
             _LOGGER.error("Failed to open valve %s: %s", self._device_id, err)
             raise HomeAssistantError(
-                f"Failed to open valve {self._device_id}: {err}"
+                translation_domain=DOMAIN,
+                translation_key="valve_open_failed",
+                translation_placeholders={"device": self._device_name},
             ) from err
 
     async def async_close(self) -> None:
@@ -244,7 +249,9 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         ab_cmd = build_set_ab_command(self._status, True)
         if ab_cmd is None:
             raise HomeAssistantError(
-                f"Cannot close valve {self._device_id}: unknown getAB format"
+                translation_domain=DOMAIN,
+                translation_key="valve_unknown_format",
+                translation_placeholders={"device": self._device_name},
             )
         set_key, set_val = ab_cmd
 
@@ -255,7 +262,9 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:
             _LOGGER.error("Failed to close valve %s: %s", self._device_id, err)
             raise HomeAssistantError(
-                f"Failed to close valve {self._device_id}: {err}"
+                translation_domain=DOMAIN,
+                translation_key="valve_close_failed",
+                translation_placeholders={"device": self._device_name},
             ) from err
 
     @override

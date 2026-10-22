@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Authentication with SYR Connect failed. Please reconfigure the integration"
+    },
+    "button_press_failed": {
+      "message": "Could not run {entity} on the device {device}"
+    },
+    "coordinator_data_unavailable": {
+      "message": "No device data available yet. Please try again later"
+    },
+    "device_not_found": {
+      "message": "The device is no longer available in SYR Connect"
+    },
+    "firmware_update_failed": {
+      "message": "Could not start the firmware update for the device {device}"
+    },
+    "invalid_option": {
+      "message": "{option} is not a valid option for {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "A microleakage test is already running on the device {device}"
+    },
+    "no_alarm_to_reset": {
+      "message": "The device {device} has no active alarm to reset"
+    },
+    "no_notification_to_reset": {
+      "message": "The device {device} has no active notification to reset"
+    },
+    "no_warning_to_reset": {
+      "message": "The device {device} has no active warning to reset"
+    },
+    "option_not_selectable": {
+      "message": "{option} cannot be selected for {entity}"
+    },
+    "set_value_failed": {
+      "message": "Could not set {entity} for the device {device}"
+    },
+    "setup_cannot_connect": {
+      "message": "Unable to connect to SYR Connect"
+    },
+    "update_connection_error": {
+      "message": "Connection to SYR Connect failed"
+    },
+    "update_failed": {
+      "message": "Error communicating with SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "Could not close the valve of the device {device}"
+    },
+    "valve_open_failed": {
+      "message": "Could not open the valve of the device {device}"
+    },
+    "valve_unknown_format": {
+      "message": "The valve of the device {device} cannot be switched because its state is unknown"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "The SYR Connect device \"{device_name}\" is currently offline and cannot be reached. Please check:\n\n- Device power supply\n- Network connection\n- SYR Connect cloud service status\n\nThe device will automatically reconnect when it comes back online.",

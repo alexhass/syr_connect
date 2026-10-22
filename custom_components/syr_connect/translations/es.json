@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Error de autenticación con SYR Connect. Vuelva a configurar la integración"
+    },
+    "button_press_failed": {
+      "message": "No se pudo ejecutar {entity} en el dispositivo {device}"
+    },
+    "coordinator_data_unavailable": {
+      "message": "Todavía no hay datos del dispositivo. Inténtelo de nuevo más tarde"
+    },
+    "device_not_found": {
+      "message": "El dispositivo ya no está disponible en SYR Connect"
+    },
+    "firmware_update_failed": {
+      "message": "No se pudo iniciar la actualización del firmware del dispositivo {device}"
+    },
+    "invalid_option": {
+      "message": "{option} no es una opción válida para {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "Ya se está ejecutando una prueba de microfugas en el dispositivo {device}"
+    },
+    "no_alarm_to_reset": {
+      "message": "El dispositivo {device} no tiene ninguna alarma activa que restablecer"
+    },
+    "no_notification_to_reset": {
+      "message": "El dispositivo {device} no tiene ningún aviso activo que restablecer"
+    },
+    "no_warning_to_reset": {
+      "message": "El dispositivo {device} no tiene ninguna advertencia activa que restablecer"
+    },
+    "option_not_selectable": {
+      "message": "{option} no se puede seleccionar para {entity}"
+    },
+    "set_value_failed": {
+      "message": "No se pudo establecer {entity} en el dispositivo {device}"
+    },
+    "setup_cannot_connect": {
+      "message": "No se puede conectar con SYR Connect"
+    },
+    "update_connection_error": {
+      "message": "Falló la conexión con SYR Connect"
+    },
+    "update_failed": {
+      "message": "Error al comunicarse con SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "No se pudo cerrar la válvula del dispositivo {device}"
+    },
+    "valve_open_failed": {
+      "message": "No se pudo abrir la válvula del dispositivo {device}"
+    },
+    "valve_unknown_format": {
+      "message": "La válvula del dispositivo {device} no se puede accionar porque su estado es desconocido"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "El dispositivo SYR Connect \"{device_name}\" está actualmente sin conexión y no se puede contactar. Por favor, verifique:\n\n- La alimentación eléctrica del dispositivo\n- La conexión de red\n- El estado del servicio en la nube de SYR Connect\n\nEl dispositivo se reconectará automáticamente cuando vuelva a estar en línea.",

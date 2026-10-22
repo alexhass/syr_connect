@@ -3,7 +3,6 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
-import logging
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -17,7 +16,7 @@ from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordi
 from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 
 
@@ -223,7 +222,7 @@ async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
-    with pytest.raises(HomeAssistantError, match="Failed to press button"):
+    with pytest.raises(HomeAssistantError, match="button_press_failed"):
         await button.async_press()
 
 
@@ -620,9 +619,7 @@ async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
 
     button = SyrConnectButton(coordinator, "device_reset", "Device Reset", "setALA")
 
-    with pytest.raises(
-        HomeAssistantError, match=r"No reset required for getALA on device_reset"
-    ):
+    with pytest.raises(ServiceValidationError, match="no_alarm_to_reset"):
         await button.async_press()
 
 
@@ -797,9 +794,7 @@ async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
 
     button = SyrConnectButton(coordinator, "device_not", "Device NOT", "setNOT")
 
-    with pytest.raises(
-        HomeAssistantError, match=r"No reset required for getNOT on device_not"
-    ):
+    with pytest.raises(ServiceValidationError, match="no_notification_to_reset"):
         await button.async_press()
 
 
@@ -867,9 +862,7 @@ async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
 
     button = SyrConnectButton(coordinator, "device_wrn", "Device WRN", "setWRN")
 
-    with pytest.raises(
-        HomeAssistantError, match=r"No reset required for getWRN on device_wrn"
-    ):
+    with pytest.raises(ServiceValidationError, match="no_warning_to_reset"):
         await button.async_press()
 
 
@@ -1029,7 +1022,7 @@ async def test_button_reset_ala_sentinel_values_no_reset(
         coordinator, "device_sentinel", "Device Sentinel", "setALA"
     )
 
-    with pytest.raises(HomeAssistantError, match="No reset required"):
+    with pytest.raises(ServiceValidationError, match="no_alarm_to_reset"):
         await button.async_press()
 
     coordinator.async_set_device_value.assert_not_called()
@@ -1287,12 +1280,11 @@ async def test_button_press_setdex_sends_integer_when_typ_lt_100(
 
 
 @pytest.mark.parametrize("dsv_value", ["1", 1])
-async def test_button_press_setdex_skips_when_test_already_running(
+async def test_button_press_setdex_rejected_when_test_already_running(
     hass: HomeAssistant,
-    caplog: pytest.LogCaptureFixture,
     dsv_value,
 ) -> None:
-    """The setDEX press logs a warning and is a no-op when getDSV == 1 (test already running)."""
+    """The setDEX press is rejected when getDSV == 1 (test already running)."""
     data = {
         "devices": [
             {
@@ -1308,13 +1300,10 @@ async def test_button_press_setdex_skips_when_test_already_running(
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
-    with caplog.at_level(
-        logging.WARNING, logger="custom_components.syr_connect.button"
-    ):
+    with pytest.raises(ServiceValidationError, match="microleakage_test_running"):
         await button.async_press()
 
     coordinator.async_set_device_value.assert_not_called()
-    assert "Microleakage test already running" in caplog.text
 
 
 async def test_button_press_setdex_sends_true_when_typ_absent(

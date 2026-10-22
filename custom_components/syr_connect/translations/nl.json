@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Authenticatie bij SYR Connect mislukt. Configureer de integratie opnieuw"
+    },
+    "button_press_failed": {
+      "message": "{entity} kon niet worden uitgevoerd op het apparaat {device}"
+    },
+    "coordinator_data_unavailable": {
+      "message": "Nog geen apparaatgegevens beschikbaar. Probeer het later opnieuw"
+    },
+    "device_not_found": {
+      "message": "Het apparaat is niet meer beschikbaar in SYR Connect"
+    },
+    "firmware_update_failed": {
+      "message": "De firmware-update voor het apparaat {device} kon niet worden gestart"
+    },
+    "invalid_option": {
+      "message": "{option} is geen geldige optie voor {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "Op het apparaat {device} loopt al een microlekkagetest"
+    },
+    "no_alarm_to_reset": {
+      "message": "Het apparaat {device} heeft geen actief alarm dat kan worden gereset"
+    },
+    "no_notification_to_reset": {
+      "message": "Het apparaat {device} heeft geen actieve melding die kan worden gereset"
+    },
+    "no_warning_to_reset": {
+      "message": "Het apparaat {device} heeft geen actieve waarschuwing die kan worden gereset"
+    },
+    "option_not_selectable": {
+      "message": "{option} kan niet worden gekozen voor {entity}"
+    },
+    "set_value_failed": {
+      "message": "{entity} kon niet worden ingesteld voor het apparaat {device}"
+    },
+    "setup_cannot_connect": {
+      "message": "Kan geen verbinding maken met SYR Connect"
+    },
+    "update_connection_error": {
+      "message": "Verbinding met SYR Connect mislukt"
+    },
+    "update_failed": {
+      "message": "Fout bij communicatie met SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "De klep van het apparaat {device} kon niet worden gesloten"
+    },
+    "valve_open_failed": {
+      "message": "De klep van het apparaat {device} kon niet worden geopend"
+    },
+    "valve_unknown_format": {
+      "message": "De klep van het apparaat {device} kan niet worden geschakeld omdat de status onbekend is"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "Het SYR Connect apparaat \"{device_name}\" is momenteel offline en kan niet worden bereikt. Controleer:\n\n- Voeding van het apparaat\n- Netwerkverbinding\n- Status van de SYR Connect cloudservice\n\nHet apparaat maakt automatisch opnieuw verbinding zodra het weer online is.",

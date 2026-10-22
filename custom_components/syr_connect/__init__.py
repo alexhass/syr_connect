@@ -18,6 +18,7 @@ from .const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .helpers import cleanup_removed_devices, get_default_scan_interval_for_entry
@@ -218,7 +219,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise
     except Exception as err:
         _LOGGER.error("Failed to connect to SYR Connect API: %s", err)
-        raise ConfigEntryNotReady(f"Unable to connect to SYR Connect: {err}") from err
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="setup_cannot_connect",
+        ) from err
 
     entry.runtime_data = coordinator
 

@@ -1312,7 +1312,7 @@ async def test_async_open_valve_no_data_raises(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, {"devices": []})
     coordinator.data = None  # type: ignore[assignment]  # force data to be falsy
 
-    with pytest.raises(HomeAssistantError, match="Coordinator data not available"):
+    with pytest.raises(HomeAssistantError, match="coordinator_data_unavailable"):
         await coordinator.async_open_valve("dev_x", "setAB", 1)
 
 
@@ -1325,7 +1325,7 @@ async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> No
     }
     coordinator = _build_coordinator(hass, data)
 
-    with pytest.raises(HomeAssistantError, match="Device missing_device not found"):
+    with pytest.raises(HomeAssistantError, match="device_not_found"):
         await coordinator.async_open_valve("missing_device", "setAB", 1)
 
 

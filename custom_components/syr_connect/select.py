@@ -8,7 +8,7 @@ from typing import Any, override
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -28,6 +28,7 @@ from .const import (
     _SYR_CONNECT_SELECT_WMP_MAP,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
+    DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -710,12 +711,14 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         coordinator = self.coordinator
         commands = set_sensor_rtm_value(self._status, option)
         if not commands:
-            _LOGGER.error(
-                "Invalid time option selected for device %s: %s",
-                self._device_id,
-                option,
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
             )
-            return
 
         try:
             # setRTH + setRTM in one call: with the XML API a single request, so the time
@@ -735,7 +738,14 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
                 self._device_id,
                 err,
             )
-            raise HomeAssistantError(f"Failed to set regeneration time: {err}") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
+            ) from err
 
 
 class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
@@ -856,8 +866,14 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             token = str(option).split()[0]
             val = round(float(token) * self._scale)
         except (IndexError, OverflowError, ValueError) as err:
-            _LOGGER.error("Invalid option for %s: %s", self._sensor_key, err)
-            return
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
+            ) from err
 
         coordinator = self.coordinator
         # key for setting: remove leading 'get' and prefix with 'set'
@@ -878,7 +894,12 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
             raise HomeAssistantError(
-                f"Failed to set {self._sensor_key}: {err}"
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
             ) from err
 
 
@@ -976,8 +997,14 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
             token = str(option).rstrip("°").strip()
             val = int(token)
         except ValueError as err:
-            _LOGGER.error("Invalid option for getSRO: %s", err)
-            return
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
+            ) from err
 
         coordinator = self.coordinator
         set_key = "setSRO"
@@ -993,7 +1020,14 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
             _LOGGER.error(
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
-            raise HomeAssistantError(f"Failed to set getSRO: {err}") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
+            ) from err
 
 
 class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
@@ -1065,16 +1099,24 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Write the selected option to the device."""
         if option not in self._options_map:
-            _LOGGER.error("Invalid option for %s: %s", self._sensor_key, option)
-            return
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
+            )
         val = self._options_map[option]
         if val is None:
-            _LOGGER.error(
-                "Option %s for %s has no underlying raw value and cannot be selected",
-                option,
-                self._sensor_key,
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="option_not_selectable",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
             )
-            return
         coordinator = self.coordinator
         set_key = f"set{self._sensor_key[3:]}"
         try:
@@ -1093,7 +1135,12 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
             raise HomeAssistantError(
-                f"Failed to set {self._sensor_key}: {err}"
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
             ) from err
 
 
@@ -1170,10 +1217,14 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
                 break
 
         if selected_idx is None:
-            _LOGGER.error(
-                "Selected profile not found for device %s: %s", self._device_id, option
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
             )
-            return
 
         try:
             await coordinator.async_set_device_value(
@@ -1186,4 +1237,11 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
             )
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             _LOGGER.error("Failed to set PRF for device %s: %s", self._device_id, err)
-            raise HomeAssistantError(f"Failed to set profile: {err}") from err
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
+            ) from err

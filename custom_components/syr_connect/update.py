@@ -16,6 +16,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -229,6 +230,11 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
             await self.coordinator.async_set_device_value(self._device_id, "setUPG", "")
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
             self._install_started = None
+            _LOGGER.error(
+                "Failed to trigger firmware update for %s: %s", self._device_id, err
+            )
             raise HomeAssistantError(
-                f"Failed to trigger firmware update: {err}"
+                translation_domain=DOMAIN,
+                translation_key="firmware_update_failed",
+                translation_placeholders={"device": self._device_name},
             ) from err

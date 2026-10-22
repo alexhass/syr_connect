@@ -58,6 +58,19 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         )
 
     @property
+    def _entity_name(self) -> str:
+        """Return the entity name for exception messages.
+
+        The translated name once the entity is added to Home Assistant, otherwise its
+        translation key.
+        """
+        if self.platform is not None:
+            name = self.name
+            if isinstance(name, str):
+                return name
+        return str(self._attr_translation_key)
+
+    @property
     def _device(self) -> SyrConnectDevice | None:
         """Return this entity's device from the coordinator data, or None if it is missing."""
         return get_device(self.coordinator.data, self._device_id)

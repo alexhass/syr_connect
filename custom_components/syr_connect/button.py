@@ -26,12 +26,12 @@ from typing import cast, override
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api_json import SyrConnectJsonAPI
-from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
+from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -237,6 +237,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         model signature flags alarm_style_alm and alarm_clear_via_set.
 
         Raises:
+            ServiceValidationError: If a microleakage test is already running
             HomeAssistantError: If the button press fails or no reset is required
         """
         # Avoid accessing possibly unset internal name attribute; use translation key or unique id
@@ -254,11 +255,11 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
             if self._command == "setDEX":
                 raw_dsv = status.get("getDSV")
                 if str(raw_dsv).strip() == "1":
-                    _LOGGER.warning(
-                        "Microleakage test already running on %s, skipping setDEX",
-                        self._device_id,
+                    raise ServiceValidationError(
+                        translation_domain=DOMAIN,
+                        translation_key="microleakage_test_running",
+                        translation_placeholders={"device": self._device_name},
                     )
-                    return
                 # Determine value encoding from getTYP (JSON devices only).
                 typ = status.get("getTYP")
                 try:
@@ -321,8 +322,10 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                         or str(raw).strip().upper()
                         in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
                     ):
-                        raise HomeAssistantError(
-                            f"No reset required for {get_key} on {self._device_id}"
+                        raise ServiceValidationError(
+                            translation_domain=DOMAIN,
+                            translation_key="no_alarm_to_reset",
+                            translation_placeholders={"device": self._device_name},
                         )
 
                     if alarm_clear_via_set:
@@ -358,8 +361,14 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     or str(raw).strip().upper()
                     in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
                 ):
-                    raise HomeAssistantError(
-                        f"No reset required for {get_key} on {self._device_id}"
+                    raise ServiceValidationError(
+                        translation_domain=DOMAIN,
+                        translation_key=(
+                            "no_notification_to_reset"
+                            if get_key == "getNOT"
+                            else "no_warning_to_reset"
+                        ),
+                        translation_placeholders={"device": self._device_name},
                     )
 
                 reset_value: int | str = (
@@ -370,4 +379,14 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                 )
                 return
         except (SyrConnectError, ValueError, TypeError, KeyError) as err:
-            raise HomeAssistantError(f"Failed to press button: {err}") from err
+            _LOGGER.error(
+                "Failed to press %s on %s: %s", self._command, self._device_id, err
+            )
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="button_press_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
+            ) from err

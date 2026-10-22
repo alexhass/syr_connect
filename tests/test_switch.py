@@ -337,7 +337,7 @@ async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
     # Icon comes from icons.json via the translation key, not from the entity
     assert sw.icon is None
 
-    with pytest.raises(HomeAssistantError, match="Failed to set getBUZ: no answer"):
+    with pytest.raises(HomeAssistantError, match="set_value_failed"):
         await sw.async_turn_on()
     mock_coordinator.async_set_device_value.assert_awaited_once_with(
         "SN300", "setBUZ", "1"

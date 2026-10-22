@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Uwierzytelnianie w SYR Connect nie powiodło się. Skonfiguruj integrację ponownie"
+    },
+    "button_press_failed": {
+      "message": "Nie udało się wykonać {entity} na urządzeniu {device}"
+    },
+    "coordinator_data_unavailable": {
+      "message": "Brak jeszcze danych urządzenia. Spróbuj ponownie później"
+    },
+    "device_not_found": {
+      "message": "Urządzenie nie jest już dostępne w SYR Connect"
+    },
+    "firmware_update_failed": {
+      "message": "Nie udało się uruchomić aktualizacji oprogramowania urządzenia {device}"
+    },
+    "invalid_option": {
+      "message": "{option} nie jest prawidłową opcją dla {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "Na urządzeniu {device} trwa już test mikrowycieków"
+    },
+    "no_alarm_to_reset": {
+      "message": "Urządzenie {device} nie ma aktywnego alarmu do zresetowania"
+    },
+    "no_notification_to_reset": {
+      "message": "Urządzenie {device} nie ma aktywnego powiadomienia do zresetowania"
+    },
+    "no_warning_to_reset": {
+      "message": "Urządzenie {device} nie ma aktywnego ostrzeżenia do zresetowania"
+    },
+    "option_not_selectable": {
+      "message": "Nie można wybrać {option} dla {entity}"
+    },
+    "set_value_failed": {
+      "message": "Nie udało się ustawić {entity} na urządzeniu {device}"
+    },
+    "setup_cannot_connect": {
+      "message": "Nie można połączyć się z SYR Connect"
+    },
+    "update_connection_error": {
+      "message": "Połączenie z SYR Connect nie powiodło się"
+    },
+    "update_failed": {
+      "message": "Błąd komunikacji z SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "Nie udało się zamknąć zaworu urządzenia {device}"
+    },
+    "valve_open_failed": {
+      "message": "Nie udało się otworzyć zaworu urządzenia {device}"
+    },
+    "valve_unknown_format": {
+      "message": "Nie można przełączyć zaworu urządzenia {device}, ponieważ jego stan jest nieznany"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "Urządzenie SYR Connect \"{device_name}\" jest obecnie offline i nie można się z nim połączyć. Sprawdź:\n\n- Zasilanie urządzenia\n- Połączenie sieciowe\n- Status usługi chmurowej SYR Connect\n\nUrządzenie połączy się automatycznie po powrocie do trybu online.",

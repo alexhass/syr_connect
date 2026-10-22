@@ -1497,6 +1497,62 @@
       }
     }
   },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Anmeldung bei SYR Connect fehlgeschlagen. Bitte die Integration neu konfigurieren"
+    },
+    "button_press_failed": {
+      "message": "{entity} konnte auf dem Gerät {device} nicht ausgeführt werden"
+    },
+    "coordinator_data_unavailable": {
+      "message": "Noch keine Gerätedaten verfügbar. Bitte später erneut versuchen"
+    },
+    "device_not_found": {
+      "message": "Das Gerät ist in SYR Connect nicht mehr vorhanden"
+    },
+    "firmware_update_failed": {
+      "message": "Das Firmware-Update für das Gerät {device} konnte nicht gestartet werden"
+    },
+    "invalid_option": {
+      "message": "{option} ist keine gültige Option für {entity}"
+    },
+    "microleakage_test_running": {
+      "message": "Auf dem Gerät {device} läuft bereits ein Mikroleckagetest"
+    },
+    "no_alarm_to_reset": {
+      "message": "Das Gerät {device} hat keinen aktiven Alarm, der zurückgesetzt werden kann"
+    },
+    "no_notification_to_reset": {
+      "message": "Das Gerät {device} hat keinen aktiven Hinweis, der zurückgesetzt werden kann"
+    },
+    "no_warning_to_reset": {
+      "message": "Das Gerät {device} hat keine aktive Warnung, die zurückgesetzt werden kann"
+    },
+    "option_not_selectable": {
+      "message": "{option} kann für {entity} nicht gewählt werden"
+    },
+    "set_value_failed": {
+      "message": "Das Gerät {device} konnte {entity} nicht einstellen"
+    },
+    "setup_cannot_connect": {
+      "message": "Keine Verbindung zu SYR Connect möglich"
+    },
+    "update_connection_error": {
+      "message": "Verbindung zu SYR Connect fehlgeschlagen"
+    },
+    "update_failed": {
+      "message": "Fehler bei der Kommunikation mit SYR Connect"
+    },
+    "valve_close_failed": {
+      "message": "Das Ventil des Geräts {device} konnte nicht geschlossen werden"
+    },
+    "valve_open_failed": {
+      "message": "Das Ventil des Geräts {device} konnte nicht geöffnet werden"
+    },
+    "valve_unknown_format": {
+      "message": "Das Gerät {device} meldet einen unbekannten Ventilzustand, deshalb kann das Ventil nicht angesteuert werden"
+    }
+  },
   "issues": {
     "device_offline": {
       "description": "Das SYR Connect Gerät \"{device_name}\" ist derzeit offline und kann nicht erreicht werden. Bitte überprüfen Sie:\n\n- Stromversorgung des Geräts\n- Netzwerkverbindung\n- SYR Connect Cloud-Dienst Status\n\nDas Gerät wird automatisch wieder verbunden, sobald es online ist.",

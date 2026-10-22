@@ -163,7 +163,8 @@ class SyrConnectDataUpdateCoordinator(
         except SyrConnectAuthError as err:
             _LOGGER.error("Authentication failed: %s", err)
             raise ConfigEntryAuthFailed(
-                "Authentication failed. Please reconfigure the integration."
+                translation_domain=DOMAIN,
+                translation_key="auth_failed",
             ) from err
         except SyrConnectConnectionError as err:
             # Temporary failures happen (cloud outage, maintenance page, device reboot), e.g. when
@@ -179,10 +180,16 @@ class SyrConnectDataUpdateCoordinator(
                 return previous
             # First refresh: nothing to keep, setup is retried (ConfigEntryNotReady)
             _LOGGER.error("Connection failed: %s", err)
-            raise UpdateFailed(f"Connection error: {err}") from err
+            raise UpdateFailed(
+                translation_domain=DOMAIN,
+                translation_key="update_connection_error",
+            ) from err
         except Exception as err:
             _LOGGER.exception("Update failed")
-            raise UpdateFailed(f"Error communicating with API: {err}") from err
+            raise UpdateFailed(
+                translation_domain=DOMAIN,
+                translation_key="update_failed",
+            ) from err
         else:
             return {
                 "configuration_url": self._configuration_url,
@@ -224,7 +231,8 @@ class SyrConnectDataUpdateCoordinator(
         for project_idx, result in enumerate(projects_devices):
             if isinstance(result, SyrConnectAuthError):
                 raise ConfigEntryAuthFailed(
-                    f"Authentication failed during device list poll: {result}"
+                    translation_domain=DOMAIN,
+                    translation_key="auth_failed",
                 ) from result
 
             project = self.api.projects[project_idx]
@@ -256,7 +264,8 @@ class SyrConnectDataUpdateCoordinator(
             for device_result in device_results:
                 if isinstance(device_result, SyrConnectAuthError):
                     raise ConfigEntryAuthFailed(
-                        f"Authentication failed during device status poll: {device_result}"
+                        translation_domain=DOMAIN,
+                        translation_key="auth_failed",
                     ) from device_result
                 if isinstance(device_result, Exception):
                     _LOGGER.warning("Device status fetch failed: %s", device_result)
@@ -444,11 +453,17 @@ class SyrConnectDataUpdateCoordinator(
         _LOGGER.debug("Setting device %s commands %s", device_id, commands)
 
         if not self.data:
-            raise HomeAssistantError("Coordinator data not available")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="coordinator_data_unavailable",
+            )
 
         dclg = self._get_device_dclg_from_srn(device_id)
         if dclg is None:
-            raise HomeAssistantError(f"Device {device_id} not found")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="device_not_found",
+            )
 
         # Optimistically update the in-memory coordinator data so entities show
         # the new values immediately, then attempt to set them via the API.
@@ -571,11 +586,17 @@ class SyrConnectDataUpdateCoordinator(
             HomeAssistantError: If the API call fails
         """
         if not self.data:
-            raise HomeAssistantError("Coordinator data not available")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="coordinator_data_unavailable",
+            )
 
         dclg = self._get_device_dclg_from_srn(device_id)
         if dclg is None:
-            raise HomeAssistantError(f"Device {device_id} not found")
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="device_not_found",
+            )
 
         device = get_device(self.data, device_id)
         status: dict = (device.get("status") or {}) if device is not None else {}

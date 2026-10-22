@@ -10,6 +10,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -210,6 +211,11 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
             raise HomeAssistantError(
-                f"Failed to set {self._sensor_key}: {err}"
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
             ) from err
         await self.coordinator.async_request_refresh()
