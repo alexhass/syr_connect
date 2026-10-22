@@ -7,11 +7,9 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
@@ -112,28 +110,6 @@ async def async_setup_entry(
                     device_name,
                     sensor_key,
                 )
-                # If a registry entry already exists for this unique_id,
-                # prefer the registry's entity_id to avoid creating a new
-                # entity with a "_2" suffix.
-                try:
-                    registry = er.async_get(hass)
-                    uid = getattr(entity, "_attr_unique_id", None)
-                    if uid:
-                        existing_entity_id = registry.async_get_entity_id(
-                            "switch", DOMAIN, uid
-                        )
-                        if existing_entity_id:
-                            entity.entity_id = existing_entity_id
-                            _LOGGER.debug(
-                                "Using existing registry entity_id %s for unique_id %s",
-                                existing_entity_id,
-                                uid,
-                            )
-                except Exception:
-                    _LOGGER.exception(
-                        "Failed to check entity registry for existing switch entity"
-                    )
-
                 entities.append(entity)
                 _LOGGER.debug(
                     "Appended SyrConnectBooleanSwitch for device %s (entity_id=%s, unique_id=%s)",
@@ -148,32 +124,6 @@ async def async_setup_entry(
                 )
     if entities:
         async_add_entities(entities)
-        try:
-            registry = er.async_get(hass)
-            missing = []
-            for ent in entities:
-                entity_id = getattr(ent, "entity_id", None)
-                unique_id = getattr(ent, "_attr_unique_id", None)
-                # Prefer lookup by entity_id; fall back to unique_id lookup
-                if entity_id and registry.async_get(entity_id) is None:
-                    # Try lookup by unique_id
-                    if unique_id:
-                        found = registry.async_get_entity_id(
-                            "switch", DOMAIN, unique_id
-                        )
-                        if found is None:
-                            missing.append((entity_id, unique_id))
-                    else:
-                        missing.append((entity_id, unique_id))
-            if missing:
-                _LOGGER.warning(
-                    "Some switch entities were created but are missing from the entity registry: %s",
-                    missing,
-                )
-        except Exception:
-            _LOGGER.exception(
-                "Failed to verify entity registry for created switch entities"
-            )
     else:
         _LOGGER.debug("No boolean switch entities found for any device.")
 

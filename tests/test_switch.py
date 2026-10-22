@@ -4,7 +4,6 @@
 
 import logging
 from types import MappingProxyType
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -20,7 +19,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 
 
@@ -346,178 +344,6 @@ async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
     )
     # The coordinator already restored the previous value; no refresh needed
     mock_coordinator.async_request_refresh.assert_not_awaited()
-
-
-async def test_async_setup_entry_uses_existing_registry_entity_id(
-    hass: HomeAssistant,
-) -> None:
-    """If registry already has entity for unique_id, use its entity_id."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="TestReg",
-        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
-        source="user",
-        entry_id="test_entry_reg",
-        unique_id="test_unique_id_reg",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    device = {"id": "SNREG", "name": "RegDevice", "status": {"getBUZ": True}}
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [device]}
-    config_entry.runtime_data = mock_coordinator
-
-    entities: list[Any] = []
-    _add = MagicMock(side_effect=entities.extend)
-
-    # Mock registry to return an existing entity id for the unique_id
-    mock_registry = MagicMock()
-    mock_registry.async_get_entity_id = MagicMock(return_value="switch.existing_buz")
-    mock_registry.async_get = MagicMock(return_value=object())
-
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(er, "async_get", lambda hass: mock_registry)
-        await async_setup_entry(hass, config_entry, _add)
-
-    assert len(entities) == 1
-    # entity_id should be replaced with registry's value
-    assert getattr(entities[0], "entity_id", None) == "switch.existing_buz"
-
-
-async def test_async_setup_entry_detects_missing_registry_entries(
-    hass: HomeAssistant,
-) -> None:
-    """When registry reports no entry for created entity, verification logic runs."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="TestMiss",
-        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
-        source="user",
-        entry_id="test_entry_miss",
-        unique_id="test_unique_id_miss",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    device = {"id": "SNMISS", "name": "MissDevice", "status": {"getBUZ": True}}
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [device]}
-    config_entry.runtime_data = mock_coordinator
-
-    entities: list[Any] = []
-    _add = MagicMock(side_effect=entities.extend)
-
-    # Registry that returns None for lookups -> triggers 'missing' path
-    mock_registry = MagicMock()
-    mock_registry.async_get_entity_id = MagicMock(return_value=None)
-    mock_registry.async_get = MagicMock(return_value=None)
-
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(er, "async_get", lambda hass: mock_registry)
-        await async_setup_entry(hass, config_entry, _add)
-
-    # Should have created entity and registry lookups attempted
-    assert len(entities) == 1
-    mock_registry.async_get.assert_called()
-    mock_registry.async_get_entity_id.assert_called()
-
-
-async def test_async_setup_entry_handles_registry_exceptions(
-    hass: HomeAssistant,
-) -> None:
-    """If entity registry access raises, setup should continue and add entities."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="TestErrReg",
-        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
-        source="user",
-        entry_id="test_entry_errreg",
-        unique_id="test_unique_id_errreg",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    device = {"id": "SNERR", "name": "ErrDevice", "status": {"getBUZ": True}}
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [device]}
-    config_entry.runtime_data = mock_coordinator
-
-    entities: list[Any] = []
-    _add = MagicMock(side_effect=entities.extend)
-
-    # async_get will raise to hit the exception branch
-    def _raise(_h):
-        raise RuntimeError("registry boom")
-
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(er, "async_get", _raise)
-        await async_setup_entry(hass, config_entry, _add)
-
-    # Should still add the created entity despite registry exceptions
-    assert len(entities) == 1
-
-
-async def test_async_setup_entry_missing_registry_no_unique_id(
-    hass: HomeAssistant,
-) -> None:
-    """Line 103: entity without unique_id and not found by entity_id goes to else-missing branch."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="TestNoUID",
-        data={},
-        source="user",
-        entry_id="test_entry_nouid",
-        unique_id="test_unique_id_nouid",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    device = {"id": "SNNOUID", "name": "NoUidDevice", "status": {"getBUZ": True}}
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [device]}
-    config_entry.runtime_data = mock_coordinator
-
-    # Subclass that clears unique_id so the else-missing branch (line 103) is taken.
-
-    class _NoUniqueIdSwitch(SyrConnectBooleanSwitch):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self._attr_unique_id = None  # force unique_id to be falsy
-
-    entities: list[Any] = []
-    _add = MagicMock(side_effect=entities.extend)
-
-    # Registry returns None for every lookup so both entity_id and unique_id paths miss.
-    mock_registry = MagicMock()
-    mock_registry.async_get_entity_id = MagicMock(return_value=None)
-    mock_registry.async_get = MagicMock(return_value=None)
-
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(switch_mod, "SyrConnectBooleanSwitch", _NoUniqueIdSwitch)
-        m.setattr(er, "async_get", lambda _hass: mock_registry)
-        await async_setup_entry(hass, config_entry, _add)
-
-    # Entity was still created and added.
-    assert len(entities) == 1
-    # unique_id is None, so the else branch (line 103) was the one that appended to missing.
-    assert entities[0].unique_id is None
 
 
 async def test_set_buz_bool_current_uses_bool_value() -> None:
