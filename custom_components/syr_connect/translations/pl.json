@@ -65,7 +65,7 @@
   "entity": {
     "binary_sensor": {
       "getbuz": {
-        "name": "Buzzer przy alarmie",
+        "name": "Brzęczyk przy alarmie",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
@@ -386,7 +386,7 @@
         "state": {
           "1": "Standard",
           "2": "ECO",
-          "3": "Moc",
+          "3": "Power",
           "4": "Automatyczny"
         }
       },
@@ -400,7 +400,7 @@
         "name": "Czas regeneracji"
       },
       "getrvt": {
-        "name": "Maksymalne napełnienie"
+        "name": "Maksymalna objętość napełniania"
       },
       "getsro": {
         "name": "Orientacja wyświetlacza",
@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Objętość pojemnika na sól 1"
+        "name": "Ilość soli (pojemnik 1)"
       },
       "getsv2": {
-        "name": "Objętość pojemnika na sól 2"
+        "name": "Ilość soli (pojemnik 2)"
       },
       "getsv3": {
-        "name": "Objętość pojemnika na sól 3"
+        "name": "Ilość soli (pojemnik 3)"
       },
       "gettpr": {
         "name": "Ciśnienie docelowe"
@@ -492,7 +492,7 @@
           "alarm_safefloor_weather": "Błąd czujnika temperatury",
           "alarm_safet_absence_leakage_detected": "Wykryto wyciek w trybie nieobecności. Przekroczono objętość",
           "alarm_safet_flow_leakage_detected": "Wykryto wyciek przepływu: przepływ objętościowy > 3500 l/h",
-          "alarm_safet_flow_time_exceeded": "Przekroczono kryterium czasu przepływu.",
+          "alarm_safet_flow_time_exceeded": "Przekroczono kryterium czasu przepływu",
           "alarm_safet_leakage_volume_reached": "Wykryto wyciek w trybie obecności. Przekroczono objętość",
           "alarm_safet_microleakage_detected": "Wykryto mikroprzeciek. Przekroczono wartość graniczną",
           "alarm_safet_turbine_no_signal": "Brak sygnału turbiny",
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Pozostała pojemność żywicy 1"
+        "name": "Pozostała pojemność żywicy (zbiornik 1)"
       },
       "getcs2": {
-        "name": "Pozostała pojemność żywicy 2"
+        "name": "Pozostała pojemność żywicy (zbiornik 2)"
       },
       "getcs3": {
-        "name": "Pozostała pojemność żywicy 3"
+        "name": "Pozostała pojemność żywicy (zbiornik 3)"
       },
       "getcyn": {
         "name": "Licznik cykli regeneracji"
@@ -603,11 +603,11 @@
       "getdfm": {
         "name": "Funkcje urządzenia",
         "state": {
-          "1": "Ochrona przed przeciekiem",
+          "1": "Ochrona przed wyciekiem",
           "2": "Centrum połączeń",
           "3": "All-in-One",
-          "4": "Automatyczne płukanie wsteczne (RSA)",
-          "5": "Filtr z płukaniem wstecznym z reduktorem ciśnienia (DM) + Ochrona przed przeciekiem (LS)"
+          "4": "Automatyczne płukanie zwrotne (RSA)",
+          "5": "Filtr z płukaniem zwrotnym z reduktorem ciśnienia (DM) + ochrona przed wyciekiem (LS)"
         }
       },
       "getdgw": {
@@ -633,7 +633,7 @@
         "state": {
           "0": "Nieaktywny",
           "1": "Aktywny",
-          "2": "Przerwany – spadek ciśnienia",
+          "2": "Przerwany (spadek ciśnienia)",
           "3": "Pominięty"
         }
       },
@@ -708,7 +708,7 @@
         "name": "Ostatnia regeneracja"
       },
       "getle": {
-        "name": "Ochrona przed wyciekiem – poziom Obecny"
+        "name": "Poziom ochrony przed wyciekiem (obecny)"
       },
       "getlft": {
         "name": "Czas ostatniego uzupełnienia"
@@ -736,7 +736,7 @@
         "name": "Adres MAC"
       },
       "getmac1": {
-        "name": "Adres MAC (Wi‑Fi)"
+        "name": "Adres MAC (Wi-Fi)"
       },
       "getmac2": {
         "name": "Adres MAC (LAN)"
@@ -772,7 +772,7 @@
         "name": "Powiadomienie",
         "state": {
           "annual_maintenance": "Coroczna konserwacja",
-          "backwash_reminder_pressure": "Przypomnienie o płukaniu wstecznym sterowanym ciśnieniem",
+          "backwash_reminder_pressure": "Przypomnienie o płukaniu zwrotnym sterowanym ciśnieniem",
           "bi_annual_maintenance": "Półroczna konserwacja",
           "filter_maintenance_reminder": "Przypomnienie o konserwacji filtra",
           "filter_service_reminder": "Przypomnienie o serwisie filtra",
@@ -853,56 +853,56 @@
         }
       },
       "getpb1": {
-        "name": "Profil buzzera 1",
+        "name": "Brzęczyk (profil 1)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb2": {
-        "name": "Profil buzzera 2",
+        "name": "Brzęczyk (profil 2)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb3": {
-        "name": "Profil buzzera 3",
+        "name": "Brzęczyk (profil 3)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb4": {
-        "name": "Profil buzzera 4",
+        "name": "Brzęczyk (profil 4)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb5": {
-        "name": "Profil buzzera 5",
+        "name": "Brzęczyk (profil 5)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb6": {
-        "name": "Profil buzzera 6",
+        "name": "Brzęczyk (profil 6)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb7": {
-        "name": "Profil buzzera 7",
+        "name": "Brzęczyk (profil 7)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpb8": {
-        "name": "Profil buzzera 8",
+        "name": "Brzęczyk (profil 8)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
@@ -933,56 +933,56 @@
         "name": "Próg przepływu wycieku 8"
       },
       "getpm1": {
-        "name": "Profil testu mikroprzecieku 1",
+        "name": "Test mikroprzecieku (profil 1)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm2": {
-        "name": "Profil testu mikroprzecieku 2",
+        "name": "Test mikroprzecieku (profil 2)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm3": {
-        "name": "Profil testu mikroprzecieku 3",
+        "name": "Test mikroprzecieku (profil 3)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm4": {
-        "name": "Profil testu mikroprzecieku 4",
+        "name": "Test mikroprzecieku (profil 4)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm5": {
-        "name": "Profil testu mikroprzecieku 5",
+        "name": "Test mikroprzecieku (profil 5)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm6": {
-        "name": "Profil testu mikroprzecieku 6",
+        "name": "Test mikroprzecieku (profil 6)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm7": {
-        "name": "Profil testu mikroprzecieku 7",
+        "name": "Test mikroprzecieku (profil 7)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
         }
       },
       "getpm8": {
-        "name": "Profil testu mikroprzecieku 8",
+        "name": "Test mikroprzecieku (profil 8)",
         "state": {
           "false": "Nieaktywny",
           "true": "Aktywny"
@@ -1013,28 +1013,28 @@
         "name": "Nazwa profilu ochrony przed wyciekiem 8"
       },
       "getpr1": {
-        "name": "Czas powrotu 1 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 1)"
       },
       "getpr2": {
-        "name": "Czas powrotu 2 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 2)"
       },
       "getpr3": {
-        "name": "Czas powrotu 3 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 3)"
       },
       "getpr4": {
-        "name": "Czas powrotu 4 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 4)"
       },
       "getpr5": {
-        "name": "Czas powrotu 5 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 5)"
       },
       "getpr6": {
-        "name": "Czas powrotu 6 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 6)"
       },
       "getpr7": {
-        "name": "Czas powrotu 7 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 7)"
       },
       "getpr8": {
-        "name": "Czas powrotu 8 do profilu Obecny"
+        "name": "Czas powrotu do profilu Obecny (profil 8)"
       },
       "getprc": {
         "name": "Poziom pozostałej pojemności"
@@ -1108,56 +1108,56 @@
         "name": "Próg objętości wycieku 8"
       },
       "getpw1": {
-        "name": "Profil ostrzeżenia o wycieku 1",
+        "name": "Ostrzeżenie o wycieku (profil 1)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw2": {
-        "name": "Profil ostrzeżenia o wycieku 2",
+        "name": "Ostrzeżenie o wycieku (profil 2)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw3": {
-        "name": "Profil ostrzeżenia o wycieku 3",
+        "name": "Ostrzeżenie o wycieku (profil 3)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw4": {
-        "name": "Profil ostrzeżenia o wycieku 4",
+        "name": "Ostrzeżenie o wycieku (profil 4)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw5": {
-        "name": "Profil ostrzeżenia o wycieku 5",
+        "name": "Ostrzeżenie o wycieku (profil 5)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw6": {
-        "name": "Profil ostrzeżenia o wycieku 6",
+        "name": "Ostrzeżenie o wycieku (profil 6)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw7": {
-        "name": "Profil ostrzeżenia o wycieku 7",
+        "name": "Ostrzeżenie o wycieku (profil 7)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
       },
       "getpw8": {
-        "name": "Profil ostrzeżenia o wycieku 8",
+        "name": "Ostrzeżenie o wycieku (profil 8)",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
@@ -1186,10 +1186,10 @@
         "name": "Dozowanie soli"
       },
       "getre1": {
-        "name": "Pojemność rezerwowa butelki 1"
+        "name": "Pojemność rezerwowa (butelka 1)"
       },
       "getre2": {
-        "name": "Pojemność rezerwowa butelki 2"
+        "name": "Pojemność rezerwowa (butelka 2)"
       },
       "getres": {
         "name": "Pozostała pojemność"
@@ -1203,14 +1203,14 @@
         }
       },
       "getrg2": {
-        "name": "Regeneracja zbiornik 2",
+        "name": "Regeneracja (zbiornik 2)",
         "state": {
           "0": "Nieaktywna",
           "1": "Uruchomiona"
         }
       },
       "getrg3": {
-        "name": "Regeneracja zbiornik 3",
+        "name": "Regeneracja (zbiornik 3)",
         "state": {
           "0": "Nieaktywna",
           "1": "Uruchomiona"
@@ -1224,7 +1224,7 @@
         "state": {
           "1": "Standard",
           "2": "ECO",
-          "3": "Moc",
+          "3": "Power",
           "4": "Automatyczny"
         }
       },
@@ -1256,7 +1256,7 @@
         "name": "Czas regeneracji"
       },
       "getrvt": {
-        "name": "Maksymalne napełnienie"
+        "name": "Maksymalna objętość napełniania"
       },
       "getscr": {
         "name": "Cykle regeneracji serwisowej"
@@ -1309,13 +1309,13 @@
         "name": "Następna coroczna konserwacja"
       },
       "getss1": {
-        "name": "Stan pojemnika na sól 1"
+        "name": "Zapas soli (pojemnik 1)"
       },
       "getss2": {
-        "name": "Stan pojemnika na sól 2"
+        "name": "Zapas soli (pojemnik 2)"
       },
       "getss3": {
-        "name": "Stan pojemnika na sól 3"
+        "name": "Zapas soli (pojemnik 3)"
       },
       "getsta": {
         "name": "Status",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Objętość pojemnika na sól 1"
+        "name": "Ilość soli (pojemnik 1)"
       },
       "getsv2": {
-        "name": "Objętość pojemnika na sól 2"
+        "name": "Ilość soli (pojemnik 2)"
       },
       "getsv3": {
-        "name": "Objętość pojemnika na sól 3"
+        "name": "Ilość soli (pojemnik 3)"
       },
       "gett1": {
         "name": "Czas wycieku 1"
@@ -1367,7 +1367,7 @@
         "name": "Typ urządzenia"
       },
       "getul": {
-        "name": "Ochrona przed wyciekiem – poziom Nieobecny"
+        "name": "Poziom ochrony przed wyciekiem (nieobecny)"
       },
       "getver": {
         "name": "Wersja oprogramowania"
@@ -1414,13 +1414,13 @@
         }
       },
       "getwgw": {
-        "name": "Brama sieciowa (Wi‑Fi)"
+        "name": "Brama sieciowa (Wi-Fi)"
       },
       "getwhu": {
         "name": "Jednostka twardości wody"
       },
       "getwip": {
-        "name": "Adres IP (Wi‑Fi)"
+        "name": "Adres IP (Wi-Fi)"
       },
       "getwmp": {
         "name": "Interwał pomiarowy"
@@ -1432,7 +1432,7 @@
           "cartridge_almost_exhausted": "Wkład prawie wyczerpany",
           "initial_filling": "Pierwsze napełnianie",
           "leak_warning": "Ostrzeżenie o wycieku",
-          "leak_warning_time": "Czas ostrzeżenia o wycieku",
+          "leak_warning_time": "Ostrzeżenie o wycieku (czas)",
           "leak_warning_volume": "Objętość wycieku",
           "microleakage_suspected": "Podejrzenie mikroprzecieku",
           "no_batteries_detected": "Nie wykryto baterii",
@@ -1445,7 +1445,7 @@
     },
     "switch": {
       "getbuz": {
-        "name": "Buzzer przy alarmie",
+        "name": "Brzęczyk przy alarmie",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"

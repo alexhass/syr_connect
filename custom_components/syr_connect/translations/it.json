@@ -77,7 +77,7 @@
         "name": "Reimposta allarme"
       },
       "setdex": {
-        "name": "Avvia test micro-perdita"
+        "name": "Avvia test di microperdita"
       },
       "setnot": {
         "name": "Reimposta notifica"
@@ -131,9 +131,9 @@
       "getffm": {
         "name": "Tipo di filtro",
         "state": {
-          "0": "Nessun filtro",
-          "1": "Filtro a cartuccia",
-          "2": "Filtro a sabbia",
+          "0": "Sconosciuto",
+          "1": "Filtro a controlavaggio",
+          "2": "Filtro sostituibile",
           "3": "Nessun filtro"
         }
       },
@@ -342,7 +342,7 @@
         "name": "Durezza acqua addolcita"
       },
       "getprf": {
-        "name": "Profilo protezione attivo",
+        "name": "Profilo protezione perdite attivo",
         "state": {
           "1": "Presente",
           "2": "Assente"
@@ -400,7 +400,7 @@
         "name": "Ora di rigenerazione"
       },
       "getrvt": {
-        "name": "Carica massima di riempimento"
+        "name": "Volume massimo di riempimento"
       },
       "getsro": {
         "name": "Orientamento del display",
@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantità sale contenitore 1"
+        "name": "Quantità di sale (contenitore 1)"
       },
       "getsv2": {
-        "name": "Quantità sale contenitore 2"
+        "name": "Quantità di sale (contenitore 2)"
       },
       "getsv3": {
-        "name": "Quantità sale contenitore 3"
+        "name": "Quantità di sale (contenitore 3)"
       },
       "gettpr": {
         "name": "Pressione target"
@@ -492,7 +492,7 @@
           "alarm_safefloor_weather": "Guasto sensore di temperatura",
           "alarm_safet_absence_leakage_detected": "Perdita in assenza rilevata. Volume superato",
           "alarm_safet_flow_leakage_detected": "Perdita di flusso rilevata: portata volumetrica > 3500 l/h",
-          "alarm_safet_flow_time_exceeded": "Criterio di tempo di flusso superato.",
+          "alarm_safet_flow_time_exceeded": "Criterio di tempo di flusso superato",
           "alarm_safet_leakage_volume_reached": "Perdita in presenza rilevata. Volume superato",
           "alarm_safet_microleakage_detected": "Microperdita rilevata. Valore limite superato",
           "alarm_safet_turbine_no_signal": "Nessun segnale turbina",
@@ -559,7 +559,7 @@
         "name": "Nome dispositivo"
       },
       "getcnd": {
-        "name": "Conduttività"
+        "name": "Conducibilità"
       },
       "getcoa": {
         "name": "Contatore controlavaggi automatici"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Capacità residua resina 1"
+        "name": "Capacità residua della resina (serbatoio 1)"
       },
       "getcs2": {
-        "name": "Capacità residua resina 2"
+        "name": "Capacità residua della resina (serbatoio 2)"
       },
       "getcs3": {
-        "name": "Capacità residua resina 3"
+        "name": "Capacità residua della resina (serbatoio 3)"
       },
       "getcyn": {
         "name": "Contatore cicli di rigenerazione"
@@ -629,11 +629,11 @@
         }
       },
       "getdsv": {
-        "name": "Test di microperdite",
+        "name": "Test di microperdita",
         "state": {
           "0": "Inattivo",
           "1": "Attivo",
-          "2": "Annullato - perdita di pressione",
+          "2": "Annullato (perdita di pressione)",
           "3": "Saltato"
         }
       },
@@ -672,9 +672,9 @@
       "getffm": {
         "name": "Tipo di filtro",
         "state": {
-          "0": "Nessun filtro",
-          "1": "Filtro a cartuccia",
-          "2": "Filtro a sabbia",
+          "0": "Sconosciuto",
+          "1": "Filtro a controlavaggio",
+          "2": "Filtro sostituibile",
           "3": "Nessun filtro"
         }
       },
@@ -708,7 +708,7 @@
         "name": "Ultima rigenerazione"
       },
       "getle": {
-        "name": "Protezione perdite - Livello presente"
+        "name": "Livello di protezione perdite (presente)"
       },
       "getlft": {
         "name": "Durata ultimo riempimento"
@@ -736,7 +736,7 @@
         "name": "Indirizzo MAC"
       },
       "getmac1": {
-        "name": "Indirizzo MAC (WLAN)"
+        "name": "Indirizzo MAC (Wi-Fi)"
       },
       "getmac2": {
         "name": "Indirizzo MAC (LAN)"
@@ -853,56 +853,56 @@
         }
       },
       "getpb1": {
-        "name": "Cicalino profilo 1",
+        "name": "Cicalino (profilo 1)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb2": {
-        "name": "Cicalino profilo 2",
+        "name": "Cicalino (profilo 2)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb3": {
-        "name": "Cicalino profilo 3",
+        "name": "Cicalino (profilo 3)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb4": {
-        "name": "Cicalino profilo 4",
+        "name": "Cicalino (profilo 4)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb5": {
-        "name": "Cicalino profilo 5",
+        "name": "Cicalino (profilo 5)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb6": {
-        "name": "Cicalino profilo 6",
+        "name": "Cicalino (profilo 6)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb7": {
-        "name": "Cicalino profilo 7",
+        "name": "Cicalino (profilo 7)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpb8": {
-        "name": "Cicalino profilo 8",
+        "name": "Cicalino (profilo 8)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
@@ -933,56 +933,56 @@
         "name": "Soglia perdita flusso 8"
       },
       "getpm1": {
-        "name": "Test micro-perdita profilo 1",
+        "name": "Test di microperdita (profilo 1)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm2": {
-        "name": "Test micro-perdita profilo 2",
+        "name": "Test di microperdita (profilo 2)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm3": {
-        "name": "Test micro-perdita profilo 3",
+        "name": "Test di microperdita (profilo 3)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm4": {
-        "name": "Test micro-perdita profilo 4",
+        "name": "Test di microperdita (profilo 4)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm5": {
-        "name": "Test micro-perdita profilo 5",
+        "name": "Test di microperdita (profilo 5)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm6": {
-        "name": "Test micro-perdita profilo 6",
+        "name": "Test di microperdita (profilo 6)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm7": {
-        "name": "Test micro-perdita profilo 7",
+        "name": "Test di microperdita (profilo 7)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
         }
       },
       "getpm8": {
-        "name": "Test micro-perdita profilo 8",
+        "name": "Test di microperdita (profilo 8)",
         "state": {
           "false": "Inattivo",
           "true": "In funzione"
@@ -1013,41 +1013,41 @@
         "name": "Nome profilo 8"
       },
       "getpr1": {
-        "name": "Tempo di ritorno al profilo attivo 1"
+        "name": "Tempo di ritorno al profilo Presente (profilo 1)"
       },
       "getpr2": {
-        "name": "Tempo di ritorno al profilo attivo 2"
+        "name": "Tempo di ritorno al profilo Presente (profilo 2)"
       },
       "getpr3": {
-        "name": "Tempo di ritorno al profilo attivo 3"
+        "name": "Tempo di ritorno al profilo Presente (profilo 3)"
       },
       "getpr4": {
-        "name": "Tempo di ritorno al profilo attivo 4"
+        "name": "Tempo di ritorno al profilo Presente (profilo 4)"
       },
       "getpr5": {
-        "name": "Tempo di ritorno al profilo attivo 5"
+        "name": "Tempo di ritorno al profilo Presente (profilo 5)"
       },
       "getpr6": {
-        "name": "Tempo di ritorno al profilo attivo 6"
+        "name": "Tempo di ritorno al profilo Presente (profilo 6)"
       },
       "getpr7": {
-        "name": "Tempo di ritorno al profilo attivo 7"
+        "name": "Tempo di ritorno al profilo Presente (profilo 7)"
       },
       "getpr8": {
-        "name": "Tempo di ritorno al profilo attivo 8"
+        "name": "Tempo di ritorno al profilo Presente (profilo 8)"
       },
       "getprc": {
         "name": "Livello di capacità residua"
       },
       "getprf": {
-        "name": "Profilo protezione attivo",
+        "name": "Profilo protezione perdite attivo",
         "state": {
           "1": "Presente",
           "2": "Assente"
         }
       },
       "getprn": {
-        "name": "Profilo protezione attivo (duplicato)"
+        "name": "Profilo protezione perdite attivo (duplicato)"
       },
       "getprs": {
         "name": "Pressione"
@@ -1108,56 +1108,56 @@
         "name": "Soglia perdita volume 8"
       },
       "getpw1": {
-        "name": "Avviso perdita profilo 1",
+        "name": "Avviso perdita (profilo 1)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw2": {
-        "name": "Avviso perdita profilo 2",
+        "name": "Avviso perdita (profilo 2)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw3": {
-        "name": "Avviso perdita profilo 3",
+        "name": "Avviso perdita (profilo 3)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw4": {
-        "name": "Avviso perdita profilo 4",
+        "name": "Avviso perdita (profilo 4)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw5": {
-        "name": "Avviso perdita profilo 5",
+        "name": "Avviso perdita (profilo 5)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw6": {
-        "name": "Avviso perdita profilo 6",
+        "name": "Avviso perdita (profilo 6)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw7": {
-        "name": "Avviso perdita profilo 7",
+        "name": "Avviso perdita (profilo 7)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
         }
       },
       "getpw8": {
-        "name": "Avviso perdita profilo 8",
+        "name": "Avviso perdita (profilo 8)",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"
@@ -1186,10 +1186,10 @@
         "name": "Dosaggio sale"
       },
       "getre1": {
-        "name": "Capacità riserva bottiglia 1"
+        "name": "Capacità di riserva (bottiglia 1)"
       },
       "getre2": {
-        "name": "Capacità riserva bottiglia 2"
+        "name": "Capacità di riserva (bottiglia 2)"
       },
       "getres": {
         "name": "Capacità residua"
@@ -1256,7 +1256,7 @@
         "name": "Ora di rigenerazione"
       },
       "getrvt": {
-        "name": "Carica massima di riempimento"
+        "name": "Volume massimo di riempimento"
       },
       "getscr": {
         "name": "Cicli di rigenerazione di servizio"
@@ -1309,13 +1309,13 @@
         "name": "Prossima manutenzione annuale"
       },
       "getss1": {
-        "name": "Scorta sale contenitore 1"
+        "name": "Scorta di sale (contenitore 1)"
       },
       "getss2": {
-        "name": "Scorta sale contenitore 2"
+        "name": "Scorta di sale (contenitore 2)"
       },
       "getss3": {
-        "name": "Scorta sale contenitore 3"
+        "name": "Scorta di sale (contenitore 3)"
       },
       "getsta": {
         "name": "Stato",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantità sale contenitore 1"
+        "name": "Quantità di sale (contenitore 1)"
       },
       "getsv2": {
-        "name": "Quantità sale contenitore 2"
+        "name": "Quantità di sale (contenitore 2)"
       },
       "getsv3": {
-        "name": "Quantità sale contenitore 3"
+        "name": "Quantità di sale (contenitore 3)"
       },
       "gett1": {
         "name": "Tempo perdita 1"
@@ -1367,7 +1367,7 @@
         "name": "Tipo di dispositivo"
       },
       "getul": {
-        "name": "Protezione perdite - Livello assente"
+        "name": "Livello di protezione perdite (assente)"
       },
       "getver": {
         "name": "Versione firmware"
@@ -1385,10 +1385,10 @@
         "name": "Volume totale"
       },
       "getvps1": {
-        "name": "Nessun impulso turbina sul comando 1 da"
+        "name": "Nessun impulso della turbina sulla testa di comando 1 da"
       },
       "getvps2": {
-        "name": "Nessun impulso turbina sul comando 2 da"
+        "name": "Nessun impulso della turbina sulla testa di comando 2 da"
       },
       "getvs1": {
         "name": "Soglia volume 1"
@@ -1400,13 +1400,13 @@
         "name": "Soglia volume 3"
       },
       "getwfc": {
-        "name": "SSID Wi‑Fi"
+        "name": "SSID Wi-Fi"
       },
       "getwfr": {
-        "name": "Intensità segnale Wi‑Fi"
+        "name": "Intensità segnale Wi-Fi"
       },
       "getwfs": {
-        "name": "Stato connessione Wi‑Fi",
+        "name": "Stato connessione Wi-Fi",
         "state": {
           "0": "Non connesso",
           "1": "Connessione in corso",
@@ -1414,13 +1414,13 @@
         }
       },
       "getwgw": {
-        "name": "Gateway (WLAN)"
+        "name": "Gateway (Wi-Fi)"
       },
       "getwhu": {
         "name": "Unità durezza acqua"
       },
       "getwip": {
-        "name": "Indirizzo IP (WLAN)"
+        "name": "Indirizzo IP (Wi-Fi)"
       },
       "getwmp": {
         "name": "Intervallo di misurazione"
@@ -1432,8 +1432,8 @@
           "cartridge_almost_exhausted": "Cartuccia quasi esaurita",
           "initial_filling": "Riempimento iniziale",
           "leak_warning": "Avviso di perdita",
-          "leak_warning_time": "Avviso di perdita tempo",
-          "leak_warning_volume": "Avviso di perdita volume",
+          "leak_warning_time": "Avviso di perdita (tempo)",
+          "leak_warning_volume": "Avviso di perdita (volume)",
           "microleakage_suspected": "Sospetta microperdita",
           "no_batteries_detected": "Nessuna batteria rilevata",
           "no_warning": "Nessun avviso",

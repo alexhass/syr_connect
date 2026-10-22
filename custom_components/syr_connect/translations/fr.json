@@ -53,7 +53,7 @@
         "title": "Reconfigurer SYR Connect"
       },
       "user": {
-        "description": "Choisissez comment vous connecter à votre appareil SYR:\n\n- **Accès cloud**: Utilisez vos identifiants de l'application mobile pour accéder à tous vos appareils via le service cloud SYR. Nécessite une connexion Internet.\n\n- **Accès local**: Connectez-vous directement à un appareil sur votre réseau local en utilisant son adresse IP. Fonctionne hors ligne et offre des temps de réponse plus rapides.",
+        "description": "Choisissez comment vous connecter à votre appareil SYR :\n\n- **Accès cloud** : Utilisez vos identifiants de l'application mobile pour accéder à tous vos appareils via le service cloud SYR. Nécessite une connexion Internet.\n\n- **Accès local** : Connectez-vous directement à un appareil sur votre réseau local en utilisant son adresse IP. Fonctionne hors ligne et offre des temps de réponse plus rapides.",
         "menu_options": {
           "api_json": "Accès local",
           "api_xml": "Accès cloud"
@@ -65,7 +65,7 @@
   "entity": {
     "binary_sensor": {
       "getbuz": {
-        "name": "Buzzer en cas d'alarme",
+        "name": "Avertisseur en cas d'alarme",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
@@ -112,7 +112,7 @@
         }
       },
       "getfcd": {
-        "name": "Intervalle de contre‑lavage du filtre",
+        "name": "Intervalle de contre-lavage du filtre",
         "state": {
           "10368000": "4 mois",
           "12960000": "5 mois",
@@ -132,7 +132,7 @@
         "name": "Type de filtre",
         "state": {
           "0": "Inconnu",
-          "1": "Filtre à contre‑lavage",
+          "1": "Filtre à contre-lavage",
           "2": "Filtre remplaçable",
           "3": "Sans filtre"
         }
@@ -400,7 +400,7 @@
         "name": "Heure de régénération"
       },
       "getrvt": {
-        "name": "Charge maximale de remplissage"
+        "name": "Volume maximal de remplissage"
       },
       "getsro": {
         "name": "Orientation de l'affichage",
@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantité de sel réservoir 1"
+        "name": "Quantité de sel (réservoir 1)"
       },
       "getsv2": {
-        "name": "Quantité de sel réservoir 2"
+        "name": "Quantité de sel (réservoir 2)"
       },
       "getsv3": {
-        "name": "Quantité de sel réservoir 3"
+        "name": "Quantité de sel (réservoir 3)"
       },
       "gettpr": {
         "name": "Pression cible"
@@ -442,7 +442,7 @@
       "dst": {
         "name": "Connectivité de l'appareil",
         "state": {
-          "0": "Jamais été en ligne",
+          "0": "Jamais en ligne",
           "1": "Hors ligne",
           "2": "En ligne",
           "3": "En veille"
@@ -477,7 +477,7 @@
           "alarm_leakage_volume_approaching": "Volume de fuite proche de la limite",
           "alarm_leakage_volume_reached": "Volume de fuite atteint",
           "alarm_max_flow_rate_reached": "Débit maximal atteint",
-          "alarm_microleakage_detected": "Micro-fuite détectée",
+          "alarm_microleakage_detected": "Microfuite détectée",
           "alarm_motor_current_exceeded": "Seuil de courant moteur dépassé",
           "alarm_no_network_connection": "Défaut de connexion réseau",
           "alarm_pressure_sensor_faulty": "Capteur de pression défectueux",
@@ -490,11 +490,11 @@
           "alarm_safefloor_low_humidity": "Seuil d'humidité basse dépassé",
           "alarm_safefloor_low_temperature": "Seuil de température basse dépassé",
           "alarm_safefloor_weather": "Défaut capteur de température",
-          "alarm_safet_absence_leakage_detected": "Fuite d’absence détectée. Volume dépassé",
-          "alarm_safet_flow_leakage_detected": "Fuite de débit détectée : débit volumique > 3500 l/h",
-          "alarm_safet_flow_time_exceeded": "Critère de durée d’écoulement dépassé.",
+          "alarm_safet_absence_leakage_detected": "Fuite d'absence détectée. Volume dépassé",
+          "alarm_safet_flow_leakage_detected": "Fuite de débit détectée : débit volumique > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Critère de durée d'écoulement dépassé",
           "alarm_safet_leakage_volume_reached": "Fuite de présence détectée. Volume dépassé",
-          "alarm_safet_microleakage_detected": "Micro-fuite détectée. Valeur limite dépassée",
+          "alarm_safet_microleakage_detected": "Microfuite détectée. Valeur limite dépassée",
           "alarm_safet_turbine_no_signal": "Aucun signal de turbine",
           "alarm_safet_valve_cannot_be_operated": "La vanne ne peut pas être actionnée",
           "alarm_salt_supply_empty": "Approvisionnement en sel vide",
@@ -503,7 +503,7 @@
           "alarm_turbine_blocked": "Turbine bloquée",
           "alarm_valve_malfunction": "Défaut du mécanisme de la vanne",
           "alarm_valve_position": "Position de la vanne",
-          "error_no_information": "Erreur: aucune information disponible",
+          "error_no_information": "Erreur : aucune information disponible",
           "fault_conductance_sensor": "Capteur de conductivité défectueux",
           "no_alarm": "Aucune alarme"
         }
@@ -562,13 +562,13 @@
         "name": "Conductivité"
       },
       "getcoa": {
-        "name": "Compteur de rinçages inverses automatiques"
+        "name": "Compteur de contre-lavages automatiques"
       },
       "getcof": {
         "name": "Consommation d'eau totale"
       },
       "getcom": {
-        "name": "Compteur de rinçages inverses manuels"
+        "name": "Compteur de contre-lavages manuels"
       },
       "getcrs": {
         "name": "Taille de la cartouche"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Capacité restante de la résine 1"
+        "name": "Capacité restante de la résine (réservoir 1)"
       },
       "getcs2": {
-        "name": "Capacité restante de la résine 2"
+        "name": "Capacité restante de la résine (réservoir 2)"
       },
       "getcs3": {
-        "name": "Capacité restante de la résine 3"
+        "name": "Capacité restante de la résine (réservoir 3)"
       },
       "getcyn": {
         "name": "Compteur de cycles"
@@ -606,22 +606,22 @@
           "1": "Protection contre les fuites",
           "2": "Centre de connexions",
           "3": "All-in-One",
-          "4": "Rétrolavage automatique (RSA)",
-          "5": "Filtre à rétrolavage avec réducteur de pression (DM) + Protection contre les fuites (LS)"
+          "4": "Contre-lavage automatique (RSA)",
+          "5": "Filtre à contre-lavage avec réducteur de pression (DM) + protection contre les fuites (LS)"
         }
       },
       "getdgw": {
         "name": "Passerelle"
       },
       "getdma": {
-        "name": "Mode d'alarme de micro-fuite",
+        "name": "Mode d'alarme de microfuite",
         "state": {
           "1": "Avertissement",
           "2": "Alarme"
         }
       },
       "getdrp": {
-        "name": "Intervalle du test de micro-fuite",
+        "name": "Intervalle du test de microfuite",
         "state": {
           "1": "Quotidien",
           "2": "Hebdomadaire",
@@ -629,16 +629,16 @@
         }
       },
       "getdsv": {
-        "name": "Test de microfuites",
+        "name": "Test de microfuite",
         "state": {
           "0": "Inactif",
           "1": "Actif",
-          "2": "Annulé - chute de pression",
+          "2": "Annulé (chute de pression)",
           "3": "Ignoré"
         }
       },
       "getdtt": {
-        "name": "Temps du test de microfuites"
+        "name": "Temps du test de microfuite"
       },
       "getdwf": {
         "name": "Consommation d'eau quotidienne prévue"
@@ -650,7 +650,7 @@
         "name": "Adresse IP (LAN)"
       },
       "getfcd": {
-        "name": "Intervalle de contre‑lavage du filtre",
+        "name": "Intervalle de contre-lavage du filtre",
         "state": {
           "10368000": "4 mois",
           "12960000": "5 mois",
@@ -673,13 +673,13 @@
         "name": "Type de filtre",
         "state": {
           "0": "Inconnu",
-          "1": "Filtre à contre‑lavage",
+          "1": "Filtre à contre-lavage",
           "2": "Filtre remplaçable",
           "3": "Sans filtre"
         }
       },
       "getfir": {
-        "name": "Modèle du firmware"
+        "name": "Modèle du micrologiciel"
       },
       "getflo": {
         "name": "Débit d'eau"
@@ -708,7 +708,7 @@
         "name": "Dernière régénération"
       },
       "getle": {
-        "name": "Protection contre les fuites - Niveau présent"
+        "name": "Niveau de protection contre les fuites (présent)"
       },
       "getlft": {
         "name": "Durée du dernier remplissage"
@@ -782,7 +782,7 @@
         }
       },
       "getnps": {
-        "name": "Sans impulsions de turbine depuis"
+        "name": "Aucune impulsion de turbine depuis"
       },
       "getnpt": {
         "name": "Temps avant alarme capteur de débit"
@@ -853,56 +853,56 @@
         }
       },
       "getpb1": {
-        "name": "Avertisseur profil 1",
+        "name": "Avertisseur (profil 1)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb2": {
-        "name": "Avertisseur profil 2",
+        "name": "Avertisseur (profil 2)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb3": {
-        "name": "Avertisseur profil 3",
+        "name": "Avertisseur (profil 3)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb4": {
-        "name": "Avertisseur profil 4",
+        "name": "Avertisseur (profil 4)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb5": {
-        "name": "Avertisseur profil 5",
+        "name": "Avertisseur (profil 5)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb6": {
-        "name": "Avertisseur profil 6",
+        "name": "Avertisseur (profil 6)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb7": {
-        "name": "Avertisseur profil 7",
+        "name": "Avertisseur (profil 7)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpb8": {
-        "name": "Avertisseur profil 8",
+        "name": "Avertisseur (profil 8)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
@@ -933,56 +933,56 @@
         "name": "Seuil de fuite de débit 8"
       },
       "getpm1": {
-        "name": "Test micro-fuite profil 1",
+        "name": "Test de microfuite (profil 1)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm2": {
-        "name": "Test micro-fuite profil 2",
+        "name": "Test de microfuite (profil 2)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm3": {
-        "name": "Test micro-fuite profil 3",
+        "name": "Test de microfuite (profil 3)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm4": {
-        "name": "Test micro-fuite profil 4",
+        "name": "Test de microfuite (profil 4)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm5": {
-        "name": "Test micro-fuite profil 5",
+        "name": "Test de microfuite (profil 5)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm6": {
-        "name": "Test micro-fuite profil 6",
+        "name": "Test de microfuite (profil 6)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm7": {
-        "name": "Test micro-fuite profil 7",
+        "name": "Test de microfuite (profil 7)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
         }
       },
       "getpm8": {
-        "name": "Test micro-fuite profil 8",
+        "name": "Test de microfuite (profil 8)",
         "state": {
           "false": "Inactif",
           "true": "En cours"
@@ -1013,28 +1013,28 @@
         "name": "Nom du profil 8"
       },
       "getpr1": {
-        "name": "Temps de retour au profil actif 1"
+        "name": "Temps de retour au profil Présent (profil 1)"
       },
       "getpr2": {
-        "name": "Temps de retour au profil actif 2"
+        "name": "Temps de retour au profil Présent (profil 2)"
       },
       "getpr3": {
-        "name": "Temps de retour au profil actif 3"
+        "name": "Temps de retour au profil Présent (profil 3)"
       },
       "getpr4": {
-        "name": "Temps de retour au profil actif 4"
+        "name": "Temps de retour au profil Présent (profil 4)"
       },
       "getpr5": {
-        "name": "Temps de retour au profil actif 5"
+        "name": "Temps de retour au profil Présent (profil 5)"
       },
       "getpr6": {
-        "name": "Temps de retour au profil actif 6"
+        "name": "Temps de retour au profil Présent (profil 6)"
       },
       "getpr7": {
-        "name": "Temps de retour au profil actif 7"
+        "name": "Temps de retour au profil Présent (profil 7)"
       },
       "getpr8": {
-        "name": "Temps de retour au profil actif 8"
+        "name": "Temps de retour au profil Présent (profil 8)"
       },
       "getprc": {
         "name": "Niveau de capacité restante"
@@ -1108,56 +1108,56 @@
         "name": "Seuil de fuite de volume 8"
       },
       "getpw1": {
-        "name": "Alerte de fuite profil 1",
+        "name": "Alerte de fuite (profil 1)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw2": {
-        "name": "Alerte de fuite profil 2",
+        "name": "Alerte de fuite (profil 2)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw3": {
-        "name": "Alerte de fuite profil 3",
+        "name": "Alerte de fuite (profil 3)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw4": {
-        "name": "Alerte de fuite profil 4",
+        "name": "Alerte de fuite (profil 4)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw5": {
-        "name": "Alerte de fuite profil 5",
+        "name": "Alerte de fuite (profil 5)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw6": {
-        "name": "Alerte de fuite profil 6",
+        "name": "Alerte de fuite (profil 6)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw7": {
-        "name": "Alerte de fuite profil 7",
+        "name": "Alerte de fuite (profil 7)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getpw8": {
-        "name": "Alerte de fuite profil 8",
+        "name": "Alerte de fuite (profil 8)",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
@@ -1186,10 +1186,10 @@
         "name": "Dosage du sel"
       },
       "getre1": {
-        "name": "Capacité de réserve de la bouteille 1"
+        "name": "Capacité de réserve (bouteille 1)"
       },
       "getre2": {
-        "name": "Capacité de réserve de la bouteille 2"
+        "name": "Capacité de réserve (bouteille 2)"
       },
       "getres": {
         "name": "Capacité restante"
@@ -1198,19 +1198,19 @@
         "name": "Statut de régénération",
         "state": {
           "0": "Pas de régénération",
-          "1": "Réservoir 1 régénéré",
-          "2": "Réservoir 2 régénéré"
+          "1": "Régénération du réservoir 1",
+          "2": "Régénération du réservoir 2"
         }
       },
       "getrg2": {
-        "name": "Réservoir de régénération 2",
+        "name": "Régénération (réservoir 2)",
         "state": {
           "0": "Inactif",
           "1": "En cours"
         }
       },
       "getrg3": {
-        "name": "Réservoir de régénération 3",
+        "name": "Régénération (réservoir 3)",
         "state": {
           "0": "Inactif",
           "1": "En cours"
@@ -1241,22 +1241,22 @@
         }
       },
       "getrsa": {
-        "name": "Intervalle de rinçage inverse"
+        "name": "Intervalle de contre-lavage"
       },
       "getrsd": {
-        "name": "Durée du rinçage inverse"
+        "name": "Durée du contre-lavage"
       },
       "getrse": {
-        "name": "Intervalle de rappel de rinçage inverse"
+        "name": "Intervalle de rappel de contre-lavage"
       },
       "getrti": {
         "name": "Durée totale du cycle de régénération"
       },
       "getrtm": {
-        "name": "Temps de régénération"
+        "name": "Heure de régénération"
       },
       "getrvt": {
-        "name": "Charge maximale de remplissage"
+        "name": "Volume maximal de remplissage"
       },
       "getscr": {
         "name": "Cycles de régénération de service"
@@ -1309,19 +1309,19 @@
         "name": "Prochaine maintenance annuelle"
       },
       "getss1": {
-        "name": "Stock de sel réservoir 1"
+        "name": "Stock de sel (réservoir 1)"
       },
       "getss2": {
-        "name": "Stock de sel réservoir 2"
+        "name": "Stock de sel (réservoir 2)"
       },
       "getss3": {
-        "name": "Stock de sel réservoir 3"
+        "name": "Stock de sel (réservoir 3)"
       },
       "getsta": {
         "name": "Statut",
         "state": {
           "status_automatic_filling": "Remplissage automatique",
-          "status_backwash": "Rinçage inverse",
+          "status_backwash": "Contre-lavage",
           "status_fast_rinse": "Rinçage rapide",
           "status_filling": "Remplissage",
           "status_inactive": "Inactif",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantité de sel réservoir 1"
+        "name": "Quantité de sel (réservoir 1)"
       },
       "getsv2": {
-        "name": "Quantité de sel réservoir 2"
+        "name": "Quantité de sel (réservoir 2)"
       },
       "getsv3": {
-        "name": "Quantité de sel réservoir 3"
+        "name": "Quantité de sel (réservoir 3)"
       },
       "gett1": {
         "name": "Fuite de temps 1"
@@ -1367,13 +1367,13 @@
         "name": "Type d'appareil"
       },
       "getul": {
-        "name": "Protection contre les fuites - Niveau absent"
+        "name": "Niveau de protection contre les fuites (absent)"
       },
       "getver": {
-        "name": "Version du firmware"
+        "name": "Version du micrologiciel"
       },
       "getvlv": {
-        "name": "État de vanne",
+        "name": "État de la vanne",
         "state": {
           "10": "Fermée",
           "11": "Fermeture",
@@ -1434,7 +1434,7 @@
           "leak_warning": "Avertissement de fuite",
           "leak_warning_time": "Avertissement de fuite (temps)",
           "leak_warning_volume": "Avertissement de fuite (volume)",
-          "microleakage_suspected": "Suspicion de micro-fuite",
+          "microleakage_suspected": "Suspicion de microfuite",
           "no_batteries_detected": "Aucune pile détectée",
           "no_warning": "Aucun avertissement",
           "outlet_pressure_too_high": "Pression de sortie trop élevée",
@@ -1445,7 +1445,7 @@
     },
     "switch": {
       "getbuz": {
-        "name": "Buzzer en cas d'alarme",
+        "name": "Avertisseur en cas d'alarme",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
@@ -1459,14 +1459,14 @@
         }
       },
       "getssa": {
-        "name": "Rinçage inverse automatique",
+        "name": "Contre-lavage automatique",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
       },
       "getsse": {
-        "name": "Rappel de rinçage inverse",
+        "name": "Rappel de contre-lavage",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
@@ -1487,7 +1487,7 @@
         }
       },
       "getvlv": {
-        "name": "État de vanne",
+        "name": "État de la vanne",
         "state": {
           "10": "Fermée",
           "11": "Fermeture",

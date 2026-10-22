@@ -53,7 +53,7 @@
         "title": "SYR Connect opnieuw configureren"
       },
       "user": {
-        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:\n\n- **Cloudtoegang**: Gebruik uw app-aanmeldingsgegevens om via de SYR cloudservice toegang te krijgen tot al uw apparaten. Vereist internetverbinding.\n\n- **Lokale toegang**: Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
+        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:\n\n- **Cloudtoegang**: Gebruik uw app-aanmeldingsgegevens om via de SYR-cloudservice toegang te krijgen tot al uw apparaten. Vereist een internetverbinding.\n\n- **Lokale toegang**: Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
         "menu_options": {
           "api_json": "Lokale toegang",
           "api_xml": "Cloudtoegang"
@@ -77,7 +77,7 @@
         "name": "Alarm resetten"
       },
       "setdex": {
-        "name": "Microlek-test starten"
+        "name": "Microlektest starten"
       },
       "setnot": {
         "name": "Melding resetten"
@@ -112,7 +112,7 @@
         }
       },
       "getfcd": {
-        "name": "Filterterugspoel-interval",
+        "name": "Filterterugspoelinterval",
         "state": {
           "10368000": "4 maanden",
           "12960000": "5 maanden",
@@ -400,7 +400,7 @@
         "name": "Regeneratietijd"
       },
       "getrvt": {
-        "name": "Maximale vullading"
+        "name": "Maximaal vulvolume"
       },
       "getsro": {
         "name": "Displayoriëntatie",
@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Zoutcontainervolume 1"
+        "name": "Zouthoeveelheid (container 1)"
       },
       "getsv2": {
-        "name": "Zoutcontainervolume 2"
+        "name": "Zouthoeveelheid (container 2)"
       },
       "getsv3": {
-        "name": "Zoutcontainervolume 3"
+        "name": "Zouthoeveelheid (container 3)"
       },
       "gettpr": {
         "name": "Streefdruk"
@@ -449,7 +449,7 @@
         }
       },
       "getab": {
-        "name": "Klep afsluiting",
+        "name": "Klepafsluiting",
         "state": {
           "false": "Geopend",
           "true": "Gesloten"
@@ -466,8 +466,8 @@
           "alarm_cartridge_exhausted_conductivity": "Cartridge uitgeput (geleidbaarheid)",
           "alarm_chlor_generator_fault": "Storing chloorgenerator!",
           "alarm_end_switch": "Eindschakelaar",
-          "alarm_external_sensor_leakage_cable": "Externe sensor lek (kabel)",
-          "alarm_external_sensor_leakage_radio": "Externe sensor lek (radio)",
+          "alarm_external_sensor_leakage_cable": "Lek externe sensor (kabel)",
+          "alarm_external_sensor_leakage_radio": "Lek externe sensor (radio)",
           "alarm_fill_cycles_exceeded": "Vulcycli overschreden!",
           "alarm_flow_sensor_fault": "Storing doorstroomsensor!",
           "alarm_heating_fill_time_leak": "Tijdlek vulling verwarming!",
@@ -492,7 +492,7 @@
           "alarm_safefloor_weather": "Temperatuursensorfout",
           "alarm_safet_absence_leakage_detected": "Afwezigheidslek gedetecteerd. Volume overschreden",
           "alarm_safet_flow_leakage_detected": "Stroomlek gedetecteerd: volumestroom > 3500 l/h",
-          "alarm_safet_flow_time_exceeded": "Tijdcriterium voor doorstroming overschreden.",
+          "alarm_safet_flow_time_exceeded": "Tijdcriterium voor doorstroming overschreden",
           "alarm_safet_leakage_volume_reached": "Aanwezigheidslek gedetecteerd. Volume overschreden",
           "alarm_safet_microleakage_detected": "Microlek gedetecteerd. Grenswaarde overschreden",
           "alarm_safet_turbine_no_signal": "Geen turbinesignaal",
@@ -526,7 +526,7 @@
         "name": "Laatste waarschuwingen"
       },
       "getapt": {
-        "name": "Access point time-out"
+        "name": "Time-out toegangspunt"
       },
       "getavo": {
         "name": "Huidige doorstroming"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Resterende harscapaciteit 1"
+        "name": "Resterende harscapaciteit (tank 1)"
       },
       "getcs2": {
-        "name": "Resterende harscapaciteit 2"
+        "name": "Resterende harscapaciteit (tank 2)"
       },
       "getcs3": {
-        "name": "Resterende harscapaciteit 3"
+        "name": "Resterende harscapaciteit (tank 3)"
       },
       "getcyn": {
         "name": "Regeneratiecyclusteller"
@@ -606,22 +606,22 @@
           "1": "Lekbeveiliging",
           "2": "Aansluitcentrum",
           "3": "All-in-One",
-          "4": "Automatische terugspoel (RSA)",
-          "5": "Terugspoefilter met drukregelaar (DM) + Lekbeveiliging (LS)"
+          "4": "Automatische terugspoeling (RSA)",
+          "5": "Terugspoelfilter met drukregelaar (DM) + lekbeveiliging (LS)"
         }
       },
       "getdgw": {
         "name": "Gateway"
       },
       "getdma": {
-        "name": "Microlek-alarmmodus",
+        "name": "Microlekalarmmodus",
         "state": {
           "1": "Waarschuwing",
           "2": "Alarm"
         }
       },
       "getdrp": {
-        "name": "Microlek-test interval",
+        "name": "Microlektestinterval",
         "state": {
           "1": "Dagelijks",
           "2": "Wekelijks",
@@ -629,16 +629,16 @@
         }
       },
       "getdsv": {
-        "name": "Microlek-test",
+        "name": "Microlektest",
         "state": {
           "0": "Inactief",
           "1": "Actief",
-          "2": "Afgebroken - drukval",
+          "2": "Afgebroken (drukval)",
           "3": "Overgeslagen"
         }
       },
       "getdtt": {
-        "name": "Microlek-test tijd"
+        "name": "Microlektesttijd"
       },
       "getdwf": {
         "name": "Verwacht dagelijks waterverbruik"
@@ -650,7 +650,7 @@
         "name": "IP-adres (LAN)"
       },
       "getfcd": {
-        "name": "Filterterugspoel-interval",
+        "name": "Filterterugspoelinterval",
         "state": {
           "10368000": "4 maanden",
           "12960000": "5 maanden",
@@ -708,7 +708,7 @@
         "name": "Laatste regeneratie"
       },
       "getle": {
-        "name": "Lekbescherming - Aanwezigheidsniveau"
+        "name": "Lekbeschermingsniveau (aanwezig)"
       },
       "getlft": {
         "name": "Laatste vulduur"
@@ -736,7 +736,7 @@
         "name": "MAC-adres"
       },
       "getmac1": {
-        "name": "MAC-adres (Wi‑Fi)"
+        "name": "MAC-adres (Wi-Fi)"
       },
       "getmac2": {
         "name": "MAC-adres (LAN)"
@@ -853,56 +853,56 @@
         }
       },
       "getpb1": {
-        "name": "Zoemer profiel 1",
+        "name": "Zoemer (profiel 1)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb2": {
-        "name": "Zoemer profiel 2",
+        "name": "Zoemer (profiel 2)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb3": {
-        "name": "Zoemer profiel 3",
+        "name": "Zoemer (profiel 3)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb4": {
-        "name": "Zoemer profiel 4",
+        "name": "Zoemer (profiel 4)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb5": {
-        "name": "Zoemer profiel 5",
+        "name": "Zoemer (profiel 5)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb6": {
-        "name": "Zoemer profiel 6",
+        "name": "Zoemer (profiel 6)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb7": {
-        "name": "Zoemer profiel 7",
+        "name": "Zoemer (profiel 7)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpb8": {
-        "name": "Zoemer profiel 8",
+        "name": "Zoemer (profiel 8)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
@@ -933,108 +933,108 @@
         "name": "Doorstromingslekdrempel 8"
       },
       "getpm1": {
-        "name": "Microlek-test profiel 1",
+        "name": "Microlektest (profiel 1)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm2": {
-        "name": "Microlek-test profiel 2",
+        "name": "Microlektest (profiel 2)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm3": {
-        "name": "Microlek-test profiel 3",
+        "name": "Microlektest (profiel 3)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm4": {
-        "name": "Microlek-test profiel 4",
+        "name": "Microlektest (profiel 4)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm5": {
-        "name": "Microlek-test profiel 5",
+        "name": "Microlektest (profiel 5)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm6": {
-        "name": "Microlek-test profiel 6",
+        "name": "Microlektest (profiel 6)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm7": {
-        "name": "Microlek-test profiel 7",
+        "name": "Microlektest (profiel 7)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpm8": {
-        "name": "Microlek-test profiel 8",
+        "name": "Microlektest (profiel 8)",
         "state": {
           "false": "Inactief",
           "true": "Actief"
         }
       },
       "getpn1": {
-        "name": "Lekbeschermingsprofiel naam 1"
+        "name": "Lekbeschermingsprofielnaam 1"
       },
       "getpn2": {
-        "name": "Lekbeschermingsprofiel naam 2"
+        "name": "Lekbeschermingsprofielnaam 2"
       },
       "getpn3": {
-        "name": "Lekbeschermingsprofiel naam 3"
+        "name": "Lekbeschermingsprofielnaam 3"
       },
       "getpn4": {
-        "name": "Lekbeschermingsprofiel naam 4"
+        "name": "Lekbeschermingsprofielnaam 4"
       },
       "getpn5": {
-        "name": "Lekbeschermingsprofiel naam 5"
+        "name": "Lekbeschermingsprofielnaam 5"
       },
       "getpn6": {
-        "name": "Lekbeschermingsprofiel naam 6"
+        "name": "Lekbeschermingsprofielnaam 6"
       },
       "getpn7": {
-        "name": "Lekbeschermingsprofiel naam 7"
+        "name": "Lekbeschermingsprofielnaam 7"
       },
       "getpn8": {
-        "name": "Lekbeschermingsprofiel naam 8"
+        "name": "Lekbeschermingsprofielnaam 8"
       },
       "getpr1": {
-        "name": "Terugkeertijd 1 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 1)"
       },
       "getpr2": {
-        "name": "Terugkeertijd 2 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 2)"
       },
       "getpr3": {
-        "name": "Terugkeertijd 3 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 3)"
       },
       "getpr4": {
-        "name": "Terugkeertijd 4 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 4)"
       },
       "getpr5": {
-        "name": "Terugkeertijd 5 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 5)"
       },
       "getpr6": {
-        "name": "Terugkeertijd 6 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 6)"
       },
       "getpr7": {
-        "name": "Terugkeertijd 7 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 7)"
       },
       "getpr8": {
-        "name": "Terugkeertijd 8 naar aanwezigheidsprofiel"
+        "name": "Terugkeertijd naar aanwezigheidsprofiel (profiel 8)"
       },
       "getprc": {
         "name": "Niveau resterende capaciteit"
@@ -1108,56 +1108,56 @@
         "name": "Volumelekdrempel 8"
       },
       "getpw1": {
-        "name": "Lekwaarschuwingsprofiel 1",
+        "name": "Lekwaarschuwing (profiel 1)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw2": {
-        "name": "Lekwaarschuwingsprofiel 2",
+        "name": "Lekwaarschuwing (profiel 2)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw3": {
-        "name": "Lekwaarschuwingsprofiel 3",
+        "name": "Lekwaarschuwing (profiel 3)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw4": {
-        "name": "Lekwaarschuwingsprofiel 4",
+        "name": "Lekwaarschuwing (profiel 4)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw5": {
-        "name": "Lekwaarschuwingsprofiel 5",
+        "name": "Lekwaarschuwing (profiel 5)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw6": {
-        "name": "Lekwaarschuwingsprofiel 6",
+        "name": "Lekwaarschuwing (profiel 6)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw7": {
-        "name": "Lekwaarschuwingsprofiel 7",
+        "name": "Lekwaarschuwing (profiel 7)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
       },
       "getpw8": {
-        "name": "Lekwaarschuwingsprofiel 8",
+        "name": "Lekwaarschuwing (profiel 8)",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
@@ -1186,10 +1186,10 @@
         "name": "Zoutdosering"
       },
       "getre1": {
-        "name": "Reservecapaciteit fles 1"
+        "name": "Reservecapaciteit (fles 1)"
       },
       "getre2": {
-        "name": "Reservecapaciteit fles 2"
+        "name": "Reservecapaciteit (fles 2)"
       },
       "getres": {
         "name": "Resterende capaciteit"
@@ -1256,7 +1256,7 @@
         "name": "Regeneratietijd"
       },
       "getrvt": {
-        "name": "Maximale vullading"
+        "name": "Maximaal vulvolume"
       },
       "getscr": {
         "name": "Serviceregeneratiecycli"
@@ -1309,13 +1309,13 @@
         "name": "Volgend jaarlijks onderhoud"
       },
       "getss1": {
-        "name": "Zoutcontainervoorraad 1"
+        "name": "Zoutvoorraad (container 1)"
       },
       "getss2": {
-        "name": "Zoutcontainervoorraad 2"
+        "name": "Zoutvoorraad (container 2)"
       },
       "getss3": {
-        "name": "Zoutcontainervoorraad 3"
+        "name": "Zoutvoorraad (container 3)"
       },
       "getsta": {
         "name": "Status",
@@ -1328,19 +1328,19 @@
           "status_initial_filling": "Eerste vulling",
           "status_manual_filling": "Handmatig vullen",
           "status_refill_salt": "Vul zout bij",
-          "status_regenerant_rinse": "Regenerant spoelen",
+          "status_regenerant_rinse": "Spoelen met regenerant",
           "status_slow_rinse": "Langzaam spoelen",
           "status_standby": "Stand-by"
         }
       },
       "getsv1": {
-        "name": "Zoutcontainervolume 1"
+        "name": "Zouthoeveelheid (container 1)"
       },
       "getsv2": {
-        "name": "Zoutcontainervolume 2"
+        "name": "Zouthoeveelheid (container 2)"
       },
       "getsv3": {
-        "name": "Zoutcontainervolume 3"
+        "name": "Zouthoeveelheid (container 3)"
       },
       "gett1": {
         "name": "Lektijd 1"
@@ -1367,7 +1367,7 @@
         "name": "Apparaattype"
       },
       "getul": {
-        "name": "Lekbescherming - Afwezigheidsniveau"
+        "name": "Lekbeschermingsniveau (afwezig)"
       },
       "getver": {
         "name": "Firmware-versie"
@@ -1400,13 +1400,13 @@
         "name": "Volumedrempel 3"
       },
       "getwfc": {
-        "name": "Wi-Fi SSID"
+        "name": "Wi-Fi-SSID"
       },
       "getwfr": {
-        "name": "Wi-Fi signaalsterkte"
+        "name": "Wi-Fi-signaalsterkte"
       },
       "getwfs": {
-        "name": "Wi-Fi verbindingsstatus",
+        "name": "Wi-Fi-verbindingsstatus",
         "state": {
           "0": "Niet verbonden",
           "1": "Verbinden",
@@ -1414,13 +1414,13 @@
         }
       },
       "getwgw": {
-        "name": "Gateway (Wi‑Fi)"
+        "name": "Gateway (Wi-Fi)"
       },
       "getwhu": {
         "name": "Waterhardheidseenheid"
       },
       "getwip": {
-        "name": "IP-adres (Wi‑Fi)"
+        "name": "IP-adres (Wi-Fi)"
       },
       "getwmp": {
         "name": "Meetinterval"
@@ -1432,7 +1432,7 @@
           "cartridge_almost_exhausted": "Cartridge bijna uitgeput",
           "initial_filling": "Eerste vulling",
           "leak_warning": "Lekwaarschuwing",
-          "leak_warning_time": "Lekwaarschuwingstijd",
+          "leak_warning_time": "Lekwaarschuwing (tijd)",
           "leak_warning_volume": "Lekvolume",
           "microleakage_suspected": "Vermoeden van microlek",
           "no_batteries_detected": "Geen batterijen gedetecteerd",
@@ -1480,7 +1480,7 @@
     },
     "valve": {
       "getab": {
-        "name": "Klep afsluiting",
+        "name": "Klepafsluiting",
         "state": {
           "false": "Geopend",
           "true": "Gesloten"
@@ -1555,7 +1555,7 @@
   },
   "issues": {
     "device_offline": {
-      "description": "Het SYR Connect apparaat \"{device_name}\" is momenteel offline en kan niet worden bereikt. Controleer:\n\n- Voeding van het apparaat\n- Netwerkverbinding\n- Status van de SYR Connect cloudservice\n\nHet apparaat maakt automatisch opnieuw verbinding zodra het weer online is.",
+      "description": "Het SYR Connect-apparaat \"{device_name}\" is momenteel offline en kan niet worden bereikt. Controleer:\n\n- Voeding van het apparaat\n- Netwerkverbinding\n- Status van de SYR Connect-cloudservice\n\nHet apparaat maakt automatisch opnieuw verbinding zodra het weer online is.",
       "title": "Apparaat offline: {device_name}"
     }
   },
@@ -1566,7 +1566,7 @@
           "scan_interval": "Update-interval"
         },
         "description": "Bepaalt het tijdsinterval tussen API-aanroepen.",
-        "title": "SYR Connect opties"
+        "title": "SYR Connect-opties"
       }
     }
   }

@@ -400,7 +400,7 @@
         "name": "Hora de regeneración"
       },
       "getrvt": {
-        "name": "Carga máxima de llenado"
+        "name": "Volumen máximo de llenado"
       },
       "getsro": {
         "name": "Orientación de la pantalla",
@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Cantidad de sal depósito 1"
+        "name": "Cantidad de sal (depósito 1)"
       },
       "getsv2": {
-        "name": "Cantidad de sal depósito 2"
+        "name": "Cantidad de sal (depósito 2)"
       },
       "getsv3": {
-        "name": "Cantidad de sal depósito 3"
+        "name": "Cantidad de sal (depósito 3)"
       },
       "gettpr": {
         "name": "Presión objetivo"
@@ -465,9 +465,9 @@
           "alarm_cartridge_exhausted_capacity": "Cartucho agotado (capacidad)",
           "alarm_cartridge_exhausted_conductivity": "Cartucho agotado (conductividad)",
           "alarm_chlor_generator_fault": "¡Fallo del generador de cloro!",
-          "alarm_end_switch": "Interruptor final",
-          "alarm_external_sensor_leakage_cable": "Fuga sensor externo (cable)",
-          "alarm_external_sensor_leakage_radio": "Fuga sensor externo (radio)",
+          "alarm_end_switch": "Interruptor de fin de carrera",
+          "alarm_external_sensor_leakage_cable": "Fuga en sensor externo (cable)",
+          "alarm_external_sensor_leakage_radio": "Fuga en sensor externo (radio)",
           "alarm_fill_cycles_exceeded": "¡Ciclos de llenado superados!",
           "alarm_flow_sensor_fault": "¡Fallo del sensor de caudal!",
           "alarm_heating_fill_time_leak": "¡Fuga de tiempo de llenado de calefacción!",
@@ -491,8 +491,8 @@
           "alarm_safefloor_low_temperature": "Umbral de temperatura baja superado",
           "alarm_safefloor_weather": "Fallo del sensor de temperatura",
           "alarm_safet_absence_leakage_detected": "Fuga de ausencia detectada. Volumen superado",
-          "alarm_safet_flow_leakage_detected": "Fuga de flujo detectada: Caudal > 3500 l/h",
-          "alarm_safet_flow_time_exceeded": "Criterio de tiempo de flujo superado.",
+          "alarm_safet_flow_leakage_detected": "Fuga de flujo detectada: caudal > 3500 l/h",
+          "alarm_safet_flow_time_exceeded": "Criterio de tiempo de flujo superado",
           "alarm_safet_leakage_volume_reached": "Fuga de presencia detectada. Volumen superado",
           "alarm_safet_microleakage_detected": "Microfuga detectada. Valor límite superado",
           "alarm_safet_turbine_no_signal": "Sin señal de turbina",
@@ -529,7 +529,7 @@
         "name": "Tiempo de espera del punto de acceso"
       },
       "getavo": {
-        "name": "Flujo actual"
+        "name": "Caudal actual"
       },
       "getbap": {
         "name": "Nivel de batería"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Capacidad restante de la resina 1"
+        "name": "Capacidad restante de la resina (depósito 1)"
       },
       "getcs2": {
-        "name": "Capacidad restante de la resina 2"
+        "name": "Capacidad restante de la resina (depósito 2)"
       },
       "getcs3": {
-        "name": "Capacidad restante de la resina 3"
+        "name": "Capacidad restante de la resina (depósito 3)"
       },
       "getcyn": {
         "name": "Contador de ciclos"
@@ -633,7 +633,7 @@
         "state": {
           "0": "Inactivo",
           "1": "Activo",
-          "2": "Cancelado - pérdida de presión",
+          "2": "Cancelado (pérdida de presión)",
           "3": "Omitido"
         }
       },
@@ -708,7 +708,7 @@
         "name": "Última regeneración"
       },
       "getle": {
-        "name": "Protección contra fugas - Nivel presente"
+        "name": "Nivel de protección contra fugas (presente)"
       },
       "getlft": {
         "name": "Duración del último rellenado"
@@ -772,12 +772,12 @@
         "name": "Notificación",
         "state": {
           "annual_maintenance": "Mantenimiento anual",
-          "backwash_reminder_pressure": "Recordatorio de contralavado por presión",
+          "backwash_reminder_pressure": "Recordatorio de retrolavado por presión",
           "bi_annual_maintenance": "Mantenimiento semestral",
           "filter_maintenance_reminder": "Recordatorio de mantenimiento del filtro",
           "filter_service_reminder": "Recordatorio de servicio del filtro",
-          "new_software_available": "Nueva actualización de software disponible!",
-          "new_software_installed": "Nueva actualización de software instalada!",
+          "new_software_available": "¡Nueva actualización de software disponible!",
+          "new_software_installed": "¡Nueva actualización de software instalada!",
           "no_notification": "Ninguna"
         }
       },
@@ -853,56 +853,56 @@
         }
       },
       "getpb1": {
-        "name": "Zumbador perfil 1",
+        "name": "Zumbador (perfil 1)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb2": {
-        "name": "Zumbador perfil 2",
+        "name": "Zumbador (perfil 2)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb3": {
-        "name": "Zumbador perfil 3",
+        "name": "Zumbador (perfil 3)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb4": {
-        "name": "Zumbador perfil 4",
+        "name": "Zumbador (perfil 4)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb5": {
-        "name": "Zumbador perfil 5",
+        "name": "Zumbador (perfil 5)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb6": {
-        "name": "Zumbador perfil 6",
+        "name": "Zumbador (perfil 6)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb7": {
-        "name": "Zumbador perfil 7",
+        "name": "Zumbador (perfil 7)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpb8": {
-        "name": "Zumbador perfil 8",
+        "name": "Zumbador (perfil 8)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
@@ -933,56 +933,56 @@
         "name": "Umbral de fuga de caudal 8"
       },
       "getpm1": {
-        "name": "Prueba de microfugas perfil 1",
+        "name": "Prueba de microfugas (perfil 1)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm2": {
-        "name": "Prueba de microfugas perfil 2",
+        "name": "Prueba de microfugas (perfil 2)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm3": {
-        "name": "Prueba de microfugas perfil 3",
+        "name": "Prueba de microfugas (perfil 3)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm4": {
-        "name": "Prueba de microfugas perfil 4",
+        "name": "Prueba de microfugas (perfil 4)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm5": {
-        "name": "Prueba de microfugas perfil 5",
+        "name": "Prueba de microfugas (perfil 5)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm6": {
-        "name": "Prueba de microfugas perfil 6",
+        "name": "Prueba de microfugas (perfil 6)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm7": {
-        "name": "Prueba de microfugas perfil 7",
+        "name": "Prueba de microfugas (perfil 7)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
         }
       },
       "getpm8": {
-        "name": "Prueba de microfugas perfil 8",
+        "name": "Prueba de microfugas (perfil 8)",
         "state": {
           "false": "Inactivo",
           "true": "Activo"
@@ -1013,28 +1013,28 @@
         "name": "Nombre del perfil de protección contra fugas 8"
       },
       "getpr1": {
-        "name": "Tiempo de retorno al perfil activo 1"
+        "name": "Tiempo de retorno al perfil Presente (perfil 1)"
       },
       "getpr2": {
-        "name": "Tiempo de retorno al perfil activo 2"
+        "name": "Tiempo de retorno al perfil Presente (perfil 2)"
       },
       "getpr3": {
-        "name": "Tiempo de retorno al perfil activo 3"
+        "name": "Tiempo de retorno al perfil Presente (perfil 3)"
       },
       "getpr4": {
-        "name": "Tiempo de retorno al perfil activo 4"
+        "name": "Tiempo de retorno al perfil Presente (perfil 4)"
       },
       "getpr5": {
-        "name": "Tiempo de retorno al perfil activo 5"
+        "name": "Tiempo de retorno al perfil Presente (perfil 5)"
       },
       "getpr6": {
-        "name": "Tiempo de retorno al perfil activo 6"
+        "name": "Tiempo de retorno al perfil Presente (perfil 6)"
       },
       "getpr7": {
-        "name": "Tiempo de retorno al perfil activo 7"
+        "name": "Tiempo de retorno al perfil Presente (perfil 7)"
       },
       "getpr8": {
-        "name": "Tiempo de retorno al perfil activo 8"
+        "name": "Tiempo de retorno al perfil Presente (perfil 8)"
       },
       "getprc": {
         "name": "Nivel de capacidad restante"
@@ -1108,56 +1108,56 @@
         "name": "Umbral de fuga de volumen 8"
       },
       "getpw1": {
-        "name": "Alerta de fuga perfil 1",
+        "name": "Alerta de fuga (perfil 1)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw2": {
-        "name": "Alerta de fuga perfil 2",
+        "name": "Alerta de fuga (perfil 2)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw3": {
-        "name": "Alerta de fuga perfil 3",
+        "name": "Alerta de fuga (perfil 3)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw4": {
-        "name": "Alerta de fuga perfil 4",
+        "name": "Alerta de fuga (perfil 4)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw5": {
-        "name": "Alerta de fuga perfil 5",
+        "name": "Alerta de fuga (perfil 5)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw6": {
-        "name": "Alerta de fuga perfil 6",
+        "name": "Alerta de fuga (perfil 6)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw7": {
-        "name": "Alerta de fuga perfil 7",
+        "name": "Alerta de fuga (perfil 7)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
       },
       "getpw8": {
-        "name": "Alerta de fuga perfil 8",
+        "name": "Alerta de fuga (perfil 8)",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
@@ -1186,10 +1186,10 @@
         "name": "Dosificación de sal"
       },
       "getre1": {
-        "name": "Capacidad de reserva del frasco 1"
+        "name": "Capacidad de reserva (frasco 1)"
       },
       "getre2": {
-        "name": "Capacidad de reserva del frasco 2"
+        "name": "Capacidad de reserva (frasco 2)"
       },
       "getres": {
         "name": "Capacidad restante"
@@ -1198,19 +1198,19 @@
         "name": "Estado de regeneración",
         "state": {
           "0": "Sin regeneración",
-          "1": "Depósito 1 regenerado",
-          "2": "Depósito 2 regenerado"
+          "1": "Regenerando depósito 1",
+          "2": "Regenerando depósito 2"
         }
       },
       "getrg2": {
-        "name": "Depósito de regeneración 2",
+        "name": "Regeneración (depósito 2)",
         "state": {
           "0": "Inactivo",
           "1": "En funcionamiento"
         }
       },
       "getrg3": {
-        "name": "Depósito de regeneración 3",
+        "name": "Regeneración (depósito 3)",
         "state": {
           "0": "Inactivo",
           "1": "En funcionamiento"
@@ -1256,7 +1256,7 @@
         "name": "Hora de regeneración"
       },
       "getrvt": {
-        "name": "Carga máxima de llenado"
+        "name": "Volumen máximo de llenado"
       },
       "getscr": {
         "name": "Ciclos de regeneración de servicio"
@@ -1309,13 +1309,13 @@
         "name": "Próximo mantenimiento anual"
       },
       "getss1": {
-        "name": "Reserva de sal depósito 1"
+        "name": "Reserva de sal (depósito 1)"
       },
       "getss2": {
-        "name": "Reserva de sal depósito 2"
+        "name": "Reserva de sal (depósito 2)"
       },
       "getss3": {
-        "name": "Reserva de sal depósito 3"
+        "name": "Reserva de sal (depósito 3)"
       },
       "getsta": {
         "name": "Estado",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Cantidad de sal depósito 1"
+        "name": "Cantidad de sal (depósito 1)"
       },
       "getsv2": {
-        "name": "Cantidad de sal depósito 2"
+        "name": "Cantidad de sal (depósito 2)"
       },
       "getsv3": {
-        "name": "Cantidad de sal depósito 3"
+        "name": "Cantidad de sal (depósito 3)"
       },
       "gett1": {
         "name": "Fuga de tiempo 1"
@@ -1367,7 +1367,7 @@
         "name": "Tipo de dispositivo"
       },
       "getul": {
-        "name": "Protección contra fugas - Nivel ausente"
+        "name": "Nivel de protección contra fugas (ausente)"
       },
       "getver": {
         "name": "Versión de firmware"
@@ -1385,10 +1385,10 @@
         "name": "Volumen total"
       },
       "getvps1": {
-        "name": "Sin pulsos de turbina en cabeza de control 1 desde"
+        "name": "Sin impulsos de turbina en el cabezal de control 1 desde"
       },
       "getvps2": {
-        "name": "Sin pulsos de turbina en cabeza de control 2 desde"
+        "name": "Sin impulsos de turbina en el cabezal de control 2 desde"
       },
       "getvs1": {
         "name": "Umbral de volumen 1"

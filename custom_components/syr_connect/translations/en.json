@@ -53,10 +53,10 @@
         "title": "Reconfigure SYR Connect"
       },
       "user": {
-        "description": "Choose how to connect to your SYR device:\n\n- **Cloud Access**: Use your mobile app credentials to access all your devices via the SYR cloud service. Requires internet connection.\n\n- **Local Access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
+        "description": "Choose how to connect to your SYR device:\n\n- **Cloud Access**: Use your mobile app credentials to access all your devices via the SYR cloud service. Requires an internet connection.\n\n- **Local Access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
         "menu_options": {
-          "api_json": "Local Access",
-          "api_xml": "Cloud Access"
+          "api_json": "Local access",
+          "api_xml": "Cloud access"
         },
         "title": "SYR Connect"
       }
@@ -89,7 +89,7 @@
         "name": "Regenerate now"
       },
       "setsmr": {
-        "name": "Multi regenerate"
+        "name": "Regenerate multiple times"
       },
       "setwrn": {
         "name": "Reset warning"
@@ -359,7 +359,7 @@
         }
       },
       "getrcp": {
-        "name": "Synchronisation interval",
+        "name": "Synchronization interval",
         "state": {
           "10800": "3 hours",
           "1209600": "2 weeks",
@@ -400,7 +400,7 @@
         "name": "Regeneration time"
       },
       "getrvt": {
-        "name": "Maximum filling charges"
+        "name": "Maximum filling volume"
       },
       "getsro": {
         "name": "Display orientation",
@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Salt container volume 1"
+        "name": "Salt volume (container 1)"
       },
       "getsv2": {
-        "name": "Salt container volume 2"
+        "name": "Salt volume (container 2)"
       },
       "getsv3": {
-        "name": "Salt container volume 3"
+        "name": "Salt volume (container 3)"
       },
       "gettpr": {
         "name": "Target pressure"
@@ -442,7 +442,7 @@
       "dst": {
         "name": "Device connectivity",
         "state": {
-          "0": "Never been online",
+          "0": "Never online",
           "1": "Offline",
           "2": "Online",
           "3": "Standby"
@@ -492,7 +492,7 @@
           "alarm_safefloor_weather": "Temperature sensor fault",
           "alarm_safet_absence_leakage_detected": "Absence leakage detected. Volume exceeded",
           "alarm_safet_flow_leakage_detected": "Flow leakage detected: Volume flow > 3500 l/h",
-          "alarm_safet_flow_time_exceeded": "Flow time criterion exceeded.",
+          "alarm_safet_flow_time_exceeded": "Flow time criterion exceeded",
           "alarm_safet_leakage_volume_reached": "Presence leakage detected. Volume exceeded",
           "alarm_safet_microleakage_detected": "Microleakage detected. Limit value exceeded",
           "alarm_safet_turbine_no_signal": "No turbine signal",
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Remaining resin capacity 1"
+        "name": "Remaining resin capacity (tank 1)"
       },
       "getcs2": {
-        "name": "Remaining resin capacity 2"
+        "name": "Remaining resin capacity (tank 2)"
       },
       "getcs3": {
-        "name": "Remaining resin capacity 3"
+        "name": "Remaining resin capacity (tank 3)"
       },
       "getcyn": {
         "name": "Regeneration cycle counter"
@@ -633,7 +633,7 @@
         "state": {
           "0": "Inactive",
           "1": "Active",
-          "2": "Aborted - pressure drop",
+          "2": "Aborted (pressure drop)",
           "3": "Skipped"
         }
       },
@@ -708,7 +708,7 @@
         "name": "Last regeneration"
       },
       "getle": {
-        "name": "Leakage protection - Present level"
+        "name": "Leak protection level (present)"
       },
       "getlft": {
         "name": "Last refill duration"
@@ -736,7 +736,7 @@
         "name": "MAC address"
       },
       "getmac1": {
-        "name": "MAC address (Wi‑Fi)"
+        "name": "MAC address (Wi-Fi)"
       },
       "getmac2": {
         "name": "MAC address (LAN)"
@@ -773,7 +773,7 @@
         "state": {
           "annual_maintenance": "Annual maintenance",
           "backwash_reminder_pressure": "Pressure-controlled backwash reminder",
-          "bi_annual_maintenance": "Bi-annual maintenance",
+          "bi_annual_maintenance": "Semi-annual maintenance",
           "filter_maintenance_reminder": "Filter maintenance reminder",
           "filter_service_reminder": "Filter service reminder",
           "new_software_available": "New software update available!",
@@ -853,56 +853,56 @@
         }
       },
       "getpb1": {
-        "name": "Buzzer profile 1",
+        "name": "Buzzer (profile 1)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb2": {
-        "name": "Buzzer profile 2",
+        "name": "Buzzer (profile 2)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb3": {
-        "name": "Buzzer profile 3",
+        "name": "Buzzer (profile 3)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb4": {
-        "name": "Buzzer profile 4",
+        "name": "Buzzer (profile 4)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb5": {
-        "name": "Buzzer profile 5",
+        "name": "Buzzer (profile 5)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb6": {
-        "name": "Buzzer profile 6",
+        "name": "Buzzer (profile 6)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb7": {
-        "name": "Buzzer profile 7",
+        "name": "Buzzer (profile 7)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpb8": {
-        "name": "Buzzer profile 8",
+        "name": "Buzzer (profile 8)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
@@ -933,56 +933,56 @@
         "name": "Flow leakage threshold 8"
       },
       "getpm1": {
-        "name": "Microleakage test profile 1",
+        "name": "Microleakage test (profile 1)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm2": {
-        "name": "Microleakage test profile 2",
+        "name": "Microleakage test (profile 2)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm3": {
-        "name": "Microleakage test profile 3",
+        "name": "Microleakage test (profile 3)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm4": {
-        "name": "Microleakage test profile 4",
+        "name": "Microleakage test (profile 4)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm5": {
-        "name": "Microleakage test profile 5",
+        "name": "Microleakage test (profile 5)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm6": {
-        "name": "Microleakage test profile 6",
+        "name": "Microleakage test (profile 6)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm7": {
-        "name": "Microleakage test profile 7",
+        "name": "Microleakage test (profile 7)",
         "state": {
           "false": "Inactive",
           "true": "Active"
         }
       },
       "getpm8": {
-        "name": "Microleakage test profile 8",
+        "name": "Microleakage test (profile 8)",
         "state": {
           "false": "Inactive",
           "true": "Active"
@@ -1013,28 +1013,28 @@
         "name": "Leak protection profile name 8"
       },
       "getpr1": {
-        "name": "Return time 1 to Present profile"
+        "name": "Return time to Present profile (profile 1)"
       },
       "getpr2": {
-        "name": "Return time 2 to Present profile"
+        "name": "Return time to Present profile (profile 2)"
       },
       "getpr3": {
-        "name": "Return time 3 to Present profile"
+        "name": "Return time to Present profile (profile 3)"
       },
       "getpr4": {
-        "name": "Return time 4 to Present profile"
+        "name": "Return time to Present profile (profile 4)"
       },
       "getpr5": {
-        "name": "Return time 5 to Present profile"
+        "name": "Return time to Present profile (profile 5)"
       },
       "getpr6": {
-        "name": "Return time 6 to Present profile"
+        "name": "Return time to Present profile (profile 6)"
       },
       "getpr7": {
-        "name": "Return time 7 to Present profile"
+        "name": "Return time to Present profile (profile 7)"
       },
       "getpr8": {
-        "name": "Return time 8 to Present profile"
+        "name": "Return time to Present profile (profile 8)"
       },
       "getprc": {
         "name": "Remaining capacity level"
@@ -1108,56 +1108,56 @@
         "name": "Volume leakage threshold 8"
       },
       "getpw1": {
-        "name": "Leak warning profile 1",
+        "name": "Leak warning (profile 1)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw2": {
-        "name": "Leak warning profile 2",
+        "name": "Leak warning (profile 2)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw3": {
-        "name": "Leak warning profile 3",
+        "name": "Leak warning (profile 3)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw4": {
-        "name": "Leak warning profile 4",
+        "name": "Leak warning (profile 4)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw5": {
-        "name": "Leak warning profile 5",
+        "name": "Leak warning (profile 5)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw6": {
-        "name": "Leak warning profile 6",
+        "name": "Leak warning (profile 6)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw7": {
-        "name": "Leak warning profile 7",
+        "name": "Leak warning (profile 7)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
       },
       "getpw8": {
-        "name": "Leak warning profile 8",
+        "name": "Leak warning (profile 8)",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
@@ -1180,16 +1180,16 @@
         "name": "Total refill count"
       },
       "getrcp": {
-        "name": "Synchronisation interval"
+        "name": "Synchronization interval"
       },
       "getrdo": {
         "name": "Salt dosing"
       },
       "getre1": {
-        "name": "Reserve capacity bottle 1"
+        "name": "Reserve capacity (bottle 1)"
       },
       "getre2": {
-        "name": "Reserve capacity bottle 2"
+        "name": "Reserve capacity (bottle 2)"
       },
       "getres": {
         "name": "Remaining capacity"
@@ -1256,7 +1256,7 @@
         "name": "Regeneration time"
       },
       "getrvt": {
-        "name": "Maximum filling charges"
+        "name": "Maximum filling volume"
       },
       "getscr": {
         "name": "Service regeneration cycles"
@@ -1309,13 +1309,13 @@
         "name": "Next annual maintenance"
       },
       "getss1": {
-        "name": "Salt container stock 1"
+        "name": "Salt stock (container 1)"
       },
       "getss2": {
-        "name": "Salt container stock 2"
+        "name": "Salt stock (container 2)"
       },
       "getss3": {
-        "name": "Salt container stock 3"
+        "name": "Salt stock (container 3)"
       },
       "getsta": {
         "name": "Status",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Salt container volume 1"
+        "name": "Salt volume (container 1)"
       },
       "getsv2": {
-        "name": "Salt container volume 2"
+        "name": "Salt volume (container 2)"
       },
       "getsv3": {
-        "name": "Salt container volume 3"
+        "name": "Salt volume (container 3)"
       },
       "gett1": {
         "name": "Leakage time 1"
@@ -1349,7 +1349,7 @@
         "name": "Leakage time 2"
       },
       "gettmp": {
-        "name": "Leakage protection deactivated"
+        "name": "Leak protection deactivated"
       },
       "gettor": {
         "name": "Regenerations (total)"
@@ -1367,7 +1367,7 @@
         "name": "Device type"
       },
       "getul": {
-        "name": "Leakage protection - Absent level"
+        "name": "Leak protection level (absent)"
       },
       "getver": {
         "name": "Firmware version"
@@ -1414,13 +1414,13 @@
         }
       },
       "getwgw": {
-        "name": "Gateway (Wi‑Fi)"
+        "name": "Gateway (Wi-Fi)"
       },
       "getwhu": {
         "name": "Water hardness unit"
       },
       "getwip": {
-        "name": "IP address (Wi‑Fi)"
+        "name": "IP address (Wi-Fi)"
       },
       "getwmp": {
         "name": "Measurement interval"
@@ -1432,7 +1432,7 @@
           "cartridge_almost_exhausted": "Cartridge almost exhausted",
           "initial_filling": "Initial filling",
           "leak_warning": "Leak warning",
-          "leak_warning_time": "Leak warning time",
+          "leak_warning_time": "Leak warning (time)",
           "leak_warning_volume": "Leakage volume",
           "microleakage_suspected": "Microleakage suspected",
           "no_batteries_detected": "No batteries detected",
@@ -1566,7 +1566,7 @@
           "scan_interval": "Update interval"
         },
         "description": "Defines the time interval between API calls.",
-        "title": "SYR Connect Options"
+        "title": "SYR Connect options"
       }
     }
   }
