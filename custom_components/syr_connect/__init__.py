@@ -204,13 +204,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         session,
         dict(entry.data),
         scan_interval,
+        config_entry=entry,
     )
-
-    # Attach config entry to coordinator for options access
-    coordinator.config_entry = entry
-    # Scope entity unique_ids to this entry so the same physical device
-    # reachable from multiple hubs doesn't collide (see build_unique_id).
-    coordinator.entry_id = entry.entry_id
 
     try:
         await coordinator.async_config_entry_first_refresh()

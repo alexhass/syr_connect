@@ -8,6 +8,7 @@ from typing import Any, override
 
 import aiohttp
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
@@ -48,7 +49,7 @@ class SyrConnectDataUpdateCoordinator(
     """Class to manage fetching SYR Connect data."""
 
     api: SyrConnectXmlAPI | SyrConnectJsonAPI
-    # Owning config entry ID; used to scope entity unique_ids across hubs (set in __init__.py).
+    # Owning config entry ID; used to scope entity unique_ids across hubs.
     entry_id: str | None = None
 
     def __init__(
@@ -57,6 +58,8 @@ class SyrConnectDataUpdateCoordinator(
         session: aiohttp.ClientSession,
         config_data: dict[str, Any],
         scan_interval: int | None = None,
+        *,
+        config_entry: ConfigEntry | None = None,
     ) -> None:
         """Initialize the coordinator.
 
@@ -65,6 +68,9 @@ class SyrConnectDataUpdateCoordinator(
             session: aiohttp client session
             config_data: Configuration data containing API type and credentials
             scan_interval: Update interval in seconds
+            config_entry: Owning config entry; its entry_id scopes the entity unique_ids
+                so the same device reachable from several hubs does not collide
+                (see build_unique_id)
         """
         # If caller didn't provide a scan_interval, compute per-API default
         if scan_interval is None:
@@ -77,9 +83,12 @@ class SyrConnectDataUpdateCoordinator(
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=config_entry,
             name=DOMAIN,
             update_interval=timedelta(seconds=scan_interval),
         )
+        if config_entry is not None:
+            self.entry_id = config_entry.entry_id
 
         # Determine API type and create appropriate API client
         api_type = config_data.get(CONF_API_TYPE, API_TYPE_XML)

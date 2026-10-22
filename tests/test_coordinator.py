@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import (
@@ -1849,3 +1850,22 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
         assert call_kwargs["api_app_name"] == svc["api_app_name"]
         assert call_kwargs["api_base_url"] == svc["api_base_url"]
         assert call_kwargs["cf_bundle_identifier"] == svc["cf_bundle_identifier"]
+
+
+async def test_coordinator_takes_config_entry_from_constructor(
+    hass: HomeAssistant,
+) -> None:
+    """The config entry passed to the constructor sets config_entry and entry_id."""
+    entry = MockConfigEntry(domain=DOMAIN, entry_id="01JTESTENTRY")
+    entry.add_to_hass(hass)
+
+    coordinator = SyrConnectDataUpdateCoordinator(
+        hass,
+        MagicMock(),
+        {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        60,
+        config_entry=entry,
+    )
+
+    assert coordinator.config_entry is entry
+    assert coordinator.entry_id == "01JTESTENTRY"
