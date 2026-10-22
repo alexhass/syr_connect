@@ -317,22 +317,6 @@ async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None
         pass
 
 
-async def test_sync_service_wrappers_schedule_tasks(hass: HomeAssistant) -> None:
-    """Test sync service wrappers schedule tasks."""
-    data = {"devices": [{"id": "s1", "name": "S1", "status": {}}]}
-    coordinator = _build_coordinator(hass, data)
-    valve = SyrConnectValve(coordinator, "s1", "S1")
-
-    # Provide a hass with async_create_task spy that consumes the coro
-    fake_hass = MagicMock()
-    fake_hass.async_create_task = Mock(side_effect=_consume_coro_return_task)
-    valve.hass = fake_hass
-    valve.open_valve()
-    fake_hass.async_create_task.assert_called()
-    valve.close_valve()
-    assert fake_hass.async_create_task.call_count >= 2
-
-
 async def test_state_unknown_when_no_status(hass: HomeAssistant) -> None:
     """Test state unknown when no status."""
     data: dict = {"devices": []}
@@ -457,17 +441,6 @@ async def test_async_service_entrypoints_call_underlying(hass: HomeAssistant) ->
 
     await valve.async_close_valve()
     valve.async_close.assert_awaited()
-
-
-async def test_sync_wrappers_without_hass_do_nothing(hass: HomeAssistant) -> None:
-    """Test sync wrappers without hass do nothing."""
-    coordinator = _build_coordinator(hass, {"devices": []})
-    valve = SyrConnectValve(coordinator, "no_hass", "NoHass")
-    # Ensure hass is None
-    valve.hass = None  # type: ignore[assignment]
-    # Should not raise
-    valve.open_valve()
-    valve.close_valve()
 
 
 async def test_state_open(hass: HomeAssistant) -> None:

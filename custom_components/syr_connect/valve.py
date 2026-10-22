@@ -264,18 +264,6 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         await self.async_open()
 
     @override
-    def open_valve(self) -> None:
-        """Sync service entrypoint to open the valve (schedules async task)."""
-        if self.hass is not None:
-            self.hass.async_create_task(self.async_open())
-
-    @override
     async def async_close_valve(self) -> None:
         """Async service entrypoint to close the valve."""
         await self.async_close()
-
-    @override
-    def close_valve(self) -> None:
-        """Sync service entrypoint to close the valve (schedules async task)."""
-        if self.hass is not None:
-            self.hass.async_create_task(self.async_close())
