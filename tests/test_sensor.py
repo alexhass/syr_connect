@@ -410,8 +410,8 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
     assert sensor.native_value in ("low_salt", "LowSalt")
 
 
-async def test_sensor_excluded_cs_with_salt(hass: HomeAssistant) -> None:
-    """Test getCS1 is shown when getSV1 has salt."""
+async def test_sensor_cs_shown_when_zero(hass: HomeAssistant) -> None:
+    """Test getCS1-3 are created at zero, with getCS2/3 disabled by default."""
     data = {
         "devices": [
             {
@@ -419,9 +419,10 @@ async def test_sensor_excluded_cs_with_salt(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getCS1": "0",  # Zero capacity
-                    "getSV1": "5",  # But has salt
-                    "getFLO": "10",  # Other sensor
+                    "getCS1": "0",
+                    "getCS2": 0,
+                    "getCS3": "0",
+                    "getSV1": "0",
                 },
             }
         ]
@@ -434,40 +435,17 @@ async def test_sensor_excluded_cs_with_salt(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, add_entities)
 
     entities = add_entities.call_args.args[0]
-    cs1_sensors = [e for e in entities if e._sensor_key == "getCS1"]
-
-    # Should create getCS1 even though value is 0, because getSV1 is not zero
-    assert len(cs1_sensors) == 1
-
-
-async def test_sensor_excluded_cs_no_salt(hass: HomeAssistant) -> None:
-    """Test getCS1 is hidden when getSV1 is zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": "0",  # Zero capacity
-                    "getSV1": "0",  # No salt
-                    "getFLO": "10",  # Other sensor
-                },
-            }
-        ]
+    enabled = {
+        e._sensor_key: e.entity_registry_enabled_default
+        for e in entities
+        if e._sensor_key in ("getCS1", "getCS2", "getCS3")
     }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
 
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    entities = add_entities.call_args.args[0]
-    cs1_sensors = [e for e in entities if e._sensor_key == "getCS1"]
-
-    # Should not create getCS1 because both are zero
-    assert len(cs1_sensors) == 0
+    assert enabled == {
+        "getCS1": True,
+        "getCS2": False,
+        "getCS3": False,
+    }
 
 
 async def test_sensor_lar_empty_value(hass: HomeAssistant) -> None:
@@ -488,6 +466,134 @@ async def test_sensor_lar_empty_value(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     assert sensor.native_value is None
+
+
+async def test_sensor_lar_zero_value(hass: HomeAssistant) -> None:
+    """Test getLAR 0 (no regeneration yet) is unknown, not 1970-01-01."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getLAR": "0",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
+
+    assert sensor.native_value is None
+
+
+async def test_sensor_zero_values_created_and_kept(hass: HomeAssistant) -> None:
+    """Test sensors reporting 0 are created and not removed by the registry cleanup."""
+    status = {
+        "getCND": "0",
+        "getCYT": "0",
+        "getLAR": "0",
+        "getTYP": 0,
+        "getVS1": 0.0,
+        "getWFR": "0",
+    }
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    created = {e._sensor_key for e in add_entities.call_args.args[0]}
+    assert set(status) <= created
+    assert not set(status) & sensor_module._hidden_sensor_keys(status)
+
+
+async def test_sensor_registered_sensor_created_with_empty_value(
+    hass: HomeAssistant,
+) -> None:
+    """Test a registered sensor is created and kept although its value is empty."""
+    registry = er.async_get(hass)
+    for key in ("getTYP", "getWIP", "getDWF", "getCEL"):
+        registry.async_get_or_create(
+            "sensor",
+            DOMAIN,
+            f"device1_{key}",
+            suggested_object_id=f"device1_{key.lower()}",
+        )
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getTYP": "",  # hidden_when="empty"
+                    "getWIP": "0.0.0.0",  # hidden_when="empty_ip"
+                    "getDWF": "350",  # hidden_when="always"
+                    "getCEL": {"nested": "dict"},  # Invalid type
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    await async_setup_entry(hass, entry, add_entities)
+
+    created = {e._sensor_key for e in add_entities.call_args.args[0]}
+    assert created == {"getTYP", "getWIP"}
+    assert registry.async_get_entity_id("sensor", DOMAIN, "device1_getTYP")
+    assert registry.async_get_entity_id("sensor", DOMAIN, "device1_getWIP")
+    assert registry.async_get_entity_id("sensor", DOMAIN, "device1_getDWF") is None
+
+
+async def test_sensor_registered_always_hidden_not_created(
+    hass: HomeAssistant,
+) -> None:
+    """Test a registered hidden_when="always" sensor is not created if the cleanup failed."""
+    registry = er.async_get(hass)
+    registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        "device1_getDWF",
+        suggested_object_id="device1_getdwf",
+    )
+
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getDWF": "350"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    entry = _build_entry(coordinator)
+    entry.add_to_hass(hass)
+
+    add_entities = Mock()
+    with patch.object(sensor_module, "registry_cleanup"):
+        await async_setup_entry(hass, entry, add_entities)
+
+    created = {e._sensor_key for e in add_entities.call_args.args[0]}
+    assert "getDWF" not in created
 
 
 async def test_sensor_lar_invalid_timestamp(hass: HomeAssistant) -> None:
@@ -1128,62 +1234,6 @@ async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_cs_zero_with_sv_zero(hass: HomeAssistant) -> None:
-    """Test getCS2 excluded when zero, but getSV2 shown even when zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": "0",
-                    "getSV2": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # getCS2 is excluded because it's 0; getSV2 is shown even when 0
-    entities = add_entities.call_args.args[0]
-    assert len(entities) == 1
-    assert entities[0]._sensor_key == "getSV2"
-
-
-async def test_sensor_cs_int_zero_with_sv_zero(hass: HomeAssistant) -> None:
-    """Test getCS2 excluded when integer zero, but getSV2 shown even when zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": 0,  # Int instead of string
-                    "getSV2": 0.0,  # Float zero
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # getCS2 is excluded when zero; getSV2 is shown even when zero
-    entities = add_entities.call_args.args[0]
-    assert len(entities) == 1
-    assert entities[0]._sensor_key == "getSV2"
-
-
 async def test_sensor_rpw_invalid_string_mask(hass: HomeAssistant) -> None:
     """Test getRPW with invalid string that cannot be converted."""
     data = {
@@ -1770,62 +1820,6 @@ async def test_sensor_native_value_none_status_key(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_getcs_with_missing_getsv(hass: HomeAssistant) -> None:
-    """Test getCS sensor when corresponding getSV doesn't exist."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": 0,
-                    # getSV2 is missing
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    entities = add_entities.call_args.args[0]
-    # Should exclude getCS2 when value is 0 and getSV2 is missing
-    cs2_sensors = [e for e in entities if e._sensor_key == "getCS2"]
-    assert len(cs2_sensors) == 0
-
-
-async def test_sensor_getcs3_with_nonzero_sv(hass: HomeAssistant) -> None:
-    """Test getCS3 shown when getSV3 is non-zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS3": "0",
-                    "getSV3": "10.5",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    entities = add_entities.call_args.args[0]
-    # Should include getCS3 because getSV3 is non-zero
-    cs3_sensors = [e for e in entities if e._sensor_key == "getCS3"]
-    assert len(cs3_sensors) == 1
-
-
 async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
     """Test getSV2 is shown even when integer value is zero."""
     data = {
@@ -1880,34 +1874,6 @@ async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None
     assert len(sv2_sensors) == 1
 
 
-async def test_sensor_getcs_int_zero(hass: HomeAssistant) -> None:
-    """Test getCS with integer zero and no getSV."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0,  # Integer zero
-                    # No getSV1
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    entities = add_entities.call_args.args[0]
-    # Should exclude getCS1
-    cs1_sensors = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_sensors) == 0
-
-
 async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     """Test entity registry cleanup handles exceptions gracefully."""
 
@@ -1930,6 +1896,9 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
     # Provide a dummy registry that safely ignores async_remove calls
     class DummyRegistry:
         def async_get(self, entity_id):
+            return None
+
+        def async_get_entity_id(self, domain, platform, unique_id):
             return None
 
         def async_remove(self, entity_id):
@@ -2387,173 +2356,6 @@ async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
 
     # Should return string value when rounding fails
     assert sensor.native_value == "invalid"
-
-
-async def test_sensor_getcs_with_zero_getsv_string(hass: HomeAssistant) -> None:
-    """Test getCS sensor with getSV as zero string."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": "0",  # Zero value
-                    "getSV1": "0",  # Zero getSV as string
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 because getSV1 is zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
-
-
-async def test_sensor_getcs_with_invalid_getsv_float(hass: HomeAssistant) -> None:
-    """Test getCS sensor with getSV value that can't be converted to float."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": "0",  # Zero value
-                    "getSV1": "invalid",  # Invalid value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 due to ValueError in float conversion
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
-
-
-async def test_sensor_getcs2_with_nonzero_sv(hass: HomeAssistant) -> None:
-    """Test getCS2 sensor shown even when zero if getSV2 is non-zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": "0",  # Zero value
-                    "getSV2": "5",  # Non-zero getSV
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should include getCS2 because getSV2 is non-zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs2_entities = [e for e in entities if e._sensor_key == "getCS2"]
-    assert len(cs2_entities) == 1
-
-
-async def test_sensor_getcs_int_value_zero(hass: HomeAssistant) -> None:
-    """Test getCS sensor with int zero value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0,  # Integer zero
-                    "getSV1": 0,  # Integer zero getSV
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 because both are zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
-
-
-async def test_sensor_getcs_float_value_zero(hass: HomeAssistant) -> None:
-    """Test getCS sensor with float zero value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0.0,  # Float zero
-                    "getSV1": 0.0,  # Float zero getSV
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 because both are zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
-
-
-async def test_sensor_exclude_when_zero_string_value(hass: HomeAssistant) -> None:
-    """Test sensor excluded when zero with string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": "0",  # String zero, should be excluded
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 because it's zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
 
 
 async def test_sensor_rpw_mask_invalid_int_conversion(hass: HomeAssistant) -> None:
@@ -3085,6 +2887,9 @@ async def test_sensor_setup_registry_exception(hass: HomeAssistant) -> None:
         def async_get(self, entity_id):
             return None
 
+        def async_get_entity_id(self, domain, platform, unique_id):
+            return None
+
         def async_remove(self, entity_id):
             return None
 
@@ -3098,118 +2903,6 @@ async def test_sensor_setup_registry_exception(hass: HomeAssistant) -> None:
 
         # Should still add entities
         add_entities.assert_called_once()
-
-
-async def test_sensor_getcs_with_getsv_none(hass: HomeAssistant) -> None:
-    """Test getCS1 when getSV1 is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0,
-                    "getSV1": None,  # None getSV
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 because it's zero and getSV1 is None
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
-
-
-async def test_sensor_getcs_with_getsv_value_error(hass: HomeAssistant) -> None:
-    """Test getCS1 when getSV1 raises ValueError on conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0,
-                    "getSV1": "invalid",  # Cannot convert to float
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS1 because it's zero and getSV1 conversion fails
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs1_entities = [e for e in entities if e._sensor_key == "getCS1"]
-    assert len(cs1_entities) == 0
-
-
-async def test_sensor_getcs2_with_valid_getsv2(hass: HomeAssistant) -> None:
-    """Test getCS2 when getSV2 is non-zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": 0,
-                    "getSV2": 5.0,  # Non-zero getSV2
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should include getCS2 because getSV2 is non-zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs2_entities = [e for e in entities if e._sensor_key == "getCS2"]
-    assert len(cs2_entities) == 1
-
-
-async def test_sensor_getcs3_with_zero_getsv3_string(hass: HomeAssistant) -> None:
-    """Test getCS3 when getSV3 is zero string and getCS3 is zero string."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS3": "0",
-                    "getSV3": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getCS3 because both are zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    cs3_entities = [e for e in entities if e._sensor_key == "getCS3"]
-    assert len(cs3_entities) == 0
 
 
 async def test_sensor_exclude_when_zero_other_sensor_int(hass: HomeAssistant) -> None:
@@ -5684,16 +5377,12 @@ async def test_sensor_getwhu_none_value(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None:
-    """Test sensor setup skips sensors with hidden_when="empty_or_zero" and None value."""
+    """Test sensor setup skips sensors with hidden_when="empty" and None value."""
 
-    # Pick a sensor from the excluded list that's not getCS1/2/3
     test_key = None
-    for key in (
-        d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty_or_zero"
-    ):
-        if key not in ("getCS1", "getCS2", "getCS3"):
-            test_key = key
-            break
+    for key in (d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty"):
+        test_key = key
+        break
 
     if test_key:
         coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -5736,15 +5425,12 @@ async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None
 
 
 async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
-    """Test sensor setup skips sensors with hidden_when="empty_or_zero" and whitespace string."""
+    """Test sensor setup skips sensors with hidden_when="empty" and whitespace string."""
 
     test_key = None
-    for key in (
-        d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty_or_zero"
-    ):
-        if key not in ("getCS1", "getCS2", "getCS3"):
-            test_key = key
-            break
+    for key in (d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty"):
+        test_key = key
+        break
 
     if test_key:
         coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -5784,53 +5470,6 @@ async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) 
 
         # test_key should not be included
         assert test_key not in sensor_keys
-
-
-async def test_sensor_getcs_with_invalid_getsv_typeerror(hass: HomeAssistant) -> None:
-    """Test getCS sensor when getSV raises TypeError."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    # Use an object that cannot be converted to float
-    class BadValue:
-        def __float__(self):
-            raise TypeError("Cannot convert")
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": "0",
-                    "getSV1": BadValue(),
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-
-    # getCS1 should be excluded because getSV1 conversion failed and getCS1 is "0"
-    assert "getCS1" not in sensor_keys
 
 
 async def test_sensor_registry_cleanup_exception_async_get(hass: HomeAssistant) -> None:
@@ -6449,50 +6088,6 @@ async def test_registry_remove_exception(hass: HomeAssistant) -> None:
         assert mock_add_entities.called
 
 
-async def test_getcs_with_getsv_value_error(hass: HomeAssistant) -> None:
-    """Test getCS sensor when getSV value cannot be converted to float (ValueError)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0,  # Zero value
-                    "getSV1": "not-a-number",  # Cannot convert to float
-                },
-            }
-        ]
-    }
-    _build_coordinator(hass, data)
-
-    # getCS1 should be excluded because getSV1 is invalid and getCS1 is zero
-    state = hass.states.get("sensor.syr_connect_device1_getcs1")
-    assert state is None
-
-
-async def test_getcs_with_getsv_type_error(hass: HomeAssistant) -> None:
-    """Test getCS sensor when getSV value causes TypeError during float conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": "0",  # String zero value
-                    "getSV2": None,  # None causes TypeError in float()
-                },
-            }
-        ]
-    }
-    _build_coordinator(hass, data)
-
-    # getCS2 should be excluded because getSV2 is None (TypeError) and getCS2 is zero
-    state = hass.states.get("sensor.syr_connect_device2_getcs2")
-    assert state is None
-
-
 async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
     """Test _is_true with list type returns False."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -6547,72 +6142,6 @@ async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
     created_keys = [e._sensor_key for e in entities]
     for key in pa2_group_keys:
         assert key not in created_keys
-
-
-async def test_getcs_with_missing_getsv_int_zero(hass: HomeAssistant) -> None:
-    """Test getCS (int zero) is excluded when corresponding getSV is missing."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS3": 0,  # Int zero, no getSV3
-                    "someOther": "value",
-                },
-            }
-        ]
-    }
-    _build_coordinator(hass, data)
-
-    # getCS3 should be excluded because getSV3 is missing and getCS3 is zero
-    state = hass.states.get("sensor.syr_connect_device1_getcs3")
-    assert state is None
-
-
-async def test_getcs_with_getsv_zero_int(hass: HomeAssistant) -> None:
-    """Test getCS is excluded when getSV is int zero and getCS is also zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS1": 0,
-                    "getSV1": 0,  # Int zero
-                },
-            }
-        ]
-    }
-    _build_coordinator(hass, data)
-
-    # getCS1 should be excluded because getSV1 is zero and getCS1 is zero
-    state = hass.states.get("sensor.syr_connect_device1_getcs1")
-    assert state is None
-
-
-async def test_getcs_with_getsv_zero_float(hass: HomeAssistant) -> None:
-    """Test getCS is excluded when getSV is float zero and getCS is also zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getCS2": 0,
-                    "getSV2": 0.0,  # Float zero
-                },
-            }
-        ]
-    }
-    _build_coordinator(hass, data)
-
-    # getCS2 should be excluded because getSV2 is zero and getCS2 is zero
-    state = hass.states.get("sensor.syr_connect_device1_getcs2")
-    assert state is None
 
 
 async def test_sensor_native_value_caching_returns_last_known_value(
@@ -8371,6 +7900,9 @@ class _FakeRegistry:
     entities: dict = {}
 
     def async_get(self, entity_id):
+        return None
+
+    def async_get_entity_id(self, domain, platform, unique_id):
         return None
 
     def async_remove(self, entity_id):

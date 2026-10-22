@@ -425,8 +425,8 @@ def registry_cleanup(
     nothing is removed.
 
     With `hidden_keys`, also removes the entities of the keys it returns for the
-    current device status (the sensor platform passes the conditionally hidden
-    sensors: keys absent from the status as well as keys with an empty value).
+    current device status (the sensor platform passes the sensors that never become
+    an entity and getLOT/getOHW for the wrong cartridge type).
 
     Args:
         hass: Home Assistant instance.

@@ -209,8 +209,12 @@ def _value_lar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if value is None or value == "":
         return None
     try:
+        timestamp = int(float(value))
+        # 0 means that no regeneration has happened yet.
+        if timestamp == 0:
+            return None
         # Home Assistant formats it according to the user's timezone/locale.
-        return datetime.fromtimestamp(int(float(value)), UTC)
+        return datetime.fromtimestamp(timestamp, UTC)
     except ValueError, TypeError, OverflowError:
         return None
 
@@ -406,10 +410,10 @@ class SyrConnectSensorEntityDescription(SensorEntityDescription):
     # Scale a numeric value before rounding, e.g. 1/10 °C -> °C (divide_by=10)
     divide_by: int = 1
     multiply_by: int = 1
-    # Hide the sensor while its value is empty: "empty" (None or blank text), "empty_or_zero"
-    # (also 0 and "0") or "empty_ip" (also the placeholder IP "0.0.0.0"). "always" never
-    # creates the entity; remove it in the code once a device reports a useful value.
-    hidden_when: Literal["empty", "empty_or_zero", "empty_ip", "always"] | None = None
+    # Hide the sensor while its value is empty: "empty" (None or blank text) or "empty_ip"
+    # (also the placeholder IP "0.0.0.0"). "always" never creates the entity; remove it in
+    # the code once a device reports a useful value.
+    hidden_when: Literal["empty", "empty_ip", "always"] | None = None
     # Compute the native value for keys with a special format or a value map
     value_fn: (
         Callable[
@@ -557,7 +561,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        hidden_when="empty_or_zero",  # value "" means sensor does not exists or not measured.
+        hidden_when="empty",  # value "" means sensor does not exists or not measured.
     ),
     SyrConnectSensorEntityDescription(
         key="getCFV",  # Current filling volume (l)
@@ -629,19 +633,18 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getCS1",  # Remaining resin capacity - tank 1 (%)
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
-        hidden_when="empty_or_zero",
     ),
     SyrConnectSensorEntityDescription(
         key="getCS2",  # Remaining resin capacity - tank 2 (%)
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
-        hidden_when="empty_or_zero",
+        entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
         key="getCS3",  # Remaining resin capacity - tank 3 (%)
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
-        hidden_when="empty_or_zero",
+        entity_registry_enabled_default=False,
     ),
     # --- Salt ---
     SyrConnectSensorEntityDescription(
@@ -719,7 +722,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getCYT",  # Regeneration cycle time (remaining)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="empty_or_zero",  # value "0" means no active regeneration, should be "00:00" to show a time.
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getINR",  # Incomplete regeneration count
@@ -732,7 +735,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_value_lar,
-        hidden_when="empty_or_zero",  # if 0 means no regeneration has happened yet, so not useful to show.
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getNOR",  # Regeneration count (normal operation)
@@ -763,8 +766,8 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     # Not tested: getRPD and getRTM have no influence on the NeoSoft 5000, which regenerates as
-    # soon as a pillar is exhausted, so hidden_when="empty_or_zero" was considered for both
-    # ("0" means no interval configured / no active regeneration).
+    # soon as a pillar is exhausted ("0" means no interval configured / no active
+    # regeneration).
     SyrConnectSensorEntityDescription(
         key="getRPD",  # Regeneration interval (days)
         native_unit_of_measurement=UnitOfTime.DAYS,
@@ -1459,21 +1462,21 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="empty_or_zero",
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getVS2",  # Volume threshold 2 (l)
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="empty_or_zero",
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getVS3",  # Volume threshold 3 (l)
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="empty_or_zero",
+        hidden_when="empty",
     ),
     # --- Automatic Backwash (RSA) ---
     SyrConnectSensorEntityDescription(
@@ -1641,7 +1644,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="empty_or_zero",  # value "" means sensor does not exists, type "0" may not exists.
+        hidden_when="empty",  # value "" means sensor does not exists.
     ),
     SyrConnectSensorEntityDescription(
         key="getVER",  # Firmware version string
@@ -1684,7 +1687,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        hidden_when="empty_or_zero",  # "0": "Not connected"
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getWFS",  # Wi-Fi connection status (not connected / connecting / connected)
@@ -1810,21 +1813,17 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     - Group-controlled keys: keys matching getPVx, getPTx, getPFx, getPNx,
         getPMx, getPWx, getPBx, getPRx are only visible when the device's
         corresponding getPAx flag is truthy (1, "1", True, "true"; see `is_value_true`).
-    - Special-case salt counters (getCS1/2/3): shown if the associated
-        getSVx value is non-zero; otherwise they follow the normal empty
-        value rules (hide when 0, "0", empty or None).
     - getLOT (Maximum output conductivity): only shown when getCRT (cartridge
         type) is "1" (HVE) or "2" (HVE+).
     - getOHW (Soft water hardness): only shown when getCRT (cartridge type)
         is "0" (HWE).
     - Empty values: the `hidden_when` of the key's description hides it when the
-        reported value is None or a whitespace-only string ("empty"), also numeric
-        zero or the string "0" ("empty_or_zero"), or also the placeholder IP
-        "0.0.0.0" ("empty_ip"). "always" hides it whatever the value.
+        reported value is None or a whitespace-only string ("empty"), or also the
+        placeholder IP "0.0.0.0" ("empty_ip"). "always" hides it whatever the value.
 
     Args:
             status: The full flattened device status mapping (used for cross-key
-                    checks such as getPAx and getSVx).
+                    checks such as getPAx and getCRT).
             key: The status key being considered (e.g. getWIP, getPV1).
             value: The raw value reported by the device for this key.
 
@@ -1835,10 +1834,6 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     Examples:
             >>> is_sensor_visible(status, 'getWIP', '0.0.0.0')
             False
-
-            >>> # If getSV1 == 5 then getCS1 is visible even if its own value is '0'
-            >>> is_sensor_visible({'getSV1': 5}, 'getCS1', '0')
-            True
     """
     # Group keys controlled by getPAx should be hidden when getPAx is false
     m = re.match(r"get(PV|PT|PF|PN|PM|PW|PB|PR)([1-8])$", key)
@@ -1847,13 +1842,6 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
 
     if key == "getBAP" and _is_spurious_bap(status, value):
         return False
-
-    # Special logic for getCS1/2/3: show if corresponding getSVx is non-zero
-    if key in ("getCS1", "getCS2", "getCS3"):
-        if _is_non_zero_number(status.get("getSV" + key[-1])):
-            return True
-        if _is_empty_or_zero(value):
-            return False
 
     crt_val = status.get("getCRT")
     crt = None if crt_val is None else str(crt_val).strip()
@@ -1865,25 +1853,6 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
         return False
 
     return not _is_excluded_when_empty(key, value)
-
-
-def _is_non_zero_number(value: Any) -> bool:
-    """Return True if the value is a number other than zero."""
-    if value is None:
-        return False
-    try:
-        return float(value) != 0
-    except ValueError, TypeError:
-        return False
-
-
-def _is_empty_or_zero(value: Any) -> bool:
-    """Return True for None, numeric zero, the string "0" and empty strings."""
-    if value is None:
-        return True
-    if isinstance(value, int | float) and float(value) == 0:
-        return True
-    return isinstance(value, str) and (value.strip() == "" or value == "0")
 
 
 def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
@@ -1916,8 +1885,6 @@ def _is_excluded_when_empty(key: str, value: Any) -> bool:
         return True
     if hidden_when == "empty":
         return value is None or (isinstance(value, str) and value.strip() == "")
-    if hidden_when == "empty_or_zero":
-        return _is_empty_or_zero(value)
     if hidden_when == "empty_ip":
         return value is None or (
             isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0")
@@ -1925,13 +1892,15 @@ def _is_excluded_when_empty(key: str, value: Any) -> bool:
     return False
 
 
-# Sensors whose visibility depends on the device status. registry_cleanup removes them
-# while they are hidden. getLOT/getOHW depend on getCRT (cross-key rule in
-# is_sensor_visible), not on their own value being empty.
+# Sensors that registry_cleanup removes while they are hidden: keys that never become an
+# entity (hidden_when="always") and getLOT/getOHW, which depend on getCRT (cross-key rule
+# in is_sensor_visible). A sensor hidden only because its own value is empty is not
+# removed: removing it would drop its customizations (name, area, ...) whenever the
+# value happens to be empty at startup.
 _SYR_CONNECT_SENSOR_CONDITIONAL_KEYS = {
     description.key
     for description in _SYR_CONNECT_SENSOR_TYPES
-    if description.hidden_when is not None
+    if description.hidden_when == "always"
 } | {"getLOT", "getOHW"}
 
 
@@ -2018,8 +1987,12 @@ async def async_setup_entry(
 
         # Create sensors for all status values
         for key, value in status.items():
+            registered = (
+                find_entity_id(registry, "sensor", coordinator.entry_id, device_id, key)
+                is not None
+            )
             if not _is_sensor_wanted(
-                status, key, value, supported_sensor_keys, handled_keys
+                status, key, value, supported_sensor_keys, handled_keys, registered
             ):
                 continue
             _LOGGER.debug(
@@ -2219,8 +2192,14 @@ def _is_sensor_wanted(
     value: Any,
     supported_sensor_keys: set[str],
     handled_keys: set[str],
+    registered: bool = False,
 ) -> bool:
-    """Return True if the status value gets a regular sensor entity."""
+    """Return True if the status value gets a regular sensor entity.
+
+    A sensor that is already registered (`registered`) is created whatever its value,
+    except for hidden_when="always". Otherwise it would stay registered without an entity
+    (greyed out) until a restart with a value that passes the value rules.
+    """
     # Allowlist check: the definitive list of keys this integration handles.
     # Anything not listed here is ignored unconditionally, regardless of
     # what other checks follow. This takes precedence over all other logic.
@@ -2240,6 +2219,12 @@ def _is_sensor_wanted(
         or key in ("getLOT", "getOHW")
     ):
         return False
+
+    if registered:
+        description = _SYR_CONNECT_SENSOR_DESCRIPTIONS.get(key)
+        if description is not None and description.hidden_when == "always":
+            return False
+        return value is None or isinstance(value, int | float | str)
 
     # Centralized visibility check
     if not is_sensor_visible(status, key, value):

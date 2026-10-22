@@ -1173,13 +1173,13 @@ def _registry_with_unique_id(unique_id: str, entity_id: str) -> MagicMock:
     return registry
 
 
-def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
-    """Stale registry entry for a conditionally hidden sensor is removed when value is empty."""
+def test_registry_cleanup_keeps_sensor_with_empty_value() -> None:
+    """A registered sensor whose value is empty at startup keeps its registry entry."""
     hass = MagicMock()
     device_id = "DEV"
-    # getTYP has hidden_when - registry entry exists but device reports ""; it is found by
-    # unique_id, so the "_2" suffix of a second hub does not matter
-    entity_id = build_entity_id("sensor", device_id, "getTYP") + "_2"
+    # getTYP has hidden_when="empty" and the device reports "": removing the entry would
+    # drop its customizations (name, area, ...)
+    entity_id = build_entity_id("sensor", device_id, "getTYP")
     registry = _registry_with_unique_id(
         build_unique_id(None, device_id, "getTYP"), entity_id
     )
@@ -1196,7 +1196,7 @@ def test_registry_cleanup_removes_conditionally_hidden_sensor() -> None:
             hidden_keys=sensor._hidden_sensor_keys,
         )
 
-    registry.async_remove.assert_called_once_with(entity_id)
+    registry.async_remove.assert_not_called()
 
 
 def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
@@ -1269,11 +1269,12 @@ def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> Non
     device_id = "DEV"
     # Only the other hub has the entity; its unique_id contains the other entry_id
     registry = _registry_with_unique_id(
-        build_unique_id("other_hub", device_id, "getTYP"),
-        build_entity_id("sensor", device_id, "getTYP"),
+        build_unique_id("other_hub", device_id, "getDWF"),
+        build_entity_id("sensor", device_id, "getDWF"),
     )
 
-    coordinator = {"devices": [{"id": device_id, "status": {"getTYP": ""}}]}
+    # getDWF has hidden_when="always"
+    coordinator = {"devices": [{"id": device_id, "status": {"getDWF": "350"}}]}
     with patch(
         "custom_components.syr_connect.helpers.er.async_get", return_value=registry
     ):
@@ -1281,7 +1282,7 @@ def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> Non
             hass,
             coordinator,
             "sensor",
-            allowed_keys={"getTYP"},
+            allowed_keys={"getDWF"},
             entry_id="this_hub",
             hidden_keys=sensor._hidden_sensor_keys,
         )
@@ -1386,14 +1387,13 @@ def test_get_sensor_ala_map_detect_model_raises() -> None:
 
 
 def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
-    """Test group-controlled visibility, CS special-case, and empty-IP exclusions."""
+    """Test group-controlled visibility, getCS1 at zero, and empty-IP exclusions."""
     # Group-controlled: getPA1 false -> getPV1 hidden
     status = {"getPA1": "0"}
     assert not is_sensor_visible(status, "getPV1", "1")
 
-    # CS1 visible when corresponding getSV1 non-zero even if value is '0'
-    status2 = {"getSV1": 5}
-    assert is_sensor_visible(status2, "getCS1", "0") is True
+    # getCS1 visible at '0' without looking at getSV1
+    assert is_sensor_visible({"getSV1": 0}, "getCS1", "0") is True
 
     # Empty-IP exclusion: pick a key from the exclusion set
     key_ip = next(iter(_keys_hidden_when("empty_ip")))
@@ -1530,21 +1530,10 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
     assert not is_sensor_visible({}, key_es, None)
     assert not is_sensor_visible({}, key_es, "   ")
 
-    # Use a key from the empty-value exclusion set that is NOT a CS key,
-    # so the generic EXCLUDED_WHEN_EMPTY_VALUE branch (including int/float zero)
-    # is exercised rather than the CS special-case block.
-    non_cs_ev_keys = _keys_hidden_when("empty_or_zero") - {
-        "getCS1",
-        "getCS2",
-        "getCS3",
-    }
-    key_ev = next(iter(non_cs_ev_keys))
-    assert not is_sensor_visible({}, key_ev, None)
-    assert not is_sensor_visible(
-        {}, key_ev, 0
-    )  # hits int/float zero branch (line 1055)
-    assert not is_sensor_visible({}, key_ev, 0.0)  # hits float zero branch
-    assert not is_sensor_visible({}, key_ev, "0")
+    # Zero is a value, not an empty value: the sensor stays visible
+    assert is_sensor_visible({}, key_es, 0)
+    assert is_sensor_visible({}, key_es, 0.0)
+    assert is_sensor_visible({}, key_es, "0")
 
     # Empty IP exclusion set
     key_ip = next(iter(_keys_hidden_when("empty_ip")))
@@ -1592,12 +1581,6 @@ def test_is_sensor_visible_group_pa_true_shows_group_keys() -> None:
     """If getPAx is truthy, related group keys should be visible."""
     status = {"getPA1": "1"}
     assert is_sensor_visible(status, "getPV1", "0") is True
-
-
-def test_is_sensor_visible_cs_sv_non_numeric_falls_back() -> None:
-    """When getSVx is non-numeric, CS follows empty/value rules and is hidden for '0'."""
-    status = {"getSV1": "bad", "getCS1": "0"}
-    assert is_sensor_visible(status, "getCS1", "0") is False
 
 
 # ---------------------------------------------------------------------------
@@ -1731,14 +1714,6 @@ def test_is_value_true_str_numeric_parse() -> None:
     assert is_sensor_visible({"getPA1": "bad"}, "getPV1", "1") is False
     # Non-bool/int/float/str type -> is_value_true returns False -> key hidden
     assert is_sensor_visible({"getPA1": [1, 2]}, "getPV1", "1") is False
-
-
-def test_is_sensor_visible_cs_value_none_returns_false() -> None:
-    """The getCS with None value and non-zero getSVx falls through to value is None check (line 826)."""
-    # getSV1 is non-zero so the early True is NOT triggered (sv_val is zero string),
-    # then value=None hits the 'if value is None: return False' branch.
-    status = {"getSV1": "0"}
-    assert is_sensor_visible(status, "getCS1", None) is False
 
 
 # ---------------------------------------------------------------------------
