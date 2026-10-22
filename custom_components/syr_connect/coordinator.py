@@ -136,7 +136,9 @@ class SyrConnectDataUpdateCoordinator(
             )
             self._username = username
             self._configuration_url = svc["configuration_url"] if svc else None
-            _LOGGER.info("Coordinator initialized with XML API (username=%s)", username)
+            _LOGGER.debug(
+                "Coordinator initialized with XML API (username=%s)", username
+            )
 
         # Keep aiohttp session for optional JSON API usage per-device
         self._session = session

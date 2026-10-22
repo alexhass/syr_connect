@@ -162,7 +162,9 @@ async def validate_input_xml(
         _LOGGER.error("XML API: unexpected error during validation: %s", err)
         raise CannotConnectError from err
 
-    _LOGGER.info("XML API: authentication successful for user: %s", data[CONF_USERNAME])
+    _LOGGER.debug(
+        "XML API: authentication successful for user: %s", data[CONF_USERNAME]
+    )
 
     title_label = display_name or "SYR Connect"
     return {"title": f"{title_label} ({data[CONF_USERNAME]})"}
@@ -728,7 +730,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
-                _LOGGER.info("Creating Cloud/XML API config entry: %s", info["title"])
+                _LOGGER.debug("Creating Cloud/XML API config entry: %s", info["title"])
                 return self.async_create_entry(
                     title=info["title"],
                     data={

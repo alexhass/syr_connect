@@ -171,7 +171,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if api_type == API_TYPE_JSON
         else entry.data.get(CONF_USERNAME, "unknown")
     )
-    _LOGGER.info(
+    _LOGGER.debug(
         "Setting up SYR Connect integration (%s API) for: %s",
         api_type.upper(),
         api_identifier,
