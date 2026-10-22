@@ -2251,3 +2251,37 @@ def test_helpers_infinite_values_count_as_invalid() -> None:
     # An invalid getWHU defaults to 0
     assert get_sensor_iwh_value({"getCND": 300, "getWHU": "inf"}) == 300 / 33
     assert get_sensor_ab_value({"getAB": float("inf")}) is None
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (None, True),
+        ("", True),
+        ("  ", True),
+        ("0.0.0.0", True),
+        ("::", True),
+        (" 0.0.0.0 ", True),
+        ("192.168.1.10", False),
+        ("fe80::1", False),
+        ("device.local", False),
+        (0, False),
+    ],
+)
+def test_is_empty_ip(value, expected) -> None:
+    """Missing, blank and unspecified IP addresses count as empty."""
+    assert helpers.is_empty_ip(value) is expected
+
+
+def test_empty_ip_hides_sensor_and_skips_mac() -> None:
+    """The unspecified IPv6 address "::" hides an empty_ip sensor and its MAC, like 0.0.0.0."""
+    key_ip = next(iter(_keys_hidden_when("empty_ip")))
+    assert is_sensor_visible({}, key_ip, "::") is False
+
+    status = {
+        "getIPA": "::",
+        "getMAC": "AA:BB",
+        "getEIP": "192.168.1.10",
+        "getMAC2": "CC:DD",
+    }
+    assert helpers.get_current_mac(status) == "CC:DD"

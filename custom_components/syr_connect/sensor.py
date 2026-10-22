@@ -60,6 +60,7 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    is_empty_ip,
     is_value_true,
     registry_cleanup,
 )
@@ -422,7 +423,7 @@ class SyrConnectSensorEntityDescription(SensorEntityDescription):
     divide_by: int = 1
     multiply_by: int = 1
     # Hide the sensor while its value is empty: "empty" (None or blank text) or "empty_ip"
-    # (also the placeholder IP "0.0.0.0"). "always" never creates the entity; remove it in
+    # (also the unspecified IP "0.0.0.0" or "::"). "always" never creates the entity; remove it in
     # the code once a device reports a useful value.
     hidden_when: Literal["empty", "empty_ip", "always"] | None = None
     # Compute the native value for keys with a special format or a value map
@@ -1830,7 +1831,7 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
         is "0" (HWE).
     - Empty values: the `hidden_when` of the key's description hides it when the
         reported value is None or a whitespace-only string ("empty"), or also the
-        placeholder IP "0.0.0.0" ("empty_ip"). "always" hides it whatever the value.
+        unspecified IP "0.0.0.0" or "::" ("empty_ip"). "always" hides it whatever the value.
 
     Args:
             status: The full flattened device status mapping (used for cross-key
@@ -1897,9 +1898,7 @@ def _is_excluded_when_empty(key: str, value: Any) -> bool:
     if hidden_when == "empty":
         return value is None or (isinstance(value, str) and value.strip() == "")
     if hidden_when == "empty_ip":
-        return value is None or (
-            isinstance(value, str) and (value.strip() == "" or value == "0.0.0.0")
-        )
+        return is_empty_ip(value)
     return False
 
 

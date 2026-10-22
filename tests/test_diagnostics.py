@@ -2874,12 +2874,25 @@ async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.parametrize(
-    "ip", ["8.8.8.8", "2001:4860:4860::8888", "device.example.com"]
+    "ip",
+    [
+        "8.8.8.8",
+        "2001:4860:4860::8888",
+        "device.example.com",
+        "127.0.0.1",
+        "::1",
+        "169.254.1.2",
+        "fe80::1",
+        "::",
+    ],
 )
 async def test_diagnostics_raw_json_skips_non_private_ip(
     hass: HomeAssistant, ip: str
 ) -> None:
-    """The device IP comes from the cloud: public addresses and hostnames are not contacted."""
+    """The device IP comes from the cloud: only private LAN addresses are contacted.
+
+    Public addresses, hostnames, loopback, link-local and unspecified addresses are not.
+    """
 
     config_entry = ConfigEntry(
         version=1,

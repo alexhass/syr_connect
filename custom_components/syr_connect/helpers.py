@@ -553,6 +553,27 @@ def registry_cleanup(
         )
 
 
+def is_empty_ip(value: Any) -> bool:
+    """Return True if an IP address value is missing, blank or the unspecified address.
+
+    Formats:
+    - Missing or blank: None, "" -> True
+    - Unspecified address (Trio DFR/LS without an address): "0.0.0.0", "::" -> True
+    - Any other value, also a hostname: "192.168.1.10" -> False
+    """
+    if value is None:
+        return True
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    if text == "":
+        return True
+    try:
+        return ipaddress.ip_address(text).is_unspecified
+    except ValueError:
+        return False
+
+
 def get_current_mac(status: dict[str, Any]) -> str | None:
     """Return the current MAC address following priority rules.
 
@@ -568,17 +589,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
         return None
 
     def is_not_empty_ip(key: str) -> bool:
-        val = status.get(key)
-        if val is None:
-            return False
-        if isinstance(val, str):
-            s = val.strip()
-            # Treat empty string and the unspecified address 0.0.0.0 as empty
-            # Syr "Trio DFR/LS" sets IP as "0.0.0.0", where others do not.
-            if s in {"", "0.0.0.0"}:
-                return False
-            return True
-        return True
+        return not is_empty_ip(status.get(key))
 
     # Priority selection for MAC address:
     # 1. If getIPA (primary IP) is set and not empty, use getMAC (primary MAC)

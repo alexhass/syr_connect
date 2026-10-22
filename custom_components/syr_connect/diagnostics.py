@@ -18,7 +18,7 @@ from .api_xml import SyrConnectXmlAPI
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
-from .helpers import mask_ug_value
+from .helpers import is_empty_ip, mask_ug_value
 from .models import detect_model
 from .sensor import sensor_keys_for_status
 
@@ -402,21 +402,20 @@ async def _fetch_local_device_json(
     status = dev.get("status") or {}
     ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
 
-    # Normalize IP: treat empty string or the placeholder 0.0.0.0 as absent
-    if isinstance(ip, str) and (ip.strip() == "" or ip == "0.0.0.0"):
-        ip = None
-
-    # If no usable IP, skip JSON fetch for this device
-    if not ip:
+    # No usable IP (missing, blank or the unspecified placeholder 0.0.0.0): skip the
+    # JSON fetch for this device
+    if is_empty_ip(ip):
         return dev_id, None
 
     # The IP comes from the cloud; only contact devices in the local network. A wrong
     # or manipulated cloud answer must not make Home Assistant send requests (including
-    # the ADM login below) to an arbitrary public address.
+    # the ADM login below) to an arbitrary public address, to Home Assistant itself
+    # (loopback) or to a link-local address, where no SYR device is reachable.
     try:
-        if not ipaddress.ip_address(str(ip).strip()).is_private:
-            return dev_id, None
+        address = ipaddress.ip_address(str(ip).strip())
     except ValueError:
+        return dev_id, None
+    if not address.is_private or address.is_loopback or address.is_link_local:
         return dev_id, None
 
     json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)
