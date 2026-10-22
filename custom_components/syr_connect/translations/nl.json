@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Zouthoeveelheid (container 1)"
+        "name": "Zouthoeveelheid in container 1"
       },
       "getsv2": {
-        "name": "Zouthoeveelheid (container 2)"
+        "name": "Zouthoeveelheid in container 2"
       },
       "getsv3": {
-        "name": "Zouthoeveelheid (container 3)"
+        "name": "Zouthoeveelheid in container 3"
       },
       "gettpr": {
         "name": "Streefdruk"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Resterende harscapaciteit (tank 1)"
+        "name": "Resterende harscapaciteit in tank 1"
       },
       "getcs2": {
-        "name": "Resterende harscapaciteit (tank 2)"
+        "name": "Resterende harscapaciteit in tank 2"
       },
       "getcs3": {
-        "name": "Resterende harscapaciteit (tank 3)"
+        "name": "Resterende harscapaciteit in tank 3"
       },
       "getcyn": {
         "name": "Regeneratiecyclusteller"
@@ -1186,10 +1186,10 @@
         "name": "Zoutdosering"
       },
       "getre1": {
-        "name": "Reservecapaciteit (fles 1)"
+        "name": "Reservecapaciteit in fles 1"
       },
       "getre2": {
-        "name": "Reservecapaciteit (fles 2)"
+        "name": "Reservecapaciteit in fles 2"
       },
       "getres": {
         "name": "Resterende capaciteit"
@@ -1198,19 +1198,19 @@
         "name": "Regeneratiestatus",
         "state": {
           "0": "Geen regeneratie",
-          "1": "Tank 1 regenereert",
-          "2": "Tank 2 regenereert"
+          "1": "Regeneratie in tank 1",
+          "2": "Regeneratie in tank 2"
         }
       },
       "getrg2": {
-        "name": "Regeneratie tank 2",
+        "name": "Regeneratie in tank 2",
         "state": {
           "0": "Inactief",
           "1": "Bezig"
         }
       },
       "getrg3": {
-        "name": "Regeneratie tank 3",
+        "name": "Regeneratie in tank 3",
         "state": {
           "0": "Inactief",
           "1": "Bezig"
@@ -1309,13 +1309,13 @@
         "name": "Volgend jaarlijks onderhoud"
       },
       "getss1": {
-        "name": "Zoutvoorraad (container 1)"
+        "name": "Zoutvoorraad in container 1"
       },
       "getss2": {
-        "name": "Zoutvoorraad (container 2)"
+        "name": "Zoutvoorraad in container 2"
       },
       "getss3": {
-        "name": "Zoutvoorraad (container 3)"
+        "name": "Zoutvoorraad in container 3"
       },
       "getsta": {
         "name": "Status",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Zouthoeveelheid (container 1)"
+        "name": "Zouthoeveelheid in container 1"
       },
       "getsv2": {
-        "name": "Zouthoeveelheid (container 2)"
+        "name": "Zouthoeveelheid in container 2"
       },
       "getsv3": {
-        "name": "Zouthoeveelheid (container 3)"
+        "name": "Zouthoeveelheid in container 3"
       },
       "gett1": {
         "name": "Lektijd 1"

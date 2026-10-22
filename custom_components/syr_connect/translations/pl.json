@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Ilość soli (pojemnik 1)"
+        "name": "Ilość soli w pojemniku 1"
       },
       "getsv2": {
-        "name": "Ilość soli (pojemnik 2)"
+        "name": "Ilość soli w pojemniku 2"
       },
       "getsv3": {
-        "name": "Ilość soli (pojemnik 3)"
+        "name": "Ilość soli w pojemniku 3"
       },
       "gettpr": {
         "name": "Ciśnienie docelowe"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Pozostała pojemność żywicy (zbiornik 1)"
+        "name": "Pozostała pojemność żywicy w zbiorniku 1"
       },
       "getcs2": {
-        "name": "Pozostała pojemność żywicy (zbiornik 2)"
+        "name": "Pozostała pojemność żywicy w zbiorniku 2"
       },
       "getcs3": {
-        "name": "Pozostała pojemność żywicy (zbiornik 3)"
+        "name": "Pozostała pojemność żywicy w zbiorniku 3"
       },
       "getcyn": {
         "name": "Licznik cykli regeneracji"
@@ -1186,10 +1186,10 @@
         "name": "Dozowanie soli"
       },
       "getre1": {
-        "name": "Pojemność rezerwowa (butelka 1)"
+        "name": "Pojemność rezerwowa w butelce 1"
       },
       "getre2": {
-        "name": "Pojemność rezerwowa (butelka 2)"
+        "name": "Pojemność rezerwowa w butelce 2"
       },
       "getres": {
         "name": "Pozostała pojemność"
@@ -1198,19 +1198,19 @@
         "name": "Status regeneracji",
         "state": {
           "0": "Brak regeneracji",
-          "1": "Zbiornik 1 w regeneracji",
-          "2": "Zbiornik 2 w regeneracji"
+          "1": "Regeneracja w zbiorniku 1",
+          "2": "Regeneracja w zbiorniku 2"
         }
       },
       "getrg2": {
-        "name": "Regeneracja (zbiornik 2)",
+        "name": "Regeneracja w zbiorniku 2",
         "state": {
           "0": "Nieaktywna",
           "1": "Uruchomiona"
         }
       },
       "getrg3": {
-        "name": "Regeneracja (zbiornik 3)",
+        "name": "Regeneracja w zbiorniku 3",
         "state": {
           "0": "Nieaktywna",
           "1": "Uruchomiona"
@@ -1309,13 +1309,13 @@
         "name": "Następna coroczna konserwacja"
       },
       "getss1": {
-        "name": "Zapas soli (pojemnik 1)"
+        "name": "Zapas soli w pojemniku 1"
       },
       "getss2": {
-        "name": "Zapas soli (pojemnik 2)"
+        "name": "Zapas soli w pojemniku 2"
       },
       "getss3": {
-        "name": "Zapas soli (pojemnik 3)"
+        "name": "Zapas soli w pojemniku 3"
       },
       "getsta": {
         "name": "Status",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Ilość soli (pojemnik 1)"
+        "name": "Ilość soli w pojemniku 1"
       },
       "getsv2": {
-        "name": "Ilość soli (pojemnik 2)"
+        "name": "Ilość soli w pojemniku 2"
       },
       "getsv3": {
-        "name": "Ilość soli (pojemnik 3)"
+        "name": "Ilość soli w pojemniku 3"
       },
       "gett1": {
         "name": "Czas wycieku 1"

@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Salzmenge (Behälter 1)"
+        "name": "Salzmenge in Behälter 1"
       },
       "getsv2": {
-        "name": "Salzmenge (Behälter 2)"
+        "name": "Salzmenge in Behälter 2"
       },
       "getsv3": {
-        "name": "Salzmenge (Behälter 3)"
+        "name": "Salzmenge in Behälter 3"
       },
       "gettpr": {
         "name": "Solldruck"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Restkapazität des Harzes (Behälter 1)"
+        "name": "Restkapazität des Harzes in Behälter 1"
       },
       "getcs2": {
-        "name": "Restkapazität des Harzes (Behälter 2)"
+        "name": "Restkapazität des Harzes in Behälter 2"
       },
       "getcs3": {
-        "name": "Restkapazität des Harzes (Behälter 3)"
+        "name": "Restkapazität des Harzes in Behälter 3"
       },
       "getcyn": {
         "name": "Regenerationszyklen (Anzahl)"
@@ -1186,10 +1186,10 @@
         "name": "Salzdosierung"
       },
       "getre1": {
-        "name": "Reservekapazität (Flasche 1)"
+        "name": "Reservekapazität in Flasche 1"
       },
       "getre2": {
-        "name": "Reservekapazität (Flasche 2)"
+        "name": "Reservekapazität in Flasche 2"
       },
       "getres": {
         "name": "Restkapazität"
@@ -1198,19 +1198,19 @@
         "name": "Regeneration-Status",
         "state": {
           "0": "keine Regeneration",
-          "1": "Behälter 1 regeneriert",
-          "2": "Behälter 2 regeneriert"
+          "1": "Regeneration in Behälter 1",
+          "2": "Regeneration in Behälter 2"
         }
       },
       "getrg2": {
-        "name": "Regeneration im Behälter 2",
+        "name": "Regeneration in Behälter 2",
         "state": {
           "0": "Inaktiv",
           "1": "Läuft"
         }
       },
       "getrg3": {
-        "name": "Regeneration im Behälter 3",
+        "name": "Regeneration in Behälter 3",
         "state": {
           "0": "Inaktiv",
           "1": "Läuft"
@@ -1309,13 +1309,13 @@
         "name": "Nächste jährliche Wartung"
       },
       "getss1": {
-        "name": "Salzvorrat (Behälter 1)"
+        "name": "Salzvorrat in Behälter 1"
       },
       "getss2": {
-        "name": "Salzvorrat (Behälter 2)"
+        "name": "Salzvorrat in Behälter 2"
       },
       "getss3": {
-        "name": "Salzvorrat (Behälter 3)"
+        "name": "Salzvorrat in Behälter 3"
       },
       "getsta": {
         "name": "Status",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Salzmenge (Behälter 1)"
+        "name": "Salzmenge in Behälter 1"
       },
       "getsv2": {
-        "name": "Salzmenge (Behälter 2)"
+        "name": "Salzmenge in Behälter 2"
       },
       "getsv3": {
-        "name": "Salzmenge (Behälter 3)"
+        "name": "Salzmenge in Behälter 3"
       },
       "gett1": {
         "name": "Zeitleckage 1"

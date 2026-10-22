@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Cantidad de sal (depósito 1)"
+        "name": "Cantidad de sal en el depósito 1"
       },
       "getsv2": {
-        "name": "Cantidad de sal (depósito 2)"
+        "name": "Cantidad de sal en el depósito 2"
       },
       "getsv3": {
-        "name": "Cantidad de sal (depósito 3)"
+        "name": "Cantidad de sal en el depósito 3"
       },
       "gettpr": {
         "name": "Presión objetivo"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Capacidad restante de la resina (depósito 1)"
+        "name": "Capacidad restante de la resina en el depósito 1"
       },
       "getcs2": {
-        "name": "Capacidad restante de la resina (depósito 2)"
+        "name": "Capacidad restante de la resina en el depósito 2"
       },
       "getcs3": {
-        "name": "Capacidad restante de la resina (depósito 3)"
+        "name": "Capacidad restante de la resina en el depósito 3"
       },
       "getcyn": {
         "name": "Contador de ciclos"
@@ -1186,10 +1186,10 @@
         "name": "Dosificación de sal"
       },
       "getre1": {
-        "name": "Capacidad de reserva (frasco 1)"
+        "name": "Capacidad de reserva en el frasco 1"
       },
       "getre2": {
-        "name": "Capacidad de reserva (frasco 2)"
+        "name": "Capacidad de reserva en el frasco 2"
       },
       "getres": {
         "name": "Capacidad restante"
@@ -1198,19 +1198,19 @@
         "name": "Estado de regeneración",
         "state": {
           "0": "Sin regeneración",
-          "1": "Regenerando depósito 1",
-          "2": "Regenerando depósito 2"
+          "1": "Regeneración en el depósito 1",
+          "2": "Regeneración en el depósito 2"
         }
       },
       "getrg2": {
-        "name": "Regeneración (depósito 2)",
+        "name": "Regeneración en el depósito 2",
         "state": {
           "0": "Inactivo",
           "1": "En funcionamiento"
         }
       },
       "getrg3": {
-        "name": "Regeneración (depósito 3)",
+        "name": "Regeneración en el depósito 3",
         "state": {
           "0": "Inactivo",
           "1": "En funcionamiento"
@@ -1309,13 +1309,13 @@
         "name": "Próximo mantenimiento anual"
       },
       "getss1": {
-        "name": "Reserva de sal (depósito 1)"
+        "name": "Reserva de sal en el depósito 1"
       },
       "getss2": {
-        "name": "Reserva de sal (depósito 2)"
+        "name": "Reserva de sal en el depósito 2"
       },
       "getss3": {
-        "name": "Reserva de sal (depósito 3)"
+        "name": "Reserva de sal en el depósito 3"
       },
       "getsta": {
         "name": "Estado",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Cantidad de sal (depósito 1)"
+        "name": "Cantidad de sal en el depósito 1"
       },
       "getsv2": {
-        "name": "Cantidad de sal (depósito 2)"
+        "name": "Cantidad de sal en el depósito 2"
       },
       "getsv3": {
-        "name": "Cantidad de sal (depósito 3)"
+        "name": "Cantidad de sal en el depósito 3"
       },
       "gett1": {
         "name": "Fuga de tiempo 1"

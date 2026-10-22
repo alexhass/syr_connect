@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantité de sel (réservoir 1)"
+        "name": "Quantité de sel dans le réservoir 1"
       },
       "getsv2": {
-        "name": "Quantité de sel (réservoir 2)"
+        "name": "Quantité de sel dans le réservoir 2"
       },
       "getsv3": {
-        "name": "Quantité de sel (réservoir 3)"
+        "name": "Quantité de sel dans le réservoir 3"
       },
       "gettpr": {
         "name": "Pression cible"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Capacité restante de la résine (réservoir 1)"
+        "name": "Capacité restante de la résine dans le réservoir 1"
       },
       "getcs2": {
-        "name": "Capacité restante de la résine (réservoir 2)"
+        "name": "Capacité restante de la résine dans le réservoir 2"
       },
       "getcs3": {
-        "name": "Capacité restante de la résine (réservoir 3)"
+        "name": "Capacité restante de la résine dans le réservoir 3"
       },
       "getcyn": {
         "name": "Compteur de cycles"
@@ -1186,10 +1186,10 @@
         "name": "Dosage du sel"
       },
       "getre1": {
-        "name": "Capacité de réserve (bouteille 1)"
+        "name": "Capacité de réserve dans la bouteille 1"
       },
       "getre2": {
-        "name": "Capacité de réserve (bouteille 2)"
+        "name": "Capacité de réserve dans la bouteille 2"
       },
       "getres": {
         "name": "Capacité restante"
@@ -1198,19 +1198,19 @@
         "name": "Statut de régénération",
         "state": {
           "0": "Pas de régénération",
-          "1": "Régénération du réservoir 1",
-          "2": "Régénération du réservoir 2"
+          "1": "Régénération dans le réservoir 1",
+          "2": "Régénération dans le réservoir 2"
         }
       },
       "getrg2": {
-        "name": "Régénération (réservoir 2)",
+        "name": "Régénération dans le réservoir 2",
         "state": {
           "0": "Inactif",
           "1": "En cours"
         }
       },
       "getrg3": {
-        "name": "Régénération (réservoir 3)",
+        "name": "Régénération dans le réservoir 3",
         "state": {
           "0": "Inactif",
           "1": "En cours"
@@ -1309,13 +1309,13 @@
         "name": "Prochaine maintenance annuelle"
       },
       "getss1": {
-        "name": "Stock de sel (réservoir 1)"
+        "name": "Stock de sel dans le réservoir 1"
       },
       "getss2": {
-        "name": "Stock de sel (réservoir 2)"
+        "name": "Stock de sel dans le réservoir 2"
       },
       "getss3": {
-        "name": "Stock de sel (réservoir 3)"
+        "name": "Stock de sel dans le réservoir 3"
       },
       "getsta": {
         "name": "Statut",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantité de sel (réservoir 1)"
+        "name": "Quantité de sel dans le réservoir 1"
       },
       "getsv2": {
-        "name": "Quantité de sel (réservoir 2)"
+        "name": "Quantité de sel dans le réservoir 2"
       },
       "getsv3": {
-        "name": "Quantité de sel (réservoir 3)"
+        "name": "Quantité de sel dans le réservoir 3"
       },
       "gett1": {
         "name": "Fuite de temps 1"

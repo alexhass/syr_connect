@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantità di sale (contenitore 1)"
+        "name": "Quantità di sale nel contenitore 1"
       },
       "getsv2": {
-        "name": "Quantità di sale (contenitore 2)"
+        "name": "Quantità di sale nel contenitore 2"
       },
       "getsv3": {
-        "name": "Quantità di sale (contenitore 3)"
+        "name": "Quantità di sale nel contenitore 3"
       },
       "gettpr": {
         "name": "Pressione target"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Capacità residua della resina (serbatoio 1)"
+        "name": "Capacità residua della resina nel serbatoio 1"
       },
       "getcs2": {
-        "name": "Capacità residua della resina (serbatoio 2)"
+        "name": "Capacità residua della resina nel serbatoio 2"
       },
       "getcs3": {
-        "name": "Capacità residua della resina (serbatoio 3)"
+        "name": "Capacità residua della resina nel serbatoio 3"
       },
       "getcyn": {
         "name": "Contatore cicli di rigenerazione"
@@ -1186,10 +1186,10 @@
         "name": "Dosaggio sale"
       },
       "getre1": {
-        "name": "Capacità di riserva (bottiglia 1)"
+        "name": "Capacità di riserva nella bottiglia 1"
       },
       "getre2": {
-        "name": "Capacità di riserva (bottiglia 2)"
+        "name": "Capacità di riserva nella bottiglia 2"
       },
       "getres": {
         "name": "Capacità residua"
@@ -1198,19 +1198,19 @@
         "name": "Stato rigenerazione",
         "state": {
           "0": "Nessuna rigenerazione",
-          "1": "Serbatoio 1 in rigenerazione",
-          "2": "Serbatoio 2 in rigenerazione"
+          "1": "Rigenerazione nel serbatoio 1",
+          "2": "Rigenerazione nel serbatoio 2"
         }
       },
       "getrg2": {
-        "name": "Rigenerazione serbatoio 2",
+        "name": "Rigenerazione nel serbatoio 2",
         "state": {
           "0": "Inattivo",
           "1": "In funzione"
         }
       },
       "getrg3": {
-        "name": "Rigenerazione serbatoio 3",
+        "name": "Rigenerazione nel serbatoio 3",
         "state": {
           "0": "Inattivo",
           "1": "In funzione"
@@ -1309,13 +1309,13 @@
         "name": "Prossima manutenzione annuale"
       },
       "getss1": {
-        "name": "Scorta di sale (contenitore 1)"
+        "name": "Scorta di sale nel contenitore 1"
       },
       "getss2": {
-        "name": "Scorta di sale (contenitore 2)"
+        "name": "Scorta di sale nel contenitore 2"
       },
       "getss3": {
-        "name": "Scorta di sale (contenitore 3)"
+        "name": "Scorta di sale nel contenitore 3"
       },
       "getsta": {
         "name": "Stato",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Quantità di sale (contenitore 1)"
+        "name": "Quantità di sale nel contenitore 1"
       },
       "getsv2": {
-        "name": "Quantità di sale (contenitore 2)"
+        "name": "Quantità di sale nel contenitore 2"
       },
       "getsv3": {
-        "name": "Quantità di sale (contenitore 3)"
+        "name": "Quantità di sale nel contenitore 3"
       },
       "gett1": {
         "name": "Tempo perdita 1"

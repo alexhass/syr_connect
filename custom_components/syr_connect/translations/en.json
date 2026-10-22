@@ -412,13 +412,13 @@
         }
       },
       "getsv1": {
-        "name": "Salt volume (container 1)"
+        "name": "Salt volume in container 1"
       },
       "getsv2": {
-        "name": "Salt volume (container 2)"
+        "name": "Salt volume in container 2"
       },
       "getsv3": {
-        "name": "Salt volume (container 3)"
+        "name": "Salt volume in container 3"
       },
       "gettpr": {
         "name": "Target pressure"
@@ -583,13 +583,13 @@
         }
       },
       "getcs1": {
-        "name": "Remaining resin capacity (tank 1)"
+        "name": "Remaining resin capacity in tank 1"
       },
       "getcs2": {
-        "name": "Remaining resin capacity (tank 2)"
+        "name": "Remaining resin capacity in tank 2"
       },
       "getcs3": {
-        "name": "Remaining resin capacity (tank 3)"
+        "name": "Remaining resin capacity in tank 3"
       },
       "getcyn": {
         "name": "Regeneration cycle counter"
@@ -1186,10 +1186,10 @@
         "name": "Salt dosing"
       },
       "getre1": {
-        "name": "Reserve capacity (bottle 1)"
+        "name": "Reserve capacity in bottle 1"
       },
       "getre2": {
-        "name": "Reserve capacity (bottle 2)"
+        "name": "Reserve capacity in bottle 2"
       },
       "getres": {
         "name": "Remaining capacity"
@@ -1198,19 +1198,19 @@
         "name": "Regeneration status",
         "state": {
           "0": "No regeneration",
-          "1": "Tank 1 regenerating",
-          "2": "Tank 2 regenerating"
+          "1": "Regeneration in tank 1",
+          "2": "Regeneration in tank 2"
         }
       },
       "getrg2": {
-        "name": "Regeneration tank 2",
+        "name": "Regeneration in tank 2",
         "state": {
           "0": "Inactive",
           "1": "Running"
         }
       },
       "getrg3": {
-        "name": "Regeneration tank 3",
+        "name": "Regeneration in tank 3",
         "state": {
           "0": "Inactive",
           "1": "Running"
@@ -1309,13 +1309,13 @@
         "name": "Next annual maintenance"
       },
       "getss1": {
-        "name": "Salt stock (container 1)"
+        "name": "Salt stock in container 1"
       },
       "getss2": {
-        "name": "Salt stock (container 2)"
+        "name": "Salt stock in container 2"
       },
       "getss3": {
-        "name": "Salt stock (container 3)"
+        "name": "Salt stock in container 3"
       },
       "getsta": {
         "name": "Status",
@@ -1334,13 +1334,13 @@
         }
       },
       "getsv1": {
-        "name": "Salt volume (container 1)"
+        "name": "Salt volume in container 1"
       },
       "getsv2": {
-        "name": "Salt volume (container 2)"
+        "name": "Salt volume in container 2"
       },
       "getsv3": {
-        "name": "Salt volume (container 3)"
+        "name": "Salt volume in container 3"
       },
       "gett1": {
         "name": "Leakage time 1"
