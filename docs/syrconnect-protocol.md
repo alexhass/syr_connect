@@ -697,7 +697,7 @@ These settings can be set by the user.
 | getCYN | "0" | | Number of the running program |
 | getCYT | "00:00" | | Duration of the running program |
 | getRTI | "00:00" | | Total duration of the regeneration cylce |
-| getLAR | "1694501839" | | Last regeneration as UNIX timestamp (seconds since 1.1.1970) |
+| getLAR | "1694501839" | | Last regeneration as local time in seconds since 1.1.1970, not UTC (see `docs/known_issues_xml_api.md`, issue 5) |
 | getTOR | "429" | | Number of total regeneration cycles |
 | getNOR | "427" | | Number of regeneration cycles in normal mode |
 | getSCR | "0" | | *unknown, likely number of service regeneration cycles* |

@@ -82,6 +82,15 @@ test fixtures, and in the parsing/encryption layers implemented here.
   - There is no client-side session expiry: a new login only happens when the server rejects the token.
   - Fixture: `tests/fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml`. Tests: `test_invalid_token_response_raises_session_expired` in `tests/test_response_parser.py`, `test_rejected_token_relogs_in_and_retries_once` and `test_rejected_token_twice_raises_session_expired` in `tests/test_api_xml.py`.
 
+### 5. Time values are local time, not UTC
+
+- Description: Time values count the local wall time of the device in seconds since 1970, not UTC. `getLAR` (last regeneration) of 23 October 2026 01:16 local time is reported as `1792718160`, which is 01:16 UTC; read as a UNIX timestamp, the regeneration appears two hours later in summer time (one hour in winter time). The cloud knows the time zone of each project: `GetProjectDeviceCollections` returns `tz="W.+Europe+Standard+Time"` and the current offset `tzo="02:00:00"`. The same is assumed for all devices and for the local JSON API, because the value comes from the device.
+- Impact: A timestamp sensor shows the time shifted by the UTC offset of the device's time zone.
+- Mitigation in this project:
+  - `parse_device_list_response()` in `custom_components/syr_connect/response_parser.py` parses `tzo` of the project into seconds and stores it as `utc_offset` of each device. The cloud switches `tzo` with daylight saving time (`01:00:00` in winter, `02:00:00` in summer), and the device list is fetched on every update, so the offset follows the season.
+  - `_value_lar()` in `custom_components/syr_connect/sensor.py` subtracts `utc_offset` from the value. Without it (local JSON API) the value is read as wall time in the time zone of Home Assistant.
+  - Tests: `test_parse_utc_offset` and `test_device_list_has_utc_offset_of_project` in `tests/test_response_parser.py`, `test_sensor_native_value_timestamp_uses_cloud_utc_offset` and `test_sensor_native_value_timestamp_is_local_time` in `tests/test_sensor.py`.
+
 ## References
 
 - Parser: [custom_components/syr_connect/response_parser.py](custom_components/syr_connect/response_parser.py)

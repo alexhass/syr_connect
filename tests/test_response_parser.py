@@ -12,7 +12,10 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectSessionExpiredError,
 )
-from custom_components.syr_connect.response_parser import ResponseParser
+from custom_components.syr_connect.response_parser import (
+    ResponseParser,
+    _parse_utc_offset,
+)
 
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(
     os.path.dirname(__file__),
@@ -1025,3 +1028,42 @@ def test_offline_device_does_not_exempt_glitching_online_device(parser):
 
     assert parser._ignore_broken_response([offline, glitch]) is True
     assert parser._ignore_broken_response([offline]) is False
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("02:00:00", 7200),
+        ("01:00:00", 3600),
+        ("-05:30:00", -19800),
+        ("1:00", 3600),
+        ("", None),
+        ("abc", None),
+        (None, None),
+    ],
+)
+def test_parse_utc_offset(value, expected) -> None:
+    """The tzo of a project is parsed into seconds east of UTC."""
+    assert _parse_utc_offset(value) == expected
+
+
+def test_device_list_has_utc_offset_of_project(parser) -> None:
+    """Every device of a project gets the project's current UTC offset (tzo)."""
+    with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
+        devices = parser.parse_device_list_response(f.read())
+
+    assert devices
+    assert all(device["utc_offset"] == 3600 for device in devices)
+
+
+def test_device_list_utc_offset_with_several_projects_and_without_tzo(parser) -> None:
+    """With several projects the first one is used; a missing tzo adds no offset."""
+    xml = (
+        '<?xml version="1.0" encoding="utf-8"?><sc><prs>'
+        '<pr pg="p1" tzo="02:00:00" /><pr pg="p2" tzo="01:00:00" /></prs>'
+        '<dvs><d dclg="d1" sn="SN1" dk="1" dkv="1" sbt="0" /></dvs></sc>'
+    )
+    assert parser.parse_device_list_response(xml)[0]["utc_offset"] == 7200
+
+    xml_without_tzo = xml.replace(' tzo="02:00:00"', "").replace(' tzo="01:00:00"', "")
+    assert "utc_offset" not in parser.parse_device_list_response(xml_without_tzo)[0]

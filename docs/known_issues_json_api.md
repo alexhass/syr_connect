@@ -20,6 +20,7 @@ repository.
 - **Response key and URL path casing inconsistencies:** `set` response keys and `/set` path segment casing vary between devices and firmwares.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
 - **API error-code case-sensitivity:** Error codes `NSC` and `MIMA` are expected uppercase; lowercased variants are treated as invalid.
+- **Time values are local time:** `getLAR` counts the local wall time of the device, not UTC; see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 
 ## Detailed deviations, impacts, and references
@@ -155,6 +156,12 @@ Actual (expected) device response:
 - Impact: Relying on the documented shapes leads to parsing errors and incorrect client assumptions; the documentation is unreliable in multiple places.
 - Mitigation in this project: The integration requires and expects the actual device response format — the compact status-key representation (e.g. {"setABtrue":"OK"}). The API documentation should be regarded as incorrect.
 - Official incorrect documentation: [SYR JSON API documentation](https://iotsyrpublicapi.z1.web.core.windows.net/)
+
+### 8. Time values are local time, not UTC
+
+- Description: `getLAR` (last regeneration) counts the local wall time of the device in seconds since 1970, not UTC, as in the XML API. The value comes from the device, so both APIs report the same number.
+- Impact: see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
+- Mitigation in this project: The local API reports no UTC offset (the cloud's `tzo`), so `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as wall time in the time zone of Home Assistant.
 
 ## Recommendations
 

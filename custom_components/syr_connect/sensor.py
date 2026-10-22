@@ -31,6 +31,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
@@ -205,7 +206,13 @@ def _value_net(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_lar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Last regeneration (getLAR): unix seconds -> aware UTC datetime."""
+    """Last regeneration (getLAR): local time in seconds since 1970 -> aware datetime.
+
+    The device counts its local wall time, not UTC (see docs/known_issues_xml_api.md,
+    issue 5): 1792718160 is 23 October 2026 01:16 local time, not 01:16 UTC. The cloud
+    reports the current UTC offset of the project (tzo), which is subtracted. The local
+    JSON API reports no offset; there the time zone of Home Assistant is used.
+    """
     if value is None or value == "":
         return None
     try:
@@ -213,8 +220,12 @@ def _value_lar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         # 0 means that no regeneration has happened yet.
         if timestamp == 0:
             return None
-        # Home Assistant formats it according to the user's timezone/locale.
-        return datetime.fromtimestamp(timestamp, UTC)
+        utc_offset = sensor.device_utc_offset
+        if utc_offset is not None:
+            return datetime.fromtimestamp(timestamp - utc_offset, UTC)
+        return datetime.fromtimestamp(timestamp, UTC).replace(
+            tzinfo=dt_util.get_default_time_zone()
+        )
     except ValueError, TypeError, OverflowError:
         return None
 

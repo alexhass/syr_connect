@@ -1,6 +1,7 @@
 """Response parser and validator for SYR Connect API."""
 
 import logging
+import re
 from typing import Any
 from urllib.parse import unquote_plus
 
@@ -11,6 +12,24 @@ from .exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
 from .helpers import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _parse_utc_offset(value: Any) -> int | None:
+    """Return a UTC offset (tzo) in seconds, or None if it is missing or invalid.
+
+    Formats:
+    - Summer time in Germany: "02:00:00" -> 7200
+    - Negative offset: "-05:30:00" -> -19800
+    """
+    if not isinstance(value, str):
+        return None
+    match = re.fullmatch(r"(-)?(\d{1,2}):(\d{2})(?::(\d{2}))?", value.strip())
+    if match is None:
+        return None
+    seconds = (
+        int(match.group(2)) * 3600 + int(match.group(3)) * 60 + int(match.group(4) or 0)
+    )
+    return -seconds if match.group(1) else seconds
 
 
 class ResponseParser:
@@ -244,6 +263,14 @@ class ResponseParser:
         if not self.validate_structure(parsed, ["sc", "prs", "pr"]):
             raise ValueError("Device list response contains no project.")
 
+        # Device time values are local time (docs/known_issues_xml_api.md, issue 5). The
+        # project reports the current UTC offset of its time zone, which the cloud
+        # switches with daylight saving time.
+        project = parsed["sc"]["prs"]["pr"]
+        if isinstance(project, list):
+            project = project[0]
+        utc_offset = _parse_utc_offset(project.get("@tzo"))
+
         devices: list[SyrConnectDevice] = []
         device_aliases: dict[str, str] = {}
 
@@ -297,17 +324,18 @@ class ResponseParser:
                     sbt,
                 )
 
-                devices.append(
-                    {
-                        "id": serial_number,  # Use serial number as device ID
-                        "dclg": dclg_id,
-                        "serial_number": serial_number,
-                        "name": device_name,
-                        "dk": dk,
-                        "dkv": dkv,
-                        "sbt": sbt,
-                    }
-                )
+                entry: SyrConnectDevice = {
+                    "id": serial_number,  # Use serial number as device ID
+                    "dclg": dclg_id,
+                    "serial_number": serial_number,
+                    "name": device_name,
+                    "dk": dk,
+                    "dkv": dkv,
+                    "sbt": sbt,
+                }
+                if utc_offset is not None:
+                    entry["utc_offset"] = utc_offset
+                devices.append(entry)
             else:
                 _LOGGER.debug("Skipping device without @dclg: %s", device)
 

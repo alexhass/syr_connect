@@ -71,6 +71,12 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         return str(self._attr_translation_key)
 
     @property
+    def device_utc_offset(self) -> int | None:
+        """Return the current UTC offset of the device's time zone in seconds, if known."""
+        device = self._device
+        return device.get("utc_offset") if device is not None else None
+
+    @property
     def _device(self) -> SyrConnectDevice | None:
         """Return this entity's device from the coordinator data, or None if it is missing."""
         return get_device(self.coordinator.data, self._device_id)
