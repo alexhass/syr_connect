@@ -579,7 +579,8 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
             }
         ]
     }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.entry_id = "entry"
     _entities, async_add_entities = mock_add_entities()
 
     call_count = 0
@@ -591,7 +592,7 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
         # second call is the per-device cleanup in async_setup_entry.
         if call_count == 1:
             empty_reg = MagicMock()
-            empty_reg.entities = {}
+            empty_reg.entities.get_entries_for_config_entry_id.return_value = []
             return empty_reg
         raise RuntimeError("registry unavailable")
 

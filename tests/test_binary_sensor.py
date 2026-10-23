@@ -8,6 +8,7 @@ from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
     async_setup_entry,
 )
+from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers import _DEVICE_MODULES
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
@@ -461,38 +462,39 @@ async def test_async_setup_entry_no_data(
 async def test_async_setup_entry_registry_cleanup(
     hass: HomeAssistant, create_mock_entry_with_coordinator
 ) -> None:
-    """Test async_setup_entry cleans up excluded sensors from registry."""
-
-    # Create registry entry for an excluded sensor
-    registry = er.async_get(hass)
-    entry_to_remove = registry.async_get_or_create(
-        "binary_sensor",
-        "syr_connect",
-        "device1_getBUZ",  # getBUZ is a known binary sensor key — should NOT be cleaned up
-        suggested_object_id="device1_getbuz",
-    )
-
+    """Test async_setup_entry removes binary sensors that are not in the allowlist."""
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "status": {},
+                "status": {"getBUZ": "1"},
             }
         ]
     }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry.add_to_hass(hass)
+    mock_coordinator.entry_id = mock_config_entry.entry_id
+
+    # getFOO is no binary sensor key; getBUZ is
+    registry = er.async_get(hass)
+    for key in ("getFOO", "getBUZ"):
+        registry.async_get_or_create(
+            "binary_sensor",
+            DOMAIN,
+            f"{mock_config_entry.entry_id}_device1_{key}",
+            config_entry=mock_config_entry,
+        )
 
     entities = []
     async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # Entry was created, so verify it existed
-    # Since `binary_sensor.py` may not remove legacy registry entries, ensure
-    # the entry at least existed prior to setup (regression-safe check).
-    assert entry_to_remove is not None
+    prefix = f"{mock_config_entry.entry_id}_device1_"
+    assert not registry.async_get_entity_id("binary_sensor", DOMAIN, prefix + "getFOO")
+    assert registry.async_get_entity_id("binary_sensor", DOMAIN, prefix + "getBUZ")
 
 
 async def test_async_setup_entry_registry_exception(

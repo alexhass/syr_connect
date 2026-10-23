@@ -434,18 +434,25 @@ def registry_cleanup(
         domain: Entity domain string (e.g. "sensor").
         allowed_keys: Set of permitted sensor keys. Entities whose key is not
             in this set will be removed from the entity registry.
-        entry_id: Owning config entry ID. When provided, only entities
-            registered under this entry are considered. Without it, entities
-            belonging to a *different* hub that happens to share the same
-            device_id (e.g. the same physical device visible from two hubs)
-            could be mistaken for stale entries and removed.
+        entry_id: Owning config entry ID. Only entities registered under this
+            entry are considered; entities of a *different* hub that shares the
+            same device_id (the same physical device visible from two hubs) are
+            not ours to remove. Without it, nothing is removed.
         hidden_keys: Returns the keys whose entities are hidden for a device
             status; they are removed as well.
     """
-    if allowed_keys is None:
+    if allowed_keys is None or entry_id is None:
         return
     try:
         registry = er.async_get(hass)
+        # Only the entities of this config entry and of the platform being cleaned up
+        # (sensor cleanup must not touch a select of the same device). The registry
+        # looks them up by config entry, without scanning the whole registry.
+        platform_entries = [
+            entry
+            for entry in er.async_entries_for_config_entry(registry, entry_id)
+            if entry.domain == domain
+        ]
 
         for device in coordinator_data.get("devices", []) if coordinator_data else []:
             device_id = device.get("id")
@@ -499,18 +506,10 @@ def registry_cleanup(
             #   every setup.
             #
             # All ids of this device and config entry start with the same prefix,
-            # "<entry_id>_<device_id>_" (only "<device_id>_" without entry_id). Comparisons
-            # are case-insensitive because switch/update build their unique_id lowercased.
+            # "<entry_id>_<device_id>_". Comparisons are case-insensitive because
+            # switch/update build their unique_id lowercased.
             unique_id_prefix = build_unique_id(entry_id, device_id, "").lower()
-            for entry in list(registry.entities.values()):
-                # Only entities of this integration and of the platform being cleaned up
-                # (sensor cleanup must not touch a select of the same device).
-                if entry.platform != DOMAIN or entry.domain != domain:
-                    continue
-                # Only entities of this config entry: the same physical device may also
-                # belong to another hub, whose entities are not ours to remove.
-                if entry_id is not None and entry.config_entry_id != entry_id:
-                    continue
+            for entry in platform_entries:
                 # Only entities of this device.
                 unique_id = str(entry.unique_id).lower()
                 if not unique_id.startswith(unique_id_prefix):

@@ -1706,7 +1706,8 @@ async def test_async_setup_entry_removes_excluded_from_registry(
     data = {
         "devices": [{"id": device_id, "name": "Device Del", "status": {"getFLO": "5"}}]
     }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.entry_id = "entry"
     _entities, async_add_entities = mock_add_entities()
 
     mock_registry = MagicMock()
@@ -1722,11 +1723,11 @@ async def test_async_setup_entry_removes_excluded_from_registry(
             self.unique_id = unique_id
             self.platform = "syr_connect"
             self.domain = eid.split(".", maxsplit=1)[0]
-            self.config_entry_id = None
+            self.config_entry_id = "entry"
 
-    mock_registry.entities = {
-        stale_entity_id: FakeEntry(stale_entity_id, f"{device_id}_getRTIME_select")
-    }
+    mock_registry.entities.get_entries_for_config_entry_id.return_value = [
+        FakeEntry(stale_entity_id, f"entry_{device_id}_getRTIME_select")
+    ]
 
     # Patch the entity registry accessor used by Home Assistant to return our mock
     with patch(

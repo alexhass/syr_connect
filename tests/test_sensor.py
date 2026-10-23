@@ -569,15 +569,6 @@ async def test_sensor_registered_sensor_created_with_empty_value(
     hass: HomeAssistant,
 ) -> None:
     """Test a registered sensor is created and kept although its value is empty."""
-    registry = er.async_get(hass)
-    for key in ("getTYP", "getWIP", "getDWF", "getCEL"):
-        registry.async_get_or_create(
-            "sensor",
-            DOMAIN,
-            f"device1_{key}",
-            suggested_object_id=f"device1_{key.lower()}",
-        )
-
     data = {
         "devices": [
             {
@@ -596,15 +587,26 @@ async def test_sensor_registered_sensor_created_with_empty_value(
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
+    coordinator.entry_id = entry.entry_id
+
+    registry = er.async_get(hass)
+    for key in ("getTYP", "getWIP", "getDWF", "getCEL"):
+        registry.async_get_or_create(
+            "sensor",
+            DOMAIN,
+            f"{entry.entry_id}_device1_{key}",
+            suggested_object_id=f"device1_{key.lower()}",
+            config_entry=entry,
+        )
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
     created = {e._sensor_key for e in add_entities.call_args.args[0]}
     assert created == {"getTYP", "getWIP"}
-    assert registry.async_get_entity_id("sensor", DOMAIN, "device1_getTYP")
-    assert registry.async_get_entity_id("sensor", DOMAIN, "device1_getWIP")
-    assert registry.async_get_entity_id("sensor", DOMAIN, "device1_getDWF") is None
+    for key, kept in (("getTYP", True), ("getWIP", True), ("getDWF", False)):
+        unique_id = f"{entry.entry_id}_device1_{key}"
+        assert bool(registry.async_get_entity_id("sensor", DOMAIN, unique_id)) is kept
 
 
 async def test_sensor_registered_always_hidden_not_created(
@@ -1205,16 +1207,6 @@ async def test_sensor_missing_device(hass: HomeAssistant) -> None:
 
 async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     """Test entity registry cleanup for excluded sensors."""
-
-    # Create registry entry for an excluded sensor
-    registry = er.async_get(hass)
-    entry_to_remove = registry.async_get_or_create(
-        "sensor",
-        "syr_connect",
-        "device1_getDTY",  # getDTY is not in _SYR_CONNECT_SENSOR_SUPPORTED_KEYS (allowlist) — will be cleaned up
-        suggested_object_id="device1_getdty",
-    )
-
     data = {
         "devices": [
             {
@@ -1228,13 +1220,27 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
+    coordinator.entry_id = entry.entry_id
+
+    # getDTY is not in the sensor allowlist; getPRS is
+    registry = er.async_get(hass)
+    for key in ("getDTY", "getPRS"):
+        registry.async_get_or_create(
+            "sensor",
+            DOMAIN,
+            f"{entry.entry_id}_device1_{key}",
+            config_entry=entry,
+        )
 
     add_entities = Mock()
     await async_setup_entry(hass, entry, add_entities)
 
-    # Excluded sensor should be removed during setup
-    # The entity was created, so verify it exists initially
-    assert entry_to_remove is not None
+    assert not registry.async_get_entity_id(
+        "sensor", DOMAIN, f"{entry.entry_id}_device1_getDTY"
+    )
+    assert registry.async_get_entity_id(
+        "sensor", DOMAIN, f"{entry.entry_id}_device1_getPRS"
+    )
 
 
 async def test_sensor_whu_string_conversion(hass: HomeAssistant) -> None:
@@ -7972,12 +7978,12 @@ async def test_muco_conditional_sensor_sync_registry_exception(
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
-    # er.async_get() is called 3 times during setup: once in registry_cleanup(), once in
-    # the main sensor loop, and once inside the MuCo conditional sync - only the last
-    # one should fail, to isolate the except branch under test.
+    # er.async_get() is called twice during setup: once in the main sensor loop and once
+    # inside the MuCo conditional sync (registry_cleanup() skips without an entry_id) -
+    # only the last one should fail, to isolate the except branch under test.
     with patch(
         "homeassistant.helpers.entity_registry.async_get",
-        side_effect=[_FakeRegistry(), _FakeRegistry(), RuntimeError("boom")],
+        side_effect=[_FakeRegistry(), RuntimeError("boom")],
     ):
         # Should not raise despite the registry accessor failing.
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
