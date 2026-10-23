@@ -62,9 +62,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getTOR",
     # --- Maintenance ---
     "getDWF",
-    "getVS1",
-    "getVS2",
-    "getVS3",
     # --- Filter ---
     "getFCO",
     "getPST",

@@ -84,6 +84,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getSLP",
     "getSLT",
     "getSLV",
+    # --- Leakage Detection (volume threshold; only getVS1 in the fixture) ---
+    "getVS1",
     # --- Microleakage Test (config keys confirmed, no status/result keys yet) ---
     "getDBD",
     "getDMA",

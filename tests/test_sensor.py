@@ -8105,3 +8105,25 @@ def test_lexplus_has_only_one_tank(model: str) -> None:
 
     assert {"getCS1", "getSS1", "getSV1"} <= keys
     assert not keys & {"getCS2", "getCS3", "getSS2", "getSS3", "getSV2", "getSV3"}
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("SyrLEX30", set()),
+        ("SyrLEXplus10S", set()),
+        # Leakage detection only on the 10 SL; the fixture reports getVS1 only
+        ("SyrLEXplus10SL", {"getVS1"}),
+    ],
+)
+def test_lex_volume_thresholds(model: str, expected: set[str]) -> None:
+    """Volume thresholds (getVS1-3) are a leakage detection feature: only LEXplus 10 SL."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    assert status is not None
+
+    keys = set(sensor_module.sensor_keys_for_status(status))
+
+    assert keys & {"getVS1", "getVS2", "getVS3"} == expected
