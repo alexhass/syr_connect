@@ -8084,3 +8084,18 @@ def test_sensor_cyt_minutes(create_mock_coordinator, raw, expected) -> None:
 
     assert sensor.native_unit_of_measurement == UnitOfTime.MINUTES
     assert sensor.native_value == expected
+
+
+@pytest.mark.parametrize("model", ["SyrLEXplus10S", "SyrLEXplus10SL"])
+def test_lexplus_has_only_one_tank(model: str) -> None:
+    """LEXplus 10 S/SL have one tank: no sensors for tank 2 and 3, even if reported."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    assert status is not None
+
+    keys = set(sensor_module.sensor_keys_for_status(status))
+
+    assert {"getCS1", "getSS1", "getSV1"} <= keys
+    assert not keys & {"getCS2", "getCS3", "getSS2", "getSS3", "getSV2", "getSV3"}

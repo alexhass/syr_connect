@@ -42,8 +42,6 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Device Status ---
     # --- Resin Capacity ---
     "getCS1",
-    "getCS2",
-    "getCS3",
     # --- Salt ---
     "getRDO",
     "getRES",
