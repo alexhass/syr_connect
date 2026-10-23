@@ -695,7 +695,7 @@ These settings can be set by the user.
 | --- | --- | --- | --- |
 | getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | "1" if regeneration is running for tank 1, 2 or 3 |
 | getCYN | "0" | | Number of the running program |
-| getCYT | "00:00" | | Duration of the running program |
+| getCYT | "00:00" | min | Remaining time of the running regeneration program: minutes as a number (NeoSoft, Sanibel UNO, Conel Clear Pro Soft) or "minutes:seconds" (LEX, L20) |
 | getRTI | "00:00" | | Total duration of the regeneration cylce |
 | getLAR | "1694501839" | | Last regeneration as local time in seconds since 1.1.1970, not UTC (see `docs/known_issues_xml_api.md`, issue 5) |
 | getTOR | "429" | | Number of total regeneration cycles |

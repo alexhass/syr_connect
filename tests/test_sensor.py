@@ -1831,13 +1831,13 @@ async def test_sensor_precision_without_config(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getCYT": 123.456,  # Sensor without configured precision
+                    "getSRH": 123.456,  # Sensor without configured precision
                 },
             }
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCYT")
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSRH")
 
     # Without precision config, value should be returned as-is
     assert sensor.native_value == 123.456
@@ -8062,3 +8062,25 @@ def test_sensor_value_fns_infinite_value_returns_none() -> None:
     assert sensor_module._value_bat(percentage_sensor, {}, "inf") is None
     assert sensor_module._value_rpw(MagicMock(), {}, "inf") is None
     assert sensor_module._value_crs(MagicMock(), {}, "inf") is None
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        (45, 45),  # NeoSoft, Sanibel UNO, Conel Clear Pro Soft (JSON)
+        ("45", 45),  # same devices (XML)
+        (0, 0),
+        ("12:30", 12.5),  # LEX, L20: minutes:seconds
+        ("00:00", 0),
+        ("abc", None),
+        ("1:2:3", None),
+        ("", None),
+    ],
+)
+def test_sensor_cyt_minutes(create_mock_coordinator, raw, expected) -> None:
+    """Remaining regeneration time (getCYT) in minutes, from a number or minutes:seconds."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getCYT": raw}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCYT")
+
+    assert sensor.native_unit_of_measurement == UnitOfTime.MINUTES
+    assert sensor.native_value == expected

@@ -171,6 +171,24 @@ def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return get_sensor_bat_value(value)
 
 
+def _value_cyt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Remaining regeneration cycle time (getCYT): raw value -> minutes.
+
+    Formats:
+    - NeoSoft, Sanibel UNO, Conel Clear Pro Soft: 45 -> 45 min
+    - LEX, L20: "12:30" (minutes:seconds) -> 12.5 min
+    """
+    if value is None or value == "":
+        return None
+    try:
+        if isinstance(value, str) and ":" in value:
+            minutes, seconds = value.strip().split(":")
+            return int(minutes) + int(seconds) / 60
+        return int(float(value))
+    except ValueError, TypeError, OverflowError:
+        return None
+
+
 def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
     if value is None or value == "":
@@ -731,9 +749,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
-        key="getCYT",  # Regeneration cycle time (remaining)
+        key="getCYT",  # Regeneration cycle time (remaining, min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_cyt,
         hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
