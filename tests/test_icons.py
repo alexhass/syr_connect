@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from custom_components.syr_connect.button import _SYR_CONNECT_BUTTON_DESCRIPTIONS
 from custom_components.syr_connect.sensor import SyrConnectSensor
 
 COMPONENT_DIR = Path(__file__).parent.parent / "custom_components" / "syr_connect"
@@ -39,8 +40,11 @@ def test_icon_keys_have_translations(platform: str) -> None:
 
 
 def test_button_icons() -> None:
-    """The reset and regeneration buttons have a dedicated icon."""
-    assert {"setala", "setnot", "setsir", "setwrn"} <= set(ICONS["button"])
+    """Every button has a dedicated icon."""
+    missing = {key.lower() for key in _SYR_CONNECT_BUTTON_DESCRIPTIONS} - set(
+        ICONS["button"]
+    )
+    assert not missing, sorted(missing)
 
 
 def test_connection_state_icons() -> None:

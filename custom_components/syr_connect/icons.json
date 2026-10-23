@@ -9,6 +9,9 @@
       "setala": {
         "default": "mdi:alarm-off"
       },
+      "setdex": {
+        "default": "mdi:water-check"
+      },
       "setnot": {
         "default": "mdi:bell-off-outline"
       },
