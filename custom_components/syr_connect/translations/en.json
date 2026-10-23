@@ -595,7 +595,7 @@
         "name": "Regeneration cycle counter"
       },
       "getcyt": {
-        "name": "Regeneration cycle time"
+        "name": "Remaining regeneration cycle time"
       },
       "getdbd": {
         "name": "Leak test pressure drop"

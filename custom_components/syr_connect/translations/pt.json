@@ -595,7 +595,7 @@
         "name": "Contador de ciclos de regeneração"
       },
       "getcyt": {
-        "name": "Duração do ciclo de regeneração"
+        "name": "Tempo restante do ciclo de regeneração"
       },
       "getdbd": {
         "name": "Queda de pressão no teste de fuga"

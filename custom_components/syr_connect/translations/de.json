@@ -595,7 +595,7 @@
         "name": "Regenerationszyklen (Anzahl)"
       },
       "getcyt": {
-        "name": "Regenerationszyklen (Zeit)"
+        "name": "Regenerationszyklus (Restzeit)"
       },
       "getdbd": {
         "name": "Druckabfall beim Lecktest"

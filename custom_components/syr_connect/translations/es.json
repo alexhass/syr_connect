@@ -592,10 +592,10 @@
         "name": "Capacidad restante de la resina en el depósito 3"
       },
       "getcyn": {
-        "name": "Contador de ciclos"
+        "name": "Contador de ciclos de regeneración"
       },
       "getcyt": {
-        "name": "Tiempo de ciclo"
+        "name": "Tiempo restante del ciclo de regeneración"
       },
       "getdbd": {
         "name": "Caída de presión en prueba de fugas"

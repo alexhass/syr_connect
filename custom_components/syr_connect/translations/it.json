@@ -595,7 +595,7 @@
         "name": "Contatore cicli di rigenerazione"
       },
       "getcyt": {
-        "name": "Durata ciclo di rigenerazione"
+        "name": "Tempo residuo del ciclo di rigenerazione"
       },
       "getdbd": {
         "name": "Caduta di pressione durante il test di perdita"

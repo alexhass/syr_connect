@@ -595,7 +595,7 @@
         "name": "Licznik cykli regeneracji"
       },
       "getcyt": {
-        "name": "Czas cyklu regeneracji"
+        "name": "Pozostały czas cyklu regeneracji"
       },
       "getdbd": {
         "name": "Spadek ciśnienia testu mikroprzecieku"

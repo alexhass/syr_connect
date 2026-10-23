@@ -595,7 +595,7 @@
         "name": "Regeneratiecyclusteller"
       },
       "getcyt": {
-        "name": "Regeneratiecyclustijd"
+        "name": "Resterende regeneratiecyclustijd"
       },
       "getdbd": {
         "name": "Drukval bij lektest"

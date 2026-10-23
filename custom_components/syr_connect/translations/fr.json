@@ -592,10 +592,10 @@
         "name": "Capacité restante de la résine dans le réservoir 3"
       },
       "getcyn": {
-        "name": "Compteur de cycles"
+        "name": "Compteur de cycles de régénération"
       },
       "getcyt": {
-        "name": "Durée du cycle"
+        "name": "Temps restant du cycle de régénération"
       },
       "getdbd": {
         "name": "Baisse de pression lors du test d'étanchéité"
