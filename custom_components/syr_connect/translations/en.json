@@ -53,7 +53,7 @@
         "title": "Reconfigure SYR Connect"
       },
       "user": {
-        "description": "Choose how to connect to your SYR device:\n\n- **Cloud Access**: Use your mobile app credentials to access all your devices via the SYR cloud service. Requires an internet connection.\n\n- **Local Access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
+        "description": "Choose how to connect to your SYR device:\n\n- **Cloud access**: Use your mobile app credentials to access all your devices via the SYR cloud service. Requires an internet connection.\n\n- **Local access**: Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
         "menu_options": {
           "api_json": "Local access",
           "api_xml": "Cloud access"
