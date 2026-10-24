@@ -21,7 +21,7 @@
       <c n="getBDE" v="0" />
       <c n="getBMP" v="43200" />
       <c n="getCEL" v="205" />
-      <c n="getCNO" v="XXXXXXXXXXXXXXX" />
+      <c n="getCNO" v="XXXXXXXXXXXXXXXX" />
       <c n="getDEF" v="" />
       <c n="getECP" v="15" />
       <c n="getEMR" v="50" />
@@ -46,5 +46,5 @@
       <c n="getWTD" v="0" />
     </d>
   </dvs>
-  <cs v="1065F" />
+  <cs v="106EB" />
 </sc>

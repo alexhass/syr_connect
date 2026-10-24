@@ -29,7 +29,7 @@
       <c n="getCND" v="608" />
       <c n="getCNF" v="20" />
       <c n="getCNL" v="0" />
-      <c n="getCNO" v="XXXXXXXXXXXXXXX" />
+      <c n="getCNO" v="XXXXXXXXXXXXXXXX" />
       <c n="getCSD" v="0" />
       <c n="getDBD" v="10" />
       <c n="getDBT" v="15" />
@@ -162,5 +162,5 @@
       <c n="getWNS" v="0" />
     </d>
   </dvs>
-  <cs v="15320" />
+  <cs v="153AC" />
 </sc>

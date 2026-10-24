@@ -950,7 +950,7 @@ def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
     status = {
         "getVER": "Syr Floorsensor 2.23",
         "getSRN": "123",
-        "getCNO": "XXXXXXXXXXXXXXX",
+        "getCNO": "XXXXXXXXXXXXXXXX",
     }
     with patch(
         "custom_components.syr_connect.helpers.er.async_get", return_value=registry
