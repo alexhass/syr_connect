@@ -8185,6 +8185,42 @@ def test_sensor_tmz_utc_offset(
 
 
 @pytest.mark.parametrize(
+    ("now", "raw", "expected"),
+    [
+        # Germany, winter (CET, UTC+1)
+        (datetime(2026, 1, 15, 12, 0, tzinfo=UTC), "04:00", "05:00"),
+        # Germany, summer (CEST, UTC+2)
+        (datetime(2026, 7, 15, 12, 0, tzinfo=UTC), "04:00", "06:00"),
+        # Crosses midnight
+        (datetime(2026, 1, 15, 12, 0, tzinfo=UTC), "23:30", "00:30"),
+        (datetime(2026, 1, 15, 12, 0, tzinfo=UTC), "", None),
+        (datetime(2026, 1, 15, 12, 0, tzinfo=UTC), "25:00", None),
+        (datetime(2026, 1, 15, 12, 0, tzinfo=UTC), "abc", None),
+    ],
+)
+async def test_sensor_dtt_utc_to_local_time(
+    hass: HomeAssistant, now: datetime, raw: str, expected: str | None
+) -> None:
+    """Microleakage test time (getDTT) is stored as UTC and shown in the Home Assistant time zone."""
+    await hass.config.async_set_time_zone("Europe/Berlin")
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getDTT": raw},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getDTT")
+
+    with patch.object(sensor_module.dt_util, "utcnow", return_value=now):
+        assert sensor.native_value == expected
+
+
+@pytest.mark.parametrize(
     ("model", "expected"),
     [
         ("SyrSafeTechV4", True),

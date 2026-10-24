@@ -204,6 +204,26 @@ def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         return None
 
 
+def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Microleakage test time (getDTT): UTC "HH:MM" -> local "HH:MM".
+
+    The device always stores the time in UTC. It is converted with the time zone of
+    Home Assistant for today's date, so the shown time follows daylight saving time.
+
+    Formats:
+    - Germany, winter (CET): "04:00" -> "05:00"
+    - Germany, summer (CEST): "04:00" -> "06:00"
+    """
+    try:
+        hour, minute = (int(part) for part in str(value).strip().split(":"))
+        utc_time = dt_util.utcnow().replace(
+            hour=hour, minute=minute, second=0, microsecond=0
+        )
+    except ValueError, TypeError:
+        return None
+    return dt_util.as_local(utc_time).strftime("%H:%M")
+
+
 def _value_iwh(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
     return get_sensor_iwh_value(status or {})
@@ -947,9 +967,9 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
-        key="getDTT",  # Microleakage test duration / time
+        key="getDTT",  # Microleakage test time (stored as UTC, shown as local time)
         entity_category=EntityCategory.DIAGNOSTIC,
-        keep_as_string=True,
+        value_fn=_value_dtt,
     ),
     SyrConnectSensorEntityDescription(
         key="getNPS",  # No turbine pulses since (s)
