@@ -38,6 +38,50 @@ def _build_coordinator(
     return coordinator
 
 
+@pytest.mark.parametrize(
+    ("command", "status", "expected"),
+    [
+        ("setALA", {"getALA": "A3"}, "mdi:alarm-light"),
+        ("setALA", {"getALA": "FF"}, None),
+        # LEX family: the alarm is read from getALM
+        ("setALA", {"getCNA": "LEXplus10S", "getALM": "NoSalt"}, "mdi:alarm-light"),
+        ("setALA", {"getCNA": "LEXplus10S", "getALM": ""}, None),
+        ("setNOT", {"getNOT": "01"}, "mdi:bell-ring"),
+        ("setNOT", {"getNOT": "ff"}, None),
+        ("setWRN", {"getWRN": "07"}, "mdi:alert"),
+        ("setWRN", {"getWRN": "FF"}, None),
+        # Other buttons always use the icons.json default
+        ("setSIR", {"getSIR": "1"}, None),
+    ],
+)
+async def test_button_icon_shows_something_to_reset(
+    hass: HomeAssistant, command: str, status: dict, expected: str | None
+) -> None:
+    """Reset buttons change their icon while there is something to reset."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    button = SyrConnectButton(coordinator, "device1", "Device 1", command)
+
+    assert button.icon == expected
+
+
+async def test_button_icon_device_missing(hass: HomeAssistant) -> None:
+    """Without device data the reset button keeps the icons.json default."""
+    coordinator = _build_coordinator(hass, {"devices": []})
+    button = SyrConnectButton(coordinator, "device1", "Device 1", "setALA")
+
+    assert button.icon is None
+
+
 async def test_button_press_success(hass: HomeAssistant) -> None:
     """Test button press succeeds."""
     data = {

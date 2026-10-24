@@ -70,6 +70,35 @@ _SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, ButtonEntityDescription] = {
 # Supported keys for the button platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BUTTON_SUPPORTED_KEYS = set(_SYR_CONNECT_BUTTON_DESCRIPTIONS)
 
+# Icons of the reset buttons while there is something to reset; otherwise the
+# icons.json default is shown
+_SYR_CONNECT_BUTTON_ACTIVE_ICONS = {
+    "setALA": "mdi:alarm-light",
+    "setNOT": "mdi:bell-ring",
+    "setWRN": "mdi:alert",
+}
+
+
+def _is_active_code(raw: object) -> bool:
+    """Return True if an alarm, notification or warning code is active.
+
+    See the module docstring for the values that mean "nothing active".
+    """
+    return (
+        raw is not None
+        and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
+    )
+
+
+def _reset_get_key(command: str, status: dict[str, object]) -> str:
+    """Return the status key read by a reset button (setALA, setNOT, setWRN).
+
+    For setALA the key depends on the model: getALM with alarm_style_alm, otherwise getALA.
+    """
+    if command == "setALA":
+        return "getALM" if detect_model(status).get("alarm_style_alm") else "getALA"
+    return "get" + command[3:]
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -221,6 +250,21 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         self._command = command
         self.entity_description = _SYR_CONNECT_BUTTON_DESCRIPTIONS[command]
 
+    @property
+    @override
+    def icon(self) -> str | None:
+        """Return the icon of a reset button while there is something to reset.
+
+        Otherwise the icon comes from icons.json.
+        """
+        active_icon = _SYR_CONNECT_BUTTON_ACTIVE_ICONS.get(self._command)
+        if active_icon is None or self._device is None:
+            return None
+        status = self._status
+        if _is_active_code(status.get(_reset_get_key(self._command, status))):
+            return active_icon
+        return None
+
     @override
     async def async_press(self) -> None:
         """Press the button.
@@ -317,11 +361,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     # depending on the device firmware.
                     raw = status.get(get_key)
                     # Sentinel values that indicate no active alarm (see module docstring).
-                    if (
-                        raw is None
-                        or str(raw).strip().upper()
-                        in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
-                    ):
+                    if not _is_active_code(raw):
                         raise ServiceValidationError(
                             translation_domain=DOMAIN,
                             translation_key="no_alarm_to_reset",
@@ -356,11 +396,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                 raw = status.get(get_key)
 
                 # Sentinel values that indicate no active notification / warning.
-                if (
-                    raw is None
-                    or str(raw).strip().upper()
-                    in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
-                ):
+                if not _is_active_code(raw):
                     raise ServiceValidationError(
                         translation_domain=DOMAIN,
                         translation_key=(
