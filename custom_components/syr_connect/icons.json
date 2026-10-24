@@ -171,11 +171,11 @@
       "getavo": {
         "default": "mdi:waves-arrow-right"
       },
-      "getbap": {
-        "default": "mdi:battery"
-      },
       "getbar": {
         "default": "mdi:gauge"
+      },
+      "getbat": {
+        "default": "mdi:car-battery"
       },
       "getbar2": {
         "default": "mdi:gauge"

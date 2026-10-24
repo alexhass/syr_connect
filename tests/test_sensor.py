@@ -3594,6 +3594,28 @@ async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
     assert bat.native_unit_of_measurement == PERCENTAGE
     assert bat.device_class == SensorDeviceClass.BATTERY
     assert bat.suggested_display_precision == 0
+    # The name follows the unit ("Battery level"), the unique_id stays getBAT
+    assert bat.translation_key == "getbap"
+    assert bat.unique_id == "device1_getBAT"
+
+
+async def test_sensor_getbat_voltage_keeps_voltage_name(hass: HomeAssistant) -> None:
+    """Devices that report getBAT as voltage keep the name "Battery voltage"."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBAT": "363"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
+
+    assert bat.native_unit_of_measurement == UnitOfElectricPotential.VOLT
+    assert bat.translation_key == "getbat"
 
 
 async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -> None:
@@ -4208,7 +4230,7 @@ async def test_sensor_icon_getbat_invalid_fallback_base(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
-    assert sensor.icon == "mdi:battery"
+    assert sensor.icon is None  # default from icons.json
 
 
 async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -> None:
@@ -4226,7 +4248,7 @@ async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
-    assert sensor.icon == "mdi:battery"
+    assert sensor.icon is None  # default from icons.json
 
 
 @pytest.mark.parametrize(
@@ -5676,7 +5698,7 @@ async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
 
     # Non-zero battery voltage keeps the default battery icon
     icon = sensor.icon
-    assert icon == "mdi:battery"
+    assert icon is None  # default from icons.json
 
 
 async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None:
@@ -5698,7 +5720,7 @@ async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None
 
     # Conversion failure keeps the default battery icon
     icon = sensor.icon
-    assert icon == "mdi:battery"
+    assert icon is None  # default from icons.json
 
 
 async def test_sensor_native_value_ala_exception(hass: HomeAssistant) -> None:
@@ -7420,7 +7442,7 @@ def test_sensor_icon_bat_cached_non_numeric_string(create_mock_coordinator):
 
     icon = sensor.icon
     # ValueError caught → falls through → default battery icon
-    assert icon == "mdi:battery"
+    assert icon is None  # default from icons.json
 
 
 # ---------------------------------------------------------------------------

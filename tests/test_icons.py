@@ -111,6 +111,14 @@ def test_valve_state_icons() -> None:
     }
 
 
-def test_battery_icon_is_set_in_code() -> None:
-    """The getBAT must not be in icons.json, otherwise it would override the battery device class."""
-    assert "getbat" not in ICONS["sensor"]
+def test_battery_level_icon_comes_from_device_class() -> None:
+    """The getbap must not be in icons.json, otherwise it would override the battery device class.
+
+    It is also the translation key of getBAT on devices that report a percentage.
+    """
+    assert "getbap" not in ICONS["sensor"]
+
+
+def test_battery_voltage_icon() -> None:
+    """The getbat is only used for battery voltages; a dead battery (0 V) is flagged in code."""
+    assert ICONS["sensor"]["getbat"] == {"default": "mdi:car-battery"}

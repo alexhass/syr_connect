@@ -2455,13 +2455,15 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             else:
                 self._attr_native_unit_of_measurement = None
 
-        # Override getBAT attributes for devices that report battery as percentage (e.g. SafeFloor TYP=120)
+        # Override getBAT attributes for devices that report battery as percentage (e.g. SafeFloor TYP=120).
+        # The name follows the unit: "Battery level" like getBAP instead of "Battery voltage".
         if sensor_key == "getBAT":
             typ = str(self._status.get("getTYP", "") or "").strip()
             if typ in _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE:
                 self._attr_native_unit_of_measurement = PERCENTAGE
                 self._attr_device_class = SensorDeviceClass.BATTERY
                 self._attr_suggested_display_precision = 0
+                self._attr_translation_key = "getbap"
 
         # Cache last non-None native value to avoid writing None when API omits values
         self._last_native_value: str | int | float | datetime | None = None
@@ -2494,10 +2496,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
     @property
     @override
     def icon(self) -> str | None:
-        """Return the getBAT icon; all other icons and state icons come from icons.json.
+        """Return the icon of a dead battery (getBAT, 0 V); all other icons come from icons.json.
 
-        In percentage mode the BATTERY device class provides the icon, in voltage mode a
-        dead battery (0 V) is flagged.
+        In percentage mode the BATTERY device class provides the icon.
         """
         if (
             self._sensor_key != "getBAT"
@@ -2512,7 +2513,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                     return "mdi:battery-alert-variant-outline"
             except TypeError, ValueError:
                 pass
-        return "mdi:battery"
+        return None
 
     @property
     @override
