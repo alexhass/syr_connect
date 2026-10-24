@@ -122,11 +122,31 @@ def get_device(
     return None
 
 
+def detect_device_model(device: SyrConnectDevice) -> SyrConnectModel:
+    """Detect the model of a device from its cloud device kind and its status.
+
+    Only the cloud API (XML) reports `dk`, `dkv` and `sbt`; without them the model is
+    detected from the status alone.
+
+    Args:
+        device: The device from the coordinator data
+
+    Returns:
+        The detected model, or `UNKNOWN_MODEL`
+    """
+    return detect_model(
+        device.get("status"),
+        dk=device.get("dk"),
+        dkv=device.get("dkv"),
+        sbt=device.get("sbt"),
+    )
+
+
 def get_device_model(device: SyrConnectDevice | None) -> SyrConnectModel:
     """Return the model of a device, as detected by the coordinator.
 
     Device data that was not built by the coordinator has no stored model; it is
-    detected from the status instead.
+    detected instead.
 
     Args:
         device: The device from the coordinator data, or None if it is missing
@@ -139,7 +159,7 @@ def get_device_model(device: SyrConnectDevice | None) -> SyrConnectModel:
     model = device.get("model")
     if model is not None:
         return model
-    return detect_model(device.get("status"))
+    return detect_device_model(device)
 
 
 def is_device_available(coordinator: Any, device_id: str) -> bool:

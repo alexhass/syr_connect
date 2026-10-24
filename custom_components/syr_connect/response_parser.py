@@ -273,8 +273,10 @@ class ResponseParser:
 
         devices: list[SyrConnectDevice] = []
         device_aliases: dict[str, str] = {}
+        device_kind_versions: dict[str, int] = {}
 
-        # Extract device aliases
+        # Extract device aliases and device kind versions. The cloud reports dkv on the
+        # device collection (dcl), not on the device (d) itself.
         if self.validate_structure(parsed, ["sc", "col"]):
             col = parsed["sc"]["col"]
             if "dcl" in col:
@@ -283,6 +285,8 @@ class ResponseParser:
                     if "@dclg" in dcl and "@ali" in dcl:
                         # URL-decode the alias (replace + with space and decode %XX sequences)
                         device_aliases[dcl["@dclg"]] = unquote_plus(dcl["@ali"])
+                    if "@dclg" in dcl:
+                        device_kind_versions[dcl["@dclg"]] = int(dcl.get("@dkv") or 0)
 
         # Extract devices
         if not self.validate_structure(parsed, ["sc", "dvs"]):
@@ -311,7 +315,7 @@ class ResponseParser:
                 serial_number = device.get("@sn", "Unknown")
                 device_name = device_aliases.get(dclg_id, serial_number)
                 dk = int(device.get("@dk") or 0)
-                dkv = int(device.get("@dkv") or 0)
+                dkv = device_kind_versions.get(dclg_id, 0)
                 sbt = int(device.get("@sbt") or 0)
 
                 _LOGGER.debug(

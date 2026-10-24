@@ -31,6 +31,7 @@ from .const import (
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
 from .helpers import (
+    detect_device_model,
     get_api_locale,
     get_default_scan_interval_for_entry,
     get_device,
@@ -38,7 +39,7 @@ from .helpers import (
     get_sensor_iwh_value,
     is_device_offline,
 )
-from .models import MODEL_SIGNATURES, UNKNOWN_MODEL, detect_model
+from .models import MODEL_SIGNATURES
 from .repairs import delete_issue
 
 _LOGGER = logging.getLogger(__name__)
@@ -343,7 +344,7 @@ class SyrConnectDataUpdateCoordinator(
                 return self._previous_device_or_empty(device)
 
             device["status"] = status
-            device["model"] = detect_model(status)
+            device["model"] = detect_device_model(device)
 
             # Emergency action.
             #
@@ -409,7 +410,7 @@ class SyrConnectDataUpdateCoordinator(
             device.get("id"),
         )
         device["status"] = {}
-        device["model"] = UNKNOWN_MODEL
+        device["model"] = detect_device_model(device)
         device["available"] = True
         return device
 
@@ -512,7 +513,7 @@ class SyrConnectDataUpdateCoordinator(
                         device["available"] = True
                     applied = True
                 if device is not None and applied:
-                    device["model"] = detect_model(device["status"])
+                    device["model"] = detect_device_model(device)
                 if applied:
                     self.async_set_updated_data(new_data)
                     optimistic_data = new_data

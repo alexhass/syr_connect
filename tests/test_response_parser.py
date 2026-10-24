@@ -1067,3 +1067,24 @@ def test_device_list_utc_offset_with_several_projects_and_without_tzo(parser) ->
 
     xml_without_tzo = xml.replace(' tzo="02:00:00"', "").replace(' tzo="01:00:00"', "")
     assert "utc_offset" not in parser.parse_device_list_response(xml_without_tzo)[0]
+
+
+def test_device_list_reads_device_kind_version_from_device_collection(parser) -> None:
+    """The dkv comes from the device collection (dcl), dk and sbt from the device (d)."""
+    with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
+        device = parser.parse_device_list_response(f.read())[0]
+
+    assert (device["dk"], device["dkv"], device["sbt"]) == (80, 25, 2)
+
+
+def test_device_list_without_device_collection_has_no_device_kind_version(
+    parser,
+) -> None:
+    """Without a device collection for the device, dkv is 0."""
+    xml = (
+        '<?xml version="1.0" encoding="utf-8"?><sc><prs><pr pg="p1" /></prs>'
+        '<col><dcl dclg="other" dkv="34" /></col>'
+        '<dvs><d dclg="d1" sn="SN1" dk="120" sbt="" /></dvs></sc>'
+    )
+    device = parser.parse_device_list_response(xml)[0]
+    assert (device["dk"], device["dkv"], device["sbt"]) == (120, 0, 0)

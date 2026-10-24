@@ -34,8 +34,9 @@ _LOGGER = logging.getLogger(__name__)
 class SyrConnectModel:
     """Signature of a device model: how it is detected and what it supports.
 
-    The `attrs_equals`, `cna_equals`, `srn_*`, `ver_*` and `v_keys*` fields are the
-    detection checks of `detect_model()`, the other fields describe the model.
+    `dk`, `dkv` and `sbt` select the family of the model in `detect_model()`; the
+    `attrs_equals`, `cna_equals`, `srn_*`, `ver_*` and `v_keys*` fields are its status
+    checks. The other fields describe the model.
     """
 
     # If True, the alarm/error state is cleared by sending a setter command (setALM)
@@ -76,8 +77,6 @@ class SyrConnectModel:
     # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
     # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
     sbt: int | None = None
-    # String that `getSRN` must contain
-    srn_contains: str | None = None
     # String that must immediately follow `srn_prefix`: "AAA" is the factory batch code
     # used by all current SYR/Hansgrohe/Sanibel devices; override it if a future
     # production run changes the pattern
@@ -1038,10 +1037,10 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="222",
     ),
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
-    # The "... MultiController" / "... Multicontroller" signatures in this section
-    # (conelmuco, sanibelmuco, ditechmuco, takemuco, conceptmuco, optimamuco, syrmuco)
-    # are fallbacks for future devices of this platform, not real products. Do not
-    # list them in the device lists of README.md / README.de.md.
+    # The role of a MultiController is getDFM. Brands with known roles have no generic
+    # signature for an unknown role: such a device stays an unknown model, so it gets
+    # reported instead of silently showing the global allowlists. Ditech, TAKE, concept
+    # and Optima have no known roles yet, so one signature covers each brand.
     SyrConnectModel(
         # CLEARPNLS - Retrofit Leakage Protection
         alarm_clear_via_set=True,
@@ -1083,17 +1082,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="500",
     ),
     SyrConnectModel(
-        # Fallback signature for any other CONEL MultiControllers
-        alarm_clear_via_set=True,
-        base_path="/trio",
-        display_name="CLEAR PRO MultiController",
-        dk=1500,
-        dkv=500,
-        manufacturer="CONEL",
-        name="conelmuco",
-        srn_prefix="500",
-    ),
-    SyrConnectModel(
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 1},
         base_path="/trio",
@@ -1115,17 +1103,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=501,
         manufacturer="Sanibel",
         name="sanibelrsa",
-        srn_prefix="501",
-    ),
-    SyrConnectModel(
-        # Fallback signature for any other Sanibel MultiControllers
-        alarm_clear_via_set=True,
-        base_path="/trio",
-        display_name="Sanibel MultiController",
-        dk=1501,
-        dkv=501,
-        manufacturer="Sanibel",
-        name="sanibelmuco",
         srn_prefix="501",
     ),
     SyrConnectModel(
@@ -1240,48 +1217,82 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         name="syrtriolockconnect",
         srn_prefix="506",
     ),
-    SyrConnectModel(
-        # Fallback signature for any other SYR MultiControllers
-        alarm_clear_via_set=True,
-        base_path="/trio",
-        display_name="SYR Multicontroller",
-        dk=1506,
-        dkv=506,
-        manufacturer="SYR",
-        name="syrmuco",
-        # TODO: Untested model.
-        srn_prefix="506",
-    ),
 ]
 
 
-def detect_model(flat: object) -> SyrConnectModel:
-    """Detect the device model from a flattened attribute dictionary.
+def detect_model(
+    flat: object,
+    dk: int | None = None,
+    dkv: int | None = None,
+    sbt: int | None = None,
+) -> SyrConnectModel:
+    """Detect the device model from the cloud device kind and the flattened status.
+
+    The cloud API (XML) reports `dk`, `dkv` and `sbt` for every device. They are the
+    most reliable match and select the family of signatures with these values; a
+    signature without `sbt` matches every subtype. A family of one signature is the
+    result. In a larger family the status decides, but only between its signatures
+    (getCNA for the i-LEX sizes, getDFM for the MultiController roles, getVER for
+    SafeTech V3/V4). Without a family, e.g. for the local JSON API that has no device
+    kind or for a device kind no signature knows, the status decides between all
+    signatures.
+
+    Args:
+        flat: Flattened device status
+        dk: Cloud API deviceKind, None if unknown
+        dkv: Cloud API deviceKindVersion, None if unknown
+        sbt: Cloud API device subtype, None if unknown
 
     Returns:
         The matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no signature
         matches.
+    """
+    if dk is not None:
+        family = [
+            sig
+            for sig in MODEL_SIGNATURES
+            if sig.dk == dk and sig.dkv == dkv and sig.sbt in (None, sbt)
+        ]
+        if len(family) == 1:
+            _LOGGER.debug(
+                "detect_model: detected model %s (dk=%s, dkv=%s, sbt=%s)",
+                family[0].display_name,
+                dk,
+                dkv,
+                sbt,
+            )
+            return family[0]
+        if family:
+            return _match_status(flat, family)
+    return _match_status(flat, MODEL_SIGNATURES)
+
+
+def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnectModel:
+    """Return the first of the signatures that matches the flattened status.
 
     Detection priority (highest to lowest):
-    1. Serial number prefix/contains combined with attrs_equals:
-        Signatures that define both 'srn_prefix'/'srn_contains' and 'attrs_equals' are checked
-        first, so a more specific variant is not shadowed by a generic srn-only signature that
-        shares the same prefix (attrs_equals is matched against the flattened status attributes,
-        e.g. 'getDFM', not against the signature's own 'dk'/'dkv' metadata fields).
+    1. Serial number prefix combined with attrs_equals:
+        Signatures that define both 'srn_prefix' and 'attrs_equals' are checked first, so a
+        more specific variant is not shadowed by a generic srn-only signature that shares the
+        same prefix (attrs_equals is matched against the flattened status attributes, e.g.
+        'getDFM', not against the signature's own 'dk'/'dkv' metadata fields).
     2. Serial number prefix (srn_prefix):
-        If a signature defines 'srn_prefix', and the serial number (getSRN) starts with srn_prefix + 'AAA', this model is selected immediately.
-    3. Serial number contains (srn_contains):
-        If a signature defines 'srn_contains' and it is found in the serial number, this model is selected.
-    4. getCNA exact match (cna_equals):
+        If a signature defines 'srn_prefix', and the serial number (getSRN) starts with srn_prefix + srn_infix, this model is selected immediately.
+    3. getCNA exact match (cna_equals):
         If a signature defines 'cna_equals' and getCNA matches, this model is selected.
-    5. Attribute match (attrs_equals):
+    4. Attribute match (attrs_equals):
         If a signature defines 'attrs_equals' and all specified attributes match, this model is selected.
-    6. v_keys fingerprint:
+    5. v_keys fingerprint:
         If a signature defines 'v_keys', at least 'v_keys_required' of those keys must be present in the flattened response. If version or attribute constraints are also specified, they must match as well.
-    7. Version prefix/contains:
+    6. Version prefix/contains:
         If a signature defines 'ver_prefix' or 'ver_contains', and getVER matches, this model is selected.
 
-    If no signature matches, returns the unknown model structure.
+    Args:
+        flat: Flattened device status
+        signatures: The signatures to choose from
+
+    Returns:
+        The matched signature, or ``UNKNOWN_MODEL`` if none matches.
     """
     if not isinstance(flat, dict):
         return UNKNOWN_MODEL
@@ -1299,14 +1310,7 @@ def detect_model(flat: object) -> SyrConnectModel:
         return all(str(flat.get(k, "")) == str(v) for k, v in attrs.items())
 
     def srn_match(sig: SyrConnectModel) -> bool:
-        srn_prefix = sig.srn_prefix
-        srn_infix = sig.srn_infix
-        srn_contains = sig.srn_contains
-        if srn_prefix and not srn.startswith(f"{srn_prefix}{srn_infix}"):
-            return False
-        if srn_contains and srn_contains not in srn:
-            return False
-        return True
+        return srn.startswith(f"{sig.srn_prefix}{sig.srn_infix}")
 
     def ver_match(sig: SyrConnectModel) -> bool:
         ver_prefix = sig.ver_prefix
@@ -1322,36 +1326,27 @@ def detect_model(flat: object) -> SyrConnectModel:
         _LOGGER.debug("detect_model: detected model %s (%s)", sig.display_name, method)
         return sig
 
-    # Step 1: Check all serial number prefix/contains matches first (highest priority)
-    # If a model signature defines 'srn_prefix' or 'srn_contains' and the serial number matches,
+    # Step 1: Check all serial number prefix matches first (highest priority)
+    # If a model signature defines 'srn_prefix' and the serial number matches,
     # return this model immediately. This ensures serial number detection always wins over other methods.
     # Signatures that also define 'attrs_equals' are more specific and are checked first, so a
     # generic srn-only signature does not shadow a more specific variant sharing the same prefix.
-    for sig in MODEL_SIGNATURES:
-        if (
-            sig.attrs_equals
-            and (sig.srn_prefix or sig.srn_contains)
-            and srn_match(sig)
-            and attrs_match(sig)
-        ):
+    for sig in signatures:
+        if sig.attrs_equals and sig.srn_prefix and srn_match(sig) and attrs_match(sig):
             return _sig_to_result(sig, "srn_equals+attrs_equals")
-    for sig in MODEL_SIGNATURES:
-        if (
-            not sig.attrs_equals
-            and (sig.srn_prefix or sig.srn_contains)
-            and srn_match(sig)
-        ):
+    for sig in signatures:
+        if not sig.attrs_equals and sig.srn_prefix and srn_match(sig):
             return _sig_to_result(sig, "srn_equals")
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
-    for sig in MODEL_SIGNATURES:
+    for sig in signatures:
         if sig.cna_equals and cna == sig.cna_equals:
             return _sig_to_result(sig, "cna_equals")
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
-    for sig in MODEL_SIGNATURES:
+    for sig in signatures:
         name = sig.name
 
         # If the signature requires certain attributes to match, skip if not satisfied.

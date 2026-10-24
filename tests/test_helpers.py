@@ -1557,7 +1557,7 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
 
 def test_get_sensor_ala_map_models_without_device_profile() -> None:
     """Models without a device profile use the generic alarm codes."""
-    for name in ("conelmuco", "takemuco", "triols", "pontosbase", "syrmuco"):
+    for name in ("hva", "takemuco", "triols", "pontosbase"):
         model = _signature(name)
         assert get_sensor_ala_map(model, "A1")[0] == "alarm_end_switch", name
 
@@ -2019,6 +2019,20 @@ def test_get_device_model_prefers_the_stored_model() -> None:
         "model": stored,
     }
     assert helpers.get_device_model(device) is stored
+
+
+def test_detect_device_model_uses_the_cloud_device_kind() -> None:
+    """The device kind from the cloud device list detects the model without a status."""
+    device: SyrConnectDevice = {
+        "id": "dev1",
+        "dclg": "dclg1",
+        "name": "Device 1",
+        "dk": 122,
+        "dkv": 34,
+        "sbt": 0,
+        "status": {},
+    }
+    assert helpers.detect_device_model(device).name == "safefloor122"
 
 
 def test_get_device_model_without_stored_model() -> None:

@@ -606,22 +606,6 @@ def test_serial_prefix_short_serial():
     assert result.name == "unknown"
 
 
-def test_srn_contains_signature_matches_and_skips():
-    """Test signature using srn_contains matches when present and skips when absent."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test SRN Contains",
-            base_path="/test",
-            name="testsrn",
-            srn_contains="XYZ",
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        assert detect_model({"getSRN": "AAAXYZBBB"}).name == "testsrn"
-        assert detect_model({"getSRN": "AABBB"}).name == "unknown"
-
-
 def test_ver_contains_signature_matches_and_skips():
     """Test signature using ver_contains matches when present and skips when absent."""
     test_sig = [
@@ -717,8 +701,7 @@ def test_manufacturer_hansgrohe_pontosbase():
 def test_manufacturer_sanibel_via_srn_prefix():
     """Sanibel devices detected by srn_prefix should return manufacturer 'Sanibel'."""
     for srn, extra_attrs, expected_name in [
-        # sanibelleakprotect additionally requires getDFM==1 to win over the
-        # generic sanibelmuco fallback signature sharing the same srn_prefix.
+        # sanibelleakprotect additionally requires getDFM==1 (its MultiController role).
         ("501AAA00001", {"getDFM": 1}, "sanibelleakprotect"),
         ("207AAA00001", {}, "sanibelsoftwateruno"),
     ]:
@@ -901,3 +884,76 @@ def test_conelclearprosoft_detection_via_json_fixture():
     assert result.display_name == "CLEAR PRO SOFT"
     assert result.manufacturer == "CONEL"
     assert result.base_path == "/neosoft"
+
+
+def test_detect_model_unique_device_kind_needs_no_status():
+    """A device kind of one signature selects it, even without a status."""
+    assert detect_model({}, dk=2, dkv=2).name == "safetmaster"
+    assert detect_model(None, dk=141, dkv=35).name == "safetech141"
+
+
+def test_detect_model_subtype_selects_the_signature():
+    """The subtype (sbt) selects one of the signatures with the same dk/dkv."""
+    assert detect_model({}, dk=80, dkv=25, sbt=2).name == "lexplus10s"
+    assert detect_model({}, dk=80, dkv=25, sbt=7).name == "lexplus10sl"
+
+
+def test_detect_model_status_decides_within_the_family():
+    """In a family of several signatures the status decides between them."""
+    assert detect_model({"getCNA": "L20"}, dk=40, dkv=16, sbt=0).name == "l20"
+    status = {"getSRN": "506AAA00001", "getDFM": "5"}
+    assert detect_model(status, dk=1506, dkv=506).name == "syrtriolockconnect"
+    status = {"getVER": "Safe-Tech V4.08"}
+    assert detect_model(status, dk=140, dkv=35).name == "safetechv4"
+
+
+def test_detect_model_family_without_status_match_is_unknown():
+    """A status that matches no signature of the family does not leave the family."""
+    status = {"getVER": "Safe-T+ V2.00e"}
+    assert detect_model(status).name == "safetplus"
+    assert detect_model(status, dk=40, dkv=16, sbt=0) is UNKNOWN_MODEL
+
+
+def test_detect_model_unknown_device_kind_uses_the_status():
+    """A device kind no signature knows falls back to the status of all signatures."""
+    assert detect_model({"getCNA": "LEXplus10"}, dk=9999, dkv=9999).name == "lexplus10"
+
+
+def test_detect_model_device_kind_matches_status_for_xml_fixtures():
+    """For every cloud fixture the device kind detects the model the status detects."""
+    parser = ResponseParser()
+    checked = 0
+    for list_file in sorted(FIXTURE_DIR.glob("*_GetProjectDeviceCollections.xml")):
+        status_file = FIXTURE_DIR / list_file.name.replace(
+            "_GetProjectDeviceCollections.xml", "_GetDeviceCollectionStatus.xml"
+        )
+        if not status_file.exists():
+            continue
+        devices = parser.parse_device_list_response(
+            list_file.read_text(encoding="utf-8")
+        )
+        status = parser.parse_device_status_response(
+            status_file.read_text(encoding="utf-8")
+        )
+        by_status = detect_model(status)
+        device = next(d for d in devices if d.get("dk") == by_status.dk)
+        by_kind = detect_model(
+            status, dk=device.get("dk"), dkv=device.get("dkv"), sbt=device.get("sbt")
+        )
+        assert by_kind is by_status, list_file.name
+        assert by_kind is not UNKNOWN_MODEL, list_file.name
+        checked += 1
+    assert checked >= 9
+
+
+def test_detect_model_unknown_multicontroller_role_is_unknown():
+    """A MultiController with an unknown role (getDFM) is an unknown model."""
+    status = {"getSRN": "506AAA00001", "getDFM": "9"}
+    assert detect_model(status) is UNKNOWN_MODEL
+    assert detect_model(status, dk=1506, dkv=506) is UNKNOWN_MODEL
+
+
+def test_detect_model_multicontroller_brand_without_known_roles():
+    """Brands without known MultiController roles have one signature for the brand."""
+    assert detect_model({"getSRN": "502AAA00001"}).name == "ditechmuco"
+    assert detect_model({}, dk=1505, dkv=505).name == "optimamuco"
