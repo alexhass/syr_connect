@@ -29,11 +29,14 @@ Deliberately NOT included:
 - getT2: appears alone without its usual getT1/getLE/getUL siblings (the
   single-profile leak keys) - too little evidence to include alone, same
   reasoning as lexplus10sl.py.
-- Self-learning phase (getSLE/getSLF/getSLP/getSLT/getSLV): all reported as
-  constant 0 in the fixture - same stub pattern muco_leakprotect excluded
-  (even a genuinely non-zero getSLF was left out there pending confirmation).
-- getVPS1, getVPS2, getIWH, getOWH, getWHU, getSTA, getTMP: not present in
-  the fixture at all.
+- getVPS1, getVPS2, getIWH, getOWH, getWHU, getSTA: not present in the fixture
+  at all.
+
+The self-learning phase and the temporary deactivation (getTMP) are included
+although the fixture reports no self-learning results and no getTMP: the
+official API documentation lists both for TRIO Lock Connect, and the
+muco_leakprotect sibling with the same firmware reports real self-learning
+results.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
@@ -65,6 +68,15 @@ SENSOR_SUPPORTED_KEYS = {
     "getVOL",
     # --- Alarm Duration ---
     "getALD",
+    # --- Self-Learning Phase ---
+    "getSLE",
+    "getSLF",
+    "getSLO",
+    "getSLP",
+    "getSLT",
+    "getSLV",
+    "getSMF",
+    "getSOF",
     # --- Microleakage Test ---
     "getDBD",
     "getDMA",
@@ -72,8 +84,9 @@ SENSOR_SUPPORTED_KEYS = {
     "getDSV",
     "getDTT",
     "getNPS",
-    # --- Leak Protection (warning threshold) ---
+    # --- Leak Protection (warning threshold; deactivation timer) ---
     "getLWT",
+    "getTMP",
     # --- Leak Protection Profiles 1-8 ---
     "getPA1",
     "getPA2",

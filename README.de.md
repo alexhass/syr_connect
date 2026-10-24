@@ -211,12 +211,12 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 - Timer für temporäre Deaktivierung
 - Leckage-Warnschwellwert (%)
 
-#### Mikroundichtigkeitstest (Trio DFR/LS)
+#### Mikroundichtigkeitstest (Trio DFR/LS, SafeTech, SafeTech+, TRIO Lock, SafeTech Lock)
 
 - Testintervall und -status des Mikroundichtigkeitstests
 - Testdauer und Ereigniszähler
 
-#### Selbstlernphase (Trio DFR/LS)
+#### Selbstlernphase (Trio DFR/LS, SafeTech+, TRIO Lock, SafeTech Lock)
 
 - Verbleibende und abgelaufene Zeit der Selbstlernphase
 - Durchflussrate und kumuliertes Volumen während der Selbstlernphase

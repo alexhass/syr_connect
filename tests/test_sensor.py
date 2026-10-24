@@ -8138,9 +8138,9 @@ def test_lex_volume_thresholds(model: str, expected: set[str]) -> None:
         ("SyrTrioDFRLS", {"getLWT", "getSLO", "getSMF"}),
         # The 10 SL reports no getSMF/getSOF
         ("SyrLEXplus10SL", {"getLWT", "getSLO"}),
-        # Self-learning settings are stubs on the MultiController roles
-        ("SyrTrioLock", {"getLWT"}),
-        ("ConelClearProLeakProtection", {"getLWT"}),
+        # The MultiController captures report no getSOF via XML
+        ("SyrTrioLock", {"getLWT", "getSLO", "getSMF"}),
+        ("ConelClearProLeakProtection", {"getLWT", "getSLO", "getSMF"}),
         # Filling controller: no leak protection
         ("ConelClearProFill", set()),
     ],
@@ -8156,6 +8156,43 @@ def test_leak_protection_settings(model: str, expected: set[str]) -> None:
     keys = set(sensor_module.sensor_keys_for_status(status))
 
     assert keys & {"getLWT", "getSLO", "getSMF", "getSOF"} == expected
+
+
+# getSLP is a documented key that never becomes a sensor (hidden_when="always")
+_SELF_LEARNING_KEYS = {"getSLE", "getSLF", "getSLT", "getSLV"}
+_MICROLEAKAGE_KEYS = {"getDBD", "getDMA", "getDRP", "getDSV", "getDTT", "getNPS"}
+
+
+@pytest.mark.parametrize(
+    ("fixture", "expected"),
+    [
+        # Official API: self-learning phase and microleakage test on these models
+        (
+            "ConelClearProLeakProtection.json",
+            _SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS,
+        ),
+        (
+            "SanibelLeakProtectionModuleA25_get_all.json",
+            _SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS,
+        ),
+        ("SyrTrioLock_get_all.json", _SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS),
+        ("SyrSafeTechPlus_get_all.json", _SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS),
+        ("SyrTrioDFRLS_get_all.json", _SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS),
+        # Filling controller: neither
+        ("ConelClearProFill_get_all.json", set()),
+    ],
+)
+def test_self_learning_and_microleakage_follow_official_matrix(
+    fixture: str, expected: set[str]
+) -> None:
+    """Self-learning phase and microleakage test sensors follow the official validity matrix."""
+    status = json.loads(
+        (Path(__file__).parent / "fixtures/json" / fixture).read_text(encoding="utf-8")
+    )
+
+    keys = set(sensor_module.sensor_keys_for_status(status))
+
+    assert keys & (_SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS) == expected
 
 
 @pytest.mark.parametrize(

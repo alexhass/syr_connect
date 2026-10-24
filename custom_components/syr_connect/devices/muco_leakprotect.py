@@ -18,6 +18,13 @@ since this model genuinely controls a shutoff valve. getNMT/getNPT/getNMS are
 included for the SafeTech Lock Connect variant, per the official validity
 matrix (docs/syrconnect-protocol.md).
 
+The self-learning phase and the microleakage test are included: the official
+API documentation lists both for SafeTech Lock Connect, and the CLEAR PRO
+RETROFIT LEAKAGE PROTECTION capture reports the results of a finished
+self-learning phase (getSLT=44171, getSLV=550, getSLF=3500), a skipped scheduled
+test (getDSV=3) and a live getNPS. All variants share the MultiController
+firmware.
+
 Deliberately NOT included, pending confirmation on a real device:
 - getBAR2, getCND: present with a value of 0 in the A25 fixture, but a zero
   reading doesn't prove genuine hardware support - the official "Per-model
@@ -35,13 +42,6 @@ Deliberately NOT included, pending confirmation on a real device:
 - getBAR: labeled "(Safe-T+)" in sensor.py, unrelated product; 0 in fixture.
 - getCEL: temperature reading with no clear tie to leak protection; 0 in fixture.
 - getRCP: generic cloud sync interval, not tied to any specific feature here.
-- getDBD, getDMA, getDRP, getDTT, getNPS: labeled "(Trio DFR/LS, SafeTech)"
-  microleakage-test feature in sensor.py - a different product family. getDSV
-  is the one exception (see BUTTON_SUPPORTED_KEYS below).
-- getSLE, getSLP, getSLT, getSLV: labeled "(Trio DFR/LS)" self-learning-phase
-  feature in sensor.py; reported as constant 0 in the fixture. getSLF is the
-  one exception (reported as a real non-zero value, 3500) but left out here
-  too pending confirmation since its siblings are all stub zeros.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
@@ -77,6 +77,22 @@ SENSOR_SUPPORTED_KEYS = {
     "getSTA",
     # --- Alarm Duration ---
     "getALD",
+    # --- Self-Learning Phase ---
+    "getSLE",
+    "getSLF",
+    "getSLO",
+    "getSLP",
+    "getSLT",
+    "getSLV",
+    "getSMF",
+    "getSOF",
+    # --- Microleakage Test ---
+    "getDBD",
+    "getDMA",
+    "getDRP",
+    "getDSV",
+    "getDTT",
+    "getNPS",
     # --- Leak Protection (warning threshold; deactivation timer, tied to the profiles below) ---
     "getLWT",
     "getTMP",

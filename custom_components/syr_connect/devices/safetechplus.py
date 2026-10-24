@@ -4,6 +4,8 @@ Based on the SafeTech+ JSON and XML fixtures and checked against the
 Per-model validity matrix. The matrix marks BAR unavailable for SafeTech+,
 so getBAR is intentionally absent here even though it appears in the captures.
 The base SafeTech family keeps its separate devices/safetech.py allowlist.
+The self-learning phase is included: the official API documentation lists it
+for SafeTech+, although the captures report no self-learning results.
 """
 
 SENSOR_SUPPORTED_KEYS = {
@@ -38,9 +40,14 @@ SENSOR_SUPPORTED_KEYS = {
     "getDSV",
     "getDTT",
     "getNPS",
-    # --- Leak protection and self-learning settings ---
+    # --- Leak protection and self-learning ---
     "getLWT",
+    "getSLE",
+    "getSLF",
     "getSLO",
+    "getSLP",
+    "getSLT",
+    "getSLV",
     "getSMF",
     "getSOF",
     # --- Leak-protection profiles ---

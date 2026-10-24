@@ -211,12 +211,12 @@ The integration provides comprehensive monitoring of your devices:
 - Temporary deactivation timer
 - Leakage warning threshold (%)
 
-#### Microleakage Testing (Trio DFR/LS)
+#### Microleakage Testing (Trio DFR/LS, SafeTech, SafeTech+, TRIO Lock, SafeTech Lock)
 
 - Microleakage test interval and status
 - Test duration and event count
 
-#### Self-Learning Phase (Trio DFR/LS)
+#### Self-Learning Phase (Trio DFR/LS, SafeTech+, TRIO Lock, SafeTech Lock)
 
 - Remaining and elapsed self-learning time
 - Flow rate and accumulated volume during self-learning
