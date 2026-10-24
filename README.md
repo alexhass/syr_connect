@@ -172,6 +172,7 @@ The integration provides comprehensive monitoring of your devices:
 
 - Raw/Soft water hardness monitoring
 - Water conductivity (µS/cm)
+- Conductivity factor
 - Water temperature (°C)
 - Remaining softening capacity tracking
 - Resin capacity per tank (up to 3 tanks, %)
@@ -208,6 +209,7 @@ The integration provides comprehensive monitoring of your devices:
 - Active leak protection profile index
 - Leak protection profiles 1–8 (volume limit, max duration, flow threshold, warning and buzzer flags)
 - Temporary deactivation timer
+- Leakage warning threshold (%)
 
 #### Microleakage Testing (Trio DFR/LS)
 
@@ -218,6 +220,7 @@ The integration provides comprehensive monitoring of your devices:
 
 - Remaining and elapsed self-learning time
 - Flow rate and accumulated volume during self-learning
+- Self-learning settings: offset for volume and time, offset for flow, minimum flow
 
 #### Floor Leak Sensor (SafeFloor)
 
@@ -242,10 +245,16 @@ The integration provides comprehensive monitoring of your devices:
 - Device type and manufacturer
 - Network information (IP, MAC, Gateway)
 - Wi-Fi connectivity status and signal strength
+- Time zone (UTC offset)
 
 #### Binary Sensors
 
 - **Buzzer State**: Indicates whether the device buzzer is currently enabled
+- **Leak Protection**: Shows whether the leak protection is active or deactivated
+- **Valve Test**: Shows whether a valve test is running
+- **Firmware Check**: Shows whether new firmware is available (checked at startup and every 6 hours)
+- **Daylight Saving Time**: Shows whether the device switches to daylight saving time automatically
+- **Temperature, Pressure and Conductivity Sensor**: Shows whether the measuring sensor is active or deactivated
 
 #### Buttons (Actions)
 
@@ -257,6 +266,7 @@ The integration provides comprehensive monitoring of your devices:
 #### Switch Controls
 
 - **Buzzer**: Enable or disable the device buzzer
+- **Profile Change by Button**: Allow or block changing the leak protection profile with the button on the device
 
 #### Select Controls (Configuration)
 

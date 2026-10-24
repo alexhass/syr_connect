@@ -172,6 +172,7 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 
 - Überwachung Roh-/Weichwasserhärte
 - Wasserleitfähigkeit (µS/cm)
+- Leitfähigkeitsfaktor
 - Wassertemperatur (°C)
 - Verbleibende Enthärtekapazität
 - Harzkapazität je Behälter (bis zu 3 Behälter, %)
@@ -202,12 +203,13 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 - Batterie- und Netzspannung
 - Alarm-, Benachrichtigungs- und Warnstatus (aktueller Code und letzte 8 Einträge)
 
-#### Leckschutz (LEXplus10SL / Trio DFR/LS)
+#### Leckageschutz (LEXplus10SL / Trio DFR/LS)
 
-- Volumen- und Zeitgrenzwerte für den Leckschutz (Anwesend- und Abwesendprofil)
-- Index des aktiven Leckschutzprofils
-- Leckschutzprofile 1–8 (Volumenlimit, maximale Dauer, Durchflussschwelle, Warn- und Summer-Flags)
+- Volumen- und Zeitgrenzwerte für den Leckageschutz (Anwesend- und Abwesendprofil)
+- Index des aktiven Leckageschutzprofils
+- Leckageschutzprofile 1–8 (Volumenlimit, maximale Dauer, Durchflussschwelle, Warn- und Summer-Flags)
 - Timer für temporäre Deaktivierung
+- Leckage-Warnschwellwert (%)
 
 #### Mikroundichtigkeitstest (Trio DFR/LS)
 
@@ -218,6 +220,7 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 
 - Verbleibende und abgelaufene Zeit der Selbstlernphase
 - Durchflussrate und kumuliertes Volumen während der Selbstlernphase
+- Einstellungen der Selbstlernphase: Zuschlag für Volumen und Zeit, Zuschlag für Durchfluss, Mindestdurchfluss
 
 #### Bodensensor (SafeFloor)
 
@@ -242,10 +245,16 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 - Gerätetyp und Hersteller
 - Netzwerk-Informationen (IP, MAC, Gateway)
 - WLAN-Verbindungsstatus und Signalstärke
+- Zeitzone (UTC-Abweichung)
 
 #### Binärsensoren
 
 - **Summer-Status**: Zeigt an, ob der Gerätesummer aktuell aktiviert ist
+- **Leckageschutz**: Zeigt an, ob der Leckageschutz aktiv oder deaktiviert ist
+- **Ventiltest**: Zeigt an, ob gerade ein Ventiltest läuft
+- **Firmware-Prüfung**: Zeigt an, ob eine neue Firmware verfügbar ist (geprüft beim Start und alle 6 Stunden)
+- **Sommerzeit**: Zeigt an, ob das Gerät automatisch auf Sommerzeit umstellt
+- **Temperatur-, Druck- und Leitfähigkeitssensor**: Zeigt an, ob der Messsensor aktiv oder deaktiviert ist
 
 #### Buttons (Aktionen)
 
@@ -257,11 +266,12 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 #### Schaltersteuerungen
 
 - **Summer**: Gerätesummer aktivieren oder deaktivieren
+- **Profilwechsel per Taste**: Wechsel des Leckageschutzprofils mit der Taste am Gerät erlauben oder sperren
 
 #### Auswahlsteuerungen (Konfiguration)
 
 - **Regenerationszeit**: Tägliche Regenerationszeit einstellen (15-Minuten-Intervalle)
-- **Leckschutzprofil**: Aktives Leckschutzprofil auswählen (bei Geräten mit mehreren Profilen)
+- **Leckageschutzprofil**: Aktives Leckageschutzprofil auswählen (bei Geräten mit mehreren Profilen)
 - **Salzmenge**: Salzmenge in Behältern konfigurieren (je nach Modell; bis zu 3 Behälter)
 - **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage)
 - **Display-Rotation**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display)
