@@ -14,7 +14,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import detect_model
+from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
@@ -1498,7 +1498,7 @@ async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands
         "getSRN": f"{srn_prefix}AAA00001",
         "getSV1": "5",
     }
-    assert detect_model(status)["name"] == expected_name
+    assert detect_model(status).name == expected_name
 
     data = {
         "devices": [
@@ -2589,13 +2589,14 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
     overrides in devices/*.py (e.g. neosoft.py deliberately excludes getSV1).
     """
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "srn_prefix": "999",
-            "maximum_salt_volume": 25,
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            srn_prefix="999",
+            maximum_salt_volume=25,
+        )
     ]
     data = {
         "devices": [
@@ -4089,12 +4090,13 @@ async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_de
 ) -> None:
     """A model without a device file falls back to the global allowlist, which must not expose these keys."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "srn_prefix": "999",
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            srn_prefix="999",
+        )
     ]
     status = {
         "getSRN": "999AAA0001",

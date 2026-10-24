@@ -2,7 +2,7 @@
 
 Single-tank NeoSoft platform (dk=1200-1222), shared by "neosoft"/"neosoft2500" and
 every single-tank rebrand-only sibling signature in this dk range via
-"device_file": "neosoft_single". Dual-tank rebrands ("*duo"/"twin"/NeoSoft 5000)
+device_file="neosoft_single". Dual-tank rebrands ("*duo"/"twin"/NeoSoft 5000)
 use the sibling neosoft_duo.py instead - see that file for the second-tank keys
 (getRE2/getSS2/getSV2/getVPS2) this file deliberately omits.
 

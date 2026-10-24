@@ -4,1220 +4,1243 @@ This module provides a small heuristic to identify device models from
 the flattened attribute dictionary produced by `ResponseParser._flatten_attributes`.
 """
 
+from collections.abc import Mapping
+from dataclasses import dataclass
 import logging
-from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectModel:
+    """Signature of a device model: how it is detected and what it supports.
+
+    The `attrs_equals`, `cna_equals`, `srn_*`, `ver_*` and `v_keys*` fields are the
+    detection checks of `detect_model()`, the other fields describe the model.
+    """
+
+    # If True, the alarm/error state is cleared by sending a setter command (setALM)
+    # rather than by a clrALM command
+    alarm_clear_via_set: bool = False
+    # If True, alarm commands use ALM variants (getALM/setALM/clrALM) instead of ALA
+    # variants (getALA/setALA/clrALA)
+    alarm_style_alm: bool = False
+    # `getX` -> value pairs that must all match the flattened status
+    attrs_equals: Mapping[str, int | str] | None = None
+    # JSON API local access base path for the model, or None if not applicable
+    base_path: str | None
+    # Exact match against the `getCNA` value
+    cna_equals: str | None = None
+    # Name of a `devices/<name>.py` override file with this model's per-platform entity
+    # allowlists (see `helpers.get_model_supported_keys()`). Defaults to `name`. Set it
+    # when several signatures are rebranded variants of the same hardware (e.g. the
+    # dk=1500-1506 MultiController family), so they share one override file.
+    device_file: str | None = None
+    # Human-readable model label used for `DeviceInfo.model` and the local model selector
+    display_name: str
+    # Cloud API deviceKind: the integer `dk` attribute in GetProjectDeviceCollections XML
+    dk: int | None
+    # Cloud API deviceKindVersion: the integer `dkv` attribute in
+    # GetProjectDeviceCollections XML; for Azure-connected devices this also equals the
+    # numeric SRN prefix of newer production units
+    dkv: int | None
+    # Human-readable name of the device manufacturer
+    manufacturer: str
+    # Maximum number of days between regenerations; None means no regeneration interval
+    maximum_regeneration_interval: int | None = None
+    # Maximum salt tank volume for the salt amount select; only set for models whose salt
+    # amount can be set
+    maximum_salt_volume: int | None = None
+    # Stable machine-readable model identifier (e.g. "lexplus10s")
+    name: str
+    # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
+    # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
+    sbt: int | None = None
+    # String that `getSRN` must contain
+    srn_contains: str | None = None
+    # String that must immediately follow `srn_prefix`: "AAA" is the factory batch code
+    # used by all current SYR/Hansgrohe/Sanibel devices; override it if a future
+    # production run changes the pattern
+    srn_infix: str = "AAA"
+    # Prefix that `getSRN` must start with
+    srn_prefix: str | None = None
+    # String that `getVER` must contain
+    ver_contains: str | None = None
+    # Prefix that `getVER` must start with
+    ver_prefix: str | None = None
+    # `getX` keys used as a fingerprint for the model. When set, any `ver_*` or
+    # `attrs_equals` constraints must match as well.
+    v_keys: frozenset[str] | None = None
+    # Minimum number of keys from `v_keys` that must be present in the flattened status
+    v_keys_required: int = 1
+
+
 # Returned by detect_model when no signature matches or input is invalid.
-UNKNOWN_MODEL: dict[str, Any] = {
-    "base_path": None,
-    "display_name": "Unknown model",
-    "manufacturer": "Unknown",
-    "maximum_regeneration_interval": None,
-    "maximum_salt_volume": None,
-    "name": "unknown",
-}
+UNKNOWN_MODEL = SyrConnectModel(
+    base_path=None,
+    display_name="Unknown model",
+    dk=None,
+    dkv=None,
+    manufacturer="Unknown",
+    name="unknown",
+)
 
 # Simple model signatures derived from fixtures. Each signature may include
 # explicit checks (exact `getCNA` value or version patterns) and a set of
 # fingerprint keys where a threshold of matches is required.
-#
-# Signature fields summary:
-# - `attrs_equals`:                 dict of `getX` -> value pairs that must all match
-# - `alarm_clear_via_set`:          if True, the alarm/error state is cleared by sending a setter
-#                                   command (setALM) rather than by a clrALM command.
-# - `alarm_style_alm`:              if True, alarm commands use ALM variants (getALM/setALM/clrALM)
-#                                   instead of ALA variants (getALA/setALA/clrALA)
-# - `base_path`:                    json api local access base path for the model or None if not applicable
-# - `cna_equals`:                   exact match against `getCNA` value (if present)
-# - `device_file`:                  name of a `devices/<name>.py` override file to use for this model's
-#                                   per-platform entity allowlists (see `helpers.get_model_supported_keys()`).
-#                                   Optional; defaults to this signature's own `name`. Set this when
-#                                   several signatures are rebranded variants of the same underlying
-#                                   hardware (e.g. the dk=1500-1506 MultiController family) so they can
-#                                   share one override file instead of duplicating near-identical content.
-# - `display_name`:                 human-readable model label used for `DeviceInfo.model` and
-#                                   the local model selector.
-# - `dk`:                           cloud API deviceKind - the integer `dk` attribute in GetProjectDeviceCollections XML
-# - `dkv`:                          cloud API deviceKindVersion - the integer `dkv` attribute in GetProjectDeviceCollections XML;
-#                                   for Azure-connected devices this also equals the numeric SRN prefix of newer production units.
-# - `manufacturer`:                 human-readable name of the device manufacturer
-# - `maximum_regeneration_interval`: maximum number of days between regenerations; `None` means no regeneration interval
-# - `maximum_salt_volume`:          maximum salt tank volume for the salt amount select; only set for
-#                                   models whose salt amount can be set.
-# - `name`:                         stable machine-readable model identifier returned by `detect_model()`
-#                                   (e.g. "lexplus10s"); also the default `device_file` value.
-# - `sbt`:                          cloud API device subtype - the integer `sbt` attribute in GetProjectDeviceCollections XML;
-#                                   only set when the subtype uniquely identifies this model within its dk/dkv family.
-# - `srn_prefix`:                   prefix that `getSRN` must start with
-# - `srn_infix`:                    string that must immediately follow `srn_prefix`
-#                                   (default: "AAA" - the factory batch code used by all
-#                                   current SYR/Hansgrohe/Sanibel devices; override if a
-#                                   future production run changes the pattern)
-# - `ver_prefix` / `ver_contains`:  require `getVER` to match the prefix or contain
-# - `v_keys`:                       set of `getX` keys used as a fingerprint for the model
-# - `v_keys_required`:              the minimum number of keys from `v_keys` that must be
-#                                   present in the flattened response for the signature to match. When
-#                                   `v_keys` are defined, the code also enforces any `ver_*` or
-#                                   `attrs_equals` constraints before returning a match.
-MODEL_SIGNATURES: list[dict[str, Any]] = [
+MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
-    {
-        "base_path": None,
-        "device_file": "safetplus",
-        "display_name": "Safe-T+ Connect",
-        "dk": 1,
-        "dkv": 6,
-        "manufacturer": "SYR",
-        "name": "safetplus",
-        "ver_prefix": "Safe-T+",
-    },
+    SyrConnectModel(
+        base_path=None,
+        device_file="safetplus",
+        display_name="Safe-T+ Connect",
+        dk=1,
+        dkv=6,
+        manufacturer="SYR",
+        name="safetplus",
+        ver_prefix="Safe-T+",
+    ),
     # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
-    {
-        "base_path": None,
-        "device_file": "safetplus",
-        "display_name": "Safe-T Master",
-        "dk": 2,
-        "dkv": 2,
-        "manufacturer": "SYR",
-        "name": "safetmaster",
+    SyrConnectModel(
+        base_path=None,
+        device_file="safetplus",
+        display_name="Safe-T Master",
+        dk=2,
+        dkv=2,
+        manufacturer="SYR",
+        name="safetmaster",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "device_file": "safetplus",
-        "display_name": "Safe-T Slave",
-        "dk": 3,
-        "dkv": 3,
-        "manufacturer": "SYR",
-        "name": "safetslave",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_file="safetplus",
+        display_name="Safe-T Slave",
+        dk=3,
+        dkv=3,
+        manufacturer="SYR",
+        name="safetslave",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "device_file": "safetplus",
-        "display_name": "Safe-T Slave",
-        "dk": 4,
-        "dkv": 4,
-        "manufacturer": "SYR",
-        "name": "safetslaveinwall",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_file="safetplus",
+        display_name="Safe-T Slave",
+        dk=4,
+        dkv=4,
+        manufacturer="SYR",
+        name="safetslaveinwall",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "device_file": "safetplus",
-        "display_name": "Safe-T Communication Module",
-        "dk": 5,
-        "dkv": 12,
-        "manufacturer": "SYR",
-        "name": "safetcomm",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_file="safetplus",
+        display_name="Safe-T Communication Module",
+        dk=5,
+        dkv=12,
+        manufacturer="SYR",
+        name="safetcomm",
         # TODO: Untested model.
-    },
+    ),
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
-    {
-        "base_path": None,
-        "display_name": "HVA",
-        "dk": 20,
-        "dkv": 19,
-        "manufacturer": "SYR",
-        "name": "hva",
+    SyrConnectModel(
+        base_path=None,
+        display_name="HVA",
+        dk=20,
+        dkv=19,
+        manufacturer="SYR",
+        name="hva",
         # TODO: Untested model.
-    },
+    ),
     # ── Inliner-HWA 3300 (dk=25) ─────────────────────────────────────────────────
-    {
-        "base_path": None,
-        "display_name": "Inliner-HWA 3300",
-        "dk": 25,
-        "dkv": 26,
-        "manufacturer": "SYR",
-        "name": "inlinerhwa3300",
+    SyrConnectModel(
+        base_path=None,
+        display_name="Inliner-HWA 3300",
+        dk=25,
+        dkv=26,
+        manufacturer="SYR",
+        name="inlinerhwa3300",
         # TODO: Untested model.
-    },
+    ),
     # ── i-LEX / LEX (dk=40, dkv=16) ─────────────────────────────────────────────
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L10",
-        "device_file": "lex",
-        "display_name": "i-LEX 10 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 25,
-        "name": "l10",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L12",
-        "device_file": "lex",
-        "display_name": "i-LEX 12 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 25,
-        "name": "l12",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L15",
-        "device_file": "lex",
-        "display_name": "i-LEX 15 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 25,
-        "name": "l15",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L20",
-        "device_file": "lex",
-        "display_name": "i-LEX 20 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 70,
-        "name": "l20",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L25",
-        "device_file": "lex",
-        "display_name": "i-LEX 25 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 70,
-        "name": "l25",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L30",
-        "device_file": "lex",
-        "display_name": "i-LEX 30 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 70,
-        "name": "l30",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L40",
-        "device_file": "lex",
-        "display_name": "i-LEX 40 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 75,
-        "name": "l40",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L50",
-        "device_file": "lex",
-        "display_name": "i-LEX 50 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 75,
-        "name": "l50",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L60",
-        "device_file": "lex",
-        "display_name": "i-LEX 60 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 110,
-        "name": "l60",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L70",
-        "device_file": "lex",
-        "display_name": "i-LEX 70 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 110,
-        "name": "l70",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L80",
-        "device_file": "lex",
-        "display_name": "i-LEX 80 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 200,
-        "name": "l80",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L90",
-        "device_file": "lex",
-        "display_name": "i-LEX 90 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 200,
-        "name": "l90",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "L100",
-        "device_file": "lex",
-        "display_name": "i-LEX 100 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR Oceanic",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 300,
-        "name": "l100",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX10",
-        "device_file": "lex",
-        "display_name": "LEX 10 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 25,
-        "name": "lex10",
-        "sbt": 1,
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX20",
-        "device_file": "lex",
-        "display_name": "LEX 20 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 70,
-        "name": "lex20",
-        "sbt": 2,
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX30",
-        "device_file": "lex",
-        "display_name": "LEX 30 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 70,
-        "name": "lex30",
-        "sbt": 3,
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX40",
-        "device_file": "lex",
-        "display_name": "LEX 40 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 75,
-        "name": "lex40",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX60",
-        "device_file": "lex",
-        "display_name": "LEX 60 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 110,
-        "name": "lex60",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX80",
-        "device_file": "lex",
-        "display_name": "LEX 80 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 200,
-        "name": "lex80",
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEX100",
-        "device_file": "lex",
-        "display_name": "LEX 100 Connect",
-        "dk": 40,
-        "dkv": 16,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 99,
-        "maximum_salt_volume": 300,
-        "name": "lex100",
-        "ver_prefix": None,
-    },
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L10",
+        device_file="lex",
+        display_name="i-LEX 10 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=25,
+        name="l10",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L12",
+        device_file="lex",
+        display_name="i-LEX 12 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=25,
+        name="l12",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L15",
+        device_file="lex",
+        display_name="i-LEX 15 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=25,
+        name="l15",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L20",
+        device_file="lex",
+        display_name="i-LEX 20 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=70,
+        name="l20",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L25",
+        device_file="lex",
+        display_name="i-LEX 25 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=70,
+        name="l25",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L30",
+        device_file="lex",
+        display_name="i-LEX 30 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=70,
+        name="l30",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L40",
+        device_file="lex",
+        display_name="i-LEX 40 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=75,
+        name="l40",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L50",
+        device_file="lex",
+        display_name="i-LEX 50 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=75,
+        name="l50",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L60",
+        device_file="lex",
+        display_name="i-LEX 60 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=110,
+        name="l60",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L70",
+        device_file="lex",
+        display_name="i-LEX 70 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=110,
+        name="l70",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L80",
+        device_file="lex",
+        display_name="i-LEX 80 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=200,
+        name="l80",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L90",
+        device_file="lex",
+        display_name="i-LEX 90 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=200,
+        name="l90",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="L100",
+        device_file="lex",
+        display_name="i-LEX 100 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR Oceanic",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=300,
+        name="l100",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX10",
+        device_file="lex",
+        display_name="LEX 10 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=25,
+        name="lex10",
+        sbt=1,
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX20",
+        device_file="lex",
+        display_name="LEX 20 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=70,
+        name="lex20",
+        sbt=2,
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX30",
+        device_file="lex",
+        display_name="LEX 30 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=70,
+        name="lex30",
+        sbt=3,
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX40",
+        device_file="lex",
+        display_name="LEX 40 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=75,
+        name="lex40",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX60",
+        device_file="lex",
+        display_name="LEX 60 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=110,
+        name="lex60",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX80",
+        device_file="lex",
+        display_name="LEX 80 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=200,
+        name="lex80",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEX100",
+        device_file="lex",
+        display_name="LEX 100 Connect",
+        dk=40,
+        dkv=16,
+        manufacturer="SYR",
+        maximum_regeneration_interval=99,
+        maximum_salt_volume=300,
+        name="lex100",
+        ver_prefix=None,
+    ),
     # ── Hygiene module (dk=60-63) ────────────────────────────────────────────────
-    {
-        "base_path": None,
-        "display_name": "Hygiene Module (cold)",
-        "dk": 60,
-        "dkv": 21,
-        "manufacturer": "SYR",
-        "name": "hygienemodulecold",
+    SyrConnectModel(
+        base_path=None,
+        display_name="Hygiene Module (cold)",
+        dk=60,
+        dkv=21,
+        manufacturer="SYR",
+        name="hygienemodulecold",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "display_name": "Hygiene Module (warm)",
-        "dk": 61,
-        "dkv": 22,
-        "manufacturer": "SYR",
-        "name": "hygienemodulwarm",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        display_name="Hygiene Module (warm)",
+        dk=61,
+        dkv=22,
+        manufacturer="SYR",
+        name="hygienemodulwarm",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "display_name": "Hygiene Module (warm and cold)",
-        "dk": 62,
-        "dkv": 23,
-        "manufacturer": "SYR",
-        "name": "hygienemodulwarmcold",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        display_name="Hygiene Module (warm and cold)",
+        dk=62,
+        dkv=23,
+        manufacturer="SYR",
+        name="hygienemodulwarmcold",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "display_name": "Hygiene Module (cold and warm)",
-        "dk": 63,
-        "dkv": 24,
-        "manufacturer": "SYR",
-        "name": "hygienemodulcoldwarm",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        display_name="Hygiene Module (cold and warm)",
+        dk=63,
+        dkv=24,
+        manufacturer="SYR",
+        name="hygienemodulcoldwarm",
         # TODO: Untested model.
-    },
+    ),
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEXplus10",
-        "device_file": "lexplus10s",
-        "display_name": "LEX Plus 10 Connect",
-        "dk": 80,
-        "dkv": 25,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 4,
-        "maximum_salt_volume": 25,
-        "name": "lexplus10",
-        "sbt": 1,
-        "ver_prefix": None,
-    },
-    {
-        "alarm_style_alm": True,
-        "base_path": None,
-        "cna_equals": "LEXplus10S",
-        "device_file": "lexplus10s",
-        "display_name": "LEX Plus 10 S Connect",
-        "dk": 80,
-        "dkv": 25,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 4,
-        "maximum_salt_volume": 25,
-        "name": "lexplus10s",
-        "sbt": 2,
-        "ver_prefix": None,
-    },
-    {
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEXplus10",
+        device_file="lexplus10s",
+        display_name="LEX Plus 10 Connect",
+        dk=80,
+        dkv=25,
+        manufacturer="SYR",
+        maximum_regeneration_interval=4,
+        maximum_salt_volume=25,
+        name="lexplus10",
+        sbt=1,
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        alarm_style_alm=True,
+        base_path=None,
+        cna_equals="LEXplus10S",
+        device_file="lexplus10s",
+        display_name="LEX Plus 10 S Connect",
+        dk=80,
+        dkv=25,
+        manufacturer="SYR",
+        maximum_regeneration_interval=4,
+        maximum_salt_volume=25,
+        name="lexplus10s",
+        sbt=2,
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
         # False (getALA), unlike its lexplus10/lexplus10s siblings: this
         # fixture reports getALA, not getALM, as the current alarm code.
-        "alarm_style_alm": False,
-        "base_path": None,
-        "cna_equals": "LEXplus10SL",
-        "device_file": "lexplus10sl",
-        "display_name": "LEX Plus 10 SL Connect",
-        "dk": 80,
-        "dkv": 25,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 4,
-        "maximum_salt_volume": 25,
-        "name": "lexplus10sl",
-        "sbt": 7,
-        "ver_prefix": None,
-    },
+        alarm_style_alm=False,
+        base_path=None,
+        cna_equals="LEXplus10SL",
+        device_file="lexplus10sl",
+        display_name="LEX Plus 10 SL Connect",
+        dk=80,
+        dkv=25,
+        manufacturer="SYR",
+        maximum_regeneration_interval=4,
+        maximum_salt_volume=25,
+        name="lexplus10sl",
+        sbt=7,
+        ver_prefix=None,
+    ),
     # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
-    {
-        "base_path": None,
-        "display_name": "CONTROLICmini",
-        "dk": 100,
-        "dkv": 27,
-        "manufacturer": "SYR",
-        "name": "controlicmini",
+    SyrConnectModel(
+        base_path=None,
+        display_name="CONTROLICmini",
+        dk=100,
+        dkv=27,
+        manufacturer="SYR",
+        name="controlicmini",
         # TODO: Untested model.
-    },
+    ),
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
-    {
+    SyrConnectModel(
         # dk=120/dkv=34 is shared by multiple vendors.
         # Destinction can only made via _SYR_CONNECT_API_SERVICES (not implemented).
         #
         # Example vendor names:
         # - CONEL CLEAR PRO Bodensensor
         # - SYR SafeFloor Connect
-        "base_path": None,
-        "device_file": "safefloor",
-        "display_name": "SafeFloor Connect",
-        "dk": 120,
-        "dkv": 34,
-        "manufacturer": "SYR",
-        "name": "safefloor",
-        "ver_contains": "Floorsensor",
-        "ver_prefix": None,
-    },
-    {
-        "base_path": None,
-        "device_file": "safefloor",
-        "display_name": "MultiSafe Floor Leak Sensor",
-        "dk": 120,
-        "dkv": 43,
-        "manufacturer": "Reliance Valves",
-        "name": "safefloorrwc",
+        base_path=None,
+        device_file="safefloor",
+        display_name="SafeFloor Connect",
+        dk=120,
+        dkv=34,
+        manufacturer="SYR",
+        name="safefloor",
+        ver_contains="Floorsensor",
+        ver_prefix=None,
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_file="safefloor",
+        display_name="MultiSafe Floor Leak Sensor",
+        dk=120,
+        dkv=43,
+        manufacturer="Reliance Valves",
+        name="safefloorrwc",
         # TODO: Untested model.
-        "srn_prefix": "43",
-    },
-    {
-        "base_path": None,
-        "device_file": "safefloor",
-        "display_name": "SafeFloor Connect",
-        "dk": 122,
-        "dkv": 34,
-        "manufacturer": "SYR",
-        "name": "safefloor122",
+        srn_prefix="43",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_file="safefloor",
+        display_name="SafeFloor Connect",
+        dk=122,
+        dkv=34,
+        manufacturer="SYR",
+        name="safefloor122",
         # TODO: Untested model.
-    },
+    ),
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
-    {
-        "base_path": "/trio",
-        "device_file": "safetech",
-        "display_name": "SafeTech Connect",
-        "dk": 140,
-        "dkv": 35,
-        "manufacturer": "SYR",
-        "name": "safetech",
+    SyrConnectModel(
+        base_path="/trio",
+        device_file="safetech",
+        display_name="SafeTech Connect",
+        dk=140,
+        dkv=35,
+        manufacturer="SYR",
+        name="safetech",
         # TODO: Untested model. Both values are incorrect in fixure.
-        "srn_infix": "aBC",
-        "srn_prefix": "123",
-    },
-    {
-        "base_path": "/safe-tec",
-        "device_file": "safetech",
-        "display_name": "SafeTech V3 Connect",
-        "dk": 140,
-        "dkv": 35,
-        "manufacturer": "SYR",
-        "name": "safetechv3",
-        "ver_prefix": "Safe-Tech V3",
-    },
-    {
-        "base_path": "/safe-tec",
-        "device_file": "safetech",
-        "display_name": "SafeTech V4 Connect",
-        "dk": 140,
-        "dkv": 35,
-        "manufacturer": "SYR",
-        "name": "safetechv4",
-        "ver_prefix": "Safe-Tech V4",
-    },
-    {
+        srn_infix="aBC",
+        srn_prefix="123",
+    ),
+    SyrConnectModel(
+        base_path="/safe-tec",
+        device_file="safetech",
+        display_name="SafeTech V3 Connect",
+        dk=140,
+        dkv=35,
+        manufacturer="SYR",
+        name="safetechv3",
+        ver_prefix="Safe-Tech V3",
+    ),
+    SyrConnectModel(
+        base_path="/safe-tec",
+        device_file="safetech",
+        display_name="SafeTech V4 Connect",
+        dk=140,
+        dkv=35,
+        manufacturer="SYR",
+        name="safetechv4",
+        ver_prefix="Safe-Tech V4",
+    ),
+    SyrConnectModel(
         # POLYGONVATRO (today POLYGON Deutschland) sold these "SYR Safe-Tech Connect" devices together
         # with the AXA building insurance, called "Wasserwächter". Order.-No.: 2422.25.003
-        "base_path": None,
-        # "base_path": "/safe-tec",
-        "device_file": "safetech",
-        "display_name": "Water Monitor",
-        "dk": 140,
-        "dkv": 38,
-        "manufacturer": "POLYGONVATRO",
-        "name": "safetechpolygonvatro",
+        base_path=None,
+        # base_path="/safe-tec",
+        device_file="safetech",
+        display_name="Water Monitor",
+        dk=140,
+        dkv=38,
+        manufacturer="POLYGONVATRO",
+        name="safetechpolygonvatro",
         # TODO: Untested model.
-        # "srn_prefix": "38",
+        # srn_prefix="38",
         # Version string: "Safe-Tech V3.53", see https://www.youtube.com/watch?v=apdL8SLZ64Q&t=585s
-        # "ver_prefix": "Safe-Tech V3",
-    },
-    {
-        "base_path": "/safe-tec",
-        "device_file": "safetech",
-        "display_name": "MultiSafe Leak Detector Control Valve",
-        "dk": 140,
-        "dkv": 42,
-        "manufacturer": "Reliance Valves",
-        "name": "safetechrwc",
+        # ver_prefix="Safe-Tech V3",
+    ),
+    SyrConnectModel(
+        base_path="/safe-tec",
+        device_file="safetech",
+        display_name="MultiSafe Leak Detector Control Valve",
+        dk=140,
+        dkv=42,
+        manufacturer="Reliance Valves",
+        name="safetechrwc",
         # TODO: Untested model.
-        "srn_prefix": "42",
-    },
-    {
-        "base_path": "/pontos-base",
-        "display_name": "Pontos Base",
-        "dk": 140,
-        "dkv": None,
-        "manufacturer": "Hansgrohe",
-        "name": "pontosbase",
+        srn_prefix="42",
+    ),
+    SyrConnectModel(
+        base_path="/pontos-base",
+        display_name="Pontos Base",
+        dk=140,
+        dkv=None,
+        manufacturer="Hansgrohe",
+        name="pontosbase",
         # TODO: Untested model.
-        "ver_prefix": "PontosBase",
-    },
-    {
-        "base_path": None,
-        # "base_path": "/safe-tec",
-        "device_file": "safetech",
-        "display_name": "SafeTech Connect",
-        "dk": 141,
-        "dkv": 35,
-        "manufacturer": "SYR",
-        "name": "safetech141",
+        ver_prefix="PontosBase",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        # base_path="/safe-tec",
+        device_file="safetech",
+        display_name="SafeTech Connect",
+        dk=141,
+        dkv=35,
+        manufacturer="SYR",
+        name="safetech141",
         # TODO: Untested model.
-    },
-    {
-        "base_path": None,
-        "device_file": "safetechplus",
-        "display_name": "SafeTech+ Connect",
-        "dk": 142,
-        "dkv": 39,
-        "manufacturer": "SYR",
-        "name": "safetechpluswifi",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_file="safetechplus",
+        display_name="SafeTech+ Connect",
+        dk=142,
+        dkv=39,
+        manufacturer="SYR",
+        name="safetechpluswifi",
         # TODO: Untested model.
-        "srn_prefix": "39",
-    },
-    {
-        "base_path": None,
-        # "base_path": "/safe-tec",
-        "device_file": "safetech",
-        "display_name": "SafeTech Connect",
-        "dk": 145,
-        "dkv": 35,
-        "manufacturer": "SYR",
-        "name": "safetech145",
+        srn_prefix="39",
+    ),
+    SyrConnectModel(
+        base_path=None,
+        # base_path="/safe-tec",
+        device_file="safetech",
+        display_name="SafeTech Connect",
+        dk=145,
+        dkv=35,
+        manufacturer="SYR",
+        name="safetech145",
         # TODO: Untested model.
-    },
+    ),
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
-    {
-        "base_path": "/all-in-one",
-        "display_name": "All in One +",
-        "dk": 160,
-        "dkv": 36,
-        "manufacturer": "SYR",
-        "name": "allinoneplus",
+    SyrConnectModel(
+        base_path="/all-in-one",
+        display_name="All in One +",
+        dk=160,
+        dkv=36,
+        manufacturer="SYR",
+        name="allinoneplus",
         # TODO: Untested model.
-        "srn_prefix": "36",
-    },
-    {
-        "base_path": "/hygbox",
-        "display_name": "HygBox",
-        "dk": 180,
-        "dkv": 37,
-        "manufacturer": "SYR",
-        "name": "hygbox",
+        srn_prefix="36",
+    ),
+    SyrConnectModel(
+        base_path="/hygbox",
+        display_name="HygBox",
+        dk=180,
+        dkv=37,
+        manufacturer="SYR",
+        name="hygbox",
         # TODO: Untested model.
-        "srn_prefix": "37",
-    },
-    {
-        "base_path": "/dosing-pump",
-        "display_name": "Dosing Pump",
-        "dk": 190,
-        "dkv": 44,
-        "manufacturer": "SYR",
-        "name": "dosingpump",
+        srn_prefix="37",
+    ),
+    SyrConnectModel(
+        base_path="/dosing-pump",
+        display_name="Dosing Pump",
+        dk=190,
+        dkv=44,
+        manufacturer="SYR",
+        name="dosingpump",
         # TODO: Untested model.
         # Probably the SYR NeoDos Connect; not yet confirmed by the manufacturer.
         # Unverified serial prefix from documentation, missing infix 'AAA' and match condition.
-        "srn_prefix": "2031",
-    },
+        srn_prefix="2031",
+    ),
     # ── Trio LS platform (dk=1100-1113) ──────────────────────────────────────────
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "Trio LS Connect",
-        "dk": 1100,
-        "dkv": 100,
-        "manufacturer": "SYR",
-        "name": "triols",
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="Trio LS Connect",
+        dk=1100,
+        dkv=100,
+        manufacturer="SYR",
+        name="triols",
         # TODO: Untested model.
-        "srn_prefix": "100",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "concept 200 Replacement Filter",
-        "dk": 1110,
-        "dkv": 110,
-        "manufacturer": "CONCEPT",
-        "name": "concept200replacementfilter",
+        srn_prefix="100",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="concept 200 Replacement Filter",
+        dk=1110,
+        dkv=110,
+        manufacturer="CONCEPT",
+        name="concept200replacementfilter",
         # TODO: Untested model.
-        "srn_prefix": "110",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "Optima T Replacement Filter",
-        "dk": 1111,
-        "dkv": 111,
-        "manufacturer": "OPTIMA",
-        "name": "optimatreplacementfilter",
+        srn_prefix="110",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="Optima T Replacement Filter",
+        dk=1111,
+        dkv=111,
+        manufacturer="OPTIMA",
+        name="optimatreplacementfilter",
         # TODO: Untested model.
-        "srn_prefix": "111",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "device_file": "safetechplus",
-        "display_name": "SafeTech Plus Connect",
-        "dk": 1112,
-        "dkv": 112,
-        "manufacturer": "SYR",
-        "name": "safetechplus",
-        "srn_prefix": "112",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "device_file": "trio",
-        "display_name": "Trio DFR/LS Connect",
-        "dk": 1113,
-        "dkv": 113,
-        "manufacturer": "SYR",
-        "name": "trio",
-        "srn_prefix": "113",
-    },
+        srn_prefix="111",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        device_file="safetechplus",
+        display_name="SafeTech Plus Connect",
+        dk=1112,
+        dkv=112,
+        manufacturer="SYR",
+        name="safetechplus",
+        srn_prefix="112",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        device_file="trio",
+        display_name="Trio DFR/LS Connect",
+        dk=1113,
+        dkv=113,
+        manufacturer="SYR",
+        name="trio",
+        srn_prefix="113",
+    ),
     # ── NeoSoft platform (dk=1200-1222) ──────────────────────────────────────────
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "NeoSoft Connect",
-        "dk": 1200,
-        "dkv": 200,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 3,
-        "name": "neosoft",
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="NeoSoft Connect",
+        dk=1200,
+        dkv=200,
+        manufacturer="SYR",
+        maximum_regeneration_interval=3,
+        name="neosoft",
         # TODO: Untested model.
-        "srn_prefix": "200",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "NeoSoft 2500 Connect",
-        "dk": 1206,
-        "dkv": 206,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 3,
-        "name": "neosoft2500",
-        "srn_prefix": "206",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "NeoSoft 5000 Connect",
-        "dk": 1206,
-        "dkv": 206,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 3,
-        "name": "neosoft5000",
+        srn_prefix="200",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="NeoSoft 2500 Connect",
+        dk=1206,
+        dkv=206,
+        manufacturer="SYR",
+        maximum_regeneration_interval=3,
+        name="neosoft2500",
+        srn_prefix="206",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="NeoSoft 5000 Connect",
+        dk=1206,
+        dkv=206,
+        manufacturer="SYR",
+        maximum_regeneration_interval=3,
+        name="neosoft5000",
         # TODO: Untested model.
-        "ver_prefix": "NSS",
-        "v_keys": {"getRE1", "getRE2"},
-        "v_keys_required": 2,
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "Softwater UNO A25",
-        "dk": 1207,
-        "dkv": 207,
-        "manufacturer": "Sanibel",
-        "maximum_regeneration_interval": 3,
-        "name": "sanibelsoftwateruno",
-        "srn_prefix": "207",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "concept Single Softening System",
-        "dk": 1208,
-        "dkv": 208,
-        "manufacturer": "CONCEPT",
-        "maximum_regeneration_interval": 3,
-        "name": "conceptsingle",
+        ver_prefix="NSS",
+        v_keys=frozenset({"getRE1", "getRE2"}),
+        v_keys_required=2,
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="Softwater UNO A25",
+        dk=1207,
+        dkv=207,
+        manufacturer="Sanibel",
+        maximum_regeneration_interval=3,
+        name="sanibelsoftwateruno",
+        srn_prefix="207",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="concept Single Softening System",
+        dk=1208,
+        dkv=208,
+        manufacturer="CONCEPT",
+        maximum_regeneration_interval=3,
+        name="conceptsingle",
         # TODO: Untested model.
-        "srn_prefix": "208",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "Optima Single Softening System",
-        "dk": 1209,
-        "dkv": 209,
-        "manufacturer": "OPTIMA",
-        "maximum_regeneration_interval": 3,
-        "name": "optimasingle",
+        srn_prefix="208",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="Optima Single Softening System",
+        dk=1209,
+        dkv=209,
+        manufacturer="OPTIMA",
+        maximum_regeneration_interval=3,
+        name="optimasingle",
         # TODO: Untested model.
-        "srn_prefix": "209",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "concept 200 Double Softening System",
-        "dk": 1210,
-        "dkv": 210,
-        "manufacturer": "CONCEPT",
-        "maximum_regeneration_interval": 3,
-        "name": "concept200duo",
+        srn_prefix="209",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="concept 200 Double Softening System",
+        dk=1210,
+        dkv=210,
+        manufacturer="CONCEPT",
+        maximum_regeneration_interval=3,
+        name="concept200duo",
         # TODO: Untested model.
-        "srn_prefix": "210",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "Optima T2.3 Double Softening System",
-        "dk": 1211,
-        "dkv": 211,
-        "manufacturer": "OPTIMA",
-        "maximum_regeneration_interval": 3,
-        "name": "optimat22duo",
+        srn_prefix="210",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="Optima T2.3 Double Softening System",
+        dk=1211,
+        dkv=211,
+        manufacturer="OPTIMA",
+        maximum_regeneration_interval=3,
+        name="optimat22duo",
         # TODO: Untested model.
-        "srn_prefix": "211",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "Softwater DUO A25",
-        "dk": 1212,
-        "dkv": 212,
-        "manufacturer": "Sanibel",
-        "maximum_regeneration_interval": 3,
-        "name": "sanibelsoftwaterduo",
+        srn_prefix="211",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="Softwater DUO A25",
+        dk=1212,
+        dkv=212,
+        manufacturer="Sanibel",
+        maximum_regeneration_interval=3,
+        name="sanibelsoftwaterduo",
         # TODO: Untested model.
-        "srn_prefix": "212",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "Optima Double Softening System",
-        "dk": 1213,
-        "dkv": 213,
-        "manufacturer": "OPTIMA",
-        "maximum_regeneration_interval": 3,
-        "name": "optimaduo",
+        srn_prefix="212",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="Optima Double Softening System",
+        dk=1213,
+        dkv=213,
+        manufacturer="OPTIMA",
+        maximum_regeneration_interval=3,
+        name="optimaduo",
         # TODO: Untested model.
-        "srn_prefix": "213",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "CLEAR PRO SOFT TWIN",
-        "dk": 1214,
-        "dkv": 214,
-        "manufacturer": "CONEL",
-        "maximum_regeneration_interval": 3,
-        "name": "conelclearprosofttwin",
-        "srn_prefix": "214",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "CLEAR PRO SOFT",
-        "dk": 1215,
-        "dkv": 215,
-        "manufacturer": "CONEL",
-        "maximum_regeneration_interval": 3,
-        "name": "conelclearprosoft",
-        "srn_prefix": "215",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "concept Double Softening System",
-        "dk": 1216,
-        "dkv": 216,
-        "manufacturer": "CONCEPT",
-        "maximum_regeneration_interval": 3,
-        "name": "conceptduo",
+        srn_prefix="213",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="CLEAR PRO SOFT TWIN",
+        dk=1214,
+        dkv=214,
+        manufacturer="CONEL",
+        maximum_regeneration_interval=3,
+        name="conelclearprosofttwin",
+        srn_prefix="214",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="CLEAR PRO SOFT",
+        dk=1215,
+        dkv=215,
+        manufacturer="CONEL",
+        maximum_regeneration_interval=3,
+        name="conelclearprosoft",
+        srn_prefix="215",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="concept Double Softening System",
+        dk=1216,
+        dkv=216,
+        manufacturer="CONCEPT",
+        maximum_regeneration_interval=3,
+        name="conceptduo",
         # TODO: Untested model.
-        "srn_prefix": "216",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "Ditech Double Softening System",
-        "dk": 1217,
-        "dkv": 217,
-        "manufacturer": "DITECH",
-        "maximum_regeneration_interval": 3,
-        "name": "ditechduo",
+        srn_prefix="216",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="Ditech Double Softening System",
+        dk=1217,
+        dkv=217,
+        manufacturer="DITECH",
+        maximum_regeneration_interval=3,
+        name="ditechduo",
         # TODO: Untested model.
-        "srn_prefix": "217",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "TAKE Double Softening System",
-        "dk": 1218,
-        "dkv": 218,
-        "manufacturer": "TAKE",
-        "maximum_regeneration_interval": 3,
-        "name": "takeduo",
+        srn_prefix="217",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="TAKE Double Softening System",
+        dk=1218,
+        dkv=218,
+        manufacturer="TAKE",
+        maximum_regeneration_interval=3,
+        name="takeduo",
         # TODO: Untested model.
-        "srn_prefix": "218",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "Ditech Single Softening System",
-        "dk": 1219,
-        "dkv": 219,
-        "manufacturer": "DITECH",
-        "maximum_regeneration_interval": 3,
-        "name": "ditechsingle",
+        srn_prefix="218",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="Ditech Single Softening System",
+        dk=1219,
+        dkv=219,
+        manufacturer="DITECH",
+        maximum_regeneration_interval=3,
+        name="ditechsingle",
         # TODO: Untested model.
-        "srn_prefix": "219",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "TAKE Single Softening System",
-        "dk": 1220,
-        "dkv": 220,
-        "manufacturer": "TAKE",
-        "maximum_regeneration_interval": 3,
-        "name": "takesingle",
+        srn_prefix="219",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="TAKE Single Softening System",
+        dk=1220,
+        dkv=220,
+        manufacturer="TAKE",
+        maximum_regeneration_interval=3,
+        name="takesingle",
         # TODO: Untested model.
-        "srn_prefix": "220",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_duo",
-        "display_name": "NeoSoft Lock Connect II",
-        "dk": 1221,
-        "dkv": 221,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 3,
-        "name": "neosoftlock2",
+        srn_prefix="220",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_duo",
+        display_name="NeoSoft Lock Connect II",
+        dk=1221,
+        dkv=221,
+        manufacturer="SYR",
+        maximum_regeneration_interval=3,
+        name="neosoftlock2",
         # TODO: Untested model.
-        "srn_prefix": "221",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "base_path": "/neosoft",
-        "device_file": "neosoft_single",
-        "display_name": "NeoSoft Lock Connect I",
-        "dk": 1222,
-        "dkv": 222,
-        "manufacturer": "SYR",
-        "maximum_regeneration_interval": 3,
-        "name": "neosoftlock1",
+        srn_prefix="221",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        base_path="/neosoft",
+        device_file="neosoft_single",
+        display_name="NeoSoft Lock Connect I",
+        dk=1222,
+        dkv=222,
+        manufacturer="SYR",
+        maximum_regeneration_interval=3,
+        name="neosoftlock1",
         # TODO: Untested model.
-        "srn_prefix": "222",
-    },
+        srn_prefix="222",
+    ),
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
     # The "... MultiController" / "... Multicontroller" signatures in this section
     # (conelmuco, sanibelmuco, ditechmuco, takemuco, conceptmuco, optimamuco, syrmuco)
     # are fallbacks for future devices of this platform, not real products. Do not
     # list them in the device lists of README.md / README.de.md.
-    {
+    SyrConnectModel(
         # CLEARPNLS - Retrofit Leakage Protection
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 1},
-        "base_path": "/trio",
-        "device_file": "muco_leakprotect",
-        "display_name": "CLEAR PRO RETROFIT LEAKAGE PROTECTION",
-        "dk": 1500,
-        "dkv": 500,
-        "manufacturer": "CONEL",
-        "name": "conelclearproleakprotection",
-        "srn_prefix": "500",
-    },
-    {
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
+        base_path="/trio",
+        device_file="muco_leakprotect",
+        display_name="CLEAR PRO RETROFIT LEAKAGE PROTECTION",
+        dk=1500,
+        dkv=500,
+        manufacturer="CONEL",
+        name="conelclearproleakprotection",
+        srn_prefix="500",
+    ),
+    SyrConnectModel(
         # CLEARPFSA - Filling Station
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 3},
-        "base_path": "/trio",
-        "device_file": "muco_filling",
-        "display_name": "CLEAR PRO FILL All-in-One",
-        "dk": 1500,
-        "dkv": 500,
-        "manufacturer": "CONEL",
-        "name": "conelclearprofill",
-        "srn_prefix": "500",
-    },
-    {
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 3},
+        base_path="/trio",
+        device_file="muco_filling",
+        display_name="CLEAR PRO FILL All-in-One",
+        dk=1500,
+        dkv=500,
+        manufacturer="CONEL",
+        name="conelclearprofill",
+        srn_prefix="500",
+    ),
+    SyrConnectModel(
         # CLEARPMCK - MultiControl-Kit / Backwash System
         # TODO: Untested model.
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 5},
-        "base_path": "/trio",
-        "device_file": "muco_backwash",
-        "display_name": "CLEAR PRO MULTICONTROL-KIT",
-        "dk": 1500,
-        "dkv": 500,
-        "manufacturer": "CONEL",
-        "name": "conelclearprobackwash",
-        "srn_prefix": "500",
-    },
-    {
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_file="muco_backwash",
+        display_name="CLEAR PRO MULTICONTROL-KIT",
+        dk=1500,
+        dkv=500,
+        manufacturer="CONEL",
+        name="conelclearprobackwash",
+        srn_prefix="500",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other CONEL MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "CLEAR PRO MultiController",
-        "dk": 1500,
-        "dkv": 500,
-        "manufacturer": "CONEL",
-        "name": "conelmuco",
-        "srn_prefix": "500",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 1},
-        "base_path": "/trio",
-        "device_file": "muco_leakprotect",
-        "display_name": "Leak Protection Module A25",
-        "dk": 1501,
-        "dkv": 501,
-        "manufacturer": "Sanibel",
-        "name": "sanibelleakprotect",
-        "srn_prefix": "501",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 5},
-        "base_path": "/trio",
-        "device_file": "muco_backwash",
-        "display_name": "Automatic Backwash System RSA A25",
-        "dk": 1501,
-        "dkv": 501,
-        "manufacturer": "Sanibel",
-        "name": "sanibelrsa",
-        "srn_prefix": "501",
-    },
-    {
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="CLEAR PRO MultiController",
+        dk=1500,
+        dkv=500,
+        manufacturer="CONEL",
+        name="conelmuco",
+        srn_prefix="500",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
+        base_path="/trio",
+        device_file="muco_leakprotect",
+        display_name="Leak Protection Module A25",
+        dk=1501,
+        dkv=501,
+        manufacturer="Sanibel",
+        name="sanibelleakprotect",
+        srn_prefix="501",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_file="muco_backwash",
+        display_name="Automatic Backwash System RSA A25",
+        dk=1501,
+        dkv=501,
+        manufacturer="Sanibel",
+        name="sanibelrsa",
+        srn_prefix="501",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other Sanibel MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "Sanibel MultiController",
-        "dk": 1501,
-        "dkv": 501,
-        "manufacturer": "Sanibel",
-        "name": "sanibelmuco",
-        "srn_prefix": "501",
-    },
-    {
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="Sanibel MultiController",
+        dk=1501,
+        dkv=501,
+        manufacturer="Sanibel",
+        name="sanibelmuco",
+        srn_prefix="501",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other Ditech MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "Ditech Multicontroller",
-        "dk": 1502,
-        "dkv": 502,
-        "manufacturer": "DITECH",
-        "name": "ditechmuco",
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="Ditech Multicontroller",
+        dk=1502,
+        dkv=502,
+        manufacturer="DITECH",
+        name="ditechmuco",
         # TODO: Untested model.
-        "srn_prefix": "502",
-    },
-    {
+        srn_prefix="502",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other TAKE MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "TAKE Multicontroller",
-        "dk": 1503,
-        "dkv": 503,
-        "manufacturer": "TAKE",
-        "name": "takemuco",
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="TAKE Multicontroller",
+        dk=1503,
+        dkv=503,
+        manufacturer="TAKE",
+        name="takemuco",
         # TODO: Untested model.
-        "srn_prefix": "503",
-    },
-    {
+        srn_prefix="503",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other concept MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "concept Multicontroller",
-        "dk": 1504,
-        "dkv": 504,
-        "manufacturer": "CONCEPT",
-        "name": "conceptmuco",
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="concept Multicontroller",
+        dk=1504,
+        dkv=504,
+        manufacturer="CONCEPT",
+        name="conceptmuco",
         # TODO: Untested model.
-        "srn_prefix": "504",
-    },
-    {
+        srn_prefix="504",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other Optima MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "Optima Multicontroller",
-        "dk": 1505,
-        "dkv": 505,
-        "manufacturer": "OPTIMA",
-        "name": "optimamuco",
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="Optima Multicontroller",
+        dk=1505,
+        dkv=505,
+        manufacturer="OPTIMA",
+        name="optimamuco",
         # TODO: Untested model.
-        "srn_prefix": "505",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 1},
-        "base_path": "/trio",
-        "device_file": "muco_leakprotect",
-        "display_name": "SafeTech Lock Connect",
-        "dk": 1506,
-        "dkv": 506,
-        "manufacturer": "SYR",
-        "name": "syrsafetechlockconnect",
+        srn_prefix="505",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
+        base_path="/trio",
+        device_file="muco_leakprotect",
+        display_name="SafeTech Lock Connect",
+        dk=1506,
+        dkv=506,
+        manufacturer="SYR",
+        name="syrsafetechlockconnect",
         # TODO: Untested model.
-        "srn_prefix": "506",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 2},
-        "base_path": "/trio",
-        "device_file": "muco_connectioncentre",
-        "display_name": "AC 3200 Connect",
-        "dk": 1506,
-        "dkv": 506,
-        "manufacturer": "SYR",
-        "name": "syrac3200connect",
+        srn_prefix="506",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 2},
+        base_path="/trio",
+        device_file="muco_connectioncentre",
+        display_name="AC 3200 Connect",
+        dk=1506,
+        dkv=506,
+        manufacturer="SYR",
+        name="syrac3200connect",
         # TODO: Untested model.
-        "srn_prefix": "506",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 3},
-        "base_path": "/trio",
-        "device_file": "muco_filling",
-        "display_name": "AC All-in-One 3228 Connect",
-        "dk": 1506,
-        "dkv": 506,
-        "manufacturer": "SYR",
-        "name": "syrac3228connect",
+        srn_prefix="506",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 3},
+        base_path="/trio",
+        device_file="muco_filling",
+        display_name="AC All-in-One 3228 Connect",
+        dk=1506,
+        dkv=506,
+        manufacturer="SYR",
+        name="syrac3228connect",
         # TODO: Untested model.
-        "srn_prefix": "506",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 4},
-        "base_path": "/trio",
-        "device_file": "muco_backwash",
-        "display_name": "RSA Connect",
-        "dk": 1506,
-        "dkv": 506,
-        "manufacturer": "SYR",
-        "name": "syrrsaconnect",
+        srn_prefix="506",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 4},
+        base_path="/trio",
+        device_file="muco_backwash",
+        display_name="RSA Connect",
+        dk=1506,
+        dkv=506,
+        manufacturer="SYR",
+        name="syrrsaconnect",
         # TODO: Untested model.
-        "srn_prefix": "506",
-    },
-    {
-        "alarm_clear_via_set": True,
-        "attrs_equals": {"getDFM": 5},
-        "base_path": "/trio",
-        "device_file": "muco_triolock",
-        "display_name": "TRIO Lock Connect",
-        "dk": 1506,
-        "dkv": 506,
-        "manufacturer": "SYR",
-        "name": "syrtriolockconnect",
-        "srn_prefix": "506",
-    },
-    {
+        srn_prefix="506",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_file="muco_triolock",
+        display_name="TRIO Lock Connect",
+        dk=1506,
+        dkv=506,
+        manufacturer="SYR",
+        name="syrtriolockconnect",
+        srn_prefix="506",
+    ),
+    SyrConnectModel(
         # Fallback signature for any other SYR MultiControllers
-        "alarm_clear_via_set": True,
-        "base_path": "/trio",
-        "display_name": "SYR Multicontroller",
-        "dk": 1506,
-        "dkv": 506,
-        "manufacturer": "SYR",
-        "name": "syrmuco",
+        alarm_clear_via_set=True,
+        base_path="/trio",
+        display_name="SYR Multicontroller",
+        dk=1506,
+        dkv=506,
+        manufacturer="SYR",
+        name="syrmuco",
         # TODO: Untested model.
-        "srn_prefix": "506",
-    },
+        srn_prefix="506",
+    ),
 ]
 
 
-def detect_model(flat: object) -> dict[str, Any]:
+def detect_model(flat: object) -> SyrConnectModel:
     """Detect the device model from a flattened attribute dictionary.
 
     Returns:
-        dict: A full copy of the matched MODEL_SIGNATURES entry. Contains all
-        signature fields (e.g. ``name``, ``display_name``, ``base_path``,
-        ``manufacturer``, ``alarm_clear_via_set``, ``alarm_style_alm``,
-        ``maximum_regeneration_interval``, ``maximum_salt_volume``, ...).
-        If no signature matches, returns the ``UNKNOWN_MODEL`` dict.
+        The matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no signature
+        matches.
 
     Detection priority (highest to lowest):
     1. Serial number prefix/contains combined with attrs_equals:
@@ -1249,42 +1272,35 @@ def detect_model(flat: object) -> dict[str, Any]:
     ver = str(flat.get("getVER") or "")
     keys = set(flat.keys())
 
-    def attrs_match(sig: dict) -> bool:
-        attrs = sig.get("attrs_equals")
+    def attrs_match(sig: SyrConnectModel) -> bool:
+        attrs = sig.attrs_equals
         if not attrs:
             return True
         return all(str(flat.get(k, "")) == str(v) for k, v in attrs.items())
 
-    def srn_match(sig: dict) -> bool:
-        srn_prefix = sig.get("srn_prefix")
-        # Default maintains compatibility with existing signatures that only specify srn_prefix without srn_infix.
-        # If srn_prefix is defined but srn_infix is not, it will check for srn_prefix followed by 'AAA' as the
-        # default infix. This allows existing signatures to continue working without modification while enabling
-        # more flexible matching for new signatures that specify a different infix.
-        srn_infix = sig.get("srn_infix", "AAA")
-        srn_contains = sig.get("srn_contains")
+    def srn_match(sig: SyrConnectModel) -> bool:
+        srn_prefix = sig.srn_prefix
+        srn_infix = sig.srn_infix
+        srn_contains = sig.srn_contains
         if srn_prefix and not srn.startswith(f"{srn_prefix}{srn_infix}"):
             return False
         if srn_contains and srn_contains not in srn:
             return False
         return True
 
-    def ver_match(sig: dict) -> bool:
-        ver_prefix = sig.get("ver_prefix")
-        ver_contains = sig.get("ver_contains")
+    def ver_match(sig: SyrConnectModel) -> bool:
+        ver_prefix = sig.ver_prefix
+        ver_contains = sig.ver_contains
         if ver_prefix and not ver.startswith(ver_prefix):
             return False
         if ver_contains and ver_contains not in ver:
             return False
         return True
 
-    def _sig_to_result(sig: dict, method: str) -> dict:
-        """Return a full copy of sig."""
-        out = dict(sig)
-        _LOGGER.debug(
-            "detect_model: detected model %s (%s)", out.get("display_name"), method
-        )
-        return out
+    def _sig_to_result(sig: SyrConnectModel, method: str) -> SyrConnectModel:
+        """Log the detected model and return sig."""
+        _LOGGER.debug("detect_model: detected model %s (%s)", sig.display_name, method)
+        return sig
 
     # Step 1: Check all serial number prefix/contains matches first (highest priority)
     # If a model signature defines 'srn_prefix' or 'srn_contains' and the serial number matches,
@@ -1293,16 +1309,16 @@ def detect_model(flat: object) -> dict[str, Any]:
     # generic srn-only signature does not shadow a more specific variant sharing the same prefix.
     for sig in MODEL_SIGNATURES:
         if (
-            sig.get("attrs_equals")
-            and (sig.get("srn_prefix") or sig.get("srn_contains"))
+            sig.attrs_equals
+            and (sig.srn_prefix or sig.srn_contains)
             and srn_match(sig)
             and attrs_match(sig)
         ):
             return _sig_to_result(sig, "srn_equals+attrs_equals")
     for sig in MODEL_SIGNATURES:
         if (
-            not sig.get("attrs_equals")
-            and (sig.get("srn_prefix") or sig.get("srn_contains"))
+            not sig.attrs_equals
+            and (sig.srn_prefix or sig.srn_contains)
             and srn_match(sig)
         ):
             return _sig_to_result(sig, "srn_equals")
@@ -1310,23 +1326,23 @@ def detect_model(flat: object) -> dict[str, Any]:
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
     for sig in MODEL_SIGNATURES:
-        if sig.get("cna_equals") and cna == sig.get("cna_equals"):
+        if sig.cna_equals and cna == sig.cna_equals:
             return _sig_to_result(sig, "cna_equals")
 
     # Step 3: Check attribute matches, fingerprint keys, and version matches
     # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
     for sig in MODEL_SIGNATURES:
-        name = sig.get("name")
+        name = sig.name
 
         # If the signature requires certain attributes to match, skip if not satisfied.
         if not attrs_match(sig):
             continue
 
         # If the signature defines fingerprint keys (v_keys), require enough keys to match.
-        v_keys = set(sig.get("v_keys") or set())
+        v_keys = sig.v_keys or frozenset()
         if v_keys:
             matches = len(v_keys & keys)
-            required = int(sig.get("v_keys_required", 1))
+            required = sig.v_keys_required
             if matches < required:
                 _LOGGER.debug(
                     "detect_model: signature %s v_keys matched %d < %d",
@@ -1346,11 +1362,11 @@ def detect_model(flat: object) -> dict[str, Any]:
             return _sig_to_result(sig, "v_keys")
 
         # If only attribute equality is required and already matched, return this model.
-        if sig.get("attrs_equals"):
+        if sig.attrs_equals:
             return _sig_to_result(sig, "attrs_equals")
 
         # If version prefix or contains is specified and matches, return this model.
-        if (sig.get("ver_prefix") or sig.get("ver_contains")) and ver_match(sig):
+        if (sig.ver_prefix or sig.ver_contains) and ver_match(sig):
             return _sig_to_result(sig, "ver")
 
     # If no model signature matched, return the unknown model structure.

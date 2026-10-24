@@ -85,11 +85,11 @@ _STEP_REAUTH_XML_DATA_SCHEMA = probatio.Schema(
 LOCAL_API_MODELS = sorted(
     [
         (
-            sig["name"],
-            f"{sig['manufacturer']} {sig['display_name']}",
+            sig.name,
+            f"{sig.manufacturer} {sig.display_name}",
         )
         for sig in MODEL_SIGNATURES
-        if sig.get("base_path") is not None
+        if sig.base_path is not None
     ],
     key=lambda x: x[1].casefold(),  # Sort by display_name (case-insensitive)
 )
@@ -250,8 +250,8 @@ async def validate_input_json(
     # Get base_path for the selected model
     base_path = None
     for sig in MODEL_SIGNATURES:
-        if sig["name"] == model:
-            base_path = sig.get("base_path")
+        if sig.name == model:
+            base_path = sig.base_path
             break
 
     if base_path is None:

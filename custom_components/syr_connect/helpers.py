@@ -44,7 +44,7 @@ from .devices import (
     safetplus,
     trio,
 )
-from .models import MODEL_SIGNATURES, detect_model
+from .models import SyrConnectModel, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -211,10 +211,8 @@ def build_device_info(
 
         # Get human-friendly model display name and manufacturer
         detected = detect_model(status)
-        display_name = detected.get("display_name")
-        if display_name:
-            model = str(display_name)
-        manufacturer = detected.get("manufacturer") or None
+        model = detected.display_name
+        manufacturer = detected.manufacturer
         configuration_url = coordinator_data.get("configuration_url")
 
         # Get software version from getVER
@@ -316,7 +314,7 @@ def find_entity_id(
 
 
 def get_model_supported_keys(
-    model_info: dict[str, Any], platform: str, global_supported_keys: set[str]
+    model_info: SyrConnectModel, platform: str, global_supported_keys: set[str]
 ) -> set[str]:
     """Return the supported-keys allowlist for a platform, scoped to the detected model.
 
@@ -344,9 +342,7 @@ def get_model_supported_keys(
     Returns:
         The effective allowlist to use for this device.
     """
-    name = model_info.get("device_file") or model_info.get("name")
-    if not name:
-        return global_supported_keys
+    name = model_info.device_file or model_info.name
     device_module = _DEVICE_MODULES.get(name)
     if device_module is None:
         return global_supported_keys
@@ -1180,18 +1176,10 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         return (None, code)
 
     # Model-specific families take precedence; every other model (including unknown ones) uses the generic codes.
-    model = str(model_info.get("name") or "")
     codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(
-        model_info.get("device_file") or model
+        model_info.device_file or model_info.name,
+        _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     )
-    if codes is None:
-        # Callers may pass a bare {"name": ...}; resolve its device_file from the signature.
-        signature = next((s for s in MODEL_SIGNATURES if s["name"] == model), None)
-        codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(
-            (signature or {}).get("device_file") or model
-        )
-    if codes is None:
-        codes = _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC
 
     mapped = codes.get(code_upper)
     return (mapped, code) if mapped is not None else (None, code)

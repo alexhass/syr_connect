@@ -53,8 +53,8 @@ def _sensor_active(status: dict[str, Any], value: Any) -> bool | None:
     """
     if _is_empty(value):
         return None
-    dk = detect_model(status).get("dk")
-    if isinstance(dk, int) and dk >= _SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK:
+    dk = detect_model(status).dk
+    if dk is not None and dk >= _SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK:
         return is_value_true(value)
     return not is_value_true(value)
 

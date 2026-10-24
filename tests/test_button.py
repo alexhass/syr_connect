@@ -721,7 +721,7 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(
 async def test_button_reset_detect_model_exception(
     hass: HomeAssistant, monkeypatch
 ) -> None:
-    """If detect_model raises, falls back to default model_info={} and calls clrALA."""
+    """If detect_model raises, falls back to UNKNOWN_MODEL and calls clrALA."""
 
     data = {
         "devices": [
@@ -746,7 +746,7 @@ async def test_button_reset_detect_model_exception(
 
     await button.async_press()
 
-    # model_info={} -> alarm_clear_via_set=False -> clrALA endpoint
+    # UNKNOWN_MODEL -> alarm_clear_via_set=False -> clrALA endpoint
     coordinator.async_clear_device_alarm.assert_called_once_with("device3", "ala")
     coordinator.async_set_device_value.assert_not_called()
 

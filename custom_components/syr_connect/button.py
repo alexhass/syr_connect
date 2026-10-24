@@ -36,7 +36,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import find_entity_id, get_model_supported_keys, registry_cleanup
-from .models import detect_model
+from .models import UNKNOWN_MODEL, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ def _reset_get_key(command: str, status: dict[str, object]) -> str:
     For setALA the key depends on the model: getALM with alarm_style_alm, otherwise getALA.
     """
     if command == "setALA":
-        return "getALM" if detect_model(status).get("alarm_style_alm") else "getALA"
+        return "getALM" if detect_model(status).alarm_style_alm else "getALA"
     return "get" + command[3:]
 
 
@@ -155,7 +155,7 @@ async def async_setup_entry(
             # For setALA, the actual get-key depends on the model: devices with
             # alarm_style_alm use getALM; all others use getALA.
             if command == "setALA":
-                alarm_field = "alm" if model_info.get("alarm_style_alm") else "ala"
+                alarm_field = "alm" if model_info.alarm_style_alm else "ala"
                 get_key = f"get{alarm_field.upper()}"
             elif command == "setDEX":
                 # No getDEX read key exists; presence is indicated by getDSV
@@ -173,10 +173,7 @@ async def async_setup_entry(
             # setSIR (manual regeneration trigger) is only meaningful for
             # softener models that actually support scheduled regeneration.
             # Workaround for https://github.com/alexhass/syr_connect/issues/24
-            if (
-                command == "setSIR"
-                and model_info.get("maximum_regeneration_interval") is None
-            ):
+            if command == "setSIR" and model_info.maximum_regeneration_interval is None:
                 continue
 
             entities.append(
@@ -348,12 +345,10 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                         model_info = detect_model(status)
                     except (ValueError, KeyError, AttributeError, TypeError) as err:
                         _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
-                        model_info = {}
+                        model_info = UNKNOWN_MODEL
 
-                    alarm_style_alm: bool = bool(model_info.get("alarm_style_alm"))
-                    alarm_clear_via_set: bool = bool(
-                        model_info.get("alarm_clear_via_set")
-                    )
+                    alarm_style_alm = model_info.alarm_style_alm
+                    alarm_clear_via_set = model_info.alarm_clear_via_set
                     field = "alm" if alarm_style_alm else "ala"
                     get_key = f"get{field.upper()}"
 

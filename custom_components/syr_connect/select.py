@@ -436,16 +436,16 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
         )
 
     # Salt amounts (getSV1-3): the maximum depends on the model; models without salt containers have none
-    max_capacity = b.model_info.get("maximum_salt_volume")
+    max_capacity = b.model_info.maximum_salt_volume
     if max_capacity is not None:
         for sv_key in ("getSV1", "getSV2", "getSV3"):
             if b.allowed(sv_key):
-                b.add_numeric(sv_key, 0, int(max_capacity))
+                b.add_numeric(sv_key, 0, max_capacity)
 
     # Regeneration interval in days (getRPD): the maximum depends on the model; models without
     # regeneration have none. 0 means no interval regeneration, so no select is created.
     # Not limited to the allowlist.
-    max_rpd = b.model_info.get("maximum_regeneration_interval")
+    max_rpd = b.model_info.maximum_regeneration_interval
     if (
         max_rpd is not None
         and _is_number(status.get("getRPD"))

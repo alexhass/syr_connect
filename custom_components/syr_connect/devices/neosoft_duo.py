@@ -1,7 +1,7 @@
 """Entity allowlist override for the neosoft_duo model family.
 
 Dual-tank NeoSoft platform rebrands: NeoSoft 5000 and every "*duo"/"twin" sibling
-signature in dk=1200-1222 via "device_file": "neosoft_duo". Single-tank rebrands
+signature in dk=1200-1222 via device_file="neosoft_duo". Single-tank rebrands
 use the sibling neosoft_single.py instead.
 
 getBAR/getCEL/getCND/getVPS2 are confirmed ✓ (available) for NeoSoft 5000

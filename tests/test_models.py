@@ -1,11 +1,12 @@
 """Tests for the model detection."""
 
+from dataclasses import replace
 import json
 import logging
 from pathlib import Path
 from unittest.mock import patch
 
-from custom_components.syr_connect.models import detect_model
+from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
@@ -18,8 +19,8 @@ def _load_xml(name: str) -> str:
 def test_lexplus10_detection_synthetic():
     """Synthetic flattened dict with getCNA should detect lexplus10."""
     flat = {"getCNA": "LEXplus10"}
-    assert detect_model(flat)["name"] == "lexplus10"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "lexplus10"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_lexplus10s_detection():
@@ -28,8 +29,8 @@ def test_lexplus10s_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat)["name"] == "lexplus10s"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "lexplus10s"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_lexplus10sl_detection():
@@ -38,8 +39,8 @@ def test_lexplus10sl_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat)["name"] == "lexplus10sl"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "lexplus10sl"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_neosoft2500_detection():
@@ -48,8 +49,8 @@ def test_neosoft2500_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat)["name"] == "neosoft2500"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "neosoft2500"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_neosoft5000_detection():
@@ -58,8 +59,8 @@ def test_neosoft5000_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat)["name"] == "neosoft5000"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "neosoft5000"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_syrtriolockconnect_detection():
@@ -69,9 +70,9 @@ def test_syrtriolockconnect_detection():
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
     result = detect_model(flat)
-    assert result["name"] == "syrtriolockconnect"
-    assert result["device_file"] == "muco_triolock"
-    assert result["manufacturer"] == "SYR"
+    assert result.name == "syrtriolockconnect"
+    assert result.device_file == "muco_triolock"
+    assert result.manufacturer == "SYR"
 
 
 def test_trio_dfrls_detection():
@@ -80,8 +81,8 @@ def test_trio_dfrls_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat)["name"] == "trio"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "trio"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_safetplus_detection():
@@ -90,61 +91,61 @@ def test_safetplus_detection():
     parser = ResponseParser()
     flat = parser.parse_device_status_response(xml)
     assert flat is not None
-    assert detect_model(flat)["name"] == "safetplus"
-    assert detect_model(flat)["manufacturer"] == "SYR"
+    assert detect_model(flat).name == "safetplus"
+    assert detect_model(flat).manufacturer == "SYR"
 
 
 def test_unknown_model_detection():
     """Unknown or empty flattened dict should yield the unknown fallback."""
     result = detect_model({})
-    assert result["name"] == "unknown"
-    assert result["manufacturer"] == "Unknown"
+    assert result.name == "unknown"
+    assert result.manufacturer == "Unknown"
 
 
 def test_detect_model_none_input():
     """Passing a non-dict (None) returns the unknown model dict."""
     result = detect_model(None)
-    assert result["name"] == "unknown"
-    assert result["display_name"] == "Unknown model"
-    assert result["manufacturer"] == "Unknown"
-    assert result["base_path"] is None
+    assert result.name == "unknown"
+    assert result.display_name == "Unknown model"
+    assert result.manufacturer == "Unknown"
+    assert result.base_path is None
 
 
 def test_neosoft_vkeys_version_mismatch_returns_unknown():
     """If v_keys match but version constraints fail, signature is skipped and result is unknown."""
     flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
-    assert detect_model(flat)["name"] == "unknown"
+    assert detect_model(flat).name == "unknown"
 
 
 def test_insufficient_v_keys_and_no_other_match():
     """If a signature requires more v_keys than present and nothing else matches, return unknown."""
     flat = {"getRE1": "1", "getVER": "NOTNSS"}
-    assert detect_model(flat)["name"] == "unknown"
+    assert detect_model(flat).name == "unknown"
 
 
 def test_attrs_equals_mismatch_skips_signature():
     """When attrs_equals is present but values don't match, signature should be skipped."""
     flat = {"getVER2": "999"}
-    assert detect_model(flat)["name"] == "unknown"
+    assert detect_model(flat).name == "unknown"
 
 
 def test_safetechplus_detection_synthetic():
     """Safe-Tech+ should be detected by ver_prefix 'Safe-Tech'."""
     flat = {"getSRN": "112AAA00001", "getVER": "Safe-Tech-1.2.3"}
     result = detect_model(flat)
-    assert result["name"] == "safetechplus"
-    assert result["display_name"] == "SafeTech Plus Connect"
-    assert result["manufacturer"] == "SYR"
+    assert result.name == "safetechplus"
+    assert result.display_name == "SafeTech Plus Connect"
+    assert result.manufacturer == "SYR"
 
 
 def test_lexplus10_with_display_name_and_base_path():
     """Verify display_name, base_path, and manufacturer are returned correctly."""
     flat = {"getCNA": "LEXplus10"}
     result = detect_model(flat)
-    assert result["name"] == "lexplus10"
-    assert result["display_name"] == "LEX Plus 10 Connect"
-    assert result["base_path"] is None
-    assert result["manufacturer"] == "SYR"
+    assert result.name == "lexplus10"
+    assert result.display_name == "LEX Plus 10 Connect"
+    assert result.base_path is None
+    assert result.manufacturer == "SYR"
 
 
 def test_getcna_none_converted_to_empty_string():
@@ -152,7 +153,7 @@ def test_getcna_none_converted_to_empty_string():
     flat = {"getSRN": "112AAA12345", "getCNA": None, "getVER": "Safe-Tech-1"}
     result = detect_model(flat)
     # Should still detect by version
-    assert result["name"] == "safetechplus"
+    assert result.name == "safetechplus"
 
 
 def test_getver_none_converted_to_empty_string():
@@ -160,24 +161,24 @@ def test_getver_none_converted_to_empty_string():
     flat = {"getCNA": "LEXplus10", "getVER": None}
     result = detect_model(flat)
     # Should still detect by getCNA
-    assert result["name"] == "lexplus10"
+    assert result.name == "lexplus10"
 
 
 def test_both_getcna_and_getver_none():
     """Both getCNA and getVER None should not cause errors."""
     flat = {"getCNA": None, "getVER": None}
     result = detect_model(flat)
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
 
 
 def test_non_dict_input_returns_unknown():
     """Non-dict inputs like string or list should return the unknown model dict."""
     for invalid in ("not a dict", [1, 2, 3], 123):
         result = detect_model(invalid)
-        assert result["name"] == "unknown"
-        assert result["display_name"] == "Unknown model"
-        assert result["manufacturer"] == "Unknown"
-        assert result["base_path"] is None
+        assert result.name == "unknown"
+        assert result.display_name == "Unknown model"
+        assert result.manufacturer == "Unknown"
+        assert result.base_path is None
 
 
 def test_ver_contains_synthetic():
@@ -188,7 +189,7 @@ def test_ver_contains_synthetic():
     # This won't match Safe-Tech (requires prefix), but tests the ver_contains code path
     result = detect_model(flat)
     # Should be unknown since no signature with ver_contains matches
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
 
 
 def test_signature_priority_first_match_wins():
@@ -196,47 +197,45 @@ def test_signature_priority_first_match_wins():
     # LEXplus10S has exact getCNA match, should win even if other conditions exist
     flat = {"getCNA": "LEXplus10S", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
-    assert result["name"] == "lexplus10s"
+    assert result.name == "lexplus10s"
 
 
 def test_neosoft5000_vkeys_match_with_version():
     """NeoSoft 5000 requires 2 v_keys and NSS version prefix."""
     flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
-    assert result["name"] == "neosoft5000"
-    assert result["display_name"] == "NeoSoft 5000 Connect"
+    assert result.name == "neosoft5000"
+    assert result.display_name == "NeoSoft 5000 Connect"
 
 
 def test_version_match_prefix_only():
     """Test version matching with only ver_prefix."""
     flat = {"getVER": "Safe-T+ V2.00e"}
     result = detect_model(flat)
-    assert result["name"] == "safetplus"
+    assert result.name == "safetplus"
 
 
 def test_version_match_prefix_mismatch():
     """Version prefix mismatch should skip signature."""
     flat = {"getAFW": "1", "getVER2": "176", "getVER": "wrong-prefix"}
     result = detect_model(flat)
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
 
 
 def test_empty_flat_dict_returns_unknown():
     """Empty dict with no keys should return unknown."""
     result = detect_model({})
-    assert result["name"] == "unknown"
-    assert result["display_name"] == "Unknown model"
-    assert result["base_path"] is None
+    assert result.name == "unknown"
+    assert result.display_name == "Unknown model"
+    assert result.base_path is None
 
 
 def test_unknown_model_has_correct_structure():
-    """Unknown model return should have proper structure."""
+    """Unknown model return should be the UNKNOWN_MODEL signature."""
     flat = {"getSomeRandomKey": "value"}
     result = detect_model(flat)
-    assert "name" in result
-    assert "display_name" in result
-    assert "base_path" in result
-    assert result["name"] == "unknown"
+    assert result is UNKNOWN_MODEL
+    assert result.name == "unknown"
 
 
 def test_multiple_keys_with_no_signature_match():
@@ -248,36 +247,36 @@ def test_multiple_keys_with_no_signature_match():
         "getVER": "unknown-version",
     }
     result = detect_model(flat)
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
 
 
 def test_lexplus10sl_with_exact_cna():
     """LEXplus10SL exact CNA match should detect correctly."""
     flat = {"getCNA": "LEXplus10SL"}
     result = detect_model(flat)
-    assert result["name"] == "lexplus10sl"
+    assert result.name == "lexplus10sl"
 
 
 def test_neosoft_base_path():
     """NeoSoft models should return 'neosoft' as base_path."""
     flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
-    assert result["base_path"] == "/neosoft"
+    assert result.base_path == "/neosoft"
 
 
 def test_safetechplus_base_path():
     """Safe-Tech+ should return 'trio' as base_path."""
     flat = {"getSRN": "112AAA22222", "getVER": "Safe-T+ V2.00e"}
     result = detect_model(flat)
-    assert result["name"] == "safetechplus"
-    assert result["base_path"] == "/trio"
+    assert result.name == "safetechplus"
+    assert result.base_path == "/trio"
 
 
 def test_lexplus_base_path_none():
     """LEX Plus models should have None as base_path."""
     flat = {"getCNA": "LEXplus10S"}
     result = detect_model(flat)
-    assert result["base_path"] is None
+    assert result.base_path is None
 
 
 # Tests for attrs_match logic
@@ -288,91 +287,96 @@ def test_attrs_match_none_returns_true():
     """When attrs_equals is None, attrs_match should return True."""
     # Create a test signature with no attrs_equals
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": "TEST",
-            "attrs_equals": None,
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix="TEST",
+            attrs_equals=None,
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {"getVER": "TEST-1.0"}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_empty_dict_returns_true():
     """When attrs_equals is an empty dict, attrs_match should return True."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": "TEST",
-            "attrs_equals": {},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix="TEST",
+            attrs_equals={},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {"getVER": "TEST-1.0"}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_single_attribute_matches():
     """When attrs_equals has one attribute that matches, should return True."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {"getATTR": "value1"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={"getATTR": "value1"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {"getATTR": "value1", "getVER": "TEST"}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_single_attribute_mismatch():
     """When attrs_equals has one attribute that doesn't match, should skip signature."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {"getATTR": "value1"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={"getATTR": "value1"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {"getATTR": "value2", "getVER": "TEST"}
         result = detect_model(flat)
         # Should not match testmodel, should fall back to unknown
-        assert result["name"] == "unknown"
+        assert result.name == "unknown"
 
 
 def test_attrs_match_multiple_attributes_all_match():
     """When attrs_equals has multiple attributes that all match, should return True."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={
                 "getATTR1": "val1",
                 "getATTR2": "val2",
                 "getATTR3": "val3",
             },
-        }
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {
@@ -382,24 +386,25 @@ def test_attrs_match_multiple_attributes_all_match():
             "getVER": "TEST",
         }
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_multiple_attributes_one_mismatch():
     """When attrs_equals has multiple attributes and one doesn't match, should skip signature."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={
                 "getATTR1": "val1",
                 "getATTR2": "val2",
                 "getATTR3": "val3",
             },
-        }
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # ATTR2 has wrong value
@@ -410,64 +415,67 @@ def test_attrs_match_multiple_attributes_one_mismatch():
             "getVER": "TEST",
         }
         result = detect_model(flat)
-        assert result["name"] == "unknown"
+        assert result.name == "unknown"
 
 
 def test_attrs_match_type_conversion_int_to_str():
     """Attrs_match should convert values to strings for comparison."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {"getATTR": "123"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={"getATTR": "123"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # Value in flat is int, should be converted to string for comparison
         flat = {"getATTR": 123}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_missing_key_in_flat():
     """When required attr key is missing in flat, should use empty string and fail match."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {"getATTR": "value"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={"getATTR": "value"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # getATTR is missing from flat
         flat = {"getVER": "TEST"}
         result = detect_model(flat)
-        assert result["name"] == "unknown"
+        assert result.name == "unknown"
 
 
 def test_attrs_match_with_version_constraints():
     """Attrs_match combined with version constraints should work together."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": "TEST",
-            "attrs_equals": {"getATTR": "value"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix="TEST",
+            attrs_equals={"getATTR": "value"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # Both attrs and version match
         flat = {"getATTR": "value", "getVER": "TEST-1.0"}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_pass_but_version_fail():
@@ -477,35 +485,37 @@ def test_attrs_match_pass_but_version_fail():
     when attrs_equals matches.
     """
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": "TEST",
-            "attrs_equals": {"getATTR": "value"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix="TEST",
+            attrs_equals={"getATTR": "value"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # Attrs match but version doesn't - attrs_equals takes precedence
         flat = {"getATTR": "value", "getVER": "WRONG"}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_with_v_keys():
     """Attrs_match combined with v_keys should work together."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": "TEST",
-            "attrs_equals": {"getATTR": "value"},
-            "v_keys": {"getKEY1", "getKEY2"},
-            "v_keys_required": 2,
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix="TEST",
+            attrs_equals={"getATTR": "value"},
+            v_keys=frozenset({"getKEY1", "getKEY2"}),
+            v_keys_required=2,
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         # All conditions satisfied: attrs, version, and v_keys
@@ -516,66 +526,68 @@ def test_attrs_match_with_v_keys():
             "getKEY2": "2",
         }
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_bool_conversion():
     """Test that boolean values are correctly converted to strings."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {"getATTR": "True"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={"getATTR": "True"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {"getATTR": True}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_attrs_match_none_value_in_flat():
     """Test that None values in flat are converted to string 'None'."""
     test_sig = [
-        {
-            "display_name": "Test Model",
-            "base_path": "test",
-            "name": "testmodel",
-            "cna_equals": None,
-            "ver_prefix": None,
-            "attrs_equals": {"getATTR": "None"},
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Model",
+            base_path="test",
+            name="testmodel",
+            cna_equals=None,
+            ver_prefix=None,
+            attrs_equals={"getATTR": "None"},
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
         flat = {"getATTR": None}
         result = detect_model(flat)
-        assert result["name"] == "testmodel"
+        assert result.name == "testmodel"
 
 
 def test_serial_prefix_detection_113():
     """Serial number starting with 113AAA... detects model 113."""
     flat = {"getSRN": "113AAA54321"}
     result = detect_model(flat)
-    assert result["name"] == "trio"
-    assert result["display_name"].startswith("Trio DFR/LS")
+    assert result.name == "trio"
+    assert result.display_name.startswith("Trio DFR/LS")
 
 
 def test_serial_prefix_detection_206():
     """Serial number starting with 206AAA... detects model 206."""
     flat = {"getSRN": "206AAA54321"}
     result = detect_model(flat)
-    assert result["name"] == "neosoft2500"
-    assert result["display_name"].startswith("NeoSoft 2500")
+    assert result.name == "neosoft2500"
+    assert result.display_name.startswith("NeoSoft 2500")
 
 
 def test_serial_prefix_priority_over_getcna():
     """serial_prefix has higher priority than getCNA match."""
     flat = {"getSRN": "113AAA99999", "getCNA": "LEXplus10"}
     result = detect_model(flat)
-    assert result["name"] == "trio"
+    assert result.name == "trio"
 
 
 def test_serial_prefix_no_match_falls_back():
@@ -583,44 +595,46 @@ def test_serial_prefix_no_match_falls_back():
     flat = {"getSRN": "999AAA12345", "getCNA": "LEXplus10"}
     result = detect_model(flat)
     # Should fall back to getCNA match
-    assert result["name"] == "lexplus10"
+    assert result.name == "lexplus10"
 
 
 def test_serial_prefix_short_serial():
     """Too short serial number does not match any prefix."""
     flat = {"getSRN": "11A"}
     result = detect_model(flat)
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
 
 
 def test_srn_contains_signature_matches_and_skips():
     """Test signature using srn_contains matches when present and skips when absent."""
     test_sig = [
-        {
-            "display_name": "Test SRN Contains",
-            "base_path": "/test",
-            "name": "testsrn",
-            "srn_contains": "XYZ",
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test SRN Contains",
+            base_path="/test",
+            name="testsrn",
+            srn_contains="XYZ",
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        assert detect_model({"getSRN": "AAAXYZBBB"})["name"] == "testsrn"
-        assert detect_model({"getSRN": "AABBB"})["name"] == "unknown"
+        assert detect_model({"getSRN": "AAAXYZBBB"}).name == "testsrn"
+        assert detect_model({"getSRN": "AABBB"}).name == "unknown"
 
 
 def test_ver_contains_signature_matches_and_skips():
     """Test signature using ver_contains matches when present and skips when absent."""
     test_sig = [
-        {
-            "display_name": "Test Ver Contains",
-            "base_path": "/test",
-            "name": "testver",
-            "ver_contains": "MAGIC",
-        }
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Ver Contains",
+            base_path="/test",
+            name="testver",
+            ver_contains="MAGIC",
+        )
     ]
     with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        assert detect_model({"getVER": "prefixMAGICsuffix"})["name"] == "testver"
-        assert detect_model({"getVER": "nope"})["name"] == "unknown"
+        assert detect_model({"getVER": "prefixMAGICsuffix"}).name == "testver"
+        assert detect_model({"getVER": "nope"}).name == "unknown"
 
 
 def test_v_keys_insufficient_logs_debug(caplog):
@@ -628,7 +642,7 @@ def test_v_keys_insufficient_logs_debug(caplog):
     caplog.set_level(logging.DEBUG)
     flat = {"getRE1": "1", "getVER": "NOTNSS"}
     result = detect_model(flat)
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
     assert "v_keys matched" in caplog.text
 
 
@@ -637,7 +651,7 @@ def test_v_keys_version_constraints_not_satisfied_logs_debug(caplog):
     caplog.set_level(logging.DEBUG)
     flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
     result = detect_model(flat)
-    assert result["name"] == "unknown"
+    assert result.name == "unknown"
     assert "version constraints not satisfied" in caplog.text
 
 
@@ -654,10 +668,10 @@ def test_manufacturer_syr_via_cna():
         ("LEXplus10SL", "lexplus10sl"),
     ]:
         result = detect_model({"getCNA": cna})
-        assert result["manufacturer"] == "SYR", (
-            f"Expected SYR for {cna}, got {result['manufacturer']}"
+        assert result.manufacturer == "SYR", (
+            f"Expected SYR for {cna}, got {result.manufacturer}"
         )
-        assert result["name"] == expected_name
+        assert result.name == expected_name
 
 
 def test_manufacturer_syr_via_srn_prefix():
@@ -668,10 +682,10 @@ def test_manufacturer_syr_via_srn_prefix():
         ("113AAA00001", "trio"),
     ]:
         result = detect_model({"getSRN": srn})
-        assert result["manufacturer"] == "SYR", (
-            f"Expected SYR for SRN {srn}, got {result['manufacturer']}"
+        assert result.manufacturer == "SYR", (
+            f"Expected SYR for SRN {srn}, got {result.manufacturer}"
         )
-        assert result["name"] == expected_name
+        assert result.name == expected_name
 
 
 def test_manufacturer_syr_via_ver_prefix():
@@ -686,17 +700,17 @@ def test_manufacturer_syr_via_ver_prefix():
             flat["getRE1"] = "1"
             flat["getRE2"] = "2"
         result = detect_model(flat)
-        assert result["manufacturer"] == "SYR", (
-            f"Expected SYR for VER {ver!r}, got {result['manufacturer']}"
+        assert result.manufacturer == "SYR", (
+            f"Expected SYR for VER {ver!r}, got {result.manufacturer}"
         )
-        assert result["name"] == expected_name
+        assert result.name == expected_name
 
 
 def test_manufacturer_hansgrohe_pontosbase():
     """Hansgrohe Pontos Base should return manufacturer 'Hansgrohe'."""
     result = detect_model({"getVER": "PontosBase V1.31"})
-    assert result["name"] == "pontosbase"
-    assert result["manufacturer"] == "Hansgrohe"
+    assert result.name == "pontosbase"
+    assert result.manufacturer == "Hansgrohe"
 
 
 def test_manufacturer_sanibel_via_srn_prefix():
@@ -708,17 +722,17 @@ def test_manufacturer_sanibel_via_srn_prefix():
         ("207AAA00001", {}, "sanibelsoftwateruno"),
     ]:
         result = detect_model({"getSRN": srn, **extra_attrs})
-        assert result["manufacturer"] == "Sanibel", (
-            f"Expected Sanibel for SRN {srn}, got {result['manufacturer']}"
+        assert result.manufacturer == "Sanibel", (
+            f"Expected Sanibel for SRN {srn}, got {result.manufacturer}"
         )
-        assert result["name"] == expected_name
+        assert result.name == expected_name
 
 
 def test_manufacturer_unknown_for_undetected_model():
     """Unknown model fallback should return manufacturer 'Unknown'."""
     result = detect_model({})
-    assert result["name"] == "unknown"
-    assert result["manufacturer"] == "Unknown"
+    assert result.name == "unknown"
+    assert result.manufacturer == "Unknown"
 
 
 def test_manufacturer_field_present_in_all_return_paths():
@@ -732,8 +746,7 @@ def test_manufacturer_field_present_in_all_return_paths():
     ]
     for flat in test_cases:
         result = detect_model(flat)
-        assert "manufacturer" in result, f"'manufacturer' key missing for input {flat}"
-        assert result["manufacturer"] is not None, (
+        assert result.manufacturer is not None, (
             f"'manufacturer' is None for input {flat}"
         )
 
@@ -761,9 +774,9 @@ def test_manufacturer_via_xml_fixtures():
         flat = parser.parse_device_status_response(xml)
         assert flat is not None
         result = detect_model(flat)
-        assert result["name"] == expected_name, f"{filename}: name mismatch"
-        assert result["manufacturer"] == expected_manufacturer, (
-            f"{filename}: expected manufacturer {expected_manufacturer!r}, got {result['manufacturer']!r}"
+        assert result.name == expected_name, f"{filename}: name mismatch"
+        assert result.manufacturer == expected_manufacturer, (
+            f"{filename}: expected manufacturer {expected_manufacturer!r}, got {result.manufacturer!r}"
         )
 
 
@@ -780,8 +793,8 @@ def test_manufacturer_via_json_fixture_pontosbase():
         else next(iter(data.values()), data)
     )
     result = detect_model(flat)
-    assert result["name"] == "pontosbase"
-    assert result["manufacturer"] == "Hansgrohe"
+    assert result.name == "pontosbase"
+    assert result.manufacturer == "Hansgrohe"
 
 
 def test_safetech_detection_via_json_fixture():
@@ -794,10 +807,10 @@ def test_safetech_detection_via_json_fixture():
         else next(iter(data.values()), data)
     )
     result = detect_model(flat)
-    assert result["name"] == "safetech"
-    assert result["display_name"] == "SafeTech Connect"
-    assert result["manufacturer"] == "SYR"
-    assert result["base_path"] == "/trio"
+    assert result.name == "safetech"
+    assert result.display_name == "SafeTech Connect"
+    assert result.manufacturer == "SYR"
+    assert result.base_path == "/trio"
 
 
 def test_safetech_v3_detection_local():
@@ -815,17 +828,17 @@ def test_safetech_v3_detection_local():
         "getVLV": "20",
     }
     result = detect_model(flat)
-    assert result["name"] == "safetechv3"
-    assert result["display_name"] == "SafeTech V3 Connect"
-    assert result["base_path"] == "/safe-tec"
-    assert result["manufacturer"] == "SYR"
+    assert result.name == "safetechv3"
+    assert result.display_name == "SafeTech V3 Connect"
+    assert result.base_path == "/safe-tec"
+    assert result.manufacturer == "SYR"
 
 
 def test_safetech_v4_not_shadowed_by_v3():
     """Adding the V3 signature must not steal detection from V4 firmware."""
     flat = {"getSRN": "987654321", "getVER": "Safe-Tech V4.08", "getTYP": "140"}
     result = detect_model(flat)
-    assert result["name"] == "safetechv4"
+    assert result.name == "safetechv4"
 
 
 # ---------------------------------------------------------------------------
@@ -837,38 +850,38 @@ def test_conelclearprosoft_detection_synthetic():
     """CONEL CLEAR PRO SOFT is detected by SRN prefix '215AAA'."""
     flat = {"getSRN": "215AAA12345"}
     result = detect_model(flat)
-    assert result["name"] == "conelclearprosoft"
-    assert result["display_name"] == "CLEAR PRO SOFT"
-    assert result["manufacturer"] == "CONEL"
-    assert result["base_path"] == "/neosoft"
+    assert result.name == "conelclearprosoft"
+    assert result.display_name == "CLEAR PRO SOFT"
+    assert result.manufacturer == "CONEL"
+    assert result.base_path == "/neosoft"
 
 
 def test_conelclearprosoft_srn_prefix_priority_over_cna():
     """SRN prefix '215AAA' wins over a concurrent getCNA value."""
     flat = {"getSRN": "215AAA99999", "getCNA": "LEXplus10"}
     result = detect_model(flat)
-    assert result["name"] == "conelclearprosoft"
+    assert result.name == "conelclearprosoft"
 
 
 def test_conelclearprosoft_wrong_srn_infix_no_match():
     """SRN '215' with non-standard infix must NOT match conelclearprosoft."""
     flat = {"getSRN": "215BBB12345"}
     result = detect_model(flat)
-    assert result["name"] != "conelclearprosoft"
+    assert result.name != "conelclearprosoft"
 
 
 def test_conelclearprosoft_base_path_is_neosoft():
     """CONEL CLEAR PRO SOFT must report '/neosoft' as its base path."""
     flat = {"getSRN": "215AAA00001"}
     result = detect_model(flat)
-    assert result["base_path"] == "/neosoft"
+    assert result.base_path == "/neosoft"
 
 
 def test_manufacturer_conel_via_srn_prefix():
     """CONEL devices detected by srn_prefix should return manufacturer 'CONEL'."""
     result = detect_model({"getSRN": "215AAA00001"})
-    assert result["manufacturer"] == "CONEL"
-    assert result["name"] == "conelclearprosoft"
+    assert result.manufacturer == "CONEL"
+    assert result.name == "conelclearprosoft"
 
 
 def test_conelclearprosoft_detection_via_json_fixture():
@@ -883,7 +896,7 @@ def test_conelclearprosoft_detection_via_json_fixture():
         else next(iter(data.values()), data)
     )
     result = detect_model(flat)
-    assert result["name"] == "conelclearprosoft"
-    assert result["display_name"] == "CLEAR PRO SOFT"
-    assert result["manufacturer"] == "CONEL"
-    assert result["base_path"] == "/neosoft"
+    assert result.name == "conelclearprosoft"
+    assert result.display_name == "CLEAR PRO SOFT"
+    assert result.manufacturer == "CONEL"
+    assert result.base_path == "/neosoft"

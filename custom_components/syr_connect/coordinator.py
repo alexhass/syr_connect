@@ -102,8 +102,8 @@ class SyrConnectDataUpdateCoordinator(
             # Get base_path for the selected model
             base_path = None
             for sig in MODEL_SIGNATURES:
-                if sig["name"] == model:
-                    base_path = sig.get("base_path")
+                if sig.name == model:
+                    base_path = sig.base_path
                     break
 
             if base_path is None:
@@ -617,8 +617,8 @@ class SyrConnectDataUpdateCoordinator(
         clear_prefix: tuple[str, Any] | None = None
         try:
             model_info = detect_model(status)
-            alarm_style_alm: bool = bool(model_info.get("alarm_style_alm"))
-            alarm_clear_via_set: bool = bool(model_info.get("alarm_clear_via_set"))
+            alarm_style_alm = model_info.alarm_style_alm
+            alarm_clear_via_set = model_info.alarm_clear_via_set
             field = "alm" if alarm_style_alm else "ala"
             get_key = f"get{field.upper()}"
             raw = status.get(get_key)

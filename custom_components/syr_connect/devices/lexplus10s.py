@@ -1,7 +1,7 @@
 """Entity allowlist override for the lexplus10s model.
 
 LEX Plus 10 S Connect (dk=80/dkv=25, sbt=2). Also used for the "lexplus10" (sbt=1)
-sibling signature via "device_file": "lexplus10s" - no distinct fixture exists for
+sibling signature via device_file="lexplus10s" - no distinct fixture exists for
 the plain "LEX Plus 10" (non-S) variant, and both share the same dk/dkv/hardware
 family, differing only in maximum_salt_volume-style metadata already handled
 elsewhere - pending confirmation if a real "LEX Plus 10" fixture ever exists.

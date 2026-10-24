@@ -58,10 +58,8 @@ def _local_json_base_path(device: SyrConnectDevice) -> str | None:
     even when the device is set up via the cloud (XML) API.
     """
     status = device.get("status")
-    base_path = detect_model(status if isinstance(status, dict) else {}).get(
-        "base_path"
-    )
-    return base_path if isinstance(base_path, str) and base_path else None
+    base_path = detect_model(status).base_path
+    return base_path or None
 
 
 def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
@@ -506,9 +504,7 @@ def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
 
     # Extract model information
     model_info = detect_model(status)
-    model_display = (
-        model_info.get("display_name") if isinstance(model_info, dict) else None
-    )
+    model_display = model_info.display_name
 
     # The sensors the integration creates for this status, with the same rules as the setup
     visible_keys = sensor_keys_for_status(status)
