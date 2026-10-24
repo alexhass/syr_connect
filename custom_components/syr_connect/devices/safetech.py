@@ -138,6 +138,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getSRV",
     "getT2",
     "getTMP",
+    "getTMZ",
     "getTYP",
     "getVER",
     # --- Wi-Fi ---
@@ -155,6 +156,7 @@ SELECT_SUPPORTED_KEYS = {
 }
 
 SWITCH_SUPPORTED_KEYS = {
+    "getBPB",
     "getBUZ",
 }
 
@@ -162,6 +164,7 @@ BINARY_SENSOR_SUPPORTED_KEYS = {
     "get71",
     "getBUZ",
     "getCSD",
+    "getIDS",
     "getPSD",
     "getSFV",
     "getTSD",

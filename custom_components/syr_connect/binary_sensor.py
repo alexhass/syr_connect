@@ -89,6 +89,11 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
         is_on_fn=_sensor_active,
     ),
     SyrConnectBinarySensorEntityDescription(
+        key="getIDS",  # Daylight saving time enabled
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
+    ),
+    SyrConnectBinarySensorEntityDescription(
         key="getPSD",  # Pressure sensor active (on = active)
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",

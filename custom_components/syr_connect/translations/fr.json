@@ -85,6 +85,13 @@
           "true": "Actif"
         }
       },
+      "getids": {
+        "name": "Heure d'été",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
       "getpsd": {
         "name": "Capteur de pression",
         "state": {
@@ -1400,6 +1407,9 @@
       "gettmp": {
         "name": "Protection contre les fuites désactivée"
       },
+      "gettmz": {
+        "name": "Fuseau horaire"
+      },
       "gettor": {
         "name": "Régénérations (total)"
       },
@@ -1493,6 +1503,13 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "name": "Changement de profil par bouton",
+        "state": {
+          "false": "Désactivé",
+          "true": "Activé"
+        }
+      },
       "getbuz": {
         "name": "Avertisseur en cas d'alarme",
         "state": {

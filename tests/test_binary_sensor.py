@@ -163,7 +163,16 @@ async def test_async_setup_entry_skips_models_without_buzzer(
     [
         (
             "SyrSafeTechV4",
-            {"get71", "getBUZ", "getCSD", "getPSD", "getSFV", "getTSD", "getVTO"},
+            {
+                "get71",
+                "getBUZ",
+                "getCSD",
+                "getIDS",
+                "getPSD",
+                "getSFV",
+                "getTSD",
+                "getVTO",
+            },
         ),
         # getTSD/getPSD/getCSD are reported empty and are not created
         ("SyrSafeTechPlus", {"get71", "getBUZ", "getSFV", "getVTO"}),
@@ -175,7 +184,9 @@ async def test_async_setup_entry_skips_models_without_buzzer(
         ("SyrSafeTPlus", {"get71", "getBUZ"}),
         ("SyrSafeFloor", {"getSFV"}),
         # Filling controller: firmware check, but no leak protection or valve test
-        ("ConelClearProFill", {"getBUZ", "getSFV"}),
+        ("ConelClearProFill", {"getBUZ", "getIDS", "getSFV"}),
+        # Daylight saving time disabled is shown as well
+        ("SyrNeoSoft2500", {"getBUZ", "getIDS"}),
     ],
 )
 async def test_async_setup_entry_real_fixtures(

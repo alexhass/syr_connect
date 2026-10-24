@@ -183,6 +183,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getMAC",
     "getMAN",
     "getSRN",
+    "getTMZ",
     "getTYP",
     "getVER",
     # --- Wi-Fi (optional module, same as the plain "lex"/lexplus10s siblings) ---

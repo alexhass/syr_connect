@@ -85,6 +85,13 @@
           "true": "Aktiv"
         }
       },
+      "getids": {
+        "name": "Sommerzeit",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
       "getpsd": {
         "name": "Drucksensor",
         "state": {
@@ -1400,6 +1407,9 @@
       "gettmp": {
         "name": "Leckageschutz deaktiviert"
       },
+      "gettmz": {
+        "name": "Zeitzone"
+      },
       "gettor": {
         "name": "Regenerationen (Gesamt)"
       },
@@ -1493,6 +1503,13 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "name": "Profilwechsel per Taste",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiviert"
+        }
+      },
       "getbuz": {
         "name": "Signalton bei Alarm",
         "state": {

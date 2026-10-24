@@ -480,7 +480,8 @@ Some further data about the device
 | getMAN | "Syr" | | Manufacturer |
 | getFIR | "SLPS" | | Firmware name. Used to find the correct firmware file during firmware update |
 | getCDE | "010SCA19DF0917.01.024.1.1.0010" | | *unknown constant (some kind of device identifier?)* |
-| getTMZ | "4" (old docs: "01:00" ?) | | Timezone (Returns unclear value "4" on LEXplus10SL, NeoSoft2500) |
+| getTMZ / setTMZ | "4" | 1/4 h | Time zone as UTC offset in quarter hours. Range: -44–48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes), default 4 (UTC+01:00). Conversion: offset = value × 15 minutes, e.g. 4 -> UTC+01:00, 22 -> UTC+05:30 (India), -14 -> UTC-03:30 (Newfoundland). Daylight saving time is handled separately by getIDS |
+| getIDS / setIDS | "1"<br>"True" | | Automatic daylight saving time: 0/False = disabled, 1/True = enabled (default) |
 | getDAT | "1694635165" | | Current time as UNIX timestamp (seconds since 1.1.1970) |
 | getLAN | "1" | | Language of the UI (0=English, 1=German, 3=Spanish) |
 | getHWV | "V1" | | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+) |
@@ -902,7 +903,6 @@ These properties are only available on devices that contain leakage protection, 
 | getFSL | "[]"<br>[{&quot;SN&quot;:&quot;987654321&quot;},{&quot;SN&quot;:&quot;876543210&quot;}] | | Array with serial numbers of connected SafeFloor devices (Available on LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech V4) |
 | getGLE | "" | | *unknown* (Safe-T+) |
 | getGUL | "" | | *unknown* (Safe-T+) |
-| getIDS | "False" | | *unknown* (LEXplus10SL, Sanibel) |
 | getINT | "0 0 0 0 0 0 1 0" | | *unknown* — 8-element array, possibly interrupt input states (Safe-T+) |
 | getREL | "0" | | *unknown* — possibly relay state (Safe-T+) |
 | getTBS | "1" | | *unknown* — possibly test or battery status flag (Safe-T+) |

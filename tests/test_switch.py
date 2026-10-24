@@ -3,6 +3,7 @@
 # mypy: disable-error-code="method-assign, misc"
 
 import logging
+from pathlib import Path
 from types import MappingProxyType
 from unittest.mock import AsyncMock, MagicMock
 
@@ -10,6 +11,7 @@ import pytest
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+from custom_components.syr_connect.response_parser import ResponseParser
 import custom_components.syr_connect.switch as switch_mod
 from custom_components.syr_connect.switch import (
     SyrConnectBooleanSwitch,
@@ -184,6 +186,36 @@ async def test_async_setup_entry_creates_entity(hass: HomeAssistant) -> None:
     # instance type check
 
     assert isinstance(args[0], SyrConnectBooleanSwitch)
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        # Profile change by button: only confirmed on the SafeTech V4
+        ("SyrSafeTechV4", {"getBPB", "getBUZ"}),
+        ("SyrSafeTechPlus", {"getBUZ"}),
+        ("SyrTrioDFRLS", {"getBUZ"}),
+    ],
+)
+async def test_async_setup_entry_real_fixtures(
+    hass: HomeAssistant, model: str, expected: set[str]
+) -> None:
+    """The switches follow the model allowlists."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    config_entry = MagicMock()
+    config_entry.runtime_data = MagicMock(
+        entry_id=None,
+        data={"devices": [{"id": "SN1", "name": "Device", "status": status}]},
+    )
+    mock_add_entities = MagicMock()
+
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    entities = mock_add_entities.call_args[0][0]
+    assert {e.entity_description.key for e in entities} == expected
 
 
 def test_is_on_boolean_and_string_values() -> None:

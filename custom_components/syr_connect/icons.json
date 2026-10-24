@@ -10,6 +10,9 @@
       "getcsd": {
         "default": "mdi:flash"
       },
+      "getids": {
+        "default": "mdi:weather-sunny"
+      },
       "getpsd": {
         "default": "mdi:gauge"
       },
@@ -733,6 +736,9 @@
       "gettmp": {
         "default": "mdi:timer-off-outline"
       },
+      "gettmz": {
+        "default": "mdi:map-clock"
+      },
       "gettor": {
         "default": "mdi:counter"
       },
@@ -807,6 +813,9 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "default": "mdi:gesture-tap-button"
+      },
       "getbuz": {
         "default": "mdi:volume-high"
       },

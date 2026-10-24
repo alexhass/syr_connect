@@ -85,6 +85,13 @@
           "true": "Active"
         }
       },
+      "getids": {
+        "name": "Daylight saving time",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
+      },
       "getpsd": {
         "name": "Pressure sensor",
         "state": {
@@ -1400,6 +1407,9 @@
       "gettmp": {
         "name": "Leak protection deactivated"
       },
+      "gettmz": {
+        "name": "Time zone"
+      },
       "gettor": {
         "name": "Regenerations (total)"
       },
@@ -1493,6 +1503,13 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "name": "Profile change by button",
+        "state": {
+          "false": "Disabled",
+          "true": "Enabled"
+        }
+      },
       "getbuz": {
         "name": "Buzzer on alarm",
         "state": {

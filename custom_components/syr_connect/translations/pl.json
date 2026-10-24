@@ -85,6 +85,13 @@
           "true": "Aktywny"
         }
       },
+      "getids": {
+        "name": "Czas letni",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
       "getpsd": {
         "name": "Czujnik ciśnienia",
         "state": {
@@ -1400,6 +1407,9 @@
       "gettmp": {
         "name": "Ochrona przed wyciekiem dezaktywowana"
       },
+      "gettmz": {
+        "name": "Strefa czasowa"
+      },
       "gettor": {
         "name": "Regeneracje (łącznie)"
       },
@@ -1493,6 +1503,13 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "name": "Zmiana profilu przyciskiem",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Włączony"
+        }
+      },
       "getbuz": {
         "name": "Brzęczyk przy alarmie",
         "state": {

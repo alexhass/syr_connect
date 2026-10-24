@@ -381,6 +381,27 @@ def _value_t(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> An
     return _map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
 
 
+def _value_tmz(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Time zone (getTMZ): offset in quarter hours -> "UTC+hh:mm".
+
+    The device accepts -44..48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes).
+
+    Formats:
+    - Germany (CET): "4" -> "UTC+01:00"
+    - India: "22" -> "UTC+05:30"
+    - Newfoundland: "-14" -> "UTC-03:30"
+    """
+    try:
+        quarters = int(str(value).strip())
+    except ValueError:
+        return None
+    if not -44 <= quarters <= 48:
+        return None
+    sign = "-" if quarters < 0 else "+"
+    hours, minutes = divmod(abs(quarters) * 15, 60)
+    return f"UTC{sign}{hours:02d}:{minutes:02d}"
+
+
 def _value_ul(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Leak protection volume limit, absent profile (getUL): raw value -> liters."""
     return _map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
@@ -1706,6 +1727,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getSRN",  # Device serial number
         entity_category=EntityCategory.DIAGNOSTIC,
         keep_as_string=True,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTMZ",  # Time zone (quarter hours, 4 = UTC+01:00)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_tmz,
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getTYP",  # Device type code

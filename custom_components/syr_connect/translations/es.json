@@ -85,6 +85,13 @@
           "true": "Activo"
         }
       },
+      "getids": {
+        "name": "Horario de verano",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
+      },
       "getpsd": {
         "name": "Sensor de presión",
         "state": {
@@ -1400,6 +1407,9 @@
       "gettmp": {
         "name": "Protección contra fugas desactivada"
       },
+      "gettmz": {
+        "name": "Zona horaria"
+      },
       "gettor": {
         "name": "Regeneraciones (total)"
       },
@@ -1493,6 +1503,13 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "name": "Cambio de perfil por botón",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activado"
+        }
+      },
       "getbuz": {
         "name": "Zumbador en alarma",
         "state": {

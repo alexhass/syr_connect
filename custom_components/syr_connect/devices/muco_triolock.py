@@ -165,6 +165,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getMAC1",
     "getMAC2",
     "getSRN",
+    "getTMZ",
     "getVER",
     # --- Wi-Fi ---
     "getAPT",
@@ -188,6 +189,7 @@ SWITCH_SUPPORTED_KEYS = {
 BINARY_SENSOR_SUPPORTED_KEYS = {
     "get71",
     "getBUZ",
+    "getIDS",
     "getSFV",
     "getVTO",
 }

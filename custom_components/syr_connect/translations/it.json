@@ -85,6 +85,13 @@
           "true": "Attivo"
         }
       },
+      "getids": {
+        "name": "Ora legale",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
       "getpsd": {
         "name": "Sensore di pressione",
         "state": {
@@ -1400,6 +1407,9 @@
       "gettmp": {
         "name": "Protezione perdite disattivata"
       },
+      "gettmz": {
+        "name": "Fuso orario"
+      },
       "gettor": {
         "name": "Rigenerazioni (totale)"
       },
@@ -1493,6 +1503,13 @@
       }
     },
     "switch": {
+      "getbpb": {
+        "name": "Cambio profilo tramite pulsante",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivato"
+        }
+      },
       "getbuz": {
         "name": "Cicalino in caso di allarme",
         "state": {

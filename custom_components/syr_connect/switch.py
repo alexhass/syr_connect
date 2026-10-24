@@ -28,6 +28,10 @@ _LOGGER = logging.getLogger(__name__)
 # Descriptions of all switches (boolean get<KEY>/set<KEY> settings)
 _SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (
     SwitchEntityDescription(
+        key="getBPB",  # Profile change by button allowed (0 = blocked, 1 = allowed)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SwitchEntityDescription(
         key="getBUZ",  # Buzzer on/off
         entity_category=EntityCategory.CONFIG,
     ),

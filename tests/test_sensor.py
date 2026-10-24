@@ -8159,6 +8159,54 @@ def test_leak_protection_settings(model: str, expected: set[str]) -> None:
 
 
 @pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("4", "UTC+01:00"),  # Germany (CET)
+        (4, "UTC+01:00"),  # JSON API
+        ("22", "UTC+05:30"),  # India
+        ("-14", "UTC-03:30"),  # Newfoundland
+        ("0", "UTC+00:00"),
+        ("-44", "UTC-11:00"),
+        ("48", "UTC+12:00"),
+        ("49", None),
+        ("-45", None),
+        ("", None),
+        ("abc", None),
+    ],
+)
+def test_sensor_tmz_utc_offset(
+    create_mock_coordinator, raw: Any, expected: str | None
+) -> None:
+    """Time zone (getTMZ) in quarter hours is shown as UTC offset."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getTMZ": raw}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getTMZ")
+
+    assert sensor.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("SyrSafeTechV4", True),
+        ("SyrNeoSoft2500", True),
+        ("SyrLEXplus10SL", True),
+        # Reported empty
+        ("SyrSafeTechPlus", False),
+        ("SyrTrioDFRLS", False),
+    ],
+)
+def test_sensor_tmz_follows_allowlists(model: str, expected: bool) -> None:
+    """The time zone sensor is created on the models that report it."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    assert status is not None
+
+    assert ("getTMZ" in sensor_module.sensor_keys_for_status(status)) is expected
+
+
+@pytest.mark.parametrize(
     ("model", "expected"),
     [
         ("SyrSafeTechV4", 2.0),
