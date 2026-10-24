@@ -1,5 +1,6 @@
 """Tests for binary_sensor platform."""
 
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -11,6 +12,7 @@ from custom_components.syr_connect.binary_sensor import (
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers import _DEVICE_MODULES
+from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -154,6 +156,89 @@ async def test_async_setup_entry_skips_models_without_buzzer(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     assert entities == []
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        (
+            "SyrSafeTechV4",
+            {"get71", "getBUZ", "getCSD", "getPSD", "getSFV", "getTSD", "getVTO"},
+        ),
+        # getTSD/getPSD/getCSD are reported empty and are not created
+        ("SyrSafeTechPlus", {"get71", "getBUZ", "getSFV", "getVTO"}),
+        ("SyrTrioDFRLS", {"get71", "getBUZ", "getSFV", "getVTO"}),
+        # The MultiController captures report no getVTO via XML
+        ("SyrTrioLock", {"get71", "getBUZ", "getSFV"}),
+        ("ConelClearProLeakProtection", {"get71", "getBUZ", "getSFV"}),
+        ("SyrLEXplus10SL", {"get71"}),
+        ("SyrSafeTPlus", {"get71", "getBUZ"}),
+        ("SyrSafeFloor", {"getSFV"}),
+        # Filling controller: firmware check, but no leak protection or valve test
+        ("ConelClearProFill", {"getBUZ", "getSFV"}),
+    ],
+)
+async def test_async_setup_entry_real_fixtures(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator,
+    mock_add_entities,
+    model: str,
+    expected: set[str],
+) -> None:
+    """Leak protection, firmware check and valve test follow the model allowlists."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert {e.entity_description.key for e in entities} == expected
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        # dk 140 (SafeTech V4): integer API, 0 = active, 1 = deactivated
+        ({"getVER": "Safe-Tech V4.08", "getTSD": "0"}, True),
+        ({"getVER": "Safe-Tech V4.08", "getTSD": "1"}, False),
+        # dk 1112 (SafeTech+): boolean API, True = active, False = deactivated
+        ({"getSRN": "112AAA12345", "getTSD": "True"}, True),
+        ({"getSRN": "112AAA12345", "getTSD": False}, False),
+        # Empty value: unknown
+        ({"getVER": "Safe-Tech V4.08", "getTSD": ""}, None),
+    ],
+)
+async def test_binary_sensor_sensor_active_depends_on_dk(
+    hass: HomeAssistant, status: dict, expected: bool | None
+) -> None:
+    """The meaning of the sensor settings flipped with the boolean API (dk >= 1100)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getTSD")
+
+    assert sensor.is_on is expected
 
 
 def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:

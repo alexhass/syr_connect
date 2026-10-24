@@ -70,7 +70,9 @@ SELECT_SUPPORTED_KEYS = {
 
 # No buzzer/switch on this model.
 SWITCH_SUPPORTED_KEYS: set[str] = set()
-BINARY_SENSOR_SUPPORTED_KEYS: set[str] = set()
+BINARY_SENSOR_SUPPORTED_KEYS = {
+    "getSFV",
+}
 
 # setSIR (regeneration) and setDEX (microleakage test) excluded - not applicable
 # to a standalone sensor. setNOT/setWRN excluded - no getNOT/getWRN in the

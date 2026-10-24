@@ -72,6 +72,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getDSV",
     "getDTT",
     "getNPS",
+    # --- Leak Protection (warning threshold) ---
+    "getLWT",
     # --- Leak Protection Profiles 1-8 ---
     "getPA1",
     "getPA2",
@@ -184,7 +186,10 @@ SWITCH_SUPPORTED_KEYS = {
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
+    "get71",
     "getBUZ",
+    "getSFV",
+    "getVTO",
 }
 
 # setDEX (microleakage test) gated on getDSV presence, matching muco_leakprotect.

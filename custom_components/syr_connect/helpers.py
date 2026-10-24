@@ -606,8 +606,8 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
         wfs_val = status.get("getWFS")
         # getWFS meaning:
         #   2 = Wi-Fi connected
-        #   1 = Wi-Fi not connected
-        #   0 = unknown or not available
+        #   1 = Wi-Fi connecting
+        #   0 = Wi-Fi not connected
         if wfs_val is not None:
             try:
                 wfs_int = int(wfs_val)

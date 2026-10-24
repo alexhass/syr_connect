@@ -1,8 +1,26 @@
 {
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "default": "mdi:shield-off-outline"
+      },
       "getbuz": {
         "default": "mdi:volume-high"
+      },
+      "getcsd": {
+        "default": "mdi:flash"
+      },
+      "getpsd": {
+        "default": "mdi:gauge"
+      },
+      "getsfv": {
+        "default": "mdi:update"
+      },
+      "gettsd": {
+        "default": "mdi:thermometer"
+      },
+      "getvto": {
+        "default": "mdi:valve"
       }
     },
     "button": {
@@ -174,6 +192,9 @@
       "getcnd": {
         "default": "mdi:flash"
       },
+      "getcnf": {
+        "default": "mdi:tune-variant"
+      },
       "getcoa": {
         "default": "mdi:counter"
       },
@@ -284,6 +305,9 @@
       },
       "getltv": {
         "default": "mdi:faucet"
+      },
+      "getlwt": {
+        "default": "mdi:water-alert"
       },
       "getmac": {
         "default": "mdi:ethernet"
@@ -652,11 +676,20 @@
       "getslf": {
         "default": "mdi:waves-arrow-right"
       },
+      "getslo": {
+        "default": "mdi:percent-outline"
+      },
       "getslt": {
         "default": "mdi:timer-outline"
       },
       "getslv": {
         "default": "mdi:water"
+      },
+      "getsmf": {
+        "default": "mdi:waves-arrow-right"
+      },
+      "getsof": {
+        "default": "mdi:percent-outline"
       },
       "getsrh": {
         "default": "mdi:wrench-clock"

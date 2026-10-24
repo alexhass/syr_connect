@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Proteção contra fugas",
+        "state": {
+          "false": "Ativa",
+          "true": "Desativada"
+        }
+      },
       "getbuz": {
         "name": "Alarme sonoro",
         "state": {
           "false": "Desativado",
           "true": "Ativado"
         }
+      },
+      "getcsd": {
+        "name": "Sensor de condutividade",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativo"
+        }
+      },
+      "getpsd": {
+        "name": "Sensor de pressão",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativo"
+        }
+      },
+      "getsfv": {
+        "name": "Verificação de firmware"
+      },
+      "gettsd": {
+        "name": "Sensor de temperatura",
+        "state": {
+          "false": "Desativado",
+          "true": "Ativo"
+        }
+      },
+      "getvto": {
+        "name": "Teste da válvula"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Condutividade"
       },
+      "getcnf": {
+        "name": "Fator de condutividade"
+      },
       "getcoa": {
         "name": "Contador de retrolavagens automáticas"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Último volume dispensado"
+      },
+      "getlwt": {
+        "name": "Limite de aviso de fuga"
       },
       "getmac": {
         "name": "Endereço MAC"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Caudal na fase de autoaprendizagem"
       },
+      "getslo": {
+        "name": "Margem na fase de autoaprendizagem (volume e tempo)"
+      },
       "getslp": {
         "name": "Duração da fase de autoaprendizagem"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Volume na fase de autoaprendizagem"
+      },
+      "getsmf": {
+        "name": "Caudal mínimo na fase de autoaprendizagem"
+      },
+      "getsof": {
+        "name": "Margem na fase de autoaprendizagem (caudal)"
       },
       "getsre": {
         "name": "Regeneração ativa",

@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Lekbescherming",
+        "state": {
+          "false": "Actief",
+          "true": "Gedeactiveerd"
+        }
+      },
       "getbuz": {
         "name": "Zoemer bij alarm",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
+      },
+      "getcsd": {
+        "name": "Geleidbaarheidssensor",
+        "state": {
+          "false": "Gedeactiveerd",
+          "true": "Actief"
+        }
+      },
+      "getpsd": {
+        "name": "Druksensor",
+        "state": {
+          "false": "Gedeactiveerd",
+          "true": "Actief"
+        }
+      },
+      "getsfv": {
+        "name": "Firmwarecontrole"
+      },
+      "gettsd": {
+        "name": "Temperatuursensor",
+        "state": {
+          "false": "Gedeactiveerd",
+          "true": "Actief"
+        }
+      },
+      "getvto": {
+        "name": "Kleptest"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Geleidbaarheid"
       },
+      "getcnf": {
+        "name": "Geleidbaarheidsfactor"
+      },
       "getcoa": {
         "name": "Teller automatische terugspoelingen"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Laatste gedoseerde volume"
+      },
+      "getlwt": {
+        "name": "Lekwaarschuwingsdrempel"
       },
       "getmac": {
         "name": "MAC-adres"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Doorstroming in zelfleerfase"
       },
+      "getslo": {
+        "name": "Marge in zelfleerfase (volume en tijd)"
+      },
       "getslp": {
         "name": "Duur van zelfleerfase"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Volume in zelfleerfase"
+      },
+      "getsmf": {
+        "name": "Minimale doorstroming in zelfleerfase"
+      },
+      "getsof": {
+        "name": "Marge in zelfleerfase (doorstroming)"
       },
       "getsre": {
         "name": "Regeneratie actief",

@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Ochrona przed wyciekiem",
+        "state": {
+          "false": "Aktywna",
+          "true": "Wyłączona"
+        }
+      },
       "getbuz": {
         "name": "Brzęczyk przy alarmie",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"
         }
+      },
+      "getcsd": {
+        "name": "Czujnik przewodności",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Aktywny"
+        }
+      },
+      "getpsd": {
+        "name": "Czujnik ciśnienia",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Aktywny"
+        }
+      },
+      "getsfv": {
+        "name": "Sprawdzanie oprogramowania sprzętowego"
+      },
+      "gettsd": {
+        "name": "Czujnik temperatury",
+        "state": {
+          "false": "Wyłączony",
+          "true": "Aktywny"
+        }
+      },
+      "getvto": {
+        "name": "Test zaworu"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Przewodność"
       },
+      "getcnf": {
+        "name": "Współczynnik przewodności"
+      },
       "getcoa": {
         "name": "Licznik automatycznych płukań zwrotnych"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Ostatnio wydana objętość"
+      },
+      "getlwt": {
+        "name": "Próg ostrzeżenia o wycieku"
       },
       "getmac": {
         "name": "Adres MAC"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Przepływ w fazie samouczenia"
       },
+      "getslo": {
+        "name": "Margines w fazie samouczenia (objętość i czas)"
+      },
       "getslp": {
         "name": "Czas trwania fazy samouczenia"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Objętość w fazie samouczenia"
+      },
+      "getsmf": {
+        "name": "Minimalny przepływ w fazie samouczenia"
+      },
+      "getsof": {
+        "name": "Margines w fazie samouczenia (przepływ)"
       },
       "getsre": {
         "name": "Regeneracja aktywna",

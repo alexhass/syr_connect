@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Leckageschutz",
+        "state": {
+          "false": "Aktiv",
+          "true": "Deaktiviert"
+        }
+      },
       "getbuz": {
         "name": "Signalton bei Alarm",
         "state": {
           "false": "Deaktiviert",
           "true": "Aktiviert"
         }
+      },
+      "getcsd": {
+        "name": "Leitfähigkeitssensor",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiv"
+        }
+      },
+      "getpsd": {
+        "name": "Drucksensor",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiv"
+        }
+      },
+      "getsfv": {
+        "name": "Firmware-Prüfung"
+      },
+      "gettsd": {
+        "name": "Temperatursensor",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiv"
+        }
+      },
+      "getvto": {
+        "name": "Ventiltest"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Wasserleitfähigkeit"
       },
+      "getcnf": {
+        "name": "Leitfähigkeitsfaktor"
+      },
       "getcoa": {
         "name": "Zähler automatischer Rückspülungen"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Letztes gezapftes Volumen"
+      },
+      "getlwt": {
+        "name": "Leckage-Warnschwellwert"
       },
       "getmac": {
         "name": "MAC-Adresse"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Durchfluss in Selbstlernphase"
       },
+      "getslo": {
+        "name": "Zuschlag in Selbstlernphase (Volumen und Zeit)"
+      },
       "getslp": {
         "name": "Dauer der Selbstlernphase"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Volumen in Selbstlernphase"
+      },
+      "getsmf": {
+        "name": "Mindestdurchfluss in Selbstlernphase"
+      },
+      "getsof": {
+        "name": "Zuschlag in Selbstlernphase (Durchfluss)"
       },
       "getsre": {
         "name": "Regeneration aktiv",

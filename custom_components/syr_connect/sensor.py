@@ -594,6 +594,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         hidden_when="empty",  # value "" means sensor does not exists or not measured.
     ),
     SyrConnectSensorEntityDescription(
+        key="getCNF",  # Conductivity factor (raw 5-50 -> 0.5-5.0)
+        suggested_display_precision=1,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        divide_by=10,
+        hidden_when="empty",
+    ),
+    SyrConnectSensorEntityDescription(
         key="getCFV",  # Current filling volume (l)
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolume.LITERS,
@@ -857,6 +864,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
+        key="getSLO",  # Self-learning offset: volume/time surplus (%, 5-20)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
+    ),
+    SyrConnectSensorEntityDescription(
         key="getSLP",  # Duration of self-learning phase
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="always",
@@ -872,6 +886,20 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSMF",  # Self-learning minimum flow (l/h, 0-5000)
+        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSOF",  # Self-learning offset: maximum flow surplus (%, 5-50)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
     ),
     # --- Microleakage Test (Trio DFR/LS, SafeTech) ---
     SyrConnectSensorEntityDescription(
@@ -917,6 +945,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_value_le,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLWT",  # Leakage warning threshold (%, 80-99)
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
         key="getT1",  # Max. flow duration - present profile (h, 0.5 h steps)

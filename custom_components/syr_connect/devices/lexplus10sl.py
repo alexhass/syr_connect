@@ -81,6 +81,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Self-Learning Phase (genuinely active in the fixture) ---
     "getSLE",
     "getSLF",
+    "getSLO",
     "getSLP",
     "getSLT",
     "getSLV",
@@ -91,7 +92,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getDMA",
     "getDRP",
     "getNPS",
-    # --- Leak Protection (deactivation timer, tied to the profiles below) ---
+    # --- Leak Protection (warning threshold; deactivation timer, tied to the profiles below) ---
+    "getLWT",
     "getTMP",
     # --- Leak Protection Profiles 1-8 (core feature of this model) ---
     "getPA1",
@@ -207,7 +209,9 @@ SELECT_SUPPORTED_KEYS = {
 
 # getBUZ present but empty in the fixture - no confirmed buzzer on this model.
 SWITCH_SUPPORTED_KEYS: set[str] = set()
-BINARY_SENSOR_SUPPORTED_KEYS: set[str] = set()
+BINARY_SENSOR_SUPPORTED_KEYS = {
+    "get71",
+}
 
 # setWRN excluded - no getWRN in the fixture. setDEX excluded - no getDSV in
 # the fixture, despite getDBD/getDRP/getNPS being present.

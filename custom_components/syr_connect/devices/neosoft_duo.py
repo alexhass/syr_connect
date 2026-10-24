@@ -104,6 +104,7 @@ SWITCH_SUPPORTED_KEYS = {
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
+    "getSFV",
 }
 
 # setDEX excluded - no microleakage-test hardware on this model.

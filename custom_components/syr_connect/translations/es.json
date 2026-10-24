@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Protección contra fugas",
+        "state": {
+          "false": "Activa",
+          "true": "Desactivada"
+        }
+      },
       "getbuz": {
         "name": "Zumbador en alarma",
         "state": {
           "false": "Desactivado",
           "true": "Activado"
         }
+      },
+      "getcsd": {
+        "name": "Sensor de conductividad",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activo"
+        }
+      },
+      "getpsd": {
+        "name": "Sensor de presión",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activo"
+        }
+      },
+      "getsfv": {
+        "name": "Comprobación de firmware"
+      },
+      "gettsd": {
+        "name": "Sensor de temperatura",
+        "state": {
+          "false": "Desactivado",
+          "true": "Activo"
+        }
+      },
+      "getvto": {
+        "name": "Prueba de válvula"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Conductividad"
       },
+      "getcnf": {
+        "name": "Factor de conductividad"
+      },
       "getcoa": {
         "name": "Contador de retrolavados automáticos"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Último volumen dispensado"
+      },
+      "getlwt": {
+        "name": "Umbral de aviso de fuga"
       },
       "getmac": {
         "name": "Dirección MAC"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Flujo en fase de autoaprendizaje"
       },
+      "getslo": {
+        "name": "Margen en fase de autoaprendizaje (volumen y tiempo)"
+      },
       "getslp": {
         "name": "Duración de la fase de autoaprendizaje"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Volumen en fase de autoaprendizaje"
+      },
+      "getsmf": {
+        "name": "Flujo mínimo en fase de autoaprendizaje"
+      },
+      "getsof": {
+        "name": "Margen en fase de autoaprendizaje (flujo)"
       },
       "getsre": {
         "name": "Regeneración activa",

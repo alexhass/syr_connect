@@ -30,6 +30,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water quality ---
     "getCEL",
     "getCND",
+    "getCNF",
     # --- Microleakage test ---
     "getDBD",
     "getDMA",
@@ -37,6 +38,11 @@ SENSOR_SUPPORTED_KEYS = {
     "getDSV",
     "getDTT",
     "getNPS",
+    # --- Leak protection and self-learning settings ---
+    "getLWT",
+    "getSLO",
+    "getSMF",
+    "getSOF",
     # --- Leak-protection profiles ---
     "getPA1",
     "getPA2",
@@ -146,7 +152,13 @@ SWITCH_SUPPORTED_KEYS = {
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
+    "get71",
     "getBUZ",
+    "getCSD",
+    "getPSD",
+    "getSFV",
+    "getTSD",
+    "getVTO",
 }
 
 BUTTON_SUPPORTED_KEYS = {

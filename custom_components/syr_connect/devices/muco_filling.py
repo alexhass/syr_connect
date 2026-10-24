@@ -61,6 +61,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getALD",
     # --- Water Quality ---
     "getCND",
+    "getCNF",
     "getIWH",
     "getOHW",
     "getWHU",
@@ -131,6 +132,7 @@ SWITCH_SUPPORTED_KEYS = {
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
+    "getSFV",
 }
 
 # setSIR (no regeneration) and setDEX (Trio DFR/LS microleakage test, not applicable

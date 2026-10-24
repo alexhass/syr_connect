@@ -7,7 +7,10 @@ keys only create entities when the device actually reports them.
 
 The self-learning-phase keys (getSLE/getSLF/getSLP/getSLT/getSLV) are omitted:
 they are present with value 0 in every SafeTech fixture and are associated
-with the Trio DFR/LS feature set, not SafeTech.
+with the Trio DFR/LS feature set, not SafeTech. The self-learning settings
+(getSLO/getSOF/getSMF) and the leakage warning threshold (getLWT) are included:
+SYR's SafeTech command table lists them, and every fixture reports their
+defaults (10 %, 20 %, 3500 l/h, 90 %).
 """
 
 SENSOR_SUPPORTED_KEYS = {
@@ -34,6 +37,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water quality ---
     "getCEL",
     "getCND",
+    "getCNF",
     # --- Microleakage test ---
     "getDBD",
     "getDMA",
@@ -41,6 +45,11 @@ SENSOR_SUPPORTED_KEYS = {
     "getDSV",
     "getDTT",
     "getNPS",
+    # --- Leak protection and self-learning settings ---
+    "getLWT",
+    "getSLO",
+    "getSMF",
+    "getSOF",
     # --- Leak-protection profiles ---
     "getPA1",
     "getPA2",
@@ -150,7 +159,13 @@ SWITCH_SUPPORTED_KEYS = {
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
+    "get71",
     "getBUZ",
+    "getCSD",
+    "getPSD",
+    "getSFV",
+    "getTSD",
+    "getVTO",
 }
 
 BUTTON_SUPPORTED_KEYS = {

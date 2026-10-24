@@ -8127,3 +8127,64 @@ def test_lex_volume_thresholds(model: str, expected: set[str]) -> None:
     keys = set(sensor_module.sensor_keys_for_status(status))
 
     assert keys & {"getVS1", "getVS2", "getVS3"} == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("SyrSafeTechV4", {"getLWT", "getSLO", "getSMF", "getSOF"}),
+        # getSOF is reported empty by these captures
+        ("SyrSafeTechPlus", {"getLWT", "getSLO", "getSMF"}),
+        ("SyrTrioDFRLS", {"getLWT", "getSLO", "getSMF"}),
+        # The 10 SL reports no getSMF/getSOF
+        ("SyrLEXplus10SL", {"getLWT", "getSLO"}),
+        # Self-learning settings are stubs on the MultiController roles
+        ("SyrTrioLock", {"getLWT"}),
+        ("ConelClearProLeakProtection", {"getLWT"}),
+        # Filling controller: no leak protection
+        ("ConelClearProFill", set()),
+    ],
+)
+def test_leak_protection_settings(model: str, expected: set[str]) -> None:
+    """Leakage warning threshold and self-learning settings follow the model allowlists."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    assert status is not None
+
+    keys = set(sensor_module.sensor_keys_for_status(status))
+
+    assert keys & {"getLWT", "getSLO", "getSMF", "getSOF"} == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("SyrSafeTechV4", 2.0),
+        ("SyrSafeTechPlus", 1.0),
+        ("ConelClearProFill", 1.0),
+        # No conductivity measurement on these models
+        ("SyrTrioDFRLS", None),
+        ("SyrTrioLock", None),
+    ],
+)
+def test_conductivity_factor(
+    create_mock_coordinator, model: str, expected: float | None
+) -> None:
+    """Conductivity factor (getCNF): raw 5-50 is shown as 0.5-5.0, only on models that measure conductivity."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    assert status is not None
+
+    keys = set(sensor_module.sensor_keys_for_status(status))
+    if expected is None:
+        assert "getCNF" not in keys
+        return
+
+    assert "getCNF" in keys
+    data = {"devices": [{"id": "d1", "name": "D1", "status": status}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCNF")
+    assert sensor.native_value == expected

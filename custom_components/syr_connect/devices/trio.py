@@ -54,9 +54,12 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Self-Learning Phase (genuinely active in both fixtures) ---
     "getSLE",
     "getSLF",
+    "getSLO",
     "getSLP",
     "getSLT",
     "getSLV",
+    "getSMF",
+    "getSOF",
     # --- Microleakage Test (genuinely active in both fixtures) ---
     "getDBD",
     "getDMA",
@@ -64,7 +67,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getDSV",
     "getDTT",
     "getNPS",
-    # --- Leak Protection (deactivation timer, tied to the profiles below) ---
+    # --- Leak Protection (warning threshold; deactivation timer, tied to the profiles below) ---
+    "getLWT",
     "getTMP",
     # --- Leak Protection Profiles 1-8 (core feature of this model) ---
     "getPA1",
@@ -167,7 +171,10 @@ SWITCH_SUPPORTED_KEYS = {
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
+    "get71",
     "getBUZ",
+    "getSFV",
+    "getVTO",
 }
 
 # setSIR (regeneration) deliberately excluded - no softener/regeneration hardware

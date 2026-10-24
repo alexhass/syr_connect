@@ -77,7 +77,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getSTA",
     # --- Alarm Duration ---
     "getALD",
-    # --- Leak Protection (deactivation timer, tied to the profiles below) ---
+    # --- Leak Protection (warning threshold; deactivation timer, tied to the profiles below) ---
+    "getLWT",
     "getTMP",
     # --- Leak Protection Profiles 1-8 (core feature of this model) ---
     "getPA1",
@@ -191,7 +192,10 @@ SWITCH_SUPPORTED_KEYS = {
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
+    "get71",
     "getBUZ",
+    "getSFV",
+    "getVTO",
 }
 
 # setSIR (no regeneration) deliberately excluded. setDEX (microleakage test) is

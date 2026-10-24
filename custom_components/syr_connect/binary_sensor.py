@@ -1,7 +1,9 @@
 """Binary sensor platform for SYR Connect."""
 
+from collections.abc import Callable
+from dataclasses import dataclass
 import logging
-from typing import override
+from typing import Any, Literal, override
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -24,18 +26,95 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
+# Devices from this device kind (dk) on report flags as True/False instead of 0/1. With the
+# change, the sensor settings (getTSD/getPSD/getCSD) flipped their meaning, see
+# docs/syrconnect-protocol.md.
+_SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK = 1100
+
+
+def _is_empty(value: Any) -> bool:
+    """Return True for a missing value (None or blank text)."""
+    return value is None or str(value).strip() == ""
+
+
+def _sensor_active(status: dict[str, Any], value: Any) -> bool | None:
+    """Return whether a measuring sensor is active (getTSD/getPSD/getCSD).
+
+    Formats:
+    - dk < 1100: "0" -> active, "1" -> deactivated
+    - dk >= 1100: "True" -> active, "False" -> deactivated
+
+    Args:
+        status: Device status, used to detect the model and its device kind (dk)
+        value: Raw value of the setting
+
+    Returns:
+        True if the sensor is active, False if deactivated, None for an empty value
+    """
+    if _is_empty(value):
+        return None
+    dk = detect_model(status).get("dk")
+    if isinstance(dk, int) and dk >= _SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK:
+        return is_value_true(value)
+    return not is_value_true(value)
+
+
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectBinarySensorEntityDescription(BinarySensorEntityDescription):
+    """Describes a SYR Connect binary sensor; `key` is the status key (e.g. "getBUZ")."""
+
+    # Hide the binary sensor while its value is empty (None or blank text)
+    hidden_when: Literal["empty"] | None = None
+    # Compute the state for keys whose meaning differs from a plain 0/1 flag
+    is_on_fn: Callable[[dict[str, Any], Any], bool | None] | None = None
+
+
 # Descriptions of all binary sensors
-_SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[BinarySensorEntityDescription, ...] = (
-    BinarySensorEntityDescription(
+_SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
+    SyrConnectBinarySensorEntityDescription, ...
+] = (
+    SyrConnectBinarySensorEntityDescription(
+        key="get71",  # Leak protection deactivated (on = deactivated)
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectBinarySensorEntityDescription(
         key="getBUZ",  # Buzzer on/off
         device_class=BinarySensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    SyrConnectBinarySensorEntityDescription(
+        key="getCSD",  # Conductivity sensor active (on = active)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
+        is_on_fn=_sensor_active,
+    ),
+    SyrConnectBinarySensorEntityDescription(
+        key="getPSD",  # Pressure sensor active (on = active)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
+        is_on_fn=_sensor_active,
+    ),
+    SyrConnectBinarySensorEntityDescription(
+        key="getSFV",  # New firmware available (checked at startup and every 6 h)
+        device_class=BinarySensorDeviceClass.UPDATE,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectBinarySensorEntityDescription(
+        key="getTSD",  # Temperature sensor active (on = active)
+        entity_category=EntityCategory.DIAGNOSTIC,
+        hidden_when="empty",
+        is_on_fn=_sensor_active,
+    ),
+    SyrConnectBinarySensorEntityDescription(
+        key="getVTO",  # Valve test running
+        device_class=BinarySensorDeviceClass.RUNNING,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
-_SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS: dict[str, BinarySensorEntityDescription] = {
-    description.key: description for description in _SYR_CONNECT_BINARY_SENSOR_TYPES
-}
+_SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS: dict[
+    str, SyrConnectBinarySensorEntityDescription
+] = {description.key: description for description in _SYR_CONNECT_BINARY_SENSOR_TYPES}
 
 # Supported keys for the binary_sensor platform — used by registry_cleanup to remove stale entries.
 _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS = set(_SYR_CONNECT_BINARY_SENSOR_DESCRIPTIONS)
@@ -83,7 +162,13 @@ async def async_setup_entry(
         # Create binary sensors for boolean status values
         for description in _SYR_CONNECT_BINARY_SENSOR_TYPES:
             sensor_key = description.key
-            if sensor_key in supported_binary_keys and sensor_key in status:
+            if (
+                sensor_key in supported_binary_keys
+                and sensor_key in status
+                and not (
+                    description.hidden_when == "empty" and _is_empty(status[sensor_key])
+                )
+            ):
                 entities.append(
                     SyrConnectBinarySensor(
                         coordinator,
@@ -99,6 +184,8 @@ async def async_setup_entry(
 
 class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
     """Representation of a SYR Connect binary sensor."""
+
+    entity_description: SyrConnectBinarySensorEntityDescription
 
     def __init__(
         self,
@@ -132,5 +219,8 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
         """
         if self._device is None:
             return None
+        value = self._status.get(self._sensor_key)
+        if self.entity_description.is_on_fn is not None:
+            return self.entity_description.is_on_fn(self._status, value)
         # An unknown value (missing, empty) is shown as off
-        return is_value_true(self._status.get(self._sensor_key))
+        return is_value_true(value)

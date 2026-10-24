@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Leak protection",
+        "state": {
+          "false": "Active",
+          "true": "Deactivated"
+        }
+      },
       "getbuz": {
         "name": "Buzzer on alarm",
         "state": {
           "false": "Disabled",
           "true": "Enabled"
         }
+      },
+      "getcsd": {
+        "name": "Conductivity sensor",
+        "state": {
+          "false": "Deactivated",
+          "true": "Active"
+        }
+      },
+      "getpsd": {
+        "name": "Pressure sensor",
+        "state": {
+          "false": "Deactivated",
+          "true": "Active"
+        }
+      },
+      "getsfv": {
+        "name": "Firmware check"
+      },
+      "gettsd": {
+        "name": "Temperature sensor",
+        "state": {
+          "false": "Deactivated",
+          "true": "Active"
+        }
+      },
+      "getvto": {
+        "name": "Valve test"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Conductivity"
       },
+      "getcnf": {
+        "name": "Conductivity factor"
+      },
       "getcoa": {
         "name": "Automatic backwash counter"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Last dispensed volume"
+      },
+      "getlwt": {
+        "name": "Leakage warning threshold"
       },
       "getmac": {
         "name": "MAC address"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Flow in self-learning phase"
       },
+      "getslo": {
+        "name": "Offset in self-learning phase (volume and time)"
+      },
       "getslp": {
         "name": "Duration of self-learning phase"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Volume in self-learning phase"
+      },
+      "getsmf": {
+        "name": "Minimum flow in self-learning phase"
+      },
+      "getsof": {
+        "name": "Offset in self-learning phase (flow)"
       },
       "getsre": {
         "name": "Regeneration active",

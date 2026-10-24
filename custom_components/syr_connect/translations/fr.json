@@ -64,12 +64,46 @@
   },
   "entity": {
     "binary_sensor": {
+      "get71": {
+        "name": "Protection contre les fuites",
+        "state": {
+          "false": "Active",
+          "true": "Désactivée"
+        }
+      },
       "getbuz": {
         "name": "Avertisseur en cas d'alarme",
         "state": {
           "false": "Désactivé",
           "true": "Activé"
         }
+      },
+      "getcsd": {
+        "name": "Capteur de conductivité",
+        "state": {
+          "false": "Désactivé",
+          "true": "Actif"
+        }
+      },
+      "getpsd": {
+        "name": "Capteur de pression",
+        "state": {
+          "false": "Désactivé",
+          "true": "Actif"
+        }
+      },
+      "getsfv": {
+        "name": "Vérification du micrologiciel"
+      },
+      "gettsd": {
+        "name": "Capteur de température",
+        "state": {
+          "false": "Désactivé",
+          "true": "Actif"
+        }
+      },
+      "getvto": {
+        "name": "Test de vanne"
       }
     },
     "button": {
@@ -561,6 +595,9 @@
       "getcnd": {
         "name": "Conductivité"
       },
+      "getcnf": {
+        "name": "Facteur de conductivité"
+      },
       "getcoa": {
         "name": "Compteur de contre-lavages automatiques"
       },
@@ -731,6 +768,9 @@
       },
       "getltv": {
         "name": "Dernier volume distribué"
+      },
+      "getlwt": {
+        "name": "Seuil d'avertissement de fuite"
       },
       "getmac": {
         "name": "Adresse MAC"
@@ -1274,6 +1314,9 @@
       "getslf": {
         "name": "Débit en phase d'apprentissage"
       },
+      "getslo": {
+        "name": "Marge en phase d'apprentissage (volume et temps)"
+      },
       "getslp": {
         "name": "Durée de la phase d'apprentissage"
       },
@@ -1282,6 +1325,12 @@
       },
       "getslv": {
         "name": "Volume en phase d'apprentissage"
+      },
+      "getsmf": {
+        "name": "Débit minimal en phase d'apprentissage"
+      },
+      "getsof": {
+        "name": "Marge en phase d'apprentissage (débit)"
       },
       "getsre": {
         "name": "Régénération active",
