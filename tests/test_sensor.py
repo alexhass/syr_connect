@@ -16,6 +16,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
@@ -2228,9 +2229,9 @@ async def test_sensor_keys_for_status_match_created_sensors(
         "dst" if isinstance(e, SyrConnectConnectionStateSensor) else e._sensor_key
         for e in entities
     ]
-    assert sorted(sensor_module.sensor_keys_for_status(status)) == sorted(created), (
-        fixture
-    )
+    assert sorted(
+        sensor_module.sensor_keys_for_status(status, detect_model(status))
+    ) == sorted(created), fixture
 
 
 async def test_getpa_group_empty_status_keeps_registry_entries(
@@ -8123,7 +8124,7 @@ def test_lexplus_has_only_one_tank(model: str) -> None:
     status = ResponseParser().parse_device_status_response(xml)
     assert status is not None
 
-    keys = set(sensor_module.sensor_keys_for_status(status))
+    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
 
     assert {"getCS1", "getSS1", "getSV1"} <= keys
     assert not keys & {"getCS2", "getCS3", "getSS2", "getSS3", "getSV2", "getSV3"}
@@ -8146,7 +8147,7 @@ def test_lex_volume_thresholds(model: str, expected: set[str]) -> None:
     status = ResponseParser().parse_device_status_response(xml)
     assert status is not None
 
-    keys = set(sensor_module.sensor_keys_for_status(status))
+    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
 
     assert keys & {"getVS1", "getVS2", "getVS3"} == expected
 
@@ -8175,7 +8176,7 @@ def test_leak_protection_settings(model: str, expected: set[str]) -> None:
     status = ResponseParser().parse_device_status_response(xml)
     assert status is not None
 
-    keys = set(sensor_module.sensor_keys_for_status(status))
+    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
 
     assert keys & {"getLWT", "getSLO", "getSMF", "getSOF"} == expected
 
@@ -8212,7 +8213,7 @@ def test_self_learning_and_microleakage_follow_official_matrix(
         (Path(__file__).parent / "fixtures/json" / fixture).read_text(encoding="utf-8")
     )
 
-    keys = set(sensor_module.sensor_keys_for_status(status))
+    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
 
     assert keys & (_SELF_LEARNING_KEYS | _MICROLEAKAGE_KEYS) == expected
 
@@ -8298,7 +8299,9 @@ def test_sensor_tmz_follows_allowlists(model: str, expected: bool) -> None:
     status = ResponseParser().parse_device_status_response(xml)
     assert status is not None
 
-    assert ("getTMZ" in sensor_module.sensor_keys_for_status(status)) is expected
+    assert (
+        "getTMZ" in sensor_module.sensor_keys_for_status(status, detect_model(status))
+    ) is expected
 
 
 @pytest.mark.parametrize(
@@ -8322,7 +8325,7 @@ def test_conductivity_factor(
     status = ResponseParser().parse_device_status_response(xml)
     assert status is not None
 
-    keys = set(sensor_module.sensor_keys_for_status(status))
+    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
     if expected is None:
         assert "getCNF" not in keys
         return

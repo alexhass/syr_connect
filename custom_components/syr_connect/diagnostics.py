@@ -18,8 +18,7 @@ from .api_xml import SyrConnectXmlAPI
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
-from .helpers import is_empty_ip, mask_ug_value
-from .models import detect_model
+from .helpers import get_device_model, is_empty_ip, mask_ug_value
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,8 +56,7 @@ def _local_json_base_path(device: SyrConnectDevice) -> str | None:
     to a model is therefore enough to include its local `/get/all` data in diagnostics,
     even when the device is set up via the cloud (XML) API.
     """
-    status = device.get("status")
-    base_path = detect_model(status).base_path
+    base_path = get_device_model(device).base_path
     return base_path or None
 
 
@@ -503,11 +501,11 @@ def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
     status = device.get("status", {})
 
     # Extract model information
-    model_info = detect_model(status)
+    model_info = get_device_model(device)
     model_display = model_info.display_name
 
     # The sensors the integration creates for this status, with the same rules as the setup
-    visible_keys = sensor_keys_for_status(status)
+    visible_keys = sensor_keys_for_status(status, model_info)
 
     device_info = {
         "id": device.get("id"),

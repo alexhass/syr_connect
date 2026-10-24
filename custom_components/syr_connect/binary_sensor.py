@@ -17,8 +17,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
-from .helpers import get_model_supported_keys, is_value_true, registry_cleanup
-from .models import detect_model
+from .helpers import (
+    get_device_model,
+    get_model_supported_keys,
+    is_value_true,
+    registry_cleanup,
+)
+from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +42,7 @@ def _is_empty(value: Any) -> bool:
     return value is None or str(value).strip() == ""
 
 
-def _sensor_active(status: dict[str, Any], value: Any) -> bool | None:
+def _sensor_active(model: SyrConnectModel, value: Any) -> bool | None:
     """Return whether a measuring sensor is active (getTSD/getPSD/getCSD).
 
     Formats:
@@ -45,7 +50,7 @@ def _sensor_active(status: dict[str, Any], value: Any) -> bool | None:
     - dk >= 1100: "True" -> active, "False" -> deactivated
 
     Args:
-        status: Device status, used to detect the model and its device kind (dk)
+        model: Detected model of the device, for its device kind (dk)
         value: Raw value of the setting
 
     Returns:
@@ -53,7 +58,7 @@ def _sensor_active(status: dict[str, Any], value: Any) -> bool | None:
     """
     if _is_empty(value):
         return None
-    dk = detect_model(status).dk
+    dk = model.dk
     if dk is not None and dk >= _SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK:
         return is_value_true(value)
     return not is_value_true(value)
@@ -66,7 +71,7 @@ class SyrConnectBinarySensorEntityDescription(BinarySensorEntityDescription):
     # Hide the binary sensor while its value is empty (None or blank text)
     hidden_when: Literal["empty"] | None = None
     # Compute the state for keys whose meaning differs from a plain 0/1 flag
-    is_on_fn: Callable[[dict[str, Any], Any], bool | None] | None = None
+    is_on_fn: Callable[[SyrConnectModel, Any], bool | None] | None = None
 
 
 # Descriptions of all binary sensors
@@ -159,7 +164,7 @@ async def async_setup_entry(
         device_name = device["name"]
         status = device.get("status", {})
         supported_binary_keys = get_model_supported_keys(
-            detect_model(status),
+            get_device_model(device),
             "binary_sensor",
             _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS,
         )
@@ -226,6 +231,6 @@ class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):
             return None
         value = self._status.get(self._sensor_key)
         if self.entity_description.is_on_fn is not None:
-            return self.entity_description.is_on_fn(self._status, value)
+            return self.entity_description.is_on_fn(self.device_model, value)
         # An unknown value (missing, empty) is shown as off
         return is_value_true(value)

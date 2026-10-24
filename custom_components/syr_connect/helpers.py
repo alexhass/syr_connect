@@ -25,7 +25,7 @@ from .const import (
     DOMAIN,
 )
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
-from .models import SyrConnectModel, detect_model
+from .models import UNKNOWN_MODEL, SyrConnectModel, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -122,6 +122,26 @@ def get_device(
     return None
 
 
+def get_device_model(device: SyrConnectDevice | None) -> SyrConnectModel:
+    """Return the model of a device, as detected by the coordinator.
+
+    Device data that was not built by the coordinator has no stored model; it is
+    detected from the status instead.
+
+    Args:
+        device: The device from the coordinator data, or None if it is missing
+
+    Returns:
+        The detected model, or `UNKNOWN_MODEL` without a device
+    """
+    if device is None:
+        return UNKNOWN_MODEL
+    model = device.get("model")
+    if model is not None:
+        return model
+    return detect_model(device.get("status"))
+
+
 def is_device_available(coordinator: Any, device_id: str) -> bool:
     """Return whether the entities of a device are available.
 
@@ -170,7 +190,7 @@ def build_device_info(
         status = device.get("status", {})
 
         # Get human-friendly model display name and manufacturer
-        detected = detect_model(status)
+        detected = get_device_model(device)
         model = detected.display_name
         manufacturer = detected.manufacturer
         configuration_url = coordinator_data.get("configuration_url")
@@ -438,7 +458,7 @@ def registry_cleanup(
 
             # Scope the allowlist to the detected model (falls back to allowed_keys
             # unchanged for models that haven't opted into per-model key lists).
-            model_info = detect_model(status)
+            model_info = get_device_model(device)
             device_allowed_keys = get_model_supported_keys(
                 model_info, domain, allowed_keys
             )
@@ -1108,11 +1128,11 @@ def _parse_ab_raw(val: Any) -> bool | None:
     return None
 
 
-def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
+def get_sensor_ala_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getALA alarm code to internal translation key.
 
     Args:
-        status: Flattened device status dict (used to detect model).
+        model: Detected model of the device (selects the alarm code family).
         raw_code: Raw code value from the API (e.g. "FF", "A5", "0").
 
     Returns:
@@ -1125,15 +1145,8 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     code = str(raw_code)
     code_upper = code.strip().upper()
 
-    # Detect model from status (expect flattened attributes)
-    try:
-        model_info = detect_model(status or {})
-    except (ValueError, KeyError, AttributeError, TypeError) as err:
-        _LOGGER.debug("Failed to detect model for ALA mapping: %s", err)
-        return (None, code)
-
     # Model-specific families take precedence; every other model (including unknown ones) uses the generic codes.
-    profile = model_info.device_profile
+    profile = model.device_profile
     codes = (
         profile.ala_codes
         if profile is not None and profile.ala_codes is not None
@@ -1144,11 +1157,11 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     return (mapped, code) if mapped is not None else (None, code)
 
 
-def get_sensor_not_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
+def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getNOT notification code to internal translation key.
 
     Args:
-        status: Device status dict (unused but kept for signature parity)
+        model: Detected model of the device (unused but kept for signature parity)
         raw_code: Raw code value from the API (e.g. "01", "FF")
 
     Returns:
@@ -1164,11 +1177,11 @@ def get_sensor_not_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
     return (mapped, code) if mapped is not None else (None, code)
 
 
-def get_sensor_wrn_map(status: dict[str, Any], raw_code: Any) -> tuple[str | None, str]:
+def get_sensor_wrn_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getWRN warning code to internal translation key.
 
     Args:
-        status: Device status dict (unused but kept for signature parity)
+        model: Detected model of the device (unused but kept for signature parity)
         raw_code: Raw code value from the API (e.g. "01", "FF")
 
     Returns:

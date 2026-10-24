@@ -11,8 +11,10 @@ from .helpers import (
     build_entity_id,
     build_unique_id,
     get_device,
+    get_device_model,
     is_device_available,
 )
+from .models import SyrConnectModel
 
 
 class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
@@ -86,6 +88,11 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         """Return the status of this entity's device; empty if the device is missing."""
         device = self._device
         return device.get("status", {}) if device is not None else {}
+
+    @property
+    def device_model(self) -> SyrConnectModel:
+        """Return the detected model of this entity's device."""
+        return get_device_model(self._device)
 
     @property
     @override

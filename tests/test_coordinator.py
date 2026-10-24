@@ -27,6 +27,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
 )
+from custom_components.syr_connect.models import UNKNOWN_MODEL
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import (
@@ -322,6 +323,51 @@ async def test_coordinator_optimistic_update(
         assert device["available"] is True
 
 
+async def test_coordinator_optimistic_update_detects_model_again(
+    hass: HomeAssistant, setup_in_progress_config_entry
+) -> None:
+    """An optimistic update detects the model again from the changed status."""
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
+    ) as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
+        mock_api.get_devices = AsyncMock(
+            return_value=[
+                {
+                    "id": "device1",
+                    "name": "Test Device",
+                    "project_id": "project1",
+                    "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                }
+            ]
+        )
+        mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
+        mock_api.set_device_status = AsyncMock(return_value=True)
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            config_data,
+            60,
+        )
+        coordinator.config_entry = setup_in_progress_config_entry
+        await coordinator.async_config_entry_first_refresh()
+        assert coordinator.data is not None
+        assert coordinator.data["devices"][0]["model"] is UNKNOWN_MODEL
+
+        await coordinator.async_set_device_value("device1", "setCNA", "LEXplus10")
+
+        assert coordinator.data["devices"][0]["model"].name == "lexplus10"
+
+
 async def test_coordinator_device_not_found_error(
     hass: HomeAssistant, setup_in_progress_config_entry
 ) -> None:
@@ -510,6 +556,7 @@ async def test_coordinator_device_status_none(
         device = coordinator.data["devices"][0]
         assert device["id"] == "device1"
         assert device["status"] == {}
+        assert device["model"] is UNKNOWN_MODEL
         assert device["available"] is True
 
 
@@ -1165,6 +1212,31 @@ async def test_fetch_device_status_no_ignore_key_keeps_status(
 
         assert isinstance(result, dict)
         assert result.get("status", {}).get("getPRS") == "75"
+
+
+async def test_fetch_device_status_stores_detected_model(
+    hass: HomeAssistant,
+) -> None:
+    """The model is detected from the fetched status and stored on the device."""
+
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
+    ) as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.session_data = "test_session"
+        mock_api.projects = [{"id": "p1", "name": "P1"}]
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.get_device_status = AsyncMock(return_value={"getCNA": "LEXplus10"})
+        mock_api_class.return_value = mock_api
+
+        config_data = {"username": "u", "password": "p"}
+        coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+
+        device = {"id": "dev1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
+
+        result = await coord._fetch_device_status(device)
+
+        assert result["model"].name == "lexplus10"
 
 
 async def test_coordinator_unexpected_exception_in_update(

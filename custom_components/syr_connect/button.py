@@ -35,8 +35,13 @@ from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
-from .helpers import find_entity_id, get_model_supported_keys, registry_cleanup
-from .models import UNKNOWN_MODEL, detect_model
+from .helpers import (
+    find_entity_id,
+    get_device_model,
+    get_model_supported_keys,
+    registry_cleanup,
+)
+from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,13 +95,13 @@ def _is_active_code(raw: object) -> bool:
     )
 
 
-def _reset_get_key(command: str, status: dict[str, object]) -> str:
+def _reset_get_key(command: str, model: SyrConnectModel) -> str:
     """Return the status key read by a reset button (setALA, setNOT, setWRN).
 
     For setALA the key depends on the model: getALM with alarm_style_alm, otherwise getALA.
     """
     if command == "setALA":
-        return "getALM" if detect_model(status).alarm_style_alm else "getALA"
+        return "getALM" if model.alarm_style_alm else "getALA"
     return "get" + command[3:]
 
 
@@ -136,7 +141,7 @@ async def async_setup_entry(
 
         created_commands: set[str] = set()
 
-        model_info = detect_model(status)
+        model_info = get_device_model(device)
 
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
@@ -258,7 +263,9 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         if active_icon is None or self._device is None:
             return None
         status = self._status
-        if _is_active_code(status.get(_reset_get_key(self._command, status))):
+        if _is_active_code(
+            status.get(_reset_get_key(self._command, self.device_model))
+        ):
             return active_icon
         return None
 
@@ -341,12 +348,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     #   alarm_style_alm: False → field = ALA (uses getALA / setALA / clrALA)
                     #   alarm_clear_via_set: True  → reset via setALA/setALM "FF"
                     #   alarm_clear_via_set: False → reset via dedicated clrALA/clrALM endpoint
-                    try:
-                        model_info = detect_model(status)
-                    except (ValueError, KeyError, AttributeError, TypeError) as err:
-                        _LOGGER.debug("Failed to detect model for alarm reset: %s", err)
-                        model_info = UNKNOWN_MODEL
-
+                    model_info = self.device_model
                     alarm_style_alm = model_info.alarm_style_alm
                     alarm_clear_via_set = model_info.alarm_clear_via_set
                     field = "alm" if alarm_style_alm else "ala"

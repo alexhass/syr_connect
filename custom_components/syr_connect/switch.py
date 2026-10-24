@@ -16,11 +16,11 @@ from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
+    get_device_model,
     get_model_supported_keys,
     is_value_true,
     registry_cleanup,
 )
-from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ async def async_setup_entry(
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
         supported_switch_keys = get_model_supported_keys(
-            detect_model(status), "switch", _SYR_CONNECT_SWITCH_SUPPORTED_KEYS
+            get_device_model(device), "switch", _SYR_CONNECT_SWITCH_SUPPORTED_KEYS
         )
 
         for sensor_key in sorted(supported_switch_keys):

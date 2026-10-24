@@ -34,10 +34,11 @@ from .helpers import (
     get_api_locale,
     get_default_scan_interval_for_entry,
     get_device,
+    get_device_model,
     get_sensor_iwh_value,
     is_device_offline,
 )
-from .models import MODEL_SIGNATURES, detect_model
+from .models import MODEL_SIGNATURES, UNKNOWN_MODEL, detect_model
 from .repairs import delete_issue
 
 _LOGGER = logging.getLogger(__name__)
@@ -342,6 +343,7 @@ class SyrConnectDataUpdateCoordinator(
                 return self._previous_device_or_empty(device)
 
             device["status"] = status
+            device["model"] = detect_model(status)
 
             # Emergency action.
             #
@@ -407,6 +409,7 @@ class SyrConnectDataUpdateCoordinator(
             device.get("id"),
         )
         device["status"] = {}
+        device["model"] = UNKNOWN_MODEL
         device["available"] = True
         return device
 
@@ -508,6 +511,8 @@ class SyrConnectDataUpdateCoordinator(
                         )
                         device["available"] = True
                     applied = True
+                if device is not None and applied:
+                    device["model"] = detect_model(device["status"])
                 if applied:
                     self.async_set_updated_data(new_data)
                     optimistic_data = new_data
@@ -616,7 +621,7 @@ class SyrConnectDataUpdateCoordinator(
         # Returns (command, value) when an alarm must be cleared first, or None.
         clear_prefix: tuple[str, Any] | None = None
         try:
-            model_info = detect_model(status)
+            model_info = get_device_model(device)
             alarm_style_alm = model_info.alarm_style_alm
             alarm_clear_via_set = model_info.alarm_clear_via_set
             field = "alm" if alarm_style_alm else "ala"

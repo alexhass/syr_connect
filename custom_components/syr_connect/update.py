@@ -22,11 +22,11 @@ from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
+    get_device_model,
     get_model_supported_keys,
     get_sensor_not_map,
     registry_cleanup,
 )
-from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ async def async_setup_entry(
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
         supported_update_keys = get_model_supported_keys(
-            detect_model(status), "update", _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
+            get_device_model(device), "update", _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
         )
         if "getNOT" not in supported_update_keys or "getNOT" not in status:
             continue
@@ -171,7 +171,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         unchanged (no update pending).
         """
         status = self._status
-        mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
+        mapped, _raw = get_sensor_not_map(self.device_model, status.get("getNOT"))
         if mapped == "new_software_available":
             return _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
         return self.installed_version
@@ -195,7 +195,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         """Finish the progress state on getNOT == "04" (new_software_installed) or timeout."""
         if self._install_started is not None:
             status = self._status
-            mapped, _raw = get_sensor_not_map(status, status.get("getNOT"))
+            mapped, _raw = get_sensor_not_map(self.device_model, status.get("getNOT"))
             _LOGGER.debug(
                 "Firmware update %s in progress, getNOT=%s",
                 self._device_id,

@@ -2,12 +2,14 @@
 
 from typing import Any, NotRequired, TypedDict
 
+from .models import SyrConnectModel
+
 
 class SyrConnectDevice(TypedDict):
     """A device as returned by the API clients and stored in the coordinator data.
 
-    `status` and `available` are added by the coordinator once the status of the
-    device has been fetched.
+    `status`, `model` and `available` are added by the coordinator once the status of
+    the device has been fetched.
     """
 
     id: str
@@ -25,6 +27,8 @@ class SyrConnectDevice(TypedDict):
     utc_offset: NotRequired[int]
     # Set by the coordinator
     status: NotRequired[dict[str, Any]]
+    # Detected from `status` whenever the coordinator changes it
+    model: NotRequired[SyrConnectModel]
     available: NotRequired[bool]
 
 

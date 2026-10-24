@@ -20,11 +20,11 @@ from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     build_set_ab_command,
+    get_device_model,
     get_model_supported_keys,
     get_sensor_ab_value,
     registry_cleanup,
 )
-from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ async def async_setup_entry(
         # `getVLV` is a read-only status sensor and is handled exclusively
         # by the sensor platform.
         supported_valve_keys = get_model_supported_keys(
-            detect_model(status), "valve", _SYR_CONNECT_VALVE_SUPPORTED_KEYS
+            get_device_model(device), "valve", _SYR_CONNECT_VALVE_SUPPORTED_KEYS
         )
         ab_value = status.get("getAB") if "getAB" in supported_valve_keys else None
         create = False

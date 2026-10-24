@@ -48,6 +48,7 @@ from .coordinator import SyrConnectDataUpdateCoordinator
 from .entity import SyrConnectEntity
 from .helpers import (
     find_entity_id,
+    get_device_model,
     get_model_supported_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
@@ -64,7 +65,7 @@ from .helpers import (
     is_value_true,
     registry_cleanup,
 )
-from .models import detect_model
+from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -77,12 +78,12 @@ PARALLEL_UPDATES = 1
 # and the raw value of the sensor key and returns the native value.
 
 
-def _map_code(status: dict[str, Any], raw: Any, mapper: Any) -> str | None:
+def _map_code(model: SyrConnectModel, raw: Any, mapper: Any) -> str | None:
     """Map an alarm/notification/warning code to its translation key, else the raw code."""
     if raw is None:
         return None
     try:
-        mapped, raw_code = mapper(status, raw)
+        mapped, raw_code = mapper(model, raw)
         if mapped:
             return str(mapped)
         # Model unknown or no mapping found: return the raw value 1:1
@@ -102,24 +103,24 @@ def _value_ab(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> A
 
 def _value_ala(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Alarm code (getALA): translation key based on the device model."""
-    return _map_code(status, value, get_sensor_ala_map)
+    return _map_code(sensor.device_model, value, get_sensor_ala_map)
 
 
 def _value_not(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Notification code (getNOT): translation key."""
-    return _map_code(status, value, get_sensor_not_map)
+    return _map_code(sensor.device_model, value, get_sensor_not_map)
 
 
 def _value_wrn(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Warning code (getWRN): translation key."""
-    return _map_code(status, value, get_sensor_wrn_map)
+    return _map_code(sensor.device_model, value, get_sensor_wrn_map)
 
 
 def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map."""
     raw_str = str(value) if value is not None else ""
     try:
-        ala_mapped, _ = get_sensor_ala_map(status or {}, value)
+        ala_mapped, _ = get_sensor_ala_map(sensor.device_model, value)
     except ValueError, KeyError, AttributeError, TypeError:
         ala_mapped = None
     std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
@@ -2072,7 +2073,7 @@ async def async_setup_entry(
 
         # Scope the sensor allowlist to the detected model (falls back to the
         # global allowlist for models that haven't opted into per-model key lists).
-        model_info = detect_model(status)
+        model_info = get_device_model(device)
         supported_sensor_keys = get_model_supported_keys(
             model_info, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
         )
@@ -2233,7 +2234,7 @@ def _pa_group_keys(idx: int) -> list[str]:
     ]
 
 
-def _muco_conditional_key(status: dict[str, Any]) -> str | None:
+def _muco_conditional_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
     """Return getLOT or getOHW, whichever applies to the cartridge type (getCRT), or None.
 
     Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
@@ -2247,12 +2248,12 @@ def _muco_conditional_key(status: dict[str, Any]) -> str | None:
     else:
         return None
     supported_sensor_keys = get_model_supported_keys(
-        detect_model(status), "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+        model, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     )
     return key if key in supported_sensor_keys else None
 
 
-def sensor_keys_for_status(status: dict[str, Any]) -> list[str]:
+def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> list[str]:
     """Return the keys of the sensors the platform creates for a device status.
 
     Uses the same rules as the setup: the model's allowlist, the connection state (dst),
@@ -2261,12 +2262,13 @@ def sensor_keys_for_status(status: dict[str, Any]) -> list[str]:
 
     Args:
         status: The flattened device status
+        model: The detected model of the device
 
     Returns:
         The sensor keys, in the order the setup creates them
     """
     supported_sensor_keys = get_model_supported_keys(
-        detect_model(status), "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+        model, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     )
     keys = ["dst"] if status.get("dst") is not None else []
     handled_keys: set[str] = set()
@@ -2284,7 +2286,7 @@ def sensor_keys_for_status(status: dict[str, Any]) -> list[str]:
         for key, value in status.items()
         if _is_sensor_wanted(status, key, value, supported_sensor_keys, handled_keys)
     )
-    if (conditional_key := _muco_conditional_key(status)) is not None:
+    if (conditional_key := _muco_conditional_key(status, model)) is not None:
         keys.append(conditional_key)
     return keys
 
@@ -2387,7 +2389,7 @@ def _async_setup_muco_conditional_sensors(
                 device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
-                wanted = _muco_conditional_key(status)
+                wanted = _muco_conditional_key(status, get_device_model(device))
                 wanted_set = {wanted} if wanted else set()
 
                 for key in current - wanted_set:

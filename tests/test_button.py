@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from custom_components.syr_connect import button as button_mod
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.const import DOMAIN
@@ -715,39 +714,6 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(
     await button.async_press()
 
     coordinator.async_clear_device_alarm.assert_called_once_with("device2", "ala")
-    coordinator.async_set_device_value.assert_not_called()
-
-
-async def test_button_reset_detect_model_exception(
-    hass: HomeAssistant, monkeypatch
-) -> None:
-    """If detect_model raises, falls back to UNKNOWN_MODEL and calls clrALA."""
-
-    data = {
-        "devices": [
-            {
-                "id": "device3",
-                "name": "Device 3",
-                "project_id": "project1",
-                "status": {"getALA": "A5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
-
-    # Make detect_model raise
-    monkeypatch.setattr(
-        button_mod, "detect_model", lambda *_: (_ for _ in ()).throw(ValueError("boom"))
-    )
-
-    button = SyrConnectButton(coordinator, "device3", "Device 3", "setALA")
-
-    await button.async_press()
-
-    # UNKNOWN_MODEL -> alarm_clear_via_set=False -> clrALA endpoint
-    coordinator.async_clear_device_alarm.assert_called_once_with("device3", "ala")
     coordinator.async_set_device_value.assert_not_called()
 
 

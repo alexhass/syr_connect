@@ -36,13 +36,14 @@ from .entity import SyrConnectEntity
 from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
+    get_device_model,
     get_model_supported_keys,
     get_sensor_rtm_value,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
 )
-from .models import detect_model
+from .models import SyrConnectModel
 from .sensor import _SYR_CONNECT_SENSOR_DESCRIPTIONS
 
 _LOGGER = logging.getLogger(__name__)
@@ -324,7 +325,7 @@ class _SyrConnectSelectBuilder:
         self.status: dict[str, Any] = device.get("status", {})
         # Scope to the detected model (falls back to the global allowlist for
         # models that haven't opted into per-model key lists).
-        self.model_info = detect_model(self.status)
+        self.model_info = get_device_model(device)
         self.supported_select_keys = get_model_supported_keys(
             self.model_info, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
         )
@@ -578,7 +579,7 @@ def _async_setup_muco_conditional_selects(
     # Per-device set of currently added keys ("getLOT" / "getOHW")
     live_keys: dict[str, set[str]] = {}
 
-    def _wanted_key(status: dict[str, Any]) -> str | None:
+    def _wanted_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
         crt = str(status.get("getCRT") or "").strip()
         if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
             key = "getLOT"
@@ -590,7 +591,7 @@ def _async_setup_muco_conditional_selects(
         # also report getCRT/getLOT/getOHW but deliberately do not expose them; a select there
         # would even write setOHW/setLOT.
         supported_select_keys = get_model_supported_keys(
-            detect_model(status), "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
+            model, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
         )
         return key if key in supported_select_keys else None
 
@@ -619,7 +620,7 @@ def _async_setup_muco_conditional_selects(
                 device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
-                wanted = _wanted_key(status)
+                wanted = _wanted_key(status, get_device_model(device))
                 wanted_set = {wanted} if wanted else set()
 
                 for key in current - wanted_set:

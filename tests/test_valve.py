@@ -1332,7 +1332,7 @@ async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> No
 async def test_async_open_valve_alarm_detection_exception_falls_back_to_set(
     hass: HomeAssistant,
 ) -> None:
-    """When detect_model raises, alarm detection fails gracefully and valve opens normally."""
+    """When the model lookup raises, alarm detection fails gracefully and valve opens normally."""
     data = {
         "devices": [
             {
@@ -1347,7 +1347,7 @@ async def test_async_open_valve_alarm_detection_exception_falls_back_to_set(
     coordinator.async_set_device_value = AsyncMock()
 
     with patch(
-        "custom_components.syr_connect.coordinator.detect_model",
+        "custom_components.syr_connect.coordinator.get_device_model",
         side_effect=RuntimeError("boom"),
     ):
         await coordinator.async_open_valve("dev_x", "setAB", 1)

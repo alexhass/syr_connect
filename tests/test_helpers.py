@@ -25,6 +25,7 @@ from custom_components.syr_connect import (
     valve,
 )
 from custom_components.syr_connect.const import API_TYPE_JSON, DOMAIN
+from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.devices import (
     lex,
     muco_connectioncentre,
@@ -62,6 +63,7 @@ from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
     SyrConnectModel,
+    detect_model,
 )
 from custom_components.syr_connect.payload_builder import PayloadBuilder
 from custom_components.syr_connect.sensor import (
@@ -312,15 +314,20 @@ def test_get_sensor_ab_and_build_set_additional():
 def test_get_sensor_maps_and_visibility_additional():
     """Test get sensor maps and visibility additional."""
     # NOT/WRN mapping
-    assert helpers.get_sensor_not_map({}, "01")[0] == "new_software_available"
-    assert helpers.get_sensor_wrn_map({}, "01")[0] == "power_outage"
+    assert (
+        helpers.get_sensor_not_map(UNKNOWN_MODEL, "01")[0] == "new_software_available"
+    )
+    assert helpers.get_sensor_wrn_map(UNKNOWN_MODEL, "01")[0] == "power_outage"
 
     # ALA mapping with detected model
     status = {"getCNA": "LEXplus10"}
-    assert helpers.get_sensor_ala_map(status, "0")[0] == "no_alarm"
+    assert helpers.get_sensor_ala_map(detect_model(status), "0")[0] == "no_alarm"
 
     # Unknown model falls back to the generic alarm codes
-    assert helpers.get_sensor_ala_map({}, "A5")[0] == "alarm_max_flow_rate_reached"
+    assert (
+        helpers.get_sensor_ala_map(UNKNOWN_MODEL, "A5")[0]
+        == "alarm_max_flow_rate_reached"
+    )
 
     # Visibility rules
     status = {"getPA1": "true", "getPV1": "5"}
@@ -851,33 +858,33 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
 
     # ALA: LEX family (detect via getCNA)
     status_lex = {"getCNA": "LEXplus10S"}
-    mapped, raw = get_sensor_ala_map(status_lex, "0")
+    mapped, raw = get_sensor_ala_map(detect_model(status_lex), "0")
     assert mapped == "no_alarm" and raw == "0"
 
     # ALA: NeoSoft family (detect via getVER prefix and v_keys)
     status_neo = {"getVER": "NSS.V.2.028", "getRE1": "x", "getRE2": "y"}
-    mapped2, raw2 = get_sensor_ala_map(status_neo, "FF")
+    mapped2, raw2 = get_sensor_ala_map(detect_model(status_neo), "FF")
     assert mapped2 == "no_alarm" and raw2 == "FF"
 
     # ALA: Safe-T+ family (detect via getVER prefix)
     status_safet = {"getVER": "Safe-T+ V2.00e"}
-    mapped3, raw3 = get_sensor_ala_map(status_safet, "A1")
+    mapped3, raw3 = get_sensor_ala_map(detect_model(status_safet), "A1")
     assert mapped3 == "alarm_safet_valve_cannot_be_operated" and raw3 == "A1"
 
     # ALA: unknown model -> generic codes
-    mapped4, raw4 = get_sensor_ala_map({}, "A5")
+    mapped4, raw4 = get_sensor_ala_map(UNKNOWN_MODEL, "A5")
     assert mapped4 == "alarm_max_flow_rate_reached" and raw4 == "A5"
 
     # NOT mapping
-    mapped_not, raw_not = get_sensor_not_map({}, "01")
+    mapped_not, raw_not = get_sensor_not_map(UNKNOWN_MODEL, "01")
     assert mapped_not == "new_software_available" and raw_not == "01"
-    mapped_not2, raw_not2 = get_sensor_not_map({}, "")
+    mapped_not2, raw_not2 = get_sensor_not_map(UNKNOWN_MODEL, "")
     assert mapped_not2 == "no_notification" and raw_not2 == ""
 
     # WRN mapping
-    mapped_wrn, raw_wrn = get_sensor_wrn_map({}, "02")
+    mapped_wrn, raw_wrn = get_sensor_wrn_map(UNKNOWN_MODEL, "02")
     assert mapped_wrn == "salt_supply_low" and raw_wrn == "02"
-    mapped_wrn2, raw_wrn2 = get_sensor_wrn_map({}, None)
+    mapped_wrn2, raw_wrn2 = get_sensor_wrn_map(UNKNOWN_MODEL, None)
     assert mapped_wrn2 is None and raw_wrn2 == ""
 
 
@@ -910,10 +917,10 @@ def test_get_sensor_ab_invalid_numeric_values() -> None:
 
 def test_mapping_none_inputs() -> None:
     """Ensure mapping functions handle None/empty raw codes."""
-    mapped_ala, raw_ala = get_sensor_ala_map({}, None)
+    mapped_ala, raw_ala = get_sensor_ala_map(UNKNOWN_MODEL, None)
     assert mapped_ala is None and raw_ala == ""
 
-    mapped_not, raw_not = get_sensor_not_map({}, None)
+    mapped_not, raw_not = get_sensor_not_map(UNKNOWN_MODEL, None)
     assert mapped_not is None and raw_not == ""
 
 
@@ -1453,16 +1460,6 @@ def test_get_sensor_rtm_invalid_values() -> None:
     assert helpers.get_sensor_rtm_value({"getRTH": "", "getRTM": "12:60"}) is None
 
 
-def test_get_sensor_ala_map_detect_model_raises() -> None:
-    """If detect_model raises an exception, get_sensor_ala_map should return (None, raw)."""
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        side_effect=ValueError("boom"),
-    ):
-        mapped, raw = helpers.get_sensor_ala_map({}, "A1")
-        assert mapped is None and raw == "A1"
-
-
 def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
     """Test group-controlled visibility, getCS1 at zero, and empty-IP exclusions."""
     # Group-controlled: getPA1 false -> getPV1 hidden
@@ -1498,62 +1495,41 @@ def test_get_default_scan_interval_entry_getattr_raises() -> None:
 
 def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
     """Known models but with unmapped raw codes should return (None, raw)."""
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("lexplus10"),
-    ):
-        mapped, raw = get_sensor_ala_map({"getCNA": "LEXplus10"}, "ZZ")
-        assert mapped is None and raw == "ZZ"
+    model = _signature("lexplus10")
+    mapped, raw = get_sensor_ala_map(model, "ZZ")
+    assert mapped is None and raw == "ZZ"
 
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("safetplus"),
-    ):
-        mapped, raw = get_sensor_ala_map({"getVER": "Safe-T+ V2"}, "ZZ")
-        assert mapped is None and raw == "ZZ"
+    model = _signature("safetplus")
+    mapped, raw = get_sensor_ala_map(model, "ZZ")
+    assert mapped is None and raw == "ZZ"
 
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("neosoft2500"),
-    ):
-        mapped, raw = get_sensor_ala_map({"getVER": "NSS"}, "ZZ")
-        assert mapped is None and raw == "ZZ"
+    model = _signature("neosoft2500")
+    mapped, raw = get_sensor_ala_map(model, "ZZ")
+    assert mapped is None and raw == "ZZ"
 
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("safefloor"),
-    ):
-        mapped, raw = get_sensor_ala_map({}, "ZZ")
-        assert mapped is None and raw == "ZZ"
+    model = _signature("safefloor")
+    mapped, raw = get_sensor_ala_map(model, "ZZ")
+    assert mapped is None and raw == "ZZ"
 
 
 def test_get_sensor_ala_map_safefloor_known_codes() -> None:
     """SafeFloor model maps its alarm codes correctly."""
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("safefloor"),
-    ):
-        mapped, raw = get_sensor_ala_map({}, "A0X0000")
-        assert mapped == "no_alarm" and raw == "A0X0000"
+    model = _signature("safefloor")
+    mapped, raw = get_sensor_ala_map(model, "A0X0000")
+    assert mapped == "no_alarm" and raw == "A0X0000"
 
-        mapped, raw = get_sensor_ala_map({}, "A0X0004")
-        assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
+    mapped, raw = get_sensor_ala_map(model, "A0X0004")
+    assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
 
 
 def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
     """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("safetplus"),
-    ):
-        assert get_sensor_ala_map({}, "LowBat") == ("alarm_battery_low", "LowBat")
-        assert get_sensor_ala_map({}, "weakbat") == ("alarm_battery_weak", "weakbat")
+    model = _signature("safetplus")
+    assert get_sensor_ala_map(model, "LowBat") == ("alarm_battery_low", "LowBat")
+    assert get_sensor_ala_map(model, "weakbat") == ("alarm_battery_weak", "weakbat")
 
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=_signature("neosoft2500"),
-    ):
-        assert get_sensor_ala_map({}, "a1")[0] == "alarm_end_switch"
+    model = _signature("neosoft2500")
+    assert get_sensor_ala_map(model, "a1")[0] == "alarm_end_switch"
 
 
 def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
@@ -1573,11 +1549,7 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
         if not device_file.startswith(families):
             continue
         code = "0" if device_file.startswith("lex") else "FF"
-        with patch(
-            "custom_components.syr_connect.helpers.detect_model",
-            return_value=signature,
-        ):
-            mapped, _raw = get_sensor_ala_map({}, code)
+        mapped, _raw = get_sensor_ala_map(signature, code)
         assert mapped == "no_alarm", signature.name
         checked += 1
     assert checked > 40
@@ -1586,24 +1558,21 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
 def test_get_sensor_ala_map_models_without_device_profile() -> None:
     """Models without a device profile use the generic alarm codes."""
     for name in ("conelmuco", "takemuco", "triols", "pontosbase", "syrmuco"):
-        with patch(
-            "custom_components.syr_connect.helpers.detect_model",
-            return_value=_signature(name),
-        ):
-            assert get_sensor_ala_map({}, "A1")[0] == "alarm_end_switch", name
+        model = _signature(name)
+        assert get_sensor_ala_map(model, "A1")[0] == "alarm_end_switch", name
 
 
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
     """Test get sensor not and wrn map unmapped and none."""
     # unmapped code
-    mapped_not, raw_not = get_sensor_not_map({}, "ZZ")
+    mapped_not, raw_not = get_sensor_not_map(UNKNOWN_MODEL, "ZZ")
     assert mapped_not is None and raw_not == "ZZ"
 
     # none input returns empty raw
-    mapped_not2, raw_not2 = get_sensor_not_map({}, None)
+    mapped_not2, raw_not2 = get_sensor_not_map(UNKNOWN_MODEL, None)
     assert mapped_not2 is None and raw_not2 == ""
 
-    mapped_wrn, raw_wrn = get_sensor_wrn_map({}, "ZZ")
+    mapped_wrn, raw_wrn = get_sensor_wrn_map(UNKNOWN_MODEL, "ZZ")
     assert mapped_wrn is None and raw_wrn == "ZZ"
 
 
@@ -1762,11 +1731,8 @@ def test_get_sensor_ab_value_unexpected_exception() -> None:
 
 def test_get_sensor_ala_map_unrecognized_known_model() -> None:
     """A model without its own alarm code family uses the generic codes."""
-    with patch(
-        "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="futuredevice2100"),
-    ):
-        mapped, raw = get_sensor_ala_map({"getSRN": "X"}, "FF")
+    model = replace(UNKNOWN_MODEL, name="futuredevice2100")
+    mapped, raw = get_sensor_ala_map(model, "FF")
     assert mapped == "no_alarm"
     assert raw == "FF"
 
@@ -2040,6 +2006,31 @@ def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() 
 # ---------------------------------------------------------------------------
 # get_model_supported_keys - per-model devices/<name>.py override resolution
 # ---------------------------------------------------------------------------
+
+
+def test_get_device_model_prefers_the_stored_model() -> None:
+    """The model stored by the coordinator wins over detecting it from the status."""
+    stored = _signature("trio")
+    device: SyrConnectDevice = {
+        "id": "dev1",
+        "dclg": "dclg1",
+        "name": "Device 1",
+        "status": {"getCNA": "LEXplus10"},
+        "model": stored,
+    }
+    assert helpers.get_device_model(device) is stored
+
+
+def test_get_device_model_without_stored_model() -> None:
+    """Without a device the model is unknown; without a stored model it is detected."""
+    assert helpers.get_device_model(None) is UNKNOWN_MODEL
+    device: SyrConnectDevice = {
+        "id": "dev1",
+        "dclg": "dclg1",
+        "name": "Device 1",
+        "status": {"getCNA": "LEXplus10"},
+    }
+    assert helpers.get_device_model(device).name == "lexplus10"
 
 
 def test_get_model_supported_keys_falls_back_without_device_profile() -> None:
