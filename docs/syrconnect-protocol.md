@@ -489,6 +489,7 @@ Some further data about the device
 | getENV | "PROD" | | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel) |
 | getRTC | "1775055037" | | Device RTC as UNIX timestamp (NeoSoft, Sanibel). See also getDAT |
 | getRURL | `"https://storageiotsyr.blob..."` | | Firmware update resource URL (NeoSoft, Sanibel) |
+| getSFV | "0"<br>"False" | | Firmware check, done at startup and every 6 hours. dk < 1100: 0 = no new firmware, 1 = new firmware available. dk ≥ 1100: False = no new firmware, True = new firmware available |
 | setUPG | "" | | Triggers a firmware update (write-only). Identical implementation shared by 8 device base classes: SafeTech, SafeFloor, LEX Plus, All-in-One+, MultiController, HygBox, Dosing Pump and Trio LS. Same command in JSON and XML. Always sent with an empty value (`setUPG=""`). |
 | getFRN | "A25032111217" | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
 | getSRV | "14.02.2027" | | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel) |
@@ -617,7 +618,8 @@ Non-critical warnings, same device family as the alarm codes above.
 | getWTI | "1740" | s | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel) |
 | getWAH | "false" | | Wi-Fi AP hotspot mode flag (NeoSoft, Sanibel) |
 | getWNS | "False" | | Wi-Fi network scan flag (Trio DFR/LS) |
-| getWFC | "MyNetwork" | | Connected Wi-Fi SSID |
+| getWFC / setWFC | "MyNetwork" | | Connected Wi-Fi SSID. Setting it sets the SSID and connects to the network |
+| setWFK | "" | | Wi-Fi key, 8–64 characters (write-only) |
 | getWFR | "75" | % | Wi-Fi signal strength |
 
 ### Holiday
@@ -664,6 +666,22 @@ These settings can be set by the user.
 | getMXT / setMXT | "490" | 1/10 | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
 | getRCP / setRCP | "43200" | s | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
 | getWMP / setWMP | "3600" | s | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
+| getBPB / setBPB | "1" | | Profile change by button: 0 = locked, 1 = allowed |
+| getCNF / setCNF | "10" | 1/10 | Conductivity factor 0.5–5.0, raw value 5–50 (e.g. 10 = 1.0) |
+| getTSD / setTSD | "0"<br>"True" | | Temperature sensor setting. Value meaning depends on the API, see note below |
+| getPSD / setPSD | "0"<br>"True" | | Pressure sensor setting. Value meaning depends on the API, see note below |
+| getCSD / setCSD | "0"<br>"True" | | Conductivity sensor setting. Value meaning depends on the API, see note below |
+
+The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and changed with `set`. From dk ≥ 1100 on, the API changed from integer to boolean values, and with it the meaning of these settings flipped:
+
+| API | Devices | Sensor active | Sensor deactivated |
+| --- | --- | --- | --- |
+| Integer | dk < 1100, e.g. SafeTech (firmware `Safe-Tech V4.08`) | "0" | "1" |
+| Boolean | dk ≥ 1100, e.g. Trio DFR/LS, SafeTech+ (firmware `syr001-A-B-…`) | "True" | "False" |
+
+- Integer API: SYR's command table names the setting "Deactivate … sensor" (0 = active, 1 = deactivated, default active). A live test on a SafeTech showed `getCSD` = 1 with `getCND` = 0; after `setCSD/0`, `getCND` returned 157.
+- Boolean API: a Trio DFR/LS reports `getTSD` = `getPSD` = "False" and empty `getCEL` and `getBAR`; it has neither sensor (see the per-model validity matrix).
+- Empty values ("") are reported by devices without these sensors (NeoSoft).
 
 ### Measurements
 
@@ -743,6 +761,8 @@ These settings can be set by the user.
 | getCMS | "[2736,1881,...]" | | Monthly consumption statistics — 12-element array (Sanibel Softwater UNO A25) |
 | getTFO | "9508" | L | Peak/total consumption level |
 | getUWF | "15599" | L | Untreated water consumption |
+| getSTH | "" | | Statistics history: the last 0–100 entries as CSV |
+| getPAH | "[]" | | Parameter history: the last 0–100 entries as CSV (JSON API only; entity name exceeds 255 chars) |
 
 ### Leakage protection
 
@@ -776,9 +796,8 @@ These properties are only available on devices that contain leakage protection, 
 | getSLF | "1200" | L/h | Self-learning phase current flow |
 | getSLT | "0" | s | Self-learning phase total elapsed time |
 | getSLV | "0" | L | Self-learning phase total volume |
-| getLWT | "90" | | Leakage watchdog timeout (LEXplus10SL, SafeTech) |
+| getLWT / setLWT | "90" | % | Leakage warning threshold. Range: 80–99, default 90 (LEXplus10SL, SafeTech) |
 | getPSE | "True" | | Pressure-sensor enable flag (Trio DFR/LS, Sanibel) |
-| getSFV | "False" | | Safe-force-valve flag (Trio DFR/LS) |
 | getVTO | "False" | | Valve-timeout flag (Trio DFR/LS) |
 | getSMF | "2500" | L/h? | Flow or maintenance threshold (Trio DFR/LS, Sanibel) |
 | getLDT | "0" | s? | Leak detection timeout (SafeTech, SafeTech+) |
@@ -829,6 +848,28 @@ Available on Trio DFR/LS and SafeTech+.
 | getDSV | "0" | | Microleakage test status (read-only): 0 = not active, 1 = active, 2 = aborted due to pressure drop, 3 = skipped |
 | getDTT / setDTT | "00:00" | | Time of day when the microleakage test is executed (format `HH:MM`) |
 | getDMA / setDMA | "1" | | Sets whether a warning or an alarm becomes active after a microleakage is detected: 1 = Warning, 2 = Alarm (Trio DFR/LS, SafeTech +, TRIO Lock, SafeTech Lock) |
+
+### SafeFloor pairing
+
+Floor sensors (SafeFloor) are paired with a leak protection device by their 9-digit serial number.
+
+| Property | Example | Unit | Description |
+| --- | --- | --- | --- |
+| getFSA / setFSA | "0" | | Setting it pairs the floor sensor with the given serial number. Reading it returns the pairing status: 0 = not paired, 1 = pairing in progress (30 s timeout), 2 = OK |
+| setFSR | "123456789" | | Unpairs the floor sensor with the given serial number (write-only) |
+| setFSC | "" | | Unpairs all floor sensors (write-only) |
+
+### Access rights
+
+Some commands require extended rights. The local JSON API is logged in with `setADM(2)f` before `/get/all` (`GET /set/ADM/(2)f`).
+
+| Property | Example | Unit | Description |
+| --- | --- | --- | --- |
+| setADM | "(2)f" | | Grants SERVICE rights (write-only) |
+| setADM | "(1)" | | Grants ADMIN rights (write-only) |
+| clrADM | "" | | Resets the SERVICE/ADMIN rights (write-only) |
+
+In the official command table the A and B columns of both `setADM` rows are swapped.
 
 ### Unknown leakage protection
 
@@ -891,18 +932,13 @@ These properties are only available on devices that contain leakage protection, 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
 | getBMX | "" | | *unknown* |
-| getCNF | "10" | | *unknown* |
-| getCSD | "" | | *unknown* |
 | getEVL | "0" | | *unknown* — possibly event level |
-| getPSD | "" | | *unknown* |
 | getTURL | "" | | *unknown* — possibly test URL |
 | getCNL | "10" | | *unknown* |
-| getTSD | "" | | *unknown* |
 | getCLC | "500" | | *unknown* |
 | getCLM | "370" | | *unknown* |
 | getDVL | "501AAA12345" | | *unknown* — possibly device volume label |
 | getALL | "0" | | *unknown* |
-| getPAH | "[]" | | *unknown* — array value (JSON API only; entity name exceeds 255 chars) |
 
 ### Trio DFR/LS
 
