@@ -45,7 +45,8 @@ UNKNOWN_MODEL: dict[str, Any] = {
 #                                   for Azure-connected devices this also equals the numeric SRN prefix of newer production units.
 # - `manufacturer`:                 human-readable name of the device manufacturer
 # - `maximum_regeneration_interval`: maximum number of days between regenerations; `None` means no regeneration interval
-# - `maximum_salt_volume`:          maximum salt tank volume; `None` means no salt container.
+# - `maximum_salt_volume`:          maximum salt tank volume for the salt amount select; only set for
+#                                   models whose salt amount can be set.
 # - `name`:                         stable machine-readable model identifier returned by `detect_model()`
 #                                   (e.g. "lexplus10s"); also the default `device_file` value.
 # - `sbt`:                          cloud API device subtype - the integer `sbt` attribute in GetProjectDeviceCollections XML;
@@ -754,7 +755,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 200,
         "manufacturer": "SYR",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "neosoft",
         # TODO: Untested model.
         "srn_prefix": "200",
@@ -768,7 +768,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 206,
         "manufacturer": "SYR",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "neosoft2500",
         "srn_prefix": "206",
     },
@@ -781,7 +780,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 206,
         "manufacturer": "SYR",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "neosoft5000",
         # TODO: Untested model.
         "ver_prefix": "NSS",
@@ -797,7 +795,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 207,
         "manufacturer": "Sanibel",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "sanibelsoftwateruno",
         "srn_prefix": "207",
     },
@@ -810,7 +807,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 208,
         "manufacturer": "CONCEPT",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "conceptsingle",
         # TODO: Untested model.
         "srn_prefix": "208",
@@ -824,7 +820,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 209,
         "manufacturer": "OPTIMA",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "optimasingle",
         # TODO: Untested model.
         "srn_prefix": "209",
@@ -838,7 +833,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 210,
         "manufacturer": "CONCEPT",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "concept200duo",
         # TODO: Untested model.
         "srn_prefix": "210",
@@ -852,7 +846,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 211,
         "manufacturer": "OPTIMA",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "optimat22duo",
         # TODO: Untested model.
         "srn_prefix": "211",
@@ -866,7 +859,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 212,
         "manufacturer": "Sanibel",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "sanibelsoftwaterduo",
         # TODO: Untested model.
         "srn_prefix": "212",
@@ -880,7 +872,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 213,
         "manufacturer": "OPTIMA",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "optimaduo",
         # TODO: Untested model.
         "srn_prefix": "213",
@@ -894,7 +885,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 214,
         "manufacturer": "CONEL",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "conelclearprosofttwin",
         "srn_prefix": "214",
     },
@@ -907,7 +897,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 215,
         "manufacturer": "CONEL",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "conelclearprosoft",
         "srn_prefix": "215",
     },
@@ -920,7 +909,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 216,
         "manufacturer": "CONCEPT",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "conceptduo",
         # TODO: Untested model.
         "srn_prefix": "216",
@@ -934,7 +922,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 217,
         "manufacturer": "DITECH",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "ditechduo",
         # TODO: Untested model.
         "srn_prefix": "217",
@@ -948,7 +935,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 218,
         "manufacturer": "TAKE",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 35,
         "name": "takeduo",
         # TODO: Untested model.
         "srn_prefix": "218",
@@ -962,7 +948,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 219,
         "manufacturer": "DITECH",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "ditechsingle",
         # TODO: Untested model.
         "srn_prefix": "219",
@@ -976,7 +961,6 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 220,
         "manufacturer": "TAKE",
         "maximum_regeneration_interval": 3,
-        "maximum_salt_volume": 40,
         "name": "takesingle",
         # TODO: Untested model.
         "srn_prefix": "220",
