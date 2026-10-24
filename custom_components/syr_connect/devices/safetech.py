@@ -13,6 +13,8 @@ SYR's SafeTech command table lists them, and every fixture reports their
 defaults (10 %, 20 %, 3500 l/h, 90 %).
 """
 
+from . import SyrConnectDeviceProfile
+
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
@@ -181,3 +183,13 @@ BUTTON_SUPPORTED_KEYS = {
 VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
+
+
+PROFILE = SyrConnectDeviceProfile(
+    binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
+    button=BUTTON_SUPPORTED_KEYS,
+    select=SELECT_SUPPORTED_KEYS,
+    sensor=SENSOR_SUPPORTED_KEYS,
+    switch=SWITCH_SUPPORTED_KEYS,
+    valve=VALVE_SUPPORTED_KEYS,
+)

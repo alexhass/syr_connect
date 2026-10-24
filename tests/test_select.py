@@ -1489,7 +1489,7 @@ async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands
 ) -> None:
     """No NeoSoft rebrand sibling gets a getSV1 select.
 
-    All rebrand-only siblings sharing device_file "neosoft_single"/"neosoft_duo"
+    All rebrand-only siblings sharing the device file neosoft_single/neosoft_duo
     (CONEL/Sanibel/Concept/Optima/Ditech/TAKE) are the same NeoSoft-platform
     hardware with the same built-in salt level sensor, so none of them get a
     getSV1 select.
@@ -2584,7 +2584,7 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
 ) -> None:
     """Test async_setup_entry creates SV1 select when model is detected via SRN prefix.
 
-    Uses a synthetic signature (no `device_file`) instead of a real srn_prefix
+    Uses a synthetic signature (no `device_profile`) instead of a real srn_prefix
     from models.py, so this stays independent of per-model SELECT_SUPPORTED_KEYS
     overrides in devices/*.py (e.g. neosoft.py deliberately excludes getSV1).
     """
@@ -4085,7 +4085,7 @@ async def test_async_setup_entry_skips_hardness_selects_for_other_models(
     assert not ({"getIWH", "getOWH"} & keys)
 
 
-async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_device_file(
+async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_device_profile(
     hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
 ) -> None:
     """A model without a device file falls back to the global allowlist, which must not expose these keys."""

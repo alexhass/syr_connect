@@ -8,6 +8,25 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 import logging
 
+from .devices import (
+    SyrConnectDeviceProfile,
+    lex,
+    lexplus10s,
+    lexplus10sl,
+    muco_backwash,
+    muco_connectioncentre,
+    muco_filling,
+    muco_leakprotect,
+    muco_triolock,
+    neosoft_duo,
+    neosoft_single,
+    safefloor,
+    safetech,
+    safetechplus,
+    safetplus,
+    trio,
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -31,11 +50,12 @@ class SyrConnectModel:
     base_path: str | None
     # Exact match against the `getCNA` value
     cna_equals: str | None = None
-    # Name of a `devices/<name>.py` override file with this model's per-platform entity
-    # allowlists (see `helpers.get_model_supported_keys()`). Defaults to `name`. Set it
-    # when several signatures are rebranded variants of the same hardware (e.g. the
-    # dk=1500-1506 MultiController family), so they share one override file.
-    device_file: str | None = None
+    # Profile from a `devices/<name>.py` file with the per-platform entity allowlists
+    # and alarm codes of the model (see `helpers.get_model_supported_keys()`). Several
+    # signatures share one profile when they are rebranded variants of the same
+    # hardware (e.g. the dk=1500-1506 MultiController family). None means the global
+    # allowlists and the generic alarm codes.
+    device_profile: SyrConnectDeviceProfile | None = None
     # Human-readable model label used for `DeviceInfo.model` and the local model selector
     display_name: str
     # Cloud API deviceKind: the integer `dk` attribute in GetProjectDeviceCollections XML
@@ -92,7 +112,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     SyrConnectModel(
         base_path=None,
-        device_file="safetplus",
+        device_profile=safetplus.PROFILE,
         display_name="Safe-T+ Connect",
         dk=1,
         dkv=6,
@@ -103,7 +123,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
     SyrConnectModel(
         base_path=None,
-        device_file="safetplus",
+        device_profile=safetplus.PROFILE,
         display_name="Safe-T Master",
         dk=2,
         dkv=2,
@@ -113,7 +133,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_file="safetplus",
+        device_profile=safetplus.PROFILE,
         display_name="Safe-T Slave",
         dk=3,
         dkv=3,
@@ -123,7 +143,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_file="safetplus",
+        device_profile=safetplus.PROFILE,
         display_name="Safe-T Slave",
         dk=4,
         dkv=4,
@@ -133,7 +153,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_file="safetplus",
+        device_profile=safetplus.PROFILE,
         display_name="Safe-T Communication Module",
         dk=5,
         dkv=12,
@@ -166,7 +186,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L10",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 10 Connect",
         dk=40,
         dkv=16,
@@ -180,7 +200,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L12",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 12 Connect",
         dk=40,
         dkv=16,
@@ -194,7 +214,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L15",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 15 Connect",
         dk=40,
         dkv=16,
@@ -208,7 +228,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L20",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 20 Connect",
         dk=40,
         dkv=16,
@@ -222,7 +242,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L25",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 25 Connect",
         dk=40,
         dkv=16,
@@ -236,7 +256,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L30",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 30 Connect",
         dk=40,
         dkv=16,
@@ -250,7 +270,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L40",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 40 Connect",
         dk=40,
         dkv=16,
@@ -264,7 +284,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L50",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 50 Connect",
         dk=40,
         dkv=16,
@@ -278,7 +298,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L60",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 60 Connect",
         dk=40,
         dkv=16,
@@ -292,7 +312,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L70",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 70 Connect",
         dk=40,
         dkv=16,
@@ -306,7 +326,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L80",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 80 Connect",
         dk=40,
         dkv=16,
@@ -320,7 +340,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L90",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 90 Connect",
         dk=40,
         dkv=16,
@@ -334,7 +354,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L100",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="i-LEX 100 Connect",
         dk=40,
         dkv=16,
@@ -348,7 +368,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX10",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 10 Connect",
         dk=40,
         dkv=16,
@@ -363,7 +383,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX20",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 20 Connect",
         dk=40,
         dkv=16,
@@ -378,7 +398,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX30",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 30 Connect",
         dk=40,
         dkv=16,
@@ -393,7 +413,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX40",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 40 Connect",
         dk=40,
         dkv=16,
@@ -407,7 +427,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX60",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 60 Connect",
         dk=40,
         dkv=16,
@@ -421,7 +441,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX80",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 80 Connect",
         dk=40,
         dkv=16,
@@ -435,7 +455,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX100",
-        device_file="lex",
+        device_profile=lex.PROFILE,
         display_name="LEX 100 Connect",
         dk=40,
         dkv=16,
@@ -487,7 +507,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEXplus10",
-        device_file="lexplus10s",
+        device_profile=lexplus10s.PROFILE,
         display_name="LEX Plus 10 Connect",
         dk=80,
         dkv=25,
@@ -502,7 +522,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEXplus10S",
-        device_file="lexplus10s",
+        device_profile=lexplus10s.PROFILE,
         display_name="LEX Plus 10 S Connect",
         dk=80,
         dkv=25,
@@ -519,7 +539,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_style_alm=False,
         base_path=None,
         cna_equals="LEXplus10SL",
-        device_file="lexplus10sl",
+        device_profile=lexplus10sl.PROFILE,
         display_name="LEX Plus 10 SL Connect",
         dk=80,
         dkv=25,
@@ -549,7 +569,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         # - CONEL CLEAR PRO Bodensensor
         # - SYR SafeFloor Connect
         base_path=None,
-        device_file="safefloor",
+        device_profile=safefloor.PROFILE,
         display_name="SafeFloor Connect",
         dk=120,
         dkv=34,
@@ -560,7 +580,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_file="safefloor",
+        device_profile=safefloor.PROFILE,
         display_name="MultiSafe Floor Leak Sensor",
         dk=120,
         dkv=43,
@@ -571,7 +591,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_file="safefloor",
+        device_profile=safefloor.PROFILE,
         display_name="SafeFloor Connect",
         dk=122,
         dkv=34,
@@ -582,7 +602,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
     SyrConnectModel(
         base_path="/trio",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="SafeTech Connect",
         dk=140,
         dkv=35,
@@ -594,7 +614,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path="/safe-tec",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="SafeTech V3 Connect",
         dk=140,
         dkv=35,
@@ -604,7 +624,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path="/safe-tec",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="SafeTech V4 Connect",
         dk=140,
         dkv=35,
@@ -617,7 +637,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         # with the AXA building insurance, called "Wasserwächter". Order.-No.: 2422.25.003
         base_path=None,
         # base_path="/safe-tec",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="Water Monitor",
         dk=140,
         dkv=38,
@@ -630,7 +650,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path="/safe-tec",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="MultiSafe Leak Detector Control Valve",
         dk=140,
         dkv=42,
@@ -652,7 +672,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         base_path=None,
         # base_path="/safe-tec",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="SafeTech Connect",
         dk=141,
         dkv=35,
@@ -662,7 +682,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_file="safetechplus",
+        device_profile=safetechplus.PROFILE,
         display_name="SafeTech+ Connect",
         dk=142,
         dkv=39,
@@ -674,7 +694,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         base_path=None,
         # base_path="/safe-tec",
-        device_file="safetech",
+        device_profile=safetech.PROFILE,
         display_name="SafeTech Connect",
         dk=145,
         dkv=35,
@@ -752,7 +772,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/trio",
-        device_file="safetechplus",
+        device_profile=safetechplus.PROFILE,
         display_name="SafeTech Plus Connect",
         dk=1112,
         dkv=112,
@@ -763,7 +783,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/trio",
-        device_file="trio",
+        device_profile=trio.PROFILE,
         display_name="Trio DFR/LS Connect",
         dk=1113,
         dkv=113,
@@ -775,7 +795,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="NeoSoft Connect",
         dk=1200,
         dkv=200,
@@ -788,7 +808,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="NeoSoft 2500 Connect",
         dk=1206,
         dkv=206,
@@ -800,7 +820,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="NeoSoft 5000 Connect",
         dk=1206,
         dkv=206,
@@ -815,7 +835,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="Softwater UNO A25",
         dk=1207,
         dkv=207,
@@ -827,7 +847,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="concept Single Softening System",
         dk=1208,
         dkv=208,
@@ -840,7 +860,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="Optima Single Softening System",
         dk=1209,
         dkv=209,
@@ -853,7 +873,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="concept 200 Double Softening System",
         dk=1210,
         dkv=210,
@@ -866,7 +886,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="Optima T2.3 Double Softening System",
         dk=1211,
         dkv=211,
@@ -879,7 +899,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="Softwater DUO A25",
         dk=1212,
         dkv=212,
@@ -892,7 +912,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="Optima Double Softening System",
         dk=1213,
         dkv=213,
@@ -905,7 +925,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="CLEAR PRO SOFT TWIN",
         dk=1214,
         dkv=214,
@@ -917,7 +937,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="CLEAR PRO SOFT",
         dk=1215,
         dkv=215,
@@ -929,7 +949,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="concept Double Softening System",
         dk=1216,
         dkv=216,
@@ -942,7 +962,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="Ditech Double Softening System",
         dk=1217,
         dkv=217,
@@ -955,7 +975,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="TAKE Double Softening System",
         dk=1218,
         dkv=218,
@@ -968,7 +988,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="Ditech Single Softening System",
         dk=1219,
         dkv=219,
@@ -981,7 +1001,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="TAKE Single Softening System",
         dk=1220,
         dkv=220,
@@ -994,7 +1014,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_duo",
+        device_profile=neosoft_duo.PROFILE,
         display_name="NeoSoft Lock Connect II",
         dk=1221,
         dkv=221,
@@ -1007,7 +1027,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_file="neosoft_single",
+        device_profile=neosoft_single.PROFILE,
         display_name="NeoSoft Lock Connect I",
         dk=1222,
         dkv=222,
@@ -1027,7 +1047,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 1},
         base_path="/trio",
-        device_file="muco_leakprotect",
+        device_profile=muco_leakprotect.PROFILE,
         display_name="CLEAR PRO RETROFIT LEAKAGE PROTECTION",
         dk=1500,
         dkv=500,
@@ -1040,7 +1060,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 3},
         base_path="/trio",
-        device_file="muco_filling",
+        device_profile=muco_filling.PROFILE,
         display_name="CLEAR PRO FILL All-in-One",
         dk=1500,
         dkv=500,
@@ -1054,7 +1074,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 5},
         base_path="/trio",
-        device_file="muco_backwash",
+        device_profile=muco_backwash.PROFILE,
         display_name="CLEAR PRO MULTICONTROL-KIT",
         dk=1500,
         dkv=500,
@@ -1077,7 +1097,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 1},
         base_path="/trio",
-        device_file="muco_leakprotect",
+        device_profile=muco_leakprotect.PROFILE,
         display_name="Leak Protection Module A25",
         dk=1501,
         dkv=501,
@@ -1089,7 +1109,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 5},
         base_path="/trio",
-        device_file="muco_backwash",
+        device_profile=muco_backwash.PROFILE,
         display_name="Automatic Backwash System RSA A25",
         dk=1501,
         dkv=501,
@@ -1160,7 +1180,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 1},
         base_path="/trio",
-        device_file="muco_leakprotect",
+        device_profile=muco_leakprotect.PROFILE,
         display_name="SafeTech Lock Connect",
         dk=1506,
         dkv=506,
@@ -1173,7 +1193,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 2},
         base_path="/trio",
-        device_file="muco_connectioncentre",
+        device_profile=muco_connectioncentre.PROFILE,
         display_name="AC 3200 Connect",
         dk=1506,
         dkv=506,
@@ -1186,7 +1206,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 3},
         base_path="/trio",
-        device_file="muco_filling",
+        device_profile=muco_filling.PROFILE,
         display_name="AC All-in-One 3228 Connect",
         dk=1506,
         dkv=506,
@@ -1199,7 +1219,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 4},
         base_path="/trio",
-        device_file="muco_backwash",
+        device_profile=muco_backwash.PROFILE,
         display_name="RSA Connect",
         dk=1506,
         dkv=506,
@@ -1212,7 +1232,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 5},
         base_path="/trio",
-        device_file="muco_triolock",
+        device_profile=muco_triolock.PROFILE,
         display_name="TRIO Lock Connect",
         dk=1506,
         dkv=506,

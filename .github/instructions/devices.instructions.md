@@ -5,7 +5,8 @@ applyTo: "custom_components/syr_connect/{devices/*.py,models.py,helpers.py}"
 
 # Device files and model detection
 
-- Global allowlists are `_SYR_CONNECT_<PLATFORM>_SUPPORTED_KEYS` in the platform modules (`sensor.py`, `select.py`, …). They are built from the entity descriptions (`_SYR_CONNECT_<PLATFORM>_TYPES`); the select allowlist is a separate set, because some selects are only enabled by a device file. A model may override them per platform in `devices/<device_file>.py` with `SENSOR_SUPPORTED_KEYS`, `SELECT_SUPPORTED_KEYS`, `SWITCH_SUPPORTED_KEYS`, `BINARY_SENSOR_SUPPORTED_KEYS`, `BUTTON_SUPPORTED_KEYS`, `VALVE_SUPPORTED_KEYS` and `UPDATE_SUPPORTED_KEYS`. An override replaces the global set completely.
+- Global allowlists are `_SYR_CONNECT_<PLATFORM>_SUPPORTED_KEYS` in the platform modules (`sensor.py`, `select.py`, …). They are built from the entity descriptions (`_SYR_CONNECT_<PLATFORM>_TYPES`); the select allowlist is a separate set, because some selects are only enabled by a device file. A model may override them per platform in a device file `devices/<name>.py` with `SENSOR_SUPPORTED_KEYS`, `SELECT_SUPPORTED_KEYS`, `SWITCH_SUPPORTED_KEYS`, `BINARY_SENSOR_SUPPORTED_KEYS`, `BUTTON_SUPPORTED_KEYS` and `VALVE_SUPPORTED_KEYS`. An override replaces the global set completely.
+- Every device file collects its allowlists in `PROFILE = SyrConnectDeviceProfile(...)` (`devices/__init__.py`), with `ala_codes=ALA_CODES` when the family has its own alarm codes. The signatures in `models.py` reference it as `device_profile=<name>.PROFILE`; without a profile a model uses the global allowlists and the generic alarm codes.
 - Use positive allowlists only. Do not add exclusion lists to `MODEL_SIGNATURES`.
 - An override must still contain structurally required keys such as `dst`, otherwise `registry_cleanup()` deletes them.
 - An empty override (`set()`) is valid and means "no entities". Always check `is None` when reading an override.
@@ -13,10 +14,10 @@ applyTo: "custom_components/syr_connect/{devices/*.py,models.py,helpers.py}"
 - The official per-model validity matrix in `docs/syrconnect-protocol.md` beats fixture contents. A key that is present in a fixture can still be a stub value. Only judge by fixture for properties the matrix does not cover.
 - Fixture co-presence of a key across models does not prove it is generic. When domain knowledge and fixture data conflict, ask the maintainer.
 - Match the exact `dk`/`dkv` in `models.py` before mapping a name from the matrix to a device file. Similar names can be different products.
-- `device_file` names use underscores (valid module names) and describe the role, for example `muco_filling`. Do not use the raw `getDFM` number, its meaning differs per `dk`/`dkv` family.
+- Device file names use underscores (valid module names) and describe the role, for example `muco_filling`. Do not use the raw `getDFM` number, its meaning differs per `dk`/`dkv` family.
 - `attrs_equals` in `MODEL_SIGNATURES` is matched against the flattened status (`getXXX` keys only). `dk` and `dkv` are never present there.
 - A specific signature needs the same `srn_prefix` as its generic sibling plus its `attrs_equals`, otherwise the generic one always wins.
-- Rebrand siblings share one device file (for example all NeoSoft rebrands). A change affects the whole family, grep `device_file="<name>"` in `models.py` first.
-- Device modules are imported statically in `helpers.py` (`_DEVICE_MODULES`). Add new files there, do not use `importlib` at runtime.
-- When renaming a device file, search the whole repository for the old name. Docstrings and test dict literals reference it as plain strings.
-- A new model name must also be added to the matching bucket in `helpers.get_sensor_ala_map()`, otherwise alarm mapping silently falls back. `_SYR_CONNECT_SENSOR_ALA_CODES_SAFET` uses a different numbering than the shared NeoSoft dict.
+- Rebrand siblings share one device file (for example all NeoSoft rebrands). A change affects the whole family, grep `device_profile=<name>.PROFILE` in `models.py` first.
+- Device modules are imported statically in `models.py`. Add new files there, do not use `importlib` at runtime. `tests/test_helpers.py` checks that every device file is referenced by a signature.
+- When renaming a device file, search the whole repository for the old name. Docstrings and test names reference it as plain strings.
+- Alarm codes that differ from `_SYR_CONNECT_SENSOR_ALA_CODES_GENERIC` (`const.py`) are defined as `ALA_CODES` in the device file and passed to its `PROFILE`. `safetplus.ALA_CODES` uses a different numbering than the generic NeoSoft codes.

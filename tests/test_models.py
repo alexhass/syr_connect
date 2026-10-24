@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from unittest.mock import patch
 
+from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
 
@@ -71,7 +72,7 @@ def test_syrtriolockconnect_detection():
     assert flat is not None
     result = detect_model(flat)
     assert result.name == "syrtriolockconnect"
-    assert result.device_file == "muco_triolock"
+    assert result.device_profile is muco_triolock.PROFILE
     assert result.manufacturer == "SYR"
 
 

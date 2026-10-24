@@ -25,6 +25,8 @@ used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global sensor.py allowlist first).
 """
 
+from . import SyrConnectDeviceProfile
+
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
@@ -86,3 +88,34 @@ BUTTON_SUPPORTED_KEYS = {
 VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
+
+# Alarm codes of the Safe-T family (raw API getALA -> internal translation key)
+ALA_CODES = {
+    "A0": "alarm_safet_microleakage_detected",
+    "A1": "alarm_safet_valve_cannot_be_operated",
+    "A2": "alarm_safet_turbine_no_signal",
+    "A3": "alarm_safet_leakage_volume_reached",
+    "A4": "alarm_safet_flow_leakage_detected",
+    "A5": "alarm_safet_absence_leakage_detected",
+    "A6": "alarm_safefloor_flood",
+    "A7": "alarm_external_sensor_leakage_radio",
+    "A8": "alarm_external_sensor_leakage_cable",
+    "A9": "alarm_safet_flow_time_exceeded",
+    "AA": "alarm_temperature_sensor_faulty",
+    "AB": "alarm_battery_weak",
+    "AE": "error_no_information",
+    "FF": "no_alarm",
+    "LOWBAT": "alarm_battery_low",
+    "WEAKBAT": "alarm_battery_weak",
+}
+
+
+PROFILE = SyrConnectDeviceProfile(
+    ala_codes=ALA_CODES,
+    binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
+    button=BUTTON_SUPPORTED_KEYS,
+    select=SELECT_SUPPORTED_KEYS,
+    sensor=SENSOR_SUPPORTED_KEYS,
+    switch=SWITCH_SUPPORTED_KEYS,
+    valve=VALVE_SUPPORTED_KEYS,
+)

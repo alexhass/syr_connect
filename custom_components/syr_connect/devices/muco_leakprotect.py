@@ -3,7 +3,7 @@
 Model type: Leak protection (LS)
 
 Covers both the Leak Protection Module A25 (dkv=501) and SafeTech Lock Connect
-(dkv=506) products, which share this device_file since both are the
+(dkv=506) products, which share this device file since both are the
 "Leckageschutz" (leak protection) role of the MultiController firmware.
 
 Derived from tests/fixtures/json/SanibelLeakProtectionModuleA25_get_all.json.
@@ -46,6 +46,8 @@ Deliberately NOT included, pending confirmation on a real device:
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
+
+from . import SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -231,3 +233,13 @@ BUTTON_SUPPORTED_KEYS = {
 VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
+
+
+PROFILE = SyrConnectDeviceProfile(
+    binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
+    button=BUTTON_SUPPORTED_KEYS,
+    select=SELECT_SUPPORTED_KEYS,
+    sensor=SENSOR_SUPPORTED_KEYS,
+    switch=SWITCH_SUPPORTED_KEYS,
+    valve=VALVE_SUPPORTED_KEYS,
+)

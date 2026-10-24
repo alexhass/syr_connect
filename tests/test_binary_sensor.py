@@ -11,7 +11,7 @@ from custom_components.syr_connect.binary_sensor import (
 )
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.helpers import _DEVICE_MODULES
+from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -254,12 +254,13 @@ async def test_binary_sensor_sensor_active_depends_on_dk(
 
 def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
     """Every device file that exposes getBUZ as a switch also lists it for the binary sensor, and vice versa."""
-    for name, module in _DEVICE_MODULES.items():
-        switch_keys = getattr(module, "SWITCH_SUPPORTED_KEYS", None)
-        binary_keys = getattr(module, "BINARY_SENSOR_SUPPORTED_KEYS", None)
-        if switch_keys is None:
+    for signature in MODEL_SIGNATURES:
+        profile = signature.device_profile
+        if profile is None:
             continue
-        assert ("getBUZ" in switch_keys) == ("getBUZ" in (binary_keys or set())), name
+        assert ("getBUZ" in profile.switch) == ("getBUZ" in profile.binary_sensor), (
+            signature.name
+        )
 
 
 async def test_async_setup_entry_multiple_devices(

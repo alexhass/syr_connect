@@ -161,48 +161,6 @@ _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM = {
     "255",
 }
 
-# Alarm codes for SafeFloor devices (raw API getALA -> internal translation key)
-# Original casing in API is "A0x0000", but we normalize it for get_sensor_ala_map() lookups.
-# Codes are hexadecimal bitmask values (0x0002, 0x0004, ..., 0x0100).
-_SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR = {
-    "A0X0000": "no_alarm",
-    "A0X0002": "alarm_safefloor_communication",
-    "A0X0004": "alarm_safefloor_flood",
-    "A0X0008": "alarm_safefloor_weather",
-    "A0X0010": "alarm_safefloor_low_temperature",
-    "A0X0020": "alarm_safefloor_high_temperature",
-    "A0X0040": "alarm_safefloor_low_humidity",
-    "A0X0080": "alarm_safefloor_high_humidity",
-    "A0X0100": "alarm_battery_weak",
-}
-
-# Alarm code mappings per device model (raw API getALA -> internal translation key)
-# These are used to map device-specific alarm codes to internal translation keys.
-_SYR_CONNECT_SENSOR_ALA_CODES_LEX = {
-    "0": "no_alarm",
-    "LOWSALT": "alarm_salt_supply_empty",
-    "NOSALT": "alarm_salt_supply_empty",
-    "1": "alarm_salt_supply_empty",
-    "2": "alarm_chlor_generator_fault",
-    "3": "alarm_valve_malfunction",
-    "4": "alarm_pressure_too_low",
-    "5": "alarm_pressure_too_high",
-    "6": "alarm_brine_level_low",
-    "7": "alarm_brine_level_high",
-    "11": "alarm_end_switch",
-    "12": "alarm_no_network_connection",
-    "13": "alarm_leakage_volume_reached",
-    "14": "alarm_leakage_time_reached",
-    "15": "alarm_max_flow_rate_reached",
-    "16": "alarm_microleakage_detected",
-    "17": "alarm_external_sensor_leakage_radio",
-    "18": "alarm_turbine_blocked",
-    "19": "alarm_pressure_sensor_faulty",
-    "20": "alarm_temperature_sensor_faulty",
-    "21": "fault_conductance_sensor",
-    "23": "alarm_leakage_volume_approaching",
-}
-
 _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC = {
     "0D": "alarm_salt_supply_empty",
     "0E": "alarm_valve_position",
@@ -227,35 +185,6 @@ _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC = {
     "AD": "alarm_increased_water_hardness",
     "AE": "error_no_information",
     "FF": "no_alarm",
-}
-
-_SYR_CONNECT_SENSOR_ALA_CODES_SAFET = {
-    "A0": "alarm_safet_microleakage_detected",
-    "A1": "alarm_safet_valve_cannot_be_operated",
-    "A2": "alarm_safet_turbine_no_signal",
-    "A3": "alarm_safet_leakage_volume_reached",
-    "A4": "alarm_safet_flow_leakage_detected",
-    "A5": "alarm_safet_absence_leakage_detected",
-    "A6": "alarm_safefloor_flood",
-    "A7": "alarm_external_sensor_leakage_radio",
-    "A8": "alarm_external_sensor_leakage_cable",
-    "A9": "alarm_safet_flow_time_exceeded",
-    "AA": "alarm_temperature_sensor_faulty",
-    "AB": "alarm_battery_weak",
-    "AE": "error_no_information",
-    "FF": "no_alarm",
-    "LOWBAT": "alarm_battery_low",
-    "WEAKBAT": "alarm_battery_weak",
-}
-
-# Model-specific alarm code families, keyed by a signature's `device_file` (see models.py), or by its
-# `name` when it has no `device_file`. Every model not listed here uses _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC.
-_SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL = {
-    "lex": _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
-    "lexplus10s": _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
-    "lexplus10sl": _SYR_CONNECT_SENSOR_ALA_CODES_LEX,
-    "safefloor": _SYR_CONNECT_SENSOR_ALA_CODES_SAFEFLOOR,
-    "safetplus": _SYR_CONNECT_SENSOR_ALA_CODES_SAFET,
 }
 
 # Notification code mappings

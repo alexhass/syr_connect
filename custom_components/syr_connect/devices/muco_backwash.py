@@ -26,6 +26,8 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
+from . import SyrConnectDeviceProfile
+
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
@@ -89,3 +91,13 @@ BUTTON_SUPPORTED_KEYS = {
 
 # No shutoff valve on this model - it only automates backwash scheduling.
 VALVE_SUPPORTED_KEYS: set[str] = set()
+
+
+PROFILE = SyrConnectDeviceProfile(
+    binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
+    button=BUTTON_SUPPORTED_KEYS,
+    select=SELECT_SUPPORTED_KEYS,
+    sensor=SENSOR_SUPPORTED_KEYS,
+    switch=SWITCH_SUPPORTED_KEYS,
+    valve=VALVE_SUPPORTED_KEYS,
+)

@@ -1,7 +1,7 @@
 """Entity allowlist override for the neosoft_duo model family.
 
 Dual-tank NeoSoft platform rebrands: NeoSoft 5000 and every "*duo"/"twin" sibling
-signature in dk=1200-1222 via device_file="neosoft_duo". Single-tank rebrands
+signature in dk=1200-1222 via device_profile=neosoft_duo.PROFILE. Single-tank rebrands
 use the sibling neosoft_single.py instead.
 
 getBAR/getCEL/getCND/getVPS2 are confirmed ✓ (available) for NeoSoft 5000
@@ -27,6 +27,8 @@ the tank-2 regeneration-running flag already in sensor.py's global
 allowlist) with a genuine non-empty value, move it into SENSOR_SUPPORTED_KEYS
 below.
 """
+
+from . import SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -119,3 +121,13 @@ BUTTON_SUPPORTED_KEYS = {
 
 # No shutoff valve on this model (a conventional softener).
 VALVE_SUPPORTED_KEYS: set[str] = set()
+
+
+PROFILE = SyrConnectDeviceProfile(
+    binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
+    button=BUTTON_SUPPORTED_KEYS,
+    select=SELECT_SUPPORTED_KEYS,
+    sensor=SENSOR_SUPPORTED_KEYS,
+    switch=SWITCH_SUPPORTED_KEYS,
+    valve=VALVE_SUPPORTED_KEYS,
+)

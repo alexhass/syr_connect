@@ -4,7 +4,9 @@
 # ruff: noqa: SLF001
 
 from dataclasses import replace
+import importlib
 import logging
+import pkgutil
 import re
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -14,6 +16,7 @@ import pytest
 from custom_components.syr_connect import (
     binary_sensor,
     button,
+    devices,
     helpers,
     select,
     sensor,
@@ -55,12 +58,27 @@ from custom_components.syr_connect.helpers import (
     mask_ug_value,
     set_sensor_rtm_value,
 )
-from custom_components.syr_connect.models import MODEL_SIGNATURES, UNKNOWN_MODEL
+from custom_components.syr_connect.models import (
+    MODEL_SIGNATURES,
+    UNKNOWN_MODEL,
+    SyrConnectModel,
+)
 from custom_components.syr_connect.payload_builder import PayloadBuilder
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     is_sensor_visible,
 )
+
+# The profiles of all device files, keyed by module name.
+_DEVICE_PROFILES = {
+    module.name: importlib.import_module(f"{devices.__name__}.{module.name}").PROFILE
+    for module in pkgutil.iter_modules(devices.__path__)
+}
+
+
+def _signature(name: str) -> SyrConnectModel:
+    """Return the model signature with the given name."""
+    return next(signature for signature in MODEL_SIGNATURES if signature.name == name)
 
 
 def _keys_hidden_when(rule: str) -> set[str]:
@@ -1482,28 +1500,28 @@ def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
     """Known models but with unmapped raw codes should return (None, raw)."""
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="lexplus10"),
+        return_value=_signature("lexplus10"),
     ):
         mapped, raw = get_sensor_ala_map({"getCNA": "LEXplus10"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="safetplus"),
+        return_value=_signature("safetplus"),
     ):
         mapped, raw = get_sensor_ala_map({"getVER": "Safe-T+ V2"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="neosoft2500"),
+        return_value=_signature("neosoft2500"),
     ):
         mapped, raw = get_sensor_ala_map({"getVER": "NSS"}, "ZZ")
         assert mapped is None and raw == "ZZ"
 
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="safefloor"),
+        return_value=_signature("safefloor"),
     ):
         mapped, raw = get_sensor_ala_map({}, "ZZ")
         assert mapped is None and raw == "ZZ"
@@ -1513,7 +1531,7 @@ def test_get_sensor_ala_map_safefloor_known_codes() -> None:
     """SafeFloor model maps its alarm codes correctly."""
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="safefloor"),
+        return_value=_signature("safefloor"),
     ):
         mapped, raw = get_sensor_ala_map({}, "A0X0000")
         assert mapped == "no_alarm" and raw == "A0X0000"
@@ -1526,25 +1544,32 @@ def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
     """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="safetplus"),
+        return_value=_signature("safetplus"),
     ):
         assert get_sensor_ala_map({}, "LowBat") == ("alarm_battery_low", "LowBat")
         assert get_sensor_ala_map({}, "weakbat") == ("alarm_battery_weak", "weakbat")
 
     with patch(
         "custom_components.syr_connect.helpers.detect_model",
-        return_value=replace(UNKNOWN_MODEL, name="neosoft2500"),
+        return_value=_signature("neosoft2500"),
     ):
         assert get_sensor_ala_map({}, "a1")[0] == "alarm_end_switch"
 
 
 def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
-    """Every signature using a MuCo/NeoSoft/SafeTech/Trio/LEX/Safe-T+ device_file gets a mapping."""
+    """Every signature using a MuCo/NeoSoft/SafeTech/Trio/LEX/Safe-T+ device file gets a mapping."""
 
     families = ("muco_", "neosoft_", "safetech", "trio", "lex", "safetplus")
     checked = 0
     for signature in MODEL_SIGNATURES:
-        device_file = signature.device_file or ""
+        device_file = next(
+            (
+                name
+                for name, profile in _DEVICE_PROFILES.items()
+                if profile is signature.device_profile
+            ),
+            "",
+        )
         if not device_file.startswith(families):
             continue
         code = "0" if device_file.startswith("lex") else "FF"
@@ -1558,12 +1583,12 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
     assert checked > 40
 
 
-def test_get_sensor_ala_map_models_without_device_file() -> None:
-    """Models that have no device_file are mapped by their name."""
+def test_get_sensor_ala_map_models_without_device_profile() -> None:
+    """Models without a device profile use the generic alarm codes."""
     for name in ("conelmuco", "takemuco", "triols", "pontosbase", "syrmuco"):
         with patch(
             "custom_components.syr_connect.helpers.detect_model",
-            return_value=replace(UNKNOWN_MODEL, name=name),
+            return_value=_signature(name),
         ):
             assert get_sensor_ala_map({}, "A1")[0] == "alarm_end_switch", name
 
@@ -2017,8 +2042,8 @@ def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() 
 # ---------------------------------------------------------------------------
 
 
-def test_get_model_supported_keys_falls_back_without_device_file() -> None:
-    """A model without a devices/<name>.py file returns the global allowlist unchanged."""
+def test_get_model_supported_keys_falls_back_without_device_profile() -> None:
+    """A model without a device profile returns the global allowlist unchanged."""
     global_keys = {"getBAR", "getVOL"}
     assert (
         helpers.get_model_supported_keys(UNKNOWN_MODEL, "sensor", global_keys)
@@ -2038,67 +2063,69 @@ _DESCRIBED_KEYS = {
 
 
 @pytest.mark.parametrize("platform", sorted(_DESCRIBED_KEYS))
-@pytest.mark.parametrize("device_file", sorted(helpers._DEVICE_MODULES))
+@pytest.mark.parametrize("device_file", sorted(_DEVICE_PROFILES))
 def test_device_file_keys_have_descriptions(device_file: str, platform: str) -> None:
     """Every key a device file supports has an entity description of its platform.
 
     The entities look their description up by key, so a key without one would fail
     when the entity is created.
     """
-    keys = getattr(
-        helpers._DEVICE_MODULES[device_file],
-        f"{platform.upper()}_SUPPORTED_KEYS",
-        set(),
-    )
+    keys = getattr(_DEVICE_PROFILES[device_file], platform) or set()
     assert keys <= _DESCRIBED_KEYS[platform]
+
+
+def test_every_device_profile_is_used_by_a_signature() -> None:
+    """Every devices/<name>.py profile is referenced by at least one model signature."""
+    used = {
+        id(signature.device_profile)
+        for signature in MODEL_SIGNATURES
+        if signature.device_profile is not None
+    }
+    assert used == {id(profile) for profile in _DEVICE_PROFILES.values()}
 
 
 def test_get_model_supported_keys_uses_device_override_when_defined() -> None:
     """A devices/<name>.py file that defines the platform's allowlist is used verbatim.
 
-    It replaces the global set (lines 254, 257-259).
+    It replaces the global set.
     """
 
     global_keys = {"getBAR", "getVOL"}
     result = helpers.get_model_supported_keys(
-        replace(UNKNOWN_MODEL, name="muco_filling"), "sensor", global_keys
+        replace(UNKNOWN_MODEL, device_profile=muco_filling.PROFILE),
+        "sensor",
+        global_keys,
     )
     assert result == muco_filling.SENSOR_SUPPORTED_KEYS
     assert result != global_keys
     assert {"getCFT", "getCFV"} <= result
 
     result = helpers.get_model_supported_keys(
-        replace(UNKNOWN_MODEL, name="muco_connectioncentre"), "sensor", global_keys
+        replace(UNKNOWN_MODEL, device_profile=muco_connectioncentre.PROFILE),
+        "sensor",
+        global_keys,
     )
     assert result == muco_connectioncentre.SENSOR_SUPPORTED_KEYS
     assert {"getCFT", "getCFV"} <= result
 
 
 def test_get_model_supported_keys_falls_back_when_platform_not_defined() -> None:
-    """A devices/<name>.py file without this platform's allowlist falls back to the global set.
-
-    Covers line 258.
-    """
-    global_keys = {"getBUZ"}
-    # A device module that defines no <PLATFORM>_SUPPORTED_KEYS at all (every real device file defines
-    # all of them), so the global set is returned unchanged.
-    with patch.dict(helpers._DEVICE_MODULES, {"no_platform_sets": SimpleNamespace()}):
-        result = helpers.get_model_supported_keys(
-            replace(UNKNOWN_MODEL, name="no_platform_sets"),
-            "binary_sensor",
-            global_keys,
-        )
+    """A device profile without this platform's allowlist falls back to the global set."""
+    global_keys = {"getUPD"}
+    # No device file defines an update allowlist, so the global set is returned unchanged.
+    assert trio.PROFILE.update is None
+    result = helpers.get_model_supported_keys(
+        replace(UNKNOWN_MODEL, device_profile=trio.PROFILE), "update", global_keys
+    )
     assert result is global_keys
 
 
-def test_get_model_supported_keys_uses_device_file_over_name() -> None:
-    """The 'device_file' field takes priority over 'name' when both are present."""
+def test_get_model_supported_keys_uses_shared_device_profile() -> None:
+    """A rebrand uses the profile of the device file it shares with its siblings."""
 
     global_keys = {"getBAR"}
     result = helpers.get_model_supported_keys(
-        replace(
-            UNKNOWN_MODEL, name="sanibelleakprotect", device_file="muco_leakprotect"
-        ),
+        _signature("sanibelleakprotect"),
         "sensor",
         global_keys,
     )
@@ -2110,14 +2137,16 @@ def test_get_model_supported_keys_safetplus_device_override() -> None:
 
     global_keys = {"getBAR"}
     result = helpers.get_model_supported_keys(
-        replace(UNKNOWN_MODEL, name="safetplus"), "sensor", global_keys
+        replace(UNKNOWN_MODEL, device_profile=safetplus.PROFILE), "sensor", global_keys
     )
     assert result == safetplus.SENSOR_SUPPORTED_KEYS
     # Explicit empty-set override (no select-worthy keys) must be honored, not
     # treated as "not defined".
     assert (
         helpers.get_model_supported_keys(
-            replace(UNKNOWN_MODEL, name="safetplus"), "select", global_keys
+            replace(UNKNOWN_MODEL, device_profile=safetplus.PROFILE),
+            "select",
+            global_keys,
         )
         == set()
     )
@@ -2149,13 +2178,13 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
     assert "getBAR2" not in safetech.SENSOR_SUPPORTED_KEYS
     assert "getBAR" not in safetechplus.SENSOR_SUPPORTED_KEYS
     assert "getBAR2" in safetechplus.SENSOR_SUPPORTED_KEYS
-    for names, module, device_file in (
-        (safetech_names, safetech, "safetech"),
-        (safetechplus_names, safetechplus, "safetechplus"),
+    for names, module in (
+        (safetech_names, safetech),
+        (safetechplus_names, safetechplus),
     ):
         for name in names:
             signature = signatures[name]
-            assert signature.device_file == device_file
+            assert signature.device_profile is module.PROFILE
             assert (
                 helpers.get_model_supported_keys(signature, "sensor", global_keys)
                 == module.SENSOR_SUPPORTED_KEYS
@@ -2185,19 +2214,19 @@ def test_get_model_supported_keys_lex_device_override() -> None:
 
     global_keys = {"getBAR"}
     result = helpers.get_model_supported_keys(
-        replace(UNKNOWN_MODEL, name="lex"), "sensor", global_keys
+        replace(UNKNOWN_MODEL, device_profile=lex.PROFILE), "sensor", global_keys
     )
     assert result == lex.SENSOR_SUPPORTED_KEYS
     # No buzzer/valve on this model - explicit empty-set overrides honored.
     assert (
         helpers.get_model_supported_keys(
-            replace(UNKNOWN_MODEL, name="lex"), "switch", global_keys
+            replace(UNKNOWN_MODEL, device_profile=lex.PROFILE), "switch", global_keys
         )
         == set()
     )
     assert (
         helpers.get_model_supported_keys(
-            replace(UNKNOWN_MODEL, name="lex"), "valve", global_keys
+            replace(UNKNOWN_MODEL, device_profile=lex.PROFILE), "valve", global_keys
         )
         == set()
     )
@@ -2208,7 +2237,7 @@ def test_get_model_supported_keys_safefloor_device_override() -> None:
 
     global_keys = {"getBAR"}
     result = helpers.get_model_supported_keys(
-        replace(UNKNOWN_MODEL, name="safefloor"), "sensor", global_keys
+        replace(UNKNOWN_MODEL, device_profile=safefloor.PROFILE), "sensor", global_keys
     )
     assert result == safefloor.SENSOR_SUPPORTED_KEYS
     # This model has no display rotation, filling, or salt config selects, but its
@@ -2216,13 +2245,17 @@ def test_get_model_supported_keys_safefloor_device_override() -> None:
     # user-adjustable settings represented as select entities.
     assert (
         helpers.get_model_supported_keys(
-            replace(UNKNOWN_MODEL, name="safefloor"), "select", global_keys
+            replace(UNKNOWN_MODEL, device_profile=safefloor.PROFILE),
+            "select",
+            global_keys,
         )
         == safefloor.SELECT_SUPPORTED_KEYS
     )
     assert (
         helpers.get_model_supported_keys(
-            replace(UNKNOWN_MODEL, name="safefloor"), "valve", global_keys
+            replace(UNKNOWN_MODEL, device_profile=safefloor.PROFILE),
+            "valve",
+            global_keys,
         )
         == set()
     )
@@ -2233,7 +2266,7 @@ def test_get_model_supported_keys_trio_device_override() -> None:
 
     global_keys = {"getBAR"}
     result = helpers.get_model_supported_keys(
-        replace(UNKNOWN_MODEL, name="trio"), "sensor", global_keys
+        replace(UNKNOWN_MODEL, device_profile=trio.PROFILE), "sensor", global_keys
     )
     assert result == trio.SENSOR_SUPPORTED_KEYS
     assert "getDSV" in result

@@ -1,11 +1,10 @@
 """Helper functions for SYR Connect integration."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Set as AbstractSet
 import contextlib
 import ipaddress
 import logging
 import re
-from types import ModuleType
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -17,7 +16,6 @@ from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
-    _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL,
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
@@ -27,47 +25,9 @@ from .const import (
     DOMAIN,
 )
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
-from .devices import (
-    lex,
-    lexplus10s,
-    lexplus10sl,
-    muco_backwash,
-    muco_connectioncentre,
-    muco_filling,
-    muco_leakprotect,
-    muco_triolock,
-    neosoft_duo,
-    neosoft_single,
-    safefloor,
-    safetech,
-    safetechplus,
-    safetplus,
-    trio,
-)
 from .models import SyrConnectModel, detect_model
 
 _LOGGER = logging.getLogger(__name__)
-
-# Statically imported above (instead of importlib.import_module()'d on demand in
-# get_model_supported_keys()) so module resolution happens at integration load time
-# rather than via a blocking import call from inside the event loop.
-_DEVICE_MODULES: dict[str, ModuleType] = {
-    "lex": lex,
-    "lexplus10s": lexplus10s,
-    "lexplus10sl": lexplus10sl,
-    "muco_backwash": muco_backwash,
-    "muco_connectioncentre": muco_connectioncentre,
-    "muco_filling": muco_filling,
-    "muco_leakprotect": muco_leakprotect,
-    "muco_triolock": muco_triolock,
-    "neosoft_single": neosoft_single,
-    "neosoft_duo": neosoft_duo,
-    "safefloor": safefloor,
-    "safetech": safetech,
-    "safetechplus": safetechplus,
-    "safetplus": safetplus,
-    "trio": trio,
-}
 
 
 def is_value_true(val: object) -> bool:
@@ -318,35 +278,32 @@ def get_model_supported_keys(
 ) -> set[str]:
     """Return the supported-keys allowlist for a platform, scoped to the detected model.
 
-    Looks for an optional `devices/<name>.py` module (matching the detected
-    model's `device_file`, or its `name` when `device_file` is not set - see
-    `models.MODEL_SIGNATURES`) and, if it defines a `<PLATFORM>_SUPPORTED_KEYS`
-    set (e.g. `SENSOR_SUPPORTED_KEYS`), uses that as a POSITIVE, device-specific
-    allowlist instead of `global_supported_keys`. `device_file` lets multiple
-    model signatures that are largely identical (e.g. rebranded variants of
-    the same hardware) share a single override file instead of duplicating
-    near-identical content per model `name`.
+    If the detected model has a `device_profile` (from a `devices/<name>.py` file,
+    see `models.MODEL_SIGNATURES`), its allowlist for the platform is used as a
+    POSITIVE, device-specific allowlist instead of `global_supported_keys`.
+    Rebranded variants of the same hardware share one profile.
     This is deliberately an allowlist, not an exclusion list — the global
     allowlists of the platform modules cover ~90 different models, and new/unexpected keys can
     show up in any device's API response at any time, so only explicitly
     confirmed keys are trusted per device. Falls back to `global_supported_keys`
-    unchanged when no override file exists for the model, or it doesn't
-    define this platform's set at all (an explicit empty set is honored as
-    "no entities of this platform for this model", not a fallback trigger).
+    unchanged when the model has no profile, or its profile has no allowlist for
+    this platform (an explicit empty set is honored as "no entities of this
+    platform for this model", not a fallback trigger).
 
     Args:
         model_info: Result of `models.detect_model()`.
-        platform: Entity domain string (e.g. "sensor", "select", "switch").
+        platform: Entity domain string (e.g. "sensor", "select", "switch"); the name
+            of a `SyrConnectDeviceProfile` allowlist field.
         global_supported_keys: The platform's full/default allowlist.
 
     Returns:
         The effective allowlist to use for this device.
     """
-    name = model_info.device_file or model_info.name
-    device_module = _DEVICE_MODULES.get(name)
-    if device_module is None:
+    profile = model_info.device_profile
+    if profile is None:
         return global_supported_keys
-    device_keys = getattr(device_module, f"{platform.upper()}_SUPPORTED_KEYS", None)
+    # No default: a platform without a profile field is a programming error.
+    device_keys: AbstractSet[str] | None = getattr(profile, platform)
     # None means "not defined" -> fall back. An explicit empty set is a valid
     # override meaning "this model has none of this platform's entities".
     if device_keys is None:
@@ -1176,9 +1133,11 @@ def get_sensor_ala_map(status: dict[str, Any], raw_code: Any) -> tuple[str | Non
         return (None, code)
 
     # Model-specific families take precedence; every other model (including unknown ones) uses the generic codes.
-    codes = _SYR_CONNECT_SENSOR_ALA_CODES_BY_MODEL.get(
-        model_info.device_file or model_info.name,
-        _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
+    profile = model_info.device_profile
+    codes = (
+        profile.ala_codes
+        if profile is not None and profile.ala_codes is not None
+        else _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC
     )
 
     mapped = codes.get(code_upper)
