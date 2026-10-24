@@ -478,10 +478,10 @@ This data is used to "register" the device in the SYR Connect cloud via GetBasic
 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
-| getSRN | "123456789" | | USER | Serial number of the device. Used to identify the unit in the SYR Connect cloud |
-| getVER | "1.7" | | USER | Firmware version |
-| getTYP | "80" | | | Type of device. See "dk" values in "deviceKinds" table. Devices may return empty string "" or "0" in XML, but values are correct in JSON format. See fixtures for examples. |
 | getCNA | "LEXplus10S" | | | Name of device. Known values: "LEXplus10", "LEXplus10S", "LEXplus10SL" |
+| getSRN | "123456789" | | USER | Serial number of the device. Used to identify the unit in the SYR Connect cloud |
+| getTYP | "80" | | | Type of device. See "dk" values in "deviceKinds" table. Devices may return empty string "" or "0" in XML, but values are correct in JSON format. See fixtures for examples. |
+| getVER | "1.7" | | USER | Firmware version |
 
 ### Further Device data
 
@@ -489,42 +489,42 @@ Some further data about the device
 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
-| getMAN | "Syr" | | | Manufacturer |
-| getFIR | "SLPS" | | | Firmware name. Used to find the correct firmware file during firmware update |
 | getCDE | "010SCA19DF0917.01.024.1.1.0010" | | | *unknown constant (some kind of device identifier?)* |
-| getTMZ / setTMZ | "4" | 1/4 h | USER / SERVICE | Time zone as UTC offset in quarter hours. Range: -44–48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes), default 4 (UTC+01:00). Conversion: offset = value × 15 minutes, e.g. 4 -> UTC+01:00, 22 -> UTC+05:30 (India), -14 -> UTC-03:30 (Newfoundland). Daylight saving time is handled separately by getIDS |
-| getIDS / setIDS | "1"<br>"True" | | USER / SERVICE | Automatic daylight saving time: 0/False = disabled, 1/True = enabled (default) |
-| getDAT | "1694635165" | | | Current time as UNIX timestamp (seconds since 1.1.1970) |
-| getLAN | "1" | | | Language of the UI (0=English, 1=German, 3=Spanish) |
-| getHWV | "V1" | | | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+) |
 | getCFW | "176" | | | Connected firmware component version (Trio DFR/LS, Sanibel) |
-| getVER2 | "2.4.2.0_4.3.2_2.4.6" | | | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER |
+| getCNO | "XXXXXXXXXXXXXXXX" | | USER | Code number (16 characters) printed on a label on the device; it registers the device to a SYR Connect account (Safe-T+, LEXplus10SL, SafeFloor, SafeTech). Deliberately not exposed by the integration and redacted in diagnostics |
+| getDAT | "1694635165" | | | Current time as UNIX timestamp (seconds since 1.1.1970) |
 | getENV | "PROD" | | | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel) |
+| getFIR | "SLPS" | | | Firmware name. Used to find the correct firmware file during firmware update |
+| getFRN | "A25032111217" | | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
+| getHWV | "V1" | | | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+) |
+| getIDS / setIDS | "1"<br>"True" | | USER / SERVICE | Automatic daylight saving time: 0/False = disabled, 1/True = enabled (default) |
+| getLAN | "1" | | | Language of the UI (0=English, 1=German, 3=Spanish) |
+| getMAN | "Syr" | | | Manufacturer |
 | getRTC / setRTC | "1775055037" | | USER / SERVICE | Device RTC as UNIX timestamp (NeoSoft, Sanibel, SafeTech). See also getDAT |
 | getRURL | `"https://storageiotsyr.blob..."` | | | Firmware update resource URL (NeoSoft, Sanibel) |
 | getSFV | "0"<br>"False" | | | Firmware check, done at startup and every 6 hours. dk < 1100: 0 = no new firmware, 1 = new firmware available. dk ≥ 1100: False = no new firmware, True = new firmware available |
-| setUPG | "" | | | Triggers a firmware update (write-only). Identical implementation shared by 8 device base classes: SafeTech, SafeFloor, LEX Plus, All-in-One+, MultiController, HygBox, Dosing Pump and Trio LS. Same command in JSON and XML. Always sent with an empty value (`setUPG=""`). |
-| getFRN | "A25032111217" | | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
-| getSRV | "14.02.2027" | | USER | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel) |
 | getSRH | "23.08.2025" | | | Next semi-annual maintenance date, format dd.mm.yyyy (NeoSoft) |
-| getCNO | "XXXXXXXXXXXXXXXX" | | USER | Code number (16 characters) printed on a label on the device; it registers the device to a SYR Connect account (Safe-T+, LEXplus10SL, SafeFloor, SafeTech). Deliberately not exposed by the integration and redacted in diagnostics |
+| getSRV | "14.02.2027" | | USER | Next annual maintenance date. Empty string means no scheduled maintenance (Trio DFR/LS, NeoSoft, Sanibel) |
+| getTMZ / setTMZ | "4" | 1/4 h | USER / SERVICE | Time zone as UTC offset in quarter hours. Range: -44–48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes), default 4 (UTC+01:00). Conversion: offset = value × 15 minutes, e.g. 4 -> UTC+01:00, 22 -> UTC+05:30 (India), -14 -> UTC-03:30 (Newfoundland). Daylight saving time is handled separately by getIDS |
+| setUPG | "" | | | Triggers a firmware update (write-only). Identical implementation shared by 8 device base classes: SafeTech, SafeFloor, LEX Plus, All-in-One+, MultiController, HygBox, Dosing Pump and Trio LS. Same command in JSON and XML. Always sent with an empty value (`setUPG=""`). |
+| getVER2 | "2.4.2.0_4.3.2_2.4.6" | | | Combined multi-component firmware version string (Trio DFR/LS, Sanibel). See also getVER |
 
 ### Device Status
 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
-| getALM | "" | | SERVICE | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes. Alarm memory (SafeTech): the last eight alarms, `->` before the current alarm, FF = empty slot, e.g. "Alarms:->A4 A4 AF AF A3 AF A3 AF" |
-| clrALM | "" | | SERVICE | Clears the alarm memory (eight alarms) (write-only) |
 | getALA | "" | | USER | Current alarm code — used on SafeTech, SafeTech+, LEXplus10SL and similar leak-protection devices. Translated to human-readable alarm strings (e.g. `alarm_leakage_volume_reached`, `alarm_microleakage_detected`). FF = no alarm |
 | setALA | "255"<br>"161" | | SERVICE | 255 = acknowledges the current alarm (official API; the value is decimal, getALA returns hexadecimal). SafeTech command table: 161–172 = sets alarm A1–AC (write-only) |
-| setWRN | "255" | | | 255 = acknowledges the current warning (write-only) |
-| setNOT | "255" | | | 255 = acknowledges the current notification (write-only) |
 | clrALA | "" | | SERVICE | Clears the current alarm and opens the valve (write-only) |
-| getSTA | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie" | | | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
-| getDEN | "1" | | | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
-| getNOT | "" | | | Current notification code (e.g. `new_software_available`, `annual_maintenance`). |
-| getWRN | "" | | | Current warning code (non-critical, e.g. `power_outage`, `salt_supply_low`). Translated to human-readable warning strings. |
 | getALH | "2026-02-07 17:41:10:A0..." | | | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel) |
+| getALM | "" | | SERVICE | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes. Alarm memory (SafeTech): the last eight alarms, `->` before the current alarm, FF = empty slot, e.g. "Alarms:->A4 A4 AF AF A3 AF A3 AF" |
+| clrALM | "" | | SERVICE | Clears the alarm memory (eight alarms) (write-only) |
+| getDEN | "1" | | | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
+| setNOT | "255" | | | 255 = acknowledges the current notification (write-only) |
+| getNOT | "" | | | Current notification code (e.g. `new_software_available`, `annual_maintenance`). |
+| getSTA | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie" | | | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
+| setWRN | "255" | | | 255 = acknowledges the current warning (write-only) |
+| getWRN | "" | | | Current warning code (non-critical, e.g. `power_outage`, `salt_supply_low`). Translated to human-readable warning strings. |
 
 #### Alarm codes (getALA) — NeoSoft / MuCo / Trio family
 
@@ -625,26 +625,26 @@ Non-critical warnings, same device family as the alarm codes above.
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
 | getAPT / setAPT | "300" | s | SERVICE | Access point timeout: 0 = timeout not active, > 0 = the access point is disabled n seconds after the internet connection is established. Range: 0–3600 |
-| getMAC | "01:23:45:67:89:AB" | | USER | MAC address of the network port |
-| getIPA | "123.123.123.1" | | | IP-Adress |
-| getSNM | "255.255.255.0" | | | Subnet mask |
-| getDNS | "123.123.123.254" | | | DNS server |
-| getDGW | "123.123.123.254" | | | Default gateway |
 | getCURL | "iot-syrconnect.azure-devices.net" | | | Azure IoT Hub connection URL (Trio DFR/LS, SafeTech, NeoSoft, Sanibel) |
-| getMQT | "1" | | | Network protocol: 1 = MQTT (Safe-Tech V4) - may be WRONG |
-| getWFL | ["SSID1:Strength", ...] | | USER | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel) |
-| getWAD / setWAD | "False" | | SERVICE | Wi-Fi access point disabled: 0/False = not disabled, 1/True = disabled |
-| getWTI | "1740" | s | | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel) |
-| getWAH / setWAH | "false" | | SERVICE | Wi-Fi access point hidden: 0/False = visible, 1/True = hidden |
-| getWNS / setWNS | "False" | | SERVICE | Wi-Fi scan before connecting: 0/False = scan for the access point before connecting, 1/True = scan disabled |
-| getWFC / setWFC | "MyNetwork" | | USER | Connected Wi-Fi SSID. Setting it sets the SSID (1–32 characters) and connects to the network |
-| setWFK | "" | | USER | Wi-Fi key, 8–64 characters (write-only). Must be set before setWFC, which starts the connection attempt |
-| setWFD | "" | | USER | Disconnects from the current Wi-Fi network and deletes the SSID and the key (write-only, no value: `/set/wfd`) |
-| getWFS | "2" | | USER | Wi-Fi state: 0 = disconnected, 1 = connecting, 2 = connected |
-| getWFR | "75" | % | USER | Wi-Fi signal strength (RSSI), 1–100 |
-| getWIP | "192.168.178.20" | | USER | Wi-Fi IP address obtained from DHCP |
-| getWGW | "192.168.178.1" | | USER | Wi-Fi default gateway obtained from DHCP |
+| getDGW | "123.123.123.254" | | | Default gateway |
+| getDNS | "123.123.123.254" | | | DNS server |
 | getDWL / setDWL | "0" | | FACTORY | Wi-Fi interface deactivated: 0 = active (default), 1 = deactivated |
+| getIPA | "123.123.123.1" | | | IP-Adress |
+| getMAC | "01:23:45:67:89:AB" | | USER | MAC address of the network port |
+| getMQT | "1" | | | Network protocol: 1 = MQTT (Safe-Tech V4) - may be WRONG |
+| getSNM | "255.255.255.0" | | | Subnet mask |
+| getWAD / setWAD | "False" | | SERVICE | Wi-Fi access point disabled: 0/False = not disabled, 1/True = disabled |
+| getWAH / setWAH | "false" | | SERVICE | Wi-Fi access point hidden: 0/False = visible, 1/True = hidden |
+| getWFC / setWFC | "MyNetwork" | | USER | Connected Wi-Fi SSID. Setting it sets the SSID (1–32 characters) and connects to the network |
+| setWFD | "" | | USER | Disconnects from the current Wi-Fi network and deletes the SSID and the key (write-only, no value: `/set/wfd`) |
+| setWFK | "" | | USER | Wi-Fi key, 8–64 characters (write-only). Must be set before setWFC, which starts the connection attempt |
+| getWFL | ["SSID1:Strength", ...] | | USER | Nearby Wi-Fi networks with signal strength (NeoSoft, Trio DFR/LS, Sanibel) |
+| getWFR | "75" | % | USER | Wi-Fi signal strength (RSSI), 1–100 |
+| getWFS | "2" | | USER | Wi-Fi state: 0 = disconnected, 1 = connecting, 2 = connected |
+| getWGW | "192.168.178.1" | | USER | Wi-Fi default gateway obtained from DHCP |
+| getWIP | "192.168.178.20" | | USER | Wi-Fi IP address obtained from DHCP |
+| getWNS / setWNS | "False" | | SERVICE | Wi-Fi scan before connecting: 0/False = scan for the access point before connecting, 1/True = scan disabled |
+| getWTI | "1740" | s | | Wi-Fi timeout configuration — value ~29 min (NeoSoft, Sanibel) |
 
 ### Holiday
 
@@ -652,12 +652,12 @@ Some devices seem to support setting holidays. The consequences for the water so
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
-| getHSD | "13" | | Holiday start day |
-| getHSM | "9" | | Holiday start month |
-| getHSY | "19" | | Holiday start **hour** |
 | getHED | "13" | | Holiday end day |
 | getHEM | "9" | | Holiday end month |
 | getHEY | "2023" | | Holiday end **year** |
+| getHSD | "13" | | Holiday start day |
+| getHSM | "9" | | Holiday start month |
+| getHSY | "19" | | Holiday start **hour** |
 
 ### Settings
 
@@ -666,39 +666,39 @@ These settings can be set by the user.
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
 | getALD / setALD | "20" | s | SERVICE | Duration of alarm in seconds (Neosoft, SafeFloor), GUI Settings: 1s/5s/10s/20s/30s/1m/2m/3m till 10m. SYR's SafeTech command table: 0 = unlimited, 1–3600 s, default 600 s |
-| getIWH / setIWH | "14" | °dH / °fH | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only |
-| getOWH / setOWH | "7" | °dh / °fH | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only |
-| getWHU / setWHU | "0" | | | Water hardness unit: 0 = °dH, 1 = °fH, 2 = ppm, 3 = mmol/l |
-| getRDO / setRDO | "90" | g/L | | Salt dosage |
-| getRTH / setRTH | "16" | hour | | Regeneration time (hour) |
-| getRTM / setRTM | "0" | minute | | Regeneration time (minute) |
-| getRPD / setRPD | "4" | days | | Regeneration interval. NeoSoft: 1–3; no effect on the NeoSoft 5000, which regenerates on its own as soon as a column is exhausted |
-| getRMO / setRMO | "1" | | | Regeneration mode (NeoSoft): 1 = Standard, 2 = ECO, 3 = Power, 4 = Automatic (switches the mode depending on consumption) |
-| getRPW / setRPW | "0" | bits | | Days on which regeneration is allowed stored as a bit mask (bit 0 = Mon .. bit 6 = Sun); mask `0` indicates no days configured. |
-| getRTY / setRTY | "0" | | | 0 = Delayed regeneration, 1 = Immediate regeneration |
+| getBPB / setBPB | "0" | | USER | Profile change by button: 0 = locked (default), 1 = allowed |
+| getBUP / setBUP | "BUZ: Puls[100ms]:4 Periode[100ms]:60" | 100 ms | FACTORY | Buzzer parameters: X = duration of the sound (1–100), Y = repetition period (1–1000), both in 100 ms; set with "X Y". Default X = 4 (400 ms), Y = 60 (6000 ms) |
+| getCFO | "0" | | | Cycle flow offset, numeric counter |
 | getCHG / setCHG | "0" | | | Type of chlor generator: 0 = Chlor generator, 1 = Salt sensor, 2 = not available |
-| getPST / setPST | "1" | | | Pressure sensor installed: 1 = not available, 2 = available |
-| getMPR / setMPR | "40" | 1/10 bar | | The set water pressure |
+| getCLP / setCLP | "0" | | | Cluster profile: 0 = the display shows the profile name (default), 1 = the display shows "Cluster" instead of the profile name |
+| getCNF / setCNF | "10" | 1/10 | USER / FACTORY | Conductivity factor 0.5–5.0, raw value 5–50 (e.g. 10 = 1.0) |
+| getCSD / setCSD | "0"<br>"True" | | USER / FACTORY | Conductivity sensor setting. Value meaning depends on the API, see note below |
+| getDTR | "[0,0,0,0,0,0,0,0]" | | | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
 | getDWF / setDWF | "200" | L | | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |
 | getFCO / setFCO | "0" | ppm | | Iron content (always 0?) |
-| getCFO | "0" | | | Cycle flow offset, numeric counter |
+| getIWH / setIWH | "14" | °dH / °fH | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only |
 | getLNG | "0" | | | Language setting (0=German, 1=English). |
-| getDTR | "[0,0,0,0,0,0,0,0]" | | | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
 | getLOCK | "False" | | | Device keypad/remote lock flag (Trio DFR/LS, SafeTech) |
 | getMIH / setMIH | "5" | % | | Minimum huminity; Values: 0=Off, 0-95% (5% steps) |
-| getMXH / setMXH | "95" | % | | Maximum huminity, Values: 100=Off, 5-100% (5% steps) |
 | getMIT / setMIT | "-40" | 1/10 | | Minium temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
+| getMPR / setMPR | "40" | 1/10 bar | | The set water pressure |
+| getMXH / setMXH | "95" | % | | Maximum huminity, Values: 100=Off, 5-100% (5% steps) |
 | getMXT / setMXT | "490" | 1/10 | | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
-| getRCP / setRCP | "43200" | s | | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
-| getWMP / setWMP | "3600" | s | | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
-| getBPB / setBPB | "0" | | USER | Profile change by button: 0 = locked (default), 1 = allowed |
-| getCLP / setCLP | "0" | | | Cluster profile: 0 = the display shows the profile name (default), 1 = the display shows "Cluster" instead of the profile name |
-| getSRO / setSRO | "0" | ° | SERVICE | Screen rotation: 0, 90, 180 or 270 degrees |
-| getBUP / setBUP | "BUZ: Puls[100ms]:4 Periode[100ms]:60" | 100 ms | FACTORY | Buzzer parameters: X = duration of the sound (1–100), Y = repetition period (1–1000), both in 100 ms; set with "X Y". Default X = 4 (400 ms), Y = 60 (6000 ms) |
-| getCNF / setCNF | "10" | 1/10 | USER / FACTORY | Conductivity factor 0.5–5.0, raw value 5–50 (e.g. 10 = 1.0) |
-| getTSD / setTSD | "0"<br>"True" | | USER / FACTORY | Temperature sensor setting. Value meaning depends on the API, see note below |
+| getOWH / setOWH | "7" | °dh / °fH | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only |
 | getPSD / setPSD | "0"<br>"True" | | USER / FACTORY | Pressure sensor setting. Value meaning depends on the API, see note below |
-| getCSD / setCSD | "0"<br>"True" | | USER / FACTORY | Conductivity sensor setting. Value meaning depends on the API, see note below |
+| getPST / setPST | "1" | | | Pressure sensor installed: 1 = not available, 2 = available |
+| getRCP / setRCP | "43200" | s | | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
+| getRDO / setRDO | "90" | g/L | | Salt dosage |
+| getRMO / setRMO | "1" | | | Regeneration mode (NeoSoft): 1 = Standard, 2 = ECO, 3 = Power, 4 = Automatic (switches the mode depending on consumption) |
+| getRPD / setRPD | "4" | days | | Regeneration interval. NeoSoft: 1–3; no effect on the NeoSoft 5000, which regenerates on its own as soon as a column is exhausted |
+| getRPW / setRPW | "0" | bits | | Days on which regeneration is allowed stored as a bit mask (bit 0 = Mon .. bit 6 = Sun); mask `0` indicates no days configured. |
+| getRTH / setRTH | "16" | hour | | Regeneration time (hour) |
+| getRTM / setRTM | "0" | minute | | Regeneration time (minute) |
+| getRTY / setRTY | "0" | | | 0 = Delayed regeneration, 1 = Immediate regeneration |
+| getSRO / setSRO | "0" | ° | SERVICE | Screen rotation: 0, 90, 180 or 270 degrees |
+| getTSD / setTSD | "0"<br>"True" | | USER / FACTORY | Temperature sensor setting. Value meaning depends on the API, see note below |
+| getWHU / setWHU | "0" | | | Water hardness unit: 0 = °dH, 1 = °fH, 2 = ppm, 3 = mmol/l |
+| getWMP / setWMP | "3600" | s | | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
 
 The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and changed with `set`. From dk ≥ 1100 on, the API changed from integer to boolean values, and with it the meaning of these settings flipped:
 
@@ -715,48 +715,48 @@ The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and chan
 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
-| getHMD | "43" | % | | Humidity in % (SafeFloor) |
-| getPRS | "40" | 1/10 bar | | Measured water pressure if sensor is available (getPST() = 2), otherwise same as getMPR()<br>255 indicates an invalid values, e.g. when no pressure sensor is available but getPST() = 2 |
-| getMXP | "40" | 1/10 bar | | The maximum measured water pressure (reset at midnight) |
-| getMNP | "40" | 1/10 bar | | The minimum measured water pressure (reset at midnight) |
-| getFLO | "0" | L/h | USER | Measured water flow. Range: 0–5000 (official API), 0–6000 (SafeTech command table) |
-| getMXF | "22" | L/h | | Maximum flow within this hour |
-| getRES | "1982" | L | | Remaining capacity of water that can be treated |
-| getVOL | "2000" | L | | Total volume, App shows in m³ (L/1000) |
-| clrVOL | "" | | FACTORY | Clears the value of getVOL (write-only) |
-| getCS1<br>getCS2<br>getCS3 | "63"<br>"0"<br>"0" | % | | Remaining capacity of the resin in tank 1, 2 or 3 |
-| getSV1 / setSV1<br>getSV2 / setSV2<br>getSV3 / setSV3 | "7"<br>"0"<br>"0" | kg | | Salt stored in tank 1, 2 or 3. LEX family: can also be set, e.g. on refill. NeoSoft: read-only value of the built-in salt level sensor, 0–40 kg (official API: GET only) |
-| getSS1<br>getSS2<br>getSS3 | "1"<br>"0"<br>"0" | weeks | | Salt in tank 1, 2 or 3 lasts for n weeks. NeoSoft: 0–40 |
-| getVS1<br>getVS2<br>getVS3 | "0"<br>"0"<br>"0" | L | | Volume threshold 1–3 (advanced configuration) |
 | getBAR | "4077" | mbar | USER | Measured inlet pressure (Safe-T+). Example: "4077 mbar" = 4.077 bar |
 | getBAR2 | "3479" | mbar | | Measured outlet pressure (Trio DFR/LS / SYR TRIO Lock Connect, Sanibel). Example: "3479 mbar" = 3.479 bar |
 | getBPT | "40" | mbar? | | Back-pressure threshold (Trio DFR/LS) |
-| getPRE | "0" | | | Pressure-related value (NeoSoft 2500/5000) |
-| getMPO | "0" | | | Max pressure offset (Sanibel Leak Protection Module A25) |
+| getCS1<br>getCS2<br>getCS3 | "63"<br>"0"<br>"0" | % | | Remaining capacity of the resin in tank 1, 2 or 3 |
+| getFLO | "0" | L/h | USER | Measured water flow. Range: 0–5000 (official API), 0–6000 (SafeTech command table) |
+| getHMD | "43" | % | | Humidity in % (SafeFloor) |
 | getLTV | "1655" | L | USER | Last volume tapped |
+| getMNP | "40" | 1/10 bar | | The minimum measured water pressure (reset at midnight) |
+| getMPO | "0" | | | Max pressure offset (Sanibel Leak Protection Module A25) |
+| getMXF | "22" | L/h | | Maximum flow within this hour |
+| getMXP | "40" | 1/10 bar | | The maximum measured water pressure (reset at midnight) |
+| getPRE | "0" | | | Pressure-related value (NeoSoft 2500/5000) |
+| getPRS | "40" | 1/10 bar | | Measured water pressure if sensor is available (getPST() = 2), otherwise same as getMPR()<br>255 indicates an invalid values, e.g. when no pressure sensor is available but getPST() = 2 |
 | getRE1<br>getRE2 | "500"<br>"0" | L | | Reserve capacity bottle 1 or 2 |
+| getRES | "1982" | L | | Remaining capacity of water that can be treated |
+| getSS1<br>getSS2<br>getSS3 | "1"<br>"0"<br>"0" | weeks | | Salt in tank 1, 2 or 3 lasts for n weeks. NeoSoft: 0–40 |
+| getSV1 / setSV1<br>getSV2 / setSV2<br>getSV3 / setSV3 | "7"<br>"0"<br>"0" | kg | | Salt stored in tank 1, 2 or 3. LEX family: can also be set, e.g. on refill. NeoSoft: read-only value of the built-in salt level sensor, 0–40 kg (official API: GET only) |
+| getVOL | "2000" | L | | Total volume, App shows in m³ (L/1000) |
+| clrVOL | "" | | FACTORY | Clears the value of getVOL (write-only) |
+| getVS1<br>getVS2<br>getVS3 | "0"<br>"0"<br>"0" | L | | Volume threshold 1–3 (advanced configuration) |
 
 ### Regeneration
 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
-| getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | | "1" if regeneration is running for tank 1, 2 or 3. NeoSoft (getRG1 only): 0 = no regeneration, 1 = bottle 1 regenerates, 2 = bottle 2 regenerates |
 | getCYN | "0" | | | Number of the running program |
 | getCYT | "00:00" | min | | Remaining time of the running regeneration program: minutes as a number (NeoSoft, Sanibel UNO, Conel Clear Pro Soft) or "minutes:seconds" (LEX, L20) |
-| getRTI | "00:00"<br>"3540" | | | Total duration of the regeneration cylce. NeoSoft: time until the regeneration ends, in seconds (0–5940) |
-| getLAR | "1694501839" | | | Last regeneration as local time in seconds since 1.1.1970, not UTC (see `docs/known_issues_xml_api.md`, issue 5) |
-| getTOR | "429" | | | Number of total regeneration cycles |
-| getNOR | "427" | | | Number of regeneration cycles in normal mode |
-| getSCR | "0" | | | *unknown, likely number of service regeneration cycles* |
-| getINR | "2" | | | Number of incomplete regeneration cycles |
-| setSIR | "1" | | | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this) |
-| setSDR | "1" | | | Trigger delayed regeneration (write-only) |
-| setSMR | "1" | | | Trigger multi-tank regeneration (write-only) |
-| getRST | "0" | | | Reset device control — unclear what values trigger |
-| setRST | "1" | | SERVICE | Restarts the device (write-only) |
 | setDEF | "" | | SERVICE | Resets all parameters to their factory defaults (write-only) |
 | getERE | "19" | | | Expected regenerations remaining (NeoSoft 2500/5000) |
+| getINR | "2" | | | Number of incomplete regeneration cycles |
+| getLAR | "1694501839" | | | Last regeneration as local time in seconds since 1.1.1970, not UTC (see `docs/known_issues_xml_api.md`, issue 5) |
+| getNOR | "427" | | | Number of regeneration cycles in normal mode |
 | getNRE | "3" | | | Number of remaining regenerations (NeoSoft 2500/5000) |
+| getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | | "1" if regeneration is running for tank 1, 2 or 3. NeoSoft (getRG1 only): 0 = no regeneration, 1 = bottle 1 regenerates, 2 = bottle 2 regenerates |
+| getRST | "0" | | | Reset device control — unclear what values trigger |
+| setRST | "1" | | SERVICE | Restarts the device (write-only) |
+| getRTI | "00:00"<br>"3540" | | | Total duration of the regeneration cylce. NeoSoft: time until the regeneration ends, in seconds (0–5940) |
+| getSCR | "0" | | | *unknown, likely number of service regeneration cycles* |
+| setSDR | "1" | | | Trigger delayed regeneration (write-only) |
+| setSIR | "1" | | | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this) |
+| setSMR | "1" | | | Trigger multi-tank regeneration (write-only) |
+| getTOR | "429" | | | Number of total regeneration cycles |
 | getVRE1<br>getVRE2 | "22"<br>"" | L? | | Volume of last regeneration in tank 1 or 2 (NeoSoft 2500/5000) |
 
 ### Statistics
@@ -801,49 +801,49 @@ These properties are only available on devices that contain leakage protection, 
 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
+| get71 / set71 | "0"<br>"False" | | FACTORY | Leakage protection deactivated: 0/False = no, 1/True = yes |
 | getAB / setAB | "true"<br>"1" | | | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed |
 | getBAT | "6,11 4,38 3,90" | V | USER | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat" |
 | getBAT | "363" | V | USER | Battery voltage in 1/100 V e.g. 3,63 Volt. |
-| getNET | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V | | USER | Mains voltage. 4 formats exists; |
-| getVLV | "20" | | SERVICE | Current valve status:<br>10 = closed<br>11 = closing<br>20 = open<br>21 = opening<br>30 = "Absence leakage" (best guess from testing, not not confirmed) |
-| getLE / setLE | "4" | L | | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L |
-| getUL / setUL | "0" | L | | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L |
-| getT1 / setT1 | "1" | | | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h |
-| getT2 / setT2 | "1" | | | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h |
-| getTMP / setTMP | "0" | seconds | | Deactivate leakage protection for n seconds, 0–4294967295; reading it returns the remaining time. All protection functions are off, except the monitoring by the floor sensor: a floor sensor leakage still triggers the alarm and closes the valve |
-| get71 / set71 | "0"<br>"False" | | FACTORY | Leakage protection deactivated: 0/False = no, 1/True = yes |
-| getTN / setTN | "20" | 1/10 s | FACTORY | Motor overrun after a limit switch has been reached. Range: 0–20 (0.0–2.0 s) |
+| getBMA | "585" | mbar? | | Battery/pressure maximum value (Sanibel Leak Protection Module A25) |
+| getBMI | "515" | mbar? | | Battery/pressure minimum value (Sanibel Leak Protection Module A25) |
+| getBSI | "2 (16 bar)" | | | Pressure sensor type and range identifier (Safe-T+) |
 | getCEL | "203" | 1/10 °C | USER | Temperature / Water temperature, e.g. 203 = 20.3°C |
-| getNPS | "22" | s | SERVICE | No turbine pulses since, 0–4294967295 (Trio DFR/LS, SafeTech+) |
-| getVPS1 | "3360" | s | | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist. |
-| getVPS2 | "3360" | s | | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist. |
 | getCND | "250" | µS/cm | USER | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel) |
 | getCND2 | "0" | µS/cm | | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix |
-| getBSI | "2 (16 bar)" | | | Pressure sensor type and range identifier (Safe-T+) |
+| getCSE2 | "false" | | | Remote-service enable for second channel (Sanibel Leak Protection Module A25) |
+| getDFM | "1" | | | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS) |
+| getFLF | "10" | L/h? | | Minimum flow filter threshold (SafeTech+) |
 | getFLL | "0 50000" | | | Minimum and maximum flow limits — two values (Safe-T+) |
-| getSLO / setSLO | "10" | % | SERVICE | Self-learning offset: surplus on the learned volume and time values. Range: 5–20, default 10 |
-| getSOF / setSOF | "20" | % | SERVICE | Self-learning offset flow: surplus on the learned maximum flow. Range: 5–50, default 20 |
-| getSMF / setSMF | "3500"<br>"2500" | L/h | USER | Self-learning minimum flow: placeholder for the learned flow value. Range: 0–5000, default 3500 (SafeTech). Trio DFR/LS and SafeTech+ captures report 2500 |
-| getSLP/setSLP | "0" | days | SERVICE | Self-learning phase duration in days; 0 ends the self-learning phase. Range: 0–28 (LEXplus10SL, SafeTech) |
-| getSLP_m<br>getSLP_sd<br>getSLP_ed | "" | | | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, SafeTech +) |
+| getLDT | "0" | s? | | Leak detection timeout (SafeTech, SafeTech+) |
+| getLE / setLE | "4" | L | | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L |
+| getLWT / setLWT | "90" | % | USER | Leakage warning threshold. Range: 80–99, default 90 (LEXplus10SL, SafeTech) |
+| getNET | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V | | USER | Mains voltage. 4 formats exists; |
+| getNPS | "22" | s | SERVICE | No turbine pulses since, 0–4294967295 (Trio DFR/LS, SafeTech+) |
+| getPB | "true" | | | Buzzer-pulse enable flag (SafeTech) |
+| getPSE | "True" | | | Pressure-sensor enable flag (Trio DFR/LS, Sanibel) |
+| getPSE2 | "false" | | | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25) |
 | setSLD | "true" | | | Clears self-learning phase data when set to `true` (write-only) (TrioDFR LS, SafeTech +) |
 | clrSLD | "" | | SERVICE | Clears the self-learned values (write-only). Named in SYR's SafeTech command table; possibly the SafeTech variant of setSLD |
 | getSLE | "86400" | s | USER | Self-learning phase remaining time, 0–2419200 |
 | getSLF | "1200" | L/h | USER | Maximum flow learned during the self-learning phase, 0–5000 |
+| getSLO / setSLO | "10" | % | SERVICE | Self-learning offset: surplus on the learned volume and time values. Range: 5–20, default 10 |
+| getSLP/setSLP | "0" | days | SERVICE | Self-learning phase duration in days; 0 ends the self-learning phase. Range: 0–28 (LEXplus10SL, SafeTech) |
+| getSLP_m<br>getSLP_sd<br>getSLP_ed | "" | | | Derived sub-attributes of getSLP — maintenance mode details (Trio DFR/LS, SafeTech +) |
 | getSLT | "0" | s | USER | Maximum time learned during the self-learning phase, 0–90000 |
 | getSLV | "0" | L | USER | Maximum volume learned during the self-learning phase, 0–9000. The learned values are reset when a new self-learning phase starts |
-| getLWT / setLWT | "90" | % | USER | Leakage warning threshold. Range: 80–99, default 90 (LEXplus10SL, SafeTech) |
-| getPSE | "True" | | | Pressure-sensor enable flag (Trio DFR/LS, Sanibel) |
-| getVTO | "False" | | USER | Valve test ongoing: 0/False = inactive, 1/True = active |
-| getLDT | "0" | s? | | Leak detection timeout (SafeTech, SafeTech+) |
-| getPB | "true" | | | Buzzer-pulse enable flag (SafeTech) |
-| getFLF | "10" | L/h? | | Minimum flow filter threshold (SafeTech+) |
-| getBMA | "585" | mbar? | | Battery/pressure maximum value (Sanibel Leak Protection Module A25) |
-| getBMI | "515" | mbar? | | Battery/pressure minimum value (Sanibel Leak Protection Module A25) |
-| getDFM | "1" | | | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS) |
-| getPSE2 | "false" | | | Pressure-sensor enable for second channel (Sanibel Leak Protection Module A25) |
-| getCSE2 | "false" | | | Remote-service enable for second channel (Sanibel Leak Protection Module A25) |
+| getSMF / setSMF | "3500"<br>"2500" | L/h | USER | Self-learning minimum flow: placeholder for the learned flow value. Range: 0–5000, default 3500 (SafeTech). Trio DFR/LS and SafeTech+ captures report 2500 |
+| getSOF / setSOF | "20" | % | SERVICE | Self-learning offset flow: surplus on the learned maximum flow. Range: 5–50, default 20 |
 | getSUP | "1" | | | Supervision or supply status (Sanibel Leak Protection Module A25) |
+| getT1 / setT1 | "1" | | | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h |
+| getT2 / setT2 | "1" | | | Leakage time (when present?): 1 = ?L, 2 = 1h, 3 = 1.5h, 4 = 2h |
+| getTMP / setTMP | "0" | seconds | | Deactivate leakage protection for n seconds, 0–4294967295; reading it returns the remaining time. All protection functions are off, except the monitoring by the floor sensor: a floor sensor leakage still triggers the alarm and closes the valve |
+| getTN / setTN | "20" | 1/10 s | FACTORY | Motor overrun after a limit switch has been reached. Range: 0–20 (0.0–2.0 s) |
+| getUL / setUL | "0" | L | | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L |
+| getVLV | "20" | | SERVICE | Current valve status:<br>10 = closed<br>11 = closing<br>20 = open<br>21 = opening<br>30 = "Absence leakage" (best guess from testing, not not confirmed) |
+| getVPS1 | "3360" | s | | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist. |
+| getVPS2 | "3360" | s | | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist. |
+| getVTO | "False" | | USER | Valve test ongoing: 0/False = inactive, 1/True = active |
 
 ### Leak protection profiles
 
@@ -851,25 +851,25 @@ LEXplus10SL, SafeTech, SafeTech+, Trio DFR/LS and Sanibel devices support up to 
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
-| getPRF / setPRF | "1" | | Currently active profile index: 1–8 (1 = present, 2 = absent on SafeTech/SafeTech+, Trio DFR/LS, Sanibel) |
-| getPRN | "2" | | Duplicate of getPRF (Trio DFR/LS, Sanibel) |
+| getPA1…getPA8 / setPA1…setPA8 | "false" | | Profile 1–8 availability (true/false). Profiles 1 (present) and 2 (absent) are preset and cannot be deactivated; profiles 3–8 should be activated in order |
+| getPB | "true" | | Default buzzer alert enabled — template for getPB1…getPB8 (SafeTech only, not exposed as HA entity) |
+| getPB1…getPB8 / setPB1…setPB8 | "false" | | Profile 1–8 buzzer enabled (true/false) |
 | getPCI | "2" | | Number of configured profiles (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
 | getPCO | "false" | | Profile configuration option (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
 | getPCS | "1" | | Profile configuration setting (SafeTech+, Trio DFR/LS, NeoSoft, Conel) |
 | getPF | "3500" | L/h | Default flow leak threshold — template for getPF1…getPF8 (SafeTech only, not exposed as HA entity) |
-| getPM | "true" | | Default microleakage test enabled — template for getPM1…getPM8 (SafeTech only, not exposed as HA entity) |
-| getPT | "30" | min | Default max. leak duration — template for getPT1…getPT8 (SafeTech only, not exposed as HA entity) |
-| getPV | "200" | L | Default max. leak volume — template for getPV1…getPV8 (SafeTech only, not exposed as HA entity) |
-| getPW | "true" | | Default leak warning enabled — template for getPW1…getPW8 (SafeTech only, not exposed as HA entity) |
-| getPB | "true" | | Default buzzer alert enabled — template for getPB1…getPB8 (SafeTech only, not exposed as HA entity) |
-| getPA1…getPA8 / setPA1…setPA8 | "false" | | Profile 1–8 availability (true/false). Profiles 1 (present) and 2 (absent) are preset and cannot be deactivated; profiles 3–8 should be activated in order |
-| getPB1…getPB8 / setPB1…setPB8 | "false" | | Profile 1–8 buzzer enabled (true/false) |
 | getPF1…getPF8 / setPF1…setPF8 | "0" | L/h | Profile 1–8 max. flow threshold; 0 = flow leak detection disabled. Range: 0–5000 |
+| getPM | "true" | | Default microleakage test enabled — template for getPM1…getPM8 (SafeTech only, not exposed as HA entity) |
 | getPM1…getPM8 / setPM1…setPM8 | "false" | | Profile 1–8 microleakage test enabled (true/false) |
 | getPN1…getPN8 | "" | | Profile 1–8 name |
 | getPR1…getPR8 / setPR1…setPR8 | "0" | h | Profile 1–8 return time to profile 1 (present); 0 = profile remains permanently active. Range: 0–700 |
+| getPRF / setPRF | "1" | | Currently active profile index: 1–8 (1 = present, 2 = absent on SafeTech/SafeTech+, Trio DFR/LS, Sanibel) |
+| getPRN | "2" | | Duplicate of getPRF (Trio DFR/LS, Sanibel) |
+| getPT | "30" | min | Default max. leak duration — template for getPT1…getPT8 (SafeTech only, not exposed as HA entity) |
 | getPT1…getPT8 / setPT1…setPT8 | "0" | min | Profile 1–8 max. leak duration; 0 = time leak detection disabled. Range: 0–1500 |
+| getPV | "200" | L | Default max. leak volume — template for getPV1…getPV8 (SafeTech only, not exposed as HA entity) |
 | getPV1…getPV8 / setPV1…setPV8 | "0" | L | Profile 1–8 max. leak volume; 0 = volume leak detection disabled. Range: 0–9000 |
+| getPW | "true" | | Default leak warning enabled — template for getPW1…getPW8 (SafeTech only, not exposed as HA entity) |
 | getPW1…getPW8 / setPW1…setPW8 | "false" | | Profile 1–8 leak warning enabled (true/false) |
 
 ### Microleakage test
@@ -879,10 +879,10 @@ Available on Trio DFR/LS, SafeTech+, TRIO Lock and SafeTech Lock (official API).
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
 | setDEX | "true" | | Starts the microleakage test (write-only). The valve is closed during the test, which takes about 4 minutes; drawing water during the test gives a negative result |
+| getDMA / setDMA | "1" | | Sets whether a warning or an alarm becomes active after a microleakage is detected: 1 = Warning, 2 = Alarm, which also closes the valve (Trio DFR/LS, SafeTech +, TRIO Lock, SafeTech Lock) |
 | getDRP / setDRP | "1" | | Microleakage test interval: 1 = daily, 2 = weekly, 3 = monthly |
 | getDSV | "0" | | Microleakage test status (read-only): 0 = not active, 1 = active, 2 = aborted due to pressure drop, 3 = skipped. A scheduled test is skipped (3) when water was drawn in the 180 minutes before; on devices with a pressure sensor a water withdrawal aborts the test and opens the valve again (2) |
 | getDTT / setDTT | "00:00" | | Time of day when the microleakage test is executed (format `HH:MM`), always in UTC; the local time offset has to be taken into account |
-| getDMA / setDMA | "1" | | Sets whether a warning or an alarm becomes active after a microleakage is detected: 1 = Warning, 2 = Alarm, which also closes the valve (Trio DFR/LS, SafeTech +, TRIO Lock, SafeTech Lock) |
 
 ### SafeFloor pairing
 
@@ -891,8 +891,8 @@ Floor sensors (SafeFloor) are paired with a leak protection device by their 9-di
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
 | getFSA / setFSA | "0" | | USER | Setting it pairs the floor sensor with the given serial number. Reading it returns the pairing status: 0 = not paired, 1 = pairing in progress (30 s timeout), 2 = OK |
-| setFSR | "123456789" | | USER | Unpairs the floor sensor with the given serial number (write-only) |
 | setFSC | "" | | | Unpairs all floor sensors (write-only) |
+| setFSR | "123456789" | | USER | Unpairs the floor sensor with the given serial number (write-only) |
 
 ### Access levels
 
@@ -913,23 +913,20 @@ These properties are only available on devices that contain leakage protection, 
 | Property | Example | Unit | Access level | Description |
 | --- | --- | --- | --- | --- |
 | getAVO | "0mL" | mL | FACTORY | Volume of the current water withdrawal in mL; resets when the withdrawal is finished. Syr Apps shows value in "L" |
-| getBSA | "0" | | | *unknown* |
-| getDBD | "10" | 1/10 bar | | Pressure drop leak test in dbar |
-| getDBT | "15" | | | *unknown* |
-| getDST | "180" | | | *unknown* |
-| getDCM | "3" | | | *unknown* |
-| getDOM | "60" | | | *unknown* |
-| getDPL | "10" | | | *unknown* |
-| getDTC | "3" | | | *unknown* |
-| getSRE | "0" | | | Regeneration state: 0 = not running, 1 = running (values 3/5 unclear) |
-| getVAC | "0" | | | *unknown* |
-| getVAT | "3" | | | *unknown* |
 | getAWY | "" | | | *unknown* (Safe-T+) |
 | getBLT | "10" | | | *unknown* (Safe-T+) |
+| getBSA | "0" | | | *unknown* |
 | getCDF | "402,9,0,..." | | | *unknown* — comma-separated array (LEXplus10SL) |
 | getCEO | "" | | | *unknown* (Safe-T+) |
 | getCES | "1" | | | *unknown* (LEXplus10SL) |
 | getCNS | "1" | | | *unknown* (LEXplus10SL) |
+| getDBD | "10" | 1/10 bar | | Pressure drop leak test in dbar |
+| getDBT | "15" | | | *unknown* |
+| getDCM | "3" | | | *unknown* |
+| getDOM | "60" | | | *unknown* |
+| getDPL | "10" | | | *unknown* |
+| getDST | "180" | | | *unknown* |
+| getDTC | "3" | | | *unknown* |
 | getEXI | "0" | | | *unknown* — possibly external input status (Safe-T+) |
 | getEXT | "1" | | | *unknown* — possibly external sensor connected (Safe-T+) |
 | getFSL | "[]"<br>[{&quot;SN&quot;:&quot;987654321&quot;},{&quot;SN&quot;:&quot;876543210&quot;}] | | USER | Array with serial numbers of connected SafeFloor devices (Available on LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech V4) |
@@ -937,11 +934,14 @@ These properties are only available on devices that contain leakage protection, 
 | getGUL | "" | | | *unknown* (Safe-T+) |
 | getINT | "0 0 0 0 0 0 1 0" | | | *unknown* — 8-element array, possibly interrupt input states (Safe-T+) |
 | getREL | "0" | | | *unknown* — possibly relay state (Safe-T+) |
+| getSRE | "0" | | | Regeneration state: 0 = not running, 1 = running (values 3/5 unclear) |
 | getTBS | "1" | | | *unknown* — possibly test or battery status flag (Safe-T+) |
 | getTC | "30" | | | *unknown* — possibly a timer count value (Safe-T+) |
 | getTO | "30" | | | *unknown* — possibly a timeout value (Safe-T+) |
 | getTPA | "32" | | | *unknown* (Safe-T+) |
 | getUNI | "0" | | | *unknown* (Safe-T+, Sanibel) |
+| getVAC | "0" | | | *unknown* |
+| getVAT | "3" | | | *unknown* |
 
 ### Unknown
 
@@ -976,14 +976,14 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
+| getALL | "0" | | *unknown* |
 | getBMX | "" | | *unknown* |
-| getEVL | "0" | | *unknown* — possibly event level |
-| getTURL | "" | | *unknown* — possibly test URL |
-| getCNL | "10" | | *unknown* |
 | getCLC | "500" | | *unknown* |
 | getCLM | "370" | | *unknown* |
+| getCNL | "10" | | *unknown* |
 | getDVL | "501AAA12345" | | *unknown* — possibly device volume label |
-| getALL | "0" | | *unknown* |
+| getEVL | "0" | | *unknown* — possibly event level |
+| getTURL | "" | | *unknown* — possibly test URL |
 
 ### Trio DFR/LS
 
@@ -994,9 +994,6 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | getBFT | "" | | *unknown* |
 | getCCK | "" | | *unknown* |
 | getCSE | "True" | | *unknown* — possibly cloud-service enable |
-| getLED | "" | | *unknown* |
-| getRCE | "" | | *unknown* |
-| getTSE | "False" | | *unknown* |
 | getDAP | "" | | *unknown* (JSON API only) |
 | getDAV | "" | | *unknown* (JSON API only) |
 | getDMO | "" | | *unknown* (JSON API only) |
@@ -1004,6 +1001,9 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | getDPV | "" | | *unknown* (JSON API only) |
 | getDSP | "" | | *unknown* (JSON API only) |
 | getDVS | "" | | *unknown* (JSON API only) |
+| getLED | "" | | *unknown* |
+| getRCE | "" | | *unknown* |
+| getTSE | "False" | | *unknown* |
 
 ### SafeTech
 
@@ -1187,10 +1187,10 @@ available per model) alongside the confirmed descriptions.
 | LFT | int | Last refill duration in s | - | ✓ | X |
 | LFV | int | Last refilled volume in liters | - | ✓ | X |
 | LTV | int | Last tapped volume in liters | - | ✓ | X |
-| NMT | int | Time in days until valve self-test becomes active | 1–61 | ✓ | ✓ |
-| NPT | int | Time in days until alarm A8 ("flow sensor fault") becomes active | 1–365 | ✓ | ✓ |
 | NMS | long | No valve movement since, in s | - | ✓ | X |
+| NMT | int | Time in days until valve self-test becomes active | 1–61 | ✓ | ✓ |
 | NPS | long | No turbine pulses since, in s | - | ✓ | X |
+| NPT | int | Time in days until alarm A8 ("flow sensor fault") becomes active | 1–365 | ✓ | ✓ |
 | NRT | int | No refill since, in s | - | ✓ | X |
 | SRN | string | Serial number of the device | - | ✓ | X |
 | TRT | int | Cumulative refill time in s | - | ✓ | X |
@@ -1217,10 +1217,10 @@ available per model) alongside the confirmed descriptions.
 | LFT | X | X | ✓ | ✓ | X | X | X | X | X |
 | LFV | X | X | ✓ | ✓ | X | X | X | X | X |
 | LTV | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
-| NMT | ✓ | ✓ | X | X | X | X | X | X | X |
-| NPT | ✓ | ✓ | X | X | X | X | X | X | X |
 | NMS | ✓ | ✓ | X | X | X | X | X | X | X |
+| NMT | ✓ | ✓ | X | X | X | X | X | X | X |
 | NPS | ✓ | ✓ | X | X | X | ✓ | ✓ | X | X |
+| NPT | ✓ | ✓ | X | X | X | X | X | X | X |
 | NRT | X | X | ✓ | ✓ | X | X | X | X | X |
 | SRN | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | TRT | X | X | ✓ | ✓ | X | X | X | X | X |
