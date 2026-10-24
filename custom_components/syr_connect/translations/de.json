@@ -1504,7 +1504,7 @@
     },
     "switch": {
       "getbpb": {
-        "name": "Profilwechsel per Taste",
+        "name": "Profilwechsel am Gerät erlauben",
         "state": {
           "false": "Deaktiviert",
           "true": "Aktiviert"

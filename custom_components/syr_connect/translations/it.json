@@ -1504,7 +1504,7 @@
     },
     "switch": {
       "getbpb": {
-        "name": "Cambio profilo tramite pulsante",
+        "name": "Consenti cambio profilo sul dispositivo",
         "state": {
           "false": "Disattivato",
           "true": "Attivato"

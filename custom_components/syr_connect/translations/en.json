@@ -1504,7 +1504,7 @@
     },
     "switch": {
       "getbpb": {
-        "name": "Profile change by button",
+        "name": "Allow profile change on the device",
         "state": {
           "false": "Disabled",
           "true": "Enabled"

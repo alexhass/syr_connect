@@ -266,7 +266,7 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 #### Schaltersteuerungen
 
 - **Summer**: Gerätesummer aktivieren oder deaktivieren
-- **Profilwechsel per Taste**: Wechsel des Leckageschutzprofils mit der Taste am Gerät erlauben oder sperren
+- **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutzprofils mit der Taste am Gerät erlauben oder sperren
 
 #### Auswahlsteuerungen (Konfiguration)
 

@@ -266,7 +266,7 @@ The integration provides comprehensive monitoring of your devices:
 #### Switch Controls
 
 - **Buzzer**: Enable or disable the device buzzer
-- **Profile Change by Button**: Allow or block changing the leak protection profile with the button on the device
+- **Allow Profile Change on the Device**: Allow or block changing the leak protection profile with the button on the device
 
 #### Select Controls (Configuration)
 

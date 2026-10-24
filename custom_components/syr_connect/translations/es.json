@@ -1504,7 +1504,7 @@
     },
     "switch": {
       "getbpb": {
-        "name": "Cambio de perfil por botón",
+        "name": "Permitir cambio de perfil en el dispositivo",
         "state": {
           "false": "Desactivado",
           "true": "Activado"

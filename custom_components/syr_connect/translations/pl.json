@@ -1504,7 +1504,7 @@
     },
     "switch": {
       "getbpb": {
-        "name": "Zmiana profilu przyciskiem",
+        "name": "Zezwalaj na zmianę profilu na urządzeniu",
         "state": {
           "false": "Wyłączony",
           "true": "Włączony"

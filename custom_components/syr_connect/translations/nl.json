@@ -1504,7 +1504,7 @@
     },
     "switch": {
       "getbpb": {
-        "name": "Profielwissel via knop",
+        "name": "Profielwissel op het apparaat toestaan",
         "state": {
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
