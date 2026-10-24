@@ -1468,7 +1468,7 @@ async def test_async_setup_entry_model_from_type_field(
         ("208", "conceptsingle"),
         ("209", "optimasingle"),
         ("210", "concept200duo"),
-        ("211", "optimat22duo"),
+        ("211", "optimat2duo"),
         ("212", "sanibelsoftwaterduo"),
         ("213", "optimaduo"),
         ("214", "conelclearprosofttwin"),

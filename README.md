@@ -114,17 +114,17 @@ Other devices are also of interest, but may need to be integrated or at least te
 
 - CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
+- concept 200 Dual Water Softener
 - concept 200 Replacement Filter
-- concept 200 Twin Water Softener
+- concept Dual Water Softener
 - concept Single Water Softener
-- concept Twin Water Softener
+- Ditech Dual Water Softener
 - Ditech Single Water Softener
-- Ditech Twin Water Softener
 - Hansgrohe PontosBase
+- Optima Dual Water Softener
 - Optima Single Water Softener
 - Optima T Replacement Filter
-- Optima T2.3 Twin Water Softener
-- Optima Twin Water Softener
+- Optima T2 Dual Water Softener
 - POLYGONVATRO SafeTech Connect (sold with AXA building insurance as "Wasserwächter")
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
@@ -151,8 +151,8 @@ Other devices are also of interest, but may need to be integrated or at least te
 - SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
 - SYR Trio LS Connect
+- TAKE Dual Water Softener
 - TAKE Single Water Softener
-- TAKE Twin Water Softener
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
 **Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
