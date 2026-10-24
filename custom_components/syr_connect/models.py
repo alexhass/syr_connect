@@ -561,7 +561,7 @@ MODEL_SIGNATURES: list[dict[str, Any]] = [
         "dkv": 35,
         "manufacturer": "SYR",
         "name": "safetech",
-        # TODO: Untested model.
+        # TODO: Untested model. Both values are incorrect in fixure.
         "srn_infix": "aBC",
         "srn_prefix": "123",
     },
