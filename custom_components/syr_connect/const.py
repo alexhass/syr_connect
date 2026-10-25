@@ -2,8 +2,6 @@
 
 from dataclasses import dataclass
 
-# Configuration URL for device info
-
 DOMAIN = "syr_connect"
 
 # Configuration keys
