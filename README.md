@@ -343,7 +343,7 @@ If a device becomes unavailable (e.g., offline or communication error), its enti
 
 ### SafeFloor Measurement History
 
-A SafeFloor measures temperature and humidity regularly but sends its measurements to the cloud only every few days, so its sensors show a flat line followed by a jump. The integration fetches the single measurements from the cloud every 12 hours and stores them as statistics named after the sensors (e.g. "Kitchen Temperature"). To see the real curve, add a **Statistics graph** card and select these statistics.
+A SafeFloor measures temperature and humidity regularly but sends its measurements to the cloud only every few days, so its sensors show a flat line followed by a jump. The integration fetches the single measurements from the cloud every 12 hours and stores them as statistics named after the sensors (e.g. "Utility Room Temperature"). To see the real curve, add a **Statistics graph** card and select these statistics.
 
 The cloud keeps the measurements of the last 6 days only. Keep the synchronization interval of the sensor at 6 days or less, otherwise measurements are lost. The statistics are deleted together with the device.
 
