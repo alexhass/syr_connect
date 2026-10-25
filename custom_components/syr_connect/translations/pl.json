@@ -41,6 +41,14 @@
         "description": "Dane logowania dla {username} są już nieważne. Podaj nowe dane logowania.",
         "title": "Ponowne uwierzytelnienie SYR Connect"
       },
+      "reauth_confirm_local": {
+        "data": {
+          "host": "Nazwa hosta lub adres IP",
+          "model": "Model urządzenia"
+        },
+        "description": "Urządzenie pod adresem {host} odrzuciło połączenie. Sprawdź model urządzenia oraz nazwę hosta lub adres IP.",
+        "title": "Ponowne połączenie SYR Connect (lokalnie)"
+      },
       "reconfigure": {
         "data": {
           "host": "Nazwa hosta lub adres IP",

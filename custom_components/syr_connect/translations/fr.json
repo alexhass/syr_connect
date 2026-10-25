@@ -41,6 +41,14 @@
         "description": "Les identifiants pour {username} ne sont plus valides. Veuillez saisir de nouveaux identifiants.",
         "title": "Réauthentifier SYR Connect"
       },
+      "reauth_confirm_local": {
+        "data": {
+          "host": "Nom d'hôte ou adresse IP",
+          "model": "Modèle de l'appareil"
+        },
+        "description": "L'appareil à l'adresse {host} a refusé la connexion. Vérifiez le modèle de l'appareil et le nom d'hôte ou l'adresse IP.",
+        "title": "Reconnecter SYR Connect (Local)"
+      },
       "reconfigure": {
         "data": {
           "host": "Nom d'hôte ou adresse IP",

@@ -41,6 +41,14 @@
         "description": "The credentials for {username} are no longer valid. Please enter new credentials.",
         "title": "Reauthenticate SYR Connect"
       },
+      "reauth_confirm_local": {
+        "data": {
+          "host": "Hostname or IP address",
+          "model": "Device model"
+        },
+        "description": "The device at {host} rejected the connection. Check the device model and the hostname or IP address.",
+        "title": "Reconnect SYR Connect (Local)"
+      },
       "reconfigure": {
         "data": {
           "host": "Hostname or IP address",

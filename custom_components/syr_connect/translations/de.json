@@ -41,6 +41,14 @@
         "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Bitte geben Sie neue Anmeldedaten ein.",
         "title": "SYR Connect erneut authentifizieren"
       },
+      "reauth_confirm_local": {
+        "data": {
+          "host": "Hostname oder IP-Adresse",
+          "model": "Gerätemodell"
+        },
+        "description": "Das Gerät unter {host} hat die Verbindung abgelehnt. Prüfen Sie Gerätemodell und Hostname oder IP-Adresse.",
+        "title": "SYR Connect (Lokal) neu verbinden"
+      },
       "reconfigure": {
         "data": {
           "host": "Hostname oder IP-Adresse",

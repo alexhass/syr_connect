@@ -353,7 +353,7 @@ async def test_validate_input_json_device_missing_id_raises(
 
 
 async def test_reauth_confirm_json_initial_form(hass: HomeAssistant) -> None:
-    """Initial reauth form for JSON API should be shown (host placeholder)."""
+    """Initial reauth form for JSON API should be shown, naming the host."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="json_reauth_init@example.com",
@@ -372,7 +372,8 @@ async def test_reauth_confirm_json_initial_form(hass: HomeAssistant) -> None:
     )
 
     assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "reauth_confirm"
+    assert result["step_id"] == "reauth_confirm_local"
+    assert (result["description_placeholders"] or {}).get("host") == "192.0.2.5"
 
 
 async def test_reauth_confirm_json_success(hass: HomeAssistant) -> None:
@@ -705,19 +706,16 @@ async def test_reauth_flow(hass: HomeAssistant) -> None:
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
-        context=cast(
-            Any,
-            {
-                "source": config_entries.SOURCE_REAUTH,
-                "entry_id": entry.entry_id,
-                "username": "test@example.com",
-            },
-        ),
+        context={"source": config_entries.SOURCE_REAUTH, "entry_id": entry.entry_id},
         data=entry.data,
     )
 
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "reauth_confirm"
+    # The description names the account of the entry
+    assert (result["description_placeholders"] or {}).get("username") == (
+        "test@example.com"
+    )
 
     with patch(
         "custom_components.syr_connect.async_setup_entry",

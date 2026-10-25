@@ -535,10 +535,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error during reauth")
                 errors["base"] = "unknown"
 
-        # Show appropriate form based on API type
+        # A local entry has no credentials: its own step asks for model and host
         if api_type == API_TYPE_JSON:
             return self.async_show_form(
-                step_id="reauth_confirm",
+                step_id="reauth_confirm_local",
                 data_schema=STEP_LOCAL_JSON_DATA_SCHEMA,
                 errors=errors,
                 description_placeholders={
@@ -551,9 +551,25 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=_STEP_REAUTH_XML_DATA_SCHEMA,
             errors=errors,
             description_placeholders={
-                "username": str(self.context.get("username", ""))
+                "username": str(entry.data.get(CONF_USERNAME, "")) if entry else ""
             },
         )
+
+    async def async_step_reauth_confirm_local(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the reauth form of a local (JSON API) entry.
+
+        The form has its own step for its own texts; the input is handled by
+        `async_step_reauth_confirm` like the cloud credentials.
+
+        Args:
+            user_input: User input data with model and host
+
+        Returns:
+            FlowResult with updated config entry or form with errors
+        """
+        return await self.async_step_reauth_confirm(user_input)
 
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
