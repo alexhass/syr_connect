@@ -1,6 +1,6 @@
 """Helper functions for SYR Connect integration."""
 
-from collections.abc import Callable, Set as AbstractSet
+from collections.abc import Callable, Mapping, Set as AbstractSet
 import contextlib
 import ipaddress
 import logging
@@ -9,6 +9,7 @@ from typing import Any
 
 from homeassistant.components.recorder import get_instance
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -17,6 +18,7 @@ from homeassistant.util import slugify
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
@@ -24,6 +26,7 @@ from .const import (
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
+    CONF_SERVICE,
     DOMAIN,
 )
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
@@ -285,6 +288,28 @@ def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
     if entry_id:
         return f"{entry_id}_{device_id}_{key}"
     return f"{device_id}_{key}"
+
+
+def build_entry_unique_id(api_type: str, data: Mapping[str, Any]) -> str:
+    """Return the unique_id of a config entry for its connection data.
+
+    A local entry is identified by its host. A cloud account belongs to its cloud
+    service (CONF_SERVICE, the cf_bundle_identifier of the app): the login only works
+    with the app name of the service, also where several services share one server.
+    The same e-mail address can therefore be a different account in every service.
+
+    Args:
+        api_type: API type of the entry (API_TYPE_XML or API_TYPE_JSON).
+        data: Entry data with the host (local) or the service and username (cloud).
+
+    Returns:
+        "json_<host>" or "xml_<cf_bundle_identifier>_<username>", e.g.
+        "xml_de.consoft.syr.connect_me@example.com".
+    """
+    if api_type == API_TYPE_JSON:
+        return f"{API_TYPE_JSON}_{data[CONF_HOST]}"
+    service = data.get(CONF_SERVICE) or _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
+    return f"{API_TYPE_XML}_{service}_{data[CONF_USERNAME]}"
 
 
 def build_statistic_id(device_id: str, key: str) -> str:

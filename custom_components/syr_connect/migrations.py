@@ -24,6 +24,7 @@ from .const import (
     CONF_SERVICE,
 )
 from .exceptions import SyrConnectInvalidResponseError
+from .helpers import build_entry_unique_id
 from .models import detect_model
 
 # Renamed local JSON API models (CONF_MODEL) -> their new name
@@ -233,6 +234,22 @@ async def v8_to_v9_detect_local_model(
         return None
     new_model = await _async_detect_local_model(hass, entry, base_path)
     return {"data": {**entry.data, CONF_MODEL: new_model}, "version": 9}
+
+
+def v9_to_v10_entry_unique_id_by_service(entry: ConfigEntry) -> dict | None:
+    """Compute update kwargs for migrating v9 -> v10.
+
+    The unique_id of a cloud entry was "xml_<username>", so the same e-mail address
+    could not be set up for a second cloud service, although every service has
+    accounts of its own. It now contains the service (see
+    helpers.build_entry_unique_id). Local entries keep "json_<host>".
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_XML:
+        return None
+    return {
+        "unique_id": build_entry_unique_id(API_TYPE_XML, entry.data),
+        "version": 10,
+    }
 
 
 async def _async_detect_local_model(

@@ -39,6 +39,7 @@ from .exceptions import (
     SyrConnectConnectionError,
 )
 from .helpers import (
+    build_entry_unique_id,
     get_api_locale,
     get_default_scan_interval_for_entry,
     host_has_port,
@@ -353,7 +354,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SYR Connect."""
 
-    VERSION = 9
+    VERSION = 10
 
     @staticmethod
     @callback
@@ -375,11 +376,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def _entry_unique_id(api_type: str, data: dict[str, Any]) -> str:
         """Return the config entry unique_id for the given connection data.
 
-        Same format as set by the user steps: "xml_<username>" or "json_<host>".
+        See build_entry_unique_id; the migration to version 10 uses the same rule.
         """
-        if api_type == API_TYPE_JSON:
-            return f"{API_TYPE_JSON}_{data[CONF_HOST]}"
-        return f"{API_TYPE_XML}_{data[CONF_USERNAME]}"
+        return build_entry_unique_id(api_type, data)
 
     @staticmethod
     def _strip_host(user_input: dict[str, Any]) -> dict[str, Any]:

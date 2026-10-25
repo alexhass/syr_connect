@@ -627,7 +627,7 @@ async def test_async_migrate_entry_v2_to_v3(hass: HomeAssistant) -> None:
 
 
 async def test_async_migrate_entry_v7_to_v8(hass: HomeAssistant) -> None:
-    """Test v7->v8 migration renames the Optima T2.3 local model, then migrates to v9."""
+    """Test v7->v8 migration renames the Optima T2.3 local model, then migrates to v10."""
     local_entry = MockConfigEntry(
         version=7,
         domain=DOMAIN,
@@ -652,9 +652,9 @@ async def test_async_migrate_entry_v7_to_v8(hass: HomeAssistant) -> None:
     assert await async_migrate_entry(hass, local_entry) is True
     assert await async_migrate_entry(hass, cloud_entry) is True
 
-    assert local_entry.version == 9
+    assert local_entry.version == 10
     assert local_entry.data[CONF_MODEL] == "optimat2duo"
-    assert cloud_entry.version == 9
+    assert cloud_entry.version == 10
     assert cloud_entry.data == {
         "username": "v7user@example.com",
         "password": "password",
@@ -686,8 +686,47 @@ async def test_async_migrate_entry_v8_to_v9(hass: HomeAssistant) -> None:
     ):
         assert await async_migrate_entry(hass, entry) is True
 
-    assert entry.version == 9
+    assert entry.version == 10
     assert entry.data[CONF_MODEL] == "syrtriolockconnect"
+
+
+@pytest.mark.parametrize(
+    ("data", "unique_id", "expected"),
+    [
+        (
+            {
+                CONF_API_TYPE: API_TYPE_XML,
+                CONF_SERVICE: "de.consoft.gc.conel.connect",
+                CONF_USERNAME: "me@example.com",
+            },
+            "xml_me@example.com",
+            "xml_de.consoft.gc.conel.connect_me@example.com",
+        ),
+        # Without a service (before multi-service support): SYR Connect
+        (
+            {CONF_API_TYPE: API_TYPE_XML, CONF_USERNAME: "me@example.com"},
+            "xml_me@example.com",
+            "xml_de.consoft.syr.connect_me@example.com",
+        ),
+        # Local entries keep their unique_id
+        (
+            {CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "10.0.0.2"},
+            "json_10.0.0.2",
+            "json_10.0.0.2",
+        ),
+    ],
+)
+async def test_async_migrate_entry_v9_to_v10(
+    hass: HomeAssistant, data: dict[str, Any], unique_id: str, expected: str
+) -> None:
+    """Test v9->v10 migration adds the cloud service to the unique_id of cloud entries."""
+    entry = MockConfigEntry(version=9, domain=DOMAIN, data=data, unique_id=unique_id)
+    entry.add_to_hass(hass)
+
+    assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.version == 10
+    assert entry.unique_id == expected
 
 
 @pytest.mark.parametrize(

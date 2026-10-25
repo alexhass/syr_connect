@@ -24,6 +24,7 @@ from custom_components.syr_connect.const import (
     CONF_HOST,
     CONF_LOGIN_REQUIRED,
     CONF_MODEL,
+    CONF_SERVICE,
     DOMAIN,
 )
 from custom_components.syr_connect.exceptions import (
@@ -189,7 +190,7 @@ async def test_form_api_xml_already_configured(hass: HomeAssistant) -> None:
     """Test we handle already configured for cloud/XML API."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="xml_test@example.com",
+        unique_id="xml_de.consoft.syr.connect_test@example.com",
         data={
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
@@ -221,6 +222,51 @@ async def test_form_api_xml_already_configured(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "already_configured"
+
+
+async def test_form_api_xml_same_username_other_service(hass: HomeAssistant) -> None:
+    """The same e-mail address can be set up for another service: it is another account."""
+    MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="xml_de.consoft.syr.connect_test@example.com",
+        data={
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "test_password",
+            CONF_API_TYPE: API_TYPE_XML,
+        },
+    ).add_to_hass(hass)
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {"next_step_id": "api_xml"}
+    )
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.validate_input_xml",
+            return_value={"title": "CONEL CLEAR PRO (test@example.com)"},
+        ),
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            return_value=True,
+        ),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_SERVICE: "de.consoft.gc.conel.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test_password",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["result"].unique_id == (
+        "xml_de.consoft.gc.conel.connect_test@example.com"
+    )
 
 
 async def test_form_api_json(hass: HomeAssistant) -> None:
@@ -889,7 +935,7 @@ async def test_reconfigure_flow(hass: HomeAssistant) -> None:
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reconfigure_successful"
     # The changed username (e.g. a new e-mail address of the account) also changes the unique_id
-    assert entry.unique_id == "xml_new_user@example.com"
+    assert entry.unique_id == "xml_de.consoft.syr.connect_new_user@example.com"
     assert entry.data[CONF_USERNAME] == "new_user@example.com"
 
 
@@ -903,7 +949,7 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
     """Switching to a username that another entry already uses would poll the same account twice."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="xml_alice@example.com",
+        unique_id="xml_de.consoft.syr.connect_alice@example.com",
         data={
             CONF_USERNAME: "alice@example.com",
             CONF_PASSWORD: "pw",
@@ -913,7 +959,7 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
     entry.add_to_hass(hass)
     MockConfigEntry(
         domain=DOMAIN,
-        unique_id="xml_bob@example.com",
+        unique_id="xml_de.consoft.syr.connect_bob@example.com",
         data={
             CONF_USERNAME: "bob@example.com",
             CONF_PASSWORD: "pw",
@@ -940,14 +986,27 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "already_configured"
     # The entry is left unchanged
-    assert entry.unique_id == "xml_alice@example.com"
+    assert entry.unique_id == "xml_de.consoft.syr.connect_alice@example.com"
     assert entry.data[CONF_USERNAME] == "alice@example.com"
 
 
 @pytest.mark.parametrize(
     ("api_type", "data", "expected"),
     [
-        (API_TYPE_XML, {CONF_USERNAME: "user@example.com"}, "xml_user@example.com"),
+        # Without a service (entries from before multi-service support): SYR Connect
+        (
+            API_TYPE_XML,
+            {CONF_USERNAME: "user@example.com"},
+            "xml_de.consoft.syr.connect_user@example.com",
+        ),
+        (
+            API_TYPE_XML,
+            {
+                CONF_SERVICE: "de.consoft.gc.conel.connect",
+                CONF_USERNAME: "user@example.com",
+            },
+            "xml_de.consoft.gc.conel.connect_user@example.com",
+        ),
         (API_TYPE_JSON, {CONF_HOST: "192.168.1.20"}, "json_192.168.1.20"),
     ],
 )

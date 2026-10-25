@@ -40,6 +40,7 @@ from .migrations import (
     v6_to_v7_scope_unique_id_by_entry,
     v7_to_v8_rename_local_model,
     v8_to_v9_detect_local_model,
+    v9_to_v10_entry_unique_id_by_service,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -89,6 +90,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
              (CONF_MODEL).
       8 → 9: Replace removed generic MultiController local JSON API models
              (CONF_MODEL) with the model detected from the device.
+      9 → 10: Add the cloud service (cf_bundle_identifier) to the unique_id of
+             cloud entries, so the same e-mail address can be set up for two
+             services, which have accounts of their own.
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -220,6 +224,20 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.config_entries.async_update_entry(entry, **update_kwargs)
         else:
             hass.config_entries.async_update_entry(entry, version=9)
+
+    # Migrate v9 -> v10
+    # Integration version: the unique_id of cloud entries contains the service
+    if entry.version == 9:
+        update_kwargs = v9_to_v10_entry_unique_id_by_service(entry)
+        if update_kwargs:
+            _LOGGER.debug(
+                "Applying v9->v10 migration for entry %s: %s",
+                entry.entry_id,
+                update_kwargs,
+            )
+            hass.config_entries.async_update_entry(entry, **update_kwargs)
+        else:
+            hass.config_entries.async_update_entry(entry, version=10)
 
     return True
 
