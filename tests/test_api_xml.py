@@ -4,8 +4,8 @@
 # ruff: noqa: SLF001
 
 import asyncio
-from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import aiohttp
@@ -20,18 +20,18 @@ from custom_components.syr_connect.exceptions import (
 
 
 @pytest.fixture
-def mock_session():
+def mock_session() -> Any:
     """Create a mock aiohttp session."""
     return MagicMock(spec=aiohttp.ClientSession)
 
 
 @pytest.fixture
-def api_client(mock_session):
+def api_client(mock_session: MagicMock) -> Any:
     """Create an API client instance."""
     return SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword")
 
 
-def test_request_urls_use_the_base_url(mock_session):
+def test_request_urls_use_the_base_url(mock_session: MagicMock) -> None:
     """The device list and status URLs are built from the configured base URL."""
     api = SyrConnectXmlAPI(
         mock_session,
@@ -48,8 +48,8 @@ def test_request_urls_use_the_base_url(mock_session):
 
 
 async def test_login_logs_payload_with_locale_but_without_password(
-    mock_session, caplog
-):
+    mock_session: MagicMock, caplog: pytest.LogCaptureFixture
+) -> None:
     """The login payload is logged (to check lng/reg), with the password masked."""
     api = SyrConnectXmlAPI(
         mock_session, "user@example.com", "s3cr3t!", language="en-DE"
@@ -69,7 +69,9 @@ async def test_login_logs_payload_with_locale_but_without_password(
     assert "s3cr3t!" not in caplog.text
 
 
-def test_language_is_passed_to_payload_builder_and_http_client(mock_session):
+def test_language_is_passed_to_payload_builder_and_http_client(
+    mock_session: MagicMock,
+) -> None:
     """The locale reaches the login/statistics payloads and the Accept-Language header."""
     api = SyrConnectXmlAPI(
         mock_session, "test@example.com", "testpassword", language="en-DE"
@@ -80,7 +82,7 @@ def test_language_is_passed_to_payload_builder_and_http_client(mock_session):
     assert api.http_client._build_accept_language() == "en-DE,en;q=0.9"
 
 
-def test_language_defaults(api_client):
+def test_language_defaults(api_client: SyrConnectXmlAPI) -> None:
     """Without a locale, the app version, payloads and header all fall back to en-US."""
     assert api_client.payload_builder.app_version.startswith("App-3.9.7-en-US-iOS-")
     assert api_client.payload_builder._compute_locale_lang_reg() == ("en", "US")
@@ -92,7 +94,7 @@ INVALID_TOKEN_XML = (
 ).read_text(encoding="utf-8")
 
 
-async def test_session_valid_check(api_client):
+async def test_session_valid_check(api_client: SyrConnectXmlAPI) -> None:
     """A session is usable as soon as a token from a login exists; there is no client-side expiry."""
     assert not api_client.is_session_valid()
 
@@ -100,10 +102,12 @@ async def test_session_valid_check(api_client):
     assert api_client.is_session_valid()
 
 
-async def test_parallel_first_requests_log_in_only_once(api_client):
+async def test_parallel_first_requests_log_in_only_once(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Without a token yet, parallel requests share one login instead of each logging in."""
 
-    async def _login():
+    async def _login() -> Any:
         await asyncio.sleep(0)  # let the other tasks reach the lock meanwhile
         api_client.session_data = "new"
         return True
@@ -115,12 +119,14 @@ async def test_parallel_first_requests_log_in_only_once(api_client):
     assert api_client.session_data == "new"
 
 
-async def test_parallel_rejections_relogin_only_once(api_client):
+async def test_parallel_rejections_relogin_only_once(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """When parallel requests get the token rejected at the same time, only one logs in again."""
 
     api_client.session_data = "old"
 
-    async def _login():
+    async def _login() -> Any:
         await asyncio.sleep(0)
         api_client.session_data = "new"
         return True
@@ -142,17 +148,17 @@ async def test_parallel_rejections_relogin_only_once(api_client):
     ],
 )
 async def test_rejected_token_relogs_in_and_retries_once(
-    api_client, method, args, parser
-):
+    api_client: SyrConnectXmlAPI, method: Any, args: Any, parser: str | None
+) -> None:
     """The real "invalid token" answer triggers one re-login and a retry with the new token."""
     api_client.session_data = "old"
     posted_payloads: list[str] = []
 
-    async def _post(_url, data, **_kw):
+    async def _post(_url: Any, data: Any, **_kw: Any) -> Any:
         posted_payloads.append(data["xml"])
         return INVALID_TOKEN_XML if len(posted_payloads) == 1 else "<sc><ok /></sc>"
 
-    async def _login():
+    async def _login() -> Any:
         api_client.session_data = "new"
         return True
 
@@ -176,12 +182,14 @@ async def test_rejected_token_relogs_in_and_retries_once(
     assert 'ug="new"' in posted_payloads[1]
 
 
-async def test_rejected_token_twice_raises_session_expired(api_client):
+async def test_rejected_token_twice_raises_session_expired(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """If the new token is rejected as well, no loop: SyrConnectSessionExpiredError (a connection error)."""
 
     api_client.session_data = "old"
 
-    async def _login():
+    async def _login() -> Any:
         api_client.session_data = "new"
         return True
 
@@ -199,7 +207,7 @@ async def test_rejected_token_twice_raises_session_expired(api_client):
     assert post.await_count == 2
 
 
-async def test_valid_response_does_not_relogin(api_client):
+async def test_valid_response_does_not_relogin(api_client: SyrConnectXmlAPI) -> None:
     """A normal answer is used as is, without any login."""
     api_client.session_data = "token"
 
@@ -220,7 +228,7 @@ async def test_valid_response_does_not_relogin(api_client):
     post.assert_awaited_once()
 
 
-async def test_login_success(api_client):
+async def test_login_success(api_client: SyrConnectXmlAPI) -> None:
     """Test successful login."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
@@ -249,7 +257,7 @@ async def test_login_success(api_client):
         assert len(api_client.projects) == 1
 
 
-async def test_login_auth_error(api_client):
+async def test_login_auth_error(api_client: SyrConnectXmlAPI) -> None:
     """Wrong credentials: valid encrypted answer whose decrypted content has no session -> re-auth."""
     with (
         patch.object(
@@ -270,7 +278,7 @@ async def test_login_auth_error(api_client):
         await api_client.login()
 
 
-async def test_login_connection_error(api_client):
+async def test_login_connection_error(api_client: SyrConnectXmlAPI) -> None:
     """Test login with connection error."""
     with (
         patch.object(
@@ -283,10 +291,11 @@ async def test_login_connection_error(api_client):
         await api_client.login()
 
 
-async def test_get_device_status_with_valid_session(api_client):
+async def test_get_device_status_with_valid_session(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Test get_device_status uses existing valid session."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(api_client, "login", return_value=True) as mock_login,
@@ -301,10 +310,9 @@ async def test_get_device_status_with_valid_session(api_client):
         mock_login.assert_not_called()
 
 
-async def test_set_device_status_value_conversion(api_client):
+async def test_set_device_status_value_conversion(api_client: SyrConnectXmlAPI) -> None:
     """Test set_device_status converts boolean to int."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with patch.object(
         api_client.http_client, "post", return_value="<sc></sc>"
@@ -316,7 +324,7 @@ async def test_set_device_status_value_conversion(api_client):
         assert "1" in str(call_args)
 
 
-async def test_login_timeout_error(api_client):
+async def test_login_timeout_error(api_client: SyrConnectXmlAPI) -> None:
     """Test login with timeout error."""
     with (
         patch.object(
@@ -327,7 +335,7 @@ async def test_login_timeout_error(api_client):
         await api_client.login()
 
 
-async def test_login_generic_exception(api_client):
+async def test_login_generic_exception(api_client: SyrConnectXmlAPI) -> None:
     """Test login with generic unexpected exception."""
     with (
         patch.object(
@@ -338,10 +346,9 @@ async def test_login_generic_exception(api_client):
         await api_client.login()
 
 
-async def test_get_devices_exception_handling(api_client):
+async def test_get_devices_exception_handling(api_client: SyrConnectXmlAPI) -> None:
     """Test get_devices exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -352,10 +359,11 @@ async def test_get_devices_exception_handling(api_client):
         await api_client.get_devices("project1")
 
 
-async def test_get_devices_connection_client_error(api_client):
+async def test_get_devices_connection_client_error(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Network client errors during get_devices should raise SyrConnectConnectionError."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -368,10 +376,11 @@ async def test_get_devices_connection_client_error(api_client):
         await api_client.get_devices("project1")
 
 
-async def test_get_devices_connection_timeout_error(api_client):
+async def test_get_devices_connection_timeout_error(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Timeout errors during get_devices should raise SyrConnectConnectionError."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -382,10 +391,9 @@ async def test_get_devices_connection_timeout_error(api_client):
         await api_client.get_devices("project1")
 
 
-async def test_get_device_status_returns_none(api_client):
+async def test_get_device_status_returns_none(api_client: SyrConnectXmlAPI) -> None:
     """Test get_device_status returns None when parser returns None."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
@@ -400,10 +408,11 @@ async def test_get_device_status_returns_none(api_client):
         assert result is None
 
 
-async def test_get_device_status_exception_handling(api_client):
+async def test_get_device_status_exception_handling(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Test get_device_status exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -414,10 +423,9 @@ async def test_get_device_status_exception_handling(api_client):
         await api_client.get_device_status("device1")
 
 
-async def test_set_device_status_boolean_false(api_client):
+async def test_set_device_status_boolean_false(api_client: SyrConnectXmlAPI) -> None:
     """Test set_device_status converts False to 0."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -434,10 +442,9 @@ async def test_set_device_status_boolean_false(api_client):
         assert call_args[0][2] == [("setSIR", 0)]  # commands list with normalized value
 
 
-async def test_set_device_status_boolean_true(api_client):
+async def test_set_device_status_boolean_true(api_client: SyrConnectXmlAPI) -> None:
     """Test set_device_status converts True to 1."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -454,10 +461,11 @@ async def test_set_device_status_boolean_true(api_client):
         assert call_args[0][2] == [("setSIR", 1)]  # commands list with normalized value
 
 
-async def test_set_device_status_exception_handling(api_client):
+async def test_set_device_status_exception_handling(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Test set_device_status exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -468,10 +476,9 @@ async def test_set_device_status_exception_handling(api_client):
         await api_client.set_device_status("device1", [("setSIR", 1)])
 
 
-async def test_get_statistics_water(api_client):
+async def test_get_statistics_water(api_client: SyrConnectXmlAPI) -> None:
     """Test get_statistics for water statistics."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     mock_stats = {"daily": "100", "weekly": "700", "monthly": "3000"}
 
@@ -488,10 +495,9 @@ async def test_get_statistics_water(api_client):
         assert result == mock_stats
 
 
-async def test_get_statistics_salt(api_client):
+async def test_get_statistics_salt(api_client: SyrConnectXmlAPI) -> None:
     """Test get_statistics for salt statistics."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     mock_stats = {"consumed": "50", "remaining": "150"}
 
@@ -508,10 +514,9 @@ async def test_get_statistics_salt(api_client):
         assert result == mock_stats
 
 
-async def test_get_statistics_exception_handling(api_client):
+async def test_get_statistics_exception_handling(api_client: SyrConnectXmlAPI) -> None:
     """Test get_statistics exception is raised."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -522,7 +527,7 @@ async def test_get_statistics_exception_handling(api_client):
         await api_client.get_statistics("device1", "water")
 
 
-async def test_login_with_parser_value_error(api_client):
+async def test_login_with_parser_value_error(api_client: SyrConnectXmlAPI) -> None:
     """A malformed login answer is a connection problem, not rejected credentials (no re-auth)."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
@@ -538,7 +543,7 @@ async def test_login_with_parser_value_error(api_client):
         await api_client.login()
 
 
-async def test_login_with_decryption_parser_error(api_client):
+async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) -> None:
     """A malformed decrypted answer is a connection problem, not rejected credentials (no re-auth)."""
     mock_response = """<?xml version="1.0"?><sc><api>encrypted_data</api></sc>"""
 
@@ -568,10 +573,11 @@ async def test_login_with_decryption_parser_error(api_client):
         ("get_statistics", ("dclg1", "water")),
     ],
 )
-async def test_network_errors_are_wrapped_in_connection_error(api_client, method, args):
+async def test_network_errors_are_wrapped_in_connection_error(
+    api_client: SyrConnectXmlAPI, method: Any, args: Any
+) -> None:
     """Network errors after all retries become SyrConnectConnectionError, which the entities handle."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -588,10 +594,9 @@ async def test_network_errors_are_wrapped_in_connection_error(api_client, method
     assert isinstance(excinfo.value.__cause__, aiohttp.ClientError)
 
 
-async def test_get_devices_adds_project_id(api_client):
+async def test_get_devices_adds_project_id(api_client: SyrConnectXmlAPI) -> None:
     """Test get_devices adds project_id to each device."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     device_data = {
         "id": "device1",
@@ -614,10 +619,9 @@ async def test_get_devices_adds_project_id(api_client):
         assert devices[0]["project_id"] == "project123"
 
 
-async def test_get_statistics_default_type(api_client):
+async def test_get_statistics_default_type(api_client: SyrConnectXmlAPI) -> None:
     """Test get_statistics with default statistic_type parameter."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     mock_stats = {"daily": "100"}
 
@@ -635,10 +639,11 @@ async def test_get_statistics_default_type(api_client):
         assert result == mock_stats
 
 
-async def test_set_device_status_non_boolean_value(api_client):
+async def test_set_device_status_non_boolean_value(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Test set_device_status with non-boolean value (no conversion)."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     with (
         patch.object(
@@ -655,10 +660,11 @@ async def test_set_device_status_non_boolean_value(api_client):
         assert call_args[0][2] == [("setSV1", 10)]  # commands list with value unchanged
 
 
-async def test_get_devices_with_device_already_has_id(api_client):
+async def test_get_devices_with_device_already_has_id(
+    api_client: SyrConnectXmlAPI,
+) -> None:
     """Test get_devices when device already has 'id' field."""
     api_client.session_data = "valid_session"
-    api_client.session_expires_at = datetime.now(UTC) + timedelta(minutes=10)
 
     device_with_id = {
         "id": "EXISTING_ID",

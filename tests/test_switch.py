@@ -5,6 +5,7 @@
 import logging
 from pathlib import Path
 from types import MappingProxyType
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -55,7 +56,7 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_no_coordinator_data_logs_warning(
-    hass: HomeAssistant, caplog
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """When `entry.runtime_data.data` is falsy, setup should warn and return."""
 
@@ -119,7 +120,7 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
     assert sw_off.is_on is False
 
     # Test turn_on/turn_off call coordinator and verify command name
-    async def fake_set_device_value(device_id, cmd, value):
+    async def fake_set_device_value(device_id: Any, cmd: Any, value: Any) -> None:
         assert cmd == "setBUZ"
 
     mock_coordinator.async_set_device_value = AsyncMock(
@@ -285,7 +286,7 @@ async def test_async_setup_entry_handles_instantiation_error(
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
 
-    def raise_on_init(*args, **kwargs):
+    def raise_on_init(*args: Any, **kwargs: Any) -> None:
         raise RuntimeError("ctor boom")
 
     mock_add_entities = MagicMock()

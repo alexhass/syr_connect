@@ -43,7 +43,7 @@ def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:
 
 
 async def test_async_setup_entry_no_coordinator_data_logs_warning(
-    hass: HomeAssistant, caplog
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """When `entry.runtime_data.data` is falsy, setup should warn and return."""
     mock_coordinator = MagicMock()

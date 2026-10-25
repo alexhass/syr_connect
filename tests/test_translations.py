@@ -4,6 +4,7 @@ import ast
 import json
 from pathlib import Path
 import string
+from typing import Any, cast
 
 from custom_components.syr_connect.const import DOMAIN
 from homeassistant.core import HomeAssistant
@@ -38,9 +39,11 @@ def _raised_translation_keys() -> dict[str, set[str]]:
             )
             for value in key_values:
                 assert isinstance(value, ast.Constant), path.name
-                assert keys.setdefault(value.value, placeholders) == placeholders, (
-                    f"{value.value} is raised with different placeholders"
-                )
+                assert isinstance(value.value, str), path.name
+                assert (
+                    keys.setdefault(value.value, cast(Any, placeholders))
+                    == placeholders
+                ), f"{value.value} is raised with different placeholders"
     return keys
 
 

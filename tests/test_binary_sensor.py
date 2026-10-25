@@ -1,9 +1,12 @@
 """Tests for binary_sensor platform."""
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any, cast
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
@@ -32,7 +35,7 @@ def _build_coordinator(
         config_data,
         60,
     )
-    coordinator.async_set_updated_data(data)
+    coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
 
@@ -99,7 +102,10 @@ async def test_binary_sensor_available(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry(
-    hass: HomeAssistant, create_mock_entry_with_coordinator
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
 ) -> None:
     """Test async_setup_entry creates binary sensors."""
     data = {
@@ -135,8 +141,10 @@ async def test_async_setup_entry(
 )
 async def test_async_setup_entry_skips_models_without_buzzer(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     status: dict,
 ) -> None:
     """Models whose device file declares no buzzer get no getBUZ binary sensor, even if the key is present."""
@@ -191,8 +199,10 @@ async def test_async_setup_entry_skips_models_without_buzzer(
 )
 async def test_async_setup_entry_real_fixtures(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     model: str,
     expected: set[str],
 ) -> None:
@@ -264,7 +274,10 @@ def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
 
 
 async def test_async_setup_entry_multiple_devices(
-    hass: HomeAssistant, create_mock_entry_with_coordinator
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
 ) -> None:
     """Test async_setup_entry with multiple devices."""
     data = {
@@ -542,7 +555,10 @@ async def test_binary_sensor_none_value(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_no_data(
-    hass: HomeAssistant, create_mock_entry_with_coordinator
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
 ) -> None:
     """Test async_setup_entry with no coordinator data."""
     mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(None)
@@ -557,7 +573,10 @@ async def test_async_setup_entry_no_data(
 
 
 async def test_async_setup_entry_registry_cleanup(
-    hass: HomeAssistant, create_mock_entry_with_coordinator
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
 ) -> None:
     """Test async_setup_entry removes binary sensors that are not in the allowlist."""
     data = {
@@ -595,7 +614,10 @@ async def test_async_setup_entry_registry_cleanup(
 
 
 async def test_async_setup_entry_registry_exception(
-    hass: HomeAssistant, create_mock_entry_with_coordinator
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
 ) -> None:
     """Test async_setup_entry handles registry exceptions gracefully."""
     data = {
@@ -614,7 +636,7 @@ async def test_async_setup_entry_registry_exception(
     async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
 
     # Mock registry to raise exception
-    def raise_registry_error(*args, **kwargs):
+    def raise_registry_error(*args: Any, **kwargs: Any) -> None:
         raise RuntimeError("Registry error")
 
     with patch(

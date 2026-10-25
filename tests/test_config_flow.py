@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from typing import Any, cast
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -320,7 +321,7 @@ async def test_form_api_json_strips_host_whitespace(hass: HomeAssistant) -> None
         ),
     ],
 )
-def test_strip_host(user_input, expected) -> None:
+def test_strip_host(user_input: Any, expected: Any) -> None:
     """Only the host is stripped; input without a host (XML credentials) is unchanged."""
 
     assert ConfigFlow._strip_host(user_input) == expected
@@ -332,10 +333,10 @@ async def test_validate_input_json_device_missing_id_raises(
     """If get_devices returns a device without an 'id', validation must fail."""
 
     class FakeApi:
-        async def login(self):
+        async def login(self) -> None:
             return None
 
-        async def get_devices(self, _scope):
+        async def get_devices(self, _scope: Any) -> Any:
             return [{"name": "nodata"}]
 
     with (
@@ -420,13 +421,13 @@ async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> N
     """If get_device_status returns empty, validation must fail."""
 
     class FakeApi:
-        async def login(self):
+        async def login(self) -> None:
             return None
 
-        async def get_devices(self, _scope):
+        async def get_devices(self, _scope: Any) -> Any:
             return [{"id": "dev1"}]
 
-        async def get_device_status(self, did):
+        async def get_device_status(self, did: Any) -> Any:
             return {}
 
     with (
@@ -506,6 +507,7 @@ async def test_reauth_confirm_xml_homeassistant_error_sets_unknown(
         )
 
     assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] is not None
     assert result2["errors"]["base"] == "unknown"
 
 
@@ -702,11 +704,14 @@ async def test_reauth_flow(hass: HomeAssistant) -> None:
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
-        context={
-            "source": config_entries.SOURCE_REAUTH,
-            "entry_id": entry.entry_id,
-            "username": "test@example.com",
-        },
+        context=cast(
+            Any,
+            {
+                "source": config_entries.SOURCE_REAUTH,
+                "entry_id": entry.entry_id,
+                "username": "test@example.com",
+            },
+        ),
         data=entry.data,
     )
 
@@ -1306,9 +1311,9 @@ async def test_options_flow_entry_none_attribute(hass: HomeAssistant) -> None:
     """Test options flow when _config_entry attribute is None."""
 
     # Create options flow without proper config entry
-    options_flow = SyrConnectOptionsFlow(None)
+    options_flow = SyrConnectOptionsFlow(cast(Any, None))
     # Manually set the _config_entry to None to test the fallback
-    options_flow._config_entry = None
+    options_flow._config_entry = None  # type: ignore[assignment]
 
     result = await options_flow.async_step_init(user_input=None)
 
@@ -1399,13 +1404,15 @@ async def test_form_api_json_persists_login_required(hass: HomeAssistant) -> Non
 
     # Fake API class that reports login_required=True
     class FakeJsonAPI:
-        def __init__(self, session, host=None, base_path=None):
+        def __init__(
+            self, session: Any, host: Any = None, base_path: Any = None
+        ) -> None:
             self.login_required = True
 
-        async def login(self):
+        async def login(self) -> None:
             return None
 
-        async def request_json_data(self, path):
+        async def request_json_data(self, path: Any) -> Any:
             return {"getSRN": "12345", "getVER": "test"}
 
     with (
@@ -1655,10 +1662,10 @@ async def test_validate_input_json_no_devices_raises(hass: HomeAssistant) -> Non
     """If `get_devices` returns empty list, validation must fail."""
 
     class FakeApi:
-        async def login(self):
+        async def login(self) -> None:
             return None
 
-        async def get_devices(self, _scope):
+        async def get_devices(self, _scope: Any) -> Any:
             return []
 
     with (
@@ -2190,6 +2197,7 @@ async def test_reauth_confirm_unexpected_exception(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.FORM
     # Accept either unknown or cannot_connect depending on code path/environment
+    assert result2["errors"] is not None
     assert result2["errors"].get("base") in ("unknown", "cannot_connect")
 
 

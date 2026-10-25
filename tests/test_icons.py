@@ -1,7 +1,9 @@
 """Tests for icons.json."""
 
+from collections.abc import Callable
 import json
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -59,7 +61,9 @@ def test_connection_state_icons() -> None:
     }
 
 
-def _sensor_state(create_mock_coordinator, key: str, raw: str) -> str:
+def _sensor_state(
+    create_mock_coordinator: Callable[..., MagicMock], key: str, raw: str
+) -> str:
     data = {
         "devices": [
             {"id": "d1", "name": "D1", "project_id": "p1", "status": {key: raw}}
@@ -87,7 +91,7 @@ def _sensor_state(create_mock_coordinator, key: str, raw: str) -> str:
     ],
 )
 def test_state_icons_match_sensor_state(
-    create_mock_coordinator, key: str, raw: str, icon: str
+    create_mock_coordinator: Callable[..., MagicMock], key: str, raw: str, icon: str
 ) -> None:
     """The state a sensor reports is a key of its state map in icons.json."""
     spec = ICONS["sensor"][key.lower()]

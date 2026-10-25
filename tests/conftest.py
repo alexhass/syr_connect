@@ -1,6 +1,7 @@
 """Fixtures for the SYR Connect tests."""
 
-from collections.abc import Generator
+from collections.abc import Callable, Generator
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -14,7 +15,7 @@ pytest_plugins = "pytest_homeassistant_custom_component"
 
 
 @pytest.fixture
-def setup_in_progress_config_entry():
+def setup_in_progress_config_entry() -> Any:
     """Mock ConfigEntry in state SETUP_IN_PROGRESS."""
     entry = MagicMock()
     entry.state = config_entries.ConfigEntryState.SETUP_IN_PROGRESS
@@ -22,7 +23,7 @@ def setup_in_progress_config_entry():
 
 
 @pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
+def auto_enable_custom_integrations(enable_custom_integrations: None) -> Any:
     """Enable custom integrations for all tests."""
     return enable_custom_integrations
 
@@ -44,7 +45,7 @@ def mock_setup_entry() -> Generator[AsyncMock]:
 
 
 @pytest.fixture
-def mock_syr_api():
+def mock_syr_api() -> Generator[Any]:
     """Mock SyrConnectXmlAPI."""
     with patch(
         "custom_components.syr_connect.config_flow.SyrConnectXmlAPI"
@@ -61,7 +62,7 @@ def mock_syr_api():
 
 
 @pytest.fixture
-def mock_config_entry():
+def mock_config_entry() -> Any:
     """Mock ConfigEntry."""
     return {
         CONF_USERNAME: "test@example.com",
@@ -70,7 +71,7 @@ def mock_config_entry():
 
 
 @pytest.fixture
-def create_mock_coordinator():
+def create_mock_coordinator() -> Any:
     """Create a mock coordinator with given data."""
 
     def _create(data: dict | None = None) -> MagicMock:
@@ -86,7 +87,9 @@ def create_mock_coordinator():
 
 
 @pytest.fixture
-def create_mock_entry_with_coordinator(create_mock_coordinator):
+def create_mock_entry_with_coordinator(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> Any:
     """Create a mock config entry with coordinator."""
 
     def _create(data: dict | None = None) -> tuple[MockConfigEntry, MagicMock]:
@@ -99,7 +102,7 @@ def create_mock_entry_with_coordinator(create_mock_coordinator):
 
 
 @pytest.fixture
-def mock_add_entities():
+def mock_add_entities() -> Any:
     """Create a mock add_entities function that captures entities."""
 
     def _create() -> tuple[list, Mock]:

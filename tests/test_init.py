@@ -3,6 +3,7 @@
 from datetime import timedelta
 import logging
 from pathlib import Path
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -360,7 +361,7 @@ async def test_async_options_update_listener_interval_unchanged(
 
 
 async def test_async_options_update_listener_clamps_minimum_json(
-    hass: HomeAssistant, caplog
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test options update listener clamps scan interval below minimum for JSON API."""
 
@@ -395,7 +396,7 @@ async def test_async_options_update_listener_clamps_minimum_json(
 
 
 async def test_async_setup_entry_clamps_scan_interval_and_logs(
-    hass: HomeAssistant, caplog
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test JSON API clamps scan interval below minimum and logs a warning."""
 
@@ -435,7 +436,9 @@ async def test_async_setup_entry_clamps_scan_interval_and_logs(
     assert "clamping to" in caplog.text or "below minimum" in caplog.text
 
 
-async def test_async_unload_entry_logs(hass: HomeAssistant, caplog) -> None:
+async def test_async_unload_entry_logs(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
     """Verify unload logs for both success and failure."""
     config_entry = MockConfigEntry(
         version=1,
@@ -491,7 +494,9 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
         mock_reload.assert_called_once_with("test_entry_id")
 
 
-async def test_async_setup_entry_logs_migration(hass: HomeAssistant, caplog) -> None:
+async def test_async_setup_entry_logs_migration(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
     """Ensure legacy migration branch logs a migration message."""
 
     config_entry = MockConfigEntry(
@@ -570,7 +575,7 @@ async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
         mock_coordinator_class.return_value = mock_coordinator
 
         with pytest.raises(ConfigEntryAuthFailed):
-            await async_setup_entry(hass, config_entry)
+            await async_setup_entry(cast(Any, hass), config_entry)
 
 
 async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
@@ -692,7 +697,10 @@ async def test_async_migrate_entry_v8_to_v9(hass: HomeAssistant) -> None:
     ],
 )
 async def test_async_migrate_entry_v8_to_v9_fails(
-    hass: HomeAssistant, caplog, error: Exception, message: str
+    hass: HomeAssistant,
+    caplog: pytest.LogCaptureFixture,
+    error: Exception,
+    message: str,
 ) -> None:
     """Test a failed v8->v9 detection keeps version 8 so the next start tries again."""
     entry = MockConfigEntry(
@@ -720,7 +728,7 @@ async def test_async_migrate_entry_v8_to_v9_fails(
 
 
 async def test_async_options_update_listener_logs_unchanged(
-    hass: HomeAssistant, caplog
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Ensure options update listener logs when scan interval is unchanged."""
     config_entry = MockConfigEntry(

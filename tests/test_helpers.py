@@ -2,13 +2,13 @@
 
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
-
 from dataclasses import replace
 import importlib
 import logging
 import pkgutil
 import re
 from types import SimpleNamespace
+from typing import Any, NoReturn, cast, override
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -92,7 +92,7 @@ def _keys_hidden_when(rule: str) -> set[str]:
     }
 
 
-def test_get_default_scan_interval_for_entry_none():
+def test_get_default_scan_interval_for_entry_none() -> None:
     """Test get default scan interval for entry none."""
     assert (
         helpers.get_default_scan_interval_for_entry(None)
@@ -100,14 +100,14 @@ def test_get_default_scan_interval_for_entry_none():
     )
 
 
-def test_get_default_scan_interval_for_entry_options_and_data():
+def test_get_default_scan_interval_for_entry_options_and_data() -> None:
     """Test get default scan interval for entry options and data."""
     # Use an object with attributes (ConfigEntry-like) rather than a plain dict
     entry = SimpleNamespace(
         options={helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "30"},
         data={helpers.CONF_API_TYPE: API_TYPE_JSON},
     )
-    assert helpers.get_default_scan_interval_for_entry(entry) == 30
+    assert helpers.get_default_scan_interval_for_entry(cast(Any, entry)) == 30
 
     # invalid option falls back to API default
     entry = SimpleNamespace(
@@ -115,16 +115,17 @@ def test_get_default_scan_interval_for_entry_options_and_data():
         data={helpers.CONF_API_TYPE: API_TYPE_JSON},
     )
     assert (
-        helpers.get_default_scan_interval_for_entry(entry)
+        helpers.get_default_scan_interval_for_entry(cast(Any, entry))
         == helpers._SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT
     )
 
 
-def test_get_default_scan_interval_for_entry_attribute_access_error_fallback():
+def test_get_default_scan_interval_for_entry_attribute_access_error_fallback() -> None:
     """When attribute access raises, fallback to mapping access must be used."""
 
     class BrokenDict(dict):
-        def __getattribute__(self, name):
+        @override
+        def __getattribute__(self, name: Any) -> Any:
             if name in ("options", "data"):
                 raise TypeError("boom")
             return super().__getattribute__(name)
@@ -139,10 +140,10 @@ def test_get_default_scan_interval_for_entry_attribute_access_error_fallback():
     assert helpers.get_default_scan_interval_for_entry(entry) == 45
 
 
-def test_build_device_info_fallback_and_entity_id_additional():
+def test_build_device_info_fallback_and_entity_id_additional() -> None:
     """Test build device info fallback and entity id additional."""
     # No device info in coordinator -> fallback model
-    coord = {"devices": []}
+    coord: Any = {"devices": []}
     di = helpers.build_device_info("dev123", "My Dev", coord)
     # DeviceInfo is a mapping-like object; assert via keys
     assert di["serial_number"] == "dev123"
@@ -151,7 +152,7 @@ def test_build_device_info_fallback_and_entity_id_additional():
     assert helpers.build_entity_id("sensor", "DevID", "getFOO").startswith("sensor.")
 
 
-def test_registry_cleanup_handles_exception():
+def test_registry_cleanup_handles_exception() -> None:
     """Test registry cleanup handles exception."""
     hass = MagicMock()
     # Make er.async_get raise
@@ -162,7 +163,7 @@ def test_registry_cleanup_handles_exception():
         # Should not raise
         helpers.registry_cleanup(
             hass,
-            {"devices": [{"id": "DEV"}]},
+            cast(Any, {"devices": [{"id": "DEV"}]}),
             "sensor",
             allowed_keys={"getPRS"},
             entry_id="entry",
@@ -188,7 +189,7 @@ def test_cleanup_removed_devices_detaches_stale_device() -> None:
         ),
     ):
         helpers.cleanup_removed_devices(
-            hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1"
+            hass, cast(Any, {"devices": [{"id": "CURRENT_DEV"}]}), "entry1"
         )
 
     device_registry.async_update_device.assert_called_once_with(
@@ -215,7 +216,7 @@ def test_cleanup_removed_devices_keeps_current_device() -> None:
         ),
     ):
         helpers.cleanup_removed_devices(
-            hass, {"devices": [{"id": "CURRENT_DEV"}]}, "entry1"
+            hass, cast(Any, {"devices": [{"id": "CURRENT_DEV"}]}), "entry1"
         )
 
     device_registry.async_update_device.assert_not_called()
@@ -229,10 +230,10 @@ def test_cleanup_removed_devices_handles_exception() -> None:
         side_effect=RuntimeError("boom"),
     ):
         # Should not raise
-        helpers.cleanup_removed_devices(hass, {"devices": []}, "entry1")
+        helpers.cleanup_removed_devices(hass, cast(Any, {"devices": []}), "entry1")
 
 
-def test_get_current_mac_priorities_additional():
+def test_get_current_mac_priorities_additional() -> None:
     """Test get current mac priorities additional."""
     # Primary IP -> getMAC
     s = {"getIPA": "192.168.1.2", "getMAC": "AA:BB:CC"}
@@ -250,7 +251,7 @@ def test_get_current_mac_priorities_additional():
     assert helpers.get_current_mac({}) is None
 
 
-def test_get_sensor_avo_value_variants_additional():
+def test_get_sensor_avo_value_variants_additional() -> None:
     """Test get sensor avo value variants additional."""
     assert helpers.get_sensor_avo_value(None) is None
     assert helpers.get_sensor_avo_value(1655) == 1.655
@@ -259,7 +260,7 @@ def test_get_sensor_avo_value_variants_additional():
     assert helpers.get_sensor_avo_value("bad") is None
 
 
-def test_get_sensor_vol_value_additional():
+def test_get_sensor_vol_value_additional() -> None:
     """Test get sensor vol value additional."""
     assert helpers.get_sensor_vol_value(6530) == 6530
     assert helpers.get_sensor_vol_value("") is None
@@ -267,7 +268,7 @@ def test_get_sensor_vol_value_additional():
     assert helpers.get_sensor_vol_value("Xyz123") == "Xyz123"
 
 
-def test_get_sensor_bat_value_formats_additional():
+def test_get_sensor_bat_value_formats_additional() -> None:
     """Test get sensor bat value formats additional."""
     assert helpers.get_sensor_bat_value(None) is None
     assert helpers.get_sensor_bat_value(363) == 3.63
@@ -276,7 +277,7 @@ def test_get_sensor_bat_value_formats_additional():
     assert helpers.get_sensor_bat_value("bad") is None
 
 
-def test_get_sensor_rtm_and_set_additional():
+def test_get_sensor_rtm_and_set_additional() -> None:
     """Test get sensor rtm and set additional."""
     # Combined string representation
     status = {"getRTH": "", "getRTM": "07:30"}
@@ -295,9 +296,9 @@ def test_get_sensor_rtm_and_set_additional():
     assert helpers.set_sensor_rtm_value(status, "bad") == []
 
 
-def test_get_sensor_ab_and_build_set_additional():
+def test_get_sensor_ab_and_build_set_additional() -> None:
     """Test get sensor ab and build set additional."""
-    assert helpers.get_sensor_ab_value(None) is None
+    assert helpers.get_sensor_ab_value(cast(Any, None)) is None
     assert helpers.get_sensor_ab_value({"getAB": True}) is True
     assert helpers.get_sensor_ab_value({"getAB": 2}) is True
     assert helpers.get_sensor_ab_value({"getAB": 1}) is False
@@ -311,7 +312,7 @@ def test_get_sensor_ab_and_build_set_additional():
     assert helpers.build_set_ab_command({"getAB": "1"}, True) == ("setAB", 2)
 
 
-def test_get_sensor_maps_and_visibility_additional():
+def test_get_sensor_maps_and_visibility_additional() -> None:
     """Test get sensor maps and visibility additional."""
     # NOT/WRN mapping
     assert (
@@ -349,8 +350,8 @@ def test_get_device() -> None:
     device = {"id": "DEVICE123", "dclg": "DCLG123", "name": "Test Device"}
     coordinator_data = {"devices": [device], "projects": []}
 
-    assert get_device(coordinator_data, "DEVICE123") is device
-    assert get_device(coordinator_data, "OTHER") is None
+    assert get_device(cast(Any, coordinator_data), "DEVICE123") is device
+    assert get_device(cast(Any, coordinator_data), "OTHER") is None
     assert get_device(None, "DEVICE123") is None
 
 
@@ -372,7 +373,9 @@ def test_build_device_info() -> None:
         ]
     }
 
-    device_info = build_device_info("DEVICE123", "Test Device", coordinator_data)
+    device_info = build_device_info(
+        "DEVICE123", "Test Device", cast(Any, coordinator_data)
+    )
 
     assert device_info["name"] == "Test Device"
     assert device_info["manufacturer"] == "SYR"  # LEXplus10S is a SYR device
@@ -396,7 +399,7 @@ def test_build_device_info_service_branding() -> None:
         "service": "de.consoft.gc.conel.connect",
     }
 
-    device_info = build_device_info("DEVICE123", "Floor", coordinator_data)
+    device_info = build_device_info("DEVICE123", "Floor", cast(Any, coordinator_data))
 
     assert device_info["manufacturer"] == "CONEL"
     assert device_info["model"] == "CLEAR PRO Floor Sensor"
@@ -414,7 +417,9 @@ def test_build_device_info_minimal() -> None:
         ]
     }
 
-    device_info = build_device_info("DEVICE123", "Test Device", coordinator_data)
+    device_info = build_device_info(
+        "DEVICE123", "Test Device", cast(Any, coordinator_data)
+    )
 
     assert device_info["name"] == "Test Device"
     assert device_info["manufacturer"] == "Unknown"  # Fallback when model is undetected
@@ -436,7 +441,7 @@ def test_get_sensor_avo_value() -> None:
     assert get_sensor_avo_value(100.5) == 0.1005
 
     # Test None input
-    assert get_sensor_avo_value(None) is None  # type: ignore[arg-type]
+    assert get_sensor_avo_value(None) is None
 
     # Test fallback: extract number at start and convert to L
     assert get_sensor_avo_value("1655") == 1.655
@@ -576,7 +581,7 @@ def test_get_sensor_bat_value_variants() -> None:
 
     # Empty or invalid -> None
     assert get_sensor_bat_value("") is None
-    assert get_sensor_bat_value(None) is None  # type: ignore[arg-type]
+    assert get_sensor_bat_value(None) is None
     assert get_sensor_bat_value("not-a-number") is None
 
 
@@ -605,73 +610,73 @@ def test_get_sensor_net_value_numeric_int() -> None:
     assert get_sensor_net_value(363) == 3.63
 
 
-def test_get_sensor_iwh_returns_int_when_getiwh_int():
+def test_get_sensor_iwh_returns_int_when_getiwh_int() -> None:
     """Test get sensor iwh returns int when getIWH int."""
     status = {"getIWH": 10, "getWHU": 0}
     assert get_sensor_iwh_value(status) == 10
 
 
-def test_get_sensor_iwh_returns_float_when_getiwh_string_float():
+def test_get_sensor_iwh_returns_float_when_getiwh_string_float() -> None:
     """Test get sensor iwh returns float when getIWH string float."""
     status = {"getIWH": "12.5", "getWHU": 0}
     assert get_sensor_iwh_value(status) == 12.5
 
 
-def test_get_sensor_iwh_derived_from_getcnd_integer_result():
+def test_get_sensor_iwh_derived_from_getcnd_integer_result() -> None:
     """Test get sensor iwh derived from getCND integer result."""
     status = {"getCND": 540}
     # 540 / 33 == 16.363636... -> float
     assert get_sensor_iwh_value(status) == 540 / 33
 
 
-def test_get_sensor_iwh_derived_from_getcnd_float_result():
+def test_get_sensor_iwh_derived_from_getcnd_float_result() -> None:
     """Test get sensor iwh derived from getCND float result."""
     status = {"getCND": "378"}
     # 378 / 33 == 11.454545... -> float
     assert get_sensor_iwh_value(status) == 378 / 33
 
 
-def test_get_sensor_iwh_returns_none_on_invalid_getcnd():
+def test_get_sensor_iwh_returns_none_on_invalid_getcnd() -> None:
     """Test get sensor iwh returns none on invalid getCND."""
     status = {"getCND": "not-a-number"}
     assert get_sensor_iwh_value(status) is None
 
 
-def test_get_sensor_iwh_missing_both_returns_none():
+def test_get_sensor_iwh_missing_both_returns_none() -> None:
     """Test get sensor iwh missing both returns none."""
-    status = {}
+    status: dict[str, Any] = {}
     assert get_sensor_iwh_value(status) is None
 
 
-def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive():
+def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive() -> None:
     """Test get sensor iwh whu missing defaults to zero and derive."""
     status = {"getCND": 300, "getWHU": ""}
     # 300 / 33 == 9.090909... -> float
     assert get_sensor_iwh_value(status) == 300 / 33
 
 
-def test_get_sensor_iwh_derived_from_getcnd_zero():
+def test_get_sensor_iwh_derived_from_getcnd_zero() -> None:
     """Test get sensor iwh derived from getCND zero."""
     status = {"getCND": 0}
     # 0 / 30 == 0 -> int
     assert get_sensor_iwh_value(status) == 0
 
 
-def test_get_sensor_iwh_derived_from_getcnd_empty_string():
+def test_get_sensor_iwh_derived_from_getcnd_empty_string() -> None:
     """Test get sensor iwh derived from getCND empty string."""
     status = {"getCND": ""}
     # empty string treated as missing -> None
     assert get_sensor_iwh_value(status) is None
 
 
-def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive():
+def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive() -> None:
     """Test get sensor iwh whu key missing defaults to zero and derive."""
     status = {"getCND": 30}
     # getWHU missing -> default 0; 30 / 33 == 0.909090... -> float
     assert get_sensor_iwh_value(status) == 30 / 33
 
 
-def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists():
+def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists() -> None:
     """Invalid getWHU string should default to 0 and be persisted."""
     status = {"getCND": 300, "getWHU": "invalid"}
     result = get_sensor_iwh_value(status)
@@ -680,11 +685,12 @@ def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists():
     assert status.get("getWHU") == 0
 
 
-def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash():
+def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash() -> None:
     """If assigning to status['getWHU'] raises, function still returns value."""
 
     class BadStatus(dict):
-        def __setitem__(self, key, value):
+        @override
+        def __setitem__(self, key: Any, value: Any) -> Any:
             if key == "getWHU":
                 raise RuntimeError("boom")
             return super().__setitem__(key, value)
@@ -694,11 +700,12 @@ def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash():
     assert get_sensor_iwh_value(status) == 330 / 33
 
 
-def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash():
+def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash() -> None:
     """If persisting explicit getIWH raises, function still returns parsed value."""
 
     class BadStatus(dict):
-        def __setitem__(self, key, value):
+        @override
+        def __setitem__(self, key: Any, value: Any) -> Any:
             if key == "getIWH":
                 raise RuntimeError("boom")
             return super().__setitem__(key, value)
@@ -708,18 +715,19 @@ def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash():
     assert get_sensor_iwh_value(status) == 12
 
 
-def test_get_sensor_iwh_invalid_getiwh_falls_back_to_derive():
+def test_get_sensor_iwh_invalid_getiwh_falls_back_to_derive() -> None:
     """If explicit getIWH is invalid but getCND exists, derive from getCND."""
     status = {"getIWH": "bad", "getWHU": 0, "getCND": 330}
     # Should fall back and compute 330 / 33 == 10
     assert get_sensor_iwh_value(status) == 330 / 33
 
 
-def test_get_sensor_iwh_derived_assignment_raises_does_not_crash():
+def test_get_sensor_iwh_derived_assignment_raises_does_not_crash() -> None:
     """If persisting derived getIWH raises, function still returns value."""
 
     class BadStatus2(dict):
-        def __setitem__(self, key, value):
+        @override
+        def __setitem__(self, key: Any, value: Any) -> Any:
             if key == "getIWH":
                 raise RuntimeError("boom")
             return super().__setitem__(key, value)
@@ -741,7 +749,7 @@ def test_get_sensor_net_value_empty_string() -> None:
 
 def test_get_sensor_net_value_none() -> None:
     """None input returns None."""
-    assert get_sensor_net_value(None) is None  # type: ignore[arg-type]
+    assert get_sensor_net_value(None) is None
 
 
 def test_get_sensor_net_value_invalid_string() -> None:
@@ -751,7 +759,7 @@ def test_get_sensor_net_value_invalid_string() -> None:
 
 def test_get_sensor_net_value_non_str_non_numeric() -> None:
     """Non-string, non-numeric types return None."""
-    assert get_sensor_net_value([1, 2, 3]) is None  # type: ignore[arg-type]
+    assert get_sensor_net_value([1, 2, 3]) is None
 
 
 def test_get_sensor_net_value_adc_format_no_v_token() -> None:
@@ -829,7 +837,7 @@ def test_get_sensor_rtm_and_setters() -> None:
     assert ("setRTH", 4) in cmds2 and ("setRTM", 20) in cmds2
 
 
-def test_get_sensor_ab_and_build_command(caplog) -> None:
+def test_get_sensor_ab_and_build_command(caplog: pytest.LogCaptureFixture) -> None:
     """Test parsing of getAB and building set commands."""
 
     # Numeric values
@@ -1002,7 +1010,7 @@ def test_registry_cleanup_removes_existing_getcno_sensor() -> None:
     ):
         helpers.registry_cleanup(
             MagicMock(),
-            {"devices": [{"id": "DEV", "status": status}]},
+            cast(Any, {"devices": [{"id": "DEV", "status": status}]}),
             "sensor",
             allowed_keys=_SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
             entry_id="entry",
@@ -1035,7 +1043,11 @@ def test_registry_cleanup_remove_called() -> None:
     ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
-            hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="entry"
+            hass,
+            cast(Any, coordinator),
+            "sensor",
+            allowed_keys={"getPRS"},
+            entry_id="entry",
         )
 
     registry.async_remove.assert_called_once_with(unlisted_entity_id)
@@ -1049,7 +1061,11 @@ def test_registry_cleanup_without_entry_id_removes_nothing() -> None:
     ):
         coordinator = {"devices": [{"id": "DEV", "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
-            MagicMock(), coordinator, "sensor", allowed_keys=set(), entry_id=None
+            MagicMock(),
+            cast(Any, coordinator),
+            "sensor",
+            allowed_keys=set(),
+            entry_id=None,
         )
 
     registry.async_remove.assert_not_called()
@@ -1075,7 +1091,11 @@ def test_registry_cleanup_skips_device_with_empty_status() -> None:
     ):
         coordinator = {"devices": [{"id": device_id, "status": {}}]}
         helpers.registry_cleanup(
-            hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="entry"
+            hass,
+            cast(Any, coordinator),
+            "sensor",
+            allowed_keys={"getPRS"},
+            entry_id="entry",
         )
 
     registry.async_remove.assert_not_called()
@@ -1105,7 +1125,11 @@ def test_registry_cleanup_entry_id_scoping_ignores_other_hub() -> None:
     ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
-            hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
+            hass,
+            cast(Any, coordinator),
+            "sensor",
+            allowed_keys={"getPRS"},
+            entry_id="this_hub",
         )
 
     registry.async_remove.assert_not_called()
@@ -1131,7 +1155,11 @@ def test_registry_cleanup_entry_id_scoping_removes_own_hub() -> None:
     ):
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         helpers.registry_cleanup(
-            hass, coordinator, "sensor", allowed_keys={"getPRS"}, entry_id="this_hub"
+            hass,
+            cast(Any, coordinator),
+            "sensor",
+            allowed_keys={"getPRS"},
+            entry_id="this_hub",
         )
 
     registry.async_remove.assert_called_once_with(unlisted_entity_id)
@@ -1155,7 +1183,7 @@ def test_registry_cleanup_remove_raises_does_not_propagate() -> None:
         coordinator = {"devices": [{"id": device_id, "status": {"getPRS": "3"}}]}
         # Should not raise despite async_remove throwing
         helpers.registry_cleanup(
-            hass, coordinator, "sensor", allowed_keys=set(), entry_id="e"
+            hass, cast(Any, coordinator), "sensor", allowed_keys=set(), entry_id="e"
         )
 
     registry.async_remove.assert_called_once_with(unlisted_entity_id)
@@ -1190,7 +1218,11 @@ def test_registry_cleanup_uses_unique_id_not_entity_id(entity_id: str) -> None:
     ):
         coordinator = {"devices": [{"id": "206AAA12345", "status": {"getFLO": "5"}}]}
         helpers.registry_cleanup(
-            MagicMock(), coordinator, "sensor", allowed_keys={"getFLO"}, entry_id="hub2"
+            MagicMock(),
+            cast(Any, coordinator),
+            "sensor",
+            allowed_keys={"getFLO"},
+            entry_id="hub2",
         )
 
     registry.async_remove.assert_not_called()
@@ -1215,7 +1247,11 @@ def test_registry_cleanup_strips_platform_suffix_and_ignores_other_platforms() -
     ):
         coordinator = {"devices": [{"id": "DEV", "status": {"getRTM": "02:00"}}]}
         helpers.registry_cleanup(
-            MagicMock(), coordinator, "select", allowed_keys={"getRTM"}, entry_id="hub"
+            MagicMock(),
+            cast(Any, coordinator),
+            "select",
+            allowed_keys={"getRTM"},
+            entry_id="hub",
         )
 
     registry.async_remove.assert_called_once_with(stale.entity_id)
@@ -1226,7 +1262,7 @@ def test_registry_cleanup_allowed_keys_none_is_noop() -> None:
     hass = MagicMock()
     with patch("custom_components.syr_connect.helpers.er.async_get") as mock_get:
         helpers.registry_cleanup(
-            hass, {"devices": [{"id": "DEV"}]}, "sensor", allowed_keys=None
+            hass, cast(Any, {"devices": [{"id": "DEV"}]}), "sensor", allowed_keys=None
         )
         mock_get.assert_not_called()
 
@@ -1244,7 +1280,7 @@ def test_registry_cleanup_skips_device_with_no_id() -> None:
         # One device with no id, one with empty-string id
         helpers.registry_cleanup(
             hass,
-            {"devices": [{"name": "no-id"}, {"id": ""}]},
+            cast(Any, {"devices": [{"name": "no-id"}, {"id": ""}]}),
             "sensor",
             allowed_keys={"getPRS"},
             entry_id="entry",
@@ -1283,7 +1319,7 @@ def test_registry_cleanup_keeps_sensor_with_empty_value() -> None:
     ):
         helpers.registry_cleanup(
             hass,
-            coordinator,
+            cast(Any, coordinator),
             "sensor",
             allowed_keys={"getTYP"},
             hidden_keys=sensor._hidden_sensor_keys,
@@ -1313,7 +1349,7 @@ def test_registry_cleanup_keeps_conditional_sensors_of_offline_device() -> None:
     ):
         helpers.registry_cleanup(
             MagicMock(),
-            {"devices": [device]},
+            cast(Any, {"devices": [device]}),
             "sensor",
             allowed_keys={"getCEL", "getBAR", "getWIP"},
             hidden_keys=sensor._hidden_sensor_keys,
@@ -1352,7 +1388,7 @@ def test_registry_cleanup_keeps_unlisted_entities_of_offline_device() -> None:
     ):
         helpers.registry_cleanup(
             MagicMock(),
-            {"devices": [device]},
+            cast(Any, {"devices": [device]}),
             "sensor",
             allowed_keys={"getSRN"},
             entry_id="entry",
@@ -1378,7 +1414,7 @@ def test_registry_cleanup_conditionally_hidden_sensor_ignores_other_hub() -> Non
     ):
         helpers.registry_cleanup(
             hass,
-            coordinator,
+            cast(Any, coordinator),
             "sensor",
             allowed_keys={"getDWF"},
             entry_id="this_hub",
@@ -1404,7 +1440,7 @@ def test_registry_cleanup_keeps_conditionally_visible_sensor() -> None:
     ):
         helpers.registry_cleanup(
             hass,
-            coordinator,
+            cast(Any, coordinator),
             "sensor",
             allowed_keys={"getTYP"},
             hidden_keys=sensor._hidden_sensor_keys,
@@ -1429,7 +1465,7 @@ def test_registry_cleanup_removes_always_hidden_sensor_with_suffix() -> None:
     ):
         helpers.registry_cleanup(
             MagicMock(),
-            coordinator,
+            cast(Any, coordinator),
             "sensor",
             allowed_keys={"getDWF"},
             entry_id="entry",
@@ -1456,7 +1492,7 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
     ):
         helpers.registry_cleanup(
             hass,
-            coordinator,
+            cast(Any, coordinator),
             "binary_sensor",
             allowed_keys={"getTYP"},
             entry_id="entry",
@@ -1498,18 +1534,18 @@ def test_get_default_scan_interval_entry_getattr_raises() -> None:
 
     class BadEntry:
         @property
-        def options(self):
+        def options(self) -> None:
             raise AttributeError("no options")
 
         @property
-        def data(self):
+        def data(self) -> None:
             raise AttributeError("no data")
 
     be = BadEntry()
     assert (
-        helpers.get_default_scan_interval_for_entry(be)
+        helpers.get_default_scan_interval_for_entry(cast(Any, be))
         == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
-    )  # type: ignore[arg-type]
+    )
 
 
 def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
@@ -1641,7 +1677,7 @@ def test_get_current_mac_eip_fallback_when_wfs_unparsable() -> None:
 
 def test_get_sensor_bat_value_non_str_non_numeric_returns_none() -> None:
     """Non-string, non-numeric types should return None."""
-    assert get_sensor_bat_value([1, 2, 3]) is None  # type: ignore[arg-type]
+    assert get_sensor_bat_value([1, 2, 3]) is None
 
 
 def test_get_sensor_ab_value_unexpected_type_returns_none() -> None:
@@ -1670,8 +1706,8 @@ def test_get_current_mac_wip_present_wfs_none() -> None:
 
 def test_get_sensor_avo_value_non_string_non_numeric_returns_none() -> None:
     """Non-string, non-numeric types return None from get_sensor_avo_value (line 286)."""
-    assert get_sensor_avo_value([1, 2]) is None  # type: ignore[arg-type]
-    assert get_sensor_avo_value({"v": 1}) is None  # type: ignore[arg-type]
+    assert get_sensor_avo_value([1, 2]) is None
+    assert get_sensor_avo_value({"v": 1}) is None
 
 
 def test_get_sensor_net_value_numeric_type_error() -> None:
@@ -1740,7 +1776,8 @@ def test_get_sensor_ab_value_unexpected_exception() -> None:
     class _BadInt(int):
         """int subclass whose float() conversion raises TypeError."""
 
-        def __float__(self):
+        @override
+        def __float__(self) -> NoReturn:
             raise TypeError("unexpected error in float()")
 
     # Pass a numeric-like object that causes TypeError inside the try block
@@ -1834,7 +1871,7 @@ def test_get_sensor_avo_value_fallback_pattern_except() -> None:
 
     call_count = 0
 
-    def _match_side_effect(pattern, string):
+    def _match_side_effect(pattern: Any, string: Any) -> Any:
         nonlocal call_count
         call_count += 1
         if call_count == 1:
@@ -1862,7 +1899,8 @@ def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
     """
 
     class _BadFloat(int):
-        def __float__(self):
+        @override
+        def __float__(self) -> NoReturn:
             raise ValueError("bad float")
 
     status = {"getPA1": _BadFloat(1), "getPN1": "value"}
@@ -1872,7 +1910,7 @@ def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
 
 
 @pytest.mark.parametrize("password", ["secret", 'a" v="x', "p>w<d", 'v="', ""])
-def test_mask_login_password(password: str):
+def test_mask_login_password(password: str) -> None:
     """Only the password is masked; username, locale and the rest of the payload stay readable."""
 
     builder = PayloadBuilder("1.0", MagicMock(), language="en-DE")
@@ -1891,13 +1929,13 @@ def test_mask_login_password(password: str):
     assert 'lng="en" reg="DE"' in masked
 
 
-def test_mask_login_password_non_string_and_empty():
+def test_mask_login_password_non_string_and_empty() -> None:
     """Non-string and empty payloads are returned unchanged."""
     assert helpers.mask_login_password("") == ""
-    assert helpers.mask_login_password(None) is None  # type: ignore[arg-type]
+    assert helpers.mask_login_password(cast(Any, None)) is None
 
 
-def test_mask_ug_value_basic():
+def test_mask_ug_value_basic() -> None:
     """Test mask ug value basic."""
     payload = '<sc ug="SECRET_TOKEN"><payload>data</payload></sc>'
 
@@ -1908,7 +1946,7 @@ def test_mask_ug_value_basic():
     assert masked.count('ug="***"') == 1
 
 
-def test_mask_ug_value_multiple_occurrences():
+def test_mask_ug_value_multiple_occurrences() -> None:
     """Test mask ug value multiple occurrences."""
     payload = '<r ug="T1"><a ug="T2"/></r>'
 
@@ -1918,7 +1956,7 @@ def test_mask_ug_value_multiple_occurrences():
     assert "T1" not in masked and "T2" not in masked
 
 
-def test_mask_ug_value_handles_empty_value():
+def test_mask_ug_value_handles_empty_value() -> None:
     """Test mask ug value handles empty value."""
     payload = '<r ug=""><child ug=""/></r>'
 
@@ -1940,7 +1978,7 @@ def test_mask_ug_value_handles_empty_value():
         ),  # longer names untouched
     ],
 )
-def test_mask_ug_value_masks_outside_complete_tags(payload: str, expected: str):
+def test_mask_ug_value_masks_outside_complete_tags(payload: str, expected: str) -> None:
     """The token must be masked even when the payload is not well-formed XML."""
     assert mask_ug_value(payload) == expected
 
@@ -1960,23 +1998,24 @@ def test_mask_ug_value_masks_outside_complete_tags(payload: str, expected: str):
         ("EN", "us", "en-US"),
     ],
 )
-def test_get_api_locale(language, country, expected):
+def test_get_api_locale(language: Any, country: Any, expected: Any) -> None:
     """The cloud locale combines the HA language with its region or the HA country."""
     assert helpers.get_api_locale(language, country) == expected
 
 
-def test_mask_ug_value_empty_string_returns_empty():
+def test_mask_ug_value_empty_string_returns_empty() -> None:
     """When payload is an empty string, return it unchanged."""
     assert mask_ug_value("") == ""
 
 
-def test_mask_ug_value_non_string_returns_input():
+def test_mask_ug_value_non_string_returns_input() -> None:
     """Non-string payloads should be returned unchanged."""
-    assert mask_ug_value(None) is None
-    assert mask_ug_value(123) == 123
+    assert mask_ug_value(cast(Any, None)) is None
+    result: Any = mask_ug_value(cast(Any, 123))
+    assert result == 123
 
 
-def test_mask_ug_value_re_error_returns_original():
+def test_mask_ug_value_re_error_returns_original() -> None:
     """If re.sub raises re.error, the original payload must be returned."""
     payload = '<sc ug="SECRET"></sc>'
     with patch(
@@ -2360,7 +2399,7 @@ def test_is_valid_host_rejects(host: str) -> None:
         (None, False),
     ],
 )
-def test_is_device_offline(dst, expected) -> None:
+def test_is_device_offline(dst: Any, expected: Any) -> None:
     """The dst values 0 (never online) and 1 (offline) mean offline; everything else does not."""
     assert helpers.is_device_offline(dst) is expected
 
@@ -2378,7 +2417,7 @@ def test_is_device_offline(dst, expected) -> None:
         ("", False),
     ],
 )
-def test_host_has_port(host, expected) -> None:
+def test_host_has_port(host: Any, expected: Any) -> None:
     """A trailing :<port> is detected; plain IPv6 addresses ending in digits are not hosts with port."""
     assert helpers.host_has_port(host) is expected
 
@@ -2406,7 +2445,7 @@ def test_helpers_infinite_values_count_as_invalid() -> None:
         (0, False),
     ],
 )
-def test_is_empty_ip(value, expected) -> None:
+def test_is_empty_ip(value: Any, expected: Any) -> None:
     """Missing, blank and unspecified IP addresses count as empty."""
     assert helpers.is_empty_ip(value) is expected
 

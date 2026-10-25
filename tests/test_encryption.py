@@ -1,6 +1,7 @@
 """Test the SYR Connect encryption module."""
 
 import base64
+from typing import Any
 
 from Cryptodome.Cipher import AES
 import pytest
@@ -9,14 +10,14 @@ from custom_components.syr_connect.encryption import SyrEncryption
 
 
 @pytest.fixture
-def encryption():
+def encryption() -> Any:
     """Create an encryption instance with test keys."""
     key = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
     iv = "408a42beb8a1cefad990098584ed51a5"
     return SyrEncryption(key, iv)
 
 
-def test_encryption_initialization():
+def test_encryption_initialization() -> None:
     """Test encryption initialization with hex keys."""
     key = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
     iv = "408a42beb8a1cefad990098584ed51a5"
@@ -26,19 +27,19 @@ def test_encryption_initialization():
     assert len(enc.iv) == 16  # 128 bits
 
 
-def test_decrypt_empty_string(encryption):
+def test_decrypt_empty_string(encryption: SyrEncryption) -> None:
     """Test decryption of empty string raises ValueError."""
     with pytest.raises(ValueError, match="Encrypted payload cannot be empty"):
         encryption.decrypt("")
 
 
-def test_decrypt_invalid_base64(encryption):
+def test_decrypt_invalid_base64(encryption: SyrEncryption) -> None:
     """Test decryption with invalid base64 raises ValueError."""
     with pytest.raises(ValueError, match="Failed to decrypt payload"):
         encryption.decrypt("invalid_base64_!@#$")
 
 
-def test_decrypt_valid_data(encryption):
+def test_decrypt_valid_data(encryption: SyrEncryption) -> None:
     """Test successful decryption of valid encrypted data."""
     # Create a properly encrypted payload for testing
     plaintext = "test data"
@@ -56,7 +57,7 @@ def test_decrypt_valid_data(encryption):
     assert result == plaintext
 
 
-def test_decrypt_with_padding(encryption):
+def test_decrypt_with_padding(encryption: SyrEncryption) -> None:
     """Test decryption correctly removes padding."""
     # Create payload with null byte padding
     plaintext = "short"
@@ -73,7 +74,7 @@ def test_decrypt_with_padding(encryption):
     assert "\x00" not in result
 
 
-def test_decrypt_with_whitespace_padding(encryption):
+def test_decrypt_with_whitespace_padding(encryption: SyrEncryption) -> None:
     """Test decryption correctly removes whitespace padding."""
     # Create payload with whitespace padding
     plaintext = "test"
@@ -89,7 +90,7 @@ def test_decrypt_with_whitespace_padding(encryption):
     assert result == plaintext
 
 
-def test_decrypt_invalid_utf8(encryption):
+def test_decrypt_invalid_utf8(encryption: SyrEncryption) -> None:
     """Test decryption with invalid UTF-8 data raises ValueError."""
     # Create encrypted data that won't decode as UTF-8
     invalid_bytes = b"\xff\xfe\xfd" + b"\x00" * 13  # Invalid UTF-8 sequence
@@ -102,7 +103,7 @@ def test_decrypt_invalid_utf8(encryption):
         encryption.decrypt(encrypted_payload)
 
 
-def test_decrypt_wrong_key():
+def test_decrypt_wrong_key() -> None:
     """Test decryption with wrong key produces garbled output or error."""
     # Create encryption with one key
     key1 = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"

@@ -3,12 +3,15 @@
 # The unit tests in this module check private attributes directly.
 # ruff: noqa: SLF001
 
+from collections.abc import Callable
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from custom_components.syr_connect.switch import SyrConnectBooleanSwitch
 
 
-def test_entity_name_before_added_is_translation_key(create_mock_coordinator) -> None:
+def test_entity_name_before_added_is_translation_key(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
     """Before the entity is added, exception messages name it by its translation key."""
     switch = SyrConnectBooleanSwitch(
         create_mock_coordinator({"devices": []}), "dev", "Keller", "getBUZ"
@@ -17,7 +20,9 @@ def test_entity_name_before_added_is_translation_key(create_mock_coordinator) ->
     assert switch._entity_name == "getbuz"
 
 
-def test_entity_name_after_added_is_translated_name(create_mock_coordinator) -> None:
+def test_entity_name_after_added_is_translated_name(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
     """Once the entity is added, exception messages use its translated name."""
     switch = SyrConnectBooleanSwitch(
         create_mock_coordinator({"devices": []}), "dev", "Keller", "getBUZ"

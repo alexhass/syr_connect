@@ -3,10 +3,11 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from collections.abc import Callable
 from dataclasses import replace
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn, cast, override
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -72,7 +73,7 @@ def _build_coordinator(hass: HomeAssistant, data: dict) -> Any:
         config_data,
         60,
     )
-    coordinator.async_set_updated_data(data)
+    coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
 
@@ -194,7 +195,7 @@ async def test_select_available(hass: HomeAssistant) -> None:
     assert select.available is True
 
 
-def test_build_time_options_default():
+def test_build_time_options_default() -> None:
     """Test building time options with default 15-minute step."""
     options = _build_time_options(15)
     assert "00:00" in options
@@ -204,7 +205,7 @@ def test_build_time_options_default():
     assert len(options) == 96  # 24 hours * 4 (every 15 min)
 
 
-def test_build_time_options_30min():
+def test_build_time_options_30min() -> None:
     """Test building time options with 30-minute step."""
     options = _build_time_options(30)
     assert "00:00" in options
@@ -214,7 +215,11 @@ def test_build_time_options_30min():
 
 
 async def test_async_setup_entry(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates select entities."""
     data = {
@@ -243,7 +248,11 @@ async def test_async_setup_entry(
 
 
 async def test_async_setup_entry_no_entities(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry with no valid select entities."""
     data = {
@@ -266,7 +275,11 @@ async def test_async_setup_entry_no_entities(
 
 
 async def test_async_setup_entry_no_prf_when_all_pa_false(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create PRF select when all getPA values are false or None."""
     data = {
@@ -297,7 +310,11 @@ async def test_async_setup_entry_no_prf_when_all_pa_false(
 
 
 async def test_async_setup_entry_skips_prf_excluded_by_model_allowlist(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """No PRF select is created when the model's SELECT_SUPPORTED_KEYS override excludes getPRF.
 
@@ -603,7 +620,11 @@ async def test_prf_select_options_with_getpa_int_one(hass: HomeAssistant) -> Non
 
 
 async def test_async_setup_entry_registry_exception(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Ensure async_setup_entry handles exceptions from entity registry cleanup."""
     data = {
@@ -634,7 +655,11 @@ async def test_async_setup_entry_registry_exception(
 
 
 async def test_async_setup_entry_creates_muco_config_selects(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """async_setup_entry creates all MuCo/CONEL config selects when present in status."""
     data = {
@@ -675,7 +700,11 @@ async def test_async_setup_entry_creates_muco_config_selects(
 
 
 async def test_muco_conditional_select_creates_ohw_for_hwe_cartridge(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """getCRT=0 (HWE) creates the getOHW select and not getLOT."""
     data = {
@@ -699,7 +728,11 @@ async def test_muco_conditional_select_creates_ohw_for_hwe_cartridge(
 
 
 async def test_muco_conditional_select_switches_live_on_crt_change(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Changing getCRT live re-evaluates the conditional select without a reload."""
     data = {
@@ -812,7 +845,11 @@ async def test_numeric_select_device_unavailable(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_zero_sv_values_always_shown(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry always creates SVx selects, even with zero values."""
     data = {
@@ -852,7 +889,11 @@ async def test_async_setup_entry_zero_sv_values_always_shown(
 
 
 async def test_async_setup_entry_no_data(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry with no coordinator data."""
     mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(None)
@@ -1016,7 +1057,7 @@ async def test_regeneration_select_handles_coordinator_exception(
     }
     coordinator = _build_coordinator(hass, data)
 
-    async def raiser(*args, **kwargs):
+    async def raiser(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator.async_set_device_values = AsyncMock(side_effect=raiser)
@@ -1075,7 +1116,7 @@ async def test_numeric_select_handles_coordinator_exception(
     }
     coordinator = _build_coordinator(hass, data)
 
-    async def raiser(*args, **kwargs):
+    async def raiser(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
@@ -1179,7 +1220,11 @@ async def test_numeric_select_available_device_not_found(hass: HomeAssistant) ->
 
 
 async def test_async_setup_entry_skip_empty_sv_values(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips empty salt values."""
     data = {
@@ -1214,7 +1259,11 @@ async def test_async_setup_entry_skip_empty_sv_values(
 
 
 async def test_async_setup_entry_skip_none_sv_values(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips None salt values."""
     data = {
@@ -1282,7 +1331,11 @@ async def test_async_setup_entry_skip_invalid_float_sv_values(
 
 
 async def test_async_setup_entry_skip_zero_rpd(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips zero RPD values."""
     data = {
@@ -1310,7 +1363,11 @@ async def test_async_setup_entry_skip_zero_rpd(
 
 
 async def test_async_setup_entry_skip_empty_rpd(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips empty RPD values."""
     data = {
@@ -1338,7 +1395,11 @@ async def test_async_setup_entry_skip_empty_rpd(
 
 
 async def test_async_setup_entry_skip_none_rpd(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips None RPD values."""
     data = {
@@ -1366,7 +1427,11 @@ async def test_async_setup_entry_skip_none_rpd(
 
 
 async def test_async_setup_entry_skip_invalid_rpd(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips invalid RPD values."""
     data = {
@@ -1397,7 +1462,11 @@ async def test_async_setup_entry_skip_invalid_rpd(
 
 
 async def test_async_setup_entry_custom_model_capacity(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry uses model-specific salt capacity."""
     data = {
@@ -1427,7 +1496,11 @@ async def test_async_setup_entry_custom_model_capacity(
 
 
 async def test_async_setup_entry_model_from_type_field(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create SVx selects for unknown models.
 
@@ -1482,10 +1555,12 @@ async def test_async_setup_entry_model_from_type_field(
 )
 async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
-    srn_prefix,
-    expected_name,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    srn_prefix: Any,
+    expected_name: Any,
 ) -> None:
     """No NeoSoft rebrand sibling gets a getSV1 select.
 
@@ -1535,8 +1610,10 @@ async def test_async_setup_entry_skips_getsv1_select_for_neosoft_family_rebrands
 )
 async def test_muco_lot_ohw_select_only_for_models_listing_it(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     fixture: str,
     expected: set,
 ) -> None:
@@ -1565,7 +1642,11 @@ async def test_muco_lot_ohw_select_only_for_models_listing_it(
 
 
 async def test_async_setup_entry_creates_triolock_selects_from_real_fixture(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """SYR TRIO Lock Connect (muco_triolock) real fixture creates getPRF/getSRO/getFFM selects."""
     xml = (
@@ -1613,7 +1694,8 @@ async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> No
 
     # Mock a unit that raises exception when converted to string
     class BadUnit:
-        def __str__(self):
+        @override
+        def __str__(self) -> NoReturn:
             raise ValueError("Cannot convert to string")
 
     with _patch_sensor_description("getSV1", native_unit_of_measurement=BadUnit()):
@@ -1629,7 +1711,11 @@ async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> No
 
 
 async def test_async_setup_entry_multiple_sv_keys(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates entities for all SV keys."""
     data = {
@@ -1698,8 +1784,12 @@ async def test_regeneration_select_combined_mode_sends_only_set_rtm(
 
 
 async def test_async_setup_entry_removes_excluded_from_registry(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
-):
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
     """Ensure async_setup_entry removes previously-registered excluded selects from the registry."""
 
     device_id = "device_del"
@@ -1741,7 +1831,7 @@ async def test_async_setup_entry_removes_excluded_from_registry(
     mock_registry.async_remove.assert_called_once_with(stale_entity_id)
 
 
-def test_build_time_options_step_60_additional():
+def test_build_time_options_step_60_additional() -> None:
     """Build time options with 60-minute step (additional coverage)."""
     opts = _build_time_options(60)
     assert len(opts) == 24
@@ -1750,8 +1840,8 @@ def test_build_time_options_step_60_additional():
 
 
 async def test_regeneration_select_current_and_select_with_mock(
-    create_mock_coordinator, hass
-):
+    create_mock_coordinator: Callable[..., MagicMock], hass: HomeAssistant
+) -> None:
     """Test regeneration select current and select with mock."""
     data = {
         "devices": [
@@ -1775,7 +1865,9 @@ async def test_regeneration_select_current_and_select_with_mock(
     )
 
 
-async def test_numeric_select_current_and_select_with_mock(create_mock_coordinator):
+async def test_numeric_select_current_and_select_with_mock(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
     """Test numeric select current and select with mock."""
     data = {"devices": [{"id": "mdev2", "status": {"getSV1": "5"}, "available": True}]}
     coord = create_mock_coordinator(data)
@@ -1789,7 +1881,9 @@ async def test_numeric_select_current_and_select_with_mock(create_mock_coordinat
     coord.async_set_device_value.assert_awaited()
 
 
-async def test_numeric_select_invalid_option_with_mock(create_mock_coordinator):
+async def test_numeric_select_invalid_option_with_mock(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
     """Test numeric select invalid option with mock."""
     data = {"devices": [{"id": "mdev3", "status": {"getSV1": "5"}}]}
     coord = create_mock_coordinator(data)
@@ -1802,7 +1896,9 @@ async def test_numeric_select_invalid_option_with_mock(create_mock_coordinator):
     coord.async_set_device_value.assert_not_awaited()
 
 
-def test_prf_select_options_and_current_with_mock(create_mock_coordinator):
+def test_prf_select_options_and_current_with_mock(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
     """Test prf select options and current with mock."""
     data = {
         "devices": [
@@ -1826,7 +1922,9 @@ def test_prf_select_options_and_current_with_mock(create_mock_coordinator):
     assert prf.current_option == "Profile A"
 
 
-def test_availability_properties_with_mock(create_mock_coordinator):
+def test_availability_properties_with_mock(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
     """Test availability properties with mock."""
     data = {"devices": [{"id": "mdev5", "status": {}, "available": False}]}
     coord = create_mock_coordinator(data)
@@ -1859,7 +1957,7 @@ async def test_prf_select_handles_coordinator_exception(hass: HomeAssistant) -> 
     }
     coordinator = _build_coordinator(hass, data)
 
-    async def raiser(*args, **kwargs):
+    async def raiser(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
@@ -2136,7 +2234,11 @@ async def test_prf_select_missing_profile_name(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_with_none_pa_values(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry handles None PA values (line 99-100)."""
     data = {
@@ -2285,7 +2387,7 @@ def _build_coordinator_local(hass: HomeAssistant, data: dict) -> Any:
         CONF_PASSWORD: "password",
     }
     coordinator = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
-    coordinator.async_set_updated_data(data)
+    coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
 
@@ -2317,7 +2419,7 @@ async def test_rotation_select_invalid_and_exception(hass: HomeAssistant) -> Non
         await select.async_select_option("bad")
     coordinator.async_set_device_value.assert_not_called()
 
-    async def raiser(*args, **kwargs):
+    async def raiser(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator = _build_coordinator_local(
@@ -2362,7 +2464,7 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
         await select.async_select_option("not_there")
     coordinator.async_set_device_value.assert_not_called()
 
-    async def raiser(*args, **kwargs):
+    async def raiser(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
@@ -2374,7 +2476,11 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
     reason="getFCD select is temporarily disabled (write-back bug: server resets value after change)"
 )
 async def test_async_setup_entry_creates_fcd_select(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates a discrete select for getFCD values."""
     data = {
@@ -2404,7 +2510,11 @@ async def test_async_setup_entry_creates_fcd_select(
 
 
 async def test_async_setup_entry_creates_ffm_numeric_select(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates a numeric select for getFFM when >=1."""
     data = {
@@ -2461,7 +2571,11 @@ async def test_discrete_select_entity_category_when_configured(
 
 
 async def test_async_setup_entry_skips_ffm_zero(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Ensure getFFM == 0 does not create a select entity."""
     data = {
@@ -2488,8 +2602,10 @@ async def test_async_setup_entry_skips_ffm_zero(
 @pytest.mark.parametrize("ffm_value", ["0", "not_a_number"])
 async def test_async_setup_entry_ffm_skip_does_not_skip_rmo(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     ffm_value: str,
 ) -> None:
     """A getFFM of 0 or an invalid value only omits the FFM select, not the device's other selects."""
@@ -2526,7 +2642,11 @@ async def test_discrete_select_current_option_no_match(hass: HomeAssistant) -> N
 
 
 async def test_async_setup_entry_adds_rotation_select(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates a rotation select when getSRO is numeric."""
     data = {
@@ -2551,7 +2671,11 @@ async def test_async_setup_entry_adds_rotation_select(
 
 
 async def test_async_setup_entry_creates_rpd_select_for_model_with_max_rpd(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates an RPD numeric select when model provides max interval."""
     data = {
@@ -2580,7 +2704,11 @@ async def test_async_setup_entry_creates_rpd_select_for_model_with_max_rpd(
 
 
 async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates SV1 select when model is detected via SRN prefix.
 
@@ -2630,8 +2758,10 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
 
 async def test_async_setup_entry_skips_invalid_sro_value(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Invalid getSRO triggers except-continue branch; no RotationSelect created (lines 105-106)."""
     data = {
@@ -2655,8 +2785,10 @@ async def test_async_setup_entry_skips_invalid_sro_value(
 
 async def test_async_setup_entry_skips_invalid_fcd_value(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Invalid getFCD triggers except-continue branch; no DiscreteSelect created (lines 133-134)."""
     data = {
@@ -2682,8 +2814,10 @@ async def test_async_setup_entry_skips_invalid_fcd_value(
 
 async def test_async_setup_entry_skips_invalid_ffm_value(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Invalid getFFM triggers except-continue branch; no FFM select created (lines 180-181)."""
     data = {
@@ -2965,8 +3099,10 @@ async def test_prf_select_async_select_option_skips_other_devices(
 
 async def test_async_setup_entry_creates_rmo_select(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates a discrete select for getRMO when value >= 1."""
     data = {
@@ -2993,8 +3129,10 @@ async def test_async_setup_entry_creates_rmo_select(
 
 async def test_async_setup_entry_no_rmo_select_when_missing(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create an RMO select when getRMO absent."""
     data = {
@@ -3020,8 +3158,10 @@ async def test_async_setup_entry_no_rmo_select_when_missing(
 
 async def test_async_setup_entry_no_rmo_select_when_zero(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create an RMO select when getRMO == '0'."""
     data = {
@@ -3047,8 +3187,10 @@ async def test_async_setup_entry_no_rmo_select_when_zero(
 
 async def test_async_setup_entry_no_rmo_select_when_none(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create an RMO select when getRMO is None."""
     data = {
@@ -3074,8 +3216,10 @@ async def test_async_setup_entry_no_rmo_select_when_none(
 
 async def test_async_setup_entry_no_rmo_select_when_empty(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create an RMO select when getRMO is empty string."""
     data = {
@@ -3101,8 +3245,10 @@ async def test_async_setup_entry_no_rmo_select_when_empty(
 
 async def test_async_setup_entry_no_rmo_select_when_invalid(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry does not create an RMO select when getRMO is not numeric."""
     data = {
@@ -3174,8 +3320,10 @@ async def test_rmo_select_current_option_all_modes(hass: HomeAssistant) -> None:
 # values must be silently skipped instead of creating a select entity.
 async def test_async_setup_entry_skips_invalid_muco_numeric_values(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Non-numeric getCRS/getRMN/getRMT/getRVT/getTPR values must not create selects."""
     data = {
@@ -3206,8 +3354,10 @@ async def test_async_setup_entry_skips_invalid_muco_numeric_values(
 # Line 371 — devices without an "id" must be skipped by the MuCo conditional sync.
 async def test_muco_conditional_select_skips_device_without_id(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The conditional MuCo select sync skips devices without an id."""
     data = {
@@ -3355,7 +3505,7 @@ async def test_rmo_select_error_on_set(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
 
-    async def raiser(*args, **kwargs):
+    async def raiser(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
@@ -3426,7 +3576,9 @@ async def test_rmo_select_entity_category_is_config(hass: HomeAssistant) -> None
     assert select.entity_category == EntityCategory.CONFIG
 
 
-def test_regeneration_select_disabled_by_default_when_in_set(hass):
+def test_regeneration_select_disabled_by_default_when_in_set(
+    hass: HomeAssistant,
+) -> None:
     """Test SyrConnectRegenerationSelect sets entity_registry_enabled_default=False when getRTM is in DISABLED_BY_DEFAULT."""
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
@@ -3437,7 +3589,7 @@ def test_regeneration_select_disabled_by_default_when_in_set(hass):
     assert select.entity_registry_enabled_default is False
 
 
-def test_discrete_select_disabled_by_default_when_in_set(hass):
+def test_discrete_select_disabled_by_default_when_in_set(hass: HomeAssistant) -> None:
     """Test SyrConnectDiscreteSelect sets entity_registry_enabled_default=False when key is in DISABLED_BY_DEFAULT."""
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
@@ -3449,7 +3601,7 @@ def test_discrete_select_disabled_by_default_when_in_set(hass):
     assert select.entity_registry_enabled_default is False
 
 
-def test_prf_select_disabled_by_default_when_in_set(hass):
+def test_prf_select_disabled_by_default_when_in_set(hass: HomeAssistant) -> None:
     """Test SyrConnectPrfSelect sets entity_registry_enabled_default=False when getPRF is in DISABLED_BY_DEFAULT."""
 
     data = {"devices": [{"id": "dev1", "name": "D1", "status": {}}]}
@@ -3475,7 +3627,11 @@ _SAFEFLOOR_STATUS = {
 
 
 async def test_async_setup_entry_creates_safefloor_threshold_selects(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """async_setup_entry creates all 7 SafeFloor threshold/interval selects when present in status."""
     data = {
@@ -3506,7 +3662,11 @@ async def test_async_setup_entry_creates_safefloor_threshold_selects(
 
 
 async def test_async_setup_entry_skips_invalid_safefloor_threshold_values(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Non-numeric/empty SafeFloor threshold values must not create select entities."""
     status = {key: "" for key in _SAFEFLOOR_STATUS if key != "getVER"}
@@ -3533,7 +3693,11 @@ async def test_async_setup_entry_skips_invalid_safefloor_threshold_values(
 
 
 async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Garbage (non-numeric) SafeFloor threshold values must not create select entities."""
     status = {key: "n/a" for key in _SAFEFLOOR_STATUS if key != "getVER"}
@@ -3586,7 +3750,11 @@ async def test_mih_mxh_select_current_option(hass: HomeAssistant) -> None:
 
 
 async def test_ald_select_current_option_and_selection(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The getALD shows the documented steps in HA seconds; selecting an option sends setALD."""
     data = {
@@ -3642,8 +3810,10 @@ async def test_ald_select_current_option_and_selection(
 )
 async def test_ald_select_current_option_matches_whole_number(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     raw: str,
     expected: str | None,
 ) -> None:
@@ -3776,7 +3946,11 @@ async def test_rcp_wmp_select_current_option(hass: HomeAssistant) -> None:
 
 
 async def test_rmt_select_options_use_ha_minutes_unit(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The getRMT options carry Home Assistant's minute unit, and selecting one writes the plain number."""
     data = {
@@ -3796,7 +3970,7 @@ async def test_rmt_select_options_use_ha_minutes_unit(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     rmt = next(e for e in entities if getattr(e, "_sensor_key", None) == "getRMT")
-    assert UnitOfTime.MINUTES == "min"
+    assert UnitOfTime.MINUTES.value == "min"
     assert rmt.options[0] == "1 min"
     assert all(opt.endswith(f" {UnitOfTime.MINUTES}") for opt in rmt.options)
     assert rmt.current_option == "30 min"
@@ -3809,7 +3983,11 @@ async def test_rmt_select_options_use_ha_minutes_unit(
 
 
 async def test_muco_select_option_units_come_from_central_unit_map(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Unit text of getCRS/getRVT/getLOT options comes from the sensor descriptions, not hard-coded strings."""
 
@@ -3843,7 +4021,11 @@ async def test_muco_select_option_units_come_from_central_unit_map(
 
 
 async def test_async_setup_entry_creates_hardness_selects_for_lex(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The plain LEX family (here i-LEX 10) gets raw/outlet water hardness selects."""
     status = {"getCNA": "L10", "getIWH": "20", "getOWH": "2", "getWHU": "0"}
@@ -3878,7 +4060,11 @@ async def test_async_setup_entry_creates_hardness_selects_for_lex(
 
 
 async def test_async_setup_entry_skips_non_numeric_hardness_values(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Non-numeric getIWH/getOWH values must not create hardness selects."""
     status = {"getCNA": "L10", "getIWH": "n/a", "getOWH": "n/a", "getWHU": "0"}
@@ -4035,7 +4221,12 @@ async def test_hardness_select_current_option_prefers_exact_match(
     ],
 )
 async def test_async_setup_entry_creates_hardness_selects_for_lex_plus(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities, cna: str
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    cna: str,
 ) -> None:
     """LEX Plus models also get raw/outlet water hardness selects."""
     status = {"getCNA": cna, "getIWH": "20", "getOWH": "2", "getWHU": "0"}
@@ -4061,7 +4252,11 @@ async def test_async_setup_entry_creates_hardness_selects_for_lex_plus(
 
 
 async def test_async_setup_entry_skips_hardness_selects_for_other_models(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Models without getIWH/getOWH in their select allowlist keep them as sensors only."""
     cna = "NeoSoft2500"
@@ -4086,7 +4281,11 @@ async def test_async_setup_entry_skips_hardness_selects_for_other_models(
 
 
 async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_device_profile(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """A model without a device file falls back to the global allowlist, which must not expose these keys."""
     test_sig = [

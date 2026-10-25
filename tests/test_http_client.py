@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -48,7 +49,7 @@ async def test_post_raises_on_auth_error_immediately() -> None:
     # Create a fake session whose post returns an async context manager that raises on __aenter__
     fake_cm = AsyncMock()
 
-    async def enter():
+    async def enter() -> None:
         raise exc
 
     fake_cm.__aenter__.side_effect = enter
@@ -281,7 +282,9 @@ def test_build_accept_language_from_constructor() -> None:
     assert client._build_accept_language() == "en-DE,en;q=0.9"
 
 
-def test_build_accept_language_assignment_failure(monkeypatch) -> None:
+def test_build_accept_language_assignment_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """If assigning the cached attribute fails, the computed value is returned."""
     mock_session = MagicMock()
     client = HTTPClient(session=mock_session, user_agent="test-agent")
@@ -289,7 +292,7 @@ def test_build_accept_language_assignment_failure(monkeypatch) -> None:
     # Capture original __setattr__ so our broken setter can delegate for other attributes
     orig_setattr = HTTPClient.__setattr__
 
-    def broken_setattr(self, name, value):
+    def broken_setattr(self: Any, name: Any, value: Any) -> Any:
         if name == "_accept_language":
             raise RuntimeError("cannot assign")
         return orig_setattr(self, name, value)

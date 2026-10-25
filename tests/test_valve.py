@@ -4,9 +4,10 @@
 # ruff: noqa: SLF001
 
 # mypy: disable-error-code="method-assign, misc"
+from collections.abc import Callable
 import contextlib
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -23,7 +24,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
 
-def _consume_coro_return_task(coro):
+def _consume_coro_return_task(coro: Any) -> Any:
     """Safely consume a coroutine passed to `async_create_task` in tests.
 
     This closes the coroutine (if possible) to avoid "was never awaited"
@@ -36,10 +37,10 @@ def _consume_coro_return_task(coro):
             close()
 
     class _DummyTask:
-        def cancel(self):
+        def cancel(self) -> None:
             return None
 
-        def done(self):
+        def done(self) -> Any:
             return True
 
     return _DummyTask()
@@ -58,7 +59,7 @@ def _build_coordinator(
         config_data,
         60,
     )
-    coordinator.async_set_updated_data(data)
+    coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
 
@@ -113,7 +114,11 @@ async def test_open_close_error_raises(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_creates_valve(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async setup entry creates valve."""
     data = {
@@ -135,7 +140,11 @@ async def test_async_setup_entry_creates_valve(
 
 
 async def test_async_setup_entry_creates_valve_for_triolock_real_fixture(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """SYR TRIO Lock Connect (muco_triolock) real fixture creates a valve entity for getAB."""
     xml = (
@@ -245,7 +254,9 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
 
     # Update status to opening (21)
     coordinator.async_set_updated_data(
-        {"devices": [{"id": "dev", "name": "Dev", "status": {"getVLV": "21"}}]}
+        cast(
+            Any, {"devices": [{"id": "dev", "name": "Dev", "status": {"getVLV": "21"}}]}
+        )
     )
     assert valve.is_opening is True
     assert valve.state == "opening"
@@ -262,7 +273,7 @@ async def test_is_closed_reads_only_getab(hass: HomeAssistant) -> None:
 
     # Invalid getAB -> unknown
     coordinator.async_set_updated_data(
-        {"devices": [{"id": "x", "name": "X", "status": {"getAB": "abc"}}]}
+        cast(Any, {"devices": [{"id": "x", "name": "X", "status": {"getAB": "abc"}}]})
     )
     assert valve.is_closed is None
 
@@ -305,7 +316,7 @@ async def test_async_open_close_success_and_failure(hass: HomeAssistant) -> None
     coordinator.async_set_device_value.assert_awaited_with("op", "setAB", 2)
 
     # Simulate failure
-    async def _fail(*args, **kwargs):
+    async def _fail(*args: Any, **kwargs: Any) -> None:
         raise ValueError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
@@ -375,7 +386,7 @@ async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -
     # If entry.runtime_data.data is falsy, async_setup_entry should not call add_entities
     coordinator = _build_coordinator(hass, {"devices": []})
     # Simulate missing data
-    coordinator.data = None  # type: ignore[assignment]
+    coordinator.data = None
     entry = _build_entry(coordinator)
     entry.add_to_hass(hass)
 
@@ -689,7 +700,7 @@ async def test_shadow_ab_false_overrides_vlv(hass: HomeAssistant) -> None:
 
     # Without getVLV, getAB=1 still means open
     coordinator.async_set_updated_data(
-        {"devices": [{"id": "cf", "name": "CF", "status": {"getAB": "1"}}]}
+        cast(Any, {"devices": [{"id": "cf", "name": "CF", "status": {"getAB": "1"}}]})
     )
     assert valve.is_closed is False
 
@@ -743,7 +754,7 @@ async def test_async_close_handles_write_state_exception(hass: HomeAssistant) ->
     valve = SyrConnectValve(coordinator, "w2", "W2")
 
     # Make async_write_ha_state raise; async_close should swallow it
-    def _fail():
+    def _fail() -> None:
         raise RuntimeError("ui fail")
 
     valve.async_write_ha_state = _fail
@@ -759,7 +770,7 @@ async def test_async_close_raises_on_failure(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
-    async def _fail(*args, **kwargs):
+    async def _fail(*args: Any, **kwargs: Any) -> None:
         raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
@@ -779,7 +790,7 @@ async def test_async_open_raises_on_failure(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
-    async def _fail(*args, **kwargs):
+    async def _fail(*args: Any, **kwargs: Any) -> None:
         raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
@@ -801,14 +812,14 @@ async def test_async_open_second_write_state_exception_on_failure(
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
-    async def _fail(*args, **kwargs):
+    async def _fail(*args: Any, **kwargs: Any) -> None:
         raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve = SyrConnectValve(coordinator, "ws1", "WS1")
 
     # Make async_write_ha_state always raise
-    def _write_fail():
+    def _write_fail() -> None:
         raise RuntimeError("write state failed")
 
     valve.async_write_ha_state = _write_fail
@@ -828,14 +839,14 @@ async def test_async_close_second_write_state_exception_on_failure(
     coordinator = _build_coordinator(hass, data)
 
     # Make async_set_device_value fail
-    async def _fail(*args, **kwargs):
+    async def _fail(*args: Any, **kwargs: Any) -> None:
         raise ValueError("command failed")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=_fail)
     valve = SyrConnectValve(coordinator, "ws2", "WS2")
 
     # Make async_write_ha_state always raise
-    def _write_fail():
+    def _write_fail() -> None:
         raise RuntimeError("write state failed")
 
     valve.async_write_ha_state = _write_fail
@@ -1310,7 +1321,7 @@ async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
 async def test_async_open_valve_no_data_raises(hass: HomeAssistant) -> None:
     """async_open_valve raises HomeAssistantError when coordinator data is not available."""
     coordinator = _build_coordinator(hass, {"devices": []})
-    coordinator.data = None  # type: ignore[assignment]  # force data to be falsy
+    coordinator.data = None  # force data to be falsy
 
     with pytest.raises(HomeAssistantError, match="coordinator_data_unavailable"):
         await coordinator.async_open_valve("dev_x", "setAB", 1)
@@ -1416,6 +1427,7 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
         "dev_z", [("setALA", "FF"), ("setAB", 1)]
     )
     # Both values are shown optimistically: valve open, alarm cleared
+    assert coordinator.data is not None
     status = coordinator.data["devices"][0]["status"]
     assert status["getAB"] == "1"
     assert status["getALA"] == "FF"
@@ -1435,6 +1447,7 @@ def _valve_data(status: dict[str, Any]) -> dict[str, Any]:
 
 
 def _status(coordinator: SyrConnectDataUpdateCoordinator) -> dict[str, Any]:
+    assert coordinator.data is not None
     return coordinator.data["devices"][0]["status"]
 
 
@@ -1499,7 +1512,7 @@ async def test_request_failure_does_not_overwrite_newer_poll_data(
     polled = _valve_data({"getAB": "1", "getFLO": "7"})
 
     async def _poll_then_fail(*_args: Any) -> None:
-        coordinator.async_set_updated_data(polled)
+        coordinator.async_set_updated_data(cast(Any, polled))
         raise TimeoutError("no answer")
 
     coordinator.api.set_device_status = AsyncMock(side_effect=_poll_then_fail)

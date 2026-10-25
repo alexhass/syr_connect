@@ -6,6 +6,7 @@
 import contextlib
 import inspect
 from types import SimpleNamespace
+from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -39,7 +40,7 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 
-def _consume_coro_return_task(coro):
+def _consume_coro_return_task(coro: Any) -> Any:
     """Safely consume a coroutine passed to `async_create_task` in tests.
 
     This closes the coroutine (if possible) to avoid "was never awaited"
@@ -52,17 +53,17 @@ def _consume_coro_return_task(coro):
             close()
 
     class _DummyTask:
-        def cancel(self):
+        def cancel(self) -> None:
             return None
 
-        def done(self):
+        def done(self) -> Any:
             return True
 
     return _DummyTask()
 
 
 async def test_coordinator_update_success(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test successful coordinator update."""
     with patch(
@@ -112,7 +113,7 @@ async def test_coordinator_update_success(
 
 
 async def test_coordinator_update_no_session(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator update without session triggers login."""
     with patch(
@@ -146,7 +147,7 @@ async def test_coordinator_update_no_session(
 
 
 async def test_coordinator_set_device_value(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test setting device value through coordinator."""
     with patch(
@@ -199,7 +200,7 @@ async def test_coordinator_set_device_value(
 
 
 async def test_set_device_status_api_raises_propagates(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """If API.set_device_status raises, the exception should propagate to caller."""
     with patch(
@@ -236,7 +237,7 @@ async def test_set_device_status_api_raises_propagates(
 
 
 async def test_invalid_command_no_optimistic_update(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Commands not starting with 'set' should not perform optimistic updates."""
     with patch(
@@ -279,7 +280,7 @@ async def test_invalid_command_no_optimistic_update(
 
 
 async def test_coordinator_optimistic_update(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator optimistic update of in-memory data."""
     with patch(
@@ -326,7 +327,7 @@ async def test_coordinator_optimistic_update(
 
 
 async def test_coordinator_optimistic_update_detects_model_again(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """An optimistic update detects the model again from the changed status."""
     with patch(
@@ -371,7 +372,7 @@ async def test_coordinator_optimistic_update_detects_model_again(
 
 
 async def test_coordinator_device_not_found_error(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator raises HomeAssistantError when device not found."""
     with patch(
@@ -440,7 +441,7 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
 
 
 async def test_coordinator_device_fetch_exception(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exceptions when fetching devices."""
     with patch(
@@ -455,7 +456,7 @@ async def test_coordinator_device_fetch_exception(
         mock_api.is_session_valid = MagicMock(return_value=True)
 
         # First project raises exception, second succeeds
-        async def get_devices_side_effect(project_id):
+        async def get_devices_side_effect(project_id: Any) -> Any:
             if project_id == "project1":
                 raise RuntimeError("Failed to fetch devices")
             return [{"id": "device2", "dclg": "c4d5e6f7-a8b9-0123-cdef-123456789012"}]
@@ -484,7 +485,7 @@ async def test_coordinator_device_fetch_exception(
 
 
 async def test_coordinator_non_list_device_result(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles non-list device results."""
     with patch(
@@ -516,7 +517,7 @@ async def test_coordinator_non_list_device_result(
 
 
 async def test_coordinator_device_status_none(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles None status (unexpected structure)."""
     with patch(
@@ -563,7 +564,7 @@ async def test_coordinator_device_status_none(
 
 
 async def test_coordinator_device_status_none_reuses_previous(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator reuses previous status when new status is None."""
     with patch(
@@ -602,6 +603,7 @@ async def test_coordinator_device_status_none_reuses_previous(
 
         # First refresh with valid data
         await coordinator.async_config_entry_first_refresh()
+        assert coordinator.data is not None
         assert coordinator.data["devices"][0]["status"]["getPRS"] == "50"
 
         # Second refresh returns None - should reuse previous data
@@ -611,7 +613,7 @@ async def test_coordinator_device_status_none_reuses_previous(
 
 
 async def test_coordinator_device_status_exception(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exceptions when fetching device status."""
     with patch(
@@ -677,7 +679,7 @@ async def test_coordinator_device_status_exception(
 
 
 async def test_coordinator_device_status_exception_result(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exception results from gather."""
     with patch(
@@ -697,7 +699,7 @@ async def test_coordinator_device_status_exception_result(
         # First device succeeds, second fails
         call_count = 0
 
-        async def get_device_status_side_effect(dclg):
+        async def get_device_status_side_effect(dclg: Any) -> Any:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -728,7 +730,7 @@ async def test_coordinator_device_status_exception_result(
 
 
 async def test_coordinator_project_devices_auth_error(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """If a project device list returns a SyrConnectAuthError, raise auth failure."""
     with patch(
@@ -760,7 +762,7 @@ async def test_coordinator_project_devices_auth_error(
 
 
 async def test_coordinator_device_status_poll_auth_error(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """If a device status poll returns SyrConnectAuthError, raise auth failure."""
     with patch(
@@ -802,7 +804,7 @@ async def test_coordinator_device_status_poll_auth_error(
 
 
 async def test_coordinator_auth_error_during_login(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator raises ConfigEntryAuthFailed on auth error."""
     with patch(
@@ -835,7 +837,7 @@ async def test_coordinator_auth_error_during_login(
 
 
 async def test_coordinator_connection_error_during_login(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator raises UpdateFailed on connection error."""
     with patch(
@@ -868,7 +870,7 @@ async def test_coordinator_connection_error_during_login(
 
 
 async def test_coordinator_general_exception_during_update(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles general exceptions during update."""
     with patch(
@@ -900,7 +902,7 @@ async def test_coordinator_general_exception_during_update(
 
 
 async def test_coordinator_delete_offline_issue_on_recovery(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator deletes repair issue when device comes back online."""
     with (
@@ -945,7 +947,7 @@ async def test_coordinator_delete_offline_issue_on_recovery(
 
 
 async def test_coordinator_optimistic_update_exception_handling(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exceptions during optimistic update gracefully."""
     with patch(
@@ -991,7 +993,7 @@ async def test_coordinator_optimistic_update_exception_handling(
 
 
 async def test_coordinator_refresh_schedule_exception_handling(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exceptions when scheduling refresh."""
     with patch(
@@ -1024,7 +1026,7 @@ async def test_coordinator_refresh_schedule_exception_handling(
         await coordinator.async_config_entry_first_refresh()
 
         # Mock async_create_task to raise exception
-        def raise_and_close(coro):
+        def raise_and_close(coro: Any) -> None:
             coro.close()
             raise RuntimeError("Task creation failed")
 
@@ -1037,7 +1039,7 @@ async def test_coordinator_refresh_schedule_exception_handling(
 
 
 async def test_coordinator_device_without_dclg_uses_id(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator uses device ID when dclg is missing."""
     with patch(
@@ -1070,11 +1072,12 @@ async def test_coordinator_device_without_dclg_uses_id(
 
         # Verify get_device_status was called with device id (fallback)
         mock_api.get_device_status.assert_called_once_with("device1")
+        assert coordinator.data is not None
         assert coordinator.data["devices"][0]["available"] is True
 
 
 async def test_coordinator_set_value_device_without_dclg(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test setting value for device without dclg uses device id."""
     with patch(
@@ -1121,7 +1124,7 @@ async def test_coordinator_set_value_device_without_dclg(
 
 
 async def test_coordinator_gather_returns_exception(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exception from gather for device tasks."""
     with patch(
@@ -1155,7 +1158,7 @@ async def test_coordinator_gather_returns_exception(
 
 
 async def test_coordinator_data_structure_with_empty_devices(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator data structure when projects have no devices."""
     with patch(
@@ -1210,7 +1213,7 @@ async def test_fetch_device_status_no_ignore_key_keeps_status(
 
         device = {"id": "dev1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
 
-        result = await coord._fetch_device_status(device)
+        result = await coord._fetch_device_status(cast(Any, device))
 
         assert isinstance(result, dict)
         assert result.get("status", {}).get("getPRS") == "75"
@@ -1236,13 +1239,14 @@ async def test_fetch_device_status_stores_detected_model(
 
         device = {"id": "dev1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
 
-        result = await coord._fetch_device_status(device)
+        result = await coord._fetch_device_status(cast(Any, device))
 
+        assert result is not None
         assert result["model"].name == "lexplus10"
 
 
 async def test_coordinator_unexpected_exception_in_update(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles unexpected exceptions in update cycle."""
     with patch(
@@ -1319,14 +1323,14 @@ async def test_async_update_data_gather_returns_exception_result(
 ) -> None:
     """If the device list of every project fails, the update fails instead of returning no devices."""
 
-    async def _fake_gather(*args, **kwargs):
+    async def _fake_gather(*args: Any, **kwargs: Any) -> Any:
         # Close any passed coroutines so they don't trigger unawaited warnings.
         for arg in args:
             if inspect.iscoroutine(arg):
                 arg.close()
         return [Exception("proj fail")]
 
-    async def _fake_get_devices(*args, **kwargs):
+    async def _fake_get_devices(*args: Any, **kwargs: Any) -> Any:
         return [{"id": "d1", "dclg": "d1", "project_id": "p1"}]
 
     # Use SimpleNamespace instead of MagicMock to avoid auto-created AsyncMock children
@@ -1354,7 +1358,7 @@ async def test_async_update_data_gather_returns_exception_result(
         }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
-            fake_session,
+            cast(Any, fake_session),
             config_data,
             60,
         )
@@ -1364,10 +1368,10 @@ async def test_async_update_data_gather_returns_exception_result(
         assert coordinator.device_list_complete is False
 
 
-def _two_project_api(failing: set[str]):
+def _two_project_api(failing: set[str]) -> Any:
     """Return an XML API stub with projects p1/p2 (one device each); projects in `failing` time out."""
 
-    async def _get_devices(project_id):
+    async def _get_devices(project_id: Any) -> Any:
         if project_id in failing:
             raise SyrConnectConnectionError("timeout")
         return [
@@ -1378,7 +1382,7 @@ def _two_project_api(failing: set[str]):
             }
         ]
 
-    async def _get_device_status(dclg):
+    async def _get_device_status(dclg: Any) -> Any:
         return {"getSRN": dclg, "getFLO": "5"}
 
     return SimpleNamespace(
@@ -1403,7 +1407,7 @@ async def test_async_update_data_failed_project_keeps_previous_devices(
     ):
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
-            SimpleNamespace(),
+            cast(Any, SimpleNamespace()),
             {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
             60,
         )
@@ -1433,7 +1437,7 @@ async def test_async_update_data_all_projects_failed_keeps_previous_devices(
     ):
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
-            SimpleNamespace(),
+            cast(Any, SimpleNamespace()),
             {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
             60,
         )
@@ -1456,7 +1460,7 @@ async def test_failed_relogin_keeps_previous_data(hass: HomeAssistant) -> None:
     ):
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
-            SimpleNamespace(),
+            cast(Any, SimpleNamespace()),
             {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
             60,
         )
@@ -1584,10 +1588,16 @@ async def test_resolve_device_dclg_returns_none_when_device_not_found(
             hass, MagicMock(), config_data, 60
         )
         coordinator.data = {
+            "configuration_url": None,
             "devices": [
-                {"id": "other_device", "dclg": "e6f7a8b9-c0d1-2345-efab-345678901234"}
+                {
+                    "id": "other_device",
+                    "dclg": "e6f7a8b9-c0d1-2345-efab-345678901234",
+                    "name": "Other Device",
+                }
             ],
             "projects": [],
+            "service": None,
         }
 
         result = coordinator._get_device_dclg_from_srn("nonexistent_device")
@@ -1632,12 +1642,16 @@ async def test_fetch_device_status_propagates_auth_error(hass: HomeAssistant) ->
 
         with pytest.raises(SyrConnectAuthError):
             await coord._fetch_device_status(
-                {"id": "deviceX", "dclg": "d5e6f7a8-b9c0-1234-defa-234567890123"}
+                {
+                    "id": "deviceX",
+                    "dclg": "d5e6f7a8-b9c0-1234-defa-234567890123",
+                    "name": "Device X",
+                }
             )
 
 
 async def test_coordinator_device_status_result_is_exception(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """Test coordinator handles exception result from _fetch_device_status gather (lines 183-184)."""
     with patch(
@@ -1680,7 +1694,7 @@ async def test_coordinator_device_status_result_is_exception(
 
 
 async def test_fetch_device_status_iwh_compute_error_is_logged(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """get_sensor_iwh_value raising ValueError/TypeError is caught and logged (lines 263-264)."""
     with (
@@ -1723,7 +1737,7 @@ async def test_fetch_device_status_iwh_compute_error_is_logged(
 
 
 async def test_coordinator_device_marked_unavailable_when_dst_is_0_or_1(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """When the API returns dst=1 the device must be marked unavailable (offline)."""
     with patch(
@@ -1762,7 +1776,7 @@ async def test_coordinator_device_marked_unavailable_when_dst_is_0_or_1(
 
 
 async def test_coordinator_device_marked_unavailable_when_dst_is_0(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """When the API returns dst=0 (never been online) the device must be marked unavailable."""
     with patch(
@@ -1801,7 +1815,7 @@ async def test_coordinator_device_marked_unavailable_when_dst_is_0(
 
 
 async def test_coordinator_device_available_when_dst_is_2(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """When the API returns dst=2 (online) the device must remain available."""
     with patch(
@@ -1839,7 +1853,7 @@ async def test_coordinator_device_available_when_dst_is_2(
 
 
 async def test_async_clear_device_alarm_xml_api_sends_clr_command(
-    hass: HomeAssistant, setup_in_progress_config_entry
+    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
 ) -> None:
     """async_clear_device_alarm sends clrALA via set_device_status for XML API."""
     with patch(
@@ -1863,19 +1877,22 @@ async def test_async_clear_device_alarm_xml_api_sends_clr_command(
         )
         coordinator.config_entry = setup_in_progress_config_entry
         coordinator.data = {
+            "configuration_url": None,
             "devices": [
                 {
                     "id": "device1",
                     "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    "name": "Device 1",
                     "status": {},
                 }
             ],
             "projects": [],
+            "service": None,
         }
         mock_api.set_device_status = AsyncMock(return_value=True)
         coordinator.api = mock_api
 
-        coordinator.hass.async_create_task = MagicMock(
+        coordinator.hass.async_create_task = MagicMock(  # type: ignore[method-assign]
             side_effect=_consume_coro_return_task
         )
         await coordinator.async_clear_device_alarm("device1")

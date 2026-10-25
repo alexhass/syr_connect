@@ -1,6 +1,7 @@
 """Tests for checksum module."""
 
 from pathlib import Path
+from typing import Any, cast
 
 from defusedxml import ElementTree as DefusedET
 import pytest
@@ -12,7 +13,7 @@ from custom_components.syr_connect.const import (
 )
 
 
-def test_checksum_init():
+def test_checksum_init() -> None:
     """Test checksum initialization."""
     checksum = SyrChecksum("ABCDEFGHIJKLMNOP", "TESTKEY")
     assert checksum.base_characters == "ABCDEFGHIJKLMNOP"
@@ -31,13 +32,13 @@ def test_checksum_init():
         ("App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect", 6169),
     ],
 )
-def test_compute_checksum_value_exact(value: str, expected: int):
+def test_compute_checksum_value_exact(value: str, expected: int) -> None:
     """Exact values of the SYR algorithm, recorded from the original bitwise implementation."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     assert checksum.compute_checksum_value(value) == expected
 
 
-def test_compute_checksum_value_empty():
+def test_compute_checksum_value_empty() -> None:
     """Test checksum computation with empty string."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     result = checksum.compute_checksum_value("")
@@ -46,11 +47,11 @@ def test_compute_checksum_value_empty():
     result = checksum.compute_checksum_value("   ")
     assert result == 0
 
-    result = checksum.compute_checksum_value(None)
+    result = checksum.compute_checksum_value(cast(Any, None))
     assert result == 0
 
 
-def test_compute_checksum_value_basic():
+def test_compute_checksum_value_basic() -> None:
     """Test checksum computation with basic strings."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     result = checksum.compute_checksum_value("test")
@@ -58,7 +59,7 @@ def test_compute_checksum_value_basic():
     assert result > 0
 
 
-def test_compute_checksum_value_with_unicode():
+def test_compute_checksum_value_with_unicode() -> None:
     """Test checksum computation with Unicode characters."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     result = checksum.compute_checksum_value("üöä")
@@ -66,7 +67,7 @@ def test_compute_checksum_value_with_unicode():
     assert result > 0
 
 
-def test_checksum_value_wrapping():
+def test_checksum_value_wrapping() -> None:
     """Test checksum value wrapping when sum >= base_characters length."""
     # Use actual production constants from const.py to ensure valid operation
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
@@ -75,7 +76,7 @@ def test_checksum_value_wrapping():
     assert result > 0
 
 
-def test_compute_xml_checksum_with_attributes():
+def test_compute_xml_checksum_with_attributes() -> None:
     """Test that compute_xml_checksum correctly processes XML attributes."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     xml_string = '<root><element a="value1" b="value2" n="ignored"/></root>'
@@ -90,7 +91,7 @@ def test_compute_xml_checksum_with_attributes():
     assert result == result_without_n
 
 
-def test_compute_element_checksum_matches_xml_checksum():
+def test_compute_element_checksum_matches_xml_checksum() -> None:
     """The tree-based checksum equals the checksum of the same tree as XML string."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     xml_string = '<sc><si v="1.2.3"/><us ug="a &amp; &lt;b&gt;"/><col><dcl dclg="d" fref="1"><c n="x" v="1"/></dcl></col></sc>'
@@ -100,7 +101,7 @@ def test_compute_element_checksum_matches_xml_checksum():
     ) == checksum.compute_xml_checksum(xml_string)
 
 
-def test_compute_xml_checksum_invalid_xml():
+def test_compute_xml_checksum_invalid_xml() -> None:
     """Test that compute_xml_checksum returns '0' for invalid XML."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
     result = checksum.compute_xml_checksum("not valid xml <unclosed")

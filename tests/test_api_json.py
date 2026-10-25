@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn, override
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -28,7 +28,8 @@ def load_fixture(name: str) -> dict:
     """Load a JSON fixture by file name."""
     path = FIXTURES_DIR / name
     with open(path, encoding="utf-8") as fh:
-        return json.load(fh)
+        data: dict[str, Any] = json.load(fh)
+    return data
 
 
 @pytest.mark.parametrize(
@@ -368,7 +369,7 @@ async def test_get_device_status_does_not_call_login_if_not_required() -> None:
 
     # Mark that login is known not required
     client._login_required = False
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     data = {"getAB": "value"}
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
@@ -455,7 +456,7 @@ async def test_get_device_status_calls_login() -> None:
     client = SyrConnectJsonAPI(sess, host="192.168.1.100", base_path="/api/v1/")
 
     # Mock login
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     data = {"getAB": "value", "getCD": "123"}
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
@@ -559,7 +560,7 @@ async def test_get_device_status_skips_login_with_base_url() -> None:
 
     # Mark session as valid to verify login still not called
     client._last_login = datetime.now(UTC)
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     data = {"getAB": "value"}
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
@@ -732,7 +733,7 @@ async def test_set_device_status_unknown_status_code(
     assert "Unexpected status 'WEIRD'" in caplog.text
 
 
-def test_strip_set_prefix_and_cases():
+def test_strip_set_prefix_and_cases() -> None:
     """Test strip set prefix and cases."""
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
@@ -743,7 +744,7 @@ def test_strip_set_prefix_and_cases():
     assert api._strip_set_prefix("setadm") == "adm"
 
 
-def test_normalize_cmd_for_url():
+def test_normalize_cmd_for_url() -> None:
     """Test normalize cmd for url."""
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
@@ -757,7 +758,7 @@ def test_normalize_cmd_for_url():
     assert api._normalize_cmd_for_url("prf9") == "prf9"
 
 
-def test_response_key_for():
+def test_response_key_for() -> None:
     """Test response key for."""
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
@@ -766,7 +767,7 @@ def test_response_key_for():
     assert api._response_key_for("PRF9", "999") == "setPRF9999"
 
 
-def test_build_set_url_encodes_and_cases():
+def test_build_set_url_encodes_and_cases() -> None:
     """Test build set url encodes and cases."""
     sess = MagicMock()
     api = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
@@ -831,7 +832,8 @@ async def test_validate_response_errors_handles_split_value_error(
     class BadSplit(str):
         __slots__ = ()
 
-        def split(self, sep=None, maxsplit=-1):
+        @override
+        def split(self, sep: Any = None, maxsplit: Any = -1) -> NoReturn:
             raise ValueError("split failed")
 
     with caplog.at_level(logging.WARNING):
@@ -941,7 +943,7 @@ async def test_get_devices_calls_login_when_session_invalid() -> None:
     client = SyrConnectJsonAPI(sess, host="192.168.1.1", base_path="/api/")
 
     # Mock login
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     data = {"getSRN": "12345", "getOther": "value"}
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
@@ -1192,10 +1194,10 @@ async def test_get_device_status_without_cache_with_base_url() -> None:
 
     # Mock request_json_data
     data = {"getSRN": "12345", "getTemp": "25"}
-    client.request_json_data = AsyncMock(return_value=data)
+    client.request_json_data = AsyncMock(return_value=data)  # type: ignore[method-assign]
 
     # Should not call login because base_url is set
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     status = await client.get_device_status("12345")
 
@@ -1259,10 +1261,10 @@ async def test_get_devices_skips_login_when_session_valid() -> None:
 
     # Mock request_json_data
     data = {"getSRN": "12345"}
-    client.request_json_data = AsyncMock(return_value=data)
+    client.request_json_data = AsyncMock(return_value=data)  # type: ignore[method-assign]
 
     # Mock login
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     devices = await client.get_devices("local")
 
@@ -1329,10 +1331,10 @@ async def test_get_value_calls_login_when_needed() -> None:
     client._last_login = None
 
     # Mock login
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     # Mock request_json_data
-    client.request_json_data = AsyncMock(return_value={"getAB": 1})
+    client.request_json_data = AsyncMock(return_value={"getAB": 1})  # type: ignore[method-assign]
 
     await client.get_value("AB")
 
@@ -1377,7 +1379,7 @@ async def test_get_value_skips_login_with_base_url() -> None:
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
     # Mock login to verify it's not called
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     await client.get_value("SRN")
 
@@ -1505,7 +1507,7 @@ async def test_get_device_status_skips_login_when_login_not_required() -> None:
     client._login_required = False
     client._last_login = None
 
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     data = {"getSRN": "99999", "getFLO": "0"}
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
@@ -1525,7 +1527,7 @@ async def test_get_value_skips_login_when_login_not_required() -> None:
     client._login_required = False
     client._last_login = None
 
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     with patch.object(
         client, "request_json_data", new=AsyncMock(return_value={"getFLO": 42})
@@ -1546,7 +1548,7 @@ async def test_get_devices_skips_login_when_login_not_required() -> None:
     client._login_required = False
     client._last_login = None
 
-    client.login = AsyncMock()
+    client.login = AsyncMock()  # type: ignore[method-assign]
 
     data = {"getSRN": "ABC123", "getFLO": "0"}
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):

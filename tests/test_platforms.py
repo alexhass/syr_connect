@@ -1,5 +1,6 @@
 """Platform smoke tests for SYR Connect."""
 
+from typing import Any, cast
 from unittest.mock import MagicMock, Mock
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -31,7 +32,7 @@ def _build_coordinator(
         config_data,
         60,
     )
-    coordinator.async_set_updated_data(data)
+    coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
 

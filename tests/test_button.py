@@ -3,10 +3,13 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from collections.abc import Callable
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import Any, cast
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
@@ -32,7 +35,7 @@ def _build_coordinator(
         config_data,
         60,
     )
-    coordinator.async_set_updated_data(data)
+    coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
 
@@ -94,7 +97,7 @@ async def test_button_press_success(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
@@ -116,7 +119,7 @@ async def test_button_press_setsir_when_getsir_false(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
@@ -142,7 +145,7 @@ async def test_button_press_setsir_when_getsir_false_string(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
@@ -166,7 +169,7 @@ async def test_button_press_failure(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("Test error"))
+    coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("Test error"))  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
@@ -195,7 +198,11 @@ async def test_button_available(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates button entities."""
     data = {
@@ -218,7 +225,11 @@ async def test_async_setup_entry(
 
 
 async def test_async_setup_entry_multiple_devices(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry with multiple devices."""
     data = {
@@ -259,7 +270,7 @@ async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock(
+    coordinator.async_set_device_value = AsyncMock(  # type: ignore[method-assign]
         side_effect=ValueError("Unexpected error")
     )
 
@@ -331,7 +342,11 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_no_data(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry with no coordinator data."""
     mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(None)
@@ -368,7 +383,11 @@ async def test_button_initialization_attributes(hass: HomeAssistant) -> None:
 
 
 async def test_async_setup_entry_skip_setsir_when_getsir_missing(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry skips setSIR button when getSIR is not available."""
     data = {
@@ -395,7 +414,11 @@ async def test_async_setup_entry_skip_setsir_when_getsir_missing(
 
 
 async def test_async_setup_entry_create_setsir_when_getsir_present(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry creates setSIR button when getSIR is available."""
     data = {
@@ -422,7 +445,11 @@ async def test_async_setup_entry_create_setsir_when_getsir_present(
 
 
 async def test_async_setup_entry_no_getsir(
-    hass: HomeAssistant, create_mock_entry_with_coordinator, mock_add_entities
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Test async_setup_entry with device that does not support setSIR (no getSIR in status)."""
     data = {
@@ -445,9 +472,11 @@ async def test_async_setup_entry_no_getsir(
 @pytest.mark.parametrize("falsy_value", ["false"])
 async def test_async_setup_entry_skip_setsir_when_getsir_false(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
-    falsy_value,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    falsy_value: Any,
 ) -> None:
     """Test async_setup_entry creates a setSIR button when getSIR is 'false'.
 
@@ -493,8 +522,10 @@ def _registered(hass: HomeAssistant, entity_id: str) -> bool:
 )
 async def test_async_setup_entry_removes_stale_setsir_from_registry(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     object_id: str,
 ) -> None:
     """A previously-registered setSIR button is removed when the device no longer reports getSIR.
@@ -525,8 +556,10 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
 
 async def test_async_setup_entry_keeps_buttons_without_status(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Without a status (not fetched yet, e.g. temporary failure at startup) no button is removed."""
     data = {
@@ -550,8 +583,10 @@ async def test_async_setup_entry_keeps_buttons_without_status(
 
 async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The button cleanup of one device does not remove buttons of another device."""
     data = {
@@ -579,8 +614,10 @@ async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
 
 async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The same device's button owned by another config entry (second hub) is not removed."""
     data = {
@@ -607,8 +644,10 @@ async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
 
 async def test_async_setup_entry_registry_cleanup_exception_is_caught(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """Exception from er.async_get during per-device cleanup is caught (line 134)."""
 
@@ -628,7 +667,7 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
 
     call_count = 0
 
-    def er_async_get_side_effect(_hass_instance):
+    def er_async_get_side_effect(_hass_instance: Any) -> Any:
         nonlocal call_count
         call_count += 1
         # First call is for registry_cleanup (let it succeed with an empty registry),
@@ -680,8 +719,8 @@ async def test_button_reset_ala_lexplus10s_calls_clr_alm(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setALA")
 
@@ -706,8 +745,8 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device2", "Device 2", "setALA")
 
@@ -730,8 +769,8 @@ async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> 
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "setALA")
     await button.async_press()
@@ -753,8 +792,8 @@ async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> 
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "setALA")
     await button.async_press()
@@ -776,8 +815,8 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock(
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock(  # type: ignore[method-assign]
         side_effect=HomeAssistantError("Connection failed")
     )
 
@@ -822,7 +861,7 @@ async def test_button_reset_not_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_not1", "Device NOT1", "setNOT")
 
@@ -846,7 +885,7 @@ async def test_button_reset_not_send_ff_for_other_models(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_not2", "Device NOT2", "setNOT")
 
@@ -890,7 +929,7 @@ async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_wrn1", "Device WRN1", "setWRN")
 
@@ -914,7 +953,7 @@ async def test_button_reset_wrn_send_ff_for_other_models(hass: HomeAssistant) ->
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_wrn2", "Device WRN2", "setWRN")
 
@@ -941,8 +980,8 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "setALA")
 
@@ -968,7 +1007,7 @@ async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> N
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
     coordinator.api.__class__ = SyrConnectJsonAPI
 
     button = SyrConnectButton(
@@ -996,7 +1035,7 @@ async def test_button_reset_wrn_sends_255_via_json_api(hass: HomeAssistant) -> N
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
     coordinator.api.__class__ = SyrConnectJsonAPI
 
     button = SyrConnectButton(
@@ -1026,8 +1065,8 @@ async def test_button_reset_ala_sentinel_values_no_reset(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-    coordinator.async_clear_device_alarm = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(
         coordinator, "device_sentinel", "Device Sentinel", "setALA"
@@ -1047,8 +1086,10 @@ async def test_button_reset_ala_sentinel_values_no_reset(
 
 async def test_async_setup_entry_creates_setdex_when_getdsv_present(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """async_setup_entry creates a setDEX button on JSON API devices when getDSV is present."""
 
@@ -1074,8 +1115,10 @@ async def test_async_setup_entry_creates_setdex_when_getdsv_present(
 
 async def test_async_setup_entry_skips_setdex_on_xml_api(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """The setDEX is skipped when the coordinator uses the XML API (not SyrConnectJsonAPI)."""
     data = {
@@ -1099,8 +1142,10 @@ async def test_async_setup_entry_skips_setdex_on_xml_api(
 
 async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """async_setup_entry does NOT create a setDEX button when getDSV is absent."""
     data = {
@@ -1123,8 +1168,10 @@ async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
 
 async def test_async_setup_entry_creates_setdex_for_triolock_real_fixture(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """SYR TRIO Lock Connect (muco_triolock) real fixture creates setDEX on the JSON API."""
 
@@ -1153,8 +1200,10 @@ async def test_async_setup_entry_creates_setdex_for_triolock_real_fixture(
 
 async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """A command missing from the model's BUTTON_SUPPORTED_KEYS override is skipped.
 
@@ -1184,8 +1233,10 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
 
 async def test_async_setup_entry_creates_setala_for_lexplus10sl_with_getala(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """LEXplus10SL (alarm_style_alm=False) reports getALA, not getALM.
 
@@ -1213,8 +1264,10 @@ async def test_async_setup_entry_creates_setala_for_lexplus10sl_with_getala(
 
 async def test_async_setup_entry_skips_setala_for_lexplus10s_without_getalm(
     hass: HomeAssistant,
-    create_mock_entry_with_coordinator,
-    mock_add_entities,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
     """LEXplus10S (alarm_style_alm=True) looks for getALM, not getALA.
 
@@ -1253,7 +1306,7 @@ async def test_button_press_setdex_sends_true(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
@@ -1279,7 +1332,7 @@ async def test_button_press_setdex_sends_integer_when_typ_lt_100(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
@@ -1293,7 +1346,7 @@ async def test_button_press_setdex_sends_integer_when_typ_lt_100(
 @pytest.mark.parametrize("dsv_value", ["1", 1])
 async def test_button_press_setdex_rejected_when_test_already_running(
     hass: HomeAssistant,
-    dsv_value,
+    dsv_value: Any,
 ) -> None:
     """The setDEX press is rejected when getDSV == 1 (test already running)."""
     data = {
@@ -1307,7 +1360,7 @@ async def test_button_press_setdex_rejected_when_test_already_running(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
@@ -1332,7 +1385,7 @@ async def test_button_press_setdex_sends_true_when_typ_absent(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
@@ -1358,7 +1411,7 @@ async def test_button_press_setdex_sends_true_when_typ_non_numeric(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_dex", "Device DEX", "setDEX")
 
@@ -1384,7 +1437,7 @@ async def test_button_press_setdex_sends_true_when_getdsv_is_two(
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
+    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_dex2", "Device DEX2", "setDEX")
 
