@@ -463,6 +463,37 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
     assert sensor.native_value in ("low_salt", "LowSalt")
 
 
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        # SafeTech V3/V4, Hansgrohe Pontos
+        ("Alarms:->A4 A4 AF AF A3 AF A3 AF", "->A4 A4 AF AF A3 AF A3 AF"),
+        # Safe-T+: the "->" before the current alarm stays where it is
+        ("Alarms: A5 A5 A6 ->A6 A5 A5 A5 A5", "A5 A5 A6 ->A6 A5 A5 A5 A5"),
+        # Without the prefix the value is shown unchanged
+        ("A4 A4 AF", "A4 A4 AF"),
+    ],
+)
+async def test_sensor_alarm_memory_without_prefix(
+    hass: HomeAssistant, raw: str, expected: str
+) -> None:
+    """The alarm memory (getALM) is shown without its "Alarms:" prefix."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getALM": raw},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
+
+    assert sensor.native_value == expected
+
+
 async def test_sensor_cs_shown_when_zero(hass: HomeAssistant) -> None:
     """Test getCS1-3 are created at zero, with getCS2/3 disabled by default."""
     data = {

@@ -118,7 +118,13 @@ def _value_wrn(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map."""
+    """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map.
+
+    Without a mapping the raw value is shown. The alarm memory loses its "Alarms:"
+    prefix; the "->" before the current alarm stays, it marks the newest entry:
+    - SafeTech: "Alarms:->A4 A4 AF AF A3 AF A3 AF" -> "->A4 A4 AF AF A3 AF A3 AF"
+    - Safe-T+: "Alarms: A5 A5 A6 ->A6 A5 A5 A5 A5" -> "A5 A5 A6 ->A6 A5 A5 A5 A5"
+    """
     raw_str = str(value) if value is not None else ""
     try:
         ala_mapped, _ = get_sensor_ala_map(sensor.device_model, value)
@@ -127,7 +133,11 @@ def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
     mapped = ala_mapped or std_mapped
     # Mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or the raw value as fallback
-    return mapped if mapped is not None else value
+    if mapped is not None:
+        return mapped
+    if isinstance(value, str) and value.startswith("Alarms:"):
+        return value.removeprefix("Alarms:").lstrip()
+    return value
 
 
 def _value_avo(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
