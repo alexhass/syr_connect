@@ -130,7 +130,9 @@ Other devices are also of interest, but may need to be integrated or at least te
 - Optima Single Water Softener
 - Optima T Replacement Filter
 - Optima T2 Dual Water Softener
+- Optima T2 Floor Sensor
 - POLYGONVATRO SafeTech Connect (sold with AXA building insurance as "Wasserwächter")
+- POLYGONVATRO Wireless Floor Sensor
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatic Backwash System RSA A25

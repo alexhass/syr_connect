@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 import logging
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -21,11 +22,16 @@ from custom_components.syr_connect.const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_SERVICE,
     DOMAIN,
 )
+from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
+
+_FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
 
 
 async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
@@ -731,3 +737,74 @@ async def test_async_setup_entry_skips_migration_for_new_entries(
 
     # Verify migration was NOT called (entry already has API_TYPE)
     mock_update.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("service", "manufacturer", "model"),
+    [
+        ("de.consoft.syr.connect", "SYR", "SafeFloor Connect"),
+        ("de.consoft.gc.conel.connect", "CONEL", "CLEAR PRO Floor Sensor"),
+        ("de.consoft.gsh.comfort.connect", "Sanibel", "Wireless Floor Sensor A25"),
+        ("de.consoft.isg.concept.connect", "CONCEPT", "concept SafeFloor Floor Sensor"),
+        ("de.consoft.isg.optima.connect", "OPTIMA", "Optima T2 Floor Sensor"),
+        ("de.consoft.polygonvatro.connect", "POLYGONVATRO", "Wireless Floor Sensor"),
+        (
+            "de.consoft.sanitaerunion.ditech.connect",
+            "DITECH",
+            "Ditech Wireless Floor Sensor",
+        ),
+        # A service without its own branding keeps the default names
+        ("de.consoft.rwc.connect", "SYR", "SafeFloor Connect"),
+    ],
+)
+async def test_setup_names_device_after_service(
+    hass: HomeAssistant, service: str, manufacturer: str, model: str
+) -> None:
+    """The device registry names the SafeFloor after the service of the entry."""
+    parser = ResponseParser()
+    devices = parser.parse_device_list_response(
+        (_FIXTURE_DIR / "SyrSafeFloor_GetProjectDeviceCollections.xml").read_text(
+            encoding="utf-8"
+        )
+    )
+    safefloor = next(device for device in devices if device["dk"] == 120)
+    status = parser.parse_device_status_response(
+        (_FIXTURE_DIR / "SyrSafeFloor_GetDeviceCollectionStatus.xml").read_text(
+            encoding="utf-8"
+        )
+    )
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=ConfigFlow.VERSION,
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+            CONF_SERVICE: service,
+        },
+        entry_id="01JTESTENTRY",
+    )
+    config_entry.add_to_hass(hass)
+
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
+    ) as mock_api_class:
+        mock_api = AsyncMock()
+        mock_api.is_session_valid = MagicMock(return_value=True)
+        mock_api.projects = [{"id": "project1", "name": "Project"}]
+        mock_api.get_devices = AsyncMock(return_value=[safefloor])
+        mock_api.get_device_status = AsyncMock(return_value=status)
+        mock_api_class.return_value = mock_api
+
+        assert await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        [device] = dr.async_entries_for_config_entry(
+            dr.async_get(hass), config_entry.entry_id
+        )
+        assert device.identifiers == {(DOMAIN, safefloor["id"])}
+        assert device.manufacturer == manufacturer
+        assert device.model == model
+
+        assert await hass.config_entries.async_unload(config_entry.entry_id)
+        await hass.async_block_till_done()

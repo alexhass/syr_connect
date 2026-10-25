@@ -178,6 +178,14 @@ def test_safefloor_vendor_branding():
         "CONCEPT",
         "concept SafeFloor Floor Sensor",
     )
+    assert result.branded("de.consoft.isg.optima.connect") == (
+        "OPTIMA",
+        "Optima T2 Floor Sensor",
+    )
+    assert result.branded("de.consoft.polygonvatro.connect") == (
+        "POLYGONVATRO",
+        "Wireless Floor Sensor",
+    )
     assert result.branded("de.consoft.sanitaerunion.ditech.connect") == (
         "DITECH",
         "Ditech Wireless Floor Sensor",

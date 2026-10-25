@@ -129,7 +129,9 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - Optima Doppelenthärtungsanlage
 - Optima Einzelenthärtungsanlage
 - Optima T Ersatzfilter
+- Optima T2 Bodensensor
 - Optima T2 Doppelenthärtungsanlage
+- POLYGONVATRO Funk-Bodensensor
 - POLYGONVATRO SafeTech Connect (über die AXA Gebäudeversicherung als „Wasserwächter“ vertrieben)
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
