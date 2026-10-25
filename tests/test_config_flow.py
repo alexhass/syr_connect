@@ -17,6 +17,7 @@ from custom_components.syr_connect.config_flow import (
     validate_input_xml,
 )
 from custom_components.syr_connect.const import (
+    _SYR_CONNECT_API_SERVICES,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -2460,3 +2461,9 @@ async def test_form_api_json_invalid_auth_error(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {"base": "invalid_auth"}
+
+
+def test_api_services_keyed_by_cf_bundle_identifier() -> None:
+    """Every service is stored under its own cf_bundle_identifier."""
+    for key, svc in _SYR_CONNECT_API_SERVICES.items():
+        assert key == svc.cf_bundle_identifier

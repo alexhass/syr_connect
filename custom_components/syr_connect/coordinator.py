@@ -133,9 +133,9 @@ class SyrConnectDataUpdateCoordinator(
             # Look up service parameters from CONF_SERVICE (cf_bundle_identifier)
             conf_service = config_data.get(CONF_SERVICE)
             svc = _SYR_CONNECT_API_SERVICES.get(conf_service) if conf_service else None
-            api_app_name = svc["api_app_name"] if svc else None
-            api_base_url = svc["api_base_url"] if svc else None
-            cf_bundle_identifier = svc["cf_bundle_identifier"] if svc else None
+            api_app_name = svc.api_app_name if svc else None
+            api_base_url = svc.api_base_url if svc else None
+            cf_bundle_identifier = svc.cf_bundle_identifier if svc else None
 
             self.api = SyrConnectXmlAPI(
                 session,
@@ -147,7 +147,7 @@ class SyrConnectDataUpdateCoordinator(
                 language=get_api_locale(hass.config.language, hass.config.country),
             )
             self._username = username
-            self._configuration_url = svc["configuration_url"] if svc else None
+            self._configuration_url = svc.configuration_url if svc else None
             self._service = conf_service
             _LOGGER.debug(
                 "Coordinator initialized with XML API (username=%s)", username

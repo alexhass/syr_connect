@@ -1934,17 +1934,17 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
         config_data = {
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
-            CONF_SERVICE: svc["cf_bundle_identifier"],
+            CONF_SERVICE: svc.cf_bundle_identifier,
         }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
 
         call_kwargs = mock_xml_api_class.call_args.kwargs
-        assert call_kwargs["api_app_name"] == svc["api_app_name"]
-        assert call_kwargs["api_base_url"] == svc["api_base_url"]
-        assert call_kwargs["cf_bundle_identifier"] == svc["cf_bundle_identifier"]
-        assert coordinator._service == svc["cf_bundle_identifier"]
+        assert call_kwargs["api_app_name"] == svc.api_app_name
+        assert call_kwargs["api_base_url"] == svc.api_base_url
+        assert call_kwargs["cf_bundle_identifier"] == svc.cf_bundle_identifier
+        assert coordinator._service == svc.cf_bundle_identifier
 
 
 async def test_coordinator_takes_config_entry_from_constructor(
