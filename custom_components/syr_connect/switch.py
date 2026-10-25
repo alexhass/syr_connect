@@ -24,6 +24,9 @@ from .helpers import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Limit parallel updates to avoid overwhelming the API
+PARALLEL_UPDATES = 1
+
 
 # Descriptions of all switches (boolean get<KEY>/set<KEY> settings)
 _SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (

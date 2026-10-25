@@ -30,6 +30,9 @@ from .helpers import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Limit parallel updates to avoid overwhelming the API
+PARALLEL_UPDATES = 1
+
 # Give up showing progress if getNOT never switches to "04".
 _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS = 600
 

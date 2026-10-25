@@ -115,7 +115,7 @@ rules:
   
   parallel-updates:
     status: done
-    comment: PARALLEL_UPDATES = 1 set in sensor.py, binary_sensor.py, button.py, select.py, valve.py
+    comment: PARALLEL_UPDATES = 1 set in every platform
   
   reauthentication-flow:
     status: done
