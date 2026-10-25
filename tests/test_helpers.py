@@ -383,6 +383,25 @@ def test_build_device_info() -> None:
     assert ("mac", "00:11:22:33:44:55") in device_info["connections"]
 
 
+def test_build_device_info_service_branding() -> None:
+    """The model and manufacturer follow the branding of the cloud service."""
+    coordinator_data = {
+        "devices": [
+            {
+                "id": "DEVICE123",
+                "name": "Floor",
+                "status": {"getVER": "Syr Floorsensor 2.23"},
+            }
+        ],
+        "service": "de.consoft.gc.conel.connect",
+    }
+
+    device_info = build_device_info("DEVICE123", "Floor", coordinator_data)
+
+    assert device_info["manufacturer"] == "CONEL"
+    assert device_info["model"] == "CLEAR PRO Floor Sensor"
+
+
 def test_build_device_info_minimal() -> None:
     """Test device info building with minimal data."""
     coordinator_data = {

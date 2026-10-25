@@ -107,6 +107,8 @@ async def test_coordinator_update_success(
         assert "devices" in coordinator.data
         assert len(coordinator.data["devices"]) == 1
         assert coordinator.data["devices"][0]["id"] == "device1"
+        # No CONF_SERVICE in the config data: no cloud service for the branding
+        assert coordinator.data["service"] is None
 
 
 async def test_coordinator_update_no_session(
@@ -1501,6 +1503,7 @@ async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
         assert call_args.kwargs["base_path"] == "/trio"
         assert coordinator._api_type == API_TYPE_JSON
         assert coordinator._username is None
+        assert coordinator._service is None
 
 
 async def test_coordinator_init_json_api_invalid_model(hass: HomeAssistant) -> None:
@@ -1916,12 +1919,15 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
             CONF_PASSWORD: "password",
             CONF_SERVICE: svc["cf_bundle_identifier"],
         }
-        SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass, MagicMock(), config_data, 60
+        )
 
         call_kwargs = mock_xml_api_class.call_args.kwargs
         assert call_kwargs["api_app_name"] == svc["api_app_name"]
         assert call_kwargs["api_base_url"] == svc["api_base_url"]
         assert call_kwargs["cf_bundle_identifier"] == svc["cf_bundle_identifier"]
+        assert coordinator._service == svc["cf_bundle_identifier"]
 
 
 async def test_coordinator_takes_config_entry_from_constructor(

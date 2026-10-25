@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
-from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE
+from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_SERVICE
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .helpers import get_device_model, is_empty_ip, mask_ug_value
@@ -491,7 +491,9 @@ async def _collect_raw_json_cloud_devices(
     return raw_json
 
 
-def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
+def _device_summary(
+    device: SyrConnectDevice, api_type: str, service: str | None
+) -> dict[str, Any]:
     """Return the diagnostics summary of a coordinator device.
 
     Lists the detected model, versions and the keys that become visible sensors, so
@@ -500,9 +502,9 @@ def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
     """
     status = device.get("status", {})
 
-    # Extract model information
+    # Extract model information, with the names of the cloud service (`service_branding`)
     model_info = get_device_model(device)
-    model_display = model_info.display_name
+    manufacturer, model_display = model_info.branded(service)
 
     # The sensors the integration creates for this status, with the same rules as the setup
     visible_keys = sensor_keys_for_status(status, model_info)
@@ -512,6 +514,7 @@ def _device_summary(device: SyrConnectDevice, api_type: str) -> dict[str, Any]:
         "name": device.get("name"),
         "available": device.get("available", True),
         "project_id": device.get("project_id"),
+        "manufacturer": manufacturer,
         "model": model_display,
         "sw_version": status.get("getVER"),
         "hw_version": status.get("getFIR"),
@@ -633,6 +636,7 @@ async def async_get_config_entry_diagnostics(
             "title": entry.title,
             "version": entry.version,
             "options": dict(entry.options),
+            "service": entry.data.get(CONF_SERVICE),
         },
         "coordinator": {
             "last_update_success": coordinator.last_update_success,
@@ -678,7 +682,7 @@ async def async_get_config_entry_diagnostics(
         # Populate devices and projects BEFORE masking and redaction, so the steps
         # below cover them as well
         devices_info.extend(
-            _device_summary(device, api_type)
+            _device_summary(device, api_type, coordinator.data.get("service"))
             for device in coordinator.data.get("devices", [])
         )
 

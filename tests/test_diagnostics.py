@@ -27,6 +27,7 @@ from custom_components.syr_connect.const import (
     CONF_API_TYPE,
     CONF_HOST,
     CONF_MODEL,
+    CONF_SERVICE,
     DOMAIN,
 )
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -3905,6 +3906,57 @@ async def test_diagnostics_device_info_minimal_status(hass: HomeAssistant) -> No
     assert device["status_count"] == 0
     assert device["status_keys"] == []
     assert "dclg" not in device  # No dclg in device dict
+
+
+async def test_diagnostics_service_branding(hass: HomeAssistant) -> None:
+    """Diagnostics name the cloud service and the model names of that service."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="CONEL CLEAR PRO",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+            CONF_SERVICE: "de.consoft.gc.conel.connect",
+        },
+        source="user",
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+        discovery_keys={},
+        options={},
+        subentries_data={},
+    )
+
+    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    mock_coordinator.data = {
+        "devices": [
+            {
+                "id": "FLOOR01",
+                "name": "Floor",
+                "status": {"getVER": "Syr Floorsensor 2.23"},
+            },
+        ],
+        "projects": [],
+        "service": "de.consoft.gc.conel.connect",
+    }
+    mock_coordinator.last_update_success = True
+    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+
+    mock_api = MagicMock()
+    mock_api.is_session_valid = MagicMock(return_value=True)
+    mock_api.projects = []
+    mock_coordinator.api = mock_api
+
+    config_entry.runtime_data = mock_coordinator
+
+    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert diagnostics["entry"]["service"] == "de.consoft.gc.conel.connect"
+    device = diagnostics["devices"][0]
+    assert device["manufacturer"] == "CONEL"
+    assert device["model"] == "CLEAR PRO Floor Sensor"
 
 
 async def test_diagnostics_xml_redacts_raw_xml(hass) -> None:

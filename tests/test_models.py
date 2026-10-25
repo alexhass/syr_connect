@@ -141,6 +141,50 @@ def test_safetechplus_detection_synthetic():
     assert result.manufacturer == "SYR"
 
 
+def test_branded_returns_service_branding():
+    """A service with its own branding returns its manufacturer and display name."""
+    model = replace(
+        UNKNOWN_MODEL,
+        display_name="Default Name",
+        manufacturer="Default",
+        service_branding={
+            "vendor.service": ("Vendor", "Vendor Name"),
+        },
+    )
+    assert model.branded("vendor.service") == ("Vendor", "Vendor Name")
+    assert model.branded("other.service") == ("Default", "Default Name")
+    assert model.branded(None) == ("Default", "Default Name")
+
+
+def test_branded_without_service_branding_returns_default():
+    """A model without branding always returns its default names."""
+    model = replace(UNKNOWN_MODEL, display_name="Default Name", manufacturer="Default")
+    assert model.branded("vendor.service") == ("Default", "Default Name")
+
+
+def test_safefloor_vendor_branding():
+    """The SafeFloor sold by other vendors is named after their cloud service."""
+    result = detect_model({"getVER": "Syr Floorsensor 2.23"})
+    assert result.name == "safefloor"
+    assert result.branded("de.consoft.gc.conel.connect") == (
+        "CONEL",
+        "CLEAR PRO Floor Sensor",
+    )
+    assert result.branded("de.consoft.gsh.comfort.connect") == (
+        "Sanibel",
+        "Wireless Floor Sensor A25",
+    )
+    assert result.branded("de.consoft.isg.concept.connect") == (
+        "CONCEPT",
+        "concept SafeFloor Floor Sensor",
+    )
+    assert result.branded("de.consoft.sanitaerunion.ditech.connect") == (
+        "DITECH",
+        "Ditech Wireless Floor Sensor",
+    )
+    assert result.branded("de.consoft.syr.connect") == ("SYR", "SafeFloor Connect")
+
+
 def test_lexplus10_with_display_name_and_base_path():
     """Verify display_name, base_path, and manufacturer are returned correctly."""
     flat = {"getCNA": "LEXplus10"}

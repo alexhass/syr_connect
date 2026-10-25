@@ -121,6 +121,7 @@ class SyrConnectDataUpdateCoordinator(
             self._configuration_url: str | None = (
                 None  # No cloud service URL for local JSON API
             )
+            self._service: str | None = None  # No cloud service for local JSON API
             _LOGGER.info(
                 "Coordinator initialized with JSON API (host=%s, model=%s)", host, model
             )
@@ -147,6 +148,7 @@ class SyrConnectDataUpdateCoordinator(
             )
             self._username = username
             self._configuration_url = svc["configuration_url"] if svc else None
+            self._service = conf_service
             _LOGGER.debug(
                 "Coordinator initialized with XML API (username=%s)", username
             )
@@ -208,6 +210,7 @@ class SyrConnectDataUpdateCoordinator(
                 "configuration_url": self._configuration_url,
                 "devices": all_devices,
                 "projects": self.api.projects,
+                "service": self._service,
             }
 
     async def _async_fetch_all_devices(self) -> list[SyrConnectDevice]:

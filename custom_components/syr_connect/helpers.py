@@ -209,10 +209,9 @@ def build_device_info(
     if coordinator_data is not None and device is not None:
         status = device.get("status", {})
 
-        # Get human-friendly model display name and manufacturer
+        # Get human-friendly model display name and manufacturer of the cloud service
         detected = get_device_model(device)
-        model = detected.display_name
-        manufacturer = detected.manufacturer
+        manufacturer, model = detected.branded(coordinator_data.get("service"))
         configuration_url = coordinator_data.get("configuration_url")
 
         # Get software version from getVER

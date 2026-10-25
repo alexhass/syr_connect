@@ -38,3 +38,5 @@ class SyrConnectCoordinatorData(TypedDict):
     configuration_url: str | None
     devices: list[SyrConnectDevice]
     projects: list[dict[str, Any]]
+    # cf_bundle_identifier of the cloud service, None for the local JSON API
+    service: str | None

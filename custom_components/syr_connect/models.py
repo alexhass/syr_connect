@@ -74,6 +74,10 @@ class SyrConnectModel:
     maximum_salt_volume: int | None = None
     # Stable machine-readable model identifier (e.g. "lexplus10s")
     name: str
+    # Per-service branding: cf_bundle_identifier from `_SYR_CONNECT_API_SERVICES` ->
+    # (manufacturer, display name). Used when the same dk/dkv hardware is sold under
+    # different names by different vendors; detection and profile stay the same.
+    service_branding: Mapping[str, tuple[str, str]] | None = None
     # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
     # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
     sbt: int | None = None
@@ -92,6 +96,23 @@ class SyrConnectModel:
     v_keys: frozenset[str] | None = None
     # Minimum number of keys from `v_keys` that must be present in the flattened status
     v_keys_required: int = 1
+
+    def branded(self, service: str | None) -> tuple[str, str]:
+        """Return the manufacturer and display name of the model for a cloud service.
+
+        Args:
+            service: The cf_bundle_identifier of the config entry, or None for the
+                local JSON API
+
+        Returns:
+            The (manufacturer, display_name) pair from `service_branding`, or the
+            default one if the service has no branding of its own
+        """
+        if service is not None and self.service_branding is not None:
+            branding = self.service_branding.get(service)
+            if branding is not None:
+                return branding
+        return self.manufacturer, self.display_name
 
 
 # Returned by detect_model when no signature matches or input is invalid.
@@ -561,12 +582,8 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     SyrConnectModel(
-        # dk=120/dkv=34 is shared by multiple vendors.
-        # Destinction can only made via _SYR_CONNECT_API_SERVICES (not implemented).
-        #
-        # Example vendor names:
-        # - CONEL CLEAR PRO Bodensensor
-        # - SYR SafeFloor Connect
+        # dk=120/dkv=34 is shared by multiple vendors; the cloud service tells them
+        # apart (`service_branding`).
         base_path=None,
         device_profile=safefloor.PROFILE,
         display_name="SafeFloor Connect",
@@ -574,6 +591,28 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=34,
         manufacturer="SYR",
         name="safefloor",
+        service_branding={
+            # CLEAR PRO Bodensensor
+            "de.consoft.gc.conel.connect": (
+                "CONEL",
+                "CLEAR PRO Floor Sensor",
+            ),
+            # Funk Boden sensor A25
+            "de.consoft.gsh.comfort.connect": (
+                "Sanibel",
+                "Wireless Floor Sensor A25",
+            ),
+            # 2422.00.100 - concept SafeFloor Bodensensor für den SafeTech Connect 2422
+            "de.consoft.isg.concept.connect": (
+                "CONCEPT",
+                "concept SafeFloor Floor Sensor",
+            ),
+            # DITECH Funk-Bodensensor
+            "de.consoft.sanitaerunion.ditech.connect": (
+                "DITECH",
+                "Ditech Wireless Floor Sensor",
+            ),
+        },
         ver_contains="Floorsensor",
         ver_prefix=None,
     ),
