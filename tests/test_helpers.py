@@ -1557,7 +1557,7 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
 
 def test_get_sensor_ala_map_models_without_device_profile() -> None:
     """Models without a device profile use the generic alarm codes."""
-    for name in ("hva", "takemuco", "triols", "pontosbase"):
+    for name in ("hva", "triols", "pontosbase"):
         model = _signature(name)
         assert get_sensor_ala_map(model, "A1")[0] == "alarm_end_switch", name
 

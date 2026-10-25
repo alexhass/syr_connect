@@ -6,6 +6,8 @@ import logging
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -953,7 +955,54 @@ def test_detect_model_unknown_multicontroller_role_is_unknown():
     assert detect_model(status, dk=1506, dkv=506) is UNKNOWN_MODEL
 
 
-def test_detect_model_multicontroller_brand_without_known_roles():
-    """Brands without known MultiController roles have one signature for the brand."""
-    assert detect_model({"getSRN": "502AAA00001"}).name == "ditechmuco"
-    assert detect_model({}, dk=1505, dkv=505).name == "optimamuco"
+@pytest.mark.parametrize(
+    ("dk", "dfm", "expected_name"),
+    [
+        (1500, 1, "conelclearproleakprotection"),
+        (1500, 2, "conelclearproconnectioncentre"),
+        (1500, 3, "conelclearprofill"),
+        (1500, 4, "conelclearprobackwash"),
+        (1501, 1, "sanibelleakprotect"),
+        (1501, 2, "sanibelconnectioncentre"),
+        (1501, 4, "sanibelrsa"),
+        (1502, 1, "ditechleakprotect"),
+        (1502, 2, "ditechconnectioncentre"),
+        (1502, 4, "ditechbackwash"),
+        (1502, 5, "ditechbackwashfilter"),
+        (1503, 1, "takeleakprotect"),
+        (1503, 2, "takeconnectioncentre"),
+        (1503, 4, "takebackwash"),
+        (1503, 5, "takebackwashfilter"),
+        (1504, 1, "conceptleakprotect"),
+        (1504, 2, "conceptconnectioncentre"),
+        (1504, 4, "conceptbackwash"),
+        (1504, 5, "concepttriolock"),
+        (1505, 1, "optimaleakprotect"),
+        (1505, 2, "optimaconnectioncentre"),
+        (1505, 4, "optimabackwash"),
+        (1505, 5, "optimatriolock"),
+        (1506, 1, "syrsafetechlockconnect"),
+        (1506, 2, "syrac3200connect"),
+        (1506, 3, "syrac3228connect"),
+        (1506, 4, "syrrsaconnect"),
+        (1506, 5, "syrtriolockconnect"),
+    ],
+)
+def test_detect_model_multicontroller_roles_follow_the_app(
+    dk: int, dfm: int, expected_name: str
+) -> None:
+    """Every MultiController role (getDFM) of the SYR Connect app has its signature.
+
+    The roles come from lib_connect_internal_config.xml of the app; the serial number
+    detects the same role as the device kind (local JSON API).
+    """
+    dkv = dk - 1000
+    status = {"getSRN": f"{dkv}AAA00001", "getDFM": str(dfm)}
+    assert detect_model(status, dk=dk, dkv=dkv).name == expected_name
+    assert detect_model(status).name == expected_name
+
+
+def test_detect_model_multicontroller_without_role_is_unknown():
+    """A MultiController without a role (getDFM) is an unknown model."""
+    assert detect_model({"getSRN": "502AAA00001"}, dk=1502, dkv=502) is UNKNOWN_MODEL
+    assert detect_model({}, dk=1505, dkv=505) is UNKNOWN_MODEL

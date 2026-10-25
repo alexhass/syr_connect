@@ -344,6 +344,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 - RSA = Rückspülautomatik
 - DM = Druckminderer
 - LS = Leckageschutz
+- DFM = role of a MultiController (`getDFM`), from `lib_connect_internal_config.xml` of the SYR Connect app. With DFM 1 (Leckageschutz) the app also reads `getFFM`: 1 = Rückspülfilter, 2 = Wechselfilter; it only selects the product image.
 - DFR = Druckminderer mit Rückspülfilter
 
 | dkv | Device name | Brand | Brand product name | Notes |
@@ -406,8 +407,8 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 501 | MultiController (GSH) | Sanibel | | ref=500;<br>DFM:<br>1=Leckageschutz<br>2=Anschlusscenter<br>4=RSA |
 | 502 | Ditech Multicontroller | Ditech | | ref=500;<br>DFM:<br>1=Leckageschutz<br>2=Anschlusscenter<br>4=RSA<br>5=Rückspülfilter mit DM+LS |
 | 503 | TAKE Multicontroller | TAKE | | ref=500;<br>DFM: analog 502 |
-| 504 | concept Multicontroller | concept | | ref=500;<br>DFM: analog 502 |
-| 505 | Optima Multicontroller | Optima | | ref=500;<br>DFM: analog 502 |
+| 504 | concept Multicontroller | concept | | ref=500;<br>DFM: analog 502, but<br>5=Trio mit LS |
+| 505 | Optima Multicontroller | Optima | | ref=500;<br>DFM: analog 502, but<br>5=Trio mit LS |
 | 506 | SYR MultiController | | | ref=500;<br>DFM:<br>1=SafeTech Lock Connect<br>2=AC 3200 Connect<br>3=AC All-in-One 3228<br>4=RSA Connect<br>5=TRIO Lock Connect |
 
 ### WiFi-APs

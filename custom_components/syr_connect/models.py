@@ -883,6 +883,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="210",
     ),
     SyrConnectModel(
+        # 5000.02.700 - Optima T2.3 Doppelenthärtungsanlage, identical to the NeoSoft 5000
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_duo.PROFILE,
@@ -1037,10 +1038,12 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="222",
     ),
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
-    # The role of a MultiController is getDFM. Brands with known roles have no generic
-    # signature for an unknown role: such a device stays an unknown model, so it gets
-    # reported instead of silently showing the global allowlists. Ditech, TAKE, concept
-    # and Optima have no known roles yet, so one signature covers each brand.
+    # The role of a MultiController is getDFM, as defined by the SYR Connect app
+    # (lib_connect_internal_config.xml): 1 leak protection, 2 connection centre,
+    # 3 All-in-One (dkv 500/506 only), 4 automatic backwash, 5 leak protection with
+    # backwash filter (dkv 502-506 only). There is deliberately no generic signature for
+    # an unknown role: such a device stays an unknown model, so it gets reported
+    # instead of silently showing the global allowlists.
     SyrConnectModel(
         # CLEARPNLS - Retrofit Leakage Protection
         alarm_clear_via_set=True,
@@ -1052,6 +1055,19 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=500,
         manufacturer="CONEL",
         name="conelclearproleakprotection",
+        srn_prefix="500",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 2},
+        base_path="/trio",
+        device_profile=muco_connectioncentre.PROFILE,
+        display_name="CLEAR PRO FILL",
+        dk=1500,
+        dkv=500,
+        manufacturer="CONEL",
+        name="conelclearproconnectioncentre",
+        # TODO: Untested model.
         srn_prefix="500",
     ),
     SyrConnectModel(
@@ -1071,7 +1087,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         # CLEARPMCK - MultiControl-Kit / Backwash System
         # TODO: Untested model.
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
+        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
         display_name="CLEAR PRO MULTICONTROL-KIT",
@@ -1095,7 +1111,20 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
+        attrs_equals={"getDFM": 2},
+        base_path="/trio",
+        device_profile=muco_connectioncentre.PROFILE,
+        display_name="Connection Module Plus Connect",
+        dk=1501,
+        dkv=501,
+        manufacturer="Sanibel",
+        name="sanibelconnectioncentre",
+        # TODO: Untested model.
+        srn_prefix="501",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
         display_name="Automatic Backwash System RSA A25",
@@ -1106,50 +1135,212 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="501",
     ),
     SyrConnectModel(
-        # Fallback signature for any other Ditech MultiControllers
         alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
         base_path="/trio",
-        display_name="Ditech Multicontroller",
+        device_profile=muco_leakprotect.PROFILE,
+        display_name="Leak Protection",
         dk=1502,
         dkv=502,
         manufacturer="DITECH",
-        name="ditechmuco",
+        name="ditechleakprotect",
         # TODO: Untested model.
         srn_prefix="502",
     ),
     SyrConnectModel(
-        # Fallback signature for any other TAKE MultiControllers
         alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 2},
         base_path="/trio",
-        display_name="TAKE Multicontroller",
+        device_profile=muco_connectioncentre.PROFILE,
+        display_name="Connection Module Plus DN20",
+        dk=1502,
+        dkv=502,
+        manufacturer="DITECH",
+        name="ditechconnectioncentre",
+        # TODO: Untested model.
+        srn_prefix="502",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 4},
+        base_path="/trio",
+        device_profile=muco_backwash.PROFILE,
+        display_name="Automatic Backwash for HWS/RF",
+        dk=1502,
+        dkv=502,
+        manufacturer="DITECH",
+        name="ditechbackwash",
+        # TODO: Untested model.
+        srn_prefix="502",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_profile=muco_triolock.PROFILE,
+        display_name="Backwash Filter with Pressure Reducer and Leak Protection",
+        dk=1502,
+        dkv=502,
+        manufacturer="DITECH",
+        name="ditechbackwashfilter",
+        # TODO: Untested model.
+        srn_prefix="502",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
+        base_path="/trio",
+        device_profile=muco_leakprotect.PROFILE,
+        display_name="Leak Protection",
         dk=1503,
         dkv=503,
         manufacturer="TAKE",
-        name="takemuco",
+        name="takeleakprotect",
         # TODO: Untested model.
         srn_prefix="503",
     ),
     SyrConnectModel(
-        # Fallback signature for any other concept MultiControllers
         alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 2},
         base_path="/trio",
-        display_name="concept Multicontroller",
+        device_profile=muco_connectioncentre.PROFILE,
+        display_name="Connection Module Plus DN20",
+        dk=1503,
+        dkv=503,
+        manufacturer="TAKE",
+        name="takeconnectioncentre",
+        # TODO: Untested model.
+        srn_prefix="503",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 4},
+        base_path="/trio",
+        device_profile=muco_backwash.PROFILE,
+        display_name="Automatic Backwash for HWS/RF",
+        dk=1503,
+        dkv=503,
+        manufacturer="TAKE",
+        name="takebackwash",
+        # TODO: Untested model.
+        srn_prefix="503",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_profile=muco_triolock.PROFILE,
+        display_name="Backwash Filter with Pressure Reducer and Leak Protection",
+        dk=1503,
+        dkv=503,
+        manufacturer="TAKE",
+        name="takebackwashfilter",
+        # TODO: Untested model.
+        srn_prefix="503",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
+        base_path="/trio",
+        device_profile=muco_leakprotect.PROFILE,
+        display_name="Leak Protection",
         dk=1504,
         dkv=504,
         manufacturer="CONCEPT",
-        name="conceptmuco",
+        name="conceptleakprotect",
         # TODO: Untested model.
         srn_prefix="504",
     ),
     SyrConnectModel(
-        # Fallback signature for any other Optima MultiControllers
         alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 2},
         base_path="/trio",
-        display_name="Optima Multicontroller",
+        device_profile=muco_connectioncentre.PROFILE,
+        display_name="Connection Module Plus DN20",
+        dk=1504,
+        dkv=504,
+        manufacturer="CONCEPT",
+        name="conceptconnectioncentre",
+        # TODO: Untested model.
+        srn_prefix="504",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 4},
+        base_path="/trio",
+        device_profile=muco_backwash.PROFILE,
+        display_name="Automatic Backwash",
+        dk=1504,
+        dkv=504,
+        manufacturer="CONCEPT",
+        name="conceptbackwash",
+        # TODO: Untested model.
+        srn_prefix="504",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_profile=muco_triolock.PROFILE,
+        display_name="Trio with Leak Protection",
+        dk=1504,
+        dkv=504,
+        manufacturer="CONCEPT",
+        name="concepttriolock",
+        # TODO: Untested model.
+        srn_prefix="504",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 1},
+        base_path="/trio",
+        device_profile=muco_leakprotect.PROFILE,
+        display_name="Leak Protection",
         dk=1505,
         dkv=505,
         manufacturer="OPTIMA",
-        name="optimamuco",
+        name="optimaleakprotect",
+        # TODO: Untested model.
+        srn_prefix="505",
+    ),
+    SyrConnectModel(
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 2},
+        base_path="/trio",
+        device_profile=muco_connectioncentre.PROFILE,
+        display_name="Connection Module Plus DN20",
+        dk=1505,
+        dkv=505,
+        manufacturer="OPTIMA",
+        name="optimaconnectioncentre",
+        # TODO: Untested model.
+        srn_prefix="505",
+    ),
+    SyrConnectModel(
+        # 2380.01.704 - Optima T2.3 Rückspülautomatik RSA
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 4},
+        base_path="/trio",
+        device_profile=muco_backwash.PROFILE,
+        display_name="T2 Automatic Backwash RSA",
+        dk=1505,
+        dkv=505,
+        manufacturer="OPTIMA",
+        name="optimabackwash",
+        # TODO: Untested model.
+        srn_prefix="505",
+    ),
+    SyrConnectModel(
+        # 2425.01.700 - Optima T2.3 Leckageschutz und Rückspülfilter TRIO mit Druckminderer und Lock Flansch
+        alarm_clear_via_set=True,
+        attrs_equals={"getDFM": 5},
+        base_path="/trio",
+        device_profile=muco_triolock.PROFILE,
+        display_name="T2 Leak Protection and Backwash Filter TRIO",
+        dk=1505,
+        dkv=505,
+        manufacturer="OPTIMA",
+        name="optimatriolock",
         # TODO: Untested model.
         srn_prefix="505",
     ),
