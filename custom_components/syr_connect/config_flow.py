@@ -604,12 +604,19 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 # Validate based on API type
                 if api_type == API_TYPE_JSON:
-                    await validate_input_json(self.hass, user_input)
+                    info = await validate_input_json(self.hass, user_input)
                     new_data = {
                         CONF_API_TYPE: API_TYPE_JSON,
                         CONF_HOST: user_input[CONF_HOST],
                         CONF_MODEL: user_input[CONF_MODEL],
                     }
+                    # Whether the device needs the ADM login (/set/ADM/(2)f) before
+                    # /get/all returns data. validate_input_json found it out while
+                    # checking the device; storing it saves the client from trying
+                    # the login again at every start. The value of the old data is
+                    # not kept: the new host may be another device.
+                    if info.get("login_required") is not None:
+                        new_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
                 else:
                     # Use the existing configured service; do not allow changing it here.
                     service = entry.data.get(CONF_SERVICE)

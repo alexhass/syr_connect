@@ -2020,6 +2020,56 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
     assert entry.data[CONF_HOST] == "192.168.1.200"
 
 
+@pytest.mark.parametrize(
+    ("detected", "expected"),
+    [
+        (True, True),
+        (False, False),
+        (None, None),
+    ],
+)
+async def test_reconfigure_flow_json_api_stores_login_required(
+    hass: HomeAssistant, detected: bool | None, expected: bool | None
+) -> None:
+    """Reconfigure stores whether the validated device needs the ADM login.
+
+    The value of the old device is not kept: the host may belong to another device.
+    """
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetechplus",
+            CONF_HOST: "192.168.1.100",
+            CONF_LOGIN_REQUIRED: not detected,
+        },
+        unique_id="json_192.168.1.100",
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={
+            "source": config_entries.SOURCE_RECONFIGURE,
+            "entry_id": entry.entry_id,
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.validate_input_json",
+            return_value={"title": "SYR Connect Local", "login_required": detected},
+        ),
+        patch.object(hass.config_entries, "async_reload", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MODEL: "safetechplus", CONF_HOST: "192.168.1.200"},
+        )
+
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data.get(CONF_LOGIN_REQUIRED) is expected
+
+
 async def test_form_api_json_host_port_error(hass: HomeAssistant) -> None:
     """Test local/JSON API host 'port' validation maps to host_no_port error."""
     result = await hass.config_entries.flow.async_init(
