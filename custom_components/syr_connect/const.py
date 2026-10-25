@@ -82,26 +82,22 @@ _SYR_CONNECT_CLIENT_USER_AGENT = f"{_SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME}/{_SYR_C
 class SyrConnectService:
     """Cloud API service (app brand) of the SYR Connect XML API."""
 
+    # App name sent in the login request. It is bound to api_base_url: the login
+    # fails unless both belong to the same service.
     api_app_name: str
+    # Base URL of the API endpoints (login, device status), ends with "/"
     api_base_url: str
+    # Bundle identifier of the official app. The server does not check it, it is
+    # sent to emulate the app. Also the key of the service in the registry.
     cf_bundle_identifier: str
+    # User-facing URL in the HA device info card, may differ from api_base_url
     configuration_url: str
+    # Name of the service in the config flow
     display_name: str
 
 
-# Cloud API service registry
-#
-# Each entry represents one distinct backend service.
-# - api_app_name: Required. The app name sent in the API login request. Must match the expected value for the service,
-#   otherwise login will fail.
-# - api_base_url: Required. Base URL for API endpoints (e.g. login, device status) - used to construct full API URLs.
-# - cf_bundle_identifier: The Core Foundation bundle identifier of the official app - used as unique key for service
-#   registry.
-# - configuration_url: User-facing URL displayed in the HA device info card (may differ from api_base_url).
-# - display_name: Human-friendly name for the service - used in HA integration UI for configuration.
-#
-# Note: The value of "api_app_name" and "api_base_url" are hard bound to each other. These need to be used together or
-# the api login fails. cf_bundle_identifier is not validated on server side, but should be used to emulate the mobile app.
+# Cloud API service registry: one entry per backend service, keyed by
+# cf_bundle_identifier.
 _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
     "de.consoft.syr.connect": SyrConnectService(
         api_app_name="SYR Connect",
