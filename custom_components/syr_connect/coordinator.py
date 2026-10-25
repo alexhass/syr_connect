@@ -2,16 +2,26 @@
 
 import asyncio
 import copy
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 from typing import Any, override
 
 import aiohttp
 
+from homeassistant.components.recorder.models import (
+    StatisticData,
+    StatisticMeanType,
+    StatisticMetaData,
+)
+from homeassistant.components.recorder.statistics import (
+    STATISTIC_UNIT_TO_UNIT_CONVERTER,
+    async_add_external_statistics,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api_json import SyrConnectJsonAPI
@@ -29,8 +39,10 @@ from .const import (
     DOMAIN,
 )
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
-from .exceptions import SyrConnectAuthError, SyrConnectConnectionError
+from .devices import SyrConnectStatistic
+from .exceptions import SyrConnectAuthError, SyrConnectConnectionError, SyrConnectError
 from .helpers import (
+    build_statistic_id,
     detect_device_model,
     get_api_locale,
     get_default_scan_interval_for_entry,
@@ -680,3 +692,163 @@ class SyrConnectDataUpdateCoordinator(
             set_val,
             device_id,
         )
+
+
+# The cloud keeps the measurements of the last 6 days. Fetching every 12 hours (as the
+# core integrations SolarEdge and Opower do for data that arrives late) keeps the
+# history at most 12 hours behind and never loses a measurement.
+_SYR_CONNECT_COORDINATOR_STATISTICS_UPDATE_INTERVAL = timedelta(hours=12)
+
+
+class SyrConnectStatisticsCoordinator(DataUpdateCoordinator[None]):
+    """Import the measurement history the cloud keeps for battery devices.
+
+    A SafeFloor measures every getWMP seconds but connects to the cloud only every
+    getRCP seconds (e.g. every 4 days), so its status and sensor entities only see
+    the latest measurement. The device profile lists the series the cloud keeps
+    (`SyrConnectDeviceProfile.statistics`); see "SafeFloor measurement history" in
+    docs/syrconnect-protocol.md.
+
+    Home Assistant can not change the past states of an entity, and the recorder
+    compiles the long-term statistics of an entity itself. The measurements go into
+    external statistics (see build_statistic_id), the API Home Assistant provides for
+    values with a past timestamp. The sensor entities stay unchanged. Every run fetches
+    the last 6 days again and overwrites the same hourly rows, so a failed run is
+    simply repeated by the next one.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        config_entry: ConfigEntry,
+        coordinator: SyrConnectDataUpdateCoordinator,
+    ) -> None:
+        """Initialize the statistics coordinator.
+
+        Args:
+            hass: Home Assistant instance
+            config_entry: Owning config entry
+            coordinator: Coordinator of the entry, whose API and devices are used
+        """
+        super().__init__(
+            hass,
+            _LOGGER,
+            config_entry=config_entry,
+            name=f"{DOMAIN} statistics",
+            update_interval=_SYR_CONNECT_COORDINATOR_STATISTICS_UPDATE_INTERVAL,
+        )
+        self._coordinator = coordinator
+
+        @callback
+        def _dummy_listener() -> None:
+            pass
+
+        # No entity listens to this coordinator; without a listener it would not
+        # refresh on its interval.
+        config_entry.async_on_unload(self.async_add_listener(_dummy_listener))
+
+    @override
+    async def _async_update_data(self) -> None:
+        """Import the measurement history of every device with statistics series.
+
+        Errors are only logged: the next run fetches the same 6 days again.
+        """
+        api = self._coordinator.api
+        data = self._coordinator.data
+        if (
+            isinstance(api, SyrConnectJsonAPI)
+            or data is None
+            or "recorder" not in self.hass.config.components
+        ):
+            return
+        translations = await async_get_translations(
+            self.hass, self.hass.config.language, "entity", {DOMAIN}
+        )
+        for device in data["devices"]:
+            profile = get_device_model(device).device_profile
+            if profile is None or not profile.statistics or not device.get("available"):
+                continue
+            dclg = device.get("dclg", device["id"])
+            for statistic in profile.statistics:
+                try:
+                    measurements = await api.get_statistics(dclg, statistic)
+                except (SyrConnectError, ValueError) as err:
+                    _LOGGER.warning(
+                        "Device %s: failed to import the %s history, retrying with the next run: %s",
+                        device["id"],
+                        statistic.key,
+                        err,
+                    )
+                    continue
+                self._add_statistics(device, statistic, measurements, translations)
+
+    def _add_statistics(
+        self,
+        device: SyrConnectDevice,
+        statistic: SyrConnectStatistic,
+        measurements: list[tuple[datetime, float]],
+        translations: dict[str, str],
+    ) -> None:
+        """Write the measurements of one series as hourly external statistics.
+
+        Args:
+            device: The device the measurements belong to
+            statistic: The series
+            measurements: (timestamp, value) of every measurement, sorted by timestamp
+            translations: Entity translations of this integration, for the name
+        """
+        rows = _hourly_statistics(measurements)
+        if not rows:
+            return
+        # Named like the sensor of the series, as SolarEdge names its statistics
+        # "<site> <equipment>"
+        sensor_name = translations.get(
+            f"component.{DOMAIN}.entity.sensor.{statistic.key.lower()}.name",
+            statistic.key,
+        )
+        converter = STATISTIC_UNIT_TO_UNIT_CONVERTER.get(statistic.unit)
+        metadata = StatisticMetaData(
+            has_sum=False,
+            mean_type=StatisticMeanType.ARITHMETIC,
+            name=f"{device.get('name') or device['id']} {sensor_name}",
+            source=DOMAIN,
+            statistic_id=build_statistic_id(device["id"], statistic.key),
+            unit_class=converter.UNIT_CLASS if converter is not None else None,
+            unit_of_measurement=statistic.unit,
+        )
+        _LOGGER.debug(
+            "Device %s: adding %d hourly row(s) to %s",
+            device["id"],
+            len(rows),
+            metadata["statistic_id"],
+        )
+        async_add_external_statistics(self.hass, metadata, rows)
+
+
+def _hourly_statistics(
+    measurements: list[tuple[datetime, float]],
+) -> list[StatisticData]:
+    """Return one statistics row for every hour with measurements.
+
+    Long-term statistics have hourly rows: an hour gets the mean, min and max of its
+    measurements. Hours without a measurement get no row; nothing is interpolated.
+
+    Args:
+        measurements: (timestamp, value) of every measurement
+
+    Returns:
+        The hourly rows sorted by hour, empty without measurements
+    """
+    hours: dict[datetime, list[float]] = {}
+    for timestamp, value in measurements:
+        hour = timestamp.replace(minute=0, second=0, microsecond=0)
+        hours.setdefault(hour, []).append(value)
+    return [
+        StatisticData(
+            start=hour,
+            mean=sum(values) / len(values),
+            min=min(values),
+            max=max(values),
+        )
+        for hour, values in sorted(hours.items())
+    ]

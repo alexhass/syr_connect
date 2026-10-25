@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <col>
-    <dcl dclg="daa8b540-c9cd-ef11-800c-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="01.05.2026 18:11:03" nrs="4" />
+    <dcl dclg="f58d53b6-83b3-4a4b-b2a4-a33c7c374c8c" sta="2" dst="2" ast="1" clb="1" nrdt="01.05.2026 18:11:03" nrs="4" />
   </col>
   <pdvs />
   <dvs>
-    <d dg="dca8b540-c9cd-ef11-800c-be3af2b6059f" sbt="3" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
+    <d dg="f78462cf-0bf4-4315-9dad-49410ee2042a" sbt="3" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
       <c n="getSRN" v="123456789" dt="01.05.2026 18:10:51" />
       <c n="getVER" v="6.4" />
       <c n="getFIR" v="SE03" />
@@ -67,5 +67,5 @@
       <c n="getWHU" v="0" />
     </d>
   </dvs>
-  <cs v="8454" />
+  <cs v="84E9" />
 </sc>

@@ -341,6 +341,12 @@ The local API is faster and doesn't depend on internet connectivity, making it m
 
 If a device becomes unavailable (e.g., offline or communication error), its entities are marked as unavailable until the next successful update.
 
+### SafeFloor Measurement History
+
+A SafeFloor measures temperature and humidity regularly but sends its measurements to the cloud only every few days, so its sensors show a flat line followed by a jump. The integration fetches the single measurements from the cloud every 12 hours and stores them as statistics named after the sensors (e.g. "Kitchen Temperature"). To see the real curve, add a **Statistics graph** card and select these statistics.
+
+The cloud keeps the measurements of the last 6 days only. Keep the synchronization interval of the sensor at 6 days or less, otherwise measurements are lost. The statistics are deleted together with the device.
+
 ### Known Limitations
 
 - **Cloud Dependency**: The cloud API requires an active internet connection and functioning cloud service

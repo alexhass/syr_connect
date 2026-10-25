@@ -48,15 +48,25 @@ Fetch the statistics series of a device profile (e.g. SafeFloor):
         --identity 1234567890 \
         --get-statistics
 
-Try a statistics method with own request attributes:
+Try a statistics method with own request attributes (SafeFloor temperature):
     python scripts/debug_cli.py \
         --username me@example.com \
         --password secret \
         --identity 1234567890 \
-        --get-statistics GetLexPlusStatistics \
+        --get-statistics GetSafeFloorStatistics \
         --stat-t 1 \
-        --stat-unit l \
-        --stat-rtyp 1
+        --stat-unit "°C" \
+        --stat-rtyp 4
+
+Try a statistics method with own request attributes (SafeFloor humidity):
+    python scripts/debug_cli.py \
+        --username me@example.com \
+        --password secret \
+        --identity 1234567890 \
+        --get-statistics GetSafeFloorStatistics \
+        --stat-t 2 \
+        --stat-unit "%" \
+        --stat-rtyp 4
 
 Example (CLEAR PRO):
     python scripts/debug_cli.py \
@@ -488,10 +498,14 @@ class DebugXmlClient:
         url = self.device_service_url + statistic.method
         _LOGGER.info("POST %s", url)
         raw_response = await self.http_client.post(url, {"xml": payload})
-        _LOGGER.debug("--- Raw statistics response ---\n%s", raw_response)
+        # Logged at info level: the cloud answers every error with <msg mtid="1">, which
+        # the parser takes for a rejected session token
+        _LOGGER.info("--- Raw statistics response ---\n%s", raw_response)
 
-        stats = self.response_parser.parse_statistics_response(raw_response)
-        _LOGGER.info("Statistics attributes returned: %d", len(stats))
+        measurements = self.response_parser.parse_statistics_response(raw_response)
+        _LOGGER.info("Measurements returned: %d", len(measurements))
+        for timestamp, value in measurements:
+            _LOGGER.info("  %s = %r", timestamp.isoformat(), value)
         return raw_response
 
 

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <col>
-    <dcl dclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" sta="2" dst="2" ast="1" clb="1" nrdt="01.05.2026 18:11:00" nrs="0" />
+    <dcl dclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" sta="2" dst="2" ast="1" clb="1" nrdt="01.05.2026 18:11:00" nrs="0" />
   </col>
   <pdvs />
   <dvs>
-    <d dg="09ffcab9-bb6a-ee11-8007-be3af2b6059f" sbt="" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
+    <d dg="48cfaa63-d49f-4f5a-bd90-18a187356f1a" sbt="" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
       <ci f="4.08" b="1.00" m="0C:73:EB:XX:XX:XX" />
       <c n="getSRN" v="123456789" dt="01.05.2026 18:11:00" />
       <c n="getVER" v="Safe-Tech V4.08" />
@@ -162,5 +162,5 @@
       <c n="getWNS" v="0" />
     </d>
   </dvs>
-  <cs v="153AC" />
+  <cs v="15436" />
 </sc>

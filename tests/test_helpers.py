@@ -12,6 +12,7 @@ from typing import Any, NoReturn, cast, override
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import (
     binary_sensor,
@@ -70,6 +71,8 @@ from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     is_sensor_visible,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 
 # The profiles of all device files, keyed by module name.
 _DEVICE_PROFILES = {
@@ -195,6 +198,113 @@ def test_cleanup_removed_devices_detaches_stale_device() -> None:
     device_registry.async_update_device.assert_called_once_with(
         "registry_entry_id", remove_config_entry_id="entry1"
     )
+
+
+def test_cleanup_removed_devices_clears_statistics_of_removed_device() -> None:
+    """A detached device loses its history (unless another entry has it)."""
+    hass = MagicMock()
+    device_registry = MagicMock()
+    stale_entry = SimpleNamespace(
+        id="registry_entry_id", identifiers={(helpers.DOMAIN, "STALE_DEV")}
+    )
+
+    with (
+        patch(
+            "custom_components.syr_connect.helpers.dr.async_get",
+            return_value=device_registry,
+        ),
+        patch(
+            "custom_components.syr_connect.helpers.dr.async_entries_for_config_entry",
+            return_value=[stale_entry],
+        ),
+        patch(
+            "custom_components.syr_connect.helpers.clear_device_statistics"
+        ) as mock_clear,
+    ):
+        helpers.cleanup_removed_devices(
+            hass, cast(Any, {"devices": [{"id": "CURRENT_DEV"}]}), "entry1"
+        )
+
+    mock_clear.assert_called_once_with(hass, "entry1", {"STALE_DEV"})
+
+
+def test_build_statistic_id() -> None:
+    """The ID is an external statistic ID: domain, colon, slugs only."""
+    assert (
+        helpers.build_statistic_id("200AAA-56934", "getCEL")
+        == "syr_connect:200aaa_56934_getcel_history"
+    )
+
+
+async def test_clear_device_statistics_clears_every_series_key(
+    hass: HomeAssistant,
+) -> None:
+    """Every series key of every profile is cleared, except for devices of other entries."""
+    hass.config.components.add("recorder")
+    entry = MockConfigEntry(domain=helpers.DOMAIN, entry_id="01JENTRYA")
+    other = MockConfigEntry(domain=helpers.DOMAIN, entry_id="01JENTRYB")
+    entry.add_to_hass(hass)
+    other.add_to_hass(hass)
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=other.entry_id, identifiers={(helpers.DOMAIN, "SHARED_DEV")}
+    )
+
+    with patch(
+        "custom_components.syr_connect.helpers.get_instance"
+    ) as mock_get_instance:
+        helpers.clear_device_statistics(
+            hass, entry.entry_id, {"123456789", "SHARED_DEV"}
+        )
+
+    mock_get_instance.return_value.async_clear_statistics.assert_called_once_with(
+        [
+            "syr_connect:123456789_getcel_history",
+            "syr_connect:123456789_gethmd_history",
+        ]
+    )
+
+
+@pytest.mark.parametrize(
+    ("recorder", "device_ids"),
+    [
+        (False, {"123456789"}),
+        (True, set()),
+        (True, {"SHARED_DEV"}),
+    ],
+)
+async def test_clear_device_statistics_skipped(
+    hass: HomeAssistant, recorder: bool, device_ids: set[str]
+) -> None:
+    """Without the recorder, devices, or with a device another entry has, nothing is cleared."""
+    if recorder:
+        hass.config.components.add("recorder")
+    other = MockConfigEntry(domain=helpers.DOMAIN, entry_id="01JENTRYB")
+    other.add_to_hass(hass)
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=other.entry_id, identifiers={(helpers.DOMAIN, "SHARED_DEV")}
+    )
+
+    with patch(
+        "custom_components.syr_connect.helpers.get_instance"
+    ) as mock_get_instance:
+        helpers.clear_device_statistics(hass, "01JENTRYA", device_ids)
+
+    mock_get_instance.assert_not_called()
+
+
+async def test_clear_device_statistics_without_series(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Without any profile with series there is nothing to clear."""
+    hass.config.components.add("recorder")
+    monkeypatch.setattr(helpers, "MODEL_SIGNATURES", [])
+
+    with patch(
+        "custom_components.syr_connect.helpers.get_instance"
+    ) as mock_get_instance:
+        helpers.clear_device_statistics(hass, "01JENTRYA", {"123456789"})
+
+    mock_get_instance.assert_not_called()
 
 
 def test_cleanup_removed_devices_keeps_current_device() -> None:

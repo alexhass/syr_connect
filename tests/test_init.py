@@ -14,6 +14,7 @@ from custom_components.syr_connect import (
     async_migrate_entry,
     async_options_update_listener,
     async_reload_entry,
+    async_remove_entry,
     async_setup_entry,
     async_unload_entry,
 )
@@ -920,3 +921,25 @@ async def test_setup_names_device_after_service(
 
         assert await hass.config_entries.async_unload(config_entry.entry_id)
         await hass.async_block_till_done()
+
+
+async def test_async_remove_entry_clears_statistics_of_own_devices(
+    hass: HomeAssistant,
+) -> None:
+    """The devices of the removed entry lose their measurement history."""
+    entry = MockConfigEntry(domain=DOMAIN, entry_id="01JENTRYA")
+    other = MockConfigEntry(domain=DOMAIN, entry_id="01JENTRYB")
+    entry.add_to_hass(hass)
+    other.add_to_hass(hass)
+    device_registry = dr.async_get(hass)
+    device_registry.async_get_or_create(
+        config_entry_id=entry.entry_id, identifiers={(DOMAIN, "OWN_DEV")}
+    )
+    device_registry.async_get_or_create(
+        config_entry_id=other.entry_id, identifiers={(DOMAIN, "OTHER_DEV")}
+    )
+
+    with patch("custom_components.syr_connect.clear_device_statistics") as mock_clear:
+        await async_remove_entry(hass, entry)
+
+    mock_clear.assert_called_once_with(hass, entry.entry_id, {"OWN_DEV"})

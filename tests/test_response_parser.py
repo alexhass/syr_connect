@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+from datetime import UTC, datetime
 import os
 from typing import Any
 
@@ -303,27 +304,103 @@ def test_parse_device_status_with_c(parser: ResponseParser) -> None:
     assert result["test"] == "123"
 
 
-def test_parse_statistics_response(parser: ResponseParser) -> None:
-    """Test parsing statistics response."""
-    xml = '<sc><c n="stat1" v="100"/><c n="stat2" v="200"/></sc>'
-    result = parser.parse_statistics_response(xml)
-    assert "stat1" in result
-    assert result["stat1"] == "100"
-    assert "stat2" in result
+@pytest.mark.parametrize(
+    ("fixture", "first", "last"),
+    [
+        (
+            "SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml",
+            (datetime(2026, 10, 19, 16, 42, 50, tzinfo=UTC), 22.4),
+            (datetime(2026, 10, 25, 11, 43, 58, tzinfo=UTC), 23.9),
+        ),
+        (
+            "SyrSafeFloor_GetSafeFloorStatistics_Humidity.xml",
+            (datetime(2026, 10, 19, 16, 42, 50, tzinfo=UTC), 58.0),
+            (datetime(2026, 10, 25, 11, 43, 58, tzinfo=UTC), 53.0),
+        ),
+    ],
+)
+def test_parse_statistics_response_fixtures(
+    parser: ResponseParser,
+    fixture: str,
+    first: tuple[datetime, float],
+    last: tuple[datetime, float],
+) -> None:
+    """The unsorted measurements of a real answer are read as UTC timestamps, sorted.
+
+    The sensor measures every hour, so the 6 days hold 140 distinct hours.
+    """
+    with open(
+        os.path.join(os.path.dirname(__file__), "fixtures/xml", fixture),
+        encoding="utf-8",
+    ) as f:
+        result = parser.parse_statistics_response(f.read())
+
+    assert len(result) == 140
+    assert len({timestamp for timestamp, _ in result}) == 140
+    assert result == sorted(result)
+    assert all(timestamp.tzinfo is UTC for timestamp, _ in result)
+    assert result[0] == first
+    assert result[-1] == last
+
+
+def test_parse_statistics_response_sorts_and_skips_invalid(
+    parser: ResponseParser,
+) -> None:
+    """Measurements are sorted; a missing or invalid timestamp or value is skipped."""
+    xml = (
+        "<sc><col><dcl><sh><sths>"
+        '<sth dt="2026-09-27 08:45:27" v="15,5" />'
+        '<sth dt="2026-09-26 14:45:27" v="14.6" />'
+        '<sth dt="27.09.2026 10:00:00" v="1" />'
+        '<sth dt="2026-09-27 12:00:00" v="abc" />'
+        '<sth dt="2026-09-27 13:00:00" v="nan" />'
+        '<sth v="2" />'
+        '<sth dt="2026-09-27 14:00:00" />'
+        "</sths></sh></dcl></col></sc>"
+    )
+
+    assert parser.parse_statistics_response(xml) == [
+        (datetime(2026, 9, 26, 14, 45, 27, tzinfo=UTC), 14.6),
+        (datetime(2026, 9, 27, 8, 45, 27, tzinfo=UTC), 15.5),
+    ]
+
+
+def test_parse_statistics_response_several_series(parser: ResponseParser) -> None:
+    """The measurements of several <sh> elements are read together."""
+    xml = (
+        "<sc><col><dcl>"
+        '<sh><sths><sth dt="2026-09-26 14:45:27" v="14.6" /></sths></sh>'
+        '<sh><sths><sth dt="2026-09-26 20:45:27" v="14.9" /></sths></sh>'
+        "</dcl></col></sc>"
+    )
+
+    assert parser.parse_statistics_response(xml) == [
+        (datetime(2026, 9, 26, 14, 45, 27, tzinfo=UTC), 14.6),
+        (datetime(2026, 9, 26, 20, 45, 27, tzinfo=UTC), 14.9),
+    ]
+
+
+def test_parse_statistics_response_single_measurement(parser: ResponseParser) -> None:
+    """A single <sth> (no list in the parsed structure) is read as well."""
+    xml = '<sc><sths><sth dt="2026-09-26 14:45:27" v="14.6" /></sths></sc>'
+
+    assert parser.parse_statistics_response(xml) == [
+        (datetime(2026, 9, 26, 14, 45, 27, tzinfo=UTC), 14.6),
+    ]
 
 
 def test_parse_statistics_response_with_message(parser: ResponseParser) -> None:
     """Test parsing statistics response with error message."""
-    xml = "<sc><msg>Error message</msg></sc>"
+    xml = '<sc><msg v="An error has occurred." hl="Error" mtid="2" /></sc>'
     result = parser.parse_statistics_response(xml)
-    assert result == {}
+    assert result == []
 
 
 def test_parse_statistics_response_no_sc(parser: ResponseParser) -> None:
     """Test parsing statistics response without sc element."""
     xml = "<root><invalid/></root>"
     result = parser.parse_statistics_response(xml)
-    assert result == {}
+    assert result == []
 
 
 def test_flatten_attributes_with_extras(parser: ResponseParser) -> None:
@@ -435,15 +512,6 @@ def test_parse_device_status_device_list_dict_no_c(parser: ResponseParser) -> No
     xml = '<sc><dvs dclg="123"><name>Device</name></dvs></sc>'
     result = parser.parse_device_status_response(xml)
     assert result is None
-
-
-def test_parse_statistics_with_checksum(parser: ResponseParser) -> None:
-    """Test parsing statistics response with checksum (should be removed)."""
-    xml = '<sc><cs>ABC123</cs><c n="stat" v="100"/></sc>'
-    result = parser.parse_statistics_response(xml)
-    assert "cs" not in result
-    assert "stat" in result
-    assert result["stat"] == "100"
 
 
 def test_flatten_attributes_c_with_acd_and_ih(parser: ResponseParser) -> None:
@@ -816,13 +884,11 @@ def test_parse_device_status_device_list_as_list_all_have_c(
     assert "sensor2" in result
 
 
-def test_parse_statistics_response_no_c_elements(parser: ResponseParser) -> None:
-    """Test parsing statistics response with no c elements."""
-    xml = "<sc><other>data</other></sc>"
+def test_parse_statistics_response_no_measurements(parser: ResponseParser) -> None:
+    """An answer without <sth> elements (e.g. without unit in the request) is empty."""
+    xml = '<sc><col /><other>data</other><cs v="ABC1" /></sc>'
     result = parser.parse_statistics_response(xml)
-    # Should return dict with 'other' key
-    assert "other" in result
-    assert result["other"] == "data"
+    assert result == []
 
 
 def test_element_to_dict_nested_elements_same_tag(parser: ResponseParser) -> None:

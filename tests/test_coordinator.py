@@ -4,6 +4,8 @@
 # ruff: noqa: SLF001
 
 import contextlib
+from datetime import UTC, datetime, timedelta
+from functools import partial
 import inspect
 from types import SimpleNamespace
 from typing import Any, cast
@@ -11,6 +13,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.components.recorder.common import (
+    async_wait_recording_done,
+)
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import (
@@ -23,12 +28,25 @@ from custom_components.syr_connect.const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.coordinator import (
+    SyrConnectDataUpdateCoordinator,
+    SyrConnectStatisticsCoordinator,
+    _hourly_statistics,
+)
+from custom_components.syr_connect.data import SyrConnectDevice
+from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
 )
+from custom_components.syr_connect.helpers import clear_device_statistics
 from custom_components.syr_connect.models import UNKNOWN_MODEL
+from homeassistant.components.recorder import Recorder
+from homeassistant.components.recorder.statistics import (
+    get_metadata,
+    statistics_during_period,
+)
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import (
@@ -38,6 +56,16 @@ from homeassistant.exceptions import (
 )
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
+
+
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(
+    recorder_db_url: str, enable_custom_integrations: None
+) -> None:
+    """Prepare the recorder database before hass is set up (overrides conftest.py).
+
+    The recorder test of the measurement history needs the database before hass.
+    """
 
 
 def _consume_coro_return_task(coro: Any) -> Any:
@@ -1964,3 +1992,256 @@ async def test_coordinator_takes_config_entry_from_constructor(
 
     assert coordinator.config_entry is entry
     assert coordinator.entry_id == "01JTESTENTRY"
+
+
+# --- Measurement history (external statistics) -------------------------------------
+
+_STATS_DEVICE_ID = "123456789"
+_STATS_ENTRY_ID = "01JTESTENTRY"
+_STATS_TEMPERATURE = [
+    (datetime(2026, 9, 26, 14, 45, 27, tzinfo=UTC), 14.6),
+    (datetime(2026, 9, 26, 20, 45, 27, tzinfo=UTC), 14.9),
+]
+
+
+def _statistics_device() -> SyrConnectDevice:
+    """Return a SafeFloor device (dk=120/dkv=34) as the coordinator builds it."""
+    return {
+        "id": _STATS_DEVICE_ID,
+        "name": "Keller",
+        "dclg": "840fab82-3e71-4cfc-ab90-a0a1491ca881",
+        "dk": 120,
+        "dkv": 34,
+        "available": True,
+        "status": {"getSRN": _STATS_DEVICE_ID},
+    }
+
+
+def _statistics_coordinator(
+    hass: HomeAssistant, devices: list[SyrConnectDevice] | None = None
+) -> tuple[SyrConnectStatisticsCoordinator, MagicMock]:
+    """Return a statistics coordinator over a mocked XML API, with the recorder loaded."""
+    hass.config.components.add("recorder")
+    entry = MockConfigEntry(domain=DOMAIN, entry_id=_STATS_ENTRY_ID)
+    entry.add_to_hass(hass)
+    mock_api = MagicMock()
+    mock_api.get_statistics = AsyncMock(return_value=_STATS_TEMPERATURE)
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.api = mock_api
+    coordinator.data = {
+        "devices": [_statistics_device()] if devices is None else devices
+    }
+    return SyrConnectStatisticsCoordinator(hass, entry, coordinator), mock_api
+
+
+async def test_statistics_coordinator_imports_every_series(
+    hass: HomeAssistant,
+) -> None:
+    """Every series of the profile is fetched and written as external statistics."""
+    statistics, mock_api = _statistics_coordinator(hass)
+
+    with patch(
+        "custom_components.syr_connect.coordinator.async_add_external_statistics"
+    ) as mock_add:
+        await statistics._async_update_data()
+
+    assert [call.args[1] for call in mock_api.get_statistics.await_args_list] == list(
+        safefloor.STATISTICS
+    )
+    assert mock_api.get_statistics.await_args_list[0].args[0] == (
+        "840fab82-3e71-4cfc-ab90-a0a1491ca881"
+    )
+    metadata = [call.args[1] for call in mock_add.call_args_list]
+    assert metadata == [
+        {
+            "has_sum": False,
+            "mean_type": 1,
+            "name": "Keller Temperature",
+            "source": DOMAIN,
+            "statistic_id": "syr_connect:123456789_getcel_history",
+            "unit_class": "temperature",
+            "unit_of_measurement": "°C",
+        },
+        {
+            "has_sum": False,
+            "mean_type": 1,
+            "name": "Keller Humidity",
+            "source": DOMAIN,
+            "statistic_id": "syr_connect:123456789_gethmd_history",
+            "unit_class": "unitless",
+            "unit_of_measurement": "%",
+        },
+    ]
+    assert len(mock_add.call_args_list[0].args[2]) == 2
+
+
+async def test_statistics_coordinator_name_without_translation(
+    hass: HomeAssistant,
+) -> None:
+    """Without a translation the sensor key names the series."""
+    statistics, _mock_api = _statistics_coordinator(hass)
+
+    with (
+        patch(
+            "custom_components.syr_connect.coordinator.async_get_translations",
+            return_value={},
+        ),
+        patch(
+            "custom_components.syr_connect.coordinator.async_add_external_statistics"
+        ) as mock_add,
+    ):
+        await statistics._async_update_data()
+
+    assert mock_add.call_args_list[0].args[1]["name"] == "Keller getCEL"
+
+
+async def test_statistics_coordinator_refreshes_on_its_interval(
+    hass: HomeAssistant,
+) -> None:
+    """The coordinator has a listener, so it refreshes every 12 hours without entities."""
+    statistics, _mock_api = _statistics_coordinator(hass)
+
+    assert statistics.update_interval == timedelta(hours=12)
+    assert statistics._listeners
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        "json_api",
+        "no_data",
+        "no_recorder",
+        "no_profile_statistics",
+        "unavailable",
+    ],
+)
+async def test_statistics_coordinator_skipped(hass: HomeAssistant, case: str) -> None:
+    """Nothing is fetched without the cloud API, data, the recorder or series."""
+    device = _statistics_device()
+    if case == "no_profile_statistics":
+        device["dk"] = 1100
+        device["dkv"] = 100
+    elif case == "unavailable":
+        device["available"] = False
+    statistics, mock_api = _statistics_coordinator(hass, [device])
+    if case == "json_api":
+        statistics._coordinator.api = MagicMock(spec=SyrConnectJsonAPI)
+    elif case == "no_data":
+        statistics._coordinator.data = None
+    elif case == "no_recorder":
+        hass.config.components.remove("recorder")
+
+    with patch(
+        "custom_components.syr_connect.coordinator.async_add_external_statistics"
+    ) as mock_add:
+        await statistics._async_update_data()
+
+    mock_api.get_statistics.assert_not_awaited()
+    mock_add.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        SyrConnectConnectionError("timeout"),
+        SyrConnectInvalidResponseError("broken"),
+        ValueError("Invalid XML response"),
+    ],
+)
+async def test_statistics_coordinator_failure_is_only_logged(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture, error: Exception
+) -> None:
+    """A failed series is logged; the other series are still imported."""
+    statistics, mock_api = _statistics_coordinator(hass)
+    mock_api.get_statistics = AsyncMock(side_effect=[error, _STATS_TEMPERATURE])
+
+    with patch(
+        "custom_components.syr_connect.coordinator.async_add_external_statistics"
+    ) as mock_add:
+        await statistics._async_update_data()
+
+    assert "failed to import the getCEL history" in caplog.text
+    assert [call.args[1]["statistic_id"] for call in mock_add.call_args_list] == [
+        "syr_connect:123456789_gethmd_history",
+    ]
+
+
+async def test_statistics_coordinator_without_measurements(
+    hass: HomeAssistant,
+) -> None:
+    """An answer without measurements writes nothing."""
+    statistics, mock_api = _statistics_coordinator(hass)
+    mock_api.get_statistics = AsyncMock(return_value=[])
+
+    with patch(
+        "custom_components.syr_connect.coordinator.async_add_external_statistics"
+    ) as mock_add:
+        await statistics._async_update_data()
+
+    mock_add.assert_not_called()
+
+
+def test_hourly_statistics_only_hours_with_measurements() -> None:
+    """An hour gets mean, min and max of its measurements; empty hours get no row."""
+    rows = _hourly_statistics(
+        [
+            (datetime(2026, 9, 26, 13, 15, tzinfo=UTC), 20.0),
+            (datetime(2026, 9, 26, 10, 5, tzinfo=UTC), 10.0),
+            (datetime(2026, 9, 26, 10, 50, tzinfo=UTC), 12.0),
+        ]
+    )
+
+    assert rows == [
+        {
+            "start": datetime(2026, 9, 26, 10, tzinfo=UTC),
+            "mean": 11.0,
+            "min": 10.0,
+            "max": 12.0,
+        },
+        {
+            "start": datetime(2026, 9, 26, 13, tzinfo=UTC),
+            "mean": 20.0,
+            "min": 20.0,
+            "max": 20.0,
+        },
+    ]
+
+
+def test_hourly_statistics_without_measurements() -> None:
+    """Without measurements there is no row."""
+    assert _hourly_statistics([]) == []
+
+
+async def test_statistics_reach_the_recorder(
+    recorder_mock: Recorder, hass: HomeAssistant
+) -> None:
+    """The recorder accepts rows and metadata; a second run overwrites, clearing removes."""
+    statistics, _mock_api = _statistics_coordinator(hass)
+    statistic_id = "syr_connect:123456789_getcel_history"
+
+    await statistics._async_update_data()
+    await statistics._async_update_data()
+    await async_wait_recording_done(hass)
+
+    stats = await recorder_mock.async_add_executor_job(
+        statistics_during_period,
+        hass,
+        datetime(2026, 9, 26, tzinfo=UTC),
+        None,
+        {statistic_id},
+        "hour",
+        None,
+        {"mean", "min", "max"},
+    )
+    assert [row["mean"] for row in stats[statistic_id]] == pytest.approx([14.6, 14.9])
+    metadata = await recorder_mock.async_add_executor_job(
+        partial(get_metadata, hass, statistic_ids={statistic_id})
+    )
+    assert metadata[statistic_id][1]["name"] == "Keller Temperature"
+
+    clear_device_statistics(hass, _STATS_ENTRY_ID, {_STATS_DEVICE_ID})
+    await async_wait_recording_done(hass)
+    metadata = await recorder_mock.async_add_executor_job(
+        partial(get_metadata, hass, statistic_ids={statistic_id})
+    )
+    assert metadata == {}

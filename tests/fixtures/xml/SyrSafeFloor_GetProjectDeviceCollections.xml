@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <prs>
-    <pr pg="06ffcab9-bb6a-ee11-8007-be3af2b6059f" pn="My+Projekt" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="02:00:00" />
+    <pr pg="9421fcab-840a-4ddd-aa4f-1891d396f3b2" pn="My+Projekt" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="02:00:00" />
   </prs>
   <col>
-    <dcl dclg="7605aa61-73b8-ef11-800c-be3af2b6059f" ali="Example+Floor+Sensor" dkv="34" mod="0" pg="06ffcab9-bb6a-ee11-8007-be3af2b6059f" ag="" aif="" pclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" so="2" sta="6" dst="3" ast="1" clb="1" nrdt="" />
-    <dcl dclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" ali="Example+SafeTech" dkv="35" mod="0" pg="06ffcab9-bb6a-ee11-8007-be3af2b6059f" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+    <dcl dclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" ali="Example+Floor+Sensor" dkv="34" mod="0" pg="9421fcab-840a-4ddd-aa4f-1891d396f3b2" ag="" aif="" pclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" so="2" sta="6" dst="3" ast="1" clb="1" nrdt="" />
+    <dcl dclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" ali="Example+SafeTech" dkv="35" mod="0" pg="9421fcab-840a-4ddd-aa4f-1891d396f3b2" ag="" aif="" pclg="" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
   </col>
   <dvs>
-    <d dg="7805aa61-73b8-ef11-800c-be3af2b6059f" sn="123456789" sbt="" dfw="Syr+Floorsensor+2.23" dk="120" dclg="7605aa61-73b8-ef11-800c-be3af2b6059f" aid="1" bus="1" sta="6" dst="3" ast="1" dcg="7705aa61-73b8-ef11-800c-be3af2b6059f" so="1" ondt="" mac="0c:73:eb:XX:XX:XX" wtd="0" tm="20.5" hmd="40" bat="40" />
-    <d dg="09ffcab9-bb6a-ee11-8007-be3af2b6059f" sn="987654321" sbt="" dfw="Safe-Tech+V4.08" dk="140" dclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" aid="1" bus="1" sta="2" dst="2" ast="1" dcg="08ffcab9-bb6a-ee11-8007-be3af2b6059f" so="1" ondt="" mac="0C:73:EB:XX:XX:XY" apn="Anwesend" apv="200" vlv="20" wh="17.37" />
+    <d dg="cbb4bffb-db36-4815-bded-94ef49b539e9" sn="123456789" sbt="" dfw="Syr+Floorsensor+2.23" dk="120" dclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" aid="1" bus="1" sta="6" dst="3" ast="1" dcg="055927ca-8632-436c-957c-b7de05a1acbe" so="1" ondt="" mac="0c:73:eb:XX:XX:XX" wtd="0" tm="20.5" hmd="40" bat="40" />
+    <d dg="48cfaa63-d49f-4f5a-bd90-18a187356f1a" sn="987654321" sbt="" dfw="Safe-Tech+V4.08" dk="140" dclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" aid="1" bus="1" sta="2" dst="2" ast="1" dcg="5b88a11f-a0c0-470a-a365-d3d2062b41b1" so="1" ondt="" mac="0C:73:EB:XX:XX:XY" apn="Anwesend" apv="200" vlv="20" wh="17.37" />
   </dvs>
   <pdvs>
-    <pdvi dg="7805aa61-73b8-ef11-800c-be3af2b6059f" sdclg="7605aa61-73b8-ef11-800c-be3af2b6059f" sdsn="123456789" pdclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" pdsn="987654321" />
-    <pdvi dg="09ffcab9-bb6a-ee11-8007-be3af2b6059f" sdclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" sdsn="987654321" pdclg="7605aa61-73b8-ef11-800c-be3af2b6059f" pdsn="123456789" />
+    <pdvi dg="cbb4bffb-db36-4815-bded-94ef49b539e9" sdclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" sdsn="123456789" pdclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" pdsn="987654321" />
+    <pdvi dg="48cfaa63-d49f-4f5a-bd90-18a187356f1a" sdclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" sdsn="987654321" pdclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" pdsn="123456789" />
   </pdvs>
-  <cs v="19691" />
+  <cs v="19A68" />
 </sc>

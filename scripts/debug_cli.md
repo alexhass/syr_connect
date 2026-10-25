@@ -102,18 +102,34 @@ python scripts/debug_cli.py `
 
 #### Try a statistics method
 
-Sends one request to any statistics method (see "Statistics web services" in `docs/syrconnect-protocol.md`) with own request attributes. Without `unit` the cloud answers with an empty `<col />`.
+Sends one request to any statistics method (see "Statistics web services" in `docs/syrconnect-protocol.md`) with own request attributes. Without `unit` the cloud answers with an empty `<col />`, with an invalid unit (e.g. `2` instead of `%`) with `<msg v="An error has occurred." mtid="1" />`.
+
+SafeFloor temperature:
 
 ```powershell
 python scripts/debug_cli.py `
     --username <username> `
     --password <password> `
     --identity 123456789 `
-    --get-statistics GetLexPlusStatistics `
+    --get-statistics GetSafeFloorStatistics `
     --stat-t 1 `
-    --stat-unit l `
-    --stat-rtyp 1 `
-    --log-file statistics.log
+    --stat-unit "°C" `
+    --stat-rtyp 4 `
+    --log-file statistics_temperature.log
+```
+
+SafeFloor humidity:
+
+```powershell
+python scripts/debug_cli.py `
+    --username <username> `
+    --password <password> `
+    --identity 123456789 `
+    --get-statistics GetSafeFloorStatistics `
+    --stat-t 2 `
+    --stat-unit "%" `
+    --stat-rtyp 4 `
+    --log-file statistics_humidity.log
 ```
 
 #### With custom log file

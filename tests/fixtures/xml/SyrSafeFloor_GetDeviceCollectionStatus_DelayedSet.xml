@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <sc>
   <col>
-    <dcl dclg="7605aa61-73b8-ef11-800c-be3af2b6059f" sta="6" dst="3" ast="1" clb="1" nrdt="01.05.2026 13:55:02" nrs="0" />
+    <dcl dclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" sta="6" dst="3" ast="1" clb="1" nrdt="01.05.2026 13:55:02" nrs="0" />
   </col>
   <pdvs>
-    <pdvi dg="7805aa61-73b8-ef11-800c-be3af2b6059f" sdclg="7605aa61-73b8-ef11-800c-be3af2b6059f" sdsn="123456789" pdclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" pdsn="987654321" />
-    <pdvi dg="09ffcab9-bb6a-ee11-8007-be3af2b6059f" sdclg="07ffcab9-bb6a-ee11-8007-be3af2b6059f" sdsn="987654321" pdclg="7605aa61-73b8-ef11-800c-be3af2b6059f" pdsn="123456789" />
+    <pdvi dg="cbb4bffb-db36-4815-bded-94ef49b539e9" sdclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" sdsn="123456789" pdclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" pdsn="987654321" />
+    <pdvi dg="48cfaa63-d49f-4f5a-bd90-18a187356f1a" sdclg="5bf32259-1d05-43b9-8582-5130f4f2ac37" sdsn="987654321" pdclg="840fab82-3e71-4cfc-ab90-a0a1491ca881" pdsn="123456789" />
   </pdvs>
   <dvs>
-    <d dg="7805aa61-73b8-ef11-800c-be3af2b6059f" sbt="" sta="6" dst="3" ast="1" so="1">
+    <d dg="cbb4bffb-db36-4815-bded-94ef49b539e9" sbt="" sta="6" dst="3" ast="1" so="1">
       <ci f="2.23" b="-" m="0c:73:eb:XX:XX:XX" />
       <c n="getSRN" v="123456789" dt="01.05.2026 13:54:50" />
       <c n="getVER" v="Syr Floorsensor 2.23" />
@@ -46,5 +46,5 @@
       <c n="getWTD" v="0" />
     </d>
   </dvs>
-  <cs v="106EB" />
+  <cs v="1082C" />
 </sc>

@@ -8,6 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .config_flow import ConfigFlow
@@ -20,9 +21,16 @@ from .const import (
     CONF_HOST,
     DOMAIN,
 )
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import (
+    SyrConnectDataUpdateCoordinator,
+    SyrConnectStatisticsCoordinator,
+)
 from .exceptions import SyrConnectConnectionError, SyrConnectError
-from .helpers import cleanup_removed_devices, get_default_scan_interval_for_entry
+from .helpers import (
+    cleanup_removed_devices,
+    clear_device_statistics,
+    get_default_scan_interval_for_entry,
+)
 from .migrations import (
     v1_to_v2_update_kwargs,
     v2_to_v3_fix_flo_unit,
@@ -286,6 +294,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(async_options_update_listener))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # Measurement history of battery devices; only the cloud keeps it. It must not
+    # delay or fail the setup, so its first run is a background task.
+    if api_type == API_TYPE_XML:
+        statistics = SyrConnectStatisticsCoordinator(hass, entry, coordinator)
+        entry.async_create_background_task(
+            hass, statistics.async_refresh(), f"{DOMAIN} statistics"
+        )
     _LOGGER.info("SYR Connect integration setup completed")
 
     return True
@@ -307,6 +323,19 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.warning("Failed to unload SYR Connect integration")
 
     return unload_ok
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Delete the measurement history statistics of the devices of a removed entry."""
+    device_ids = {
+        identifier
+        for device_entry in dr.async_entries_for_config_entry(
+            dr.async_get(hass), entry.entry_id
+        )
+        for domain, identifier in device_entry.identifiers
+        if domain == DOMAIN
+    }
+    clear_device_statistics(hass, entry.entry_id, device_ids)
 
 
 async def async_options_update_listener(

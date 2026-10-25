@@ -24,6 +24,7 @@ The API client coordinates several helper components:
 
 import asyncio
 from collections.abc import Callable
+from datetime import datetime
 import logging
 from typing import Any
 
@@ -520,7 +521,7 @@ class SyrConnectXmlAPI:
 
     async def get_statistics(
         self, device_id: str, statistic: SyrConnectStatistic
-    ) -> dict[str, Any]:
+    ) -> list[tuple[datetime, float]]:
         """Fetch the measurement history of one series of a device.
 
         The cloud keeps measurements a device does not report in its status, for
@@ -532,7 +533,7 @@ class SyrConnectXmlAPI:
             statistic: Series to fetch (web service method and request attributes)
 
         Returns:
-            Flattened attributes of the response
+            (timestamp, value) of every measurement, sorted by timestamp (UTC)
 
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
@@ -561,7 +562,7 @@ class SyrConnectXmlAPI:
 
             # --- Parse Response ---
             stats_data = self.response_parser.parse_statistics_response(xml_response)
-            _LOGGER.debug("Statistics data parsed: %d attributes", len(stats_data))
+            _LOGGER.debug("Statistics parsed: %d measurement(s)", len(stats_data))
 
         except (aiohttp.ClientError, TimeoutError) as err:
             _LOGGER.error("Failed to get %s statistics: %s", statistic.key, err)

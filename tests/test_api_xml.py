@@ -4,6 +4,7 @@
 # ruff: noqa: SLF001
 
 import asyncio
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -486,7 +487,7 @@ async def test_get_statistics_posts_series_to_its_method(
 ) -> None:
     """The request goes to the method of the series and carries its attributes."""
     api_client.session_data = "valid_session"
-    mock_stats = {"min": "14.6", "max": "15.8"}
+    mock_stats = [(datetime(2026, 9, 26, 14, 45, 27, tzinfo=UTC), 52.0)]
 
     with (
         patch.object(

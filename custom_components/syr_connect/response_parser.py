@@ -1,6 +1,8 @@
 """Response parser and validator for SYR Connect API."""
 
+from datetime import UTC, datetime
 import logging
+import math
 import re
 from typing import Any
 from urllib.parse import unquote_plus
@@ -487,14 +489,21 @@ class ResponseParser:
         # Only treat as broken when minimal c-names are present.
         return False
 
-    def parse_statistics_response(self, xml_response: str) -> dict[str, Any]:
-        """Parse statistics response.
+    def parse_statistics_response(
+        self, xml_response: str
+    ) -> list[tuple[datetime, float]]:
+        """Parse the measurements (<sth dt v>) of a statistics response.
+
+        See "SafeFloor measurement history" in docs/syrconnect-protocol.md for the
+        format. The timestamps are UTC. Measurements without a valid timestamp or value
+        are skipped.
 
         Args:
             xml_response: XML response string
 
         Returns:
-            Dictionary of statistics data
+            (timestamp, value) of every measurement, sorted by timestamp; empty if the
+            response has no measurements or is an error message
         """
         parsed = self.parse_xml(xml_response)
         self._raise_if_session_expired(parsed)
@@ -502,14 +511,60 @@ class ResponseParser:
         # Guard: require top-level 'sc' element before any further access
         if "sc" not in parsed:
             _LOGGER.warning("No 'sc' element in statistics response")
-            return {}
+            return []
 
-        # Check for API-level error message returned inside <sc>
+        # Check for API-level error message returned inside <sc>, e.g. for an unknown dclg
         if self.validate_structure(parsed, ["sc", "msg"]):
             _LOGGER.warning("Statistics API returned message: %s", parsed["sc"]["msg"])
-            return {}
+            return []
 
-        return self._flatten_attributes(parsed["sc"])
+        measurements: list[tuple[datetime, float]] = []
+        for sth in self._find_elements(parsed["sc"], "sth"):
+            raw_dt = sth.get("@dt")
+            raw_value = sth.get("@v")
+            try:
+                timestamp = datetime.strptime(str(raw_dt), "%Y-%m-%d %H:%M:%S").replace(
+                    tzinfo=UTC
+                )
+                value = float(str(raw_value).replace(",", "."))
+            except ValueError:
+                value = math.nan
+            if not math.isfinite(value):
+                _LOGGER.debug(
+                    "Skipping measurement with invalid data: dt=%r v=%r",
+                    raw_dt,
+                    raw_value,
+                )
+                continue
+            measurements.append((timestamp, value))
+        return sorted(measurements)
+
+    @staticmethod
+    def _find_elements(data: Any, tag: str) -> list[dict[str, Any]]:
+        """Return every element with this tag below a parsed XML structure.
+
+        Args:
+            data: Parsed XML structure (see parse_xml)
+            tag: Tag of the elements to return
+
+        Returns:
+            The elements in document order
+        """
+        found: list[dict[str, Any]] = []
+        if isinstance(data, list):
+            for item in data:
+                found.extend(ResponseParser._find_elements(item, tag))
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                if key == tag:
+                    found.extend(
+                        item
+                        for item in (value if isinstance(value, list) else [value])
+                        if isinstance(item, dict)
+                    )
+                else:
+                    found.extend(ResponseParser._find_elements(value, tag))
+        return found
 
     @staticmethod
     def _flatten_attributes(data: dict | list, prefix: str = "") -> dict[str, Any]:

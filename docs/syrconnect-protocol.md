@@ -1280,12 +1280,17 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
 | Attribute | Values | Description |
 | --- | --- | --- |
 | t | 1, 2 | Measurement:<br>1 = temperature<br>2 = humidity |
-| unit | "°C", "%" | **Required.** Without `unit` the response is an empty `<col />` |
+| unit | "°C", "%" | **Required.** Without `unit` the response is an empty `<col />`; an invalid unit (e.g. "2") returns the error message below |
 | rtyp | 1–4 | Report type:<br>1 = week (6-hour buckets)<br>2 = month (per day)<br>3 = year (per week)<br>4 = raw measurements with timestamps |
-| lg, rg | "de", "DE" | Language and region |
-| sd, ed | | Ignored in requests. The response contains the window used: `sd` = now − 6 days, `ed` = end of today (both in server local time) |
+| lg | "de", "en" | Language of the app; both values work |
+| rg | "DE", "US" | Region of the app; both values work |
+| sd | "2026-10-19 15:57:19" | Start date of the window. Ignored in requests. The response contains the start used: now − 6 days in server local time (Europe/Berlin) |
+| ed | "2026-10-25 23:59:59" | End date of the window. Ignored in requests. The response contains the end used: end of today in server local time (Europe/Berlin) |
+| min | "45.0" | Response only: lowest value in the window |
+| max | "58.0" | Response only: highest value in the window |
+| avg | "53.0" | Response only: mean value in the window |
 
-- Response for `rtyp="4"` (raw measurements of the last 6 days, timestamps in UTC):
+- Response for `rtyp="4"` (raw measurements of the last 6 days, timestamps `dt` in UTC, not sorted):
 
   ```xml
   <sc>
@@ -1305,9 +1310,15 @@ SafeFloor sensors are battery powered. They measure temperature and humidity eve
   </sc>
   ```
 
-- An unknown `dclg` returns `<sc><msg v="An error has occurred." hl="Error" mtid="1" /></sc>`.
+| Attribute of `<sth>` | Example | Description |
+| --- | --- | --- |
+| dt | "2026-09-26 14:45:27" | Time of the measurement in UTC |
+| v | "14.6", "58" | Measured value in `unit`; temperature with one decimal, humidity as integer |
+
+- An unknown `dclg` or an invalid `unit` returns `<sc><msg v="An error has occurred." hl="Error" mtid="1" /></sc>`. It has the same `mtid="1"` as a rejected session token, so the integration logs it as an expired session.
 - Only the last 6 days are returned. With an upload interval (`getRCP`) above 6 days the older measurements of an upload can not be retrieved with `rtyp="4"`.
-- The integration fetches the raw measurements whenever `getSRN_dt` changes (new upload, plus one follow-up 75 minutes later), after a restart and at least once a day, and writes them into the hourly long-term statistics of the `getCEL` and `getHMD` sensors (step curve, only hours already compiled by the recorder; see README).
+- `dt` is UTC: a sensor measuring every hour (`getWMP` = 3600) returned an hourly series without duplicate or missing hour across the change from summer to winter time on 2026-10-25. `sd` and `ed` are local time, and the server compares them with `dt` without converting: the first measurement returned is the first one whose UTC time is after the local `sd`, so the window is 1–2 hours shorter than 6 days.
+- The integration fetches the raw measurements every 12 hours and at startup (`SyrConnectStatisticsCoordinator` in `coordinator.py`) and writes them as external statistics `syr_connect:<serial>_getcel_history` and `syr_connect:<serial>_gethmd_history`: one row per hour with measurements (mean, min, max). Every run overwrites the rows of the 6 days again. The sensor entities are not changed. The statistics are cleared when the device or the config entry is removed.
 
 ## Further information
 

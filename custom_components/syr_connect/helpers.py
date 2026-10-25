@@ -7,10 +7,12 @@ import logging
 import re
 from typing import Any
 
+from homeassistant.components.recorder import get_instance
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.util import slugify
 
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
@@ -25,7 +27,7 @@ from .const import (
     DOMAIN,
 )
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
-from .models import UNKNOWN_MODEL, SyrConnectModel, detect_model
+from .models import MODEL_SIGNATURES, UNKNOWN_MODEL, SyrConnectModel, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -285,6 +287,64 @@ def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
     return f"{device_id}_{key}"
 
 
+def build_statistic_id(device_id: str, key: str) -> str:
+    """Build the external statistic ID of the measurement history of a sensor.
+
+    External statistics need the form "<domain>:<object id>" with slugs. The ID has
+    no entry_id: a device reachable from several hubs shares one history.
+
+    Args:
+        device_id: Device ID (serial number).
+        key: Sensor key of the series (e.g. "getCEL").
+
+    Returns:
+        Statistic ID, e.g. "syr_connect:123456789_getcel_history".
+    """
+    return f"{DOMAIN}:{slugify(device_id)}_{key.lower()}_history"
+
+
+def clear_device_statistics(
+    hass: HomeAssistant, entry_id: str, device_ids: AbstractSet[str]
+) -> None:
+    """Delete the measurement history statistics of devices removed from an entry.
+
+    The statistic ID has no entry_id (see build_statistic_id), so a device that
+    another config entry of this integration still has keeps its history. The model
+    of a removed device is no longer known, so the IDs of every series key of every
+    device profile are cleared; IDs without statistics are ignored.
+
+    Args:
+        hass: Home Assistant instance.
+        entry_id: Config entry the devices were removed from.
+        device_ids: Device IDs (serial numbers) of the removed devices.
+    """
+    if not device_ids or "recorder" not in hass.config.components:
+        return
+    device_registry = dr.async_get(hass)
+    device_ids = set(device_ids) - {
+        identifier
+        for entry in hass.config_entries.async_entries(DOMAIN)
+        if entry.entry_id != entry_id
+        for device_entry in dr.async_entries_for_config_entry(
+            device_registry, entry.entry_id
+        )
+        for domain, identifier in device_entry.identifiers
+        if domain == DOMAIN
+    }
+    keys = {
+        statistic.key
+        for signature in MODEL_SIGNATURES
+        if signature.device_profile is not None
+        for statistic in signature.device_profile.statistics
+    }
+    statistic_ids = sorted(
+        build_statistic_id(device_id, key) for device_id in device_ids for key in keys
+    )
+    if statistic_ids:
+        _LOGGER.debug("Clearing statistics of removed devices: %s", statistic_ids)
+        get_instance(hass).async_clear_statistics(statistic_ids)
+
+
 def find_entity_id(
     registry: er.EntityRegistry,
     domain: str,
@@ -381,6 +441,7 @@ def cleanup_removed_devices(
             for d in (coordinator_data.get("devices", []) if coordinator_data else [])
             if d.get("id")
         }
+        removed_ids: set[str] = set()
         device_registry = dr.async_get(hass)
         for device_entry in dr.async_entries_for_config_entry(
             device_registry, entry_id
@@ -398,6 +459,8 @@ def cleanup_removed_devices(
                 device_registry.async_update_device(
                     device_entry.id, remove_config_entry_id=entry_id
                 )
+                removed_ids.add(device_id)
+        clear_device_statistics(hass, entry_id, removed_ids)
     except Exception:
         _LOGGER.exception("Failed to cleanup removed devices from registry")
 
