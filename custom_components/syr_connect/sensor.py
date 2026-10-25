@@ -2256,7 +2256,8 @@ def _muco_conditional_key(status: dict[str, Any], model: SyrConnectModel) -> str
     Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
     also report getCRT/getLOT/getOHW but deliberately do not expose them.
     """
-    crt = str(status.get("getCRT") or "").strip()
+    crt_value = status.get("getCRT")
+    crt = str(crt_value).strip() if crt_value is not None else ""
     if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
         key = "getLOT"
     elif crt == "0" and status.get("getOHW") not in (None, ""):

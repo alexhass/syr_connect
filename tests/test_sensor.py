@@ -7984,8 +7984,16 @@ async def test_async_setup_entry_connection_state_sensor_per_device(
     assert len(connection_sensors) == 2
 
 
+@pytest.mark.parametrize(
+    "crt_value",
+    [
+        pytest.param(0, id="json-integer"),
+        pytest.param("0", id="xml-string"),
+    ],
+)
 async def test_muco_conditional_sensor_creates_ohw_for_hwe_cartridge(
     hass: HomeAssistant,
+    crt_value: int | str,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
@@ -7998,7 +8006,7 @@ async def test_muco_conditional_sensor_creates_ohw_for_hwe_cartridge(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "status": {"getCRT": "0", "getOHW": "5"},
+                "status": {"getCRT": crt_value, "getOHW": "5"},
             }
         ]
     }

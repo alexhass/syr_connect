@@ -577,7 +577,8 @@ def _async_setup_muco_conditional_selects(
     live_keys: dict[str, set[str]] = {}
 
     def _wanted_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
-        crt = str(status.get("getCRT") or "").strip()
+        crt_value = status.get("getCRT")
+        crt = str(crt_value).strip() if crt_value is not None else ""
         if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
             key = "getLOT"
         elif crt == "0" and status.get("getOHW") not in (None, ""):
