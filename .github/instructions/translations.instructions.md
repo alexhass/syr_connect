@@ -19,6 +19,7 @@ applyTo: "custom_components/syr_connect/{const.py,sensor.py,select.py,switch.py,
 
 ## Wording
 
+- Strings are software texts: they are written impersonally, in the passive, and never address the user (no "you", "Sie", "du", "vous", "usted", "tu"). `Model of the device`, `Modell des Geräts`, `The device model must be checked`, `Gerätemodell und Hostname müssen geprüft werden`; not `Check your device model`, `Prüfen Sie Ihr Gerätemodell`.
 - Every language uses one term per concept across all strings (backwash, microleakage, conductivity, leak protection). Check the existing strings of the language before adding a new one.
 - A qualifier after a name goes in parentheses: `Buzzer (profile 1)`, `Aborted (pressure drop)`, `Leak protection level (present)`. No dash constructions (`Leakage protection - Present level`) and no bare appended words (`Regenerationszyklen Anzahl`).
 - A container, tank or bottle is named with the preposition of the language instead of parentheses: `Salt volume in container 1`, `Salzmenge in Behälter 1`, `Quantité de sel dans le réservoir 1`, `Ilość soli w pojemniku 1`.

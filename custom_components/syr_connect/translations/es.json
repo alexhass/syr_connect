@@ -21,6 +21,10 @@
           "host": "Nombre de host o dirección IP",
           "model": "Modelo del dispositivo"
         },
+        "data_description": {
+          "host": "Aquí se introduce la dirección IP o el nombre de host del dispositivo en la red local, sin puerto.",
+          "model": "Aquí se selecciona el modelo del dispositivo."
+        },
         "description": "Introduzca el modelo y el nombre de host/IP para acceso local",
         "title": "SYR Connect (Local)"
       },
@@ -30,6 +34,11 @@
           "service": "Servicio",
           "username": "Nombre de usuario"
         },
+        "data_description": {
+          "password": "Aquí se introduce la contraseña con la que se inicia sesión en la nube.",
+          "service": "Aquí se selecciona la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
+          "username": "Aquí se introduce el nombre de usuario con el que se inicia sesión en la nube."
+        },
         "description": "Introduzca las credenciales de su aplicación móvil para acceso en la nube",
         "title": "SYR Connect (Cloud)"
       },
@@ -37,6 +46,10 @@
         "data": {
           "password": "Contraseña",
           "username": "Nombre de usuario"
+        },
+        "data_description": {
+          "password": "Aquí se introduce la contraseña con la que se inicia sesión en la nube.",
+          "username": "Aquí se introduce el nombre de usuario con el que se inicia sesión en la nube."
         },
         "description": "Las credenciales de {username} ya no son válidas. Introduzca nuevas credenciales.",
         "title": "Reautenticar SYR Connect"
@@ -46,7 +59,11 @@
           "host": "Nombre de host o dirección IP",
           "model": "Modelo del dispositivo"
         },
-        "description": "El dispositivo en {host} rechazó la conexión. Compruebe el modelo del dispositivo y el nombre de host o la dirección IP.",
+        "data_description": {
+          "host": "Aquí se introduce la dirección IP o el nombre de host del dispositivo en la red local, sin puerto.",
+          "model": "Aquí se selecciona el modelo del dispositivo. De él depende la dirección de su API local."
+        },
+        "description": "El dispositivo en {host} rechazó la conexión. Deben comprobarse el modelo del dispositivo y el nombre de host o la dirección IP.",
         "title": "Reconectar SYR Connect (Local)"
       },
       "reconfigure": {
@@ -56,6 +73,13 @@
           "password": "Contraseña",
           "service": "Servicio",
           "username": "Nombre de usuario"
+        },
+        "data_description": {
+          "host": "Aquí se introduce la dirección IP o el nombre de host del dispositivo en la red local, sin puerto.",
+          "model": "Aquí se selecciona el modelo del dispositivo.",
+          "password": "Aquí se introduce la contraseña con la que se inicia sesión en la nube.",
+          "service": "Aquí se selecciona la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
+          "username": "Aquí se introduce la cuenta con la que se inicia sesión en la nube."
         },
         "description": "Actualice su configuración.",
         "title": "Reconfigurar SYR Connect"
@@ -1638,6 +1662,9 @@
       "init": {
         "data": {
           "scan_interval": "Intervalo de actualización"
+        },
+        "data_description": {
+          "scan_interval": "Indica cuántos segundos pasan entre dos actualizaciones. Para la nube son posibles al menos 60 segundos y para los dispositivos locales al menos 10 segundos, en ambos casos como máximo 600 segundos."
         },
         "description": "Define el intervalo de tiempo entre llamadas a la API.",
         "title": "Opciones de SYR Connect"

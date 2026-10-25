@@ -18,15 +18,14 @@ rules:
   common-modules:
     status: done
     comment: |
-      - encryption.py for AES encryption
-      - payload_builder.py for XML payloads
-      - response_parser.py for XML parsing
-      - http_client.py for HTTP requests
-      - helpers.py for DeviceInfo and Entity ID
+      - coordinator.py for the data update coordinators
+      - entity.py for the base entity (SyrConnectEntity)
+      - api_xml.py and api_json.py for the cloud and the local API
+      - helpers.py for shared helpers (DeviceInfo, unique_id, registry cleanup)
   
   config-flow-test-coverage:
     status: done
-    comment: Comprehensive tests in tests/test_config_flow.py (25 test cases covering user flow, options, reauth, reconfigure, error handling)
+    comment: tests/test_config_flow.py (92 tests) covers the user steps, options, reauth (cloud and local), reconfigure and the error handling
   
   config-flow:
     status: done
@@ -34,11 +33,12 @@ rules:
       - Config Flow with UI setup implemented
       - Options Flow for scan interval available
       - Translations provided via translations/*.json (no strings.json required)
+      - Every form field has a data_description
       - ConfigEntry.data for credentials, ConfigEntry.options for scan interval
   
   dependency-transparency:
     status: done
-    comment: Dependencies declared in manifest.json (pycryptodomex); no hidden runtime deps
+    comment: Dependencies declared in manifest.json (pycryptodomex, defusedxml); no hidden runtime deps
   
   docs-actions:
     status: exempt
@@ -82,12 +82,12 @@ rules:
   
   unique-config-entry:
     status: done
-    comment: _abort_if_unique_id_configured() prevents duplicates
+    comment: _abort_if_unique_id_configured() prevents duplicates; unique_id "xml_<cf_bundle_identifier>_<username>" or "json_<host>"
 
   # SILVER TIER
   action-exceptions:
     status: done
-    comment: Button.async_press() raises HomeAssistantError on failures
+    comment: Buttons, selects, switches, valves and the update entity raise HomeAssistantError or ServiceValidationError with translations on failures
   
   config-entry-unloading:
     status: done
@@ -119,36 +119,11 @@ rules:
   
   reauthentication-flow:
     status: done
-    comment: Reauth flow implemented, ConfigEntryAuthFailed on login failures
+    comment: ConfigEntryAuthFailed starts the reauth flow; cloud entries ask for new credentials (reauth_confirm), local entries for model and host (reauth_confirm_local)
   
   test-coverage:
     status: done
-    comment: |
-      Comprehensive test suite with 1,300+ test cases:
-      - tests/test_api_json.py (83 tests)
-      - tests/test_api_xml.py (30 tests)
-      - tests/test_binary_sensor.py (38 tests)
-      - tests/test_button.py (38 tests)
-      - tests/test_checksum.py (10 tests)
-      - tests/test_config_flow.py (77 tests)
-      - tests/test_coordinator.py (45 tests)
-      - tests/test_diagnostics.py (111 tests)
-      - tests/test_encryption.py (8 tests)
-      - tests/test_exceptions.py (6 tests)
-      - tests/test_helpers.py (116 tests)
-      - tests/test_http_client.py (16 tests)
-      - tests/test_init.py (22 tests)
-      - tests/test_migrations.py (12 tests)
-      - tests/test_models.py (68 tests)
-      - tests/test_payload_builder.py (31 tests)
-      - tests/test_platforms.py (3 tests)
-      - tests/test_repairs.py (3 tests)
-      - tests/test_response_parser.py (81 tests)
-      - tests/test_select.py (133 tests)
-      - tests/test_sensor.py (376 tests)
-      - tests/test_switch.py (22 tests)
-      - tests/test_valve.py (70 tests)
-      Code coverage tracked via pytest-cov and reported to codecov
+    comment: 2393 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
 
   # GOLD TIER
   devices:
@@ -161,11 +136,11 @@ rules:
   
   discovery:
     status: exempt
-    comment: Cloud-based integration - no local discovery possible
+    comment: Cloud devices come from the account; no discovery mechanism (mDNS, SSDP, DHCP) is known for the local API
   
   discovery-update-info:
     status: exempt
-    comment: Cloud-based integration - no network info updates needed
+    comment: No discovery, so there is no discovery information to update; a new host of a local device is set with the reconfigure flow
   
   docs-data-update:
     status: done
@@ -173,7 +148,7 @@ rules:
   
   docs-examples:
     status: done
-    comment: README.md includes 5+ automation examples (alerts, reports, monitoring)
+    comment: README.md section "Automation Examples" with 6 automations (alerts, reports, monitoring)
   
   docs-known-limitations:
     status: done
@@ -209,15 +184,15 @@ rules:
   
   entity-disabled-by-default:
     status: done
-    comment: 63 sensors disabled by default (14 basic sensors: cycle metrics, regeneration settings, advanced config; 49 leak protection profile sensors)
+    comment: 83 of 223 sensor descriptions and 4 selects are disabled by default (technical values, leak protection profiles)
   
   entity-translations:
     status: done
-    comment: Translations available in 8 languages: de.json, en.json, es.json, fr.json, it.json, nl.json, pl.json, pt.json
+    comment: Translations available in 8 languages (de, en, es, fr, it, nl, pl, pt) in translations/*.json
   
   exception-translations:
     status: done
-    comment: Custom exception classes (CannotConnect, InvalidAuth) with translatable error messages in translations/*.json
+    comment: Every exception shown to the user (HomeAssistantError, ServiceValidationError, ConfigEntryNotReady, ConfigEntryAuthFailed, UpdateFailed) uses translation_domain and translation_key; tests/test_translations.py checks keys and placeholders
   
   icon-translations:
     status: done
@@ -228,12 +203,12 @@ rules:
     comment: Reconfigure flow implemented with async_step_reconfigure
   
   repair-issues:
-    status: done
-    comment: Repair issues created for offline devices with translations
+    status: exempt
+    comment: No repair issues by design (temporary errors are only logged, see AGENTS.md); the device_offline issues of older versions are deleted
   
   stale-devices:
     status: done
-    comment: Devices removed automatically when no longer in API response
+    comment: Devices removed from the account are detached at the next setup of the entry if the device list was complete; until then their entities are unavailable
   
   # PLATINUM TIER
   async-dependency:
@@ -249,9 +224,9 @@ rules:
     comment: mypy runs with the strict settings of Home Assistant core (mypy.ini); py.typed marker file present for PEP 561 compliance
 
 # Summary
-# Bronze: 19/19 completed (100%) ✅ (2 exempt rules)
-# Silver: 10/10 completed (100%) ✅ 
-# Gold: 20/20 completed (100%) ✅🥇 (2 exempt rules)
+# Bronze: 18/18 completed (100%) ✅ (3 exempt rules)
+# Silver: 10/10 completed (100%) ✅
+# Gold: 21/21 completed (100%) ✅🥇 (3 exempt rules)
 # Platinum: 3/3 completed (100%) ✅🏆
 # Total Platinum Tier Rules: 3 (3 done, 0 exempt, 0 pending)
 # Rating: Custom Integration - Platinum Tier achieved! 🏆✨🎉

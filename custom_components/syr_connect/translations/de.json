@@ -21,6 +21,10 @@
           "host": "Hostname oder IP-Adresse",
           "model": "Gerätemodell"
         },
+        "data_description": {
+          "host": "Hier wird die IP-Adresse oder der Hostname des Geräts im lokalen Netzwerk eingetragen, ohne Port.",
+          "model": "Hier wird das Modell des Gerätes ausgewählt."
+        },
         "description": "Geben Sie Modell und Hostname/IP für den lokalen Zugriff ein",
         "title": "SYR Connect (Lokal)"
       },
@@ -30,6 +34,11 @@
           "service": "Dienst",
           "username": "Benutzername"
         },
+        "data_description": {
+          "password": "Hier wird das Passwort eingetragen, mit dem die Anmeldung an der Cloud erfolgt.",
+          "service": "Hier wird die Cloud gewählt, mit der die Geräte genutzt werden. Jede Cloud hat eigene Konten.",
+          "username": "Hier wird der Benutzername eingetragen, mit dem die Anmeldung an der Cloud erfolgt."
+        },
         "description": "Geben Sie Ihre App-Anmeldedaten für den Cloud-Zugriff ein",
         "title": "SYR Connect (Cloud)"
       },
@@ -37,6 +46,10 @@
         "data": {
           "password": "Passwort",
           "username": "Benutzername"
+        },
+        "data_description": {
+          "password": "Hier wird das Passwort eingetragen, mit dem die Anmeldung an der Cloud erfolgt.",
+          "username": "Hier wird der Benutzername eingetragen, mit dem die Anmeldung an der Cloud erfolgt."
         },
         "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Bitte geben Sie neue Anmeldedaten ein.",
         "title": "SYR Connect erneut authentifizieren"
@@ -46,7 +59,11 @@
           "host": "Hostname oder IP-Adresse",
           "model": "Gerätemodell"
         },
-        "description": "Das Gerät unter {host} hat die Verbindung abgelehnt. Prüfen Sie Gerätemodell und Hostname oder IP-Adresse.",
+        "data_description": {
+          "host": "Hier wird die IP-Adresse oder der Hostname des Geräts im lokalen Netzwerk eingetragen, ohne Port.",
+          "model": "Hier wird das Modell des Geräts gewählt. Davon hängt die Adresse seiner lokalen API ab."
+        },
+        "description": "Das Gerät unter {host} hat die Verbindung abgelehnt. Gerätemodell und Hostname oder IP-Adresse müssen geprüft werden.",
         "title": "SYR Connect (Lokal) neu verbinden"
       },
       "reconfigure": {
@@ -56,6 +73,13 @@
           "password": "Passwort",
           "service": "Dienst",
           "username": "Benutzername"
+        },
+        "data_description": {
+          "host": "Hier wird die IP-Adresse oder der Hostname des Geräts im lokalen Netzwerk eingetragen, ohne Port.",
+          "model": "Hier wird das Modell des Gerätes ausgewählt.",
+          "password": "Hier wird das Passwort eingetragen, mit dem die Anmeldung an der Cloud erfolgt.",
+          "service": "Hier wird die Cloud gewählt, mit der die Geräte genutzt werden. Jede Cloud hat eigene Konten.",
+          "username": "Hier wird das Konto eingetragen, mit dem die Anmeldung an der Cloud erfolgt."
         },
         "description": "Aktualisieren Sie Ihre Einstellungen.",
         "title": "SYR Connect neu konfigurieren"
@@ -1638,6 +1662,9 @@
       "init": {
         "data": {
           "scan_interval": "Aktualisierungsintervall"
+        },
+        "data_description": {
+          "scan_interval": "Legt fest, wie viele Sekunden zwischen zwei Aktualisierungen liegen. Für die Cloud sind mindestens 60 Sekunden möglich, für lokale Geräte mindestens 10 Sekunden, in beiden Fällen höchstens 600 Sekunden."
         },
         "description": "Definiert den Zeitabstand zwischen API-Aufrufen.",
         "title": "SYR-Connect-Optionen"

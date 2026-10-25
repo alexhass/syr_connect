@@ -21,6 +21,10 @@
           "host": "Hostnaam of IP-adres",
           "model": "Apparaatmodel"
         },
+        "data_description": {
+          "host": "Hier wordt het IP-adres of de hostnaam van het apparaat in het lokale netwerk ingevoerd, zonder poort.",
+          "model": "Hier wordt het model van het apparaat gekozen."
+        },
         "description": "Voer het model en de hostnaam/het IP-adres in voor lokale toegang",
         "title": "SYR Connect (Lokaal)"
       },
@@ -30,6 +34,11 @@
           "service": "Service",
           "username": "Gebruikersnaam"
         },
+        "data_description": {
+          "password": "Hier wordt het wachtwoord ingevoerd waarmee bij de cloud wordt aangemeld.",
+          "service": "Hier wordt de cloud gekozen waarmee de apparaten worden gebruikt. Elke cloud heeft eigen accounts.",
+          "username": "Hier wordt de gebruikersnaam ingevoerd waarmee bij de cloud wordt aangemeld."
+        },
         "description": "Voer uw app-aanmeldingsgegevens in voor cloudtoegang",
         "title": "SYR Connect (Cloud)"
       },
@@ -37,6 +46,10 @@
         "data": {
           "password": "Wachtwoord",
           "username": "Gebruikersnaam"
+        },
+        "data_description": {
+          "password": "Hier wordt het wachtwoord ingevoerd waarmee bij de cloud wordt aangemeld.",
+          "username": "Hier wordt de gebruikersnaam ingevoerd waarmee bij de cloud wordt aangemeld."
         },
         "description": "De aanmeldingsgegevens voor {username} zijn niet meer geldig. Voer nieuwe aanmeldingsgegevens in.",
         "title": "SYR Connect opnieuw verifiëren"
@@ -46,7 +59,11 @@
           "host": "Hostnaam of IP-adres",
           "model": "Apparaatmodel"
         },
-        "description": "Het apparaat op {host} heeft de verbinding geweigerd. Controleer het apparaatmodel en de hostnaam of het IP-adres.",
+        "data_description": {
+          "host": "Hier wordt het IP-adres of de hostnaam van het apparaat in het lokale netwerk ingevoerd, zonder poort.",
+          "model": "Hier wordt het model van het apparaat gekozen. Daarvan hangt het adres van de lokale API af."
+        },
+        "description": "Het apparaat op {host} heeft de verbinding geweigerd. Het apparaatmodel en de hostnaam of het IP-adres moeten worden gecontroleerd.",
         "title": "SYR Connect (Lokaal) opnieuw verbinden"
       },
       "reconfigure": {
@@ -56,6 +73,13 @@
           "password": "Wachtwoord",
           "service": "Service",
           "username": "Gebruikersnaam"
+        },
+        "data_description": {
+          "host": "Hier wordt het IP-adres of de hostnaam van het apparaat in het lokale netwerk ingevoerd, zonder poort.",
+          "model": "Hier wordt het model van het apparaat gekozen.",
+          "password": "Hier wordt het wachtwoord ingevoerd waarmee bij de cloud wordt aangemeld.",
+          "service": "Hier wordt de cloud gekozen waarmee de apparaten worden gebruikt. Elke cloud heeft eigen accounts.",
+          "username": "Hier wordt het account ingevoerd waarmee bij de cloud wordt aangemeld."
         },
         "description": "Werk uw instellingen bij.",
         "title": "SYR Connect opnieuw configureren"
@@ -1638,6 +1662,9 @@
       "init": {
         "data": {
           "scan_interval": "Update-interval"
+        },
+        "data_description": {
+          "scan_interval": "Geeft aan hoeveel seconden er tussen twee updates zitten. Voor de cloud zijn minimaal 60 seconden mogelijk en voor lokale apparaten minimaal 10 seconden, in beide gevallen maximaal 600 seconden."
         },
         "description": "Bepaalt het tijdsinterval tussen API-aanroepen.",
         "title": "SYR Connect-opties"

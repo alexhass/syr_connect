@@ -21,6 +21,10 @@
           "host": "Nazwa hosta lub adres IP",
           "model": "Model urządzenia"
         },
+        "data_description": {
+          "host": "Tutaj wpisuje się adres IP lub nazwę hosta urządzenia w sieci lokalnej, bez portu.",
+          "model": "Tutaj wybiera się model urządzenia."
+        },
         "description": "Podaj model i nazwę hosta/IP do dostępu lokalnego",
         "title": "SYR Connect (lokalnie)"
       },
@@ -30,6 +34,11 @@
           "service": "Usługa",
           "username": "Nazwa użytkownika"
         },
+        "data_description": {
+          "password": "Tutaj wpisuje się hasło używane do logowania w chmurze.",
+          "service": "Tutaj wybiera się chmurę, w której używane są urządzenia. Każda chmura ma własne konta.",
+          "username": "Tutaj wpisuje się nazwę użytkownika używaną do logowania w chmurze."
+        },
         "description": "Podaj dane logowania do aplikacji mobilnej, aby uzyskać dostęp przez chmurę",
         "title": "SYR Connect (Cloud)"
       },
@@ -37,6 +46,10 @@
         "data": {
           "password": "Hasło",
           "username": "Nazwa użytkownika"
+        },
+        "data_description": {
+          "password": "Tutaj wpisuje się hasło używane do logowania w chmurze.",
+          "username": "Tutaj wpisuje się nazwę użytkownika używaną do logowania w chmurze."
         },
         "description": "Dane logowania dla {username} są już nieważne. Podaj nowe dane logowania.",
         "title": "Ponowne uwierzytelnienie SYR Connect"
@@ -46,7 +59,11 @@
           "host": "Nazwa hosta lub adres IP",
           "model": "Model urządzenia"
         },
-        "description": "Urządzenie pod adresem {host} odrzuciło połączenie. Sprawdź model urządzenia oraz nazwę hosta lub adres IP.",
+        "data_description": {
+          "host": "Tutaj wpisuje się adres IP lub nazwę hosta urządzenia w sieci lokalnej, bez portu.",
+          "model": "Tutaj wybiera się model urządzenia. Od niego zależy adres lokalnego API."
+        },
+        "description": "Urządzenie pod adresem {host} odrzuciło połączenie. Należy sprawdzić model urządzenia oraz nazwę hosta lub adres IP.",
         "title": "Ponowne połączenie SYR Connect (lokalnie)"
       },
       "reconfigure": {
@@ -56,6 +73,13 @@
           "password": "Hasło",
           "service": "Usługa",
           "username": "Nazwa użytkownika"
+        },
+        "data_description": {
+          "host": "Tutaj wpisuje się adres IP lub nazwę hosta urządzenia w sieci lokalnej, bez portu.",
+          "model": "Tutaj wybiera się model urządzenia.",
+          "password": "Tutaj wpisuje się hasło używane do logowania w chmurze.",
+          "service": "Tutaj wybiera się chmurę, w której używane są urządzenia. Każda chmura ma własne konta.",
+          "username": "Tutaj wpisuje się konto używane do logowania w chmurze."
         },
         "description": "Zaktualizuj ustawienia.",
         "title": "Rekonfiguruj SYR Connect"
@@ -1638,6 +1662,9 @@
       "init": {
         "data": {
           "scan_interval": "Interwał aktualizacji"
+        },
+        "data_description": {
+          "scan_interval": "Określa, ile sekund mija między dwiema aktualizacjami. Dla chmury możliwe jest co najmniej 60 sekund, a dla urządzeń lokalnych co najmniej 10 sekund, w obu przypadkach najwyżej 600 sekund."
         },
         "description": "Określa czas między wywołaniami API.",
         "title": "Opcje SYR Connect"
