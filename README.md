@@ -343,7 +343,26 @@ If a device becomes unavailable (e.g., offline or communication error), its enti
 
 ### SafeFloor Measurement History
 
-A SafeFloor measures temperature and humidity regularly but sends its measurements to the cloud only every few days, so its sensors show a flat line followed by a jump. The integration fetches the single measurements from the cloud every 12 hours and stores them as statistics named after the sensors (e.g. "Utility Room Temperature"). To see the real curve, add a **Statistics graph** card and select these statistics.
+A SafeFloor measures temperature and humidity regularly but sends its measurements to the cloud only every few days, so its sensors show a flat line followed by a jump. The integration fetches the single measurements from the cloud every 12 hours and stores them as statistics named after the sensors (e.g. "Utility Room Temperature"). To see the real curve, add a card to a dashboard:
+
+1. Open the dashboard and select **Edit dashboard** at the top right.
+2. Select **Add card**, type `Statistics` into **Search cards** and pick **Statistics graph**.
+3. Select **Show code editor**, replace the text with the snippet below and select **Save**.
+4. Select **Done**.
+
+Replace `123456789` with the serial number of your SafeFloor. For the humidity, add a second card with `_gethmd_history` instead of `_getcel_history`.
+
+```yaml
+type: statistics-graph
+title: Temperature
+chart_type: line
+period: hour
+days_to_show: 14
+stat_types:
+  - mean
+entities:
+  - syr_connect:123456789_getcel_history
+```
 
 The cloud keeps the measurements of the last 6 days only. Keep the synchronization interval of the sensor at 6 days or less, otherwise measurements are lost. The statistics are deleted together with the device.
 

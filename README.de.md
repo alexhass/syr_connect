@@ -343,7 +343,26 @@ Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten b
 
 ### SafeFloor-Messverlauf
 
-Ein SafeFloor misst Temperatur und Luftfeuchtigkeit regelmäßig, sendet seine Messungen aber nur alle paar Tage an die Cloud. Seine Sensoren zeigen deshalb eine flache Linie und dann einen Sprung. Die Integration holt die einzelnen Messungen alle 12 Stunden aus der Cloud und speichert sie als Statistiken, die wie die Sensoren heißen (z. B. „Hauswirtschaftsraum Temperatur“). Für die echte Kurve eine Karte **Statistikdiagramm** anlegen und diese Statistiken auswählen.
+Ein SafeFloor misst Temperatur und Luftfeuchtigkeit regelmäßig, sendet seine Messungen aber nur alle paar Tage an die Cloud. Seine Sensoren zeigen deshalb eine flache Linie und dann einen Sprung. Die Integration holt die einzelnen Messungen alle 12 Stunden aus der Cloud und speichert sie als Statistiken, die wie die Sensoren heißen (z. B. „Hauswirtschaftsraum Temperatur“). Für die echte Kurve eine Karte in einem Dashboard anlegen:
+
+1. Das Dashboard öffnen und oben rechts **Dashboard bearbeiten** wählen.
+2. **Karte hinzufügen** wählen, in **Karten durchsuchen** `Statistik` eintippen und **Statistikdiagramm** wählen.
+3. **Code-Editor anzeigen** wählen, den Text durch den Ausschnitt unten ersetzen und **Speichern** wählen.
+4. **Fertig** wählen.
+
+`123456789` durch die Seriennummer des SafeFloor ersetzen. Für die Luftfeuchtigkeit eine zweite Karte mit `_gethmd_history` statt `_getcel_history` anlegen.
+
+```yaml
+type: statistics-graph
+title: Temperatur
+chart_type: line
+period: hour
+days_to_show: 14
+stat_types:
+  - mean
+entities:
+  - syr_connect:123456789_getcel_history
+```
 
 Die Cloud hält nur die Messungen der letzten 6 Tage vor. Das Synchronisationsintervall des Sensors sollte deshalb höchstens 6 Tage betragen, sonst gehen Messungen verloren. Die Statistiken werden zusammen mit dem Gerät gelöscht.
 
