@@ -28,6 +28,7 @@ from .models import detect_model
 
 # Renamed local JSON API models (CONF_MODEL) -> their new name
 _SYR_CONNECT_MIGRATIONS_LOCAL_MODEL_RENAMES = {
+    "neosoft": "neosoft5000",
     "optimat22duo": "optimat2duo",
 }
 
@@ -196,7 +197,8 @@ def v7_to_v8_rename_local_model(entry: ConfigEntry) -> dict | None:
     """Compute update kwargs for migrating v7 -> v8.
 
     Local JSON API entries store the model chosen at setup (CONF_MODEL). The
-    Optima T2.3 model was renamed, so these entries could no longer be loaded.
+    Optima T2.3 model was renamed, and the generic NeoSoft model (dk=1200) turned
+    out to be the NeoSoft 5000, so these entries could no longer be loaded.
     """
     if entry.data.get(CONF_API_TYPE) != API_TYPE_JSON:
         return None

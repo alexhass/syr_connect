@@ -2,14 +2,17 @@
 
 from dataclasses import replace
 import json
-import logging
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from custom_components.syr_connect.devices import muco_triolock
-from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
+from custom_components.syr_connect.models import (
+    MODEL_SIGNATURES,
+    UNKNOWN_MODEL,
+    detect_model,
+)
 from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
@@ -112,18 +115,6 @@ def test_detect_model_none_input():
     assert result.display_name == "Unknown model"
     assert result.manufacturer == "Unknown"
     assert result.base_path is None
-
-
-def test_neosoft_vkeys_version_mismatch_returns_unknown():
-    """If v_keys match but version constraints fail, signature is skipped and result is unknown."""
-    flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
-    assert detect_model(flat).name == "unknown"
-
-
-def test_insufficient_v_keys_and_no_other_match():
-    """If a signature requires more v_keys than present and nothing else matches, return unknown."""
-    flat = {"getRE1": "1", "getVER": "NOTNSS"}
-    assert detect_model(flat).name == "unknown"
 
 
 def test_attrs_equals_mismatch_skips_signature():
@@ -255,9 +246,9 @@ def test_signature_priority_first_match_wins():
     assert result.name == "lexplus10s"
 
 
-def test_neosoft5000_vkeys_match_with_version():
-    """NeoSoft 5000 requires 2 v_keys and NSS version prefix."""
-    flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"}
+def test_neosoft5000_serial_prefix_detection():
+    """The NeoSoft 5000 is detected by its serial number prefix (dkv=200)."""
+    flat = {"getSRN": "200AAA12345", "getVER": "NSS.V.2.36"}
     result = detect_model(flat)
     assert result.name == "neosoft5000"
     assert result.display_name == "NeoSoft 5000 Connect"
@@ -314,7 +305,7 @@ def test_lexplus10sl_with_exact_cna():
 
 def test_neosoft_base_path():
     """NeoSoft models should return 'neosoft' as base_path."""
-    flat = {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"}
+    flat = {"getSRN": "200AAA12345"}
     result = detect_model(flat)
     assert result.base_path == "/neosoft"
 
@@ -557,33 +548,6 @@ def test_attrs_match_pass_but_version_fail():
         assert result.name == "testmodel"
 
 
-def test_attrs_match_with_v_keys():
-    """Attrs_match combined with v_keys should work together."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix="TEST",
-            attrs_equals={"getATTR": "value"},
-            v_keys=frozenset({"getKEY1", "getKEY2"}),
-            v_keys_required=2,
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # All conditions satisfied: attrs, version, and v_keys
-        flat = {
-            "getATTR": "value",
-            "getVER": "TEST-1.0",
-            "getKEY1": "1",
-            "getKEY2": "2",
-        }
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
 def test_attrs_match_bool_conversion():
     """Test that boolean values are correctly converted to strings."""
     test_sig = [
@@ -676,24 +640,6 @@ def test_ver_contains_signature_matches_and_skips():
         assert detect_model({"getVER": "nope"}).name == "unknown"
 
 
-def test_v_keys_insufficient_logs_debug(caplog):
-    """When v_keys match count is insufficient, a debug log is emitted."""
-    caplog.set_level(logging.DEBUG)
-    flat = {"getRE1": "1", "getVER": "NOTNSS"}
-    result = detect_model(flat)
-    assert result.name == "unknown"
-    assert "v_keys matched" in caplog.text
-
-
-def test_v_keys_version_constraints_not_satisfied_logs_debug(caplog):
-    """When v_keys match but version constraints fail, a debug log is emitted."""
-    caplog.set_level(logging.DEBUG)
-    flat = {"getRE1": "1", "getRE2": "2", "getVER": "XXX"}
-    result = detect_model(flat)
-    assert result.name == "unknown"
-    assert "version constraints not satisfied" in caplog.text
-
-
 # ---------------------------------------------------------------------------
 # Manufacturer field tests
 # ---------------------------------------------------------------------------
@@ -732,12 +678,8 @@ def test_manufacturer_syr_via_ver_prefix():
     for ver, expected_name in [
         ("Safe-Tech V4.1", "safetechv4"),
         ("Safe-T+ V2.00e", "safetplus"),
-        ("NSS.V.2.36", "neosoft5000"),
     ]:
         flat = {"getVER": ver}
-        if expected_name == "neosoft5000":
-            flat["getRE1"] = "1"
-            flat["getRE2"] = "2"
         result = detect_model(flat)
         assert result.manufacturer == "SYR", (
             f"Expected SYR for VER {ver!r}, got {result.manufacturer}"
@@ -779,7 +721,6 @@ def test_manufacturer_field_present_in_all_return_paths():
         {"getCNA": "LEXplus10"},  # cna_equals path
         {"getSRN": "113AAA00001"},  # srn_prefix path
         {"getVER": "Safe-T+ V2.00e"},  # ver_prefix path
-        {"getRE1": "1", "getRE2": "2", "getVER": "NSS.V.2.36"},  # v_keys path
         {},  # unknown fallback
     ]
     for flat in test_cases:
@@ -816,6 +757,17 @@ def test_manufacturer_via_xml_fixtures():
         assert result.manufacturer == expected_manufacturer, (
             f"{filename}: expected manufacturer {expected_manufacturer!r}, got {result.manufacturer!r}"
         )
+
+
+def test_neosoft_detection_via_json_fixtures():
+    """The NeoSoft 2500 and 5000 JSON fixtures are told apart by their serial number."""
+    for filename, expected_name in (
+        ("SyrNeoSoft2500_get_all.json", "neosoft2500"),
+        ("SyrNeoSoft5000_get_all.json", "neosoft5000"),
+    ):
+        fixture_path = Path(__file__).parent / "fixtures/json" / filename
+        flat = json.loads(fixture_path.read_text(encoding="utf-8"))
+        assert detect_model(flat).name == expected_name, filename
 
 
 def test_manufacturer_via_json_fixture_pontosbase():
@@ -1058,3 +1010,16 @@ def test_detect_model_multicontroller_without_role_is_unknown():
     """A MultiController without a role (getDFM) is an unknown model."""
     assert detect_model({"getSRN": "502AAA00001"}, dk=1502, dkv=502) is UNKNOWN_MODEL
     assert detect_model({}, dk=1505, dkv=505) is UNKNOWN_MODEL
+
+
+def test_model_signature_names_are_unique():
+    """Every signature has its own name; a duplicate would never be detected."""
+    names = [signature.name for signature in MODEL_SIGNATURES]
+    assert sorted(name for name in set(names) if names.count(name) > 1) == []
+
+
+def test_detect_model_neosoft_device_kinds():
+    """The app's "NeoSoft" (dk=1200) is the NeoSoft 5000, "NeoSoft Single" (dk=1206) the 2500."""
+    assert detect_model({}, dk=1200, dkv=200).name == "neosoft5000"
+    status = {"getSRN": "206AAA12345"}
+    assert detect_model(status, dk=1206, dkv=206).name == "neosoft2500"

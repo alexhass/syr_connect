@@ -35,7 +35,7 @@ class SyrConnectModel:
     """Signature of a device model: how it is detected and what it supports.
 
     `dk`, `dkv` and `sbt` select the family of the model in `detect_model()`; the
-    `attrs_equals`, `cna_equals`, `srn_*`, `ver_*` and `v_keys*` fields are its status
+    `attrs_equals`, `cna_equals`, `srn_*` and `ver_*` fields are its status
     checks. The other fields describe the model.
     """
 
@@ -91,11 +91,6 @@ class SyrConnectModel:
     ver_contains: str | None = None
     # Prefix that `getVER` must start with
     ver_prefix: str | None = None
-    # `getX` keys used as a fingerprint for the model. When set, any `ver_*` or
-    # `attrs_equals` constraints must match as well.
-    v_keys: frozenset[str] | None = None
-    # Minimum number of keys from `v_keys` that must be present in the flattened status
-    v_keys_required: int = 1
 
     def branded(self, service: str | None) -> tuple[str, str]:
         """Return the manufacturer and display name of the model for a cloud service.
@@ -126,8 +121,7 @@ UNKNOWN_MODEL = SyrConnectModel(
 )
 
 # Simple model signatures derived from fixtures. Each signature may include
-# explicit checks (exact `getCNA` value or version patterns) and a set of
-# fingerprint keys where a threshold of matches is required.
+# explicit checks (exact `getCNA` value, serial number or version patterns).
 MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     SyrConnectModel(
@@ -768,6 +762,13 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=37,
         manufacturer="SYR",
         name="hygbox",
+        service_branding={
+            # DT3638 - DITECH Hygienespülbox
+            "de.consoft.sanitaerunion.ditech.connect": (
+                "DITECH",
+                "DITECH Hygiene Flush Box",
+            ),
+        },
         # TODO: Untested model.
         srn_prefix="37",
     ),
@@ -841,19 +842,21 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     # ── NeoSoft platform (dk=1200-1222) ──────────────────────────────────────────
     SyrConnectModel(
+        # 5000.00.000 - SYR NeoSoft 5000 Connect
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_profile=neosoft_single.PROFILE,
-        display_name="NeoSoft Connect",
+        device_profile=neosoft_duo.PROFILE,
+        display_name="NeoSoft 5000 Connect",
         dk=1200,
         dkv=200,
         manufacturer="SYR",
         maximum_regeneration_interval=3,
-        name="neosoft",
+        name="neosoft5000",
         # TODO: Untested model.
         srn_prefix="200",
     ),
     SyrConnectModel(
+        # 2500.00.000 - SYR NeoSoft 2500 Connect
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_single.PROFILE,
@@ -868,23 +871,8 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/neosoft",
-        device_profile=neosoft_duo.PROFILE,
-        display_name="NeoSoft 5000 Connect",
-        dk=1206,
-        dkv=206,
-        manufacturer="SYR",
-        maximum_regeneration_interval=3,
-        name="neosoft5000",
-        # TODO: Untested model.
-        ver_prefix="NSS",
-        v_keys=frozenset({"getRE1", "getRE2"}),
-        v_keys_required=2,
-    ),
-    SyrConnectModel(
-        alarm_clear_via_set=True,
-        base_path="/neosoft",
         device_profile=neosoft_single.PROFILE,
-        display_name="Softwater UNO A25",
+        display_name="comfort-Softwater UNO A25",
         dk=1207,
         dkv=207,
         manufacturer="Sanibel",
@@ -893,11 +881,10 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="207",
     ),
     SyrConnectModel(
-        # 2500.02.100 - concept 300 Einzelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_single.PROFILE,
-        display_name="concept 300 Single Water Softener",
+        display_name="concept Single Water Softener",
         dk=1208,
         dkv=208,
         manufacturer="CONCEPT",
@@ -950,7 +937,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_duo.PROFILE,
-        display_name="Softwater DUO A25",
+        display_name="comfort-Softwater DUO A25",
         dk=1212,
         dkv=212,
         manufacturer="Sanibel",
@@ -1001,7 +988,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_duo.PROFILE,
-        display_name="concept 300 Dual Water Softener",
+        display_name="concept Dual Water Softener",
         dk=1216,
         dkv=216,
         manufacturer="CONCEPT",
@@ -1011,10 +998,11 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="216",
     ),
     SyrConnectModel(
+        # DT3674 - DITECH Doppelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_duo.PROFILE,
-        display_name="Ditech Dual Water Softener",
+        display_name="DITECH Dual Water Softener",
         dk=1217,
         dkv=217,
         manufacturer="DITECH",
@@ -1037,10 +1025,11 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="218",
     ),
     SyrConnectModel(
+        # DT3673 - DITECH Einzelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_single.PROFILE,
-        display_name="Ditech Single Water Softener",
+        display_name="DITECH Single Water Softener",
         dk=1219,
         dkv=219,
         manufacturer="DITECH",
@@ -1063,6 +1052,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="220",
     ),
     SyrConnectModel(
+        # 5000.02.000 - SYR BLACKLANE - NeoSoft Lock Connect II, Doppelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_duo.PROFILE,
@@ -1076,6 +1066,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="221",
     ),
     SyrConnectModel(
+        # 2500.02.000 - SYR BLACKLANE - NeoSoft Lock Connect I, Einzelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_single.PROFILE,
@@ -1153,7 +1144,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
-        display_name="Leak Protection Module A25",
+        display_name="comfort-Leak Protection Module A25",
         dk=1501,
         dkv=501,
         manufacturer="Sanibel",
@@ -1165,7 +1156,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
-        display_name="Connection Module Plus Connect",
+        display_name="comfort-Connection Module Plus Connect",
         dk=1501,
         dkv=501,
         manufacturer="Sanibel",
@@ -1178,7 +1169,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
-        display_name="Automatic Backwash System RSA A25",
+        display_name="comfort-Automatic Backwash System RSA A25",
         dk=1501,
         dkv=501,
         manufacturer="Sanibel",
@@ -1190,7 +1181,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
-        display_name="Leak Protection",
+        display_name="DITECH Leak Protection",
         dk=1502,
         dkv=502,
         manufacturer="DITECH",
@@ -1199,11 +1190,12 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="502",
     ),
     SyrConnectModel(
+        # DT3645 - DITECH Anschlussmodul Plus, with DT3646 - DITECH MultiControl
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
-        display_name="Connection Module Plus",
+        display_name="DITECH Connection Module Plus",
         dk=1502,
         dkv=502,
         manufacturer="DITECH",
@@ -1212,11 +1204,12 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="502",
     ),
     SyrConnectModel(
+        # DT3654 - DITECH Rückspülautomatik HWS/RF
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
-        display_name="Automatic Backwash for HWS/RF",
+        display_name="DITECH Automatic Backwash HWS/RF",
         dk=1502,
         dkv=502,
         manufacturer="DITECH",
@@ -1225,11 +1218,12 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="502",
     ),
     SyrConnectModel(
+        # DT3676 - DITECH Rückspülfilter Protect
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
-        display_name="Backwash Filter with Pressure Reducer and Leak Protection",
+        display_name="DITECH Backwash Filter Protect",
         dk=1502,
         dkv=502,
         manufacturer="DITECH",
@@ -1294,7 +1288,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
-        display_name="Leak Protection",
+        display_name="concept 300 Leak Protection",
         dk=1504,
         dkv=504,
         manufacturer="CONCEPT",
@@ -1307,7 +1301,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
-        display_name="Connection Module Plus",
+        display_name="concept 300 Connection Module Plus",
         dk=1504,
         dkv=504,
         manufacturer="CONCEPT",
@@ -1526,9 +1520,7 @@ def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnect
         If a signature defines 'cna_equals' and getCNA matches, this model is selected.
     4. Attribute match (attrs_equals):
         If a signature defines 'attrs_equals' and all specified attributes match, this model is selected.
-    5. v_keys fingerprint:
-        If a signature defines 'v_keys', at least 'v_keys_required' of those keys must be present in the flattened response. If version or attribute constraints are also specified, they must match as well.
-    6. Version prefix/contains:
+    5. Version prefix/contains:
         If a signature defines 'ver_prefix' or 'ver_contains', and getVER matches, this model is selected.
 
     Args:
@@ -1588,37 +1580,12 @@ def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnect
         if sig.cna_equals and cna == sig.cna_equals:
             return _sig_to_result(sig, "cna_equals")
 
-    # Step 3: Check attribute matches, fingerprint keys, and version matches
-    # This block handles more complex detection using attribute equality, fingerprint keys, and version info.
+    # Step 3: Check attribute matches and version matches
+    # This block handles detection using attribute equality and version info.
     for sig in signatures:
-        name = sig.name
-
         # If the signature requires certain attributes to match, skip if not satisfied.
         if not attrs_match(sig):
             continue
-
-        # If the signature defines fingerprint keys (v_keys), require enough keys to match.
-        v_keys = sig.v_keys or frozenset()
-        if v_keys:
-            matches = len(v_keys & keys)
-            required = sig.v_keys_required
-            if matches < required:
-                _LOGGER.debug(
-                    "detect_model: signature %s v_keys matched %d < %d",
-                    name,
-                    matches,
-                    required,
-                )
-                continue
-            # If version constraints are present, require them to match as well.
-            if not ver_match(sig):
-                _LOGGER.debug(
-                    "detect_model: signature %s version constraints not satisfied (ver=%s)",
-                    name,
-                    ver,
-                )
-                continue
-            return _sig_to_result(sig, "v_keys")
 
         # If only attribute equality is required and already matched, return this model.
         if sig.attrs_equals:

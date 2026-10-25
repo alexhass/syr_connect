@@ -12,11 +12,11 @@ earlier decision to exclude them pending fixture confirmation.
 
 No genuine real-device evidence exists yet for the remaining second-tank
 keys (getRE2/getSS2/getSV2), which aren't covered by the matrix at all. The
-only available capture with dual-tank data,
-tests/fixtures/xml/SyrNeoSoft5000_GetDeviceCollectionStatus.xml, is explicitly
-marked in its own XML comment as "Just for model tests. We need a test
-machine to verify" (used only to satisfy the getRE1+getRE2 v_keys
-fingerprint required for model detection), so it is NOT treated as proof:
+only fixtures with dual-tank data,
+tests/fixtures/xml/SyrNeoSoft5000_GetDeviceCollectionStatus.xml and
+tests/fixtures/json/SyrNeoSoft5000_get_all.json, are generated from the
+NeoSoft 2500 fixtures and not real captures (see their comments), so they are
+NOT treated as proof:
 - getRE2: has a real-looking, distinct non-zero value (999 vs getRE1=773)
   in that synthetic fixture, but the fixture itself is unverified - pending
   a real dual-tank capture.

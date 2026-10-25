@@ -77,7 +77,8 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
       6 → 7: Prefix entity unique_ids with the owning config entry ID so the
              same physical device reachable from multiple hubs (config
              entries) no longer collides on a shared unique_id.
-      7 → 8: Rename the Optima T2.3 local JSON API model (CONF_MODEL).
+      7 → 8: Rename the Optima T2.3 and the generic NeoSoft local JSON API models
+             (CONF_MODEL).
       8 → 9: Replace removed generic MultiController local JSON API models
              (CONF_MODEL) with the model detected from the device.
     """
@@ -167,7 +168,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config_entries.async_update_entry(entry, version=7)
 
     # Migrate v7 -> v8
-    # Integration version: Optima T2.3 local model renamed
+    # Integration version: Optima T2.3 local model renamed, generic NeoSoft is the NeoSoft 5000
     if entry.version == 7:
         update_kwargs = v7_to_v8_rename_local_model(entry)
         if update_kwargs:

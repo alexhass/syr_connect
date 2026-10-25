@@ -118,13 +118,17 @@ Other devices are also of interest, but may need to be integrated or at least te
 - concept 200 Dual Water Softener
 - concept 200 Replacement Filter
 - concept 300 Automatic Backwash RSA
-- concept 300 Dual Water Softener
-- concept 300 Single Water Softener
 - concept 300 Trio Filter with Leak Protection
+- concept Dual Water Softener
 - concept SafeFloor Floor Sensor
-- Ditech Dual Water Softener
-- Ditech Single Water Softener
-- Ditech Wireless Floor Sensor
+- concept Single Water Softener
+- DITECH Automatic Backwash HWS/RF
+- DITECH Backwash Filter Protect
+- DITECH Connection Module Plus
+- DITECH Dual Water Softener
+- DITECH Hygiene Flush Box
+- DITECH Single Water Softener
+- DITECH Wireless Floor Sensor
 - Hansgrohe PontosBase
 - Optima Dual Water Softener
 - Optima Single Water Softener
@@ -152,7 +156,6 @@ Other devices are also of interest, but may need to be integrated or at least te
 - SYR LEX 1500 Connect Triple
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
-- SYR NeoSoft Connect
 - SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
 - SYR Safe-T Communication Module

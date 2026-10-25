@@ -385,8 +385,8 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 111 | Optima T Wechselfilter | | | ref=100 |
 | 112 | SafeTech+ | | | Azure, WiFi-AP: `SYR` |
 | 113 | Trio DFR LS | | | Azure, ref=100 |
-| 200 | NeoSoft | | | Azure |
-| 206 | NeoSoft Single | | | ref=200 |
+| 200 | NeoSoft | SYR | NeoSoft 5000 Connect | Azure |
+| 206 | NeoSoft Single | SYR | NeoSoft 2500 Connect | ref=200; product image 2500.00.000 |
 | 207 | comfort-Enthärtungsanlage Softwater Uno | Sanibel | Softwater UNO A25 | ref=200 |
 | 208 | concept Einzelenthärtungsanlage | | | ref=200 |
 | 209 | Optima Einzelenthärtungsanlage | | | ref=200 |
@@ -966,14 +966,14 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 
 | Model | Salt container |
 | --- | --- |
-| NeoSoft (Connect), NeoSoft 2500 | 40 kg |
+| NeoSoft 2500 | 40 kg |
 | NeoSoft 5000 | 35 kg |
 | Sanibel Softwater UNO A25 | 35 kg |
 | Sanibel Softwater DUO A25 | 35 kg |
 | CONEL CLEAR PRO SOFT | 40 kg |
 | CONEL CLEAR PRO SOFT TWIN | 35 kg |
-| concept 300, Optima, Ditech, TAKE single softening systems | 40 kg |
-| concept 200, concept 300, Optima, Optima T2, Ditech, TAKE double softening systems | 35 kg |
+| concept, Optima, Ditech, TAKE single softening systems | 40 kg |
+| concept 200, concept, Optima, Optima T2, Ditech, TAKE double softening systems | 35 kg |
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |

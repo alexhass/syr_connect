@@ -38,6 +38,7 @@ def load_fixture(name: str) -> dict:
         "SyrSafeTechV4_old_get_all.json",
         "SyrSafeTechV4_get_all.json",
         "SyrNeoSoft2500_get_all.json",
+        "SyrNeoSoft5000_get_all.json",
     ],
 )
 async def test_json_client_parses_fixture(fixture: str) -> None:

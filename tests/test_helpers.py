@@ -880,8 +880,8 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     mapped, raw = get_sensor_ala_map(detect_model(status_lex), "0")
     assert mapped == "no_alarm" and raw == "0"
 
-    # ALA: NeoSoft family (detect via getVER prefix and v_keys)
-    status_neo = {"getVER": "NSS.V.2.028", "getRE1": "x", "getRE2": "y"}
+    # ALA: NeoSoft family (detect via serial number prefix)
+    status_neo = {"getSRN": "200AAA12345", "getVER": "NSS.V.2.028"}
     mapped2, raw2 = get_sensor_ala_map(detect_model(status_neo), "FF")
     assert mapped2 == "no_alarm" and raw2 == "FF"
 

@@ -831,6 +831,24 @@ def test_v7_to_v8_renames_local_model() -> None:
     }
 
 
+def test_v7_to_v8_renames_generic_neosoft_to_neosoft5000() -> None:
+    """The generic NeoSoft model (dk=1200) is the NeoSoft 5000."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        version=7,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "neosoft",
+        },
+    )
+
+    update = v7_to_v8_rename_local_model(entry)
+
+    assert update is not None
+    assert update["data"][CONF_MODEL] == "neosoft5000"
+
+
 def test_v7_to_v8_keeps_other_local_models_and_cloud_entries() -> None:
     """A current or removed local model and a cloud entry need no rename."""
     for data in (

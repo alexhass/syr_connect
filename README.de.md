@@ -117,14 +117,18 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - CONEL CLEAR PRO SOFT TWIN
 - concept 200 Doppelenthärtungsanlage
 - concept 200 Ersatzfilter
-- concept 300 Doppelenthärtungsanlage
-- concept 300 Einzelenthärtungsanlage
 - concept 300 Rückspülautomatik RSA
 - concept 300 Triofilter mit Leckageschutz
+- concept Doppelenthärtungsanlage
+- concept Einzelenthärtungsanlage
 - concept SafeFloor Bodensensor
-- Ditech Doppelenthärtungsanlage
-- Ditech Einzelenthärtungsanlage
-- Ditech Funk-Bodensensor
+- DITECH Anschlussmodul Plus
+- DITECH Doppelenthärtungsanlage
+- DITECH Einzelenthärtungsanlage
+- DITECH Funk-Bodensensor
+- DITECH Hygienespülbox
+- DITECH Rückspülautomatik HWS/RF
+- DITECH Rückspülfilter Protect
 - Hansgrohe PontosBase
 - Optima Doppelenthärtungsanlage
 - Optima Einzelenthärtungsanlage
@@ -152,7 +156,6 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - SYR LEX 1500 Connect Pendel
 - SYR NeoDos Connect
 - SYR NeoSoft 5000 Connect
-- SYR NeoSoft Connect
 - SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
 - SYR Safe-T Kommunikationsmodul
