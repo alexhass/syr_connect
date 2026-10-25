@@ -7,6 +7,7 @@ import contextlib
 from datetime import UTC, datetime, timedelta
 from functools import partial
 import inspect
+import logging
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -2245,3 +2246,46 @@ async def test_statistics_reach_the_recorder(
         partial(get_metadata, hass, statistic_ids={statistic_id})
     )
     assert metadata == {}
+
+
+async def test_device_failure_is_logged_once_and_its_recovery(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A failing device logs one warning, repeats at debug level, the recovery at info."""
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
+    ) as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.get_device_status = AsyncMock(
+            side_effect=[
+                SyrConnectConnectionError("timeout"),
+                SyrConnectConnectionError("timeout"),
+                {"getSRN": "123456789"},
+            ]
+        )
+        mock_api_class.return_value = mock_api
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            MagicMock(),
+            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            60,
+        )
+
+    caplog.set_level(logging.DEBUG, logger="custom_components.syr_connect.coordinator")
+    for _ in range(3):
+        await coordinator._fetch_device_status(
+            {"id": "123456789", "dclg": "d", "name": "Keller"}
+        )
+
+    failures = [
+        record.levelno
+        for record in caplog.records
+        if record.getMessage().startswith("Failed to get status for device 123456789")
+    ]
+    assert failures == [logging.WARNING, logging.DEBUG]
+    recoveries = [
+        record.levelno
+        for record in caplog.records
+        if record.getMessage() == "Status of device 123456789 fetched again"
+    ]
+    assert recoveries == [logging.INFO]

@@ -172,6 +172,10 @@ class SyrConnectDataUpdateCoordinator(
         # last update; devices missing from the data are then not known to be deleted.
         self.device_list_complete = False
 
+        # Failures (of the whole update, a project or a device) already logged as a
+        # warning: repeats are logged at debug level, the recovery once at info level
+        self._failures: set[str] = set()
+
     @override
     async def _async_update_data(self) -> SyrConnectCoordinatorData:
         """Fetch data from API.
@@ -200,8 +204,10 @@ class SyrConnectDataUpdateCoordinator(
             # The coordinator data is None until the first successful refresh
             previous: SyrConnectCoordinatorData | None = self.data
             if previous is not None:
-                _LOGGER.warning(
-                    "Connection failed, keeping the data of the last update: %s", err
+                self._log_failure(
+                    "update",
+                    "Connection failed, keeping the data of the last update: %s",
+                    err,
                 )
                 self.device_list_complete = False
                 return previous
@@ -218,6 +224,7 @@ class SyrConnectDataUpdateCoordinator(
                 translation_key="update_failed",
             ) from err
         else:
+            self._log_recovery("update", "Connection restored")
             return {
                 "configuration_url": self._configuration_url,
                 "devices": all_devices,
@@ -269,7 +276,8 @@ class SyrConnectDataUpdateCoordinator(
                 # project's devices from the last update with their old values instead
                 # of dropping them or marking them unavailable; the next poll updates them.
                 previous = self._previous_project_devices(project["id"])
-                _LOGGER.warning(
+                self._log_failure(
+                    f"project:{project['id']}",
                     "Failed to get devices for project %s, keeping %d device(s) from the last update: %s",
                     project["name"],
                     len(previous),
@@ -279,6 +287,11 @@ class SyrConnectDataUpdateCoordinator(
                 failed_projects += 1
                 continue
             devices: list[SyrConnectDevice] = result
+            self._log_recovery(
+                f"project:{project['id']}",
+                "Devices of project %s fetched again",
+                project["name"],
+            )
 
             _LOGGER.debug(
                 "Found %d device(s) in project %s", len(devices), project["name"]
@@ -316,6 +329,35 @@ class SyrConnectDataUpdateCoordinator(
         _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
         return all_devices
 
+    def _log_failure(self, key: str, message: str, *args: Any) -> None:
+        """Log a failure as warning the first time, then at debug level until it recovers.
+
+        Home Assistant asks for one message when something becomes unreachable and one
+        when it is back, instead of a warning at every poll.
+
+        Args:
+            key: What failed, e.g. "update", "project:<id>" or "device:<id>"
+            message: Log message with %-style placeholders
+            *args: Arguments of the message
+        """
+        if key in self._failures:
+            _LOGGER.debug(message, *args)
+            return
+        self._failures.add(key)
+        _LOGGER.warning(message, *args)
+
+    def _log_recovery(self, key: str, message: str, *args: Any) -> None:
+        """Log at info level that a failure logged by _log_failure has recovered.
+
+        Args:
+            key: What recovered, as passed to _log_failure
+            message: Log message with %-style placeholders
+            *args: Arguments of the message
+        """
+        if key in self._failures:
+            self._failures.discard(key)
+            _LOGGER.info(message, *args)
+
     def _previous_project_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Return the devices of a project from the last successful update."""
         if not self.data:
@@ -352,7 +394,8 @@ class SyrConnectDataUpdateCoordinator(
             # the previous device entry from coordinator data if available
             # (keep existing status). Otherwise mark device unavailable.
             if status is None:
-                _LOGGER.warning(
+                self._log_failure(
+                    f"device:{device['id']}",
                     "Device %s returned unexpected status structure; preserving previous status if present",
                     device.get("id"),
                 )
@@ -400,13 +443,19 @@ class SyrConnectDataUpdateCoordinator(
         except Exception as err:  # noqa: BLE001
             # Temporary failures happen (routing, timeouts). Only log them and keep the
             # previous values; no unavailable state and no repair issue.
-            _LOGGER.warning(
+            self._log_failure(
+                f"device:{device['id']}",
                 "Failed to get status for device %s, keeping previous status: %s",
                 device["id"],
                 err,
             )
             return self._previous_device_or_empty(device)
         else:
+            self._log_recovery(
+                f"device:{device['id']}",
+                "Status of device %s fetched again",
+                device["id"],
+            )
             return device
 
     def _previous_device_or_empty(self, device: SyrConnectDevice) -> SyrConnectDevice:

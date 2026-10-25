@@ -103,7 +103,7 @@ rules:
   
   entity-unavailable:
     status: done
-    comment: Entities check device['available'] and set unavailable on errors
+    comment: Entities are unavailable while the cloud reports the device offline (dst 0/1), when it is gone from the account or when an unexpected error stops the update. Deliberate deviation (AGENTS.md) - temporary connection errors keep the last values instead, because the cloud often answers with timeouts, maintenance pages or broken data for a short time
   
   integration-owner:
     status: done
@@ -111,7 +111,7 @@ rules:
   
   log-when-unavailable:
     status: done
-    comment: Coordinator logs warning on device errors, marks as unavailable
+    comment: A failure of the update, of a project or of a device is logged once as a warning and its recovery once at info level; repeats are logged at debug level
   
   parallel-updates:
     status: done
