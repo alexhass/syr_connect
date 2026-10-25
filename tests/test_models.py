@@ -117,12 +117,6 @@ def test_detect_model_none_input():
     assert result.base_path is None
 
 
-def test_attrs_equals_mismatch_skips_signature():
-    """When attrs_equals is present but values don't match, signature should be skipped."""
-    flat = {"getVER2": "999"}
-    assert detect_model(flat).name == "unknown"
-
-
 def test_safetechplus_detection_synthetic():
     """Safe-Tech+ should be detected by ver_prefix 'Safe-Tech'."""
     flat = {"getSRN": "112AAA00001", "getVER": "Safe-Tech-1.2.3"}
@@ -323,267 +317,6 @@ def test_lexplus_base_path_none():
     flat = {"getCNA": "LEXplus10S"}
     result = detect_model(flat)
     assert result.base_path is None
-
-
-# Tests for attrs_match logic
-# Since no current MODEL_SIGNATURES use attrs_equals, we use mocking to test this logic
-
-
-def test_attrs_match_none_returns_true():
-    """When attrs_equals is None, attrs_match should return True."""
-    # Create a test signature with no attrs_equals
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix="TEST",
-            attrs_equals=None,
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getVER": "TEST-1.0"}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_empty_dict_returns_true():
-    """When attrs_equals is an empty dict, attrs_match should return True."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix="TEST",
-            attrs_equals={},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getVER": "TEST-1.0"}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_single_attribute_matches():
-    """When attrs_equals has one attribute that matches, should return True."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={"getATTR": "value1"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getATTR": "value1", "getVER": "TEST"}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_single_attribute_mismatch():
-    """When attrs_equals has one attribute that doesn't match, should skip signature."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={"getATTR": "value1"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getATTR": "value2", "getVER": "TEST"}
-        result = detect_model(flat)
-        # Should not match testmodel, should fall back to unknown
-        assert result.name == "unknown"
-
-
-def test_attrs_match_multiple_attributes_all_match():
-    """When attrs_equals has multiple attributes that all match, should return True."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={
-                "getATTR1": "val1",
-                "getATTR2": "val2",
-                "getATTR3": "val3",
-            },
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {
-            "getATTR1": "val1",
-            "getATTR2": "val2",
-            "getATTR3": "val3",
-            "getVER": "TEST",
-        }
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_multiple_attributes_one_mismatch():
-    """When attrs_equals has multiple attributes and one doesn't match, should skip signature."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={
-                "getATTR1": "val1",
-                "getATTR2": "val2",
-                "getATTR3": "val3",
-            },
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # ATTR2 has wrong value
-        flat = {
-            "getATTR1": "val1",
-            "getATTR2": "wrong",
-            "getATTR3": "val3",
-            "getVER": "TEST",
-        }
-        result = detect_model(flat)
-        assert result.name == "unknown"
-
-
-def test_attrs_match_type_conversion_int_to_str():
-    """Attrs_match should convert values to strings for comparison."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={"getATTR": "123"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # Value in flat is int, should be converted to string for comparison
-        flat = {"getATTR": 123}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_missing_key_in_flat():
-    """When required attr key is missing in flat, should use empty string and fail match."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={"getATTR": "value"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # getATTR is missing from flat
-        flat = {"getVER": "TEST"}
-        result = detect_model(flat)
-        assert result.name == "unknown"
-
-
-def test_attrs_match_with_version_constraints():
-    """Attrs_match combined with version constraints should work together."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix="TEST",
-            attrs_equals={"getATTR": "value"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # Both attrs and version match
-        flat = {"getATTR": "value", "getVER": "TEST-1.0"}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_pass_but_version_fail():
-    """When attrs match but version doesn't, model is still detected.
-
-    attrs_equals takes precedence in detection logic, version is not checked
-    when attrs_equals matches.
-    """
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix="TEST",
-            attrs_equals={"getATTR": "value"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        # Attrs match but version doesn't - attrs_equals takes precedence
-        flat = {"getATTR": "value", "getVER": "WRONG"}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_bool_conversion():
-    """Test that boolean values are correctly converted to strings."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={"getATTR": "True"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getATTR": True}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
-
-
-def test_attrs_match_none_value_in_flat():
-    """Test that None values in flat are converted to string 'None'."""
-    test_sig = [
-        replace(
-            UNKNOWN_MODEL,
-            display_name="Test Model",
-            base_path="test",
-            name="testmodel",
-            cna_equals=None,
-            ver_prefix=None,
-            attrs_equals={"getATTR": "None"},
-        )
-    ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
-        flat = {"getATTR": None}
-        result = detect_model(flat)
-        assert result.name == "testmodel"
 
 
 def test_serial_prefix_detection_113():
@@ -1023,3 +756,16 @@ def test_detect_model_neosoft_device_kinds():
     assert detect_model({}, dk=1200, dkv=200).name == "neosoft5000"
     status = {"getSRN": "206AAA12345"}
     assert detect_model(status, dk=1206, dkv=206).name == "neosoft2500"
+
+
+def test_detect_model_dfm_as_number_or_text():
+    """The local API reports getDFM as a number, the cloud API as text."""
+    for dfm in (2, "2", " 2 "):
+        status = {"getSRN": "506AAA12345", "getDFM": dfm}
+        assert detect_model(status).name == "syrac3200connect", repr(dfm)
+
+
+def test_detect_model_dfm_alone_does_not_detect_a_role():
+    """Without a matching serial number or device kind, getDFM alone detects no role."""
+    assert detect_model({"getDFM": 1}) is UNKNOWN_MODEL
+    assert detect_model({"getSRN": "123456789", "getDFM": 1}) is UNKNOWN_MODEL

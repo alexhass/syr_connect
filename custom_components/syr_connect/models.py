@@ -34,9 +34,9 @@ _LOGGER = logging.getLogger(__name__)
 class SyrConnectModel:
     """Signature of a device model: how it is detected and what it supports.
 
-    `dk`, `dkv` and `sbt` select the family of the model in `detect_model()`; the
-    `attrs_equals`, `cna_equals`, `srn_*` and `ver_*` fields are its status
-    checks. The other fields describe the model.
+    `dk`, `dkv`, `sbt` and `dfm` identify the model in `detect_model()`; the
+    `cna_equals`, `srn_*` and `ver_*` fields are its status checks. The other fields
+    describe the model.
     """
 
     # If True, the alarm/error state is cleared by sending a setter command (setALM)
@@ -45,8 +45,6 @@ class SyrConnectModel:
     # If True, alarm commands use ALM variants (getALM/setALM/clrALM) instead of ALA
     # variants (getALA/setALA/clrALA)
     alarm_style_alm: bool = False
-    # `getX` -> value pairs that must all match the flattened status
-    attrs_equals: Mapping[str, int | str] | None = None
     # JSON API local access base path for the model, or None if not applicable
     base_path: str | None
     # Exact match against the `getCNA` value
@@ -57,6 +55,9 @@ class SyrConnectModel:
     # hardware (e.g. the dk=1500-1506 MultiController family). None means the global
     # allowlists and the generic alarm codes.
     device_profile: SyrConnectDeviceProfile | None = None
+    # MultiController role (getDFM), the subtype the app uses for dk=1500-1506
+    # (subtypeAttr="dfm"). Like `sbt`, None matches every device.
+    dfm: int | None = None
     # Human-readable model label used for `DeviceInfo.model` and the local model selector
     display_name: str
     # Cloud API deviceKind: the integer `dk` attribute in GetProjectDeviceCollections XML
@@ -1089,9 +1090,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # CLEARPNLS - Retrofit Leakage Protection
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="CLEAR PRO RETROFIT LEAKAGE PROTECTION",
         dk=1500,
         dkv=500,
@@ -1101,9 +1102,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="CLEAR PRO FILL",
         dk=1500,
         dkv=500,
@@ -1115,9 +1116,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # CLEARPFSA - Filling Station
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 3},
         base_path="/trio",
         device_profile=muco_filling.PROFILE,
+        dfm=3,
         display_name="CLEAR PRO FILL All-in-One",
         dk=1500,
         dkv=500,
@@ -1129,9 +1130,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         # CLEARPMCK - MultiControl-Kit / Backwash System
         # TODO: Untested model.
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="CLEAR PRO MULTICONTROL-KIT",
         dk=1500,
         dkv=500,
@@ -1141,9 +1142,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="comfort-Leak Protection Module A25",
         dk=1501,
         dkv=501,
@@ -1153,9 +1154,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="comfort-Connection Module Plus Connect",
         dk=1501,
         dkv=501,
@@ -1166,9 +1167,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="comfort-Automatic Backwash System RSA A25",
         dk=1501,
         dkv=501,
@@ -1178,9 +1179,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="DITECH Leak Protection",
         dk=1502,
         dkv=502,
@@ -1192,9 +1193,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # DT3645 - DITECH Anschlussmodul Plus, with DT3646 - DITECH MultiControl
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="DITECH Connection Module Plus",
         dk=1502,
         dkv=502,
@@ -1206,9 +1207,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # DT3654 - DITECH Rückspülautomatik HWS/RF
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="DITECH Automatic Backwash HWS/RF",
         dk=1502,
         dkv=502,
@@ -1220,9 +1221,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # DT3676 - DITECH Rückspülfilter Protect
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
+        dfm=5,
         display_name="DITECH Backwash Filter Protect",
         dk=1502,
         dkv=502,
@@ -1233,9 +1234,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="Leak Protection",
         dk=1503,
         dkv=503,
@@ -1246,9 +1247,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="Connection Module Plus",
         dk=1503,
         dkv=503,
@@ -1259,9 +1260,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="Automatic Backwash for HWS/RF",
         dk=1503,
         dkv=503,
@@ -1272,9 +1273,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
+        dfm=5,
         display_name="Backwash Filter with Pressure Reducer and Leak Protection",
         dk=1503,
         dkv=503,
@@ -1285,9 +1286,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="concept 300 Leak Protection",
         dk=1504,
         dkv=504,
@@ -1298,9 +1299,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="concept 300 Connection Module Plus",
         dk=1504,
         dkv=504,
@@ -1312,9 +1313,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # 2380.01.104 - concept 300 Rückspülautomatik RSA
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="concept 300 Automatic Backwash RSA",
         dk=1504,
         dkv=504,
@@ -1326,9 +1327,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # 2425.01.100 - concept 300 Triofilter mit Leckageschutz
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
+        dfm=5,
         display_name="concept 300 Trio Filter with Leak Protection",
         dk=1504,
         dkv=504,
@@ -1339,9 +1340,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="Optima T2 Leak Protection",
         dk=1505,
         dkv=505,
@@ -1352,9 +1353,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="Optima T2 Connection Module Plus",
         dk=1505,
         dkv=505,
@@ -1366,9 +1367,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # 2380.01.704 - Optima T2.3 Rückspülautomatik RSA
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="Optima T2 Automatic Backwash RSA",
         dk=1505,
         dkv=505,
@@ -1380,9 +1381,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         # 2425.01.700 - Optima T2.3 Leckageschutz und Rückspülfilter TRIO mit Druckminderer und Lock Flansch
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
+        dfm=5,
         display_name="Optima T2 Leak Protection and Backwash Filter TRIO",
         dk=1505,
         dkv=505,
@@ -1393,9 +1394,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 1},
         base_path="/trio",
         device_profile=muco_leakprotect.PROFILE,
+        dfm=1,
         display_name="SafeTech Lock Connect",
         dk=1506,
         dkv=506,
@@ -1406,9 +1407,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 2},
         base_path="/trio",
         device_profile=muco_connectioncentre.PROFILE,
+        dfm=2,
         display_name="AC 3200 Connect",
         dk=1506,
         dkv=506,
@@ -1419,9 +1420,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 3},
         base_path="/trio",
         device_profile=muco_filling.PROFILE,
+        dfm=3,
         display_name="AC All-in-One 3228 Connect",
         dk=1506,
         dkv=506,
@@ -1432,9 +1433,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
+        dfm=4,
         display_name="RSA Connect",
         dk=1506,
         dkv=506,
@@ -1445,9 +1446,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         alarm_clear_via_set=True,
-        attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
+        dfm=5,
         display_name="TRIO Lock Connect",
         dk=1506,
         dkv=506,
@@ -1468,12 +1469,13 @@ def detect_model(
 
     The cloud API (XML) reports `dk`, `dkv` and `sbt` for every device. They are the
     most reliable match and select the family of signatures with these values; a
-    signature without `sbt` matches every subtype. A family of one signature is the
-    result. In a larger family the status decides, but only between its signatures
-    (getCNA for the i-LEX sizes, getDFM for the MultiController roles, getVER for
-    SafeTech V3/V4). Without a family, e.g. for the local JSON API that has no device
-    kind or for a device kind no signature knows, the status decides between all
-    signatures.
+    signature without `sbt` matches every subtype. A MultiController reports its role
+    in getDFM, the subtype the app uses for dk=1500-1506: like `sbt`, a signature with
+    `dfm` only matches a device with that role, one without `dfm` every device. A
+    family of one signature is the result. In a larger family the status decides, but
+    only between its signatures (getCNA for the i-LEX sizes, getVER for SafeTech
+    V3/V4). Without a family, e.g. for the local JSON API that has no device kind or
+    for a device kind no signature knows, the status decides between all signatures.
 
     Args:
         flat: Flattened device status
@@ -1485,42 +1487,48 @@ def detect_model(
         The matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no signature
         matches.
     """
+    dfm = _status_dfm(flat)
+    signatures = [sig for sig in MODEL_SIGNATURES if sig.dfm in (None, dfm)]
     if dk is not None:
         family = [
             sig
-            for sig in MODEL_SIGNATURES
+            for sig in signatures
             if sig.dk == dk and sig.dkv == dkv and sig.sbt in (None, sbt)
         ]
         if len(family) == 1:
             _LOGGER.debug(
-                "detect_model: detected model %s (dk=%s, dkv=%s, sbt=%s)",
+                "detect_model: detected model %s (dk=%s, dkv=%s, sbt=%s, dfm=%s)",
                 family[0].display_name,
                 dk,
                 dkv,
                 sbt,
+                dfm,
             )
             return family[0]
         if family:
             return _match_status(flat, family)
-    return _match_status(flat, MODEL_SIGNATURES)
+    return _match_status(flat, signatures)
+
+
+def _status_dfm(flat: object) -> int | None:
+    """Return the MultiController role (getDFM) of the flattened status, or None."""
+    if not isinstance(flat, dict):
+        return None
+    try:
+        return int(str(flat.get("getDFM")).strip())
+    except ValueError:
+        return None
 
 
 def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnectModel:
     """Return the first of the signatures that matches the flattened status.
 
     Detection priority (highest to lowest):
-    1. Serial number prefix combined with attrs_equals:
-        Signatures that define both 'srn_prefix' and 'attrs_equals' are checked first, so a
-        more specific variant is not shadowed by a generic srn-only signature that shares the
-        same prefix (attrs_equals is matched against the flattened status attributes, e.g.
-        'getDFM', not against the signature's own 'dk'/'dkv' metadata fields).
-    2. Serial number prefix (srn_prefix):
+    1. Serial number prefix (srn_prefix):
         If a signature defines 'srn_prefix', and the serial number (getSRN) starts with srn_prefix + srn_infix, this model is selected immediately.
-    3. getCNA exact match (cna_equals):
+    2. getCNA exact match (cna_equals):
         If a signature defines 'cna_equals' and getCNA matches, this model is selected.
-    4. Attribute match (attrs_equals):
-        If a signature defines 'attrs_equals' and all specified attributes match, this model is selected.
-    5. Version prefix/contains:
+    3. Version prefix/contains:
         If a signature defines 'ver_prefix' or 'ver_contains', and getVER matches, this model is selected.
 
     Args:
@@ -1538,12 +1546,6 @@ def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnect
     srn = str(flat.get("getSRN") or "")
     ver = str(flat.get("getVER") or "")
     keys = set(flat.keys())
-
-    def attrs_match(sig: SyrConnectModel) -> bool:
-        attrs = sig.attrs_equals
-        if not attrs:
-            return True
-        return all(str(flat.get(k, "")) == str(v) for k, v in attrs.items())
 
     def srn_match(sig: SyrConnectModel) -> bool:
         return srn.startswith(f"{sig.srn_prefix}{sig.srn_infix}")
@@ -1565,14 +1567,9 @@ def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnect
     # Step 1: Check all serial number prefix matches first (highest priority)
     # If a model signature defines 'srn_prefix' and the serial number matches,
     # return this model immediately. This ensures serial number detection always wins over other methods.
-    # Signatures that also define 'attrs_equals' are more specific and are checked first, so a
-    # generic srn-only signature does not shadow a more specific variant sharing the same prefix.
     for sig in signatures:
-        if sig.attrs_equals and sig.srn_prefix and srn_match(sig) and attrs_match(sig):
-            return _sig_to_result(sig, "srn_equals+attrs_equals")
-    for sig in signatures:
-        if not sig.attrs_equals and sig.srn_prefix and srn_match(sig):
-            return _sig_to_result(sig, "srn_equals")
+        if sig.srn_prefix and srn_match(sig):
+            return _sig_to_result(sig, "srn_prefix")
 
     # Step 2: Check all getCNA (model name) exact matches
     # If a model signature defines 'cna_equals' and getCNA matches, return this model.
@@ -1580,18 +1577,9 @@ def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnect
         if sig.cna_equals and cna == sig.cna_equals:
             return _sig_to_result(sig, "cna_equals")
 
-    # Step 3: Check attribute matches and version matches
-    # This block handles detection using attribute equality and version info.
+    # Step 3: Check version matches
+    # If version prefix or contains is specified and matches, return this model.
     for sig in signatures:
-        # If the signature requires certain attributes to match, skip if not satisfied.
-        if not attrs_match(sig):
-            continue
-
-        # If only attribute equality is required and already matched, return this model.
-        if sig.attrs_equals:
-            return _sig_to_result(sig, "attrs_equals")
-
-        # If version prefix or contains is specified and matches, return this model.
         if (sig.ver_prefix or sig.ver_contains) and ver_match(sig):
             return _sig_to_result(sig, "ver")
 
