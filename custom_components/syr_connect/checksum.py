@@ -3,8 +3,6 @@
 import base64
 from xml.etree.ElementTree import Element
 
-import defusedxml.ElementTree as etree
-
 # Standard Base32 alphabet (RFC 4648); the index of a character is its 5-bit value
 _SYR_CONNECT_BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
@@ -70,30 +68,11 @@ class SyrChecksum:
 
         return contribution
 
-    def compute_xml_checksum(self, xml_string: str) -> str:
-        """Compute the checksum for an XML string.
-
-        Uses a local accumulator — does not touch any instance state and is
-        safe to call concurrently on the same instance.
-
-        Args:
-            xml_string: The XML string to process
-
-        Returns:
-            Checksum value in uppercase hexadecimal
-        """
-        try:
-            root = etree.fromstring(xml_string)
-        except etree.ParseError:
-            return format(0, "X")
-        return self.compute_element_checksum(root)
-
     def compute_element_checksum(self, root: Element) -> str:
         """Compute the checksum for an already built element tree.
 
         Sums the contributions of all attribute values except ``n`` across ``root`` and its
-        descendants. Gives the same result as ``compute_xml_checksum`` on the serialised tree,
-        without serialising and re-parsing it.
+        descendants.
 
         Args:
             root: Root element of the request

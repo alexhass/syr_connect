@@ -13,7 +13,6 @@ from custom_components.syr_connect import (
     _mask_sensitive_data,
     async_migrate_entry,
     async_options_update_listener,
-    async_reload_entry,
     async_remove_entry,
     async_setup_entry,
     async_unload_entry,
@@ -472,27 +471,6 @@ async def test_async_unload_entry_logs(
 
     assert result2 is False
     assert "Failed to unload" in caplog.text
-
-
-async def test_async_reload_entry(hass: HomeAssistant) -> None:
-    """Test reload entry."""
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-
-    with patch.object(
-        hass.config_entries, "async_reload", new_callable=AsyncMock
-    ) as mock_reload:
-        await async_reload_entry(hass, config_entry)
-
-        mock_reload.assert_called_once_with("test_entry_id")
 
 
 async def test_async_setup_entry_logs_migration(

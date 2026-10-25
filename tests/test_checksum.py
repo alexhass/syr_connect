@@ -76,36 +76,21 @@ def test_checksum_value_wrapping() -> None:
     assert result > 0
 
 
-def test_compute_xml_checksum_with_attributes() -> None:
-    """Test that compute_xml_checksum correctly processes XML attributes."""
+def test_compute_element_checksum_with_attributes() -> None:
+    """Test that compute_element_checksum correctly processes XML attributes."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    xml_string = '<root><element a="value1" b="value2" n="ignored"/></root>'
+    root = DefusedET.fromstring(
+        '<root><element a="value1" b="value2" n="ignored"/></root>'
+    )
 
-    result = checksum.compute_xml_checksum(xml_string)
+    result = checksum.compute_element_checksum(root)
 
     # Must produce a non-zero hex string, and 'n' attribute must be ignored
     assert result != "0"
-    result_without_n = checksum.compute_xml_checksum(
-        '<root><element a="value1" b="value2"/></root>'
+    result_without_n = checksum.compute_element_checksum(
+        DefusedET.fromstring('<root><element a="value1" b="value2"/></root>')
     )
     assert result == result_without_n
-
-
-def test_compute_element_checksum_matches_xml_checksum() -> None:
-    """The tree-based checksum equals the checksum of the same tree as XML string."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    xml_string = '<sc><si v="1.2.3"/><us ug="a &amp; &lt;b&gt;"/><col><dcl dclg="d" fref="1"><c n="x" v="1"/></dcl></col></sc>'
-
-    assert checksum.compute_element_checksum(
-        DefusedET.fromstring(xml_string)
-    ) == checksum.compute_xml_checksum(xml_string)
-
-
-def test_compute_xml_checksum_invalid_xml() -> None:
-    """Test that compute_xml_checksum returns '0' for invalid XML."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    result = checksum.compute_xml_checksum("not valid xml <unclosed")
-    assert result == "0"
 
 
 def test_compute_checksum_next_byte_and_offset_negative() -> None:

@@ -64,7 +64,6 @@ _SYR_CONNECT_CLIENT_OS_MODEL = "iPhone"
 _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION = "3.9.7"
 _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
 _SYR_CONNECT_CLIENT_APP_NAME = "SYR Connect"
-_SYR_CONNECT_CLIENT_APP_VERSION = f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}-{_SYR_CONNECT_CLIENT_OS_NAME}-{_SYR_CONNECT_CLIENT_OS_MODEL}-{_SYR_CONNECT_CLIENT_OS_VERSION}-{_SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER}"
 
 # Example: "SYR/485 CFNetwork/3896.100.1.2.1 Darwin/27.0.0"
 _SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME = "SYR"
@@ -276,25 +275,6 @@ _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
     28: 1400,
     29: 1450,
     30: 1500,
-}
-
-# getRPW: Days on which regeneration is allowed, stored as a bit mask.
-#
-# This maps a single-bit mask value to the corresponding weekday index
-# (0 = Monday .. 6 = Sunday). A mask value of 0 indicates "no days configured"
-# Example: mask 5 (0b0000101) means Monday (1<<0) and Wednesday (1<<2).
-#
-# Use this mapping to decode device `getRPW` bitmasks where each bit
-# represents a weekday. Documentation only.
-_SYR_CONNECT_SENSOR_RPW_VALUE_MAP = {
-    0: None,  # No days configured
-    1: 0,  # Monday
-    2: 1,  # Tuesday
-    4: 2,  # Wednesday
-    8: 3,  # Thursday
-    16: 4,  # Friday
-    32: 5,  # Saturday
-    64: 6,  # Sunday
 }
 
 # Mapping for getCRS sensor values (Cartridge size)
