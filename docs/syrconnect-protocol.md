@@ -344,7 +344,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 - RSA = Rückspülautomatik
 - DM = Druckminderer
 - LS = Leckageschutz
-- DFM = role of a MultiController (`getDFM`), from `lib_connect_internal_config.xml` of the SYR Connect app. With DFM 1 (Leckageschutz) the app also reads `getFFM`: 1 = Rückspülfilter, 2 = Wechselfilter; it only selects the product image.
+- DFM = role of a MultiController (`getDFM`). With DFM 1 (Leckageschutz) `getFFM` is also read: 1 = Rückspülfilter, 2 = Wechselfilter.
 - DFR = Druckminderer mit Rückspülfilter
 
 | dkv | Device name | Brand | Brand product name | Notes |
@@ -386,7 +386,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 112 | SafeTech+ | | | Azure, WiFi-AP: `SYR` |
 | 113 | Trio DFR LS | | | Azure, ref=100 |
 | 200 | NeoSoft | SYR | NeoSoft 5000 Connect | Azure |
-| 206 | NeoSoft Single | SYR | NeoSoft 2500 Connect | ref=200; product image 2500.00.000 |
+| 206 | NeoSoft Single | SYR | NeoSoft 2500 Connect | ref=200; product number 2500.00.000 |
 | 207 | comfort-Enthärtungsanlage Softwater Uno | Sanibel | Softwater UNO A25 | ref=200 |
 | 208 | concept Einzelenthärtungsanlage | | | ref=200 |
 | 209 | Optima Einzelenthärtungsanlage | | | ref=200 |
@@ -1230,6 +1230,35 @@ available per model) alongside the confirmed descriptions.
 | VOL | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
 | VPS1 | X | X | X | X | X | X | X | ✓ | ✓ |
 | VPS2 | X | X | X | X | X | X | X | X | ✓ |
+
+## Statistics web services
+
+Every device web service is a method below one path. The statistics have one method per device family:
+
+- URL: `<api_base_url>WebServices/SyrControlWebServiceTest2.asmx/<method>` (form parameter `xml`, same session and checksum as `GetDeviceCollectionStatus`)
+
+| Config attribute | Method |
+| ------ | ------ |
+| mStatisticAllInOnePlus | GetAllInOnePlusStatistics |
+| mStatisticDefault | GetWaterConsumption |
+| mStatisticDosingPump | GetDosingPumpStatistics |
+| mStatisticHva | GetFillingVolumeConsumption |
+| mStatisticHygBox | GetHygBoxStatistics |
+| mStatisticHygiene | GetFlushingVolumeConsumption |
+| mStatisticLexPlus | GetLexPlusStatistics |
+| mStatisticMuCo | GetMuCoStatistics |
+| mStatisticNeoSoft | GetNeoSoftStatistics |
+| mStatisticSafeFloor | GetSafeFloorStatistics |
+| mStatisticSafeTech | GetSafeTechStatistics |
+| mStatisticSafeTechPlusV2 | GetSafeTechAzureStatistics |
+| mStatisticTrioLs | GetTrioLsStatistics |
+
+Which device kind uses which method has not been verified. The request attributes (`<sh t rtyp unit>`) are only known for:
+
+- GetSafeFloorStatistics: see below
+- GetLexPlusStatistics: `t="1"` with `unit="l"` (water) and `t="2"` with `unit="kg"` (salt), `rtyp="1"` (from TA2k/ioBroker.syrconnectapp, not verified)
+
+The integration describes the series of a device family as `SyrConnectStatistic` (method, `t`, `rtyp`, `unit` and the sensor key) in `statistics` of the device profile (`devices/<name>.py`). Only SafeFloor has series so far: the other devices report their values with every status, so Home Assistant builds the history itself.
 
 ## SafeFloor measurement history (GetSafeFloorStatistics)
 

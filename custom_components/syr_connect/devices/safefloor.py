@@ -22,7 +22,7 @@ used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global sensor.py allowlist first).
 """
 
-from . import SyrConnectDeviceProfile
+from . import SyrConnectDeviceProfile, SyrConnectStatistic
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -101,6 +101,26 @@ ALA_CODES = {
     "A0X0100": "alarm_battery_weak",
 }
 
+# The sensor measures every getWMP seconds but uploads only every getRCP seconds, so
+# the status holds only the latest measurement. The cloud keeps the raw measurements
+# of the last 6 days (see "SafeFloor measurement history" in docs/syrconnect-protocol.md).
+STATISTICS = (
+    SyrConnectStatistic(
+        key="getCEL",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=1,
+        unit="°C",
+    ),
+    SyrConnectStatistic(
+        key="getHMD",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=2,
+        unit="%",
+    ),
+)
+
 
 PROFILE = SyrConnectDeviceProfile(
     ala_codes=ALA_CODES,
@@ -108,6 +128,7 @@ PROFILE = SyrConnectDeviceProfile(
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
+    statistics=STATISTICS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
 )

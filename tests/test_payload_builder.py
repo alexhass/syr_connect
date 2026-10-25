@@ -18,7 +18,10 @@ from custom_components.syr_connect.const import (
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
 )
+from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.payload_builder import PayloadBuilder
+
+_TEMPERATURE, _HUMIDITY = safefloor.STATISTICS
 
 
 def test_compute_locale_lang_reg_from_getlocale() -> None:
@@ -120,7 +123,9 @@ def test_session_and_device_payloads_roundtrip_special_characters(value: str) ->
     assert status.find(".//us").attrib["ug"] == value
     assert status.find(".//dcl").attrib["dclg"] == value
 
-    stats = DefusedET.fromstring(pb.build_device_get_statistics_payload(value, value))
+    stats = DefusedET.fromstring(
+        pb.build_device_get_statistics_payload(value, value, _TEMPERATURE)
+    )
     assert stats.find(".//us").attrib["ug"] == value
     assert stats.find(".//dcl").attrib["dclg"] == value
 
@@ -183,8 +188,8 @@ _REQUEST_FIXTURES = {
     "list": "ExampleRequest_GetProjectDeviceCollections.xml",
     "status": "ExampleRequest_GetDeviceCollectionStatus.xml",
     "set": "ExampleRequest_SetDeviceCollectionStatus.xml",
-    "water": "ExampleRequest_GetStatistics_Water.xml",
-    "salt": "ExampleRequest_GetStatistics_Salt.xml",
+    "temperature": "ExampleRequest_GetSafeFloorStatistics_Temperature.xml",
+    "humidity": "ExampleRequest_GetSafeFloorStatistics_Humidity.xml",
 }
 
 
@@ -216,8 +221,12 @@ def _build_reference_payloads() -> dict[str, str]:
             "set": pb.build_device_set_status_payload(
                 session, device, [("setAB", 1), ("setSIR", "")]
             ),
-            "water": pb.build_device_get_statistics_payload(session, device, "water"),
-            "salt": pb.build_device_get_statistics_payload(session, device, "salt"),
+            "temperature": pb.build_device_get_statistics_payload(
+                session, device, _TEMPERATURE
+            ),
+            "humidity": pb.build_device_get_statistics_payload(
+                session, device, _HUMIDITY
+            ),
         }
 
 
@@ -255,10 +264,8 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     assert 'lng="de"' in payload and 'reg="DE"' in payload
 
 
-def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lang(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """Statistics payload branches for salt and water include correct units and checksum."""
+def test_build_device_get_statistics_payload_uses_series_checksum_and_lang() -> None:
+    """The <sh> element carries the series attributes and the locale; a checksum is added."""
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.return_value = "CHK"
     pb = PayloadBuilder("1.2.3", fake_checksum)
@@ -266,24 +273,17 @@ def test_build_device_get_statistics_payload_salt_and_water_use_checksum_and_lan
     with patch.object(
         PayloadBuilder, "_compute_locale_lang_reg", return_value=("it", "IT")
     ):
-        salt_payload = pb.build_device_get_statistics_payload(
-            "sess", "dev", statistic_type="salt"
-        )
-        water_payload = pb.build_device_get_statistics_payload(
-            "sess", "dev", statistic_type="water"
-        )
+        payload = pb.build_device_get_statistics_payload("sess", "dev", _HUMIDITY)
 
-    # Checksum added
-    assert DefusedET.fromstring(salt_payload).find("cs").attrib["v"] == "CHK"
-    assert DefusedET.fromstring(water_payload).find("cs").attrib["v"] == "CHK"
-
-    # salt uses kg, water uses l
-    assert 'unit="kg"' in salt_payload
-    assert 'unit="l"' in water_payload
-
-    # lang/region are injected
-    assert 'lg="it"' in salt_payload
-    assert 'rg="IT"' in water_payload
+    root = DefusedET.fromstring(payload)
+    assert root.find("cs").attrib["v"] == "CHK"
+    assert root.find(".//sh").attrib == {
+        "t": "2",
+        "rtyp": "4",
+        "lg": "it",
+        "rg": "IT",
+        "unit": "%",
+    }
 
 
 @pytest.mark.parametrize(
@@ -397,34 +397,6 @@ def test_build_device_set_status_payload_with_string_value(
     assert "NewName" in payload
 
 
-def test_build_device_get_statistics_payload_water(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test building statistics payload for water."""
-    payload = payload_builder.build_device_get_statistics_payload(
-        "session123", "device789", "water"
-    )
-
-    assert "session123" in payload
-    assert "device789" in payload
-    assert 't="1"' in payload  # Water type
-    assert 'unit="l"' in payload
-
-
-def test_build_device_get_statistics_payload_salt(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test building statistics payload for salt."""
-    payload = payload_builder.build_device_get_statistics_payload(
-        "session123", "device789", "salt"
-    )
-
-    assert "session123" in payload
-    assert "device789" in payload
-    assert 't="2"' in payload  # Salt type
-    assert 'unit="kg"' in payload
-
-
 def test_get_timestamp(payload_builder: PayloadBuilder) -> None:
     """Test timestamp generation."""
     timestamp = payload_builder.get_timestamp()
@@ -516,25 +488,12 @@ def test_build_device_get_statistics_payload_escaping(
     device = "device<test>"
 
     payload = payload_builder.build_device_get_statistics_payload(
-        session, device, "water"
+        session, device, _TEMPERATURE
     )
 
     # Special characters should be escaped
     assert "&amp;" in payload
     assert "&lt;" in payload or "&gt;" in payload
-
-
-def test_build_device_get_statistics_payload_default_type(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test building statistics payload with default type (water)."""
-    payload = payload_builder.build_device_get_statistics_payload(
-        "session123", "device789"
-    )
-
-    # Should default to water
-    assert 't="1"' in payload
-    assert 'unit="l"' in payload
 
 
 def test_add_checksum_integration(payload_builder: PayloadBuilder) -> None:

@@ -55,8 +55,8 @@ class SyrConnectModel:
     # hardware (e.g. the dk=1500-1506 MultiController family). None means the global
     # allowlists and the generic alarm codes.
     device_profile: SyrConnectDeviceProfile | None = None
-    # MultiController role (getDFM), the subtype the app uses for dk=1500-1506
-    # (subtypeAttr="dfm"). Like `sbt`, None matches every device.
+    # MultiController role (getDFM), the subtype of dk=1500-1506. Like `sbt`, None
+    # matches every device.
     dfm: int | None = None
     # Human-readable model label used for `DeviceInfo.model` and the local model selector
     display_name: str
@@ -1081,8 +1081,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="222",
     ),
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
-    # The role of a MultiController is getDFM, as defined by the SYR Connect app
-    # (lib_connect_internal_config.xml): 1 leak protection, 2 connection centre,
+    # The role of a MultiController is getDFM: 1 leak protection, 2 connection centre,
     # 3 All-in-One (dkv 500/506 only), 4 automatic backwash, 5 leak protection with
     # backwash filter (dkv 502-506 only). There is deliberately no generic signature for
     # an unknown role: such a device stays an unknown model, so it gets reported
@@ -1470,7 +1469,7 @@ def detect_model(
     The cloud API (XML) reports `dk`, `dkv` and `sbt` for every device. They are the
     most reliable match and select the family of signatures with these values; a
     signature without `sbt` matches every subtype. A MultiController reports its role
-    in getDFM, the subtype the app uses for dk=1500-1506: like `sbt`, a signature with
+    in getDFM, the subtype of dk=1500-1506: like `sbt`, a signature with
     `dfm` only matches a device with that role, one without `dfm` every device. A
     family of one signature is the result. In a larger family the status decides, but
     only between its signatures (getCNA for the i-LEX sizes, getVER for SafeTech

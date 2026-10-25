@@ -725,13 +725,12 @@ def test_detect_model_unknown_multicontroller_role_is_unknown() -> None:
         (1506, 5, "syrtriolockconnect"),
     ],
 )
-def test_detect_model_multicontroller_roles_follow_the_app(
+def test_detect_model_multicontroller_roles(
     dk: int, dfm: int, expected_name: str
 ) -> None:
-    """Every MultiController role (getDFM) of the SYR Connect app has its signature.
+    """Every MultiController role (getDFM) has its signature.
 
-    The roles come from lib_connect_internal_config.xml of the app; the serial number
-    detects the same role as the device kind (local JSON API).
+    The serial number detects the same role as the device kind (local JSON API).
     """
     dkv = dk - 1000
     status = {"getSRN": f"{dkv}AAA00001", "getDFM": str(dfm)}
@@ -752,7 +751,7 @@ def test_model_signature_names_are_unique() -> None:
 
 
 def test_detect_model_neosoft_device_kinds() -> None:
-    """The app's "NeoSoft" (dk=1200) is the NeoSoft 5000, "NeoSoft Single" (dk=1206) the 2500."""
+    """Device kind "NeoSoft" (dk=1200) is the NeoSoft 5000, "NeoSoft Single" (dk=1206) the 2500."""
     assert detect_model({}, dk=1200, dkv=200).name == "neosoft5000"
     status = {"getSRN": "206AAA12345"}
     assert detect_model(status, dk=1206, dkv=206).name == "neosoft2500"

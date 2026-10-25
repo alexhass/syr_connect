@@ -2137,6 +2137,15 @@ def test_device_file_keys_have_descriptions(device_file: str, platform: str) -> 
     assert keys <= _DESCRIBED_KEYS[platform]
 
 
+@pytest.mark.parametrize("device_file", sorted(_DEVICE_PROFILES))
+def test_device_file_statistics_belong_to_its_sensors(device_file: str) -> None:
+    """Every measurement history series of a device file is one of its sensors, once."""
+    profile = _DEVICE_PROFILES[device_file]
+    keys = [statistic.key for statistic in profile.statistics]
+    assert set(keys) <= profile.sensor
+    assert len(keys) == len(set(keys))
+
+
 def test_every_device_profile_is_used_by_a_signature() -> None:
     """Every devices/<name>.py profile is referenced by at least one model signature."""
     used = {

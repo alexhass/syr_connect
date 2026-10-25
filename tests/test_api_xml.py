@@ -12,6 +12,7 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
+from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -144,7 +145,11 @@ async def test_parallel_rejections_relogin_only_once(
         ("get_devices", ("project1",), "parse_device_list_response"),
         ("get_device_status", ("dclg1",), "parse_device_status_response"),
         ("set_device_status", ("dclg1", [("setAB", "2")]), None),
-        ("get_statistics", ("dclg1", "water"), "parse_statistics_response"),
+        (
+            "get_statistics",
+            ("dclg1", safefloor.STATISTICS[0]),
+            "parse_statistics_response",
+        ),
     ],
 )
 async def test_rejected_token_relogs_in_and_retries_once(
@@ -476,42 +481,34 @@ async def test_set_device_status_exception_handling(
         await api_client.set_device_status("device1", [("setSIR", 1)])
 
 
-async def test_get_statistics_water(api_client: SyrConnectXmlAPI) -> None:
-    """Test get_statistics for water statistics."""
+async def test_get_statistics_posts_series_to_its_method(
+    api_client: SyrConnectXmlAPI,
+) -> None:
+    """The request goes to the method of the series and carries its attributes."""
     api_client.session_data = "valid_session"
-
-    mock_stats = {"daily": "100", "weekly": "700", "monthly": "3000"}
+    mock_stats = {"min": "14.6", "max": "15.8"}
 
     with (
-        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
+        patch.object(
+            api_client.http_client, "post", return_value="<sc></sc>"
+        ) as mock_post,
         patch.object(
             api_client.response_parser,
             "parse_statistics_response",
             return_value=mock_stats,
         ),
     ):
-        result = await api_client.get_statistics("device1", "water")
+        result = await api_client.get_statistics("device1", safefloor.STATISTICS[1])
 
-        assert result == mock_stats
-
-
-async def test_get_statistics_salt(api_client: SyrConnectXmlAPI) -> None:
-    """Test get_statistics for salt statistics."""
-    api_client.session_data = "valid_session"
-
-    mock_stats = {"consumed": "50", "remaining": "150"}
-
-    with (
-        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
-        patch.object(
-            api_client.response_parser,
-            "parse_statistics_response",
-            return_value=mock_stats,
-        ),
-    ):
-        result = await api_client.get_statistics("device1", "salt")
-
-        assert result == mock_stats
+    assert result == mock_stats
+    url = mock_post.call_args.args[0]
+    assert url == (
+        "https://syrconnect.de/WebServices/SyrControlWebServiceTest2.asmx/"
+        "GetSafeFloorStatistics"
+    )
+    payload = mock_post.call_args.args[1]["xml"]
+    assert '<sh t="2" rtyp="4"' in payload
+    assert 'unit="%"' in payload
 
 
 async def test_get_statistics_exception_handling(api_client: SyrConnectXmlAPI) -> None:
@@ -524,7 +521,7 @@ async def test_get_statistics_exception_handling(api_client: SyrConnectXmlAPI) -
         ),
         pytest.raises(RuntimeError, match="Stats error"),
     ):
-        await api_client.get_statistics("device1", "water")
+        await api_client.get_statistics("device1", safefloor.STATISTICS[0])
 
 
 async def test_login_with_parser_value_error(api_client: SyrConnectXmlAPI) -> None:
@@ -570,7 +567,7 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
     [
         ("get_device_status", ("dclg1",)),
         ("set_device_status", ("dclg1", [("setAB", "2")])),
-        ("get_statistics", ("dclg1", "water")),
+        ("get_statistics", ("dclg1", safefloor.STATISTICS[0])),
     ],
 )
 async def test_network_errors_are_wrapped_in_connection_error(
@@ -617,26 +614,6 @@ async def test_get_devices_adds_project_id(api_client: SyrConnectXmlAPI) -> None
 
         assert len(devices) == 1
         assert devices[0]["project_id"] == "project123"
-
-
-async def test_get_statistics_default_type(api_client: SyrConnectXmlAPI) -> None:
-    """Test get_statistics with default statistic_type parameter."""
-    api_client.session_data = "valid_session"
-
-    mock_stats = {"daily": "100"}
-
-    with (
-        patch.object(api_client.http_client, "post", return_value="<sc></sc>"),
-        patch.object(
-            api_client.response_parser,
-            "parse_statistics_response",
-            return_value=mock_stats,
-        ),
-    ):
-        # Call without explicit statistic_type (should default to "water")
-        result = await api_client.get_statistics("device1")
-
-        assert result == mock_stats
 
 
 async def test_set_device_status_non_boolean_value(

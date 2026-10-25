@@ -33,8 +33,8 @@ from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_API_XML_BASE_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
-    _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
+    _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
     _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
     _SYR_CONNECT_API_XML_LOGIN_URL,
     _SYR_CONNECT_CLIENT_APP_NAME,
@@ -51,6 +51,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_USER_AGENT,
 )
 from .data import SyrConnectDevice
+from .devices import SyrConnectStatistic
 from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
@@ -124,9 +125,8 @@ class SyrConnectXmlAPI:
         self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
         self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
         self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
-        self._device_get_statistics_url = (
-            _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL
-        )
+        # The statistics method of the device family is appended (get_statistics)
+        self._device_service_url = _base + _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH
 
         # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
         # The app sends the phone's language here; use the HA locale.
@@ -519,33 +519,20 @@ class SyrConnectXmlAPI:
             return True
 
     async def get_statistics(
-        self, device_id: str, statistic_type: str = "water"
+        self, device_id: str, statistic: SyrConnectStatistic
     ) -> dict[str, Any]:
-        """Fetch historical consumption statistics for a device.
+        """Fetch the measurement history of one series of a device.
 
-        This endpoint is primarily used by LEXplus devices that track:
-        - Water consumption (daily/weekly/monthly totals)
-        - Salt consumption (regeneration counts, salt usage)
-
-        Statistics are useful for:
-        - Monitoring usage patterns
-        - Detecting leaks (abnormal consumption)
-        - Planning maintenance (salt refills)
-        - Energy/cost analysis
-
-        Note: Not all device models support statistics. SafeTech and older
-        NeoSoft models may not provide this data.
-
-        Not used by the integration yet; kept for planned water/salt statistics sensors.
+        The cloud keeps measurements a device does not report in its status, for
+        example the measurements of a SafeFloor sensor between two uploads. The device
+        profile lists the series of a family (``SyrConnectDeviceProfile.statistics``).
 
         Args:
             device_id: Device collection group ID (DCLG)
-            statistic_type: Type of statistic to fetch:
-                - "water": Water consumption in liters/gallons
-                - "salt": Salt consumption in kg and regeneration counts
+            statistic: Series to fetch (web service method and request attributes)
 
         Returns:
-            Dictionary with time-series data (format varies by statistic_type)
+            Flattened attributes of the response
 
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
@@ -554,31 +541,35 @@ class SyrConnectXmlAPI:
         # --- Ensure Valid Session ---
         await self._ensure_session()
 
-        _LOGGER.debug("Getting %s statistics for device: %s", statistic_type, device_id)
+        _LOGGER.debug(
+            "Getting %s statistics (%s) for device: %s",
+            statistic.key,
+            statistic.method,
+            device_id,
+        )
 
         try:
             # --- Make HTTP Request ---
             xml_response = await self._post_with_session(
-                self._device_get_statistics_url,
+                self._device_service_url + statistic.method,
                 lambda token: self.payload_builder.build_device_get_statistics_payload(
-                    token, device_id, statistic_type
+                    token, device_id, statistic
                 ),
                 "Statistics",
             )
             _LOGGER.debug("Statistics XML response: %s", xml_response)
 
             # --- Parse Response ---
-            # Statistics format depends on device model and statistic type
             stats_data = self.response_parser.parse_statistics_response(xml_response)
             _LOGGER.debug("Statistics data parsed: %d attributes", len(stats_data))
 
         except (aiohttp.ClientError, TimeoutError) as err:
-            _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
+            _LOGGER.error("Failed to get %s statistics: %s", statistic.key, err)
             raise SyrConnectConnectionError(
-                f"Failed to get {statistic_type} statistics: {err}"
+                f"Failed to get {statistic.key} statistics: {err}"
             ) from err
         except Exception as err:
-            _LOGGER.error("Failed to get %s statistics: %s", statistic_type, err)
+            _LOGGER.error("Failed to get %s statistics: %s", statistic.key, err)
             raise
         else:
             return stats_data

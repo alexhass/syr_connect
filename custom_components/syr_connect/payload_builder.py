@@ -15,6 +15,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
 )
+from .devices import SyrConnectStatistic
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -233,41 +234,44 @@ class PayloadBuilder:
         return self._add_checksum(root)
 
     def build_device_get_statistics_payload(
-        self, session_id: str, device_id: str, statistic_type: str = "water"
+        self, session_id: str, device_id: str, statistic: SyrConnectStatistic
     ) -> str:
         """Build statistics XML payload with checksum.
 
         Args:
             session_id: Active session ID
             device_id: Device ID to query (UUID)
-            statistic_type: Type of statistics ("water" or "salt")
+            statistic: Series to request (attributes of the ``<sh>`` element)
 
         Returns:
             XML string with checksum
 
-        Example for ``water`` (``tests/fixtures/xml/requests/ExampleRequest_GetStatistics_Water.xml``);
-        ``salt`` uses ``t="2"`` and ``unit="kg"``::
+        Example for the SafeFloor temperature
+        (``tests/fixtures/xml/requests/ExampleRequest_GetSafeFloorStatistics_Temperature.xml``)::
 
             <sc>
               <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
               <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
               <col>
                 <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f">
-                  <sh t="1" rtyp="1" lg="de" rg="DE" unit="l"/>
+                  <sh t="1" rtyp="4" lg="de" rg="DE" unit="°C"/>
                 </dcl>
               </col>
-              <cs v="3B9C"/>
+              <cs v="3C73"/>
             </sc>
         """
         root = self._new_request(session_id)
         dcl = self._element(self._element(root, "col"), "dcl", dclg=device_id)
-
-        # Add statistic-specific element
         lang, reg = self._compute_locale_lang_reg()
-        if statistic_type == "salt":
-            self._element(dcl, "sh", t="2", rtyp="1", lg=lang, rg=reg, unit="kg")
-        else:
-            self._element(dcl, "sh", t="1", rtyp="1", lg=lang, rg=reg, unit="l")
+        self._element(
+            dcl,
+            "sh",
+            t=statistic.t,
+            rtyp=statistic.rtyp,
+            lg=lang,
+            rg=reg,
+            unit=statistic.unit,
+        )
         return self._add_checksum(root)
 
     def _add_checksum(self, root: ET.Element) -> str:

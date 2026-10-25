@@ -25,6 +25,10 @@ Or activate the virtualenv first (`.venv\Scripts\activate.bat` in cmd, `.venv\Sc
 | `--identity DEVICE` | - | Target device identifier (matches `id`, `dclg`, `serial_number` or `name`) for a one-shot set command |
 | `--set-command CMD` | - | Set command to execute (e.g. `setSIR`, `setSV1`). Requires `--identity` and `--set-value` |
 | `--set-value VALUE` | - | Value to use with `--set-command`. Parsed as `true`/`false` → bool, numbers → int/float, otherwise string |
+| `--get-statistics [METHOD]` | - | Fetch the statistics of `--identity` and exit. Without `METHOD` the series of the device profile of the detected model (e.g. SafeFloor temperature and humidity); with `METHOD` one request with `--stat-t`, `--stat-unit` and `--stat-rtyp` |
+| `--stat-t INT` | - | Measurement attribute `t` of `<sh>` (with `--get-statistics METHOD`) |
+| `--stat-unit STRING` | - | Unit attribute `unit` of `<sh>`, e.g. `°C`, `%`, `l` (with `--get-statistics METHOD`) |
+| `--stat-rtyp INT` | - | Report type attribute `rtyp` of `<sh>` (with `--get-statistics METHOD`) |
 | `--get-devices` | - | Fetch device list for every project after login |
 | `--get-status` | - | Fetch device status for every device (implies `--get-devices`) |
 | `--no-decrypt` | - | Skip decryption, show raw XML response |
@@ -83,6 +87,34 @@ python scripts/debug_cli.py `
 ```
 
 Note: `--set-command` requires `--identity` and `--set-value`. The script parses `"true"`/`"false"` to booleans, numeric strings to `int`/`float`, otherwise the raw string is sent.
+
+#### Statistics of a device
+
+Fetches the statistics series of the device profile, for example the temperature and humidity history of a SafeFloor. The raw responses are logged at debug level; use `--log-file` to keep them.
+
+```powershell
+python scripts/debug_cli.py `
+    --username <username> `
+    --password <password> `
+    --identity 123456789 `
+    --get-statistics
+```
+
+#### Try a statistics method
+
+Sends one request to any statistics method (see "Statistics web services" in `docs/syrconnect-protocol.md`) with own request attributes. Without `unit` the cloud answers with an empty `<col />`.
+
+```powershell
+python scripts/debug_cli.py `
+    --username <username> `
+    --password <password> `
+    --identity 123456789 `
+    --get-statistics GetLexPlusStatistics `
+    --stat-t 1 `
+    --stat-unit l `
+    --stat-rtyp 1 `
+    --log-file statistics.log
+```
 
 #### With custom log file
 

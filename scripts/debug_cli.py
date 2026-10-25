@@ -17,6 +17,11 @@ Options:
     --identity DEVICE           Device identifier (id, dclg, serial_number or name) to target with --set-command
     --set-command CMD           Set command to execute (e.g. setSIR, setSV1); requires --identity and --set-value
     --set-value VALUE           Value to use with --set-command (bool/int/float/string parsed)
+    --get-statistics [METHOD]   Fetch the statistics of --identity: the series of its device profile,
+                                or METHOD with --stat-t, --stat-unit and --stat-rtyp
+    --stat-t INT                Measurement attribute t of <sh> (with --get-statistics METHOD)
+    --stat-unit STRING          Unit attribute of <sh>, e.g. "°C" (with --get-statistics METHOD)
+    --stat-rtyp INT             Report type attribute rtyp of <sh> (with --get-statistics METHOD)
     --log-file PATH             Write output additionally to this file (no file written by default)
     --show-password             Show password in log output (default: masked as "***")
     --no-decrypt                Skip decryption step; also prevents set commands from running
@@ -35,6 +40,23 @@ Execute a single set command (one-shot):
         --identity 1234567890 \
         --set-command setSV1 \
         --set-value 10
+
+Fetch the statistics series of a device profile (e.g. SafeFloor):
+    python scripts/debug_cli.py \
+        --username me@example.com \
+        --password secret \
+        --identity 1234567890 \
+        --get-statistics
+
+Try a statistics method with own request attributes:
+    python scripts/debug_cli.py \
+        --username me@example.com \
+        --password secret \
+        --identity 1234567890 \
+        --get-statistics GetLexPlusStatistics \
+        --stat-t 1 \
+        --stat-unit l \
+        --stat-rtyp 1
 
 Example (CLEAR PRO):
     python scripts/debug_cli.py \
@@ -99,6 +121,7 @@ try:
 
     from custom_components.syr_connect.checksum import SyrChecksum
     from custom_components.syr_connect.const import (
+        _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
         _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
         _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
         _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
@@ -112,8 +135,10 @@ try:
         _SYR_CONNECT_CLIENT_USER_AGENT,
     )
     from custom_components.syr_connect.data import SyrConnectDevice
+    from custom_components.syr_connect.devices import SyrConnectStatistic
     from custom_components.syr_connect.encryption import SyrEncryption
     from custom_components.syr_connect.http_client import HTTPClient
+    from custom_components.syr_connect.models import detect_model
     from custom_components.syr_connect.payload_builder import PayloadBuilder
     from custom_components.syr_connect.response_parser import ResponseParser
 except ModuleNotFoundError as err:
@@ -219,6 +244,10 @@ class DebugXmlClient:
         self.device_list_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
         self.device_status_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
         self.device_set_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
+        # The statistics method of the device family is appended (get_statistics)
+        self.device_service_url = (
+            f"{base_url}/{_SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH}"
+        )
 
         self.session_data: str = ""
         self.projects: list[dict[str, Any]] = []
@@ -244,6 +273,7 @@ class DebugXmlClient:
         _LOGGER.info("  device_list_url   : %s", self.device_list_url)
         _LOGGER.info("  device_status_url : %s", self.device_status_url)
         _LOGGER.info("  device_set_url    : %s", self.device_set_url)
+        _LOGGER.info("  device_service_url: %s", self.device_service_url)
         _LOGGER.info("  app_version       : %s", app_version)
         _LOGGER.info("  api_app_name      : %s", app_name)
         _LOGGER.info("  api_package_name  : %s", api_package_name)
@@ -431,6 +461,39 @@ class DebugXmlClient:
             _LOGGER.info("  %-20s = %r", k, v)
         return status
 
+    # ------------------------------------------------------------------
+    # Statistics
+    # ------------------------------------------------------------------
+
+    async def get_statistics(self, dclg: str, statistic: SyrConnectStatistic) -> str:
+        """Fetch and log one statistics series of a device.
+
+        Returns:
+            The raw XML response, so it can be saved as a fixture
+        """
+        _LOGGER.info(
+            "=== GET STATISTICS  dclg=%s  method=%s  t=%s  unit=%s  rtyp=%s ===",
+            dclg,
+            statistic.method,
+            statistic.t,
+            statistic.unit,
+            statistic.rtyp,
+        )
+
+        payload = self.payload_builder.build_device_get_statistics_payload(
+            self.session_data, dclg, statistic
+        )
+        _LOGGER.debug("--- Statistics request payload ---\n%s", payload)
+
+        url = self.device_service_url + statistic.method
+        _LOGGER.info("POST %s", url)
+        raw_response = await self.http_client.post(url, {"xml": payload})
+        _LOGGER.debug("--- Raw statistics response ---\n%s", raw_response)
+
+        stats = self.response_parser.parse_statistics_response(raw_response)
+        _LOGGER.info("Statistics attributes returned: %d", len(stats))
+        return raw_response
+
 
 # ---------------------------------------------------------------------------
 # Main
@@ -518,7 +581,125 @@ def _parse_args() -> argparse.Namespace:
         "--set-value",
         help="Value to use with the set command (bool/int/float/string parsed automatically)",
     )
+    parser.add_argument(
+        "--get-statistics",
+        nargs="?",
+        const="",
+        metavar="METHOD",
+        help=(
+            "Fetch the statistics of --identity: without METHOD the series of its"
+            " device profile, with METHOD one request with --stat-t, --stat-unit and"
+            " --stat-rtyp"
+        ),
+    )
+    parser.add_argument(
+        "--stat-t",
+        type=int,
+        help="Measurement attribute t of <sh> (with --get-statistics METHOD)",
+    )
+    parser.add_argument(
+        "--stat-unit",
+        help='Unit attribute of <sh>, e.g. "°C" (with --get-statistics METHOD)',
+    )
+    parser.add_argument(
+        "--stat-rtyp",
+        type=int,
+        help="Report type attribute rtyp of <sh> (with --get-statistics METHOD)",
+    )
     return parser.parse_args()
+
+
+def _find_device(
+    devices: list[SyrConnectDevice], identity: str
+) -> SyrConnectDevice | None:
+    """Return the device matching id, dclg, serial number or name, logging the rest."""
+    target = next(
+        (
+            d
+            for d in devices
+            if identity
+            in (
+                d.get("id"),
+                d.get("dclg"),
+                d.get("serial_number"),
+                d.get("name"),
+            )
+        ),
+        None,
+    )
+    if target is None:
+        _LOGGER.error("Device '%s' not found. Available devices:", identity)
+        for d in devices:
+            _LOGGER.info(
+                "  id=%s  dclg=%s  name=%s  dk=%s  dkv=%s  sbt=%s",
+                d.get("id"),
+                d.get("dclg"),
+                d.get("name"),
+                d.get("dk"),
+                d.get("dkv"),
+                d.get("sbt"),
+            )
+    return target
+
+
+async def _get_statistics(client: DebugXmlClient, args: argparse.Namespace) -> None:
+    """Fetch the statistics series requested by --get-statistics, exit on bad options."""
+    attrs = (args.stat_t, args.stat_unit, args.stat_rtyp)
+    if not args.identity:
+        _LOGGER.error("--get-statistics requires --identity")
+        sys.exit(1)
+    if args.get_statistics and None in attrs:
+        _LOGGER.error(
+            "--get-statistics METHOD requires --stat-t, --stat-unit and --stat-rtyp"
+        )
+        sys.exit(1)
+    if not args.get_statistics and attrs != (None, None, None):
+        _LOGGER.error("--stat-t, --stat-unit and --stat-rtyp require a METHOD")
+        sys.exit(1)
+
+    target = _find_device(await _collect_devices(client), args.identity)
+    if target is None:
+        sys.exit(1)
+    dclg = target.get("dclg") or target.get("id")
+    if not dclg:
+        _LOGGER.error("Device %s has neither a dclg nor an id", target)
+        sys.exit(1)
+
+    if args.get_statistics:
+        statistics: tuple[SyrConnectStatistic, ...] = (
+            SyrConnectStatistic(
+                key="debug",
+                method=args.get_statistics,
+                rtyp=args.stat_rtyp,
+                t=args.stat_t,
+                unit=args.stat_unit,
+            ),
+        )
+    else:
+        # The status is needed where a device kind has several models
+        status = await client.get_status(target)
+        model = detect_model(
+            status,
+            dk=target.get("dk"),
+            dkv=target.get("dkv"),
+            sbt=target.get("sbt"),
+        )
+        profile = model.device_profile
+        statistics = profile.statistics if profile is not None else ()
+        _LOGGER.info("Detected model: %s (%s)", model.name, model.display_name)
+        if not statistics:
+            _LOGGER.error(
+                "Model %s has no statistics series; use --get-statistics METHOD",
+                model.name,
+            )
+            sys.exit(1)
+
+    for statistic in statistics:
+        try:
+            await client.get_statistics(dclg, statistic)
+        except Exception as exc:
+            _LOGGER.error("Failed to get %s statistics: %s", statistic.method, exc)
+            _LOGGER.debug("Statistics traceback", exc_info=True)
 
 
 async def _collect_devices(client: DebugXmlClient) -> list[SyrConnectDevice]:
@@ -609,37 +790,8 @@ async def _run(args: argparse.Namespace) -> None:
                 _LOGGER.error("--set-command requires --identity and --set-value")
                 sys.exit(1)
 
-            all_devices = await _collect_devices(client)
-
-            target = next(
-                (
-                    d
-                    for d in all_devices
-                    if args.identity
-                    in (
-                        d.get("id"),
-                        d.get("dclg"),
-                        d.get("serial_number"),
-                        d.get("name"),
-                    )
-                ),
-                None,
-            )
-
+            target = _find_device(await _collect_devices(client), args.identity)
             if not target:
-                _LOGGER.error(
-                    "Device '%s' not found. Available devices:", args.identity
-                )
-                for d in all_devices:
-                    _LOGGER.info(
-                        "  id=%s  dclg=%s  name=%s  dk=%s  dkv=%s  sbt=%s",
-                        d.get("id"),
-                        d.get("dclg"),
-                        d.get("name"),
-                        d.get("dk"),
-                        d.get("dkv"),
-                        d.get("sbt"),
-                    )
                 sys.exit(1)
 
             dclg = target.get("dclg") or target.get("id")
@@ -659,6 +811,13 @@ async def _run(args: argparse.Namespace) -> None:
                 return
             _LOGGER.error("Set command failed for device %s", target.get("id"))
             sys.exit(1)
+
+        # ------------------------------------------------------------------
+        # --get-statistics: fetch the statistics of one device and exit
+        # ------------------------------------------------------------------
+        if args.get_statistics is not None:
+            await _get_statistics(client, args)
+            return
 
         # ------------------------------------------------------------------
         # --get-devices / --get-status: fetch and optionally poll status

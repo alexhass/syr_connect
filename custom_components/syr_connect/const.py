@@ -39,9 +39,8 @@ _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = (
 _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = (
     "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
 )
-_SYR_CONNECT_API_XML_DEVICE_GET_STATISTICS_URL = (
-    "WebServices/SyrControlWebServiceTest2.asmx/GetLexPlusStatistics"
-)
+# Path of the device web services; the statistics method of a device family is appended
+_SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH = "WebServices/SyrControlWebServiceTest2.asmx/"
 
 # Encryption keys (from original adapter) - internal
 _SYR_CONNECT_CLIENT_ENCRYPTION_KEY = (

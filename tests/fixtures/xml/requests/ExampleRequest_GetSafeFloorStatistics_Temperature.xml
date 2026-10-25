@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- build_device_get_statistics_payload(session, device, "salt"), language de-DE; ids are placeholders, checksum computed by the integration -->
+<!-- build_device_get_statistics_payload(session, device, safefloor.STATISTICS[0]), language de-DE; ids are placeholders, checksum computed by the integration -->
 <sc>
   <si v="App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"/>
   <us ug="9f3c1a52-7d4e-4b8a-a1c6-2e5d8b07f413"/>
   <col>
     <dcl dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f">
-      <sh t="2" rtyp="1" lg="de" rg="DE" unit="kg"/>
+      <sh t="1" rtyp="4" lg="de" rg="DE" unit="°C"/>
     </dcl>
   </col>
-  <cs v="3C34"/>
+  <cs v="3C73"/>
 </sc>
