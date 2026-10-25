@@ -22,8 +22,13 @@ from custom_components.syr_connect.const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_MODEL,
     CONF_SERVICE,
     DOMAIN,
+)
+from custom_components.syr_connect.exceptions import (
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
 )
 from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -613,6 +618,105 @@ async def test_async_migrate_entry_v2_to_v3(hass: HomeAssistant) -> None:
     assert result is True
     mock_fix.assert_called_once_with(hass, config_entry)
     mock_update.assert_called_once_with(config_entry, version=3)
+
+
+async def test_async_migrate_entry_v7_to_v8(hass: HomeAssistant) -> None:
+    """Test v7->v8 migration renames the Optima T2.3 local model, then migrates to v9."""
+    local_entry = MockConfigEntry(
+        version=7,
+        domain=DOMAIN,
+        title="Local",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "optimat22duo",
+        },
+        entry_id="v7_local",
+    )
+    cloud_entry = MockConfigEntry(
+        version=7,
+        domain=DOMAIN,
+        title="Cloud",
+        data={"username": "v7user@example.com", "password": "password"},
+        entry_id="v7_cloud",
+    )
+    local_entry.add_to_hass(hass)
+    cloud_entry.add_to_hass(hass)
+
+    assert await async_migrate_entry(hass, local_entry) is True
+    assert await async_migrate_entry(hass, cloud_entry) is True
+
+    assert local_entry.version == 9
+    assert local_entry.data[CONF_MODEL] == "optimat2duo"
+    assert cloud_entry.version == 9
+    assert cloud_entry.data == {
+        "username": "v7user@example.com",
+        "password": "password",
+    }
+
+
+async def test_async_migrate_entry_v8_to_v9(hass: HomeAssistant) -> None:
+    """Test v8->v9 migration stores the model detected from the device."""
+    entry = MockConfigEntry(
+        version=8,
+        domain=DOMAIN,
+        title="Local",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "syrmuco",
+        },
+        entry_id="v8_local",
+    )
+    entry.add_to_hass(hass)
+    update = {
+        "data": {**entry.data, CONF_MODEL: "syrtriolockconnect"},
+        "version": 9,
+    }
+
+    with patch(
+        "custom_components.syr_connect.v8_to_v9_detect_local_model",
+        return_value=update,
+    ):
+        assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.version == 9
+    assert entry.data[CONF_MODEL] == "syrtriolockconnect"
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (SyrConnectConnectionError("timeout"), "retried at the next start"),
+        (SyrConnectInvalidResponseError("no model"), "set up the device again"),
+    ],
+)
+async def test_async_migrate_entry_v8_to_v9_fails(
+    hass: HomeAssistant, caplog, error: Exception, message: str
+) -> None:
+    """Test a failed v8->v9 detection keeps version 8 so the next start tries again."""
+    entry = MockConfigEntry(
+        version=8,
+        domain=DOMAIN,
+        title="Local",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "syrmuco",
+        },
+        entry_id="v7_local_fail",
+    )
+    entry.add_to_hass(hass)
+
+    with patch(
+        "custom_components.syr_connect.v8_to_v9_detect_local_model",
+        side_effect=error,
+    ):
+        assert await async_migrate_entry(hass, entry) is False
+
+    assert entry.version == 8
+    assert entry.data[CONF_MODEL] == "syrmuco"
+    assert message in caplog.text
 
 
 async def test_async_options_update_listener_logs_unchanged(

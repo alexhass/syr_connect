@@ -10,16 +10,38 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, UnitOfVolumeFlowRate
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api_json import SyrConnectJsonAPI
 from .const import (
     _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_LOGIN_REQUIRED,
     CONF_MODEL,
     CONF_SERVICE,
 )
+from .exceptions import SyrConnectInvalidResponseError
+from .models import detect_model
+
+# Renamed local JSON API models (CONF_MODEL) -> their new name
+_SYR_CONNECT_MIGRATIONS_LOCAL_MODEL_RENAMES = {
+    "optimat22duo": "optimat2duo",
+}
+
+# Removed generic MultiController models (CONF_MODEL) -> their local base path. Such a
+# model could be any role (getDFM) of its brand, so the migration asks the device.
+_SYR_CONNECT_MIGRATIONS_LOCAL_MODEL_REMOVED = {
+    "conceptmuco": "/trio",
+    "conelmuco": "/trio",
+    "ditechmuco": "/trio",
+    "optimamuco": "/trio",
+    "sanibelmuco": "/trio",
+    "syrmuco": "/trio",
+    "takemuco": "/trio",
+}
 
 
 def v1_to_v2_update_kwargs(entry: ConfigEntry) -> dict | None:
@@ -168,3 +190,69 @@ def v6_to_v7_scope_unique_id_by_entry(hass: HomeAssistant, entry: ConfigEntry) -
             entity_entry.entity_id,
             new_unique_id=f"{entry.entry_id}_{entity_entry.unique_id}",
         )
+
+
+def v7_to_v8_rename_local_model(entry: ConfigEntry) -> dict | None:
+    """Compute update kwargs for migrating v7 -> v8.
+
+    Local JSON API entries store the model chosen at setup (CONF_MODEL). The
+    Optima T2.3 model was renamed, so these entries could no longer be loaded.
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_JSON:
+        return None
+    new_model = _SYR_CONNECT_MIGRATIONS_LOCAL_MODEL_RENAMES.get(
+        str(entry.data.get(CONF_MODEL))
+    )
+    if new_model is None:
+        return None
+    return {"data": {**entry.data, CONF_MODEL: new_model}, "version": 8}
+
+
+async def v8_to_v9_detect_local_model(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict | None:
+    """Compute update kwargs for migrating v8 -> v9.
+
+    Local JSON API entries store the model chosen at setup (CONF_MODEL). The
+    generic MultiController models were removed, so these entries could no longer
+    be loaded. Such a model could be any of its brand's roles, so the model is
+    detected from the device.
+
+    Raises:
+        SyrConnectConnectionError: If the device cannot be reached
+        SyrConnectError: If the device's model cannot be detected
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_JSON:
+        return None
+    base_path = _SYR_CONNECT_MIGRATIONS_LOCAL_MODEL_REMOVED.get(
+        str(entry.data.get(CONF_MODEL))
+    )
+    if base_path is None:
+        return None
+    new_model = await _async_detect_local_model(hass, entry, base_path)
+    return {"data": {**entry.data, CONF_MODEL: new_model}, "version": 9}
+
+
+async def _async_detect_local_model(
+    hass: HomeAssistant, entry: ConfigEntry, base_path: str
+) -> str:
+    """Detect the model of a local device from its status.
+
+    Raises:
+        SyrConnectConnectionError: If the device cannot be reached
+        SyrConnectInvalidResponseError: If no model with local access matches
+    """
+    api = SyrConnectJsonAPI(
+        async_get_clientsession(hass),
+        host=entry.data[CONF_HOST],
+        base_path=base_path,
+        login_required=entry.data.get(CONF_LOGIN_REQUIRED),
+    )
+    devices = await api.get_devices("local")
+    status = await api.get_device_status(devices[0]["id"])
+    model = detect_model(status)
+    if model.base_path is None:
+        raise SyrConnectInvalidResponseError(
+            f"No model with local access matches the device ({model.display_name})"
+        )
+    return model.name

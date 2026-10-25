@@ -1,7 +1,8 @@
 """Tests for migration helpers in migrations.py."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.const import (
@@ -10,7 +11,12 @@ from custom_components.syr_connect.const import (
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
+    CONF_MODEL,
     CONF_SERVICE,
+)
+from custom_components.syr_connect.exceptions import (
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
 )
 from custom_components.syr_connect.migrations import (
     v1_to_v2_update_kwargs,
@@ -19,6 +25,8 @@ from custom_components.syr_connect.migrations import (
     v4_to_v5_remove_sta_binary_sensor,
     v5_to_v6_fix_nps_unit,
     v6_to_v7_scope_unique_id_by_entry,
+    v7_to_v8_rename_local_model,
+    v8_to_v9_detect_local_model,
 )
 from homeassistant.const import UnitOfVolumeFlowRate
 from homeassistant.core import HomeAssistant
@@ -799,3 +807,127 @@ async def test_v6_to_v7_no_entries(hass: HomeAssistant) -> None:
         v6_to_v7_scope_unique_id_by_entry(hass, entry)
 
     mock_reg.async_update_entity.assert_not_called()
+
+
+def test_v7_to_v8_renames_local_model() -> None:
+    """A renamed local model gets its new name."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        version=7,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "optimat22duo",
+        },
+    )
+
+    assert v7_to_v8_rename_local_model(entry) == {
+        "data": {
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "optimat2duo",
+        },
+        "version": 8,
+    }
+
+
+def test_v7_to_v8_keeps_other_local_models_and_cloud_entries() -> None:
+    """A current or removed local model and a cloud entry need no rename."""
+    for data in (
+        {CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "10.0.0.2", CONF_MODEL: "trio"},
+        {CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "10.0.0.2", CONF_MODEL: "syrmuco"},
+        {CONF_API_TYPE: API_TYPE_XML, CONF_MODEL: "optimat22duo"},
+    ):
+        entry = MockConfigEntry(domain="syr_connect", version=7, data=data)
+        assert v7_to_v8_rename_local_model(entry) is None
+
+
+def _mock_local_device(api_class: MagicMock, status: dict) -> None:
+    """Let the patched local JSON API client report one device with this status."""
+    api = api_class.return_value
+    api.get_devices = AsyncMock(return_value=[{"id": "506AAA12345"}])
+    api.get_device_status = AsyncMock(return_value=status)
+
+
+async def test_v8_to_v9_detects_removed_multicontroller_from_device(
+    hass: HomeAssistant,
+) -> None:
+    """A removed generic MultiController gets the role the device reports (getDFM)."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        version=8,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "syrmuco",
+        },
+    )
+
+    with patch("custom_components.syr_connect.migrations.SyrConnectJsonAPI") as api:
+        _mock_local_device(api, {"getSRN": "506AAA12345", "getDFM": 5})
+        update = await v8_to_v9_detect_local_model(hass, entry)
+
+    assert api.call_args.kwargs["host"] == "10.0.0.2"
+    assert api.call_args.kwargs["base_path"] == "/trio"
+    assert update is not None
+    assert update["data"][CONF_MODEL] == "syrtriolockconnect"
+    assert update["version"] == 9
+
+
+async def test_v8_to_v9_unknown_multicontroller_role_raises(
+    hass: HomeAssistant,
+) -> None:
+    """A device whose model cannot be detected fails the migration."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        version=8,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "syrmuco",
+        },
+    )
+
+    with patch("custom_components.syr_connect.migrations.SyrConnectJsonAPI") as api:
+        _mock_local_device(api, {"getSRN": "506AAA12345", "getDFM": 9})
+        with pytest.raises(SyrConnectInvalidResponseError):
+            await v8_to_v9_detect_local_model(hass, entry)
+
+
+async def test_v8_to_v9_unreachable_device_raises(hass: HomeAssistant) -> None:
+    """An unreachable device fails the migration with a connection error."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        version=8,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "takemuco",
+        },
+    )
+
+    with patch("custom_components.syr_connect.migrations.SyrConnectJsonAPI") as api:
+        api.return_value.get_devices = AsyncMock(
+            side_effect=SyrConnectConnectionError("timeout")
+        )
+        with pytest.raises(SyrConnectConnectionError):
+            await v8_to_v9_detect_local_model(hass, entry)
+
+
+async def test_v8_to_v9_keeps_current_local_model_and_cloud_entries(
+    hass: HomeAssistant,
+) -> None:
+    """A current local model and a cloud entry need no update."""
+    local = MockConfigEntry(
+        domain="syr_connect",
+        version=8,
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "10.0.0.2", CONF_MODEL: "trio"},
+    )
+    cloud = MockConfigEntry(
+        domain="syr_connect",
+        version=8,
+        data={CONF_API_TYPE: API_TYPE_XML, CONF_MODEL: "syrmuco"},
+    )
+
+    assert await v8_to_v9_detect_local_model(hass, local) is None
+    assert await v8_to_v9_detect_local_model(hass, cloud) is None

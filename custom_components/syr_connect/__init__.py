@@ -21,6 +21,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
+from .exceptions import SyrConnectConnectionError, SyrConnectError
 from .helpers import cleanup_removed_devices, get_default_scan_interval_for_entry
 from .migrations import (
     v1_to_v2_update_kwargs,
@@ -29,6 +30,8 @@ from .migrations import (
     v4_to_v5_remove_sta_binary_sensor,
     v5_to_v6_fix_nps_unit,
     v6_to_v7_scope_unique_id_by_entry,
+    v7_to_v8_rename_local_model,
+    v8_to_v9_detect_local_model,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,6 +77,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
       6 → 7: Prefix entity unique_ids with the owning config entry ID so the
              same physical device reachable from multiple hubs (config
              entries) no longer collides on a shared unique_id.
+      7 → 8: Rename the Optima T2.3 local JSON API model (CONF_MODEL).
+      8 → 9: Replace removed generic MultiController local JSON API models
+             (CONF_MODEL) with the model detected from the device.
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -159,6 +165,52 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         v6_to_v7_scope_unique_id_by_entry(hass, entry)
         hass.config_entries.async_update_entry(entry, version=7)
+
+    # Migrate v7 -> v8
+    # Integration version: Optima T2.3 local model renamed
+    if entry.version == 7:
+        update_kwargs = v7_to_v8_rename_local_model(entry)
+        if update_kwargs:
+            _LOGGER.debug(
+                "Applying v7->v8 migration for entry %s: %s",
+                entry.entry_id,
+                _mask_sensitive_data(update_kwargs),
+            )
+            hass.config_entries.async_update_entry(entry, **update_kwargs)
+        else:
+            hass.config_entries.async_update_entry(entry, version=8)
+
+    # Migrate v8 -> v9
+    # Integration version: generic MultiController local models removed
+    if entry.version == 8:
+        try:
+            update_kwargs = await v8_to_v9_detect_local_model(hass, entry)
+        except SyrConnectConnectionError as err:
+            # Leaves the entry at version 8, so the next start tries again
+            _LOGGER.error(
+                "Cannot migrate %s: the device is not reachable to detect its model, "
+                "the migration is retried at the next start: %s",
+                entry.title,
+                err,
+            )
+            return False
+        except SyrConnectError as err:
+            _LOGGER.error(
+                "Cannot migrate %s: the model of the device cannot be detected, remove "
+                "the entry and set up the device again: %s",
+                entry.title,
+                err,
+            )
+            return False
+        if update_kwargs:
+            _LOGGER.debug(
+                "Applying v8->v9 migration for entry %s: %s",
+                entry.entry_id,
+                _mask_sensitive_data(update_kwargs),
+            )
+            hass.config_entries.async_update_entry(entry, **update_kwargs)
+        else:
+            hass.config_entries.async_update_entry(entry, version=9)
 
     return True
 
