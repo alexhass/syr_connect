@@ -16,7 +16,8 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .entity import SyrConnectEntity
+from .data import SyrConnectDevice
+from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers import (
     get_device_model,
     get_model_supported_keys,
@@ -145,8 +146,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect binary sensors")
     coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
 
-    entities: list[BinarySensorEntity] = []
-
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for binary sensors")
         return
@@ -159,37 +158,49 @@ async def async_setup_entry(
         entry_id=coordinator.entry_id,
     )
 
-    for device in coordinator.data.get("devices", []):
-        device_id = device["id"]
-        device_name = device["name"]
-        status = device.get("status", {})
-        supported_binary_keys = get_model_supported_keys(
-            get_device_model(device),
-            "binary_sensor",
-            _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS,
-        )
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_binary_sensors(coordinator, device),
+    )
 
-        # Create binary sensors for boolean status values
-        for description in _SYR_CONNECT_BINARY_SENSOR_TYPES:
-            sensor_key = description.key
-            if (
-                sensor_key in supported_binary_keys
-                and sensor_key in status
-                and not (
-                    description.hidden_when == "empty" and _is_empty(status[sensor_key])
-                )
-            ):
-                entities.append(
-                    SyrConnectBinarySensor(
-                        coordinator,
-                        device_id,
-                        device_name,
-                        sensor_key,
-                    )
-                )
 
-    _LOGGER.debug("Adding %d binary sensor(s) total", len(entities))
-    async_add_entities(entities)
+def _build_device_binary_sensors(
+    coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
+) -> list[BinarySensorEntity]:
+    """Return the binary sensors of one device."""
+    entities: list[BinarySensorEntity] = []
+    device_id = device["id"]
+    device_name = device["name"]
+    status = device.get("status", {})
+    supported_binary_keys = get_model_supported_keys(
+        get_device_model(device),
+        "binary_sensor",
+        _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS,
+    )
+
+    # Create binary sensors for boolean status values
+    for description in _SYR_CONNECT_BINARY_SENSOR_TYPES:
+        sensor_key = description.key
+        if (
+            sensor_key in supported_binary_keys
+            and sensor_key in status
+            and not (
+                description.hidden_when == "empty" and _is_empty(status[sensor_key])
+            )
+        ):
+            entities.append(
+                SyrConnectBinarySensor(
+                    coordinator,
+                    device_id,
+                    device_name,
+                    sensor_key,
+                )
+            )
+
+    _LOGGER.debug("Adding %d binary sensor(s) for device %s", len(entities), device_id)
+    return entities
 
 
 class SyrConnectBinarySensor(SyrConnectEntity, BinarySensorEntity):

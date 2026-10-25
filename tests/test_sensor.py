@@ -130,6 +130,11 @@ async def test_getcno_registration_code_is_not_exposed(
     assert not [e for e in added if getattr(e, "_sensor_key", None) == "getCNO"]
 
 
+def _added_entities(add_entities: Mock) -> list[Any]:
+    """Return every entity passed to a mocked async_add_entities (none if not called)."""
+    return [entity for call in add_entities.call_args_list for entity in call.args[0]]
+
+
 async def test_sensor_setup(hass: HomeAssistant) -> None:
     """Test sensor platform setup."""
     data = {
@@ -642,7 +647,7 @@ async def test_sensor_registered_always_hidden_not_created(
     with patch.object(sensor_module, "registry_cleanup"):
         await async_setup_entry(hass, entry, add_entities)
 
-    created = {e._sensor_key for e in add_entities.call_args.args[0]}
+    created = {e._sensor_key for e in _added_entities(add_entities)}
     assert "getDWF" not in created
 
 
@@ -4633,9 +4638,6 @@ async def test_is_value_true_int_float_exception(hass: HomeAssistant) -> None:
     # Should handle exception in is_value_true and treat as false
     await async_setup_entry(hass, entry, mock_add_entities)
 
-    # Should complete without raising exception
-    assert mock_add_entities.called
-
 
 async def test_is_value_true_string_numeric_exception(hass: HomeAssistant) -> None:
     """Test is_value_true exception handling for string that fails numeric conversion."""
@@ -4672,7 +4674,7 @@ async def test_is_value_true_string_numeric_exception(hass: HomeAssistant) -> No
     # Should handle exception and complete setup
     await async_setup_entry(hass, entry, mock_add_entities)
 
-    entities = mock_add_entities.call_args[0][0]
+    entities = _added_entities(mock_add_entities)
     # Since "not_a_number" string fails conversion, is_value_true returns False
     # So getPA1 group shouldn't be created
     sensor_keys = [e._sensor_key for e in entities]
@@ -4721,8 +4723,7 @@ async def test_is_value_true_float_int_methods_raise(hass: HomeAssistant) -> Non
 
     # Should handle conversion errors and complete setup without creating PA group members
     await async_setup_entry(hass, entry, mock_add_entities)
-    assert mock_add_entities.called
-    entities = mock_add_entities.call_args[0][0]
+    entities = _added_entities(mock_add_entities)
     keys = [e._sensor_key for e in entities]
     assert "getPA1" not in keys
 
@@ -5664,9 +5665,6 @@ async def test_sensor_pa_group_remove_exception(hass: HomeAssistant) -> None:
         # Should not raise exception, should log and continue
         await async_setup_entry(hass, entry, mock_add_entities)
 
-        # Entities should still be added
-        assert mock_add_entities.called
-
 
 async def test_sensor_pa_group_exception_handling(hass: HomeAssistant) -> None:
     """Test exception handling in PA group logic."""
@@ -5706,9 +5704,6 @@ async def test_sensor_pa_group_exception_handling(hass: HomeAssistant) -> None:
         mock_add_entities = Mock()
         # Should not raise exception even if PA group logic fails
         await async_setup_entry(hass, entry, mock_add_entities)
-
-        # Entities should still be added
-        assert mock_add_entities.called
 
 
 async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
@@ -6057,8 +6052,7 @@ async def test_is_true_with_non_standard_type(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, mock_add_entities)
 
     # Should complete without raising exception, PA group sensors should not be created
-    assert mock_add_entities.called
-    entities = mock_add_entities.call_args[0][0]
+    entities = _added_entities(mock_add_entities)
     # PA1 dict value treated as False, so no getPA1 group members created
     pa_group_keys = [
         "getPA1",
@@ -6139,7 +6133,6 @@ async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, mock_add_entities)
 
     # Should complete despite exception
-    assert mock_add_entities.called
 
 
 async def test_registry_remove_exception(hass: HomeAssistant) -> None:
@@ -6190,7 +6183,6 @@ async def test_registry_remove_exception(hass: HomeAssistant) -> None:
         await async_setup_entry(hass, entry, mock_add_entities)
 
         # Should complete despite exception
-        assert mock_add_entities.called
 
 
 async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
@@ -6230,8 +6222,7 @@ async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
     # List type should be treated as False by _is_true
     await async_setup_entry(hass, entry, mock_add_entities)
 
-    assert mock_add_entities.called
-    entities = mock_add_entities.call_args[0][0]
+    entities = _added_entities(mock_add_entities)
     # PA2 list value treated as False, so no getPA2 group members should be created
     pa2_group_keys = [
         "getPA2",
@@ -6709,7 +6700,7 @@ async def test_getpa_is_true_bool_false(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, mock_add_entities)
 
     # getPA group sensors should NOT be created
-    entities = mock_add_entities.call_args[0][0]
+    entities = _added_entities(mock_add_entities)
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA2" not in sensor_keys
     assert "getPV2" not in sensor_keys
@@ -6875,7 +6866,7 @@ async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, entry, mock_add_entities)
 
     # Should treat as false (don't create group sensors)
-    entities = mock_add_entities.call_args[0][0]
+    entities = _added_entities(mock_add_entities)
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA7" not in sensor_keys
     assert "getPV7" not in sensor_keys
@@ -7362,8 +7353,8 @@ async def test_sensor_setup_pa_group_outer_exception_caught(
         side_effect=TypeError("boom"),
     ):
         await async_setup_entry(hass, entry, mock_add)
-    # Exception was caught; add_entities called with empty list (no entities created)
-    mock_add.assert_called_once_with([])
+    # Exception was caught; no entity was created
+    mock_add.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

@@ -12,7 +12,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .entity import SyrConnectEntity
+from .data import SyrConnectDevice
+from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
@@ -80,60 +81,66 @@ async def async_setup_entry(
         entry_id=coordinator.entry_id,
     )
 
-    entities = []
-    devices = coordinator.data.get("devices", [])
-    _LOGGER.debug("Found %d devices in coordinator data.", len(devices))
-    for device in devices:
-        device_id = device["id"]
-        device_name = device["name"]
-        status = device.get("status", {})
-        _LOGGER.debug(
-            "Checking device: id=%s, name=%s, status_keys=%s",
-            device_id,
-            device_name,
-            list(status.keys()),
-        )
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_switches(coordinator, device),
+    )
 
-        # Scope to the detected model (falls back to the global allowlist for
-        # models that haven't opted into per-model key lists).
-        supported_switch_keys = get_model_supported_keys(
-            get_device_model(device), "switch", _SYR_CONNECT_SWITCH_SUPPORTED_KEYS
-        )
 
-        for sensor_key in sorted(supported_switch_keys):
-            if sensor_key not in status:
-                _LOGGER.debug(
-                    "%s not found in status for device %s.", sensor_key, device_id
-                )
-                continue
+def _build_device_switches(
+    coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
+) -> list[SyrConnectBooleanSwitch]:
+    """Return the switches of one device."""
+    entities: list[SyrConnectBooleanSwitch] = []
+    device_id = device["id"]
+    device_name = device["name"]
+    status = device.get("status", {})
+    _LOGGER.debug(
+        "Checking device: id=%s, name=%s, status_keys=%s",
+        device_id,
+        device_name,
+        list(status.keys()),
+    )
+
+    # Scope to the detected model (falls back to the global allowlist for
+    # models that haven't opted into per-model key lists).
+    supported_switch_keys = get_model_supported_keys(
+        get_device_model(device), "switch", _SYR_CONNECT_SWITCH_SUPPORTED_KEYS
+    )
+
+    for sensor_key in sorted(supported_switch_keys):
+        if sensor_key not in status:
             _LOGGER.debug(
-                "%s found in status for device %s. Creating SyrConnectBooleanSwitch.",
+                "%s not found in status for device %s.", sensor_key, device_id
+            )
+            continue
+        _LOGGER.debug(
+            "%s found in status for device %s. Creating SyrConnectBooleanSwitch.",
+            sensor_key,
+            device_id,
+        )
+        try:
+            entity = SyrConnectBooleanSwitch(
+                coordinator,
+                device_id,
+                device_name,
                 sensor_key,
+            )
+            entities.append(entity)
+            _LOGGER.debug(
+                "Appended SyrConnectBooleanSwitch for device %s (entity_id=%s, unique_id=%s)",
+                device_id,
+                getattr(entity, "entity_id", None),
+                getattr(entity, "_attr_unique_id", None),
+            )
+        except Exception:
+            _LOGGER.exception(
+                "Failed to instantiate SyrConnectBooleanSwitch for device %s",
                 device_id,
             )
-            try:
-                entity = SyrConnectBooleanSwitch(
-                    coordinator,
-                    device_id,
-                    device_name,
-                    sensor_key,
-                )
-                entities.append(entity)
-                _LOGGER.debug(
-                    "Appended SyrConnectBooleanSwitch for device %s (entity_id=%s, unique_id=%s)",
-                    device_id,
-                    getattr(entity, "entity_id", None),
-                    getattr(entity, "_attr_unique_id", None),
-                )
-            except Exception:
-                _LOGGER.exception(
-                    "Failed to instantiate SyrConnectBooleanSwitch for device %s",
-                    device_id,
-                )
-    if entities:
-        async_add_entities(entities)
-    else:
-        _LOGGER.debug("No boolean switch entities found for any device.")
+    return entities
 
 
 class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):

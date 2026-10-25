@@ -45,7 +45,8 @@ from .const import (
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .entity import SyrConnectEntity
+from .data import SyrConnectDevice
+from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers import (
     find_entity_id,
     get_device_model,
@@ -2057,77 +2058,82 @@ async def async_setup_entry(
         hidden_keys=_hidden_sensor_keys,
     )
 
-    # Registry handle used for per-group removals below
-    registry = er.async_get(hass)
-
-    entities: list[SensorEntity] = []
-
-    _LOGGER.debug(
-        "Setting up sensors for %d device(s)", len(coordinator.data.get("devices", []))
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_sensors(hass, coordinator, device),
     )
 
-    for device in coordinator.data.get("devices", []):
-        device_id = device["id"]
-        device_name = device["name"]
-        status = device.get("status", {})
-
-        # Scope the sensor allowlist to the detected model (falls back to the
-        # global allowlist for models that haven't opted into per-model key lists).
-        model_info = get_device_model(device)
-        supported_sensor_keys = get_model_supported_keys(
-            model_info, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
-        )
-
-        _LOGGER.debug(
-            "Device %s (%s) has %d status values", device_name, device_id, len(status)
-        )
-
-        # Only create the connection state sensor when the API provides a "dst" value
-        if status.get("dst") is not None:
-            entities.append(
-                SyrConnectConnectionStateSensor(
-                    coordinator,
-                    device_id,
-                    device_name,
-                )
-            )
-
-        # Handle leak-protection groups controlled by getPA1..getPA8
-        group_entities, handled_keys = _build_pa_group_sensors(
-            coordinator, registry, device_id, device_name, status, supported_sensor_keys
-        )
-        entities.extend(group_entities)
-        sensor_count = len(group_entities)
-
-        # Create sensors for all status values
-        for key, value in status.items():
-            registered = (
-                find_entity_id(registry, "sensor", coordinator.entry_id, device_id, key)
-                is not None
-            )
-            if not _is_sensor_wanted(
-                status, key, value, supported_sensor_keys, handled_keys, registered
-            ):
-                continue
-            _LOGGER.debug(
-                "Creating sensor: device=%s key=%s value=%r", device_id, key, value
-            )
-            entities.append(
-                SyrConnectSensor(
-                    coordinator,
-                    device_id,
-                    device_name,
-                    key,
-                )
-            )
-            sensor_count += 1
-
-        _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
-
-    _LOGGER.debug("Adding %d sensor(s) total", len(entities))
-    async_add_entities(entities)
-
     _async_setup_muco_conditional_sensors(hass, entry, coordinator, async_add_entities)
+
+
+def _build_device_sensors(
+    hass: HomeAssistant,
+    coordinator: SyrConnectDataUpdateCoordinator,
+    device: SyrConnectDevice,
+) -> list[SensorEntity]:
+    """Return the sensors of one device (except the conditional getLOT/getOHW)."""
+    # Registry handle used for per-group removals below
+    registry = er.async_get(hass)
+    entities: list[SensorEntity] = []
+    device_id = device["id"]
+    device_name = device["name"]
+    status = device.get("status", {})
+
+    # Scope the sensor allowlist to the detected model (falls back to the
+    # global allowlist for models that haven't opted into per-model key lists).
+    model_info = get_device_model(device)
+    supported_sensor_keys = get_model_supported_keys(
+        model_info, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+    )
+
+    _LOGGER.debug(
+        "Device %s (%s) has %d status values", device_name, device_id, len(status)
+    )
+
+    # Only create the connection state sensor when the API provides a "dst" value
+    if status.get("dst") is not None:
+        entities.append(
+            SyrConnectConnectionStateSensor(
+                coordinator,
+                device_id,
+                device_name,
+            )
+        )
+
+    # Handle leak-protection groups controlled by getPA1..getPA8
+    group_entities, handled_keys = _build_pa_group_sensors(
+        coordinator, registry, device_id, device_name, status, supported_sensor_keys
+    )
+    entities.extend(group_entities)
+    sensor_count = len(group_entities)
+
+    # Create sensors for all status values
+    for key, value in status.items():
+        registered = (
+            find_entity_id(registry, "sensor", coordinator.entry_id, device_id, key)
+            is not None
+        )
+        if not _is_sensor_wanted(
+            status, key, value, supported_sensor_keys, handled_keys, registered
+        ):
+            continue
+        _LOGGER.debug(
+            "Creating sensor: device=%s key=%s value=%r", device_id, key, value
+        )
+        entities.append(
+            SyrConnectSensor(
+                coordinator,
+                device_id,
+                device_name,
+                key,
+            )
+        )
+        sensor_count += 1
+
+    _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
+    return entities
 
 
 def _build_pa_group_sensors(

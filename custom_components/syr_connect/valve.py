@@ -16,7 +16,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .entity import SyrConnectEntity
+from .data import SyrConnectDevice
+from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     build_set_ab_command,
@@ -74,48 +75,54 @@ async def async_setup_entry(
         entry_id=coordinator.entry_id,
     )
 
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_valves(coordinator, device),
+    )
+
+
+def _build_device_valves(
+    coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
+) -> list[SyrConnectValve]:
+    """Return the shut-off valve of one device, if it has one."""
     entities: list[SyrConnectValve] = []
-    for device in coordinator.data.get("devices", []):
-        device_id = device["id"]
-        device_name = device["name"]
-        # Per-device status dictionary from the coordinator payload
-        status = device.get("status", {})
-        # Create a valve entity only when the device exposes `getAB` (the
-        # actual valve control key) AND the model's allowlist permits it.
-        # `getVLV` is a read-only status sensor and is handled exclusively
-        # by the sensor platform.
-        supported_valve_keys = get_model_supported_keys(
-            get_device_model(device), "valve", _SYR_CONNECT_VALVE_SUPPORTED_KEYS
-        )
-        ab_value = status.get("getAB") if "getAB" in supported_valve_keys else None
+    device_id = device["id"]
+    device_name = device["name"]
+    # Per-device status dictionary from the coordinator payload
+    status = device.get("status", {})
+    # Create a valve entity only when the device exposes `getAB` (the
+    # actual valve control key) AND the model's allowlist permits it.
+    # `getVLV` is a read-only status sensor and is handled exclusively
+    # by the sensor platform.
+    supported_valve_keys = get_model_supported_keys(
+        get_device_model(device), "valve", _SYR_CONNECT_VALVE_SUPPORTED_KEYS
+    )
+    ab_value = status.get("getAB") if "getAB" in supported_valve_keys else None
+    create = False
+    # If `getAB` looks like a control value (numeric 1/2 or boolean),
+    # treat the device as a valve that can be controlled.
+    try:
+        if ab_value is not None and ab_value != "":
+            if (
+                # Native boolean from JSON
+                isinstance(ab_value, bool)
+                # Boolean-like strings
+                or (
+                    isinstance(ab_value, str)
+                    and ab_value.strip().lower() in ("true", "false")
+                )
+                # Numeric representation (1=open, 2=closed)
+                or int(float(ab_value)) in (1, 2)
+            ):
+                create = True
+    except ValueError, TypeError, OverflowError:
         create = False
-        # If `getAB` looks like a control value (numeric 1/2 or boolean),
-        # treat the device as a valve that can be controlled.
-        try:
-            if ab_value is not None and ab_value != "":
-                if (
-                    # Native boolean from JSON
-                    isinstance(ab_value, bool)
-                    # Boolean-like strings
-                    or (
-                        isinstance(ab_value, str)
-                        and ab_value.strip().lower() in ("true", "false")
-                    )
-                    # Numeric representation (1=open, 2=closed)
-                    or int(float(ab_value)) in (1, 2)
-                ):
-                    create = True
-        except ValueError, TypeError, OverflowError:
-            create = False
 
-        if create:
-            entities.append(SyrConnectValve(coordinator, device_id, device_name))
-
-    if entities:
-        _LOGGER.debug("Adding %d valve(s) total", len(entities))
-        async_add_entities(entities)
-    else:
-        _LOGGER.debug("No valve entities to add")
+    if create:
+        entities.append(SyrConnectValve(coordinator, device_id, device_name))
+    return entities
 
 
 class SyrConnectValve(SyrConnectEntity, ValveEntity):

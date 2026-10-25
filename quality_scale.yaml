@@ -197,7 +197,7 @@ rules:
   
   dynamic-devices:
     status: done
-    comment: Devices are discovered dynamically on each coordinator update
+    comment: Every platform adds the entities of a device that appears after the setup with the next coordinator update (entity.async_add_device_entities)
   
   entity-category:
     status: done

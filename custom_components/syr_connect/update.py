@@ -18,7 +18,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .entity import SyrConnectEntity
+from .data import SyrConnectDevice
+from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     build_unique_id,
@@ -76,27 +77,33 @@ async def async_setup_entry(
         entry_id=coordinator.entry_id,
     )
 
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_updates(coordinator, device),
+    )
+
+
+def _build_device_updates(
+    coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
+) -> list[UpdateEntity]:
+    """Return the firmware update entity of one device, if it has one."""
     entities: list[UpdateEntity] = []
-    for device in coordinator.data.get("devices", []):
-        device_id = device["id"]
-        device_name = device["name"]
-        status = device.get("status", {})
+    device_id = device["id"]
+    device_name = device["name"]
+    status = device.get("status", {})
 
-        # Scope to the detected model (falls back to the global allowlist for
-        # models that haven't opted into per-model key lists).
-        supported_update_keys = get_model_supported_keys(
-            get_device_model(device), "update", _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
-        )
-        if "getNOT" not in supported_update_keys or "getNOT" not in status:
-            continue
+    # Scope to the detected model (falls back to the global allowlist for
+    # models that haven't opted into per-model key lists).
+    supported_update_keys = get_model_supported_keys(
+        get_device_model(device), "update", _SYR_CONNECT_UPDATE_SUPPORTED_KEYS
+    )
+    if "getNOT" not in supported_update_keys or "getNOT" not in status:
+        return entities
 
-        entities.append(SyrConnectFirmwareUpdate(coordinator, device_id, device_name))
-
-    if entities:
-        _LOGGER.debug("Adding %d update entity(ies) total", len(entities))
-        async_add_entities(entities)
-    else:
-        _LOGGER.debug("No update entities found for any device")
+    entities.append(SyrConnectFirmwareUpdate(coordinator, device_id, device_name))
+    return entities
 
 
 class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):

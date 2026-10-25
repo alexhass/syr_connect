@@ -33,7 +33,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api_json import SyrConnectJsonAPI
 from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .entity import SyrConnectEntity
+from .data import SyrConnectDevice
+from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
@@ -120,8 +121,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect buttons")
     coordinator = cast(SyrConnectDataUpdateCoordinator, entry.runtime_data)
 
-    entities = []
-
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for buttons")
         return
@@ -134,99 +133,105 @@ async def async_setup_entry(
         entry_id=coordinator.entry_id,
     )
 
-    for device in coordinator.data.get("devices", []):
-        device_id = device["id"]
-        device_name = device["name"]
-        status = device.get("status", {})
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_buttons(hass, coordinator, device),
+    )
 
-        created_commands: set[str] = set()
 
-        model_info = get_device_model(device)
+def _build_device_buttons(
+    hass: HomeAssistant,
+    coordinator: SyrConnectDataUpdateCoordinator,
+    device: SyrConnectDevice,
+) -> list[SyrConnectButton]:
+    """Return the buttons of one device and remove the ones it no longer has."""
+    entities: list[SyrConnectButton] = []
+    device_id = device["id"]
+    device_name = device["name"]
+    status = device.get("status", {})
 
-        # Scope to the detected model (falls back to the global allowlist for
-        # models that haven't opted into per-model key lists).
-        supported_button_keys = get_model_supported_keys(
-            model_info, "button", _SYR_CONNECT_BUTTON_SUPPORTED_KEYS
+    created_commands: set[str] = set()
+
+    model_info = get_device_model(device)
+
+    # Scope to the detected model (falls back to the global allowlist for
+    # models that haven't opted into per-model key lists).
+    supported_button_keys = get_model_supported_keys(
+        model_info, "button", _SYR_CONNECT_BUTTON_SUPPORTED_KEYS
+    )
+
+    for description in _SYR_CONNECT_BUTTON_TYPES:
+        command = description.key
+        if command not in supported_button_keys:
+            continue
+
+        # Derive the corresponding "getXYZ" key from the command name
+        # (e.g. 'setNOT' -> 'getNOT') and skip if it's not present
+        # in the device status.
+        # For setALA, the actual get-key depends on the model: devices with
+        # alarm_style_alm use getALM; all others use getALA.
+        if command == "setALA":
+            alarm_field = "alm" if model_info.alarm_style_alm else "ala"
+            get_key = f"get{alarm_field.upper()}"
+        elif command == "setDEX":
+            # No getDEX read key exists; presence is indicated by getDSV
+            # (microleakage test status), which exists on devices that support
+            # microleakage tests (Trio DFR/LS, SafeTech+).
+            # setDEX is JSON-only: skip on XML API.
+            if not isinstance(coordinator.api, SyrConnectJsonAPI):
+                continue
+            get_key = "getDSV"
+        else:
+            get_key = "get" + command[3:]
+        if get_key not in status:
+            continue
+
+        # setSIR (manual regeneration trigger) is only meaningful for
+        # softener models that actually support scheduled regeneration.
+        # Workaround for https://github.com/alexhass/syr_connect/issues/24
+        if command == "setSIR" and model_info.maximum_regeneration_interval is None:
+            continue
+
+        entities.append(
+            SyrConnectButton(
+                coordinator,
+                device_id,
+                device_name,
+                command,
+            )
         )
+        created_commands.add(command)
+        _LOGGER.debug("Adding button: %s (%s)", device_name, command)
 
+    # Remove any previously-registered button that is no longer being created
+    # for this device (e.g. a command whose get-key disappeared from the status).
+    # These buttons are in _SYR_CONNECT_BUTTON_SUPPORTED_KEYS and therefore survive
+    # the global registry_cleanup; they must be removed individually here. A device
+    # without a status (not fetched yet) is not passed here (async_add_device_entities).
+    try:
+        registry = er.async_get(hass)
         for description in _SYR_CONNECT_BUTTON_TYPES:
             command = description.key
-            if command not in supported_button_keys:
+            if command in created_commands:
                 continue
-
-            # Derive the corresponding "getXYZ" key from the command name
-            # (e.g. 'setNOT' -> 'getNOT') and skip if it's not present
-            # in the device status.
-            # For setALA, the actual get-key depends on the model: devices with
-            # alarm_style_alm use getALM; all others use getALA.
-            if command == "setALA":
-                alarm_field = "alm" if model_info.alarm_style_alm else "ala"
-                get_key = f"get{alarm_field.upper()}"
-            elif command == "setDEX":
-                # No getDEX read key exists; presence is indicated by getDSV
-                # (microleakage test status), which exists on devices that support
-                # microleakage tests (Trio DFR/LS, SafeTech+).
-                # setDEX is JSON-only: skip on XML API.
-                if not isinstance(coordinator.api, SyrConnectJsonAPI):
-                    continue
-                get_key = "getDSV"
-            else:
-                get_key = "get" + command[3:]
-            if get_key not in status:
-                continue
-
-            # setSIR (manual regeneration trigger) is only meaningful for
-            # softener models that actually support scheduled regeneration.
-            # Workaround for https://github.com/alexhass/syr_connect/issues/24
-            if command == "setSIR" and model_info.maximum_regeneration_interval is None:
-                continue
-
-            entities.append(
-                SyrConnectButton(
-                    coordinator,
-                    device_id,
-                    device_name,
-                    command,
-                )
+            # Found by unique_id, so a renamed or "_2"-suffixed button is removed as well
+            stale_entity_id = find_entity_id(
+                registry, "button", coordinator.entry_id, device_id, command
             )
-            created_commands.add(command)
-            _LOGGER.debug("Adding button: %s (%s)", device_name, command)
-
-        # Remove any previously-registered button that is no longer being created
-        # for this device (e.g. a command whose get-key disappeared from the status).
-        # These buttons are in _SYR_CONNECT_BUTTON_SUPPORTED_KEYS and therefore survive
-        # the global registry_cleanup above; they must be removed individually here.
-        # Skipped without a status (not fetched yet): no button was created, but
-        # none of them disappeared either.
-        if not status:
-            continue
-        try:
-            registry = er.async_get(hass)
-            for description in _SYR_CONNECT_BUTTON_TYPES:
-                command = description.key
-                if command in created_commands:
-                    continue
-                # Found by unique_id, so a renamed or "_2"-suffixed button is removed as well
-                stale_entity_id = find_entity_id(
-                    registry, "button", coordinator.entry_id, device_id, command
+            if stale_entity_id is not None:
+                _LOGGER.debug(
+                    "Removing conditionally-skipped button from registry: %s",
+                    stale_entity_id,
                 )
-                if stale_entity_id is not None:
-                    _LOGGER.debug(
-                        "Removing conditionally-skipped button from registry: %s",
-                        stale_entity_id,
-                    )
-                    registry.async_remove(stale_entity_id)
-        except Exception:
-            _LOGGER.exception(
-                "Failed to remove conditionally-skipped buttons for device %s",
-                device_id,
-            )
-
-    if entities:
-        _LOGGER.debug("Adding %d button(s) total", len(entities))
-        async_add_entities(entities)
-    else:
-        _LOGGER.debug("No button entities to add")
+                registry.async_remove(stale_entity_id)
+    except Exception:
+        _LOGGER.exception(
+            "Failed to remove conditionally-skipped buttons for device %s",
+            device_id,
+        )
+    return entities
 
 
 class SyrConnectButton(SyrConnectEntity, ButtonEntity):

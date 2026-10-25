@@ -1,7 +1,12 @@
 """Base entity for SYR Connect."""
 
+from collections.abc import Callable, Iterable
 from typing import Any, override
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import callback
+from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
@@ -99,3 +104,38 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
     def available(self) -> bool:
         """Return if the entity is available (last update successful and device not offline)."""
         return is_device_available(self.coordinator, self._device_id)
+
+
+def async_add_device_entities(
+    entry: ConfigEntry,
+    coordinator: SyrConnectDataUpdateCoordinator,
+    async_add_entities: AddEntitiesCallback,
+    build_entities: Callable[[SyrConnectDevice], Iterable[Entity]],
+) -> None:
+    """Add the entities of every device, also of devices that appear after the setup.
+
+    A device is set up once, as soon as the coordinator data has a status for it: at
+    the setup of the platform, or at the first update that has it, for a device added
+    to the account later or one whose status could not be fetched at the setup.
+
+    Args:
+        entry: Config entry of the platform
+        coordinator: Data update coordinator
+        async_add_entities: Callback of the platform to add entities
+        build_entities: Returns the entities of the platform for one device
+    """
+    set_up: set[str] = set()
+
+    @callback
+    def _add_new_devices() -> None:
+        entities: list[Entity] = []
+        for device in coordinator.data.get("devices", []) if coordinator.data else []:
+            if device["id"] in set_up or not device.get("status"):
+                continue
+            set_up.add(device["id"])
+            entities.extend(build_entities(device))
+        if entities:
+            async_add_entities(entities)
+
+    _add_new_devices()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new_devices))

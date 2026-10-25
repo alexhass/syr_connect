@@ -32,7 +32,7 @@ from .const import (
 )
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
-from .entity import SyrConnectEntity
+from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
@@ -548,15 +548,12 @@ async def async_setup_entry(
         entry_id=coordinator.entry_id,
     )
 
-    entities: list[SelectEntity] = []
-    for device in coordinator.data.get("devices", []):
-        entities.extend(_build_device_selects(coordinator, device))
-
-    if entities:
-        _LOGGER.debug("Adding %d select(s) total", len(entities))
-        async_add_entities(entities)
-    else:
-        _LOGGER.debug("No select entities to add")
+    async_add_device_entities(
+        entry,
+        coordinator,
+        async_add_entities,
+        lambda device: _build_device_selects(coordinator, device),
+    )
 
     _async_setup_muco_conditional_selects(hass, entry, coordinator, async_add_entities)
 
