@@ -106,9 +106,10 @@
       "problemMatcher": []
     },
     {
-      "label": "Install Dev Requirements",
+      "label": "Update Dev Requirements",
+      "detail": "Install or update pip and requirements-dev.txt to the newest allowed versions",
       "type": "shell",
-      "command": "${command:python.interpreterPath} -m pip install -r requirements-dev.txt",
+      "command": "${command:python.interpreterPath} -m pip install --upgrade pip -r requirements-dev.txt",
       "group": {
         "kind": "build",
         "isDefault": true
@@ -117,6 +118,37 @@
         "reveal": "always",
         "panel": "new"
       },
+      "problemMatcher": []
+    },
+    {
+      "label": "Update Dev Requirements (WSL)",
+      "detail": "Install or update pip and requirements-dev.txt in the WSL venv used by Pytest (WSL)",
+      "type": "process",
+      "command": "${env:WINDIR}\\System32\\wsl.exe",
+      "args": [
+        "--distribution",
+        "Ubuntu",
+        "--exec",
+        "bash",
+        "-lc",
+        "workspace_path=\"$(wslpath -u '${workspaceFolder}')\" && cd \"$workspace_path\" && \"$HOME/.venvs/syr_connect/bin/python\" -m pip install --upgrade pip -r requirements-dev.txt"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Update Dev Environments",
+      "detail": "Update the Windows and the WSL development environment",
+      "dependsOn": [
+        "Update Dev Requirements",
+        "Update Dev Requirements (WSL)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
       "problemMatcher": []
     },
     {

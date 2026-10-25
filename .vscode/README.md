@@ -24,7 +24,9 @@ Defines tasks for common development operations:
 - **Ruff Check** - Lint code
 - **Ruff Format** - Format code
 - **Mypy Type Check** - Type checking
-- **Install Dev Requirements** - Install development dependencies
+- **Update Dev Requirements** - Install or update pip and the development dependencies to the newest versions `requirements-dev.txt` allows
+- **Update Dev Requirements (WSL)** - The same for the WSL venv (`~/.venvs/syr_connect`) that runs the tests
+- **Update Dev Environments** - Run both update tasks one after the other. On Windows, an update of ruff fails while the Ruff extension's language server uses `.venv\Scripts\ruff.exe`; disable the extension for the update in that case
 - **Pre-commit Run All** - Run all pre-commit hooks
 
 Run tasks via: `Terminal > Run Task...` or `Ctrl+Shift+P > Tasks: Run Task`
@@ -53,5 +55,5 @@ VS Code will prompt you to install these when you open the workspace.
 
 1. Install recommended extensions when prompted
 2. Select your Python interpreter: `Ctrl+Shift+P > Python: Select Interpreter`
-3. Install dev requirements: Run task "Install Dev Requirements"
+3. Install dev requirements: Run task "Update Dev Environments" (run it again later to update)
 4. Run tests: `Ctrl+Shift+P > Tasks: Run Task > Pytest`
