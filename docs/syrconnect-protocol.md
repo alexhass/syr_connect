@@ -972,8 +972,8 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | Sanibel Softwater DUO A25 | 35 kg |
 | CONEL CLEAR PRO SOFT | 40 kg |
 | CONEL CLEAR PRO SOFT TWIN | 35 kg |
-| concept, Optima, Ditech, TAKE single softening systems | 40 kg |
-| concept, concept 200, Optima, Optima T2, Ditech, TAKE double softening systems | 35 kg |
+| concept 300, Optima, Ditech, TAKE single softening systems | 40 kg |
+| concept 200, concept 300, Optima, Optima T2, Ditech, TAKE double softening systems | 35 kg |
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |

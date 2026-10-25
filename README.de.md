@@ -112,14 +112,19 @@ Getestet und gemeldet als funktionierend:
 
 Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindest getestet werden (bitte melden):
 
+- CONEL CLEAR PRO Bodensensor
 - CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
 - concept 200 Doppelenthärtungsanlage
 - concept 200 Ersatzfilter
-- concept Doppelenthärtungsanlage
-- concept Einzelenthärtungsanlage
+- concept 300 Doppelenthärtungsanlage
+- concept 300 Einzelenthärtungsanlage
+- concept 300 Rückspülautomatik RSA
+- concept 300 Triofilter mit Leckageschutz
+- concept SafeFloor Bodensensor
 - Ditech Doppelenthärtungsanlage
 - Ditech Einzelenthärtungsanlage
+- Ditech Funk-Bodensensor
 - Hansgrohe PontosBase
 - Optima Doppelenthärtungsanlage
 - Optima Einzelenthärtungsanlage
@@ -129,6 +134,7 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatische Rückspülanlage RSA A25
+- Sanibel Funk-Bodensensor A25
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect

@@ -112,14 +112,19 @@ Tested and reported as working:
 
 Other devices are also of interest, but may need to be integrated or at least tested (please report):
 
+- CONEL CLEAR PRO Floor Sensor
 - CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
 - concept 200 Dual Water Softener
 - concept 200 Replacement Filter
-- concept Dual Water Softener
-- concept Single Water Softener
+- concept 300 Automatic Backwash RSA
+- concept 300 Dual Water Softener
+- concept 300 Single Water Softener
+- concept 300 Trio Filter with Leak Protection
+- concept SafeFloor Floor Sensor
 - Ditech Dual Water Softener
 - Ditech Single Water Softener
+- Ditech Wireless Floor Sensor
 - Hansgrohe PontosBase
 - Optima Dual Water Softener
 - Optima Single Water Softener
@@ -130,6 +135,7 @@ Other devices are also of interest, but may need to be integrated or at least te
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatic Backwash System RSA A25
 - Sanibel Softwater DUO A25
+- Sanibel Wireless Floor Sensor A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
 - SYR All in One +

@@ -883,10 +883,11 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="207",
     ),
     SyrConnectModel(
+        # 2500.02.100 - concept 300 Einzelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_single.PROFILE,
-        display_name="concept Single Water Softener",
+        display_name="concept 300 Single Water Softener",
         dk=1208,
         dkv=208,
         manufacturer="CONCEPT",
@@ -986,10 +987,11 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="215",
     ),
     SyrConnectModel(
+        # 5000.02.100 - concept 300 Doppelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
         device_profile=neosoft_duo.PROFILE,
-        display_name="concept Dual Water Softener",
+        display_name="concept 300 Dual Water Softener",
         dk=1216,
         dkv=216,
         manufacturer="CONCEPT",
@@ -1304,11 +1306,12 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="504",
     ),
     SyrConnectModel(
+        # 2380.01.104 - concept 300 Rückspülautomatik RSA
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 4},
         base_path="/trio",
         device_profile=muco_backwash.PROFILE,
-        display_name="Automatic Backwash",
+        display_name="concept 300 Automatic Backwash RSA",
         dk=1504,
         dkv=504,
         manufacturer="CONCEPT",
@@ -1317,11 +1320,12 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         srn_prefix="504",
     ),
     SyrConnectModel(
+        # 2425.01.100 - concept 300 Triofilter mit Leckageschutz
         alarm_clear_via_set=True,
         attrs_equals={"getDFM": 5},
         base_path="/trio",
         device_profile=muco_triolock.PROFILE,
-        display_name="Trio with Leak Protection",
+        display_name="concept 300 Trio Filter with Leak Protection",
         dk=1504,
         dkv=504,
         manufacturer="CONCEPT",
