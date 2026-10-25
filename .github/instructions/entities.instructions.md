@@ -13,4 +13,4 @@ applyTo: "custom_components/syr_connect/*.py"
 - Entities that do not apply to a device are added or removed (registry removal plus `async_add_entities`), not just marked unavailable. `available` is only for offline devices.
 - Never use truthiness for values that can legitimately be `0` or an empty collection. Use `is None` / `is not None` (for example `raw = str(v) if v is not None else ""`).
 - Every platform must honor the per-model allowlists, see `devices.instructions.md`. An entity-creation loop that only checks `key in status` is a bug.
-- Firmware update entity (`update.py`): `entity_category` is `DIAGNOSTIC`, there is no `entity_picture` override and `INSTALL` is only a stub that raises `SyrConnectError`. Do not change these without being asked, they were decided deliberately.
+- Firmware update entity (`update.py`): `entity_category` is `DIAGNOSTIC`, there is no `entity_picture` override and `INSTALL` sends `setUPG` with an empty value (see `docs/syrconnect-protocol.md`), the progress lasts until getNOT reports "04" or the timeout expires. Do not change these without being asked, they were decided deliberately.
