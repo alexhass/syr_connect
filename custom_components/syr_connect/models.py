@@ -1487,8 +1487,11 @@ def detect_model(
         The matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no signature
         matches.
     """
-    dfm = _status_dfm(flat)
-    signatures = [sig for sig in MODEL_SIGNATURES if sig.dfm in (None, dfm)]
+    # getDFM is text in the cloud status and a number in the local status
+    dfm = str(flat.get("getDFM")) if isinstance(flat, dict) else None
+    signatures = [
+        sig for sig in MODEL_SIGNATURES if sig.dfm is None or str(sig.dfm) == dfm
+    ]
     if dk is not None:
         family = [
             sig
@@ -1506,21 +1509,13 @@ def detect_model(
             )
             return family[0]
         if family:
-            return _match_status(flat, family)
-    return _match_status(flat, signatures)
+            return _match_device_values(flat, family)
+    return _match_device_values(flat, signatures)
 
 
-def _status_dfm(flat: object) -> int | None:
-    """Return the MultiController role (getDFM) of the flattened status, or None."""
-    if not isinstance(flat, dict):
-        return None
-    try:
-        return int(str(flat.get("getDFM")).strip())
-    except ValueError:
-        return None
-
-
-def _match_status(flat: object, signatures: list[SyrConnectModel]) -> SyrConnectModel:
+def _match_device_values(
+    flat: object, signatures: list[SyrConnectModel]
+) -> SyrConnectModel:
     """Return the first of the signatures that matches the flattened status.
 
     Detection priority (highest to lowest):

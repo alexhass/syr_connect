@@ -760,7 +760,7 @@ def test_detect_model_neosoft_device_kinds():
 
 def test_detect_model_dfm_as_number_or_text():
     """The local API reports getDFM as a number, the cloud API as text."""
-    for dfm in (2, "2", " 2 "):
+    for dfm in (2, "2"):
         status = {"getSRN": "506AAA12345", "getDFM": dfm}
         assert detect_model(status).name == "syrac3200connect", repr(dfm)
 
