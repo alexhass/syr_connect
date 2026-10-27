@@ -22,8 +22,8 @@
           "model": "Modelo del dispositivo"
         },
         "data_description": {
-          "host": "Aquí se introduce la dirección IP o el nombre de host del dispositivo en la red local, sin puerto.",
-          "model": "Aquí se selecciona el modelo del dispositivo."
+          "host": "Dirección IP o nombre de host del dispositivo en la red local.",
+          "model": "Seleccionar el modelo del dispositivo"
         },
         "description": "Introduzca el modelo y el nombre de host/IP para acceso local",
         "title": "SYR Connect (Local)"
@@ -35,9 +35,9 @@
           "username": "Nombre de usuario"
         },
         "data_description": {
-          "password": "Aquí se introduce la contraseña con la que se inicia sesión en la nube.",
-          "service": "Aquí se selecciona la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
-          "username": "Aquí se introduce el nombre de usuario con el que se inicia sesión en la nube."
+          "password": "La contraseña con la que se inicia sesión en la nube.",
+          "service": "Seleccionar la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
+          "username": "El nombre de usuario con el que se inicia sesión en la nube."
         },
         "description": "Introduzca las credenciales de su aplicación móvil para acceso en la nube",
         "title": "SYR Connect (Cloud)"
@@ -48,8 +48,8 @@
           "username": "Nombre de usuario"
         },
         "data_description": {
-          "password": "Aquí se introduce la contraseña con la que se inicia sesión en la nube.",
-          "username": "Aquí se introduce el nombre de usuario con el que se inicia sesión en la nube."
+          "password": "La contraseña con la que se inicia sesión en la nube.",
+          "username": "El nombre de usuario con el que se inicia sesión en la nube."
         },
         "description": "Las credenciales de {username} ya no son válidas. Introduzca nuevas credenciales.",
         "title": "Reautenticar SYR Connect"
@@ -60,8 +60,8 @@
           "model": "Modelo del dispositivo"
         },
         "data_description": {
-          "host": "Aquí se introduce la dirección IP o el nombre de host del dispositivo en la red local, sin puerto.",
-          "model": "Aquí se selecciona el modelo del dispositivo. De él depende la dirección de su API local."
+          "host": "Dirección IP o nombre de host del dispositivo en la red local, sin puerto.",
+          "model": "Seleccionar el modelo del dispositivo. De él depende la dirección de su API local."
         },
         "description": "El dispositivo en {host} rechazó la conexión. Deben comprobarse el modelo del dispositivo y el nombre de host o la dirección IP.",
         "title": "Reconectar SYR Connect (Local)"
@@ -75,11 +75,11 @@
           "username": "Nombre de usuario"
         },
         "data_description": {
-          "host": "Aquí se introduce la dirección IP o el nombre de host del dispositivo en la red local, sin puerto.",
-          "model": "Aquí se selecciona el modelo del dispositivo.",
-          "password": "Aquí se introduce la contraseña con la que se inicia sesión en la nube.",
-          "service": "Aquí se selecciona la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
-          "username": "Aquí se introduce la cuenta con la que se inicia sesión en la nube."
+          "host": "Dirección IP o nombre de host del dispositivo en la red local, sin puerto.",
+          "model": "Seleccionar el modelo del dispositivo",
+          "password": "La contraseña con la que se inicia sesión en la nube.",
+          "service": "Seleccionar la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
+          "username": "La cuenta con la que se inicia sesión en la nube."
         },
         "description": "Actualice su configuración.",
         "title": "Reconfigurar SYR Connect"

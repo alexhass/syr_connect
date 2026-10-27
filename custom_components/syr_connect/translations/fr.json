@@ -22,8 +22,8 @@
           "model": "Modèle de l'appareil"
         },
         "data_description": {
-          "host": "L'adresse IP ou le nom d'hôte de l'appareil dans le réseau local est saisi ici, sans port.",
-          "model": "Le modèle de l'appareil est sélectionné ici."
+          "host": "Adresse IP ou nom d'hôte de l'appareil dans le réseau local.",
+          "model": "Sélectionner le modèle de l'appareil"
         },
         "description": "Entrez le modèle et le nom d'hôte/IP pour l'accès local",
         "title": "SYR Connect (Local)"
@@ -35,9 +35,9 @@
           "username": "Nom d'utilisateur"
         },
         "data_description": {
-          "password": "Le mot de passe utilisé pour se connecter au cloud est saisi ici.",
-          "service": "Le cloud utilisé avec les appareils est sélectionné ici. Chaque cloud a ses propres comptes.",
-          "username": "Le nom d'utilisateur utilisé pour se connecter au cloud est saisi ici."
+          "password": "Le mot de passe utilisé pour se connecter au cloud.",
+          "service": "Sélectionner le cloud utilisé avec les appareils. Chaque cloud a ses propres comptes.",
+          "username": "Le nom d'utilisateur utilisé pour se connecter au cloud."
         },
         "description": "Entrez vos identifiants de l'application mobile pour l'accès cloud",
         "title": "SYR Connect (Cloud)"
@@ -48,8 +48,8 @@
           "username": "Nom d'utilisateur"
         },
         "data_description": {
-          "password": "Le mot de passe utilisé pour se connecter au cloud est saisi ici.",
-          "username": "Le nom d'utilisateur utilisé pour se connecter au cloud est saisi ici."
+          "password": "Le mot de passe utilisé pour se connecter au cloud.",
+          "username": "Le nom d'utilisateur utilisé pour se connecter au cloud."
         },
         "description": "Les identifiants pour {username} ne sont plus valides. Veuillez saisir de nouveaux identifiants.",
         "title": "Réauthentifier SYR Connect"
@@ -60,8 +60,8 @@
           "model": "Modèle de l'appareil"
         },
         "data_description": {
-          "host": "L'adresse IP ou le nom d'hôte de l'appareil dans le réseau local est saisi ici, sans port.",
-          "model": "Le modèle de l'appareil est sélectionné ici. Il détermine l'adresse de son API locale."
+          "host": "Adresse IP ou nom d'hôte de l'appareil dans le réseau local, sans port.",
+          "model": "Sélectionner le modèle de l'appareil. Il détermine l'adresse de son API locale."
         },
         "description": "L'appareil à l'adresse {host} a refusé la connexion. Le modèle de l'appareil et le nom d'hôte ou l'adresse IP doivent être vérifiés.",
         "title": "Reconnecter SYR Connect (Local)"
@@ -75,11 +75,11 @@
           "username": "Nom d'utilisateur"
         },
         "data_description": {
-          "host": "L'adresse IP ou le nom d'hôte de l'appareil dans le réseau local est saisi ici, sans port.",
-          "model": "Le modèle de l'appareil est sélectionné ici.",
-          "password": "Le mot de passe utilisé pour se connecter au cloud est saisi ici.",
-          "service": "Le cloud utilisé avec les appareils est sélectionné ici. Chaque cloud a ses propres comptes.",
-          "username": "Le compte utilisé pour se connecter au cloud est saisi ici."
+          "host": "Adresse IP ou nom d'hôte de l'appareil dans le réseau local, sans port.",
+          "model": "Sélectionner le modèle de l'appareil",
+          "password": "Le mot de passe utilisé pour se connecter au cloud.",
+          "service": "Sélectionner le cloud utilisé avec les appareils. Chaque cloud a ses propres comptes.",
+          "username": "Le compte utilisé pour se connecter au cloud."
         },
         "description": "Mettez à jour votre configuration.",
         "title": "Reconfigurer SYR Connect"

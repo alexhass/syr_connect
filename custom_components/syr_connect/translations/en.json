@@ -22,8 +22,8 @@
           "model": "Device model"
         },
         "data_description": {
-          "host": "The IP address or hostname of the device in the local network is entered here, without a port.",
-          "model": "The model of the device is selected here."
+          "host": "IP address or hostname of the device in the local network.",
+          "model": "Select the model of the device"
         },
         "description": "Enter model and hostname/IP for local access",
         "title": "SYR Connect (Local)"
@@ -35,9 +35,9 @@
           "username": "Username"
         },
         "data_description": {
-          "password": "The password used to sign in to the cloud is entered here.",
-          "service": "The cloud used with the devices is selected here. Every cloud has accounts of its own.",
-          "username": "The username used to sign in to the cloud is entered here."
+          "password": "The password used to sign in to the cloud.",
+          "service": "Select the cloud used with the devices. Every cloud has accounts of its own.",
+          "username": "The username used to sign in to the cloud."
         },
         "description": "Enter your mobile app credentials for cloud access",
         "title": "SYR Connect (Cloud)"
@@ -48,8 +48,8 @@
           "username": "Username"
         },
         "data_description": {
-          "password": "The password used to sign in to the cloud is entered here.",
-          "username": "The username used to sign in to the cloud is entered here."
+          "password": "The password used to sign in to the cloud.",
+          "username": "The username used to sign in to the cloud."
         },
         "description": "The credentials for {username} are no longer valid. Please enter new credentials.",
         "title": "Reauthenticate SYR Connect"
@@ -60,8 +60,8 @@
           "model": "Device model"
         },
         "data_description": {
-          "host": "The IP address or hostname of the device in the local network is entered here, without a port.",
-          "model": "The model of the device is selected here. It determines the address of its local API."
+          "host": "IP address or hostname of the device in the local network, without a port.",
+          "model": "Select the model of the device. It determines the address of its local API."
         },
         "description": "The device at {host} rejected the connection. The device model and the hostname or IP address must be checked.",
         "title": "Reconnect SYR Connect (Local)"
@@ -75,11 +75,11 @@
           "username": "Username"
         },
         "data_description": {
-          "host": "The IP address or hostname of the device in the local network is entered here, without a port.",
-          "model": "The model of the device is selected here.",
-          "password": "The password used to sign in to the cloud is entered here.",
-          "service": "The cloud used with the devices is selected here. Every cloud has accounts of its own.",
-          "username": "The account used to sign in to the cloud is entered here."
+          "host": "IP address or hostname of the device in the local network, without a port.",
+          "model": "Select the model of the device",
+          "password": "The password used to sign in to the cloud.",
+          "service": "Select the cloud used with the devices. Every cloud has accounts of its own.",
+          "username": "The account used to sign in to the cloud."
         },
         "description": "Update your settings.",
         "title": "Reconfigure SYR Connect"
