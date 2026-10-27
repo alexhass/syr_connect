@@ -11,6 +11,7 @@ from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
+    SyrConnectBranding,
     detect_model,
 )
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -133,49 +134,119 @@ def test_branded_returns_service_branding() -> None:
         display_name="Default Name",
         manufacturer="Default",
         service_branding={
-            "vendor.service": ("Vendor", "Vendor Name"),
+            "vendor.service": SyrConnectBranding(
+                display_name="Vendor Name",
+                manufacturer="Vendor",
+            ),
         },
     )
-    assert model.branded("vendor.service") == ("Vendor", "Vendor Name")
-    assert model.branded("other.service") == ("Default", "Default Name")
-    assert model.branded(None) == ("Default", "Default Name")
+    assert model.branded("vendor.service", None) == ("Vendor", "Vendor Name")
+    assert model.branded("other.service", None) == ("Default", "Default Name")
+    assert model.branded(None, None) == ("Default", "Default Name")
 
 
 def test_branded_without_service_branding_returns_default() -> None:
     """A model without branding always returns its default names."""
     model = replace(UNKNOWN_MODEL, display_name="Default Name", manufacturer="Default")
-    assert model.branded("vendor.service") == ("Default", "Default Name")
+    assert model.branded("vendor.service", None) == ("Default", "Default Name")
+
+
+def test_branded_returns_language_display_name() -> None:
+    """A language with its own name returns it; others get the English one."""
+    model = replace(
+        UNKNOWN_MODEL,
+        display_name="Default Name",
+        language_display_names={
+            "de": "German Name",
+            "de-CH": "Swiss Name",
+        },
+        manufacturer="Default",
+    )
+    assert model.branded(None, "de") == ("Default", "German Name")
+    assert model.branded(None, "de-CH") == ("Default", "Swiss Name")
+    # A regional language without an entry of its own falls back to its base language
+    assert model.branded(None, "de-AT") == ("Default", "German Name")
+    assert model.branded(None, "en") == ("Default", "Default Name")
+    assert model.branded(None, "en-GB") == ("Default", "Default Name")
+    assert model.branded(None, None) == ("Default", "Default Name")
+
+
+def test_branded_service_branding_with_language_display_name() -> None:
+    """The branding of the cloud service wins and has language names of its own."""
+    model = replace(
+        UNKNOWN_MODEL,
+        display_name="Default Name",
+        language_display_names={
+            "de": "German Name",
+        },
+        manufacturer="Default",
+        service_branding={
+            "vendor.service": SyrConnectBranding(
+                display_name="Vendor Name",
+                language_display_names={
+                    "de": "Vendor German Name",
+                },
+                manufacturer="Vendor",
+            ),
+        },
+    )
+    assert model.branded("vendor.service", "de") == ("Vendor", "Vendor German Name")
+    assert model.branded("vendor.service", "en") == ("Vendor", "Vendor Name")
+    assert model.branded("other.service", "de") == ("Default", "German Name")
+
+
+def test_safetech_polygonvatro_language_display_name() -> None:
+    """The POLYGONVATRO SafeTech is the "Wasserwächter" in German."""
+    model = next(sig for sig in MODEL_SIGNATURES if sig.name == "safetechpolygonvatro")
+    assert model.branded(None, "de") == ("POLYGONVATRO", "Wasserwächter")
+    assert model.branded(None, "en") == ("POLYGONVATRO", "Water Monitor")
+
+
+def test_german_original_names() -> None:
+    """German gets the German original product names."""
+    hygiene = next(sig for sig in MODEL_SIGNATURES if sig.name == "hygienemodulecold")
+    assert hygiene.branded(None, "de") == ("SYR", "Hygienemodul (kalt)")
+    assert hygiene.branded(None, "en") == ("SYR", "Hygiene Module (cold)")
+
+    safefloor = detect_model({"getVER": "Syr Floorsensor 2.23"})
+    assert safefloor.branded("de.consoft.gc.conel.connect", "de") == (
+        "CONEL",
+        "CLEAR PRO Bodensensor",
+    )
 
 
 def test_safefloor_vendor_branding() -> None:
     """The SafeFloor sold by other vendors is named after their cloud service."""
     result = detect_model({"getVER": "Syr Floorsensor 2.23"})
     assert result.name == "safefloor"
-    assert result.branded("de.consoft.gc.conel.connect") == (
+    assert result.branded("de.consoft.gc.conel.connect", None) == (
         "CONEL",
         "CLEAR PRO Floor Sensor",
     )
-    assert result.branded("de.consoft.gsh.comfort.connect") == (
+    assert result.branded("de.consoft.gsh.comfort.connect", None) == (
         "Sanibel",
         "Wireless Floor Sensor A25",
     )
-    assert result.branded("de.consoft.isg.concept.connect") == (
+    assert result.branded("de.consoft.isg.concept.connect", None) == (
         "CONCEPT",
         "concept SafeFloor Floor Sensor",
     )
-    assert result.branded("de.consoft.isg.optima.connect") == (
+    assert result.branded("de.consoft.isg.optima.connect", None) == (
         "OPTIMA",
         "Optima T2 Floor Sensor",
     )
-    assert result.branded("de.consoft.polygonvatro.connect") == (
+    assert result.branded("de.consoft.polygonvatro.connect", None) == (
         "POLYGONVATRO",
         "Wireless Floor Sensor",
     )
-    assert result.branded("de.consoft.sanitaerunion.ditech.connect") == (
+    assert result.branded("de.consoft.sanitaerunion.ditech.connect", None) == (
         "DITECH",
         "Ditech Wireless Floor Sensor",
     )
-    assert result.branded("de.consoft.syr.connect") == ("SYR", "SafeFloor Connect")
+    assert result.branded("de.consoft.syr.connect", None) == (
+        "SYR",
+        "SafeFloor Connect",
+    )
 
 
 def test_lexplus10_with_display_name_and_base_path() -> None:

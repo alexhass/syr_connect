@@ -139,6 +139,7 @@ async def test_coordinator_update_success(
         assert coordinator.data["devices"][0]["id"] == "device1"
         # No CONF_SERVICE in the config data: no cloud service for the branding
         assert coordinator.data["service"] is None
+        assert coordinator.data["language"] == hass.config.language
 
 
 async def test_coordinator_update_no_session(
@@ -1625,6 +1626,7 @@ async def test_resolve_device_dclg_returns_none_when_device_not_found(
                     "name": "Other Device",
                 }
             ],
+            "language": "en",
             "projects": [],
             "service": None,
         }
@@ -1915,6 +1917,7 @@ async def test_async_clear_device_alarm_xml_api_sends_clr_command(
                     "status": {},
                 }
             ],
+            "language": "en",
             "projects": [],
             "service": None,
         }

@@ -215,8 +215,11 @@ def build_device_info(
         status = device.get("status", {})
 
         # Get human-friendly model display name and manufacturer of the cloud service
+        # and language
         detected = get_device_model(device)
-        manufacturer, model = detected.branded(coordinator_data.get("service"))
+        manufacturer, model = detected.branded(
+            coordinator_data.get("service"), coordinator_data.get("language")
+        )
         configuration_url = coordinator_data.get("configuration_url")
 
         # Get software version from getVER
