@@ -30,40 +30,6 @@ from .devices import (
 _LOGGER = logging.getLogger(__name__)
 
 
-def _language_display_name(
-    language_display_names: Mapping[str, str] | None, language: str | None
-) -> str | None:
-    """Return the display name of a language from a `language_display_names` map.
-
-    The exact language (`de-CH`) wins over its base language (`de`).
-
-    Args:
-        language_display_names: Language -> display name, or None
-        language: The language of Home Assistant (`hass.config.language`), or None
-
-    Returns:
-        The display name of the language, or None if the map has none
-    """
-    if language is None or language_display_names is None:
-        return None
-    display_name = language_display_names.get(language)
-    if display_name is None:
-        display_name = language_display_names.get(language.split("-")[0])
-    return display_name
-
-
-@dataclass(frozen=True, kw_only=True)
-class SyrConnectBranding:
-    """Names of a model sold by another vendor through its own cloud service."""
-
-    # English display name of the vendor
-    display_name: str
-    # Per-language display name, as in `SyrConnectModel.language_display_names`
-    language_display_names: Mapping[str, str] | None = None
-    # Human-readable name of the vendor
-    manufacturer: str
-
-
 @dataclass(frozen=True, kw_only=True)
 class SyrConnectModel:
     """Signature of a device model: how it is detected and what it supports.
@@ -100,10 +66,6 @@ class SyrConnectModel:
     # GetProjectDeviceCollections XML; for Azure-connected devices this also equals the
     # numeric SRN prefix of newer production units
     dkv: int | None
-    # Per-language display name: language of `hass.config.language` (`de`, `de-CH`)
-    # -> display name. Used for the original product names, e.g. of models sold in
-    # Germany only. Languages without an entry fall back to the English `display_name`.
-    language_display_names: Mapping[str, str] | None = None
     # Human-readable name of the device manufacturer
     manufacturer: str
     # Maximum number of days between regenerations; None means no regeneration interval
@@ -114,9 +76,9 @@ class SyrConnectModel:
     # Stable machine-readable model identifier (e.g. "lexplus10s")
     name: str
     # Per-service branding: cf_bundle_identifier from `_SYR_CONNECT_API_SERVICES` ->
-    # names of the vendor. Used when the same dk/dkv hardware is sold under different
-    # names by different vendors; detection and profile stay the same.
-    service_branding: Mapping[str, SyrConnectBranding] | None = None
+    # (manufacturer, display name). Used when the same dk/dkv hardware is sold under
+    # different names by different vendors; detection and profile stay the same.
+    service_branding: Mapping[str, tuple[str, str]] | None = None
     # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
     # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
     sbt: int | None = None
@@ -131,29 +93,22 @@ class SyrConnectModel:
     # Prefix that `getVER` must start with
     ver_prefix: str | None = None
 
-    def branded(self, service: str | None, language: str | None) -> tuple[str, str]:
-        """Return the manufacturer and display name of the model.
+    def branded(self, service: str | None) -> tuple[str, str]:
+        """Return the manufacturer and display name of the model for a cloud service.
 
         Args:
             service: The cf_bundle_identifier of the config entry, or None for the
                 local JSON API
-            language: The language of Home Assistant (`hass.config.language`), or
-                None for the English names
 
         Returns:
-            The (manufacturer, display_name) pair of the service branding, or of the
-            model if the service has no branding of its own. The display name is the
-            one of the language, else the English one.
+            The (manufacturer, display_name) pair from `service_branding`, or the
+            default one if the service has no branding of its own
         """
         if service is not None and self.service_branding is not None:
             branding = self.service_branding.get(service)
             if branding is not None:
-                display_name = _language_display_name(
-                    branding.language_display_names, language
-                )
-                return branding.manufacturer, display_name or branding.display_name
-        display_name = _language_display_name(self.language_display_names, language)
-        return self.manufacturer, display_name or self.display_name
+                return branding
+        return self.manufacturer, self.display_name
 
 
 # Returned by detect_model when no signature matches or input is invalid.
@@ -217,9 +172,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Safe-T Communication Module",
         dk=5,
         dkv=12,
-        language_display_names={
-            "de": "Safe-T Kommunikationsmodul",
-        },
         manufacturer="SYR",
         name="safetcomm",
         # TODO: Untested model.
@@ -534,9 +486,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Hygiene Module (cold)",
         dk=60,
         dkv=21,
-        language_display_names={
-            "de": "Hygienemodul (kalt)",
-        },
         manufacturer="SYR",
         name="hygienemodulecold",
         # TODO: Untested model.
@@ -546,9 +495,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Hygiene Module (warm)",
         dk=61,
         dkv=22,
-        language_display_names={
-            "de": "Hygienemodul (warm)",
-        },
         manufacturer="SYR",
         name="hygienemodulwarm",
         # TODO: Untested model.
@@ -558,9 +504,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Hygiene Module (warm and cold)",
         dk=62,
         dkv=23,
-        language_display_names={
-            "de": "Hygienemodul (warm und kalt)",
-        },
         manufacturer="SYR",
         name="hygienemodulwarmcold",
         # TODO: Untested model.
@@ -570,9 +513,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Hygiene Module (cold and warm)",
         dk=63,
         dkv=24,
-        language_display_names={
-            "de": "Hygienemodul (kalt und warm)",
-        },
         manufacturer="SYR",
         name="hygienemodulcoldwarm",
         # TODO: Untested model.
@@ -648,52 +588,34 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         name="safefloor",
         service_branding={
             # CLEAR PRO Bodensensor
-            "de.consoft.gc.conel.connect": SyrConnectBranding(
-                display_name="CLEAR PRO Floor Sensor",
-                language_display_names={
-                    "de": "CLEAR PRO Bodensensor",
-                },
-                manufacturer="CONEL",
+            "de.consoft.gc.conel.connect": (
+                "CONEL",
+                "CLEAR PRO Floor Sensor",
             ),
             # Funk Boden sensor A25
-            "de.consoft.gsh.comfort.connect": SyrConnectBranding(
-                display_name="Wireless Floor Sensor A25",
-                language_display_names={
-                    "de": "Funk-Bodensensor A25",
-                },
-                manufacturer="Sanibel",
+            "de.consoft.gsh.comfort.connect": (
+                "Sanibel",
+                "Wireless Floor Sensor A25",
             ),
             # 2422.00.100 - concept SafeFloor Bodensensor für den SafeTech Connect 2422
-            "de.consoft.isg.concept.connect": SyrConnectBranding(
-                display_name="concept SafeFloor Floor Sensor",
-                language_display_names={
-                    "de": "concept SafeFloor Bodensensor",
-                },
-                manufacturer="CONCEPT",
+            "de.consoft.isg.concept.connect": (
+                "CONCEPT",
+                "concept SafeFloor Floor Sensor",
             ),
             # Optima T2 Bodensensor
-            "de.consoft.isg.optima.connect": SyrConnectBranding(
-                display_name="Optima T2 Floor Sensor",
-                language_display_names={
-                    "de": "Optima T2 Bodensensor",
-                },
-                manufacturer="OPTIMA",
+            "de.consoft.isg.optima.connect": (
+                "OPTIMA",
+                "Optima T2 Floor Sensor",
             ),
             # POLYGONVATRO Funk-Bodensensor
-            "de.consoft.polygonvatro.connect": SyrConnectBranding(
-                display_name="Wireless Floor Sensor",
-                language_display_names={
-                    "de": "Funk-Bodensensor",
-                },
-                manufacturer="POLYGONVATRO",
+            "de.consoft.polygonvatro.connect": (
+                "POLYGONVATRO",
+                "Wireless Floor Sensor",
             ),
             # DITECH Funk-Bodensensor
-            "de.consoft.sanitaerunion.ditech.connect": SyrConnectBranding(
-                display_name="Ditech Wireless Floor Sensor",
-                language_display_names={
-                    "de": "DITECH Funk-Bodensensor",
-                },
-                manufacturer="DITECH",
+            "de.consoft.sanitaerunion.ditech.connect": (
+                "DITECH",
+                "Ditech Wireless Floor Sensor",
             ),
         },
         ver_contains="Floorsensor",
@@ -762,9 +684,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Water Monitor",
         dk=140,
         dkv=38,
-        language_display_names={
-            "de": "Wasserwächter",
-        },
         manufacturer="POLYGONVATRO",
         name="safetechpolygonvatro",
         # TODO: Untested model.
@@ -846,12 +765,9 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         name="hygbox",
         service_branding={
             # DT3638 - DITECH Hygienespülbox
-            "de.consoft.sanitaerunion.ditech.connect": SyrConnectBranding(
-                display_name="DITECH Hygiene Flush Box",
-                language_display_names={
-                    "de": "DITECH Hygienespülbox",
-                },
-                manufacturer="DITECH",
+            "de.consoft.sanitaerunion.ditech.connect": (
+                "DITECH",
+                "DITECH Hygiene Flush Box",
             ),
         },
         # TODO: Untested model.
@@ -887,9 +803,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="concept 200 Replacement Filter",
         dk=1110,
         dkv=110,
-        language_display_names={
-            "de": "concept 200 Ersatzfilter",
-        },
         manufacturer="CONCEPT",
         name="concept200replacementfilter",
         # TODO: Untested model.
@@ -901,9 +814,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Optima T Replacement Filter",
         dk=1111,
         dkv=111,
-        language_display_names={
-            "de": "Optima T Ersatzfilter",
-        },
         manufacturer="OPTIMA",
         name="optimatreplacementfilter",
         # TODO: Untested model.
@@ -978,9 +888,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="concept Single Water Softener",
         dk=1208,
         dkv=208,
-        language_display_names={
-            "de": "concept Einzelenthärtungsanlage",
-        },
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="conceptsingle",
@@ -994,9 +901,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Optima Single Water Softener",
         dk=1209,
         dkv=209,
-        language_display_names={
-            "de": "Optima Einzelenthärtungsanlage",
-        },
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimasingle",
@@ -1010,9 +914,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="concept 200 Dual Water Softener",
         dk=1210,
         dkv=210,
-        language_display_names={
-            "de": "concept 200 Doppelenthärtungsanlage",
-        },
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="concept200duo",
@@ -1027,9 +928,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Optima T2 Dual Water Softener",
         dk=1211,
         dkv=211,
-        language_display_names={
-            "de": "Optima T2 Doppelenthärtungsanlage",
-        },
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimat2duo",
@@ -1056,9 +954,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Optima Dual Water Softener",
         dk=1213,
         dkv=213,
-        language_display_names={
-            "de": "Optima Doppelenthärtungsanlage",
-        },
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimaduo",
@@ -1097,9 +992,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="concept Dual Water Softener",
         dk=1216,
         dkv=216,
-        language_display_names={
-            "de": "concept Doppelenthärtungsanlage",
-        },
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="conceptduo",
@@ -1114,9 +1006,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="DITECH Dual Water Softener",
         dk=1217,
         dkv=217,
-        language_display_names={
-            "de": "DITECH Doppelenthärtungsanlage",
-        },
         manufacturer="DITECH",
         maximum_regeneration_interval=3,
         name="ditechduo",
@@ -1130,9 +1019,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="TAKE Dual Water Softener",
         dk=1218,
         dkv=218,
-        language_display_names={
-            "de": "TAKE Doppelenthärtungsanlage",
-        },
         manufacturer="TAKE",
         maximum_regeneration_interval=3,
         name="takeduo",
@@ -1147,9 +1033,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="DITECH Single Water Softener",
         dk=1219,
         dkv=219,
-        language_display_names={
-            "de": "DITECH Einzelenthärtungsanlage",
-        },
         manufacturer="DITECH",
         maximum_regeneration_interval=3,
         name="ditechsingle",
@@ -1163,9 +1046,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="TAKE Single Water Softener",
         dk=1220,
         dkv=220,
-        language_display_names={
-            "de": "TAKE Einzelenthärtungsanlage",
-        },
         manufacturer="TAKE",
         maximum_regeneration_interval=3,
         name="takesingle",
@@ -1267,9 +1147,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="comfort-Leak Protection Module A25",
         dk=1501,
         dkv=501,
-        language_display_names={
-            "de": "comfort-Leckageschutzmodul A25",
-        },
         manufacturer="Sanibel",
         name="sanibelleakprotect",
         srn_prefix="501",
@@ -1295,9 +1172,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="comfort-Automatic Backwash System RSA A25",
         dk=1501,
         dkv=501,
-        language_display_names={
-            "de": "comfort-Automatische Rückspülanlage RSA A25",
-        },
         manufacturer="Sanibel",
         name="sanibelrsa",
         srn_prefix="501",
@@ -1324,9 +1198,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="DITECH Connection Module Plus",
         dk=1502,
         dkv=502,
-        language_display_names={
-            "de": "DITECH Anschlussmodul Plus",
-        },
         manufacturer="DITECH",
         name="ditechconnectioncentre",
         # TODO: Untested model.
@@ -1341,9 +1212,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="DITECH Automatic Backwash HWS/RF",
         dk=1502,
         dkv=502,
-        language_display_names={
-            "de": "DITECH Rückspülautomatik HWS/RF",
-        },
         manufacturer="DITECH",
         name="ditechbackwash",
         # TODO: Untested model.
@@ -1358,9 +1226,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="DITECH Backwash Filter Protect",
         dk=1502,
         dkv=502,
-        language_display_names={
-            "de": "DITECH Rückspülfilter Protect",
-        },
         manufacturer="DITECH",
         name="ditechbackwashfilter",
         # TODO: Untested model.
@@ -1453,9 +1318,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="concept 300 Automatic Backwash RSA",
         dk=1504,
         dkv=504,
-        language_display_names={
-            "de": "concept 300 Rückspülautomatik RSA",
-        },
         manufacturer="CONCEPT",
         name="conceptbackwash",
         # TODO: Untested model.
@@ -1470,9 +1332,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="concept 300 Trio Filter with Leak Protection",
         dk=1504,
         dkv=504,
-        language_display_names={
-            "de": "concept 300 Triofilter mit Leckageschutz",
-        },
         manufacturer="CONCEPT",
         name="concepttriolock",
         # TODO: Untested model.
@@ -1513,9 +1372,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Optima T2 Automatic Backwash RSA",
         dk=1505,
         dkv=505,
-        language_display_names={
-            "de": "Optima T2 Rückspülautomatik RSA",
-        },
         manufacturer="OPTIMA",
         name="optimabackwash",
         # TODO: Untested model.
@@ -1530,9 +1386,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         display_name="Optima T2 Leak Protection and Backwash Filter TRIO",
         dk=1505,
         dkv=505,
-        language_display_names={
-            "de": "Optima T2 Leckageschutz und Rückspülfilter TRIO",
-        },
         manufacturer="OPTIMA",
         name="optimatriolock",
         # TODO: Untested model.

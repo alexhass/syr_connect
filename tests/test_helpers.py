@@ -515,39 +515,6 @@ def test_build_device_info_service_branding() -> None:
     assert device_info["model"] == "CLEAR PRO Floor Sensor"
 
 
-def test_build_device_info_language_display_name() -> None:
-    """The model follows the name of the Home Assistant language."""
-    model = replace(
-        UNKNOWN_MODEL,
-        display_name="Default Name",
-        language_display_names={
-            "de": "German Name",
-        },
-        manufacturer="Default",
-    )
-    coordinator_data = {
-        "devices": [
-            {
-                "id": "DEVICE123",
-                "name": "Device",
-                "status": {},
-            }
-        ],
-        "language": "de",
-        "service": None,
-    }
-
-    with patch(
-        "custom_components.syr_connect.helpers.get_device_model", return_value=model
-    ):
-        device_info = build_device_info(
-            "DEVICE123", "Device", cast(Any, coordinator_data)
-        )
-
-    assert device_info["manufacturer"] == "Default"
-    assert device_info["model"] == "German Name"
-
-
 def test_build_device_info_minimal() -> None:
     """Test device info building with minimal data."""
     coordinator_data = {

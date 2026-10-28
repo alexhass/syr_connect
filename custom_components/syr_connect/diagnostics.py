@@ -492,10 +492,7 @@ async def _collect_raw_json_cloud_devices(
 
 
 def _device_summary(
-    device: SyrConnectDevice,
-    api_type: str,
-    service: str | None,
-    language: str | None,
+    device: SyrConnectDevice, api_type: str, service: str | None
 ) -> dict[str, Any]:
     """Return the diagnostics summary of a coordinator device.
 
@@ -506,9 +503,8 @@ def _device_summary(
     status = device.get("status", {})
 
     # Extract model information, with the names of the cloud service (`service_branding`)
-    # and of the language (`language_display_names`)
     model_info = get_device_model(device)
-    manufacturer, model_display = model_info.branded(service, language)
+    manufacturer, model_display = model_info.branded(service)
 
     # The sensors the integration creates for this status, with the same rules as the setup
     visible_keys = sensor_keys_for_status(status, model_info)
@@ -686,12 +682,7 @@ async def async_get_config_entry_diagnostics(
         # Populate devices and projects BEFORE masking and redaction, so the steps
         # below cover them as well
         devices_info.extend(
-            _device_summary(
-                device,
-                api_type,
-                coordinator.data.get("service"),
-                coordinator.data.get("language"),
-            )
+            _device_summary(device, api_type, coordinator.data.get("service"))
             for device in coordinator.data.get("devices", [])
         )
 

@@ -228,7 +228,6 @@ class SyrConnectDataUpdateCoordinator(
             return {
                 "configuration_url": self._configuration_url,
                 "devices": all_devices,
-                "language": self.hass.config.language,
                 "projects": self.api.projects,
                 "service": self._service,
             }

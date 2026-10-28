@@ -37,8 +37,6 @@ class SyrConnectCoordinatorData(TypedDict):
 
     configuration_url: str | None
     devices: list[SyrConnectDevice]
-    # Language of Home Assistant (`hass.config.language`) for the model names
-    language: str
     projects: list[dict[str, Any]]
     # cf_bundle_identifier of the cloud service, None for the local JSON API
     service: str | None
