@@ -36,7 +36,6 @@ from homeassistant.util import dt as dt_util
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
@@ -193,7 +192,7 @@ def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     Formats:
     - Safe-T+: "6,11 4,38 3,90" -> 6.11 V
     - Trio DFR/LS: "363" -> 3.63 V
-    - SafeFloor TYP=120: "85" -> 85 %
+    - SafeFloor: "85" -> 85 %
     """
     if value is None:
         return None
@@ -2585,11 +2584,11 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             else:
                 self._attr_native_unit_of_measurement = None
 
-        # Override getBAT attributes for devices that report battery as percentage (e.g. SafeFloor TYP=120).
+        # Override getBAT attributes for devices that report battery as percentage (SafeFloor).
         # The name follows the unit: "Battery level" like getBAP instead of "Battery voltage".
         if sensor_key == "getBAT":
-            typ = str(self._status.get("getTYP", "") or "").strip()
-            if typ in _SYR_CONNECT_SENSOR_BAT_VALUE_PERCENTAGE:
+            profile = self.device_model.device_profile
+            if profile is not None and profile.bat_in_percent:
                 self._attr_native_unit_of_measurement = PERCENTAGE
                 self._attr_device_class = SensorDeviceClass.BATTERY
                 self._attr_suggested_display_precision = 0

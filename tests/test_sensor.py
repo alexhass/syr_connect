@@ -3647,7 +3647,8 @@ async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
                 "project_id": "project1",
                 "status": {
                     "getBAT": "40",
-                    "getTYP": "120",  # SafeFloor
+                    "getTYP": "120",
+                    "getVER": "Syr Floorsensor 2.23",  # SafeFloor
                 },
             }
         ]
@@ -3745,6 +3746,33 @@ async def test_async_setup_entry_creates_computed_battery_level(
         assert bap[0].native_value == 50
 
 
+@pytest.mark.parametrize(
+    ("device", "unit"),
+    [
+        # SafeFloor detected by the cloud device kind, without getTYP
+        ({"dk": 122, "dkv": 34, "sbt": 0, "status": {"getBAT": "40"}}, PERCENTAGE),
+        # getTYP 120 alone does not make an unknown model a SafeFloor
+        (
+            {"status": {"getBAT": "363", "getTYP": "120"}},
+            UnitOfElectricPotential.VOLT,
+        ),
+    ],
+)
+async def test_sensor_getbat_percentage_follows_the_model(
+    hass: HomeAssistant, device: dict[str, Any], unit: str
+) -> None:
+    """Battery (getBAT) is a percentage only for models whose profile says so (SafeFloor)."""
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Device 1", "project_id": "project1", **device}
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
+
+    assert bat.native_unit_of_measurement == unit
+
+
 async def test_sensor_getbat_voltage_keeps_voltage_name(hass: HomeAssistant) -> None:
     """Devices that report getBAT as voltage keep the name "Battery voltage"."""
     data = {
@@ -3774,7 +3802,8 @@ async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -
                 "project_id": "project1",
                 "status": {
                     "getBAT": "not_a_number",
-                    "getTYP": "120",  # SafeFloor -> PERCENTAGE unit
+                    "getTYP": "120",
+                    "getVER": "Syr Floorsensor 2.23",  # SafeFloor -> PERCENTAGE unit
                 },
             }
         ]
@@ -3793,7 +3822,7 @@ async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
         "id": "device1",
         "name": "Device 1",
         "project_id": "project1",
-        "status": {"getTYP": "120"},
+        "status": {"getTYP": "120", "getVER": "Syr Floorsensor 2.23"},
     }
     for bat_pct in ["95", "85", "75", "65", "55", "45", "35", "25", "15", "5", "0"]:
         data = {

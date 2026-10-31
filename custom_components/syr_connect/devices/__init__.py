@@ -51,6 +51,8 @@ class SyrConnectDeviceProfile:
 
     # Alarm code family (getALA) of the device; None means the generic codes
     ala_codes: Mapping[str, str] | None = None
+    # The device reports the battery (getBAT) in % instead of a voltage
+    bat_in_percent: bool = False
     binary_sensor: AbstractSet[str]
     button: AbstractSet[str]
     # The device reports the water flow (getFLO) in l/min instead of l/h

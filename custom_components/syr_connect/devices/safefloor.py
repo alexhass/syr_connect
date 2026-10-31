@@ -124,6 +124,7 @@ STATISTICS = (
 
 PROFILE = SyrConnectDeviceProfile(
     ala_codes=ALA_CODES,
+    bat_in_percent=True,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
