@@ -964,12 +964,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_dbd,
     ),
     SyrConnectSensorEntityDescription(
-        key="getDMA",  # Microleakage alarm mode (1=Warning, 2=Alarm)
+        key="getDMA",  # Microleakage alarm mode (0=Disabled, 1=Warning, 2=Alarm)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
-        key="getDRP",  # Microleakage test interval (daily / weekly / monthly)
+        key="getDRP",  # Microleakage test interval (always / daily / weekly / monthly)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -1472,9 +1472,10 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
     ),
     SyrConnectSensorEntityDescription(
-        key="getPRN",  # Duplicate of getPRF
+        key="getPRN",  # Number of leak protection profiles available to the user (1-8)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="always",
     ),
     SyrConnectSensorEntityDescription(
         key="getPST",  # Pressure sensor installed (1=not available, 2=available)

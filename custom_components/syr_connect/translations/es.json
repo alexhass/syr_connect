@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Cartucho agotado (capacidad)",
           "alarm_cartridge_exhausted_conductivity": "Cartucho agotado (conductividad)",
           "alarm_chlor_generator_fault": "¡Fallo del generador de cloro!",
+          "alarm_conductivity_too_high": "Conductividad demasiado alta",
           "alarm_end_switch": "Interruptor de fin de carrera",
           "alarm_external_sensor_leakage_cable": "Fuga en sensor externo (cable)",
           "alarm_external_sensor_leakage_radio": "Fuga en sensor externo (radio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "¡Microfuga detectada!",
           "alarm_motor_current_exceeded": "¡Umbral de corriente del motor superado!",
           "alarm_no_network_connection": "Fallo de conexión de red",
+          "alarm_no_power_supply": "Sin alimentación eléctrica",
           "alarm_pressure_sensor_faulty": "¡Sensor de presión defectuoso!",
           "alarm_pressure_too_high": "Presión de entrada demasiado alta",
           "alarm_pressure_too_low": "Presión de entrada demasiado baja",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Modo de alarma de microfugas",
         "state": {
+          "0": "Desactivado",
           "1": "Advertencia",
           "2": "Alarma"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Intervalo de prueba de microfugas",
         "state": {
+          "0": "Siempre",
           "1": "Diario",
           "2": "Semanal",
           "3": "Mensual"
@@ -796,7 +800,10 @@
         "name": "Idioma del dispositivo",
         "state": {
           "0": "Alemán",
-          "1": "Inglés"
+          "1": "Inglés",
+          "2": "Español",
+          "3": "Italiano",
+          "4": "Polaco"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Perfil de protección contra fugas activo (duplicado)"
+        "name": "Número de perfiles de protección contra fugas"
       },
       "getprs": {
         "name": "Presión"
@@ -1469,7 +1476,8 @@
           "10": "Cerrada",
           "11": "Cerrando",
           "20": "Abierta",
-          "21": "Abriendo"
+          "21": "Abriendo",
+          "30": "Fuga de ausencia"
         }
       },
       "getvol": {

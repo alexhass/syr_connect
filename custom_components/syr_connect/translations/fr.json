@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Cartouche épuisée (capacité)",
           "alarm_cartridge_exhausted_conductivity": "Cartouche épuisée (conductivité)",
           "alarm_chlor_generator_fault": "Défaut du générateur de chlore",
+          "alarm_conductivity_too_high": "Conductivité trop élevée",
           "alarm_end_switch": "Fin de course",
           "alarm_external_sensor_leakage_cable": "Fuite du capteur externe (câble)",
           "alarm_external_sensor_leakage_radio": "Fuite du capteur externe (radio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Microfuite détectée",
           "alarm_motor_current_exceeded": "Seuil de courant moteur dépassé",
           "alarm_no_network_connection": "Défaut de connexion réseau",
+          "alarm_no_power_supply": "Pas d'alimentation électrique",
           "alarm_pressure_sensor_faulty": "Capteur de pression défectueux",
           "alarm_pressure_too_high": "Pression d'entrée trop élevée",
           "alarm_pressure_too_low": "Pression d'entrée trop basse",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Mode d'alarme de microfuite",
         "state": {
+          "0": "Désactivé",
           "1": "Avertissement",
           "2": "Alarme"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Intervalle du test de microfuite",
         "state": {
+          "0": "Toujours",
           "1": "Quotidien",
           "2": "Hebdomadaire",
           "3": "Mensuel"
@@ -796,7 +800,10 @@
         "name": "Langue de l'appareil",
         "state": {
           "0": "Allemand",
-          "1": "Anglais"
+          "1": "Anglais",
+          "2": "Espagnol",
+          "3": "Italien",
+          "4": "Polonais"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Profil de protection contre les fuites actif (doublon)"
+        "name": "Nombre de profils de protection contre les fuites"
       },
       "getprs": {
         "name": "Pression"
@@ -1469,7 +1476,8 @@
           "10": "Fermée",
           "11": "Fermeture",
           "20": "Ouverte",
-          "21": "Ouverture"
+          "21": "Ouverture",
+          "30": "Fuite d'absence"
         }
       },
       "getvol": {

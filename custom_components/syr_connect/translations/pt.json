@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Cartucho esgotado (capacidade)",
           "alarm_cartridge_exhausted_conductivity": "Cartucho esgotado (condutividade)",
           "alarm_chlor_generator_fault": "Falha no gerador de cloro!",
+          "alarm_conductivity_too_high": "Condutividade demasiado alta",
           "alarm_end_switch": "Fim de curso",
           "alarm_external_sensor_leakage_cable": "Fuga no sensor externo (cabo)",
           "alarm_external_sensor_leakage_radio": "Fuga no sensor externo (rádio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Microfuga detetada!",
           "alarm_motor_current_exceeded": "Limite de corrente do motor excedido!",
           "alarm_no_network_connection": "Falha de ligação de rede",
+          "alarm_no_power_supply": "Sem alimentação elétrica",
           "alarm_pressure_sensor_faulty": "Sensor de pressão com defeito!",
           "alarm_pressure_too_high": "Pressão de entrada demasiado alta",
           "alarm_pressure_too_low": "Pressão de entrada demasiado baixa",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Modo de alarme de microfuga",
         "state": {
+          "0": "Desativado",
           "1": "Aviso",
           "2": "Alarme"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Intervalo do teste de microfuga",
         "state": {
+          "0": "Sempre",
           "1": "Diário",
           "2": "Semanal",
           "3": "Mensal"
@@ -796,7 +800,10 @@
         "name": "Idioma do dispositivo",
         "state": {
           "0": "Alemão",
-          "1": "Inglês"
+          "1": "Inglês",
+          "2": "Espanhol",
+          "3": "Italiano",
+          "4": "Polaco"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Perfil de proteção contra fugas ativo (duplicado)"
+        "name": "Número de perfis de proteção contra fugas"
       },
       "getprs": {
         "name": "Pressão de entrada"
@@ -1469,7 +1476,8 @@
           "10": "Fechada",
           "11": "A fechar",
           "20": "Aberta",
-          "21": "A abrir"
+          "21": "A abrir",
+          "30": "Fuga em ausência"
         }
       },
       "getvol": {

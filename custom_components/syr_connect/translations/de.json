@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Kartusche erschöpft (Kapazität)",
           "alarm_cartridge_exhausted_conductivity": "Kartusche erschöpft (Leitwertanstieg)",
           "alarm_chlor_generator_fault": "Störung Chlorgenerator!",
+          "alarm_conductivity_too_high": "Leitfähigkeit zu hoch",
           "alarm_end_switch": "Endschalter",
           "alarm_external_sensor_leakage_cable": "EXT. SENSOR LECKAGE KABEL",
           "alarm_external_sensor_leakage_radio": "EXT. SENSOR LECKAGE FUNK",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Mikroleckage erkannt!",
           "alarm_motor_current_exceeded": "Motorstrom-Grenzwert überschritten!",
           "alarm_no_network_connection": "Störung Netzwerkverbindung",
+          "alarm_no_power_supply": "Keine Stromversorgung",
           "alarm_pressure_sensor_faulty": "Drucksensor fehlerhaft!",
           "alarm_pressure_too_high": "Vordruck zu hoch",
           "alarm_pressure_too_low": "Vordruck zu niedrig",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Mikroleckage-Alarmmodus",
         "state": {
+          "0": "Deaktiviert",
           "1": "Warnung",
           "2": "Alarm"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Mikroleckage-Test-Intervall",
         "state": {
+          "0": "Immer",
           "1": "Täglich",
           "2": "Wöchentlich",
           "3": "Monatlich"
@@ -796,7 +800,10 @@
         "name": "Gerätesprache",
         "state": {
           "0": "Deutsch",
-          "1": "Englisch"
+          "1": "Englisch",
+          "2": "Spanisch",
+          "3": "Italienisch",
+          "4": "Polnisch"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Aktives Leckageschutz-Profil (Duplikat)"
+        "name": "Anzahl der Leckageschutz-Profile"
       },
       "getprs": {
         "name": "Eingangsdruck"
@@ -1469,7 +1476,8 @@
           "10": "Geschlossen",
           "11": "Wird geschlossen",
           "20": "Geöffnet",
-          "21": "Wird geöffnet"
+          "21": "Wird geöffnet",
+          "30": "Abwesenheits-Leckage"
         }
       },
       "getvol": {

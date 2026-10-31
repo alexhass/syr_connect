@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Cartridge uitgeput (capaciteit)",
           "alarm_cartridge_exhausted_conductivity": "Cartridge uitgeput (geleidbaarheid)",
           "alarm_chlor_generator_fault": "Storing chloorgenerator!",
+          "alarm_conductivity_too_high": "Geleidbaarheid te hoog",
           "alarm_end_switch": "Eindschakelaar",
           "alarm_external_sensor_leakage_cable": "Lek externe sensor (kabel)",
           "alarm_external_sensor_leakage_radio": "Lek externe sensor (radio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Microlek gedetecteerd!",
           "alarm_motor_current_exceeded": "Motorstroomgrens overschreden!",
           "alarm_no_network_connection": "Netwerkverbindingsfout",
+          "alarm_no_power_supply": "Geen stroomvoorziening",
           "alarm_pressure_sensor_faulty": "Druksensor defect!",
           "alarm_pressure_too_high": "Inlaatdruk te hoog",
           "alarm_pressure_too_low": "Inlaatdruk te laag",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Microlekalarmmodus",
         "state": {
+          "0": "Uitgeschakeld",
           "1": "Waarschuwing",
           "2": "Alarm"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Microlektestinterval",
         "state": {
+          "0": "Altijd",
           "1": "Dagelijks",
           "2": "Wekelijks",
           "3": "Maandelijks"
@@ -796,7 +800,10 @@
         "name": "Apparaattaal",
         "state": {
           "0": "Duits",
-          "1": "Engels"
+          "1": "Engels",
+          "2": "Spaans",
+          "3": "Italiaans",
+          "4": "Pools"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Actief lekbeschermingsprofiel (duplicaat)"
+        "name": "Aantal lekbeschermingsprofielen"
       },
       "getprs": {
         "name": "Inlaatdruk"
@@ -1469,7 +1476,8 @@
           "10": "Gesloten",
           "11": "Sluiten",
           "20": "Geopend",
-          "21": "Openen"
+          "21": "Openen",
+          "30": "Afwezigheidslek"
         }
       },
       "getvol": {

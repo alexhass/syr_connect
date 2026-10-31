@@ -146,6 +146,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getPW7",
     "getPW8",
     "getPRF",
+    "getPRN",
     # --- Device Info & Diagnostics ---
     "getEGW",
     "getEIP",

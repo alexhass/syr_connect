@@ -1025,6 +1025,25 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     assert mapped_wrn2 is None and raw_wrn2 == ""
 
 
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("A2", "alarm_no_network_connection"),
+        ("AC", "alarm_conductivity_too_high"),
+        ("AD", "alarm_battery_low"),
+        ("AE", "alarm_leakage_volume_approaching"),
+        ("AF", "alarm_no_power_supply"),
+        ("FF", "no_alarm"),
+    ],
+)
+def test_sensor_ala_map_safetech(raw: str, expected: str) -> None:
+    """SafeTech alarm codes that differ from the generic codes use their own meaning."""
+    model = detect_model({"getVER": "Safe-Tech V4.08"})
+
+    assert model.name == "safetechv4"
+    assert get_sensor_ala_map(model, raw) == (expected, raw)
+
+
 def test_get_sensor_ab_string_numeric_edge() -> None:
     """Cover numeric-string branch for getAB ('1' -> False)."""
 

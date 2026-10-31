@@ -102,6 +102,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getPR7",
     "getPR8",
     "getPRF",
+    "getPRN",
     "getPT1",
     "getPT2",
     "getPT3",

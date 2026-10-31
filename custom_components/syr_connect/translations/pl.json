@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Wkład wyczerpany (pojemność)",
           "alarm_cartridge_exhausted_conductivity": "Wkład wyczerpany (przewodność)",
           "alarm_chlor_generator_fault": "Usterka generatora chloru!",
+          "alarm_conductivity_too_high": "Zbyt wysoka przewodność",
           "alarm_end_switch": "Wyłącznik krańcowy",
           "alarm_external_sensor_leakage_cable": "Zewnętrzny czujnik przecieku (kabel)",
           "alarm_external_sensor_leakage_radio": "Zewnętrzny czujnik przecieku (radio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Wykryto mikroprzeciek!",
           "alarm_motor_current_exceeded": "Przekroczono próg prądu silnika!",
           "alarm_no_network_connection": "Błąd połączenia sieciowego",
+          "alarm_no_power_supply": "Brak zasilania",
           "alarm_pressure_sensor_faulty": "Czujnik ciśnienia uszkodzony!",
           "alarm_pressure_too_high": "Ciśnienie wlotowe zbyt wysokie",
           "alarm_pressure_too_low": "Ciśnienie wlotowe zbyt niskie",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Tryb alarmu mikroprzecieku",
         "state": {
+          "0": "Wyłączony",
           "1": "Ostrzeżenie",
           "2": "Alarm"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Interwał testu mikroprzecieku",
         "state": {
+          "0": "Zawsze",
           "1": "Codziennie",
           "2": "Co tydzień",
           "3": "Co miesiąc"
@@ -796,7 +800,10 @@
         "name": "Język urządzenia",
         "state": {
           "0": "Niemiecki",
-          "1": "Angielski"
+          "1": "Angielski",
+          "2": "Hiszpański",
+          "3": "Włoski",
+          "4": "Polski"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Aktywny profil ochrony przed wyciekiem (duplikat)"
+        "name": "Liczba profili ochrony przed wyciekiem"
       },
       "getprs": {
         "name": "Ciśnienie wejściowe"
@@ -1469,7 +1476,8 @@
           "10": "Zamknięty",
           "11": "Zamykanie",
           "20": "Otwarty",
-          "21": "Otwieranie"
+          "21": "Otwieranie",
+          "30": "Wyciek w trybie nieobecności"
         }
       },
       "getvol": {

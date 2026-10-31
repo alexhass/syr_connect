@@ -563,26 +563,26 @@ Applies to NeoSoft, Trio DFR/LS, MuCo/Lock/RSA family devices (Conel/Sanibel/Opt
 
 #### Alarm codes (getALA) — SafeTech
 
-Alarm codes of the SafeTech (dk 140). A1 and A3–AB match the NeoSoft / MuCo / Trio family above; A2 and AC–AF differ. The integration currently uses the codes of the NeoSoft / MuCo / Trio family for the SafeTech.
+Alarm codes of the SafeTech (dk 140). A1 and A3–AB match the NeoSoft / MuCo / Trio family above; A2 and AC–AF differ.
 
-| Code | Meaning (official) |
-| --- | --- |
-| A1 | Alarm end switch |
-| A2 | No network |
-| A3 | Alarm volume leakage |
-| A4 | Alarm time leakage |
-| A5 | Alarm max flow leakage |
-| A6 | Alarm micro leakage |
-| A7 | Alarm ext. sensor leakage |
-| A8 | Alarm turbine blocked |
-| A9 | Alarm pressure sensor error |
-| AA | Alarm temperature sensor error |
-| AB | Alarm conductivity sensor error |
-| AC | Alarm too high conductivity (getCNL exceeded) |
-| AD | Low battery |
-| AE | Warning volume leakage |
-| AF | Alarm no power supply |
-| FF | No alarm |
+| Code | Meaning (official) | Translation key |
+| --- | --- | --- |
+| A1 | Alarm end switch | `alarm_end_switch` |
+| A2 | No network | `alarm_no_network_connection` |
+| A3 | Alarm volume leakage | `alarm_leakage_volume_reached` |
+| A4 | Alarm time leakage | `alarm_leakage_time_reached` |
+| A5 | Alarm max flow leakage | `alarm_max_flow_rate_reached` |
+| A6 | Alarm micro leakage | `alarm_microleakage_detected` |
+| A7 | Alarm ext. sensor leakage | `alarm_external_sensor_leakage_radio` |
+| A8 | Alarm turbine blocked | `alarm_turbine_blocked` |
+| A9 | Alarm pressure sensor error | `alarm_pressure_sensor_faulty` |
+| AA | Alarm temperature sensor error | `alarm_temperature_sensor_faulty` |
+| AB | Alarm conductivity sensor error | `fault_conductance_sensor` |
+| AC | Alarm too high conductivity (getCNL exceeded) | `alarm_conductivity_too_high` |
+| AD | Low battery | `alarm_battery_low` |
+| AE | Warning volume leakage | `alarm_leakage_volume_approaching` |
+| AF | Alarm no power supply | `alarm_no_power_supply` |
+| FF | No alarm | `no_alarm` |
 
 #### Alarm codes (getALA) — LEX family
 
@@ -880,7 +880,7 @@ These properties are only available on devices that contain leakage protection, 
 | getTN / setTN | "20" | 1/10 s | FACTORY | 1 | Motor overrun after a limit switch has been reached. Range: 0–20 (0.0–2.0 s) |
 | getTTM / setTTM | "30" | days | FACTORY | 30 | Maximum time without turbine pulses (no flow); when it is exceeded, the alarm A8 (turbine blocked) is triggered. Range: 1–30 |
 | getUL / setUL | "0" | L | | | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L |
-| getVLV | "20" | | SERVICE | | Current valve status:<br>10 = closed<br>11 = closing<br>20 = open<br>21 = opening<br>30 = undefined |
+| getVLV | "20" | | SERVICE | | Current valve status:<br>10 = closed<br>11 = closing<br>20 = open<br>21 = opening<br>30 = "Absence leakage" (best guess from testing, not not confirmed) |
 | getVPS1 | "3360" | s | | | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist. |
 | getVPS2 | "3360" | s | | | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist. |
 | getVTO | "False" | | USER | | Valve test ongoing: 0/False = inactive, 1/True = active |

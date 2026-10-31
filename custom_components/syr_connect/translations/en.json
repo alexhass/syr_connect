@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Cartridge exhausted (capacity)",
           "alarm_cartridge_exhausted_conductivity": "Cartridge exhausted (conductivity)",
           "alarm_chlor_generator_fault": "Chlorine generator fault!",
+          "alarm_conductivity_too_high": "Conductivity too high",
           "alarm_end_switch": "End switch",
           "alarm_external_sensor_leakage_cable": "External sensor leakage (cable)",
           "alarm_external_sensor_leakage_radio": "External sensor leakage (radio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Microleakage detected!",
           "alarm_motor_current_exceeded": "Motor current threshold exceeded!",
           "alarm_no_network_connection": "Network connection fault",
+          "alarm_no_power_supply": "No power supply",
           "alarm_pressure_sensor_faulty": "Pressure sensor faulty!",
           "alarm_pressure_too_high": "Inlet pressure too high",
           "alarm_pressure_too_low": "Inlet pressure too low",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Microleakage alarm mode",
         "state": {
+          "0": "Disabled",
           "1": "Warning",
           "2": "Alarm"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Microleakage test interval",
         "state": {
+          "0": "Always",
           "1": "Daily",
           "2": "Weekly",
           "3": "Monthly"
@@ -796,7 +800,10 @@
         "name": "Device language",
         "state": {
           "0": "German",
-          "1": "English"
+          "1": "English",
+          "2": "Spanish",
+          "3": "Italian",
+          "4": "Polish"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Active leak protection profile (duplicate)"
+        "name": "Number of leak protection profiles"
       },
       "getprs": {
         "name": "Inlet pressure"
@@ -1469,7 +1476,8 @@
           "10": "Closed",
           "11": "Closing",
           "20": "Opened",
-          "21": "Opening"
+          "21": "Opening",
+          "30": "Absence leakage"
         }
       },
       "getvol": {

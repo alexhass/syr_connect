@@ -172,6 +172,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getPW7",
     "getPW8",
     "getPRF",
+    "getPRN",
     # --- Filter ---
     "getFCO",
     "getPST",

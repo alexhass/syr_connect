@@ -538,6 +538,7 @@
           "alarm_cartridge_exhausted_capacity": "Cartuccia esaurita (capacità)",
           "alarm_cartridge_exhausted_conductivity": "Cartuccia esaurita (conducibilità)",
           "alarm_chlor_generator_fault": "Guasto generatore di cloro!",
+          "alarm_conductivity_too_high": "Conducibilità troppo alta",
           "alarm_end_switch": "Interruttore di fine corsa",
           "alarm_external_sensor_leakage_cable": "Perdita del sensore esterno (cavo)",
           "alarm_external_sensor_leakage_radio": "Perdita del sensore esterno (radio)",
@@ -553,6 +554,7 @@
           "alarm_microleakage_detected": "Microperdita rilevata!",
           "alarm_motor_current_exceeded": "Soglia di corrente motore superata!",
           "alarm_no_network_connection": "Guasto connessione di rete",
+          "alarm_no_power_supply": "Nessuna alimentazione elettrica",
           "alarm_pressure_sensor_faulty": "Sensore di pressione difettoso!",
           "alarm_pressure_too_high": "Pressione in ingresso troppo alta",
           "alarm_pressure_too_low": "Pressione in ingresso troppo bassa",
@@ -692,6 +694,7 @@
       "getdma": {
         "name": "Modalità allarme microperdite",
         "state": {
+          "0": "Disattivato",
           "1": "Avviso",
           "2": "Allarme"
         }
@@ -699,6 +702,7 @@
       "getdrp": {
         "name": "Intervallo test microperdite",
         "state": {
+          "0": "Sempre",
           "1": "Quotidiano",
           "2": "Settimanale",
           "3": "Mensile"
@@ -796,7 +800,10 @@
         "name": "Lingua del dispositivo",
         "state": {
           "0": "Tedesco",
-          "1": "Inglese"
+          "1": "Inglese",
+          "2": "Spagnolo",
+          "3": "Italiano",
+          "4": "Polacco"
         }
       },
       "getlot": {
@@ -1126,7 +1133,7 @@
         }
       },
       "getprn": {
-        "name": "Profilo protezione perdite attivo (duplicato)"
+        "name": "Numero di profili protezione perdite"
       },
       "getprs": {
         "name": "Pressione"
@@ -1469,7 +1476,8 @@
           "10": "Chiusa",
           "11": "Chiusura",
           "20": "Aperta",
-          "21": "Apertura"
+          "21": "Apertura",
+          "30": "Perdita in assenza"
         }
       },
       "getvol": {

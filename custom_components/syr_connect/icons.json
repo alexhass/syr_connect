@@ -516,6 +516,9 @@
       "getprf": {
         "default": "mdi:account"
       },
+      "getprn": {
+        "default": "mdi:account-multiple"
+      },
       "getprs": {
         "default": "mdi:gauge"
       },

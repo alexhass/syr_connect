@@ -102,6 +102,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getPR7",
     "getPR8",
     "getPRF",
+    "getPRN",
     "getPT1",
     "getPT2",
     "getPT3",
@@ -184,8 +185,30 @@ VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
 
+# Alarm codes of the SafeTech family (raw API getALA -> internal translation key).
+# A2 and AC-AF differ from the generic NeoSoft / MuCo / Trio codes.
+ALA_CODES = {
+    "A1": "alarm_end_switch",
+    "A2": "alarm_no_network_connection",
+    "A3": "alarm_leakage_volume_reached",
+    "A4": "alarm_leakage_time_reached",
+    "A5": "alarm_max_flow_rate_reached",
+    "A6": "alarm_microleakage_detected",
+    "A7": "alarm_external_sensor_leakage_radio",
+    "A8": "alarm_turbine_blocked",
+    "A9": "alarm_pressure_sensor_faulty",
+    "AA": "alarm_temperature_sensor_faulty",
+    "AB": "fault_conductance_sensor",
+    "AC": "alarm_conductivity_too_high",
+    "AD": "alarm_battery_low",
+    "AE": "alarm_leakage_volume_approaching",
+    "AF": "alarm_no_power_supply",
+    "FF": "no_alarm",
+}
+
 
 PROFILE = SyrConnectDeviceProfile(
+    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,

@@ -8200,6 +8200,7 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
         "getDTT",
         "getPA1",
         "getPRF",
+        "getPRN",
     } <= keys
 
 
