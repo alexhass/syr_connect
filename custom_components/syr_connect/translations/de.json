@@ -103,6 +103,13 @@
           "true": "Deaktiviert"
         }
       },
+      "getbsa": {
+        "name": "Bodensensor-Überwachung",
+        "state": {
+          "false": "Deaktiviert",
+          "true": "Aktiv"
+        }
+      },
       "getbuz": {
         "name": "Signalton bei Alarm",
         "state": {

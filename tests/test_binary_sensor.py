@@ -173,6 +173,7 @@ async def test_async_setup_entry_skips_models_without_buzzer(
             "SyrSafeTechV4",
             {
                 "get71",
+                "getBSA",
                 "getBUZ",
                 "getCSD",
                 "getIDS",
@@ -183,12 +184,12 @@ async def test_async_setup_entry_skips_models_without_buzzer(
             },
         ),
         # getTSD/getPSD/getCSD are reported empty and are not created
-        ("SyrSafeTechPlus", {"get71", "getBUZ", "getSFV", "getVTO"}),
-        ("SyrTrioDFRLS", {"get71", "getBUZ", "getSFV", "getVTO"}),
+        ("SyrSafeTechPlus", {"get71", "getBSA", "getBUZ", "getSFV", "getVTO"}),
+        ("SyrTrioDFRLS", {"get71", "getBSA", "getBUZ", "getSFV", "getVTO"}),
         # The MultiController captures report no getVTO via XML
-        ("SyrTrioLock", {"get71", "getBUZ", "getSFV"}),
-        ("ConelClearProLeakProtection", {"get71", "getBUZ", "getSFV"}),
-        ("SyrLEXplus10SL", {"get71"}),
+        ("SyrTrioLock", {"get71", "getBSA", "getBUZ", "getSFV"}),
+        ("ConelClearProLeakProtection", {"get71", "getBSA", "getBUZ", "getSFV"}),
+        ("SyrLEXplus10SL", {"get71", "getBSA"}),
         ("SyrSafeTPlus", {"get71", "getBUZ"}),
         ("SyrSafeFloor", {"getSFV"}),
         # Filling controller: firmware check, but no leak protection or valve test
@@ -258,6 +259,36 @@ async def test_binary_sensor_sensor_active_depends_on_dk(
     }
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getTSD")
+
+    assert sensor.is_on is expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("1", True),  # SafeTech, integer API
+        ("0", False),
+        ("True", True),  # SafeTech+, Trio DFR/LS, boolean API
+        (True, True),  # JSON
+        (False, False),
+    ],
+)
+async def test_binary_sensor_floor_sensor_monitoring(
+    hass: HomeAssistant, value: Any, expected: bool
+) -> None:
+    """Floor sensor monitoring (getBSA) is on when it is enabled, in both APIs."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBSA": value},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBSA")
 
     assert sensor.is_on is expected
 

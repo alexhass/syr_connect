@@ -103,6 +103,13 @@
           "true": "Desactivada"
         }
       },
+      "getbsa": {
+        "name": "Supervisión del sensor de suelo",
+        "state": {
+          "false": "Desactivada",
+          "true": "Activa"
+        }
+      },
       "getbuz": {
         "name": "Zumbador en alarma",
         "state": {

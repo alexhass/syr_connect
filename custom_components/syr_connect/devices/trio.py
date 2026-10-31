@@ -181,6 +181,7 @@ SWITCH_SUPPORTED_KEYS = {
 
 BINARY_SENSOR_SUPPORTED_KEYS = {
     "get71",
+    "getBSA",
     "getBUZ",
     "getSFV",
     "getVTO",

@@ -103,6 +103,13 @@
           "true": "Wyłączona"
         }
       },
+      "getbsa": {
+        "name": "Monitorowanie czujnika podłogowego",
+        "state": {
+          "false": "Wyłączone",
+          "true": "Aktywne"
+        }
+      },
       "getbuz": {
         "name": "Brzęczyk przy alarmie",
         "state": {

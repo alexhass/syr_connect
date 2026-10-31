@@ -103,6 +103,13 @@
           "true": "Désactivée"
         }
       },
+      "getbsa": {
+        "name": "Surveillance du capteur de sol",
+        "state": {
+          "false": "Désactivée",
+          "true": "Active"
+        }
+      },
       "getbuz": {
         "name": "Avertisseur en cas d'alarme",
         "state": {

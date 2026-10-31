@@ -103,6 +103,13 @@
           "true": "Gedeactiveerd"
         }
       },
+      "getbsa": {
+        "name": "Vloersensorbewaking",
+        "state": {
+          "false": "Gedeactiveerd",
+          "true": "Actief"
+        }
+      },
       "getbuz": {
         "name": "Zoemer bij alarm",
         "state": {

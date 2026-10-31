@@ -4,6 +4,9 @@
       "get71": {
         "default": "mdi:shield-off-outline"
       },
+      "getbsa": {
+        "default": "mdi:home-flood"
+      },
       "getbuz": {
         "default": "mdi:volume-high"
       },

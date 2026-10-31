@@ -84,6 +84,10 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectBinarySensorEntityDescription(
+        key="getBSA",  # Floor sensor monitoring enabled
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectBinarySensorEntityDescription(
         key="getBUZ",  # Buzzer on/off
         device_class=BinarySensorDeviceClass.POWER,
         entity_category=EntityCategory.DIAGNOSTIC,

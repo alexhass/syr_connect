@@ -222,6 +222,7 @@ SELECT_SUPPORTED_KEYS = {
 SWITCH_SUPPORTED_KEYS: set[str] = set()
 BINARY_SENSOR_SUPPORTED_KEYS = {
     "get71",
+    "getBSA",
 }
 
 # setWRN excluded - no getWRN in the fixture. setDEX excluded - no getDSV in

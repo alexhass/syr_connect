@@ -103,6 +103,13 @@
           "true": "Deactivated"
         }
       },
+      "getbsa": {
+        "name": "Floor sensor monitoring",
+        "state": {
+          "false": "Deactivated",
+          "true": "Active"
+        }
+      },
       "getbuz": {
         "name": "Buzzer on alarm",
         "state": {

@@ -103,6 +103,13 @@
           "true": "Desativada"
         }
       },
+      "getbsa": {
+        "name": "Monitorização do sensor de pavimento",
+        "state": {
+          "false": "Desativada",
+          "true": "Ativa"
+        }
+      },
       "getbuz": {
         "name": "Alarme sonoro",
         "state": {

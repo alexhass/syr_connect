@@ -103,6 +103,13 @@
           "true": "Disattivata"
         }
       },
+      "getbsa": {
+        "name": "Monitoraggio sensore del pavimento",
+        "state": {
+          "false": "Disattivato",
+          "true": "Attivo"
+        }
+      },
       "getbuz": {
         "name": "Cicalino in caso di allarme",
         "state": {
