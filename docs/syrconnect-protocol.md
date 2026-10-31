@@ -712,7 +712,7 @@ These settings can be set by the user.
 | getDWF / setDWF | "200" | L | | | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |
 | getFCO / setFCO | "0" | ppm | | | Iron content (always 0?) |
 | getIWH / setIWH | "14" | °dH / °fH | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only |
-| getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English. SafeTech also: 2 = Spanish, 3 = Italian, 4 = Polish |
+| getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |
 | getLOCK | "False" | | | | Device keypad/remote lock flag (Trio DFR/LS, SafeTech) |
 | getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps) |
 | getMIT / setMIT | "-40" | 1/10 | | | Minium temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
