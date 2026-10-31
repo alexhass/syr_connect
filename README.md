@@ -21,7 +21,7 @@ This custom integration enables control of SYR Connect devices through Home Assi
 | Hansgrohe Pontos | <https://www.hansgrohe.de/> |
 | mein concept | <https://www.mein-concept.de/> |
 | mein Optima | <https://www.mein-optima.de/> |
-| POLYGONVATRO (today POLYGON Deutschland) | <https://www.polygongroup.com/de-DE/> |
+| POLYGONVATRO | <https://www.polygongroup.com/de-DE/> |
 | Reliance Valves | <https://www.rwc.com/brands/reliance-valves> |
 | SYR | <https://www.syr.de/> |
 | SYR Oceanic | <https://www.debestewaterbehandeling.be/> |

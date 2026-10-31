@@ -676,7 +676,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         ver_prefix="Safe-Tech V4",
     ),
     SyrConnectModel(
-        # POLYGONVATRO (today POLYGON Deutschland) sold these "SYR Safe-Tech Connect" devices together
+        # POLYGONVATRO sold these "SYR Safe-Tech Connect" devices together
         # with the AXA building insurance, called "Wasserwächter". Order.-No.: 2422.25.003
         base_path=None,
         # base_path="/safe-tec",
