@@ -92,8 +92,14 @@ SENSOR_SUPPORTED_KEYS = {
     "getVS1",
     # --- Microleakage Test (config keys confirmed, no status/result keys yet) ---
     "getDBD",
+    "getDBT",
+    "getDCM",
     "getDMA",
+    "getDOM",
+    "getDPL",
     "getDRP",
+    "getDST",
+    "getDTC",
     "getNPS",
     # --- Leak Protection (warning threshold; deactivation timer, tied to the profiles below) ---
     "getLWT",

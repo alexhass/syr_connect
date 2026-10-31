@@ -64,9 +64,15 @@ SENSOR_SUPPORTED_KEYS = {
     "getSOF",
     # --- Microleakage Test (genuinely active in both fixtures) ---
     "getDBD",
+    "getDBT",
+    "getDCM",
     "getDMA",
+    "getDOM",
+    "getDPL",
     "getDRP",
+    "getDST",
     "getDSV",
+    "getDTC",
     "getDTT",
     "getNPS",
     # --- Leak Protection (warning threshold; deactivation timer, tied to the profiles below) ---

@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Drukval bij lektest"
       },
+      "getdbt": {
+        "name": "Drukvaltijd microlektest"
+      },
+      "getdcm": {
+        "name": "Sluittijd klep microlektest"
+      },
       "getdfm": {
         "name": "Apparaatfuncties",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Alarm"
         }
       },
+      "getdom": {
+        "name": "Openingstijd klep microlektest"
+      },
+      "getdpl": {
+        "name": "Turbine-impulsen microlektest"
+      },
       "getdrp": {
         "name": "Microlektestinterval",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Maandelijks"
         }
       },
+      "getdst": {
+        "name": "Wachttijd zonder doorstroming microlektest"
+      },
       "getdsv": {
         "name": "Microlektest",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Afgebroken (drukval)",
           "3": "Overgeslagen"
         }
+      },
+      "getdtc": {
+        "name": "Controlecycli microlektest"
       },
       "getdtt": {
         "name": "Microlektesttijd"

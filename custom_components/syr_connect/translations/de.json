@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Druckabfall beim Lecktest"
       },
+      "getdbt": {
+        "name": "Mikroleckage-Test-Druckabfallzeit"
+      },
+      "getdcm": {
+        "name": "Mikroleckage-Test-Schließzeit"
+      },
       "getdfm": {
         "name": "Gerätefunktionen",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Alarm"
         }
       },
+      "getdom": {
+        "name": "Mikroleckage-Test-Öffnungszeit"
+      },
+      "getdpl": {
+        "name": "Mikroleckage-Test-Turbinenimpulse"
+      },
       "getdrp": {
         "name": "Mikroleckage-Test-Intervall",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Monatlich"
         }
       },
+      "getdst": {
+        "name": "Mikroleckage-Test-Wartezeit ohne Durchfluss"
+      },
       "getdsv": {
         "name": "Mikroleckage-Test",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Abgebrochen (Druckabfall)",
           "3": "Übersprungen"
         }
+      },
+      "getdtc": {
+        "name": "Mikroleckage-Test-Prüfzyklen"
       },
       "getdtt": {
         "name": "Mikroleckage-Test-Zeit"

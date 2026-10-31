@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Baisse de pression lors du test d'étanchéité"
       },
+      "getdbt": {
+        "name": "Durée de chute de pression du test de microfuite"
+      },
+      "getdcm": {
+        "name": "Durée de vanne fermée du test de microfuite"
+      },
       "getdfm": {
         "name": "Fonctionnalités de l'appareil",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Alarme"
         }
       },
+      "getdom": {
+        "name": "Durée de vanne ouverte du test de microfuite"
+      },
+      "getdpl": {
+        "name": "Impulsions de turbine du test de microfuite"
+      },
       "getdrp": {
         "name": "Intervalle du test de microfuite",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Mensuel"
         }
       },
+      "getdst": {
+        "name": "Temps d'attente sans débit du test de microfuite"
+      },
       "getdsv": {
         "name": "Test de microfuite",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Annulé (chute de pression)",
           "3": "Ignoré"
         }
+      },
+      "getdtc": {
+        "name": "Cycles de vérification du test de microfuite"
       },
       "getdtt": {
         "name": "Temps du test de microfuite"

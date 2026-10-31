@@ -81,9 +81,15 @@ SENSOR_SUPPORTED_KEYS = {
     "getSOF",
     # --- Microleakage Test ---
     "getDBD",
+    "getDBT",
+    "getDCM",
     "getDMA",
+    "getDOM",
+    "getDPL",
     "getDRP",
+    "getDST",
     "getDSV",
+    "getDTC",
     "getDTT",
     "getNPS",
     # --- Leak Protection (warning threshold; deactivation timer) ---

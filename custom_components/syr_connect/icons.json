@@ -231,6 +231,12 @@
       "getdbd": {
         "default": "mdi:gauge"
       },
+      "getdbt": {
+        "default": "mdi:timer-outline"
+      },
+      "getdcm": {
+        "default": "mdi:valve-closed"
+      },
       "getdfm": {
         "default": "mdi:cog-outline"
       },
@@ -240,11 +246,23 @@
       "getdma": {
         "default": "mdi:alert-circle-outline"
       },
+      "getdom": {
+        "default": "mdi:valve-open"
+      },
+      "getdpl": {
+        "default": "mdi:pulse"
+      },
       "getdrp": {
         "default": "mdi:calendar-clock"
       },
+      "getdst": {
+        "default": "mdi:timer-sand"
+      },
       "getdsv": {
         "default": "mdi:water-check"
+      },
+      "getdtc": {
+        "default": "mdi:repeat"
       },
       "getdtt": {
         "default": "mdi:clock-outline"

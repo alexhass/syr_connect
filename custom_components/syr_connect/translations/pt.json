@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Queda de pressão no teste de fuga"
       },
+      "getdbt": {
+        "name": "Tempo de queda de pressão do teste de microfuga"
+      },
+      "getdcm": {
+        "name": "Tempo de válvula fechada do teste de microfuga"
+      },
       "getdfm": {
         "name": "Funcionalidades do dispositivo",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Alarme"
         }
       },
+      "getdom": {
+        "name": "Tempo de válvula aberta do teste de microfuga"
+      },
+      "getdpl": {
+        "name": "Impulsos da turbina do teste de microfuga"
+      },
       "getdrp": {
         "name": "Intervalo do teste de microfuga",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Mensal"
         }
       },
+      "getdst": {
+        "name": "Tempo de espera sem caudal do teste de microfuga"
+      },
       "getdsv": {
         "name": "Teste de microfuga",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Interrompido (queda de pressão)",
           "3": "Ignorado"
         }
+      },
+      "getdtc": {
+        "name": "Ciclos de verificação do teste de microfuga"
       },
       "getdtt": {
         "name": "Tempo do teste de microfuga"

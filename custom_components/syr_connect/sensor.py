@@ -964,9 +964,36 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_dbd,
     ),
     SyrConnectSensorEntityDescription(
+        key="getDBT",  # Microleakage test pressure drop time (s, 1-15)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDCM",  # Microleakage test valve closed time (min, 1-30)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getDMA",  # Microleakage alarm mode (0=Disabled, 1=Warning, 2=Alarm)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDOM",  # Microleakage test valve open time (s, 1-60)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDPL",  # Microleakage test turbine pulses (3-99)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
         key="getDRP",  # Microleakage test interval (always / daily / weekly / monthly)
@@ -974,9 +1001,22 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
+        key="getDST",  # Microleakage test wait time without flow (min, 0=deactivated, 1-480)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getDSV",  # Microleakage test status (inactive / active / aborted / skipped)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDTC",  # Microleakage test verification cycles (1-20)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
         key="getDTT",  # Microleakage test time (stored as UTC, shown as local time)

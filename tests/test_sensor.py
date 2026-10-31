@@ -8194,14 +8194,47 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
         "getAB",
         "getVLV",
         "getDBD",
+        "getDBT",
+        "getDCM",
         "getDMA",
+        "getDOM",
+        "getDPL",
         "getDRP",
+        "getDST",
         "getDSV",
+        "getDTC",
         "getDTT",
         "getPA1",
         "getPRF",
         "getPRN",
     } <= keys
+
+
+@pytest.mark.parametrize(
+    ("key", "raw", "unit", "expected"),
+    [
+        ("getDBT", "15", UnitOfTime.SECONDS, 15),
+        ("getDCM", "3", UnitOfTime.MINUTES, 3),
+        ("getDOM", "60", UnitOfTime.SECONDS, 60),
+        ("getDPL", "10", None, 10),
+        ("getDST", "180", UnitOfTime.MINUTES, 180),
+        ("getDTC", "3", None, 3),
+    ],
+)
+def test_sensor_microleakage_test_parameters(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+    raw: str,
+    unit: str | None,
+    expected: int,
+) -> None:
+    """Microleakage test parameters are shown as numbers with their unit."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {key: raw}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
+
+    assert sensor.native_unit_of_measurement == unit
+    assert sensor.native_value == expected
+    assert sensor.entity_registry_enabled_default is False
 
 
 @pytest.mark.parametrize("key", ["getLE", "getT1", "getUL"])

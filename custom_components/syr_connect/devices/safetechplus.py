@@ -37,9 +37,15 @@ SENSOR_SUPPORTED_KEYS = {
     "getCNF",
     # --- Microleakage test ---
     "getDBD",
+    "getDBT",
+    "getDCM",
     "getDMA",
+    "getDOM",
+    "getDPL",
     "getDRP",
+    "getDST",
     "getDSV",
+    "getDTC",
     "getDTT",
     "getNPS",
     # --- Leak protection and self-learning ---

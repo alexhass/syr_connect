@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Spadek ciśnienia testu mikroprzecieku"
       },
+      "getdbt": {
+        "name": "Czas spadku ciśnienia testu mikroprzecieku"
+      },
+      "getdcm": {
+        "name": "Czas zamknięcia zaworu testu mikroprzecieku"
+      },
       "getdfm": {
         "name": "Funkcje urządzenia",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Alarm"
         }
       },
+      "getdom": {
+        "name": "Czas otwarcia zaworu testu mikroprzecieku"
+      },
+      "getdpl": {
+        "name": "Impulsy turbiny testu mikroprzecieku"
+      },
       "getdrp": {
         "name": "Interwał testu mikroprzecieku",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Co miesiąc"
         }
       },
+      "getdst": {
+        "name": "Czas oczekiwania bez przepływu testu mikroprzecieku"
+      },
       "getdsv": {
         "name": "Test mikroprzecieku",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Przerwany (spadek ciśnienia)",
           "3": "Pominięty"
         }
+      },
+      "getdtc": {
+        "name": "Cykle weryfikacji testu mikroprzecieku"
       },
       "getdtt": {
         "name": "Czas testu mikroprzecieku"

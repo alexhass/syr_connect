@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Caduta di pressione durante il test di perdita"
       },
+      "getdbt": {
+        "name": "Tempo calo di pressione test microperdite"
+      },
+      "getdcm": {
+        "name": "Tempo valvola chiusa test microperdite"
+      },
       "getdfm": {
         "name": "Funzionalità del dispositivo",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Allarme"
         }
       },
+      "getdom": {
+        "name": "Tempo valvola aperta test microperdite"
+      },
+      "getdpl": {
+        "name": "Impulsi turbina test microperdite"
+      },
       "getdrp": {
         "name": "Intervallo test microperdite",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Mensile"
         }
       },
+      "getdst": {
+        "name": "Tempo di attesa senza flusso test microperdite"
+      },
       "getdsv": {
         "name": "Test di microperdita",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Annullato (perdita di pressione)",
           "3": "Saltato"
         }
+      },
+      "getdtc": {
+        "name": "Cicli di verifica test microperdite"
       },
       "getdtt": {
         "name": "Tempo test microperdite"

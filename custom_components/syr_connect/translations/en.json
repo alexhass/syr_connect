@@ -678,6 +678,12 @@
       "getdbd": {
         "name": "Leak test pressure drop"
       },
+      "getdbt": {
+        "name": "Microleakage test pressure drop time"
+      },
+      "getdcm": {
+        "name": "Microleakage test valve closed time"
+      },
       "getdfm": {
         "name": "Device features",
         "state": {
@@ -699,6 +705,12 @@
           "2": "Alarm"
         }
       },
+      "getdom": {
+        "name": "Microleakage test valve open time"
+      },
+      "getdpl": {
+        "name": "Microleakage test turbine pulses"
+      },
       "getdrp": {
         "name": "Microleakage test interval",
         "state": {
@@ -708,6 +720,9 @@
           "3": "Monthly"
         }
       },
+      "getdst": {
+        "name": "Microleakage test wait time without flow"
+      },
       "getdsv": {
         "name": "Microleakage test",
         "state": {
@@ -716,6 +731,9 @@
           "2": "Aborted (pressure drop)",
           "3": "Skipped"
         }
+      },
+      "getdtc": {
+        "name": "Microleakage test verification cycles"
       },
       "getdtt": {
         "name": "Microleakage test time"
