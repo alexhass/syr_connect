@@ -706,7 +706,7 @@ These settings can be set by the user.
 | getCHG / setCHG | "0" | | | | Type of chlor generator: 0 = Chlor generator, 1 = Salt sensor, 2 = not available |
 | getCLP / setCLP | "0" | | USER | 0 | Cluster profile: 0 = the display shows the profile name, 1 = the display shows "Cluster" instead of the profile name |
 | getCNF / setCNF | "10" | 1/10 | USER | 10 | Conductivity factor: multiplier of the measured conductivity, 0.5–5.0, raw value 5–50 (e.g. 10 = 1.0) |
-| getCNL / setCNL | "0" | µS/cm | USER | 0 | Conductivity limit: 0 = disabled, 1–5000 µS/cm. Exceeding it triggers alarm AC (SafeTech). NeoSoft 2500/5000 also report it (e.g. 10), meaning unconfirmed |
+| getCNL / setCNL | "0" | µS/cm | USER | 0 | Conductivity limit: 0 = disabled, 1–5000 µS/cm. Exceeding it triggers alarm AC (SafeTech). NeoSoft 2500/5000 report it as empty string |
 | getCSD / setCSD | "0"<br>"True" | | USER / FACTORY | 0 | Conductivity sensor setting. Value meaning depends on the API, see note below |
 | getDTR | "[0,0,0,0,0,0,0,0]" | | | | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
 | getDWF / setDWF | "200" | L | | | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |

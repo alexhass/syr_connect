@@ -20,6 +20,8 @@ kept for the same reason as the muco_leakprotect/safetplus leak-protection varia
 
 Deliberately NOT included:
 - getBAR, getBAR2, getCEL, getCND: null/empty in both fixtures.
+- getCNL: reported in both fixtures, but the conductivity limit needs a
+  conductivity sensor, which the matrix marks X (CND) for Trio DFR/LS.
 - getFFM, getSRO, getSRV, getWFL, getLNG: 0/empty/absent in both fixtures (no
   filter, display, maintenance-date, nearby-Wi-Fi-scan, or language feature
   confirmed on this model).

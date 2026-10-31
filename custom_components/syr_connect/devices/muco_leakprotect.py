@@ -31,6 +31,8 @@ Deliberately NOT included, pending confirmation on a real device:
   validity" matrix (docs/syrconnect-protocol.md) explicitly marks both as X
   (not available) for the SafeTech Lock Connect variant sharing this file,
   which takes precedence over the A25 fixture's zero values.
+- getCNL: reported in the fixtures, but the conductivity limit needs a
+  conductivity sensor, which the matrix marks X (CND) for SafeTech Lock.
 - getMIH, getMXH, getMIT, getMXT: labeled "(SafeFloor)" in sensor.py -
   a different product (humidity/flood sensor), unrelated to this model.
   getALD is the one exception (see SENSOR_SUPPORTED_KEYS below).

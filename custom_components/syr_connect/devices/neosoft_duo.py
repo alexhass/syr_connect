@@ -22,6 +22,9 @@ NOT treated as proof:
   a real dual-tank capture.
 - getSS2, getSV2: not present at all, even in the synthetic fixture.
 
+getCNL (conductivity limit) is NOT included either: the NeoSoft 2500
+fixture and the synthetic NeoSoft 5000 fixture report it empty ("").
+
 If a real dual-tank device capture confirms getRE2/getSS2/getSV2 (or getRG2,
 the tank-2 regeneration-running flag already in sensor.py's global
 allowlist) with a genuine non-empty value, move it into SENSOR_SUPPORTED_KEYS

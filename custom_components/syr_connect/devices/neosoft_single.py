@@ -36,6 +36,9 @@ Deliberately NOT included:
   JSON fixture entirely. The official "Per-model validity" matrix confirms
   X (not available) for NeoSoft 2500 specifically (✓ for NeoSoft 5000 -
   see neosoft_duo.py, which correctly includes them).
+- getCNL: empty ("") in the XML fixture and absent from the JSON fixture.
+  The conductivity limit needs a conductivity sensor, which NeoSoft 2500
+  does not have (see getCND).
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.

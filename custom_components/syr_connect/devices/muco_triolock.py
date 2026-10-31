@@ -26,6 +26,8 @@ Deliberately NOT included:
   that file's fixture is actually the unrelated A25 Leak Protection Module
   (dkv=501), a product not covered by this TRIO-Lock-specific matrix.
 - getTYP: 0 in the fixture; no other muco_*.py sibling includes it either.
+- getCNL: reported (10 in the JSON fixture), but the conductivity limit needs
+  a conductivity sensor, which the matrix marks X (CND) for TRIO Lock.
 - getT2: appears alone without its usual getT1/getLE/getUL siblings (the
   single-profile leak keys) - too little evidence to include alone, same
   reasoning as lexplus10sl.py.
