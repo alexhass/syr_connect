@@ -722,7 +722,7 @@ These settings can be set by the user.
 | getOWH / setOWH | "7" | °dh / °fH | | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only |
 | getPSD / setPSD | "0"<br>"True" | | USER / FACTORY | 0 | Pressure sensor setting. Value meaning depends on the API, see note below |
 | getPST / setPST | "1" | | | | Pressure sensor installed: 1 = not available, 2 = available |
-| getRCP / setRCP | "43200" | s | | | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w |
+| getRCP / setRCP | "43200" | s | | | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w. HVA: different meaning, "remaining capacity" in the format `"<n> (<m>L)"`: n / 100 = remaining capacity in %, m = remaining capacity in liters |
 | getRDO / setRDO | "90" | g/L | | | Salt dosage |
 | getRMO / setRMO | "1" | | | | Regeneration mode (NeoSoft): 1 = Standard, 2 = ECO, 3 = Power, 4 = Automatic (switches the mode depending on consumption) |
 | getRPD / setRPD | "4" | days | | | Regeneration interval. NeoSoft: 1–3; no effect on the NeoSoft 5000, which regenerates on its own as soon as a column is exhausted |
