@@ -8239,14 +8239,16 @@ def test_sensor_microleakage_test_parameters(
 
 
 @pytest.mark.parametrize(
-    ("model", "created"),
+    ("model", "expected"),
     [
-        ("SyrSafeTechV4", True),
-        ("SyrSafeTechPlus", True),
-        # NeoSoft reports getCNL as empty string, it measures no conductivity
-        ("SyrNeoSoft2500", False),
+        ("SyrSafeTechV4", 0),
+        ("SyrSafeTechPlus", 0),
+        # The validity matrix lists a conductivity sensor for NeoSoft 5000 only
+        ("SyrNeoSoft5000", 10),
+        # NeoSoft 2500 reports getCNL as empty string, it measures no conductivity
+        ("SyrNeoSoft2500", None),
         # TRIO Lock has no conductivity sensor
-        ("SyrTrioLock", False),
+        ("SyrTrioLock", None),
     ],
 )
 async def test_async_setup_entry_conductivity_limit(
@@ -8256,9 +8258,12 @@ async def test_async_setup_entry_conductivity_limit(
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
     model: str,
-    created: bool,
+    expected: int | None,
 ) -> None:
-    """The conductivity limit (getCNL) is only created for models that measure conductivity."""
+    """The conductivity limit (getCNL) is only created for models that measure conductivity.
+
+    `expected` is the shown value, or None when the sensor is not created.
+    """
     xml = (
         Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
     ).read_text(encoding="utf-8")
@@ -8279,12 +8284,12 @@ async def test_async_setup_entry_conductivity_limit(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     cnl = [e for e in entities if getattr(e, "_sensor_key", None) == "getCNL"]
-    assert bool(cnl) is created
-    if created:
+    assert bool(cnl) is (expected is not None)
+    if expected is not None:
         assert cnl[0].native_unit_of_measurement == (
             UnitOfConductivity.MICROSIEMENS_PER_CM
         )
-        assert cnl[0].native_value == 0
+        assert cnl[0].native_value == expected
 
 
 async def test_async_setup_entry_turbine_no_pulse_max_time(

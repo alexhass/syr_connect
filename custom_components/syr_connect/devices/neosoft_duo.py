@@ -8,7 +8,9 @@ getBAR/getCEL/getCND/getVPS2 are confirmed ✓ (available) for NeoSoft 5000
 specifically by the now-complete "Per-model validity" matrix in
 docs/syrconnect-protocol.md (X for NeoSoft 2500, hence neosoft_single.py
 correctly excludes them) - included below on that authority, overriding the
-earlier decision to exclude them pending fixture confirmation.
+earlier decision to exclude them pending fixture confirmation. getCNL
+(conductivity limit) is included with getCND, as it needs the conductivity
+sensor.
 
 No genuine real-device evidence exists yet for the remaining second-tank
 keys (getRE2/getSS2/getSV2), which aren't covered by the matrix at all. The
@@ -21,9 +23,6 @@ NOT treated as proof:
   in that synthetic fixture, but the fixture itself is unverified - pending
   a real dual-tank capture.
 - getSS2, getSV2: not present at all, even in the synthetic fixture.
-
-getCNL (conductivity limit) is NOT included either: the NeoSoft 2500
-fixture and the synthetic NeoSoft 5000 fixture report it empty ("").
 
 If a real dual-tank device capture confirms getRE2/getSS2/getSV2 (or getRG2,
 the tank-2 regeneration-running flag already in sensor.py's global
@@ -51,6 +50,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water Quality ---
     "getCEL",
     "getCND",
+    "getCNL",
     "getIWH",
     "getOWH",
     "getWHU",
