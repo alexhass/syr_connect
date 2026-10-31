@@ -496,7 +496,7 @@ Some further data about the device
 | getCFW | "176" | | | | Connected firmware component version (Trio DFR/LS, Sanibel) |
 | getCNO | "XXXXXXXXXXXXXXXX" | | USER | | Code number (16 characters) printed on a label on the device; it registers the device to a SYR Connect account (Safe-T+, LEXplus10SL, SafeFloor, SafeTech). Deliberately not exposed by the integration and redacted in diagnostics |
 | getDAT | "1694635165" | | | | Current time as UNIX timestamp (seconds since 1.1.1970) |
-| getDKI / setDKI | "35" | | USER / FACTORY | 35 | Device kind version ID, see "dkv" values in "deviceKindVersions" table. Range: 1–255, 0 = return to the default value; not changeable with the default settings. A SafeTech V4 capture reports 36 |
+| getDKI / setDKI | "35" | | USER / FACTORY | 35 | Device kind ID. Range: 1–255, 0 = return to the default value; not changeable with the default settings. Possibly the dkv (see "deviceKindVersions" table), as the SafeTech default 35 matches its dkv. Not confirmed: a SafeTech V4 capture (`getVER` "Safe-Tech V4.08", `getTYP` 140) reports 36, although dkv 36 is the All in One +. So either getDKI is not the dkv, or the device or the capture is wrong. The SafeTech V4 is treated as dkv 35 |
 | getENV | "PROD" | | | | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel) |
 | getFIR | "SLPS" | | | | Firmware name. Used to find the correct firmware file during firmware update |
 | getFRN | "A25032111217" | | | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
