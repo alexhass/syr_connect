@@ -1164,6 +1164,12 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | getALA_dt | "" | Last alarm occurrence timestamp |
 | getALA_ih | "0" | Last alarm inhibit flag |
 | getALA_m | "A5" | Last alarm message codes |
+| getFMO_fc | "3" | Number of filling processes (HVA) |
+| getLE_max | "30" | Highest raw value of getLE (Safe-T+); limits the volume steps of the present profile |
+| getUL_iis | "0" | Absent profile (Safe-T+): while > 0, switching to the absent profile is not offered. A Safe-T+ capture reports `iir=""` instead |
+| getUL_m | "" | Absent profile (Safe-T+): number that is sent back as attribute `m` of setUL; meaning unknown |
+| getUL_uled | "" | Absent profile (Safe-T+): probably the end date of a planned absence; sent back as attribute `uled` of setUL |
+| getUL_ulsd | "" | Absent profile (Safe-T+): probably the start date of a planned absence; sent back as attribute `ulsd` of setUL |
 | f | "0" | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL) |
 | b | "0" | *unknown* CI metadata attribute (Safe-T+, LEXplus10SL) |
 | m | "ff:ff:eb:XX:XX:XY" | CI metadata attribute — MAC address of device (Safe-T+) |
