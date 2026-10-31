@@ -66,7 +66,6 @@ from custom_components.syr_connect.models import (
     SyrConnectModel,
     detect_model,
 )
-from custom_components.syr_connect.payload_builder import PayloadBuilder
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     is_sensor_visible,
@@ -2045,32 +2044,6 @@ def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
     # getPN1 is a PA-group key controlled by getPA1; is_value_true(_BadFloat(1))
     # hits the except → returns False → getPN1 is hidden
     assert is_sensor_visible(status, "getPN1", "value") is False
-
-
-@pytest.mark.parametrize("password", ["secret", 'a" v="x', "p>w<d", 'v="', ""])
-def test_mask_login_password(password: str) -> None:
-    """Only the password is masked; username, locale and the rest of the payload stay readable."""
-
-    builder = PayloadBuilder("1.0", MagicMock(), language="en-DE")
-    with patch.object(
-        PayloadBuilder, "get_timestamp", return_value="2026-10-17 10:00:00"
-    ):
-        payload = builder.build_login_payload("user@example.com", password)
-        expected = builder.build_login_payload("user@example.com", "***")
-
-    masked = helpers.mask_login_password(payload)
-
-    # Identical to the payload built with "***" as password: the password is gone
-    # and nothing else is touched
-    assert masked == expected
-    assert '<usr n="user@example.com" v="***" />' in masked
-    assert 'lng="en" reg="DE"' in masked
-
-
-def test_mask_login_password_non_string_and_empty() -> None:
-    """Non-string and empty payloads are returned unchanged."""
-    assert helpers.mask_login_password("") == ""
-    assert helpers.mask_login_password(cast(Any, None)) is None
 
 
 def test_mask_ug_value_basic() -> None:

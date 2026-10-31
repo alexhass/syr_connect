@@ -59,7 +59,7 @@ from .exceptions import (
     SyrConnectConnectionError,
     SyrConnectSessionExpiredError,
 )
-from .helpers import mask_login_password, mask_ug_value
+from .helpers import mask_ug_value
 from .http_client import HTTPClient
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
@@ -269,7 +269,7 @@ class SyrConnectXmlAPI:
         xml_data = self.payload_builder.build_login_payload(
             self.username, self.password
         )
-        _LOGGER.debug("Login payload prepared: %s", mask_login_password(xml_data))
+        _LOGGER.debug("Login payload prepared (%d bytes)", len(xml_data))
 
         try:
             # --- Make HTTP Request ---

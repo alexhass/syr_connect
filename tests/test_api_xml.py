@@ -49,10 +49,10 @@ def test_request_urls_use_the_base_url(mock_session: MagicMock) -> None:
     assert api.device_get_status_url.startswith("https://example.invalid/WebServices/")
 
 
-async def test_login_logs_payload_with_locale_but_without_password(
+async def test_login_does_not_log_payload(
     mock_session: MagicMock, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """The login payload is logged (to check lng/reg), with the password masked."""
+    """The login payload is not logged, only its size, so the password never reaches the log."""
     api = SyrConnectXmlAPI(
         mock_session, "user@example.com", "s3cr3t!", language="en-DE"
     )
@@ -66,8 +66,8 @@ async def test_login_logs_payload_with_locale_but_without_password(
     ):
         await api.login()
 
-    assert 'lng="en" reg="DE"' in caplog.text
-    assert '<usr n="user@example.com" v="***"' in caplog.text
+    assert "Login payload prepared (" in caplog.text
+    assert "<usr" not in caplog.text
     assert "s3cr3t!" not in caplog.text
 
 
