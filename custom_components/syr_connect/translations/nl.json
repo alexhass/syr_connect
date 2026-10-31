@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "Hoge temperatuurdrempel overschreden",
           "alarm_safefloor_low_humidity": "Lage vochtigheidsdrempel overschreden",
           "alarm_safefloor_low_temperature": "Lage temperatuurdrempel overschreden",
-          "alarm_safefloor_weather": "Temperatuursensorfout",
+          "alarm_safefloor_weather": "Temperatuur- en vochtigheidssensorfout",
           "alarm_safet_absence_leakage_detected": "Afwezigheidslek gedetecteerd. Volume overschreden",
           "alarm_safet_flow_leakage_detected": "Stroomlek gedetecteerd: volumestroom > 3500 l/h",
           "alarm_safet_flow_time_exceeded": "Tijdcriterium voor doorstroming overschreden",

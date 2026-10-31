@@ -98,7 +98,7 @@ ALA_CODES = {
     "A0X0020": "alarm_safefloor_high_temperature",
     "A0X0040": "alarm_safefloor_low_humidity",
     "A0X0080": "alarm_safefloor_high_humidity",
-    "A0X0100": "alarm_battery_weak",
+    "A0X0100": "alarm_battery_low",
 }
 
 # The sensor measures every getWMP seconds but uploads only every getRCP seconds, so

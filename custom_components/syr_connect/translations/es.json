@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "Umbral de temperatura alta superado",
           "alarm_safefloor_low_humidity": "Umbral de humedad baja superado",
           "alarm_safefloor_low_temperature": "Umbral de temperatura baja superado",
-          "alarm_safefloor_weather": "Fallo del sensor de temperatura",
+          "alarm_safefloor_weather": "Fallo del sensor de temperatura y humedad",
           "alarm_safet_absence_leakage_detected": "Fuga de ausencia detectada. Volumen superado",
           "alarm_safet_flow_leakage_detected": "Fuga de flujo detectada: caudal > 3500 l/h",
           "alarm_safet_flow_time_exceeded": "Criterio de tiempo de flujo superado",

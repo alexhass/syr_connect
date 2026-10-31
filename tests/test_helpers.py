@@ -1713,6 +1713,10 @@ def test_get_sensor_ala_map_safefloor_known_codes() -> None:
     mapped, raw = get_sensor_ala_map(model, "A0X0004")
     assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
 
+    # Bit 8 is the low battery alarm
+    mapped, raw = get_sensor_ala_map(model, "A0x0100")
+    assert mapped == "alarm_battery_low" and raw == "A0x0100"
+
 
 def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
     """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""

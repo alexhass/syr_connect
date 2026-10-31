@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "Temperatur überschritten",
           "alarm_safefloor_low_humidity": "Luftfeuchtigkeit unterschritten",
           "alarm_safefloor_low_temperature": "Temperatur unterschritten",
-          "alarm_safefloor_weather": "Störung Temperatursensor",
+          "alarm_safefloor_weather": "Störung Temperatur- und Luftfeuchtigkeitssensor",
           "alarm_safet_absence_leakage_detected": "Abwesenheits-Leckage erkannt. Volumen überschritten",
           "alarm_safet_flow_leakage_detected": "Durchfluss-Leckage: Volumenstrom > 3500 l/h erkannt",
           "alarm_safet_flow_time_exceeded": "Zeitkriterium des Durchflusses überschritten.",

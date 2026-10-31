@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "Przekroczono próg wysokiej temperatury",
           "alarm_safefloor_low_humidity": "Przekroczono próg niskiej wilgotności",
           "alarm_safefloor_low_temperature": "Przekroczono próg niskiej temperatury",
-          "alarm_safefloor_weather": "Błąd czujnika temperatury",
+          "alarm_safefloor_weather": "Błąd czujnika temperatury i wilgotności",
           "alarm_safet_absence_leakage_detected": "Wykryto wyciek w trybie nieobecności. Przekroczono objętość",
           "alarm_safet_flow_leakage_detected": "Wykryto wyciek przepływu: przepływ objętościowy > 3500 l/h",
           "alarm_safet_flow_time_exceeded": "Przekroczono kryterium czasu przepływu",

@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "Seuil de température haute dépassé",
           "alarm_safefloor_low_humidity": "Seuil d'humidité basse dépassé",
           "alarm_safefloor_low_temperature": "Seuil de température basse dépassé",
-          "alarm_safefloor_weather": "Défaut capteur de température",
+          "alarm_safefloor_weather": "Défaut capteur de température et d'humidité",
           "alarm_safet_absence_leakage_detected": "Fuite d'absence détectée. Volume dépassé",
           "alarm_safet_flow_leakage_detected": "Fuite de débit détectée : débit volumique > 3500 l/h",
           "alarm_safet_flow_time_exceeded": "Critère de durée d'écoulement dépassé",

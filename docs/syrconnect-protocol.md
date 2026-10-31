@@ -843,8 +843,9 @@ These properties are only available on devices that contain leakage protection, 
 | getAB / setAB | "true"<br>"1" | | USER | 1 | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed |
 | getBAT | "6,11 4,38 3,90" | V | USER | | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat" |
 | getBAT | "363" | V | USER | | Battery voltage in 1/100 V e.g. 3,63 Volt. |
-| getBMA | "585" | mbar? | | | Battery/pressure maximum value (Sanibel Leak Protection Module A25) |
-| getBMI | "515" | mbar? | | | Battery/pressure minimum value (Sanibel Leak Protection Module A25) |
+| getBAT | "40" | % | | | Battery state 0–100 % (SafeFloor): getBMI = 0 %, getBMA = 100 % |
+| getBMA / setBMA | "310"<br>"585" | 1/100 V | | 310 | Battery voltage of 100 % battery state (SafeFloor: 310 = 3.10 V). Sanibel Leak Protection Module A25 reports 585 |
+| getBMI / setBMI | "240"<br>"515" | 1/100 V | | 240 | Battery voltage of 0 % battery state (SafeFloor: 240 = 2.40 V). Sanibel Leak Protection Module A25 reports 515 |
 | getBSA / setBSA | "1"<br>"True" | | USER | 1 | Floor sensor monitoring: 0/False = disabled, 1/True = enabled |
 | getBSI | "2 (16 bar)" | | | | Pressure sensor type and range identifier (Safe-T+) |
 | getCEL | "203" | 1/10 °C | USER | | Temperature / Water temperature, e.g. 203 = 20.3°C |
@@ -941,6 +942,57 @@ Floor sensors (SafeFloor) are paired with a leak protection device by their 9-di
 | setFSC | "" | | USER | | Unpairs all floor sensors (write-only) |
 | getFSL | "[]"<br>[{&quot;SN&quot;:&quot;987654321&quot;},{&quot;SN&quot;:&quot;876543210&quot;}] | | USER | | Array (JSON) with serial numbers of the paired SafeFloor devices (Available on LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech V4) |
 | setFSR | "123456789" | | USER | | Unpairs the floor sensor with the given serial number (write-only) |
+
+### SafeFloor
+
+Properties of the SafeFloor floor sensor (dk 120, dkv 34). Settings are taken over at the next connection (getRCP); setSVP stores changed settings in non-volatile memory.
+
+| Property | Example | Unit | Access level | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| getALI / setALI | "40" | s | | 40 | Duration of the quiet flood alarm after the loud alarm (getALD): siren and red LED off to save energy. Range: 10–600 |
+| getAOA / setAOA | "0" | | | 0 | Turn on the access point on an alarm: 0 = only a button press turns it on, 1 = an alarm turns it on as well |
+| getAPD / setAPD | "0" | | | 0 | Access point disabled: 0 = no, 1 = yes. Not stored in non-volatile memory |
+| getBDE / setBDE | "0" | | | 0 | Buzzer deactivated: 0 = no, 1 = yes, only the red LED blinks on an alarm |
+| getBMP / setBMP | "43200" | s | | 43200 | Battery measurement period; for the best battery life equal to getRCP. Range: 60 s–14 days |
+| getECP / setECP | "15" | s | | | EnOcean connection period; EnOcean is not supported. Range: 60 s–14 days |
+| getEFV | "" | | | | Firmware version of the Wi-Fi module (Espressif) |
+| setEFL | "" | | | | Erases the external flash: history, parameters, non-volatile data, the overridden serial number and the certificates; the firmware is kept (write-only, admin mode only) |
+| getEMR / setEMR | "50" | s | | 50 | Maximum time the Wi-Fi client tries to connect to the server. Range: 30–300 |
+| getHAE / setHAE | "1" | | | 1 | Humidity alarm enabled: 0 = no, 1 = yes. Can only be disabled in the Hansgrohe firmware |
+| getHBE / setHBE | "0" | | | 0 | Buzzer on a humidity alarm: 0 = no, 1 = yes |
+| getICS | "1" | | | | Internet connection state: 1 = connected to the internet, 0 = otherwise |
+| getISN / setISN | "0" | | | 0 | Isolated network: 0 = report to the internet server, 1 = report only to SafeTech devices via LAN, 2 = report only to SafeTech devices via Wi-Fi directly, 3 = no connection (the alarm is only signalled by sound and light) |
+| getLWH | "" | | | | Last weather history: timestamp, temperature, humidity, battery state and alarms since the last server connection, at most 24 rows. The command format is not accepted yet |
+| setOTA | "1" | | | | Firmware update of the Wi-Fi module (Bravo hardware version) (write-only) |
+| setSAR | "123456789" | | | | Pairs the SafeTech with the given 9-digit serial number (write-only, for testing; deprecated, devices are paired from the SafeTech, see setFSA) |
+| setSDA | "" | | | | Clears the list of paired SafeTech devices (write-only, for testing; deprecated) |
+| setSDR | "123456789" | | | | Unpairs the SafeTech with the given 9-digit serial number (write-only, for testing; deprecated) |
+| setSLP | "" | | | | Turns off the access point and goes to sleep (write-only) |
+| setSVP | "" | | | | Stores changed parameters in non-volatile memory; necessary after a change (write-only) |
+| getTAE / setTAE | "1" | | | 1 | Temperature alarm enabled: 0 = no, 1 = yes. Can only be disabled in the Hansgrohe firmware |
+| getTBE / setTBE | "0" | | | 0 | Buzzer on a temperature alarm: 0 = no, 1 = yes |
+| getWAR / setWAR | "600" | s | | 600 | Duration of the quiet weather alarm (temperature or humidity). Range: 10–3600 |
+| getWTD | "0" | | | | Water (flood) detected: 0 = no, 1 = yes |
+
+Certificates and the AWS configuration are uploaded with HTTP POST to `upload/CACERT`, `upload/DEVICECERT`, `upload/PRIVATEKEY` and `upload/AWSCFG`. A temporary history URL can be set to send the history via HTTPS on port 443 to another server instead of the web service.
+
+#### SafeFloor alarms (getALA)
+
+getALA reports the active alarms as bits in hex, e.g. "A0x0002" (bit 1). Several alarms can be active at the same time.
+
+| Bit | Value | Alarm | Translation key |
+| --- | --- | --- | --- |
+| – | A0x0000 | No alarm | `no_alarm` |
+| 1 | A0x0002 | Communication | `alarm_safefloor_communication` |
+| 2 | A0x0004 | Flood | `alarm_safefloor_flood` |
+| 3 | A0x0008 | Weather (temperature and humidity) sensor | `alarm_safefloor_weather` |
+| 4 | A0x0010 | Low temperature | `alarm_safefloor_low_temperature` |
+| 5 | A0x0020 | High temperature | `alarm_safefloor_high_temperature` |
+| 6 | A0x0040 | Low humidity | `alarm_safefloor_low_humidity` |
+| 7 | A0x0080 | High humidity | `alarm_safefloor_high_humidity` |
+| 8 | A0x0100 | Low battery | `alarm_battery_low` |
+
+The alarm history (getALH / setALH) names alarms by code: 1–8 = the alarm of bit 1–8 is set, 11–18 = the alarm of bit 1–8 is released.
 
 ### Access levels
 
@@ -1122,7 +1174,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getCNL2 | "" | | *unknown* |
 | getCWL | "" | | *unknown* |
 | getDTX | "" | | *unknown* |
-| getEMR | "" | | *unknown* |
 | getFCS | "" | | *unknown* |
 | getFMT | "" | | *unknown* |
 | getFVT | "" | | *unknown* |

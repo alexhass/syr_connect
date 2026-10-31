@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "Soglia temperatura alta superata",
           "alarm_safefloor_low_humidity": "Soglia umidità bassa superata",
           "alarm_safefloor_low_temperature": "Soglia temperatura bassa superata",
-          "alarm_safefloor_weather": "Guasto sensore di temperatura",
+          "alarm_safefloor_weather": "Guasto sensore di temperatura e umidità",
           "alarm_safet_absence_leakage_detected": "Perdita in assenza rilevata. Volume superato",
           "alarm_safet_flow_leakage_detected": "Perdita di flusso rilevata: portata volumetrica > 3500 l/h",
           "alarm_safet_flow_time_exceeded": "Criterio di tempo di flusso superato",

@@ -571,7 +571,7 @@
           "alarm_safefloor_high_temperature": "High temperature threshold exceeded",
           "alarm_safefloor_low_humidity": "Low humidity threshold exceeded",
           "alarm_safefloor_low_temperature": "Low temperature threshold exceeded",
-          "alarm_safefloor_weather": "Temperature sensor fault",
+          "alarm_safefloor_weather": "Temperature and humidity sensor fault",
           "alarm_safet_absence_leakage_detected": "Absence leakage detected. Volume exceeded",
           "alarm_safet_flow_leakage_detected": "Flow leakage detected: Volume flow > 3500 l/h",
           "alarm_safet_flow_time_exceeded": "Flow time criterion exceeded",
