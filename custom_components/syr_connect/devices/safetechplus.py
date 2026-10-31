@@ -35,6 +35,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getCEL",
     "getCND",
     "getCNF",
+    "getCNL",
     # --- Microleakage test ---
     "getDBD",
     "getDBT",

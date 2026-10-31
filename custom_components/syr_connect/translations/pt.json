@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Fator de condutividade"
       },
+      "getcnl": {
+        "name": "Limite de condutividade"
+      },
       "getcoa": {
         "name": "Contador de retrolavagens automáticas"
       },

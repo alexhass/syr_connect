@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Leitfähigkeitsfaktor"
       },
+      "getcnl": {
+        "name": "Leitfähigkeitsgrenzwert"
+      },
       "getcoa": {
         "name": "Zähler automatischer Rückspülungen"
       },

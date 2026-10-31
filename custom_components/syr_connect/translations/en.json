@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Conductivity factor"
       },
+      "getcnl": {
+        "name": "Conductivity limit"
+      },
       "getcoa": {
         "name": "Automatic backwash counter"
       },

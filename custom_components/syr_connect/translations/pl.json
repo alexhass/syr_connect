@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Współczynnik przewodności"
       },
+      "getcnl": {
+        "name": "Limit przewodności"
+      },
       "getcoa": {
         "name": "Licznik automatycznych płukań zwrotnych"
       },

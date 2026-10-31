@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Fattore di conducibilità"
       },
+      "getcnl": {
+        "name": "Limite di conducibilità"
+      },
       "getcoa": {
         "name": "Contatore controlavaggi automatici"
       },

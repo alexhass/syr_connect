@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Geleidbaarheidsfactor"
       },
+      "getcnl": {
+        "name": "Geleidbaarheidsgrens"
+      },
       "getcoa": {
         "name": "Teller automatische terugspoelingen"
       },

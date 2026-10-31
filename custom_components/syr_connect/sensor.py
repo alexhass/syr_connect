@@ -654,6 +654,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
+        key="getCNL",  # Conductivity limit (µS/cm, 0=disabled, exceeding it triggers alarm AC)
+        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getCFV",  # Current filling volume (l)
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolume.LITERS,

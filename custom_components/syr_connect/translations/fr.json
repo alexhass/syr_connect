@@ -646,6 +646,9 @@
       "getcnf": {
         "name": "Facteur de conductivité"
       },
+      "getcnl": {
+        "name": "Limite de conductivité"
+      },
       "getcoa": {
         "name": "Compteur de contre-lavages automatiques"
       },

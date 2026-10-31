@@ -32,6 +32,7 @@ from homeassistant.const import (
     CONF_PASSWORD,
     CONF_USERNAME,
     PERCENTAGE,
+    UnitOfConductivity,
     UnitOfElectricPotential,
     UnitOfTime,
     UnitOfVolume,
@@ -8235,6 +8236,55 @@ def test_sensor_microleakage_test_parameters(
     assert sensor.native_unit_of_measurement == unit
     assert sensor.native_value == expected
     assert sensor.entity_registry_enabled_default is False
+
+
+@pytest.mark.parametrize(
+    ("model", "created"),
+    [
+        ("SyrSafeTechV4", True),
+        ("SyrSafeTechPlus", True),
+        # NeoSoft reports getCNL as empty string, it measures no conductivity
+        ("SyrNeoSoft2500", False),
+        # TRIO Lock has no conductivity sensor
+        ("SyrTrioLock", False),
+    ],
+)
+async def test_async_setup_entry_conductivity_limit(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    model: str,
+    created: bool,
+) -> None:
+    """The conductivity limit (getCNL) is only created for models that measure conductivity."""
+    xml = (
+        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    cnl = [e for e in entities if getattr(e, "_sensor_key", None) == "getCNL"]
+    assert bool(cnl) is created
+    if created:
+        assert cnl[0].native_unit_of_measurement == (
+            UnitOfConductivity.MICROSIEMENS_PER_CM
+        )
+        assert cnl[0].native_value == 0
 
 
 @pytest.mark.parametrize("key", ["getLE", "getT1", "getUL"])

@@ -201,6 +201,9 @@
       "getcnf": {
         "default": "mdi:tune-variant"
       },
+      "getcnl": {
+        "default": "mdi:flash-alert"
+      },
       "getcoa": {
         "default": "mdi:counter"
       },
