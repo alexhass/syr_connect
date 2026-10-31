@@ -1489,6 +1489,9 @@
       "gettrv": {
         "name": "Volume total de remplissage"
       },
+      "getttm": {
+        "name": "Durée maximale sans impulsion de turbine"
+      },
       "gettyp": {
         "name": "Type d'appareil"
       },

@@ -1489,6 +1489,9 @@
       "gettrv": {
         "name": "Volume total reabastecido"
       },
+      "getttm": {
+        "name": "Tempo máximo sem impulsos de turbina"
+      },
       "gettyp": {
         "name": "Tipo de dispositivo"
       },

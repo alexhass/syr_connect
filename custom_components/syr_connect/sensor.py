@@ -1037,6 +1037,13 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",  # value "" means sensor does not exist.
     ),
+    SyrConnectSensorEntityDescription(
+        key="getTTM",  # No turbine pulses max. time until alarm A8 (days, 1-30)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+    ),
     # --- Leak Protection (LEXplus10SL / Trio DFR/LS) ---
     SyrConnectSensorEntityDescription(
         key="getLE",  # Leak protection volume limit - present profile (l)

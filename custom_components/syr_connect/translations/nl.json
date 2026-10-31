@@ -1489,6 +1489,9 @@
       "gettrv": {
         "name": "Totaal gevuld volume"
       },
+      "getttm": {
+        "name": "Maximale tijd zonder turbine-impulsen"
+      },
       "gettyp": {
         "name": "Apparaattype"
       },

@@ -1489,6 +1489,9 @@
       "gettrv": {
         "name": "Całkowita uzupełniona objętość"
       },
+      "getttm": {
+        "name": "Maksymalny czas bez impulsów turbiny"
+      },
       "gettyp": {
         "name": "Typ urządzenia"
       },

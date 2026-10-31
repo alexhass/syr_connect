@@ -54,6 +54,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getDTC",
     "getDTT",
     "getNPS",
+    "getTTM",
     # --- Leak protection and self-learning settings ---
     "getLWT",
     "getSLO",

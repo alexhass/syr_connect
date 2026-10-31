@@ -1489,6 +1489,9 @@
       "gettrv": {
         "name": "Total refilled volume"
       },
+      "getttm": {
+        "name": "Maximum time without turbine pulses"
+      },
       "gettyp": {
         "name": "Device type"
       },

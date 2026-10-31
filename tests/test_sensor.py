@@ -8287,6 +8287,41 @@ async def test_async_setup_entry_conductivity_limit(
         assert cnl[0].native_value == 0
 
 
+async def test_async_setup_entry_turbine_no_pulse_max_time(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """SafeTech V4 shows the time without turbine pulses until alarm A8 (getTTM) in days."""
+    xml = (
+        Path(__file__).parent
+        / "fixtures/xml/SyrSafeTechV4_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    ttm = [e for e in entities if getattr(e, "_sensor_key", None) == "getTTM"]
+    assert len(ttm) == 1
+    assert ttm[0].native_unit_of_measurement == UnitOfTime.DAYS
+    assert ttm[0].native_value == 30
+    assert ttm[0].entity_registry_enabled_default is False
+
+
 @pytest.mark.parametrize("key", ["getLE", "getT1", "getUL"])
 @pytest.mark.parametrize("raw", ["abc", "1.5", [1]])
 def test_mapped_int_sensor_invalid_value_returns_none(key: str, raw: Any) -> None:

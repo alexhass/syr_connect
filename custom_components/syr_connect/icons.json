@@ -778,6 +778,9 @@
       "gettrv": {
         "default": "mdi:water-plus"
       },
+      "getttm": {
+        "default": "mdi:turbine"
+      },
       "gettyp": {
         "default": "mdi:devices"
       },
