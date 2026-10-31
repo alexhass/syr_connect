@@ -41,6 +41,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Device Status ---
     "getDFM",
     # --- Voltage / Battery ---
+    "getBAP",
     "getBAT",
     # --- Automatic Backwash (RSA) ---
     "getCOA",

@@ -147,6 +147,31 @@ def _value_avo(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return get_sensor_avo_value(value)
 
 
+def _value_bap(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Battery level (getBAP): the reported percentage, else computed from the voltages.
+
+    Without getBAP the level follows the battery voltage (getBAT) between the voltages
+    of 0 % (getBMI) and 100 % (getBMA):
+    - getBAT >= getBMA: 100 %
+    - getBMI < getBAT < getBMA: (getBAT - getBMI) / (getBMA - getBMI) * 100 %
+    - getBAT <= getBMI: 0 %
+    There is no level without a positive getBAT, without getBMA/getBMI or with
+    getBMI > getBMA.
+    """
+    if value is not None and not (isinstance(value, str) and value.strip() == ""):
+        return sensor.numeric_value(value)
+    bat = get_sensor_bat_value(status.get("getBAT"))
+    bma = get_sensor_bat_value(status.get("getBMA"))
+    bmi = get_sensor_bat_value(status.get("getBMI"))
+    if bat is None or bat <= 0 or bma is None or bmi is None or bmi > bma:
+        return None
+    if bat >= bma:
+        return 100
+    if bat > bmi:
+        return round((bat - bmi) / (bma - bmi) * 100)
+    return 0
+
+
 def _value_bar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Pressure (getBAR / getBAR2, Safe-T+ / TRIO Lock): "4077 mbar" -> bar."""
     if value is None or value == "":
@@ -602,11 +627,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     # --- Voltage / Battery ---
     SyrConnectSensorEntityDescription(
-        key="getBAP",  # Battery level (%)
+        key="getBAP",  # Battery level (%), computed from getBAT/getBMA/getBMI without getBAP
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
+        value_fn=_value_bap,
     ),
     SyrConnectSensorEntityDescription(
         key="getBAT",  # Battery voltage (V) or battery level (%) - unit depends on device type
@@ -2191,6 +2217,23 @@ def _build_device_sensors(
                 device_id,
                 device_name,
                 key,
+            )
+        )
+        sensor_count += 1
+
+    # Without getBAP the battery level is computed from the battery voltages (_value_bap)
+    if (
+        "getBAP" not in status
+        and "getBAP" in supported_sensor_keys
+        and all(status.get(key) is not None for key in ("getBAT", "getBMA", "getBMI"))
+    ):
+        _LOGGER.debug("Creating sensor: device=%s key=getBAP (computed)", device_id)
+        entities.append(
+            SyrConnectSensor(
+                coordinator,
+                device_id,
+                device_name,
+                "getBAP",
             )
         )
         sensor_count += 1

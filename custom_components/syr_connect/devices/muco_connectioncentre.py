@@ -46,6 +46,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Pressure ---
     "getBAR2",
     # --- Voltage / Battery ---
+    "getBAP",
     "getBAT",
     # --- Water Quality ---
     "getCND",

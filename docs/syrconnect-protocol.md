@@ -841,11 +841,11 @@ These properties are only available on devices that contain leakage protection, 
 | --- | --- | --- | --- | --- | --- |
 | get71 / set71 | "0"<br>"False" | | FACTORY | 0 | Leakage protection deactivated: 0/False = no, 1/True = yes |
 | getAB / setAB | "true"<br>"1" | | USER | 1 | Valve shut-off: false = open, true = closed<br>Older devices: 1 = open, 2 = closed |
-| getBAT | "6,11 4,38 3,90" | V | USER | | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat" |
+| getBAT | "6,11 4,38 3,90" | V | USER | | Battery voltage e.g. 6,11 Volt. Other examples e.g. "0,00 4,38 3,90 LowBat". Only the first value is the battery voltage; the meaning of the other values is unknown (Safe-T+) |
 | getBAT | "363" | V | USER | | Battery voltage in 1/100 V e.g. 3,63 Volt. |
 | getBAT | "40" | % | | | Battery state 0–100 % (SafeFloor): getBMI = 0 %, getBMA = 100 % |
-| getBMA / setBMA | "310"<br>"585" | 1/100 V | | 310 | Battery voltage of 100 % battery state (SafeFloor: 310 = 3.10 V). Sanibel Leak Protection Module A25 reports 585 |
-| getBMI / setBMI | "240"<br>"515" | 1/100 V | | 240 | Battery voltage of 0 % battery state (SafeFloor: 240 = 2.40 V). Sanibel Leak Protection Module A25 reports 515 |
+| getBMA / setBMA | "310"<br>"585" | 1/100 V | | 310 | Battery voltage of 100 % battery state (SafeFloor: 310 = 3.10 V; MultiController: 585 = 5.85 V). See the battery level below |
+| getBMI / setBMI | "240"<br>"515" | 1/100 V | | 240 | Battery voltage of 0 % battery state (SafeFloor: 240 = 2.40 V; MultiController: 515 = 5.15 V). See the battery level below |
 | getBSA / setBSA | "1"<br>"True" | | USER | 1 | Floor sensor monitoring: 0/False = disabled, 1/True = enabled |
 | getBSI | "2 (16 bar)" | | | | Pressure sensor type and range identifier (Safe-T+) |
 | getCEL | "203" | 1/10 °C | USER | | Temperature / Water temperature, e.g. 203 = 20.3°C |
@@ -885,6 +885,16 @@ These properties are only available on devices that contain leakage protection, 
 | getVPS1 | "3360" | s | | | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist. |
 | getVPS2 | "3360" | s | | | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist. |
 | getVTO | "False" | | USER | | Valve test ongoing: 0/False = inactive, 1/True = active |
+
+#### Battery level
+
+The battery level in % is getBAP when the device reports it. Without getBAP it follows from the battery voltage getBAT (only its first value) and the voltages of 0 % (getBMI) and 100 % (getBMA):
+
+- getBAT ≥ getBMA: 100 %
+- getBMI < getBAT < getBMA: (getBAT − getBMI) / (getBMA − getBMI) × 100 %
+- getBAT ≤ getBMI: 0 %
+
+There is no level if getBAT is not positive, getBMA or getBMI is missing, or getBMI is greater than getBMA. All MultiController captures report getBAP; their getBAP does not follow from this formula (e.g. getBAT 600, getBMA 585 and getBAP 56), so the device computes it differently.
 
 ### Leak protection profiles
 
@@ -1076,7 +1086,7 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
 | getAFW | "0" | | *unknown* |
-| getBAP | "99" | % | Battery as percentage |
+| getBAP | "99" | % | Battery as percentage. Takes precedence over the level computed from getBAT, getBMA and getBMI (see "Battery level" in "Leakage protection") |
 | getCCK | "" | | *unknown* |
 | getCSE | "True" | | *unknown* — possibly cloud-service enable |
 | getDAP | "" | | *unknown* (JSON API only) |

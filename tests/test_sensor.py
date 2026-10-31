@@ -3663,6 +3663,87 @@ async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
     assert bat.unique_id == "device1_getBAT"
 
 
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        # A reported getBAP wins over the computed level
+        ({"getBAP": "59", "getBAT": "601", "getBMA": "585", "getBMI": "515"}, 59),
+        ({"getBAP": 56, "getBAT": 600, "getBMA": 585, "getBMI": 515}, 56),
+        # Without getBAP: 100 % from getBMA on, 0 % up to getBMI, linear in between
+        ({"getBAT": "601", "getBMA": "585", "getBMI": "515"}, 100),
+        ({"getBAT": "585", "getBMA": "585", "getBMI": "515"}, 100),
+        ({"getBAT": "550", "getBMA": "585", "getBMI": "515"}, 50),
+        ({"getBAT": 540, "getBMA": 585, "getBMI": 515}, 36),
+        ({"getBAP": "", "getBAT": "550", "getBMA": "585", "getBMI": "515"}, 50),
+        ({"getBAT": "515", "getBMA": "585", "getBMI": "515"}, 0),
+        ({"getBAT": "500", "getBMA": "585", "getBMI": "515"}, 0),
+        # No level without a positive voltage, without getBMA/getBMI or with getBMI > getBMA
+        ({"getBAT": "0", "getBMA": "585", "getBMI": "515"}, None),
+        ({"getBAT": "550", "getBMI": "515"}, None),
+        ({"getBAT": "550", "getBMA": "585"}, None),
+        ({"getBAT": "550", "getBMA": "515", "getBMI": "585"}, None),
+        ({"getBMA": "585", "getBMI": "515"}, None),
+    ],
+)
+async def test_sensor_getbap_computed_from_voltages(
+    hass: HomeAssistant, status: dict[str, Any], expected: int | None
+) -> None:
+    """Battery level (getBAP) is the reported level, else computed from the voltages."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    bap = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAP")
+
+    assert bap.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("status", "created"),
+    [
+        ({"getBAT": "550", "getBMA": "585", "getBMI": "515"}, True),
+        # Without one of the voltages no level can be computed
+        ({"getBAT": "550", "getBMA": "585"}, False),
+    ],
+)
+async def test_async_setup_entry_creates_computed_battery_level(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    status: dict[str, Any],
+    created: bool,
+) -> None:
+    """A device without getBAP gets a battery level sensor if it reports the voltages."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    bap = [e for e in entities if getattr(e, "_sensor_key", None) == "getBAP"]
+    assert len(bap) == (1 if created else 0)
+    if created:
+        assert bap[0].native_value == 50
+
+
 async def test_sensor_getbat_voltage_keeps_voltage_name(hass: HomeAssistant) -> None:
     """Devices that report getBAT as voltage keep the name "Battery voltage"."""
     data = {
