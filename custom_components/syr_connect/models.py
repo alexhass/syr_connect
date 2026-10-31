@@ -704,6 +704,8 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path="/pontos-base",
+        # Rebranded SafeTech with the same functions.
+        device_profile=safetech.PROFILE,
         display_name="Pontos Base",
         dk=140,
         dkv=None,

@@ -1036,11 +1036,20 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
         ("FF", "no_alarm"),
     ],
 )
-def test_sensor_ala_map_safetech(raw: str, expected: str) -> None:
+@pytest.mark.parametrize(
+    ("version", "name"),
+    [
+        ("Safe-Tech V4.08", "safetechv4"),
+        ("PontosBase V1.31", "pontosbase"),
+    ],
+)
+def test_sensor_ala_map_safetech(
+    version: str, name: str, raw: str, expected: str
+) -> None:
     """SafeTech alarm codes that differ from the generic codes use their own meaning."""
-    model = detect_model({"getVER": "Safe-Tech V4.08"})
+    model = detect_model({"getVER": version})
 
-    assert model.name == "safetechv4"
+    assert model.name == name
     assert get_sensor_ala_map(model, raw) == (expected, raw)
 
 
@@ -1741,7 +1750,7 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
 
 def test_get_sensor_ala_map_models_without_device_profile() -> None:
     """Models without a device profile use the generic alarm codes."""
-    for name in ("hva", "triols", "pontosbase"):
+    for name in ("hva", "triols"):
         model = _signature(name)
         assert get_sensor_ala_map(model, "A1")[0] == "alarm_end_switch", name
 
