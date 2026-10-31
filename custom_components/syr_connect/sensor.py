@@ -261,6 +261,20 @@ def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return dt_util.as_local(utc_time).strftime("%H:%M")
 
 
+def _value_flo(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Water flow (getFLO): raw value -> l/h.
+
+    Formats:
+    - LEX family: "4" (l/min) -> 240 l/h
+    - Other models: "240" (l/h) -> 240 l/h
+    """
+    flow = sensor.numeric_value(value)
+    profile = sensor.device_model.device_profile
+    if profile is not None and profile.flo_per_minute and isinstance(flow, int | float):
+        return flow * 60
+    return flow
+
+
 def _value_iwh(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
     return get_sensor_iwh_value(status or {})
@@ -554,11 +568,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_avo,
     ),
     SyrConnectSensorEntityDescription(
-        key="getFLO",  # Water flow rate (l/h)
+        key="getFLO",  # Water flow rate (l/h; LEX family reports l/min)
         device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
         suggested_display_precision=0,
+        value_fn=_value_flo,
     ),
     SyrConnectSensorEntityDescription(
         key="getVLV",  # Valve position (10=closed, 11=closing, 20=open, 21=opening)

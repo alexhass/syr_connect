@@ -36,6 +36,7 @@ from homeassistant.const import (
     UnitOfElectricPotential,
     UnitOfTime,
     UnitOfVolume,
+    UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -8290,6 +8291,40 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
         "getPRF",
         "getPRN",
     } <= keys
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        # LEX family: l/min, e.g. 4 l/min = 240 l/h
+        ({"getCNA": "LEXplus10S", "getFLO": "4"}, 240),
+        ({"getCNA": "LEXplus10SL", "getFLO": 7}, 420),
+        ({"getCNA": "LEXplus10", "getFLO": "3"}, 180),
+        ({"getCNA": "LEX30", "getFLO": "9"}, 540),
+        ({"getCNA": "LEX100", "getFLO": "12"}, 720),
+        ({"getCNA": "L20", "getFLO": "5"}, 300),
+        ({"getCNA": "L100", "getFLO": "11"}, 660),
+        ({"getCNA": "LEXplus10S", "getFLO": "0"}, 0),
+        ({"getCNA": "LEXplus10S", "getFLO": "abc"}, "abc"),
+        # Other models: l/h
+        ({"getVER": "Safe-Tech V4.08", "getFLO": "240"}, 240),
+        ({"getSRN": "206AAA12345", "getVER": "NSS.V.2.028", "getFLO": "380"}, 380),
+        ({"getSRN": "206AAA12345", "getVER": "NSS.V.2.028", "getFLO": 615}, 615),
+        # Unknown model: l/h
+        ({"getFLO": "240"}, 240),
+    ],
+)
+def test_sensor_flo_unit_depends_on_model(
+    create_mock_coordinator: Callable[..., MagicMock],
+    status: dict[str, Any],
+    expected: Any,
+) -> None:
+    """Water flow (getFLO) is shown in l/h; the LEX family reports it in l/min."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": status}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getFLO")
+
+    assert sensor.native_unit_of_measurement == UnitOfVolumeFlowRate.LITERS_PER_HOUR
+    assert sensor.native_value == expected
 
 
 @pytest.mark.parametrize(

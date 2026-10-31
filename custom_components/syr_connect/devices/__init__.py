@@ -53,6 +53,8 @@ class SyrConnectDeviceProfile:
     ala_codes: Mapping[str, str] | None = None
     binary_sensor: AbstractSet[str]
     button: AbstractSet[str]
+    # The device reports the water flow (getFLO) in l/min instead of l/h
+    flo_per_minute: bool = False
     select: AbstractSet[str]
     sensor: AbstractSet[str]
     # Measurement history series the cloud keeps for the device; empty means none
