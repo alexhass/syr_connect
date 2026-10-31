@@ -11,6 +11,10 @@ with the Trio DFR/LS feature set, not SafeTech. The self-learning settings
 (getSLO/getSOF/getSMF) and the leakage warning threshold (getLWT) are included:
 SYR's SafeTech command table lists them, and every fixture reports their
 defaults (10 %, 20 %, 3500 l/h, 90 %).
+
+The battery level (getBAP) is omitted: of the SafeTech family only the SafeTech+
+with dk 1112 (dkv 112) reports it; the SafeTech reports the battery voltage
+(getBAT) only.
 """
 
 from . import SyrConnectDeviceProfile
@@ -32,7 +36,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getNOT",
     "getWRN",
     # --- Pressure, voltage, and battery ---
-    "getBAP",
     "getBAR",
     "getBAT",
     "getNET",
