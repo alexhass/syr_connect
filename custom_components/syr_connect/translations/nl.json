@@ -1434,7 +1434,7 @@
         "name": "Lektijd 1"
       },
       "gett2": {
-        "name": "Lektijd 2"
+        "name": "Maximale doorstromingslektijd"
       },
       "gettmp": {
         "name": "Lekbescherming uitgeschakeld"

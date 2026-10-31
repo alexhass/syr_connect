@@ -306,7 +306,7 @@ _SYR_CONNECT_SENSOR_STA_VALUE_MAP = {
     "3": "status_manual_filling",
 }
 
-# Mapping for getT1, getT2 sensor values (Time leakage)
+# Mapping for getT1 sensor values (Time leakage)
 # Maps raw API value (integer) -> display value in hours (float)
 _SYR_CONNECT_SENSOR_T1_VALUE_MAP = {
     1: 0.5,

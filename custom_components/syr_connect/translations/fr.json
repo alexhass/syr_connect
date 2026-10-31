@@ -1434,7 +1434,7 @@
         "name": "Fuite de temps 1"
       },
       "gett2": {
-        "name": "Fuite de temps 2"
+        "name": "Durée maximale de fuite de débit"
       },
       "gettmp": {
         "name": "Protection contre les fuites désactivée"

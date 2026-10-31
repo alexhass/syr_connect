@@ -1434,7 +1434,7 @@
         "name": "Tempo perdita 1"
       },
       "gett2": {
-        "name": "Tempo perdita 2"
+        "name": "Tempo massimo perdita flusso"
       },
       "gettmp": {
         "name": "Protezione perdite disattivata"

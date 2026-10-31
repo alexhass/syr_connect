@@ -1434,7 +1434,7 @@
         "name": "Leakage time 1"
       },
       "gett2": {
-        "name": "Leakage time 2"
+        "name": "Maximum flow leakage time"
       },
       "gettmp": {
         "name": "Leak protection deactivated"

@@ -1434,7 +1434,7 @@
         "name": "Zeitleckage 1"
       },
       "gett2": {
-        "name": "Zeitleckage 2"
+        "name": "Maximale Durchfluss-Leckzeit"
       },
       "gettmp": {
         "name": "Leckageschutz deaktiviert"

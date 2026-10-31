@@ -409,7 +409,7 @@ def _value_sta(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_t(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Maximum flow duration, present / absent profile (getT1 / getT2): raw value -> hours."""
+    """Maximum flow duration, present / absent profile (getT1): raw value -> hours."""
     return _map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
 
 
@@ -1014,11 +1014,10 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_t,
     ),
     SyrConnectSensorEntityDescription(
-        key="getT2",  # Max. flow duration - absent profile (h, 0.5 h steps)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=1,
+        key="getT2",  # Maximum flow leakage time (min, 0-99)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_t,
     ),
     SyrConnectSensorEntityDescription(
         key="getTMP",  # Leak protection temporarily deactivated - remaining time (s)

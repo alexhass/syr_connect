@@ -1434,7 +1434,7 @@
         "name": "Fuga de tiempo 1"
       },
       "gett2": {
-        "name": "Fuga de tiempo 2"
+        "name": "Tiempo máximo de fuga de caudal"
       },
       "gettmp": {
         "name": "Protección contra fugas desactivada"

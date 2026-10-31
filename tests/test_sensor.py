@@ -8203,7 +8203,7 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
     } <= keys
 
 
-@pytest.mark.parametrize("key", ["getLE", "getT1", "getT2", "getUL"])
+@pytest.mark.parametrize("key", ["getLE", "getT1", "getUL"])
 @pytest.mark.parametrize("raw", ["abc", "1.5", [1]])
 def test_mapped_int_sensor_invalid_value_returns_none(key: str, raw: Any) -> None:
     """A non-integer raw value of a mapped sensor gives None instead of raising."""
@@ -8218,6 +8218,26 @@ def test_mapped_int_sensor_invalid_value_returns_none(key: str, raw: Any) -> Non
     sensor = SyrConnectSensor(coordinator, "dev", "Dev", key)
 
     assert sensor._compute_native_value() is None
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("1", 1),  # XML
+        (1, 1),  # JSON
+        ("99", 99),
+        ("0", 0),
+    ],
+)
+def test_sensor_t2_minutes(
+    create_mock_coordinator: Callable[..., MagicMock], raw: Any, expected: Any
+) -> None:
+    """Maximum flow leakage time (getT2) is shown in minutes, without a value map."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getT2": raw}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getT2")
+
+    assert sensor.native_unit_of_measurement == UnitOfTime.MINUTES
+    assert sensor.native_value == expected
 
 
 def test_sensor_value_fns_infinite_value_returns_none() -> None:
