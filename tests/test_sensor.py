@@ -8383,7 +8383,7 @@ def test_sensor_microleakage_test_parameters(
     assert sensor.entity_registry_enabled_default is False
 
 
-@pytest.mark.parametrize("key", ["getPRN", "getSLO", "getSOF", "getTMZ"])
+@pytest.mark.parametrize("key", ["getAPT", "getPRN", "getSLO", "getSOF", "getTMZ"])
 def test_sensor_settings_disabled_by_default(
     create_mock_coordinator: Callable[..., MagicMock], key: str
 ) -> None:

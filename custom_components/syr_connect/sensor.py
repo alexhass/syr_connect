@@ -1912,6 +1912,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
         key="getWFC",  # Wi-Fi SSID
