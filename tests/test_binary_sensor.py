@@ -263,6 +263,27 @@ async def test_binary_sensor_sensor_active_depends_on_dk(
     assert sensor.is_on is expected
 
 
+@pytest.mark.parametrize("key", ["getBSA", "getIDS"])
+async def test_binary_sensor_settings_disabled_by_default(
+    hass: HomeAssistant, key: str
+) -> None:
+    """Rarely changed settings are disabled by default."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {key: "1"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", key)
+
+    assert sensor.entity_registry_enabled_default is False
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [

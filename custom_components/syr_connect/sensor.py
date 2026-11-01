@@ -980,6 +980,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
@@ -1011,6 +1012,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         hidden_when="empty",
     ),
     # --- Microleakage Test (Trio DFR/LS, SafeTech) ---
@@ -1870,6 +1872,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getTMZ",  # Time zone (quarter hours, 4 = UTC+01:00)
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         value_fn=_value_tmz,
         hidden_when="empty",
     ),

@@ -8383,6 +8383,17 @@ def test_sensor_microleakage_test_parameters(
     assert sensor.entity_registry_enabled_default is False
 
 
+@pytest.mark.parametrize("key", ["getPRN", "getSLO", "getSOF", "getTMZ"])
+def test_sensor_settings_disabled_by_default(
+    create_mock_coordinator: Callable[..., MagicMock], key: str
+) -> None:
+    """Rarely changed settings are disabled by default."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {key: "4"}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
+
+    assert sensor.entity_registry_enabled_default is False
+
+
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [

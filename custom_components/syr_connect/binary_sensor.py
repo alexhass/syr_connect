@@ -86,6 +86,7 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
     SyrConnectBinarySensorEntityDescription(
         key="getBSA",  # Floor sensor monitoring enabled
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     ),
     SyrConnectBinarySensorEntityDescription(
         key="getBUZ",  # Buzzer on/off
@@ -101,6 +102,7 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
     SyrConnectBinarySensorEntityDescription(
         key="getIDS",  # Daylight saving time enabled
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         hidden_when="empty",
     ),
     SyrConnectBinarySensorEntityDescription(
