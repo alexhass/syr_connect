@@ -597,7 +597,7 @@ Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken 
 
 ## Lizenz
 
-MIT License - siehe LICENSE Datei
+Apache License 2.0 - siehe LICENSE Datei
 
 ## Danksagungen
 

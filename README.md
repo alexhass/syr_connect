@@ -606,7 +606,7 @@ By installing and using this integration, you acknowledge these risks and agree 
 
 ## License
 
-MIT License - see LICENSE file
+Apache License 2.0 - see LICENSE file
 
 ## Credits
 
