@@ -8384,6 +8384,65 @@ def test_sensor_microleakage_test_parameters(
 
 
 @pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        # SafeTech: seconds
+        ("60", 60),
+        (45, 45),
+        # Safe-T+: with unit in minutes
+        ("1 min", 60),
+        ("2min", 120),
+        (" 3 MIN ", 180),
+        # Unit without a number
+        ("min", None),
+        ("abc min", None),
+    ],
+)
+def test_sensor_dom_seconds(
+    create_mock_coordinator: Callable[..., MagicMock], raw: Any, expected: Any
+) -> None:
+    """Microleakage test valve open time (getDOM) is shown in seconds in both formats."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getDOM": raw}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getDOM")
+
+    assert sensor.native_value == expected
+
+
+async def test_async_setup_entry_safetplus_dom(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """The Safe-T+ shows getDOM ("1 min") in seconds; the other test parameters stay hidden."""
+    xml = (
+        Path(__file__).parent
+        / "fixtures/xml/SyrSafeTPlus_GetDeviceCollectionStatus.xml"
+    ).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": status,
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    sensors = {getattr(e, "_sensor_key", None): e for e in entities}
+    assert sensors["getDOM"].native_value == 60
+    assert sensors["getDOM"].native_unit_of_measurement == UnitOfTime.SECONDS
+    assert not {"getDBT", "getDCM", "getDPL", "getDST", "getDTC"} & set(sensors)
+
+
+@pytest.mark.parametrize(
     ("model", "expected"),
     [
         ("SyrSafeTechV4", 0),

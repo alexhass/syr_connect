@@ -240,6 +240,19 @@ def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         return None
 
 
+def _value_dom(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Microleakage test valve open time (getDOM): raw value -> seconds.
+
+    Formats:
+    - SafeTech: "60" -> 60 s
+    - Safe-T+: "1 min" -> 60 s
+    """
+    if isinstance(value, str) and value.strip().lower().endswith("min"):
+        minutes = sensor.numeric_value(value.strip()[:-3].strip())
+        return minutes * 60 if isinstance(minutes, int | float) else None
+    return sensor.numeric_value(value)
+
+
 def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Microleakage test time (getDTT): UTC "HH:MM" -> local "HH:MM".
 
@@ -1034,6 +1047,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        value_fn=_value_dom,
     ),
     SyrConnectSensorEntityDescription(
         key="getDPL",  # Microleakage test turbine pulses (3-99)

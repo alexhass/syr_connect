@@ -12,10 +12,13 @@ family) - it uses the plain getLE/getT1/getT2/getUL/getTMP keys instead.
 It also has no Wi-Fi module (no getWFC/getWFR/getWFS/getEGW/getEIP/getMAC1/
 getMAC2/getAPT in the fixture) and no getFLO/getNOT/getWRN/getDSV/getDTT.
 getDMA (microleakage alarm mode) is present with a real value and included.
+getDOM (microleakage test valve open time) is included: the Safe-T+ reports it
+with its unit ("1 min"), which the sensor converts to seconds.
 
 Deliberately NOT included, pending confirmation on a real device:
-- getDST, getDTC, getDBT, getDCM, getDOM, getDPL: present in the fixture but
-  not in the global sensor.py allowlist at all (undocumented/unclear keys).
+- getDST, getDTC, getDBT, getDCM, getDPL: present in the fixture, but in other
+  formats than on the SafeTech ("5 min", "3 3"), so their meaning on the
+  Safe-T+ is not confirmed.
 - getBSA, getBSI, getBLT, getUNI, getTC, getTO, getTPA, getTBS, getREL,
   getEXI, getEXT, getFLL, getINT, get71: same as above - not in the global
   allowlist, meaning not confirmed for use across the integration.
@@ -49,6 +52,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Microleakage Test ---
     "getDBD",
     "getDMA",
+    "getDOM",
     "getDRP",
     "getNPS",
     # --- Leak Protection (single profile only, no numbered profile family) ---

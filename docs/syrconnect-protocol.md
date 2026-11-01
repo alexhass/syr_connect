@@ -934,7 +934,7 @@ Available on Trio DFR/LS, SafeTech+, TRIO Lock and SafeTech Lock (official API) 
 | getDCM / setDCM | "3" | min | SERVICE | 3 | Time the valve stays closed during the microleakage test. Range: 1–30 |
 | setDEX | "true"<br>"1" | | SERVICE | | Starts the microleakage test (write-only). The valve is closed during the test, which takes about 4 minutes; drawing water during the test gives a negative result. SafeTech: value 1 |
 | getDMA / setDMA | "1" | | USER | 1 | Sets whether a warning or an alarm becomes active after a microleakage is detected: 1 = Warning, 2 = Alarm, which also closes the valve (Trio DFR/LS, SafeTech +, TRIO Lock, SafeTech Lock). SafeTech also: 0 = test disabled |
-| getDOM / setDOM | "60" | s | SERVICE | 60 | Time the valve stays open during the microleakage test. Range: 1–60 |
+| getDOM / setDOM | "60" | s | SERVICE | 60 | Time the valve stays open during the microleakage test. Range: 1–60. The Safe-T+ reports it with its unit, e.g. "1 min" = 60 s |
 | getDPL / setDPL | "10" | pulses | SERVICE | 10 | Turbine pulses of the microleakage test. Range: 3–99 |
 | getDRP / setDRP | "1" | | USER | 1 | Microleakage test interval: 1 = daily, 2 = weekly, 3 = monthly. SafeTech also: 0 = always |
 | getDST / setDST | "180" | min | SERVICE | 180 | Time without turbine pulses (no water drawn) before the microleakage test starts: 0 = deactivated, 1–480 min |
