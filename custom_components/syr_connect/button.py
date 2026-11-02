@@ -6,7 +6,7 @@ Reset buttons (setALA, setNOT, setWRN) only trigger when the device
 reports an active code. The following values are treated as "no alarm"
 and will suppress the reset command (case-insensitive):
 
-    "", "0", "00", "0000", "ff", "a0x0000", "255"
+    "", "0", "00", "ff", "a0x0000", "255"
 
 For setALA, both the alarm field and the reset method depend on the
 model signature:
@@ -17,7 +17,8 @@ model signature:
     alarm_clear_via_set: True  → send setALA/setALM with value "FF"
     alarm_clear_via_set: False → call dedicated clrALA/clrALM endpoint
 
-setNOT and setWRN always send "FF" via the standard set command.
+setNOT and setWRN send "FF" (XML API) or 255 (JSON API) via the standard set
+command.
 """
 
 import logging

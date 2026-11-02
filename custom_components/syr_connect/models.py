@@ -651,7 +651,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=35,
         manufacturer="SYR",
         name="safetech",
-        # TODO: Untested model. Both values are incorrect in fixure.
+        # TODO: Untested model. Both values are incorrect in fixture.
         srn_infix="aBC",
         srn_prefix="123",
     ),

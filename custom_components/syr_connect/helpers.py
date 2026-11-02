@@ -796,7 +796,7 @@ def get_sensor_vol_value(value: str | float) -> str | int | float | None:
         return None
 
     # Pattern to match values like 'Vol[L]6530', 'Temp[C]25', etc.
-    # Format: word characters, optional brackets with content, then the actual value
+    # Format: letters, brackets with content, then the actual value
     match = re.match(r"^[A-Za-z]+\[[^\]]+\](.+)$", value)
     if match:
         cleaned = match.group(1).strip()
@@ -981,7 +981,7 @@ def get_sensor_bat_value(value: Any) -> float | None:
     if s == "":
         return None
 
-    # If space-separated Safe-T+ format, take firstech token
+    # If space-separated Safe-T+ format, take the first token
     if " " in s:
         first = s.split()[0]
         try:

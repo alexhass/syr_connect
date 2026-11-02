@@ -562,7 +562,7 @@ class SyrConnectSensorEntityDescription(SensorEntityDescription):
 # Only API keys listed here will become sensor entities. Any key returned by
 # a firmware update that is not listed here is silently ignored.
 _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
-    # --- Connectivity (virtual, always created) ---
+    # --- Connectivity (virtual, created when the API reports dst) ---
     SyrConnectSensorEntityDescription(
         key="dst",  # Device connection state (0=never online, 1=offline, 2=online, 3=standby)
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -573,7 +573,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_ab,
     ),
     SyrConnectSensorEntityDescription(
-        key="getAVO",  # Current instantaneous flow rate
+        key="getAVO",  # Volume of the current water withdrawal
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=1,
@@ -634,7 +634,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPressure.BAR,
         suggested_display_precision=1,
         value_fn=_value_bar,
-        hidden_when="empty",  # value "" means sensor does not exists or not measured
+        hidden_when="empty",  # value "" means sensor does not exist or is not measured
     ),
     SyrConnectSensorEntityDescription(
         key="getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
@@ -684,7 +684,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         suggested_display_precision=1,
         divide_by=10,
-        hidden_when="empty",  # value "" means sensor does not exists or not measured.
+        hidden_when="empty",  # value "" means sensor does not exist or is not measured.
     ),
     SyrConnectSensorEntityDescription(
         key="getCFT",  # Current filling duration (s)
@@ -697,7 +697,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        hidden_when="empty",  # value "" means sensor does not exists or not measured.
+        hidden_when="empty",  # value "" means sensor does not exist or is not measured.
     ),
     SyrConnectSensorEntityDescription(
         key="getCNF",  # Conductivity factor (raw 5-50 -> 0.5-5.0)
@@ -1134,7 +1134,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        hidden_when="empty",  # value "" means sensor does not exists.
+        hidden_when="empty",  # value "" means sensor does not exist.
     ),
     SyrConnectSensorEntityDescription(
         key="getUL",  # Leak protection volume limit - absent profile (l)
@@ -1838,7 +1838,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         hidden_when="empty",
     ),
     SyrConnectSensorEntityDescription(
-        key="getLNG",  # Device language (0=Deutsch, 1=English) - other models
+        key="getLNG",  # Device language (0=German, 1=English, 2=Spanish, 3=Italian, 4=Polish) - other models
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
@@ -1881,7 +1881,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        hidden_when="empty",  # value "" means sensor does not exists.
+        hidden_when="empty",  # value "" means sensor does not exist.
     ),
     SyrConnectSensorEntityDescription(
         key="getVER",  # Firmware version string

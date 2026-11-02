@@ -258,9 +258,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     session = async_get_clientsession(hass)
 
-    # Get scan interval from options. If not set, use per-API default (JSON uses
-    # a faster default). This ensures new JSON/local entries default to
-    # `_SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT`.
+    # Get scan interval from options. If not set, use the per-API default, so new
+    # JSON/local entries default to `_SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT`.
     scan_interval = get_default_scan_interval_for_entry(entry)
 
     # Enforce minimum scan interval depending on API type using named constants

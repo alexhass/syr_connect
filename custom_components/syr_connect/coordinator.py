@@ -392,7 +392,8 @@ class SyrConnectDataUpdateCoordinator(
             # expected sc>dvs>d structure, it returns None. In this case we
             # SHOULD NOT overwrite the existing sensor values. Try to reuse
             # the previous device entry from coordinator data if available
-            # (keep existing status). Otherwise mark device unavailable.
+            # (keep existing status). Otherwise the device stays available with
+            # an empty status.
             if status is None:
                 self._log_failure(
                     f"device:{device['id']}",

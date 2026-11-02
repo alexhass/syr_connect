@@ -56,8 +56,8 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up valve entities for SYR Connect."""
-    # Discover and create valve entities for devices that expose
-    # either a control sensor (`getAB`) or a status sensor (`getVLV`).
+    # Discover and create valve entities for devices that expose the
+    # control key `getAB` (see _build_device_valves).
     # We perform light validation of the values to avoid creating
     # entities for non-numeric or unexpected sensor payloads.
     _LOGGER.debug("Setting up SYR Connect valve entities")

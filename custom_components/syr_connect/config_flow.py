@@ -305,7 +305,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             FlowResult with the configuration entry or form
         """
         if user_input is not None:
-            # Persist options (scan interval and per-device toggles)
+            # Persist options (scan interval)
             entry = getattr(self, "_config_entry", None)
             options = dict(entry.options) if entry and entry.options else {}
 

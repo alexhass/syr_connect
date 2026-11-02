@@ -135,13 +135,13 @@ class SyrConnectJsonAPI:
         Returns:
             Base URL with trailing slash, or None if neither option is available
         """
-        # Option 1: Use explicit base_url if provided (e.g., for tests)
+        # Option 2: Use explicit base_url if provided (e.g., for tests)
         if self._base_url:
             result = f"{self._base_url.rstrip('/')}/"
             _LOGGER.debug("JSON API: Built base URL from explicit base_url: %s", result)
             return result
 
-        # Option 2: Construct from host + base_path (standard production use)
+        # Option 1: Construct from host + base_path (standard production use)
         _LOGGER.debug(
             "JSON API: Attempting to build base URL - host=%r, base_path=%r",
             self._host,
@@ -711,9 +711,8 @@ class SyrConnectJsonAPI:
             SyrConnectInvalidResponseError: On MIMA/NSC errors or unexpected status
                 (always raises for non-OK when is_login=True)
         """
-        # Devices return the command portion UPPERCASE in the response key
-        # (e.g., "setABtrue": "OK"). Require the exact uppercase response
-        # key to be present.
+        # Devices usually return the command portion UPPERCASE in the response
+        # key (e.g., "setABtrue": "OK"), but not all of them (see below).
         #
         # Construct expected response key by concatenating set + cmd + value
         # Example: cmd="sir", value="0" -> response_key="setSIR0"

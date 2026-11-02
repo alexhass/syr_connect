@@ -15,7 +15,7 @@ class SyrConnectDevice(TypedDict):
     id: str
     dclg: str
     name: str
-    # Added by `SyrConnectXmlAPI.get_devices`, the response parser does not know it
+    # Added by the `get_devices` of both API clients, the XML response parser does not know it
     project_id: NotRequired[str]
     # Only reported by the XML API
     serial_number: NotRequired[str]
