@@ -137,12 +137,12 @@ class TestLEXplus10SL(unittest.TestCase):
         LEXplus10SL has up to 8 profiles that can be activated/deactivated.
         This device has profiles 1-3 activated, 4-8 deactivated.
         """
-        # Aktivierte Profile
+        # Activated profiles
         assert self.sensors["getPA1"] == "1"
         assert self.sensors["getPA2"] == "1"
         assert self.sensors["getPA3"] == "1"
 
-        # Deaktivierte Profile
+        # Deactivated profiles
         assert self.sensors["getPA4"] == "0"
         assert self.sensors["getPA5"] == "0"
         assert self.sensors["getPA6"] == "0"
@@ -236,7 +236,7 @@ class TestLEXplus10SL(unittest.TestCase):
         Many leak protection sensors do not have an icon in icons.json.
         The code must handle this.
         """
-        # Simuliere Sensoren ohne Icon
+        # Sensors without an icon
         sensors_without_icon = [
             "getPA1",
             "getPA2",

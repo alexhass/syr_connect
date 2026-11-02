@@ -1077,7 +1077,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     1. If `getIWH` exists and is numeric, return it (int if whole).
     2. If `getIWH` missing/empty but `getCND` exists and is numeric,
        default `getWHU` to 0 when missing and compute `getIWH = getCND / 33`.
-    3. Return None when values are missing or unparseable.
+    3. Return None when values are missing or unparsable.
     """
     if not status:
         return None
@@ -1176,7 +1176,7 @@ def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
     Returns:
         - True if valve is closed
         - False if valve is open
-        - None if unknown/unparseable
+        - None if unknown/unparsable
 
     The value stored under getAB may be a plain raw value from the API
     (string, int, bool). The device itself signals a pending change via the
@@ -1322,7 +1322,7 @@ def build_set_ab_command(
     Using the device's native format prevents potential parsing errors or
     firmware issues when the device receives commands in an unexpected format.
 
-    Returns a tuple (set_key, value), or None when the format is unrecognised.
+    Returns a tuple (set_key, value), or None when the format is unrecognized.
     """
     raw = None
     if status:

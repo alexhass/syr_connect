@@ -1656,7 +1656,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     # --- Intervals ---
     SyrConnectSensorEntityDescription(
-        key="getRCP",  # Synchronisation interval (s)
+        key="getRCP",  # Synchronization interval (s)
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTime.SECONDS,
         suggested_display_precision=0,
@@ -2458,7 +2458,7 @@ def _is_sensor_wanted(
 
     A sensor that is already registered (`registered`) is created whatever its value,
     except for hidden_when="always". Otherwise it would stay registered without an entity
-    (greyed out) until a restart with a value that passes the value rules.
+    (grayed out) until a restart with a value that passes the value rules.
     """
     # Allowlist check: the definitive list of keys this integration handles.
     # Anything not listed here is ignored unconditionally, regardless of
@@ -2516,7 +2516,7 @@ def _async_setup_muco_conditional_sensors(
     Mirrors _async_setup_muco_conditional_selects in select.py: getLOT (HVE/HVE+) and
     getOHW (HWE) are mutually exclusive based on getCRT. registry_cleanup() only runs
     once at setup, so without this listener the inapplicable diagnostic sensor would
-    stay registered and show as permanently greyed-out "unavailable" after the user
+    stay registered and show as permanently grayed-out "unavailable" after the user
     changes the cartridge type live (e.g. via the getCRT select), instead of being
     removed. Re-evaluated on every coordinator update.
     """

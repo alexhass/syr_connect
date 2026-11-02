@@ -388,7 +388,7 @@ class SyrConnectDataUpdateCoordinator(
             )
             status = await self.api.get_device_status(dclg)
 
-            # If parser signalled that the response did not contain the
+            # If parser signaled that the response did not contain the
             # expected sc>dvs>d structure, it returns None. In this case we
             # SHOULD NOT overwrite the existing sensor values. Try to reuse
             # the previous device entry from coordinator data if available
@@ -656,7 +656,7 @@ class SyrConnectDataUpdateCoordinator(
           endpoint).
 
         If no alarm is detected, or alarm detection fails for any reason, the
-        open command is issued without any clear prefix — identical behaviour
+        open command is issued without any clear prefix — identical behavior
         to a direct "async_set_device_value" call.
 
         Args:

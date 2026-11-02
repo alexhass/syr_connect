@@ -172,7 +172,7 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SyrConnectSelectEntityDescription(
-        key="getRCP",  # Synchronisation interval (s)
+        key="getRCP",  # Synchronization interval (s)
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -378,7 +378,7 @@ class _SyrConnectSelectBuilder:
         )
 
     def add_numeric_steps(self, key: str, values: list[int]) -> None:
-        """Add a numeric select with a non-uniform list of steps, labelled with the unit.
+        """Add a numeric select with a non-uniform list of steps, labeled with the unit.
 
         Args:
             key: Status key, e.g. "getRMT"
@@ -568,7 +568,7 @@ def _async_setup_muco_conditional_selects(
 
     getLOT (HVE/HVE+) and getOHW (HWE) are mutually exclusive: only one ever applies for a
     given cartridge type (getCRT). Instead of creating both and showing the inapplicable one
-    as permanently greyed-out "unavailable", only the currently-relevant entity is added; the
+    as permanently grayed-out "unavailable", only the currently-relevant entity is added; the
     other is removed from the entity registry. Re-evaluated on every coordinator update, so
     switching getCRT (which optimistically updates coordinator.data immediately) swaps the
     visible entity right away, without requiring an integration reload.

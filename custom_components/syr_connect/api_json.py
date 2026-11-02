@@ -169,7 +169,7 @@ class SyrConnectJsonAPI:
     def is_session_valid(self) -> bool:
         """Check if the current session is still valid.
 
-        WARNING: There is no session, but this behaviour reduces the load to the device.
+        WARNING: There is no session, but this behavior reduces the load to the device.
 
         Sessions expire after 30 minutes of inactivity. This method checks if:
         1. A login has occurred (_last_login is set)
@@ -581,7 +581,7 @@ class SyrConnectJsonAPI:
         """Return the device status dictionary parsed from JSON.
 
         Returns None on unexpected payload to allow the coordinator to keep
-        previous state (same behaviour as the XML client parser).
+        previous state (same behavior as the XML client parser).
 
         This method reuses the cached response from get_devices() if available,
         otherwise fetches /get/all directly.

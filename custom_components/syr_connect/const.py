@@ -455,7 +455,7 @@ _SYR_CONNECT_SELECT_RCD_MAP = {
     "3": 3,
 }
 
-# Settings synchronisation interval (getRCP) in seconds: non-uniform duration steps as
+# Settings synchronization interval (getRCP) in seconds: non-uniform duration steps as
 # documented in docs/syrconnect-protocol.md. Display labels come from the select.getrcp
 # translation "state" map.
 _SYR_CONNECT_SELECT_RCP_MAP = {

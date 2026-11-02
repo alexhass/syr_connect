@@ -1034,7 +1034,7 @@ def test_flatten_attributes_shadow_value_used_when_s_present(
 def test_flatten_attributes_shadow_value_single_c_element(
     parser: ResponseParser,
 ) -> None:
-    """Shadow 's' attribute is also honoured for a single (non-list) <c> element."""
+    """Shadow 's' attribute is also honored for a single (non-list) <c> element."""
     data = {"c": {"@n": "getMXT", "@v": "500", "@s": "490"}}
     result = ResponseParser._flatten_attributes(data)
     assert result["getMXT"] == "490"

@@ -284,7 +284,7 @@ async def test_v2_to_v3_skips_flo_with_different_unit(hass: HomeAssistant) -> No
     )
     entry.add_to_hass(hass)
 
-    # Entity with user-customised unit (m³/h) — must not be touched
+    # Entity with user-customized unit (m³/h) — must not be touched
     mock_entity = MagicMock()
     mock_entity.entity_id = "sensor.device_getflo"
     mock_entity.unique_id = "device_id_getFLO"

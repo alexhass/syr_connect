@@ -1799,7 +1799,7 @@ def test_get_sensor_ab_value_string_variants() -> None:
 
 
 def test_get_sensor_bat_value_first_token_unparseable() -> None:
-    """Test get sensor bat value first token unparseable."""
+    """Test get sensor bat value first token unparsable."""
     # First token is non-numeric -> should return None
     assert get_sensor_bat_value("bad 4,38 3,90") is None
 

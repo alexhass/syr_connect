@@ -85,7 +85,7 @@ class PayloadBuilder:
     def _element(parent: ET.Element | None, tag: str, **attrs: Any) -> ET.Element:
         """Create an element (optionally below ``parent``) with attributes in the given order.
 
-        Values are converted to ``str``. ElementTree escapes them on serialisation,
+        Values are converted to ``str``. ElementTree escapes them on serialization,
         so no value can break out of its attribute or inject markup.
 
         Raises:
@@ -101,7 +101,7 @@ class PayloadBuilder:
 
     @staticmethod
     def _serialize(root: ET.Element) -> str:
-        """Serialise an element tree to an XML string with the declaration the API expects."""
+        """Serialize an element tree to an XML string with the declaration the API expects."""
         return _XML_DECLARATION + ET.tostring(root, encoding="unicode")
 
     def _new_request(self, session_id: str) -> ET.Element:
@@ -275,7 +275,7 @@ class PayloadBuilder:
         return self._add_checksum(root)
 
     def _add_checksum(self, root: ET.Element) -> str:
-        """Serialise the request and append its checksum element.
+        """Serialize the request and append its checksum element.
 
         The checksum is computed over the request without the ``<cs>`` element. Any ``<cs>``
         already present is removed first, so calling this again on the same root yields the

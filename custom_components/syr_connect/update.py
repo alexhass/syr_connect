@@ -111,7 +111,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
 
     The SYR Connect API does not expose the actual target firmware version, so
     `latest_version` uses a placeholder string instead of a real version when an
-    update is signalled. Installing is supported via setUPG, a write-only command
+    update is signaled. Installing is supported via setUPG, a write-only command
     shared identically by 8 device base classes (SafeTech, SafeFloor, LEX Plus,
     All-in-One+, MultiController, HygBox, Dosing Pump, Trio LS); it is always sent
     with an empty value (see docs/syrconnect-protocol.md).

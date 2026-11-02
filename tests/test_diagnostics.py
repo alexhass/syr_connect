@@ -4464,7 +4464,7 @@ async def test_json_api_getsrn_except_block(
     assert "raw_json" in result
     raw_json = result["raw_json"]
     # Accept either the device being present or an empty/error dict depending
-    # on environment/mock behaviour.
+    # on environment/mock behavior.
     if "local_device" not in raw_json:
         assert raw_json == {} or "error" in raw_json
 

@@ -52,7 +52,7 @@ def test_select_descriptions_have_unique_keys() -> None:
 
 
 def test_option_unit_without_unit_raises() -> None:
-    """A select key whose sensor description has no unit fails instead of labelling "30 None"."""
+    """A select key whose sensor description has no unit fails instead of labeling "30 None"."""
     assert select_module._option_unit("getRMT") == "min"
     with (
         _patch_sensor_description("getRMT", native_unit_of_measurement=None),

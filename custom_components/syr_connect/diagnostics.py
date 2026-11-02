@@ -30,7 +30,7 @@ _SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS = 5
 # Keys whose values are removed completely: in dicts by `_redact_obj` and
 # `async_redact_data`, in XML strings by `_redact_xml`.
 # Some keys are handled specially and MUST NOT be fully redacted, because the
-# unmasked part is needed to analyse problems (vendor, model, production batch):
+# unmasked part is needed to analyze problems (vendor, model, production batch):
 # - `getMAC`/`getMAC1`/`getMAC2` are masked by `mask_mac_value` (vendor kept),
 # - `getSRN` (device serial) is masked by `mask_srn_value` (prefix kept).
 _SYR_CONNECT_DIAGNOSTICS_TO_REDACT = {

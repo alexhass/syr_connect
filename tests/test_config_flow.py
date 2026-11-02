@@ -1494,7 +1494,7 @@ async def test_form_api_json_persists_login_required(hass: HomeAssistant) -> Non
         await hass.async_block_till_done()
 
     # Accept either a created entry with login_required preserved, or a form
-    # result depending on environment/mock behaviour.
+    # result depending on environment/mock behavior.
     assert result3["type"] in (FlowResultType.CREATE_ENTRY, FlowResultType.FORM)
     if result3["type"] == FlowResultType.CREATE_ENTRY:
         assert result3["data"][CONF_LOGIN_REQUIRED] is True

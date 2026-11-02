@@ -1734,7 +1734,7 @@ async def test_sensor_mxt_temperature_conversion(hass: HomeAssistant) -> None:
         ("getALD", "20", 20),  # Alarm duration (s) — whole number
         ("getMIH", "5", 5),  # Minimum humidity (%) — whole number
         ("getMXH", "95", 95),  # Maximum humidity (%) — whole number
-        ("getRCP", "43200", 43200),  # Synchronisation interval (s) — whole number
+        ("getRCP", "43200", 43200),  # Synchronization interval (s) — whole number
         ("getWMP", "3600", 3600),  # Measurement interval (s) — whole number
     ],
 )
@@ -3793,7 +3793,7 @@ async def test_sensor_getbat_voltage_keeps_voltage_name(hass: HomeAssistant) -> 
 
 
 async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -> None:
-    """SafeFloor getBAT with an unparseable value returns None (covers except branch)."""
+    """SafeFloor getBAT with an unparsable value returns None (covers except branch)."""
     data = {
         "devices": [
             {
