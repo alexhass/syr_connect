@@ -402,7 +402,7 @@ class SyrConnectDataUpdateCoordinator(
                 return self._previous_device_or_empty(device)
 
             device["status"] = status
-            device["model"] = detect_device_model(device)
+            device["model"] = detect_device_model(device, self._service)
 
             # Emergency action.
             #
@@ -474,7 +474,7 @@ class SyrConnectDataUpdateCoordinator(
             device.get("id"),
         )
         device["status"] = {}
-        device["model"] = detect_device_model(device)
+        device["model"] = detect_device_model(device, self._service)
         device["available"] = True
         return device
 
@@ -577,7 +577,7 @@ class SyrConnectDataUpdateCoordinator(
                         device["available"] = True
                     applied = True
                 if device is not None and applied:
-                    device["model"] = detect_device_model(device)
+                    device["model"] = detect_device_model(device, self._service)
                 if applied:
                     self.async_set_updated_data(new_data)
                     optimistic_data = new_data

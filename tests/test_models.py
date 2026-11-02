@@ -768,3 +768,26 @@ def test_detect_model_dfm_alone_does_not_detect_a_role() -> None:
     """Without a matching serial number or device kind, getDFM alone detects no role."""
     assert detect_model({"getDFM": 1}) is UNKNOWN_MODEL
     assert detect_model({"getSRN": "123456789", "getDFM": 1}) is UNKNOWN_MODEL
+
+
+@pytest.mark.parametrize(
+    ("status", "device_kind"),
+    [
+        pytest.param({}, {"dk": 120, "dkv": 34, "sbt": 0}, id="device_kind"),
+        pytest.param({"getVER": "Syr Floorsensor 2.23"}, {}, id="status"),
+    ],
+)
+def test_detect_model_logs_the_branded_name(
+    caplog: pytest.LogCaptureFixture,
+    status: dict[str, str],
+    device_kind: dict[str, int],
+) -> None:
+    """The log names the model as the cloud service of the config entry brands it."""
+    with caplog.at_level("DEBUG", logger="custom_components.syr_connect.models"):
+        result = detect_model(
+            status, service="de.consoft.gc.conel.connect", **device_kind
+        )
+
+    assert result.name == "safefloor"
+    assert "detected model CLEAR PRO Floor Sensor" in caplog.text
+    assert "SafeFloor Connect" not in caplog.text

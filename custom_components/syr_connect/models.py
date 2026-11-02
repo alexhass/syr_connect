@@ -1465,6 +1465,7 @@ def detect_model(
     dk: int | None = None,
     dkv: int | None = None,
     sbt: int | None = None,
+    service: str | None = None,
 ) -> SyrConnectModel:
     """Detect the device model from the cloud device kind and the flattened status.
 
@@ -1483,6 +1484,8 @@ def detect_model(
         dk: Cloud API deviceKind, None if unknown
         dkv: Cloud API deviceKindVersion, None if unknown
         sbt: Cloud API device subtype, None if unknown
+        service: The cf_bundle_identifier of the config entry, None for the local
+            JSON API; the log names the model as this service brands it
 
     Returns:
         The matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no signature
@@ -1502,7 +1505,7 @@ def detect_model(
         if len(family) == 1:
             _LOGGER.debug(
                 "detect_model: detected model %s (dk=%s, dkv=%s, sbt=%s, dfm=%s)",
-                family[0].display_name,
+                family[0].branded(service)[1],
                 dk,
                 dkv,
                 sbt,
@@ -1510,12 +1513,12 @@ def detect_model(
             )
             return family[0]
         if family:
-            return _match_device_values(flat, family)
-    return _match_device_values(flat, signatures)
+            return _match_device_values(flat, family, service)
+    return _match_device_values(flat, signatures, service)
 
 
 def _match_device_values(
-    flat: object, signatures: list[SyrConnectModel]
+    flat: object, signatures: list[SyrConnectModel], service: str | None
 ) -> SyrConnectModel:
     """Return the first of the signatures that matches the flattened status.
 
@@ -1530,6 +1533,8 @@ def _match_device_values(
     Args:
         flat: Flattened device status
         signatures: The signatures to choose from
+        service: The cf_bundle_identifier of the config entry, None for the local
+            JSON API
 
     Returns:
         The matched signature, or ``UNKNOWN_MODEL`` if none matches.
@@ -1557,7 +1562,9 @@ def _match_device_values(
 
     def _sig_to_result(sig: SyrConnectModel, method: str) -> SyrConnectModel:
         """Log the detected model and return sig."""
-        _LOGGER.debug("detect_model: detected model %s (%s)", sig.display_name, method)
+        _LOGGER.debug(
+            "detect_model: detected model %s (%s)", sig.branded(service)[1], method
+        )
         return sig
 
     # Step 1: Check all serial number prefix matches first (highest priority)

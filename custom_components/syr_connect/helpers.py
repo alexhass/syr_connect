@@ -127,7 +127,9 @@ def get_device(
     return None
 
 
-def detect_device_model(device: SyrConnectDevice) -> SyrConnectModel:
+def detect_device_model(
+    device: SyrConnectDevice, service: str | None = None
+) -> SyrConnectModel:
     """Detect the model of a device from its cloud device kind and its status.
 
     Only the cloud API (XML) reports `dk`, `dkv` and `sbt`; without them the model is
@@ -135,6 +137,8 @@ def detect_device_model(device: SyrConnectDevice) -> SyrConnectModel:
 
     Args:
         device: The device from the coordinator data
+        service: The cf_bundle_identifier of the config entry, None for the local
+            JSON API; the log names the model as this service brands it
 
     Returns:
         The detected model, or `UNKNOWN_MODEL`
@@ -144,6 +148,7 @@ def detect_device_model(device: SyrConnectDevice) -> SyrConnectModel:
         dk=device.get("dk"),
         dkv=device.get("dkv"),
         sbt=device.get("sbt"),
+        service=service,
     )
 
 
