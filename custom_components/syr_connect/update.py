@@ -131,9 +131,6 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         device_name: str,
     ) -> None:
         """Initialize the update entity."""
-        # build_device_info() (in the base class) already replaces a bare-serial device name
-        # with "<model> (<serial>)" when no real device name is available - that's what
-        # shows as the heading in the Settings > Updates overview.
         super().__init__(
             coordinator,
             device_id,
