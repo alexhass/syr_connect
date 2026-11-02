@@ -290,7 +290,7 @@ The integration provides comprehensive monitoring of your devices:
 - **Regeneration Mode**: Select Standard / ECO / Power / Automatic (for devices that support it)
 - **Raw / Soft Water Hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l)
 - **Water Treatment and Filling** (MuCo-based devices): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure
-- **Floor Leak Sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronisation interval
+- **Floor Leak Sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval
 
 #### Valve Control
 

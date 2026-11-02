@@ -91,7 +91,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   lint:
-    name: Lint (ruff)
+    name: Lint (ruff, codespell)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -123,6 +123,9 @@ jobs:
 
       - name: Check ruff formatting
         run: ruff format --check .
+
+      - name: Check spelling
+        run: codespell
 
   typecheck:
     name: Type Check (mypy)

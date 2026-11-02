@@ -2,7 +2,7 @@
 
 The SYR water softening units of the LEX Plus series, e.g. LEX Plus 10 Connect or LEX Plus 10 S Connect, are sharing their status with the SYR Connect cloud and receiving commands and settings changes from it. The SYR Connect cloud can be either accessed through the [SYR Connect web interface](https://syrconnect.de/) or the [SYR App](https://www.syr.de/de/SYR_App).
 
-The protocol between SYR water softening unit and SYR Connect cloud is partially reverse engineered through analyzing the exchanged messages. A LEX Plus 10 S Connect with firmware SLPS 1.7 was used for this analysis; later SLSP 1.9 was analysed. Additionally, a LEX Plus 10 SL Connect was analyzed that contains an integrated leakage detection device, called Safeconnect.  
+The protocol between SYR water softening unit and SYR Connect cloud is partially reverse engineered through analyzing the exchanged messages. A LEX Plus 10 S Connect with firmware SLPS 1.7 was used for this analysis; later SLSP 1.9 was analyzed. Additionally, a LEX Plus 10 SL Connect was analyzed that contains an integrated leakage detection device, called Safeconnect.  
 
 ## Communication
 
@@ -469,7 +469,7 @@ Every `<c>` element carries a `v` attribute (last confirmed device value) and an
 
 ## Getters and Setters
 
-All known properties have 2-character names, e.g. XY or 3-character names, e.g. XYZ. The SYR Connect cloud can either call "getXYZ" to receive the property value during the next request, or it can call "setXYZ" with an appropriate value. Currently, most analysis focussed on the getters. In is currently unknown if for each getter also a setter is working. If setters have been found to work, they are listed in below tables.
+All known properties have 2-character names, e.g. XY or 3-character names, e.g. XYZ. The SYR Connect cloud can either call "getXYZ" to receive the property value during the next request, or it can call "setXYZ" with an appropriate value. Currently, most analysis focused on the getters. In is currently unknown if for each getter also a setter is working. If setters have been found to work, they are listed in below tables.
 
 The column "Access level" names the level a command requires on the local JSON API of devices with dk < 1100: USER, SERVICE or FACTORY (see [Access levels](#access-levels)). When the getter and the setter differ, both are listed in the order of the property, e.g. "USER / FACTORY" for "getTSD / setTSD". An empty cell or "?" means the level is unknown.
 
@@ -679,7 +679,7 @@ Non-critical warnings, same device family as the alarm codes above.
 
 ### Holiday
 
-Some devices seem to support setting holidays. The consequences for the water softening unit are unknown. For devices with leakage detection it makes the device more sensitive to consumed water. On the SYR Lex Plus 10 S Connect that was analysed the system automatically sets the holiday end to the current date.
+Some devices seem to support setting holidays. The consequences for the water softening unit are unknown. For devices with leakage detection it makes the device more sensitive to consumed water. On the SYR Lex Plus 10 S Connect that was analyzed the system automatically sets the holiday end to the current date.
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
@@ -715,14 +715,14 @@ These settings can be set by the user.
 | getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |
 | getLOCK | "False" | | | | Device keypad/remote lock flag (Trio DFR/LS, SafeTech) |
 | getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps) |
-| getMIT / setMIT | "-40" | 1/10 | | | Minium temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
+| getMIT / setMIT | "-40" | 1/10 | | | Minimum temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
 | getMPR / setMPR | "40" | 1/10 bar | | | The set water pressure |
 | getMXH / setMXH | "95" | % | | | Maximum huminity, Values: 100=Off, 5-100% (5% steps) |
 | getMXT / setMXT | "490" | 1/10 | | | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
 | getOWH / setOWH | "7" | °dh / °fH | | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only |
 | getPSD / setPSD | "0"<br>"True" | | USER / FACTORY | 0 | Pressure sensor setting. Value meaning depends on the API, see note below |
 | getPST / setPST | "1" | | | | Pressure sensor installed: 1 = not available, 2 = available |
-| getRCP / setRCP | "43200" | s | | | Settings synchronisation interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w. HVA: different meaning, "remaining capacity" in the format `"<n> (<m>L)"`: n / 100 = remaining capacity in %, m = remaining capacity in liters |
+| getRCP / setRCP | "43200" | s | | | Settings synchronization interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w. HVA: different meaning, "remaining capacity" in the format `"<n> (<m>L)"`: n / 100 = remaining capacity in %, m = remaining capacity in liters |
 | getRDO / setRDO | "90" | g/L | | | Salt dosage |
 | getRMO / setRMO | "1" | | | | Regeneration mode (NeoSoft): 1 = Standard, 2 = ECO, 3 = Power, 4 = Automatic (switches the mode depending on consumption) |
 | getRPD / setRPD | "4" | days | | | Regeneration interval. NeoSoft: 1–3; no effect on the NeoSoft 5000, which regenerates on its own as soon as a column is exhausted |
@@ -787,7 +787,7 @@ The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and chan
 | getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | | | "1" if regeneration is running for tank 1, 2 or 3. NeoSoft (getRG1 only): 0 = no regeneration, 1 = bottle 1 regenerates, 2 = bottle 2 regenerates |
 | getRST | "0" | | | | Reset device control — unclear what values trigger |
 | setRST | "1" | | SERVICE | | Restarts the device (write-only) |
-| getRTI | "00:00"<br>"3540" | | | | Total duration of the regeneration cylce. NeoSoft: time until the regeneration ends, in seconds (0–5940) |
+| getRTI | "00:00"<br>"3540" | | | | Total duration of the regeneration cycle. NeoSoft: time until the regeneration ends, in seconds (0–5940) |
 | getSCR | "0" | | | | *unknown, likely number of service regeneration cycles* |
 | setSDR | "1" | | | | Trigger delayed regeneration (write-only) |
 | setSIR | "1" | | | | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this) |
@@ -971,7 +971,7 @@ Properties of the SafeFloor floor sensor (dk 120, dkv 34). Settings are taken ov
 | getHAE / setHAE | "1" | | | 1 | Humidity alarm enabled: 0 = no, 1 = yes. Can only be disabled in the Hansgrohe firmware |
 | getHBE / setHBE | "0" | | | 0 | Buzzer on a humidity alarm: 0 = no, 1 = yes |
 | getICS | "1" | | | | Internet connection state: 1 = connected to the internet, 0 = otherwise |
-| getISN / setISN | "0" | | | 0 | Isolated network: 0 = report to the internet server, 1 = report only to SafeTech devices via LAN, 2 = report only to SafeTech devices via Wi-Fi directly, 3 = no connection (the alarm is only signalled by sound and light) |
+| getISN / setISN | "0" | | | 0 | Isolated network: 0 = report to the internet server, 1 = report only to SafeTech devices via LAN, 2 = report only to SafeTech devices via Wi-Fi directly, 3 = no connection (the alarm is only signaled by sound and light) |
 | getLWH | "" | | | | Last weather history: timestamp, temperature, humidity, battery state and alarms since the last server connection, at most 24 rows. The command format is not accepted yet |
 | setOTA | "1" | | | | Firmware update of the Wi-Fi module (Bravo hardware version) (write-only) |
 | setSAR | "123456789" | | | | Pairs the SafeTech with the given 9-digit serial number (write-only, for testing; deprecated, devices are paired from the SafeTech, see setFSA) |

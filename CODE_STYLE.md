@@ -30,7 +30,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 - Every module, class and public function has a docstring. Use the Google style with `Args:`, `Returns:` and `Raises:` sections where they apply.
 - The first docstring line is one sentence that says what the function does.
-- Comments and docstrings are in English.
+- Comments and docstrings are in American English (`behavior`, `synchronization`), as in Home Assistant core. `codespell` checks them, see `AGENTS.md`, Commands.
 - A docstring about a device key names the value first and the key in parentheses: `"""Cartridge size (getCRS): raw value -> liters."""`, not `"""getCRS: raw value -> liters."""`.
 - List several value formats or examples one per line, as `- <Model or case>: "<raw value>" -> <result>`, not several on one line:
 
@@ -69,7 +69,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 ## Tests
 
-- Every behaviour change comes with a test. Bug fixes get a test that fails without the fix.
+- Every behavior change comes with a test. Bug fixes get a test that fails without the fix.
 - Line coverage of `custom_components/syr_connect` must stay at 100 %: no line without test coverage is accepted. Check it after every change (see `AGENTS.md`, Commands) and add tests for every uncovered line. Do not add `# pragma: no cover` to reach it.
 - Fixtures live in `tests/fixtures/xml/` and `tests/fixtures/json/`. They are anonymised copies of real answers; keep their checksums valid (`tests/test_checksum.py` checks them).
 - Further test rules are in `.github/instructions/tests.instructions.md`.

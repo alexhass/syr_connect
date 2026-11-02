@@ -1,13 +1,13 @@
 # Known issues — SYR XML API
 
 This document lists known deviations between the official SYR Connect XML
-API behaviour and what this integration observes in the wild, in the
+API behavior and what this integration observes in the wild, in the
 test fixtures, and in the parsing/encryption layers implemented here.
 
 ## Purpose
 
 - Provide a concise, actionable reference of non-conformant XML API
-  behaviour the integration must tolerate.
+  behavior the integration must tolerate.
 - Point maintainers to the code and tests that implement the necessary
   workarounds.
 

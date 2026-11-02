@@ -247,3 +247,10 @@ max-complexity = 25
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 property-decorators = ["propcache.api.cached_property"]
+
+# Spell check of code, comments and docs in American English, as in Home Assistant core.
+# The ignored words are names, XML elements, test data and German quotes.
+[tool.codespell]
+builtin = "clear,rare,informal,usage,code,names,en-GB_to_en-US"
+ignore-words-list = "ags,centre,cna,falsy,hass,hve,ist,master,nam,oder,periode,puls,sie,slave,te,ws"
+skip = "*/translations/*,*/fixtures/*,*.ambr,README.de.md,./.git,./.venv,./.mypy_cache,./.ruff_cache,./.pytest_cache,./.coverage,*/__pycache__/*"

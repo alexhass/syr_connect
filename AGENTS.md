@@ -23,11 +23,12 @@ All of these files apply. Read the matching ones before changing code.
 - Coverage (WSL only): add `--cov=custom_components.syr_connect --cov-report=term-missing:skip-covered` to the test command. It must report 100 %; every uncovered line needs a test.
 - Format (Windows): `.venv/Scripts/ruff.exe format .` after every change to Python code, before linting. `.venv/Scripts/ruff.exe format --check .` must report no changes.
 - Lint and types (Windows): `.venv/Scripts/ruff.exe check .` and `.venv/Scripts/mypy.exe` (checks the integration, `scripts/` and `tests/`, see `files` in `mypy.ini`).
+- Spelling (Windows): `.venv/Scripts/codespell.exe` checks code, comments and docs in American English. Its settings and the list of ignored words are in `[tool.codespell]` in `pyproject.toml`.
 - Git: Windows git and WSL git both work. `.gitattributes` forces LF line endings for every text file, as in Home Assistant core, independent of `core.autocrlf`.
 
 ## Deliberate Decisions
 
-These behaviours are intended. Do not change them and do not report them as findings in reviews.
+These behaviors are intended. Do not change them and do not report them as findings in reviews.
 
 - **Temporary errors keep old values.** Timeouts, routing errors, maintenance pages and failed polls are only logged. Entities keep their previous values: no `unavailable` state, no `UpdateFailed`, no repair issues. Only the very first refresh at setup may fail. A valid answer without a device means the device was deleted.
 - **Offline devices.** The cloud reports `dst="0"` (never online) or `dst="1"` (offline); the coordinator then marks the device unavailable. After that, the device stays unavailable until a full status arrives, even if broken answers with `dst="2"` come first.
