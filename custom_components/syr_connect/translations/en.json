@@ -2,9 +2,7 @@
   "config": {
     "abort": {
       "already_configured": "This hub is already configured",
-      "reauth_failed": "Reauthentication failed. Please try again.",
       "reauth_successful": "Reauthentication successful",
-      "reconfigure_failed": "Reconfiguration failed. Please try again.",
       "reconfigure_successful": "Reconfiguration successful"
     },
     "error": {

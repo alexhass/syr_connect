@@ -452,25 +452,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             FlowResult with updated config entry or form with errors
         """
         errors: dict[str, str] = {}
-
-        # Get the existing config entry for API type determination
-        entry_id = self.context.get("entry_id")
-        entry = (
-            self.hass.config_entries.async_get_entry(entry_id)
-            if entry_id is not None
-            else None
-        )
-        if entry is None and user_input is not None:
-            return self.async_abort(reason="reauth_failed")
+        entry = self._get_reauth_entry()
 
         # Determine API type for this entry (default to XML for backward compatibility)
-        api_type = (
-            entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
-        )
+        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
 
         if user_input is not None:
-            # At this point, if we reached here after the check above, `entry` must not be None
-            assert entry is not None
             user_input = self._strip_host(user_input)
             try:
                 # Validate and update based on API type
@@ -530,7 +517,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=STEP_LOCAL_JSON_DATA_SCHEMA,
                 errors=errors,
                 description_placeholders={
-                    "host": str(entry.data.get(CONF_HOST, "")) if entry else ""
+                    "host": str(entry.data.get(CONF_HOST, "")),
                 },
             )
 
@@ -539,7 +526,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=_STEP_REAUTH_XML_DATA_SCHEMA,
             errors=errors,
             description_placeholders={
-                "username": str(entry.data.get(CONF_USERNAME, "")) if entry else ""
+                "username": str(entry.data.get(CONF_USERNAME, "")),
             },
         )
 
@@ -571,25 +558,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             FlowResult with updated config entry or form with errors
         """
         errors: dict[str, str] = {}
-        entry_id = self.context.get("entry_id")
-        entry = (
-            self.hass.config_entries.async_get_entry(entry_id)
-            if entry_id is not None
-            else None
-        )
+        entry = self._get_reconfigure_entry()
+        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
 
         if user_input is not None:
-            # Check if entry still exists during submission
-            if entry is None:
-                return self.async_abort(reason="reconfigure_failed")
-
-            # `entry` is guaranteed to be non-None beyond this point
-            assert entry is not None
             user_input = self._strip_host(user_input)
             try:
-                # Determine API type from current entry
-                api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
-
                 # Validate based on API type
                 if api_type == API_TYPE_JSON:
                     info = await validate_input_json(self.hass, user_input)
@@ -623,12 +597,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             except CannotConnectError:
-                # Use appropriate error message based on API type
-                api_type = (
-                    entry.data.get(CONF_API_TYPE, API_TYPE_XML)
-                    if entry
-                    else API_TYPE_XML
-                )
                 errors["base"] = (
                     "cannot_connect_local"
                     if api_type == API_TYPE_JSON
@@ -644,21 +612,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error during reconfiguration")
                 errors["base"] = "unknown"
 
-        # Determine API type from entry (or default to XML if entry is None)
-        api_type = (
-            entry.data.get(CONF_API_TYPE, API_TYPE_XML) if entry else API_TYPE_XML
-        )
-
         # Show appropriate form based on API type
         if api_type == API_TYPE_JSON:
-            # Pre-fill with current values for JSON API (or empty if entry is None)
+            # Pre-fill with current values for JSON API
             return self.async_show_form(
                 step_id="reconfigure",
                 data_schema=probatio.Schema(
                     {
                         probatio.Required(
                             CONF_MODEL,
-                            default=entry.data.get(CONF_MODEL, "") if entry else "",
+                            default=entry.data.get(CONF_MODEL, ""),
                         ): selector.SelectSelector(
                             selector.SelectSelectorConfig(
                                 options=[
@@ -670,13 +633,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         ),
                         probatio.Required(
                             CONF_HOST,
-                            default=entry.data.get(CONF_HOST, "") if entry else "",
+                            default=entry.data.get(CONF_HOST, ""),
                         ): str,
                     }
                 ),
                 errors=errors,
             )
-        # Pre-fill with current values for XML API (or defaults if entry is None)
+        # Pre-fill with current values for XML API
         # Do not allow changing the configured service here; only credentials may be updated.
         return self.async_show_form(
             step_id="reconfigure",
@@ -684,7 +647,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     probatio.Required(
                         CONF_USERNAME,
-                        default=entry.data.get(CONF_USERNAME, "") if entry else "",
+                        default=entry.data.get(CONF_USERNAME, ""),
                     ): str,
                     probatio.Required(CONF_PASSWORD): str,
                 }

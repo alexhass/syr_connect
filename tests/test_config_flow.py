@@ -38,7 +38,7 @@ from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType, UnknownFlow
+from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import HomeAssistantError
 
 # Patch path for API class (lazy-loaded in config_flow)
@@ -1265,83 +1265,6 @@ def test_local_api_models_sorted_by_label() -> None:
     )
 
 
-async def test_reauth_flow_entry_not_found(hass: HomeAssistant) -> None:
-    """Test reauth flow when entry is deleted during confirmation."""
-
-    # Create a config entry first
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-            CONF_API_TYPE: API_TYPE_XML,
-        },
-        entry_id="test_entry_id",
-    )
-    entry.add_to_hass(hass)
-
-    # Mock the API to avoid actual connections
-    mock_api = AsyncMock()
-    mock_api.login = AsyncMock()
-
-    with patch(
-        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI",
-        return_value=mock_api,
-    ):
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={
-                "source": config_entries.SOURCE_REAUTH,
-                "entry_id": entry.entry_id,
-            },
-            data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        )
-
-        # Mock async_get_entry to return None (simulating deleted entry)
-        with patch.object(
-            hass.config_entries,
-            "async_get_entry",
-            return_value=None,
-        ):
-            # Submit credentials - entry lookup will return None
-            result2 = await hass.config_entries.flow.async_configure(
-                result["flow_id"],
-                {
-                    CONF_USERNAME: "test@example.com",
-                    CONF_PASSWORD: "new_password",
-                },
-            )
-
-            assert result2["type"] == FlowResultType.ABORT
-            assert result2["reason"] == "reauth_failed"
-
-
-async def test_reconfigure_flow_entry_not_found(hass: HomeAssistant) -> None:
-    """Test reconfigure flow when entry is not found during submission."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={
-            "source": config_entries.SOURCE_RECONFIGURE,
-            "entry_id": "nonexistent_entry_id",
-        },
-    )
-
-    # Submit credentials
-    with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
-    ):
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            {
-                CONF_USERNAME: "test@example.com",
-                CONF_PASSWORD: "new_password",
-            },
-        )
-
-    assert result2["type"] == FlowResultType.ABORT
-    assert result2["reason"] == "reconfigure_failed"
-
-
 @pytest.mark.usefixtures("mock_syr_api")
 async def test_options_flow_with_existing_interval(hass: HomeAssistant) -> None:
     """Test options flow shows existing scan interval as default."""
@@ -1362,22 +1285,6 @@ async def test_options_flow_with_existing_interval(hass: HomeAssistant) -> None:
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "init"
     # The form should have the existing scan_interval as default
-
-
-async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
-    """Test reconfigure flow when entry is None during form display."""
-    # Initialize flow with nonexistent entry
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={
-            "source": config_entries.SOURCE_RECONFIGURE,
-            "entry_id": "nonexistent_id",
-        },
-    )
-
-    # Form should be shown with empty default (no crash)
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "reconfigure"
 
 
 async def test_form_api_xml_with_auth_error_exception(hass: HomeAssistant) -> None:
@@ -1740,7 +1647,10 @@ async def test_reauth_confirm_homeassistant_error_json_direct(
 
     flow = ConfigFlow()
     flow.hass = hass
-    flow.context = {"entry_id": entry.entry_id}
+    flow.context = {
+        "source": config_entries.SOURCE_REAUTH,
+        "entry_id": entry.entry_id,
+    }
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
@@ -1770,7 +1680,10 @@ async def test_reconfigure_homeassistant_error_direct(hass: HomeAssistant) -> No
 
     flow = ConfigFlow()
     flow.hass = hass
-    flow.context = {"entry_id": entry.entry_id}
+    flow.context = {
+        "source": config_entries.SOURCE_RECONFIGURE,
+        "entry_id": entry.entry_id,
+    }
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_json",
@@ -1802,7 +1715,10 @@ async def test_reconfigure_homeassistant_error_xml_shows_unknown(
 
     flow = ConfigFlow()
     flow.hass = hass
-    flow.context = {"entry_id": entry.entry_id}
+    flow.context = {
+        "source": config_entries.SOURCE_RECONFIGURE,
+        "entry_id": entry.entry_id,
+    }
 
     with patch(
         "custom_components.syr_connect.config_flow.validate_input_xml",
@@ -2365,48 +2281,6 @@ async def test_reauth_confirm_homeassistant_error_json_host_invalid(
 
     assert result2["type"] == FlowResultType.FORM
     assert result2["errors"] == {CONF_HOST: "host_invalid"}
-
-
-async def test_reauth_confirm_entry_missing_aborts(hass: HomeAssistant) -> None:
-    """Test reauth confirm aborts when entry is missing during submission."""
-    # Create and add an entry, then start a reauth flow and remove the entry
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id="xml_reauth_missing@example.com",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "old_password",
-            CONF_API_TYPE: API_TYPE_XML,
-        },
-    )
-    entry.add_to_hass(hass)
-
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={
-            "source": config_entries.SOURCE_REAUTH,
-            "entry_id": entry.entry_id,
-        },
-        data=entry.data,
-    )
-
-    # Remove the entry to simulate it being deleted between flow start and submission
-    await hass.config_entries.async_remove(entry.entry_id)
-
-    # Submitting credentials when entry does not exist should abort. Some
-    # test harnesses may raise UnknownFlow if the flow cannot be found;
-    # accept either behavior as equivalent for the test.
-
-    try:
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"], {CONF_USERNAME: "x", CONF_PASSWORD: "y"}
-        )
-    except UnknownFlow:
-        # Flow was removed/unknown — treat as an effective abort
-        return
-
-    assert result2["type"] == FlowResultType.ABORT
-    assert result2["reason"] == "reauth_failed"
 
 
 async def test_validate_input_json_model_without_base_path_raises(

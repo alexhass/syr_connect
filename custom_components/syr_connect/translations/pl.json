@@ -2,9 +2,7 @@
   "config": {
     "abort": {
       "already_configured": "To centrum jest już skonfigurowane",
-      "reauth_failed": "Ponowne uwierzytelnienie nie powiodło się. Spróbuj ponownie.",
       "reauth_successful": "Ponowne uwierzytelnienie zakończone sukcesem",
-      "reconfigure_failed": "Rekonfiguracja nie powiodła się. Spróbuj ponownie.",
       "reconfigure_successful": "Rekonfiguracja zakończona sukcesem"
     },
     "error": {

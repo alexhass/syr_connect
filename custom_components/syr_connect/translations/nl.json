@@ -2,9 +2,7 @@
   "config": {
     "abort": {
       "already_configured": "Deze hub is al geconfigureerd",
-      "reauth_failed": "Herautenticatie mislukt. Probeer het opnieuw.",
       "reauth_successful": "Herautenticatie geslaagd",
-      "reconfigure_failed": "Herconfiguratie mislukt. Probeer het opnieuw.",
       "reconfigure_successful": "Herconfiguratie geslaagd"
     },
     "error": {

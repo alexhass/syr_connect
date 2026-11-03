@@ -2,9 +2,7 @@
   "config": {
     "abort": {
       "already_configured": "Questo hub è già configurato",
-      "reauth_failed": "Riautenticazione non riuscita. Riprova.",
       "reauth_successful": "Riautenticazione riuscita",
-      "reconfigure_failed": "Riconfigurazione non riuscita. Riprova.",
       "reconfigure_successful": "Riconfigurazione riuscita"
     },
     "error": {
