@@ -288,11 +288,6 @@ async def validate_input_json(
 class SyrConnectOptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for SYR Connect."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize the options flow handler and store the config entry."""
-        # Avoid assigning to the read-only `config_entry` property; store privately.
-        self._config_entry = config_entry
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -306,8 +301,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
         """
         if user_input is not None:
             # Persist options (scan interval)
-            entry = getattr(self, "_config_entry", None)
-            options = dict(entry.options) if entry and entry.options else {}
+            options = dict(self.config_entry.options)
 
             # Scan interval
             if _SYR_CONNECT_SCAN_INTERVAL_CONF in user_input:
@@ -318,8 +312,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=options)
 
         # Compute current scan interval with centralized helper
-        entry = getattr(self, "_config_entry", None)
-        current_scan_interval = get_default_scan_interval_for_entry(entry)
+        current_scan_interval = get_default_scan_interval_for_entry(self.config_entry)
 
         # Build schema for options: scan interval only
         schema_dict: dict = {
@@ -331,11 +324,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlow):
                     # Minimum depends on API type: JSON devices can poll faster
                     min=(
                         _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM
-                        if (
-                            self._config_entry
-                            and self._config_entry.data.get(CONF_API_TYPE)
-                            == API_TYPE_JSON
-                        )
+                        if self.config_entry.data.get(CONF_API_TYPE) == API_TYPE_JSON
                         else _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM
                     ),
                     max=_SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
@@ -370,7 +359,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         Returns:
             The options flow handler instance
         """
-        return SyrConnectOptionsFlow(config_entry)
+        return SyrConnectOptionsFlow()
 
     @staticmethod
     def _entry_unique_id(api_type: str, data: dict[str, Any]) -> str:

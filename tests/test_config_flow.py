@@ -3,7 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
-from typing import Any, cast
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -12,7 +12,6 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect.config_flow import (
     LOCAL_API_MODELS,
     ConfigFlow,
-    SyrConnectOptionsFlow,
     validate_input_json,
     validate_input_xml,
 )
@@ -1363,21 +1362,6 @@ async def test_options_flow_with_existing_interval(hass: HomeAssistant) -> None:
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "init"
     # The form should have the existing scan_interval as default
-
-
-async def test_options_flow_entry_none_attribute(hass: HomeAssistant) -> None:
-    """Test options flow when _config_entry attribute is None."""
-
-    # Create options flow without proper config entry
-    options_flow = SyrConnectOptionsFlow(cast(Any, None))
-    # Manually set the _config_entry to None to test the fallback
-    options_flow._config_entry = None  # type: ignore[assignment]
-
-    result = await options_flow.async_step_init(user_input=None)
-
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "init"
-    # Should use default scan interval when entry is None
 
 
 async def test_reconfigure_flow_no_entry_prefill(hass: HomeAssistant) -> None:
