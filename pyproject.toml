@@ -252,5 +252,6 @@ property-decorators = ["propcache.api.cached_property"]
 # The ignored words are names, XML elements, test data and German quotes.
 [tool.codespell]
 builtin = "clear,rare,informal,usage,code,names,en-GB_to_en-US"
-ignore-words-list = "ags,centre,cna,falsy,hass,hve,ist,master,nam,oder,periode,puls,sie,slave,te,ws"
-skip = "*/translations/*,*/fixtures/*,*.ambr,README.de.md,./.git,./.venv,./.mypy_cache,./.ruff_cache,./.pytest_cache,./.coverage,*/__pycache__/*"
+ignore-words-list = "ags,centre,cna,falsy,hass,hve,ist,master,modell,nam,oder,periode,puls,sie,slave,te,temperatur,ws"
+check-hidden = true
+skip = "*/translations/*,*/fixtures/*,*.ambr,README.de.md,.git,.venv,.mypy_cache,.ruff_cache,.pytest_cache,.coverage,__pycache__"

@@ -127,6 +127,11 @@ jobs:
       - name: Check spelling
         run: codespell
 
+      - name: Check German spelling and compounds (README.de.md)
+        run: |
+          pre-commit run cspell --all-files
+          pre-commit run german-compounds --all-files
+
   typecheck:
     name: Type Check (mypy)
     runs-on: ubuntu-latest

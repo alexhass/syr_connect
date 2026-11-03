@@ -11,7 +11,7 @@
 
 ![Syr](custom_components/syr_connect/logo.png)
 
-Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant. Desweiteren kann diese Integration auch für die baugleichen Geräte anderer Marken genutzt werden. Gemischte Installationen unterschiedlicher Marken werden ebenfalls unterstützt.
+Diese Custom-Integration ermöglicht die Steuerung von SYR-Connect-Geräten über Home Assistant. Des Weiteren kann diese Integration auch für die baugleichen Geräte anderer Marken genutzt werden. Gemischte Installationen unterschiedlicher Marken werden ebenfalls unterstützt.
 
 | Marke | Link |
 | ------ | ------ |
@@ -86,7 +86,7 @@ Die Integration erstellt automatisch Entitäten für alle SYR Connect Geräte in
 
 ### Unterstützte Geräte
 
-Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräte und anderen, die im SYR Connect-Cloud-Portal (über die jeweilige Mobile App) sichtbar sind.
+Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräten und anderen, die im SYR-Connect-Cloud-Portal (über die jeweilige Mobile App) sichtbar sind.
 
 Getestet und gemeldet als funktionierend:
 
@@ -166,11 +166,11 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - TAKE Einzelenthärtungsanlage
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
-**Hinweis**: Wenn ein Gerät in deinem SYR Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
+**Hinweis**: Wenn ein Gerät in deinem SYR-Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
 
 ### Nicht unterstützte Geräte
 
-- Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um ein umbenanntes Husty SaoCal-Gerät.
+- Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR-Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um ein umbenanntes Husty SaoCal-Gerät.
 - Husty SaoCal-Geräte. Siehe [husty_integration_home_assistant](https://github.com/trafopowielacz/husty_integration_home_assistant)
 
 ### Unterstützte Funktionen
@@ -305,11 +305,11 @@ Die Integration unterstützt zwei API-Modi:
 
 #### Cloud-API (XML-basiert)
 
-- **Unterstützt von**: Allen SYR Connect-Geräten
-- **Verbindung**: Über den SYR Connect-Cloud-Dienst
-- **Authentifizierung**: Benutzername und Passwort vom SYR Connect-Konto
+- **Unterstützt von**: Allen SYR-Connect-Geräten
+- **Verbindung**: Über den SYR-Connect-Cloud-Dienst
+- **Authentifizierung**: Benutzername und Passwort vom SYR-Connect-Konto
 - **Vorteile**: Funktioniert mit allen Gerätemodellen, Fernzugriff von überall
-- **Voraussetzungen**: Internetverbindung, SYR Connect-Konto
+- **Voraussetzungen**: Internetverbindung, SYR-Connect-Konto
 
 #### Lokale API (JSON-basiert)
 
@@ -323,19 +323,19 @@ Die Integration erkennt automatisch, welcher API-Modus basierend auf der bei der
 
 ## Wie Daten aktualisiert werden
 
-Die Integration pollt die Geräte-API in regelmäßigen Abständen (Standard: 60 Sekunden). Der Aktualisierungsprozess hängt vom API-Modus ab:
+Die Integration fragt die Geräte-API in regelmäßigen Abständen ab (Standard: 60 Sekunden). Der Aktualisierungsprozess hängt vom API-Modus ab:
 
 ### Cloud-API Aktualisierungsprozess
 
-1. **Login**: Authentifiziert sich bei der SYR Connect-Cloud-API mit deinen Zugangsdaten
+1. **Login**: Authentifiziert sich bei der SYR-Connect-Cloud-API mit deinen Zugangsdaten
 2. **Geräte-Erkennung**: Ruft alle Projekte und Geräte ab, die mit deinem Konto verknüpft sind
 3. **Status-Updates**: Holt für jedes Gerät die aktuellen Statuswerte
-4. **Entitäts-Updates**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
+4. **Entitäts-Updates**: Aktualisiert alle Home-Assistant-Entitäten mit den neuesten Werten
 
 ### Lokale API Aktualisierungsprozess
 
 1. **Status-Updates**: Holt den Gerätestatus direkt vom lokalen Endpunkt
-2. **Entitäts-Updates**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
+2. **Entitäts-Updates**: Aktualisiert alle Home-Assistant-Entitäten mit den neuesten Werten
 
 Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuverlässiger für Echtzeit-Überwachung und Automatisierungen macht.
 
@@ -551,13 +551,13 @@ Wenn du "Authentication failed" siehst:
 - **App-Einrichtung**: Stelle sicher, dass Geräte in der SYR Connect App richtig konfiguriert sind
 - **Konto**: Verwende dasselbe Konto, das deine Geräte enthält
 - **Gerätestatus**: Prüfe, ob Geräte in der SYR Connect App online sind
-- **Logs**: Prüfe Home Assistant-Logs auf spezifische Fehlermeldungen
+- **Logs**: Prüfe Home-Assistant-Logs auf spezifische Fehlermeldungen
 
 ### Entitäten sind als nicht verfügbar markiert
 
 - **Gerät offline**: Prüfe, ob das Gerät in der SYR Connect App online ist
 - **Netzwerkprobleme**: Verifiziere die Internetverbindung
-- **Cloud-Dienst**: Der SYR Connect-Cloud-Dienst könnte vorübergehend nicht verfügbar sein
+- **Cloud-Dienst**: Der SYR-Connect-Cloud-Dienst könnte vorübergehend nicht verfügbar sein
 - **Warte auf Update**: Entitäten werden nach dem nächsten erfolgreichen Update wieder verfügbar
 
 ### Hohe CPU-/Speicherauslastung
@@ -590,7 +590,7 @@ Diese Integration steuert Wasseraufbereitungssysteme und Absperrventile. Fehlerh
 - **Gründlich testen**: Teste Automatisierungen immer unter sicheren Bedingungen, bevor du sie produktiv einsetzt
 - **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können deine gesamte Wasserversorgung abschalten - teste sorgfältig
 - **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen
-- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen - Verfügbarkeit ist nicht garantiert
+- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR-Connect-Cloud-Dienst angewiesen - Verfügbarkeit ist nicht garantiert
 - **Notfallplan**: Stelle sicher, dass du alternativen Zugang zu deinem Absperrventil hast, falls das System ausfällt
 
 Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken an und stimmst zu, sie verantwortungsbewusst zu verwenden.

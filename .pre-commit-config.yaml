@@ -10,6 +10,13 @@ repos:
     rev: v2.4.3
     hooks:
       - id: codespell
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v10.4.0
+    hooks:
+      - id: cspell
+        files: ^README\.de\.md$
+        additional_dependencies:
+          - "@cspell/dict-de-de@4.1.3"
   - repo: local
     hooks:
       - id: ruff-local
@@ -26,3 +33,9 @@ repos:
         additional_dependencies: ["ruff"]
         pass_filenames: false
         args: ["format", "--check", "."]
+      # A name in a German compound is joined with hyphens: SYR-Connect-Konto
+      - id: german-compounds
+        name: German compounds with hyphens
+        entry: '\b(SYR Connect|Home Assistant)-\w'
+        language: pygrep
+        files: ^README\.de\.md$
