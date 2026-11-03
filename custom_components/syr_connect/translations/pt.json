@@ -85,7 +85,11 @@
         "title": "Reconfigurar SYR Connect"
       },
       "user": {
-        "description": "Escolha como ligar ao seu dispositivo SYR:\n\n- **Acesso à nuvem**: Utilize as credenciais da aplicação móvel para aceder a todos os seus dispositivos através do serviço de nuvem SYR. Requer uma ligação à Internet.\n\n- **Acesso local**: Ligue-se diretamente a um dispositivo na sua rede local através do respetivo endereço IP. Funciona offline e oferece tempos de resposta mais rápidos.",
+        "description": "Escolha como ligar ao seu dispositivo SYR:",
+        "menu_option_descriptions": {
+          "api_json": "Ligue-se diretamente a um dispositivo na sua rede local através do respetivo endereço IP. Funciona offline e oferece tempos de resposta mais rápidos.",
+          "api_xml": "Utilize as credenciais da aplicação móvel para aceder a todos os seus dispositivos através do serviço de nuvem SYR. Requer uma ligação à Internet."
+        },
         "menu_options": {
           "api_json": "Acesso local",
           "api_xml": "Acesso à nuvem"

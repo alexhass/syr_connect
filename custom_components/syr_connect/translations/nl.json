@@ -85,7 +85,11 @@
         "title": "SYR Connect opnieuw configureren"
       },
       "user": {
-        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:\n\n- **Cloudtoegang**: Gebruik uw app-aanmeldingsgegevens om via de SYR-cloudservice toegang te krijgen tot al uw apparaten. Vereist een internetverbinding.\n\n- **Lokale toegang**: Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
+        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:",
+        "menu_option_descriptions": {
+          "api_json": "Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
+          "api_xml": "Gebruik uw app-aanmeldingsgegevens om via de SYR-cloudservice toegang te krijgen tot al uw apparaten. Vereist een internetverbinding."
+        },
         "menu_options": {
           "api_json": "Lokale toegang",
           "api_xml": "Cloudtoegang"

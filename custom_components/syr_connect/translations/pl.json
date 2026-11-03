@@ -85,7 +85,11 @@
         "title": "Rekonfiguruj SYR Connect"
       },
       "user": {
-        "description": "Wybierz sposób połączenia z urządzeniem SYR:\n\n- **Dostęp przez chmurę**: Użyj danych logowania do aplikacji mobilnej, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego.\n\n- **Dostęp lokalny**: Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
+        "description": "Wybierz sposób połączenia z urządzeniem SYR:",
+        "menu_option_descriptions": {
+          "api_json": "Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
+          "api_xml": "Użyj danych logowania do aplikacji mobilnej, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego."
+        },
         "menu_options": {
           "api_json": "Dostęp lokalny",
           "api_xml": "Dostęp przez chmurę"
