@@ -1,9 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "To centrum jest już skonfigurowane",
-      "reauth_successful": "Ponowne uwierzytelnienie zakończone sukcesem",
-      "reconfigure_successful": "Rekonfiguracja zakończona sukcesem"
+      "already_configured": "To centrum jest już skonfigurowane"
     },
     "error": {
       "cannot_connect": "Nie można połączyć się z usługą. Sprawdź połączenie internetowe i spróbuj ponownie.",

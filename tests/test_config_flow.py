@@ -693,26 +693,34 @@ async def test_options_flow(hass: HomeAssistant) -> None:
     )
     entry.add_to_hass(hass)
 
-    with patch(
-        "custom_components.syr_connect.async_setup_entry",
-        new_callable=AsyncMock,
-    ) as mock_setup:
-        mock_setup.return_value = True
+    with (
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            return_value=True,
+        ) as mock_setup,
+        patch(
+            "custom_components.syr_connect.async_unload_entry",
+            return_value=True,
+        ),
+    ):
         await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+        result = await hass.config_entries.options.async_init(entry.entry_id)
 
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "init"
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "init"
 
-    result2 = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={"scan_interval": 120},
-    )
+        result2 = await hass.config_entries.options.async_configure(
+            result["flow_id"],
+            user_input={"scan_interval": 120},
+        )
+        await hass.async_block_till_done()
 
     assert result2["type"] == FlowResultType.CREATE_ENTRY
     assert result2["data"] == {"scan_interval": 120}
+    # The new scan interval takes effect by reloading the entry
+    assert mock_setup.call_count == 2
 
 
 async def test_options_flow_no_entry(hass: HomeAssistant) -> None:
@@ -1457,52 +1465,6 @@ async def test_form_api_json_host_with_port_flow(hass: HomeAssistant) -> None:
 
     assert result3["type"] == FlowResultType.FORM
     assert result3["errors"] == {CONF_HOST: "host_no_port"}
-
-
-async def test_reconfigure_flow_reload_exception(hass: HomeAssistant) -> None:
-    """Test reconfigure flow catches unexpected exceptions during reload."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        unique_id="xml_test@example.com",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "old_password",
-            CONF_API_TYPE: API_TYPE_XML,
-        },
-    )
-    entry.add_to_hass(hass)
-
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={
-            "source": config_entries.SOURCE_RECONFIGURE,
-            "entry_id": entry.entry_id,
-        },
-    )
-
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "reconfigure"
-
-    with patch(
-        "custom_components.syr_connect.config_flow.validate_input_xml",
-        new_callable=AsyncMock,
-    ) as mock_validate:
-        mock_validate.return_value = {"title": "SYR Connect (test@example.com)"}
-        with patch.object(
-            hass.config_entries, "async_reload", side_effect=RuntimeError("boom")
-        ):
-            result2 = await hass.config_entries.flow.async_configure(
-                result["flow_id"],
-                {
-                    CONF_USERNAME: "new_user@example.com",
-                    CONF_PASSWORD: "new_password",
-                },
-            )
-
-    assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "unknown"} or result2["errors"] == {
-        "base": "cannot_connect"
-    }
 
 
 async def test_reconfigure_flow_homeassistant_error_port_json(

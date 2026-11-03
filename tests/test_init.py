@@ -1,6 +1,5 @@
 """Tests for __init__.py integration setup."""
 
-from datetime import timedelta
 import logging
 from pathlib import Path
 from typing import Any, cast
@@ -12,7 +11,6 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect import (
     _mask_sensitive_data,
     async_migrate_entry,
-    async_options_update_listener,
     async_remove_entry,
     async_setup_entry,
     async_unload_entry,
@@ -303,96 +301,6 @@ async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
         result = await async_unload_entry(hass, config_entry)
 
     assert result is False
-
-
-async def test_async_options_update_listener_interval_changed(
-    hass: HomeAssistant,
-) -> None:
-    """Test options update listener when scan interval changes."""
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        options={"scan_interval": 120},  # New interval
-    )
-
-    mock_coordinator = MagicMock()
-    mock_coordinator.update_interval = timedelta(seconds=60)  # Old interval
-    mock_coordinator.async_request_refresh = AsyncMock()
-    config_entry.runtime_data = mock_coordinator
-
-    await async_options_update_listener(hass, config_entry)
-
-    # Verify interval was updated
-    assert config_entry.runtime_data.update_interval == timedelta(seconds=120)
-    mock_coordinator.async_request_refresh.assert_called_once()
-
-
-async def test_async_options_update_listener_interval_unchanged(
-    hass: HomeAssistant,
-) -> None:
-    """Test options update listener when scan interval unchanged."""
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        options={"scan_interval": 60},  # Same as current
-    )
-
-    mock_coordinator = MagicMock()
-    mock_coordinator.update_interval = timedelta(seconds=60)  # Same interval
-    mock_coordinator.async_request_refresh = AsyncMock()
-    config_entry.runtime_data = mock_coordinator
-
-    await async_options_update_listener(hass, config_entry)
-
-    # Verify refresh was not called
-    mock_coordinator.async_request_refresh.assert_not_called()
-
-
-async def test_async_options_update_listener_clamps_minimum_json(
-    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
-) -> None:
-    """Test options update listener clamps scan interval below minimum for JSON API."""
-
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test JSON Options Clamp",
-        data={
-            "username": "json@example.com",
-            "password": "password",
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_HOST: "192.0.2.1",
-        },
-        source="user",
-        entry_id="json_options_entry_id",
-        unique_id=f"{API_TYPE_JSON}_json@example.com",
-        options={"scan_interval": 1},
-    )
-
-    mock_coordinator = MagicMock()
-    mock_coordinator.update_interval = timedelta(seconds=60)  # Old interval
-    mock_coordinator.async_request_refresh = AsyncMock()
-    config_entry.runtime_data = mock_coordinator
-
-    caplog.set_level("WARNING")
-    await async_options_update_listener(hass, config_entry)
-
-    # Minimum for JSON API is 10 seconds, so interval should be clamped
-    assert config_entry.runtime_data.update_interval == timedelta(seconds=10)
-    assert "clamping to" in caplog.text or "below minimum" in caplog.text
 
 
 async def test_async_setup_entry_clamps_scan_interval_and_logs(
@@ -743,33 +651,6 @@ async def test_async_migrate_entry_v8_to_v9_fails(
     assert entry.version == 8
     assert entry.data[CONF_MODEL] == "syrmuco"
     assert message in caplog.text
-
-
-async def test_async_options_update_listener_logs_unchanged(
-    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
-) -> None:
-    """Ensure options update listener logs when scan interval is unchanged."""
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={"username": "test@example.com", "password": "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        options={"scan_interval": 60},  # Same as current
-    )
-
-    mock_coordinator = MagicMock()
-    mock_coordinator.update_interval = timedelta(seconds=60)  # Same interval
-    mock_coordinator.async_request_refresh = AsyncMock()
-    config_entry.runtime_data = mock_coordinator
-
-    caplog.set_level(logging.DEBUG)
-    await async_options_update_listener(hass, config_entry)
-
-    assert "Options updated but scan interval unchanged" in caplog.text
 
 
 async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:

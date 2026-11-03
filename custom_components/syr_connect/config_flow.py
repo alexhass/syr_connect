@@ -285,7 +285,7 @@ async def validate_input_json(
     }
 
 
-class SyrConnectOptionsFlow(config_entries.OptionsFlow):
+class SyrConnectOptionsFlow(config_entries.OptionsFlowWithReload):
     """Handle options flow for SYR Connect."""
 
     async def async_step_init(
@@ -395,12 +395,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             for other in self._async_current_entries(include_ignore=False)
         )
 
-    async def _async_update_entry_and_reload(
+    @callback
+    def _async_update_reload_and_abort(
         self,
         entry: ConfigEntry,
         api_type: str,
         new_data: dict[str, Any],
-        success_reason: str,
     ) -> ConfigFlowResult:
         """Save the new connection data of an existing entry, reload it and finish the flow.
 
@@ -412,7 +412,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             entry: The config entry to update
             api_type: API type of the entry
             new_data: Complete new entry data
-            success_reason: Abort reason shown on success ("reauth_successful", "reconfigure_successful")
 
         Returns:
             The abort result that ends the flow
@@ -420,14 +419,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         new_unique_id = self._entry_unique_id(api_type, new_data)
         if self._unique_id_used_by_other_entry(entry, new_unique_id):
             return self.async_abort(reason="already_configured")
-        self.hass.config_entries.async_update_entry(
+        return self.async_update_reload_and_abort(
             entry, data=new_data, unique_id=new_unique_id
         )
-
-        # Reload the config entry
-        await self.hass.config_entries.async_reload(entry.entry_id)
-
-        return self.async_abort(reason=success_reason)
 
     async def async_step_reauth(self, _entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle reauth flow when credentials are invalid.
@@ -490,9 +484,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                return await self._async_update_entry_and_reload(
-                    entry, api_type, new_data, "reauth_successful"
-                )
+                return self._async_update_reload_and_abort(entry, api_type, new_data)
 
             except CannotConnectError:
                 errors["base"] = (
@@ -592,9 +584,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
 
-                return await self._async_update_entry_and_reload(
-                    entry, api_type, new_data, "reconfigure_successful"
-                )
+                return self._async_update_reload_and_abort(entry, api_type, new_data)
 
             except CannotConnectError:
                 errors["base"] = (

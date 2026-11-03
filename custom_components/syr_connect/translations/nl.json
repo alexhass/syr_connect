@@ -1,9 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Deze hub is al geconfigureerd",
-      "reauth_successful": "Herautenticatie geslaagd",
-      "reconfigure_successful": "Herconfiguratie geslaagd"
+      "already_configured": "Deze hub is al geconfigureerd"
     },
     "error": {
       "cannot_connect": "Kan geen verbinding maken met de service. Controleer uw internetverbinding en probeer het opnieuw.",

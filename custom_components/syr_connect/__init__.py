@@ -1,7 +1,6 @@
 """The SYR Connect integration."""
 
 import copy
-from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -307,9 +306,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.warning("Device list incomplete; skipping removal of stale devices")
 
-    # Register listener for options changes (scan_interval updates)
-    entry.async_on_unload(entry.add_update_listener(async_options_update_listener))
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Measurement history of battery devices; only the cloud keeps it. It must not
@@ -348,39 +344,3 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         if domain == DOMAIN
     }
     clear_device_statistics(hass, entry.entry_id, device_ids)
-
-
-async def async_options_update_listener(
-    hass: HomeAssistant, entry: ConfigEntry
-) -> None:
-    """Handle options update (scan_interval changes)."""
-    old_scan_interval = entry.runtime_data.update_interval.total_seconds()
-    new_scan_interval = get_default_scan_interval_for_entry(entry)
-
-    # Enforce the same minimum as async_setup_entry so no code path can
-    # bypass the per-API floor, even if the config flow schema changes.
-    api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
-    min_allowed = (
-        _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM
-        if api_type == API_TYPE_JSON
-        else _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM
-    )
-    if new_scan_interval < min_allowed:
-        _LOGGER.warning(
-            "Options scan interval %d is below minimum for %s API; clamping to %d seconds",
-            new_scan_interval,
-            api_type,
-            min_allowed,
-        )
-        new_scan_interval = min_allowed
-
-    if old_scan_interval != new_scan_interval:
-        _LOGGER.info(
-            "Scan interval updated from %d to %d seconds, reloading coordinator",
-            int(old_scan_interval),
-            new_scan_interval,
-        )
-        entry.runtime_data.update_interval = timedelta(seconds=new_scan_interval)
-        await entry.runtime_data.async_request_refresh()
-    else:
-        _LOGGER.debug("Options updated but scan interval unchanged")

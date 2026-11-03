@@ -1,9 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "This hub is already configured",
-      "reauth_successful": "Reauthentication successful",
-      "reconfigure_successful": "Reconfiguration successful"
+      "already_configured": "This hub is already configured"
     },
     "error": {
       "cannot_connect": "Unable to connect to service. Please check your internet connection and try again.",
