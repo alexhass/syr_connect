@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime
 import json
+import logging
 from pathlib import Path
 from typing import Any, NoReturn, cast, override
 from unittest.mock import MagicMock, Mock, patch
@@ -783,7 +784,8 @@ async def test_sensor_string_value_non_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
-    assert sensor.native_value == "not-a-number"
+    # getFLO is a numeric sensor, so the text is no value
+    assert sensor.native_value is None
 
 
 async def test_sensor_setup_no_data(hass: HomeAssistant) -> None:
@@ -2382,7 +2384,7 @@ async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getFLO": "invalid",  # Will cause ValueError in round()
+                    "getFLO": "invalid",  # Not a number, never rounded
                 },
             }
         ]
@@ -2390,8 +2392,7 @@ async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
-    # Should return string value when rounding fails
-    assert sensor.native_value == "invalid"
+    assert sensor.native_value is None
 
 
 async def test_sensor_rpw_mask_invalid_int_conversion(hass: HomeAssistant) -> None:
@@ -4807,8 +4808,92 @@ async def test_sensor_apply_numeric_conversion_vol_exception(
         sensor_key="getVOL",
     )
 
-    # The conversion error is handled; numeric_value returns the text that is no number
-    assert sensor.native_value == "invalid"
+    # A numeric sensor gets no text as its value, Home Assistant would reject it
+    assert sensor.native_value is None
+
+
+def _flo_sensor(
+    create_mock_coordinator: Callable[..., MagicMock], raw: object
+) -> tuple[MagicMock, SyrConnectSensor]:
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getFLO": raw}}]}
+    coordinator = create_mock_coordinator(data)
+    return coordinator, SyrConnectSensor(coordinator, "d1", "D1", "getFLO")
+
+
+def _set_flo(coordinator: MagicMock, raw: object) -> None:
+    coordinator.data["devices"][0]["status"]["getFLO"] = raw
+
+
+def _non_numeric_warnings(caplog: pytest.LogCaptureFixture) -> list[str]:
+    return [
+        record.getMessage()
+        for record in caplog.records
+        if record.levelno == logging.WARNING and "non-numeric" in record.getMessage()
+    ]
+
+
+def test_sensor_non_numeric_text_keeps_last_value_and_warns_once(
+    create_mock_coordinator: Callable[..., MagicMock],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A text of a numeric sensor keeps the last value, warned once until a number comes."""
+    caplog.set_level(logging.DEBUG)
+    coordinator, sensor = _flo_sensor(create_mock_coordinator, "240")
+    assert sensor.native_value == 240
+
+    _set_flo(coordinator, "-")
+    assert sensor.native_value == 240
+    assert sensor.native_value == 240
+    assert _non_numeric_warnings(caplog) == [
+        "Device D1 (d1): getFLO reported the non-numeric value '-'; keeping the last value"
+    ]
+
+    # A number resets the warning, the next text is warned again
+    _set_flo(coordinator, 300)
+    assert sensor.native_value == 300
+    caplog.clear()
+    _set_flo(coordinator, "n/a")
+    assert sensor.native_value == 300
+    assert len(_non_numeric_warnings(caplog)) == 1
+
+
+def test_sensor_non_numeric_text_without_last_value(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """Without an earlier number the state is unknown (None)."""
+    _coordinator, sensor = _flo_sensor(create_mock_coordinator, "n/a")
+    assert sensor.native_value is None
+
+
+def test_sensor_empty_text_is_missing_without_warning(
+    create_mock_coordinator: Callable[..., MagicMock],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """An empty value of a numeric sensor is a missing value, not a wrong format."""
+    _coordinator, sensor = _flo_sensor(create_mock_coordinator, " ")
+    assert sensor.native_value is None
+    assert not _non_numeric_warnings(caplog)
+
+
+def test_sensor_text_sensor_keeps_text(
+    create_mock_coordinator: Callable[..., MagicMock],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A sensor without unit, state class, precision or device class shows the text."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getSRV": "next week"}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getSRV")
+    assert sensor.native_value == "next week"
+    assert not _non_numeric_warnings(caplog)
+
+
+def test_sensor_non_numeric_device_class_keeps_text(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """A non-numeric device class (e.g. timestamp) is no numeric sensor."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getSRV": "soon"}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getSRV")
+    sensor._attr_device_class = SensorDeviceClass.TIMESTAMP
+    assert sensor.numeric_value("soon") == "soon"
 
 
 async def test_sensor_native_value_caching(hass: HomeAssistant) -> None:
@@ -8062,7 +8147,7 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
         ({"getCNA": "L20", "getFLO": "5"}, 300),
         ({"getCNA": "L100", "getFLO": "11"}, 660),
         ({"getCNA": "LEXplus10S", "getFLO": "0"}, 0),
-        ({"getCNA": "LEXplus10S", "getFLO": "abc"}, "abc"),
+        ({"getCNA": "LEXplus10S", "getFLO": "abc"}, None),
         # Other models: l/h
         ({"getVER": "Safe-Tech V4.08", "getFLO": "240"}, 240),
         ({"getSRN": "206AAA12345", "getVER": "NSS.V.2.028", "getFLO": "380"}, 380),

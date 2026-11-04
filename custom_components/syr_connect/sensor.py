@@ -15,6 +15,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+from homeassistant.components.sensor.const import NON_NUMERIC_DEVICE_CLASSES
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     UnitOfConductivity,
@@ -2571,6 +2572,10 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
     entity_description: SyrConnectSensorEntityDescription
 
+    # A non-numeric value of a numeric sensor is logged as a warning once, until a
+    # number arrives again
+    _non_numeric_logged = False
+
     def __init__(
         self,
         coordinator: SyrConnectDataUpdateCoordinator,
@@ -2696,22 +2701,62 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             value: Raw value from the device status
 
         Returns:
-            The converted number, the text itself if it is no number, or None for
-            a missing value or a type a sensor cannot show (e.g. a list)
+            The converted number; for a text that is no number the text itself, or
+            None if the sensor needs a number; None for a missing value or a type a
+            sensor cannot show (e.g. a list)
         """
         if isinstance(value, str):
             try:
                 numeric_value = float(value)
-                return self._apply_numeric_conversion(numeric_value)
             except ValueError, TypeError:
-                return value
+                return self._non_numeric_value(value)
+            self._non_numeric_logged = False
+            return self._apply_numeric_conversion(numeric_value)
 
         # Handle numeric values directly
         if isinstance(value, int | float):
+            self._non_numeric_logged = False
             return self._apply_numeric_conversion(float(value))
 
         # None, or a type a sensor cannot show (e.g. a list)
         return None
+
+    def _non_numeric_value(self, value: str) -> str | None:
+        """Return a text that is no number, or None if the sensor needs a number.
+
+        Home Assistant rejects a text as the state of a numeric sensor (ValueError), so
+        the entity would not be updated or added. None keeps the last value instead.
+        An empty text is a missing value (logged at debug by _compute_native_value).
+        """
+        if not self._expects_number():
+            return value
+        if value.strip() == "":
+            return None
+        log = _LOGGER.debug if self._non_numeric_logged else _LOGGER.warning
+        log(
+            "Device %s (%s): %s reported the non-numeric value %r; keeping the last value",
+            self._device_name,
+            self._device_id,
+            self._sensor_key,
+            value,
+        )
+        self._non_numeric_logged = True
+        return None
+
+    def _expects_number(self) -> bool:
+        """Return True if Home Assistant requires a numeric state for this sensor.
+
+        The same rule as Home Assistant's sensor state check: a unit, state class or
+        display precision, or a device class that is not a non-numeric one.
+        """
+        if self.device_class in NON_NUMERIC_DEVICE_CLASSES:
+            return False
+        return (
+            self.state_class is not None
+            or self.native_unit_of_measurement is not None
+            or self.suggested_display_precision is not None
+            or self.device_class is not None
+        )
 
 
 class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
