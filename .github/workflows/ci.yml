@@ -71,14 +71,14 @@ jobs:
 
       - name: Upload coverage XML
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-xml-${{ matrix.python-version }}
           path: coverage.xml
 
       - name: Upload coverage HTML
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-html-${{ matrix.python-version }}
           path: coverage_html
