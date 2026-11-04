@@ -31,9 +31,9 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import (
     CONF_PASSWORD,
     CONF_USERNAME,
-    PERCENTAGE,
     UnitOfConductivity,
     UnitOfElectricPotential,
+    UnitOfRatio,
     UnitOfTime,
     UnitOfVolume,
     UnitOfVolumeFlowRate,
@@ -3657,7 +3657,7 @@ async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
     bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert bat.native_value == 40
-    assert bat.native_unit_of_measurement == PERCENTAGE
+    assert bat.native_unit_of_measurement == UnitOfRatio.PERCENTAGE
     assert bat.device_class == SensorDeviceClass.BATTERY
     assert bat.suggested_display_precision == 0
     # The name follows the unit ("Battery level"), the unique_id stays getBAT
@@ -3750,7 +3750,10 @@ async def test_async_setup_entry_creates_computed_battery_level(
     ("device", "unit"),
     [
         # SafeFloor detected by the cloud device kind, without getTYP
-        ({"dk": 122, "dkv": 34, "sbt": 0, "status": {"getBAT": "40"}}, PERCENTAGE),
+        (
+            {"dk": 122, "dkv": 34, "sbt": 0, "status": {"getBAT": "40"}},
+            UnitOfRatio.PERCENTAGE,
+        ),
         # getTYP 120 alone does not make an unknown model a SafeFloor
         (
             {"status": {"getBAT": "363", "getTYP": "120"}},
@@ -3803,7 +3806,7 @@ async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -
                 "status": {
                     "getBAT": "not_a_number",
                     "getTYP": "120",
-                    "getVER": "Syr Floorsensor 2.23",  # SafeFloor -> PERCENTAGE unit
+                    "getVER": "Syr Floorsensor 2.23",  # SafeFloor -> percentage unit
                 },
             }
         ]
@@ -3811,7 +3814,7 @@ async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -
     coordinator = _build_coordinator(hass, data)
     bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
-    assert bat.native_unit_of_measurement == PERCENTAGE
+    assert bat.native_unit_of_measurement == UnitOfRatio.PERCENTAGE
     assert bat.native_value is None
 
 
@@ -8581,7 +8584,7 @@ def test_sensor_t2_minutes(
 
 def test_sensor_value_fns_infinite_value_returns_none() -> None:
     """Infinity cannot be converted to int (OverflowError) and gives no value."""
-    percentage_sensor = MagicMock(native_unit_of_measurement=PERCENTAGE)
+    percentage_sensor = MagicMock(native_unit_of_measurement=UnitOfRatio.PERCENTAGE)
     assert sensor_module._value_bat(percentage_sensor, {}, "inf") is None
     assert sensor_module._value_rpw(MagicMock(), {}, "inf") is None
     assert sensor_module._value_crs(MagicMock(), {}, "inf") is None

@@ -17,11 +17,11 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    PERCENTAGE,
     UnitOfConductivity,
     UnitOfElectricPotential,
     UnitOfMass,
     UnitOfPressure,
+    UnitOfRatio,
     UnitOfTemperature,
     UnitOfTime,
     UnitOfVolume,
@@ -199,7 +199,7 @@ def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if not isinstance(value, (str | int | float)):
         return None
     # SafeFloor (and similar) report battery as an integer percentage.
-    if sensor.native_unit_of_measurement == PERCENTAGE:
+    if sensor.native_unit_of_measurement == UnitOfRatio.PERCENTAGE:
         try:
             return int(float(str(value).strip()))
         except ValueError, TypeError, OverflowError:
@@ -657,7 +657,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getBAP",  # Battery level (%), computed from getBAT/getBMA/getBMI without getBAP
         device_class=SensorDeviceClass.BATTERY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         value_fn=_value_bap,
     ),
@@ -722,7 +722,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getHMD",  # Ambient humidity (%)
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
     ),
     SyrConnectSensorEntityDescription(
@@ -780,18 +780,18 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     # --- Resin Capacity ---
     SyrConnectSensorEntityDescription(
         key="getCS1",  # Remaining resin capacity - tank 1 (%)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
     ),
     SyrConnectSensorEntityDescription(
         key="getCS2",  # Remaining resin capacity - tank 2 (%)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
         key="getCS3",  # Remaining resin capacity - tank 3 (%)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_registry_enabled_default=False,
     ),
@@ -977,7 +977,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getSLO",  # Self-learning offset: volume/time surplus (%, 5-20)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
@@ -1009,7 +1009,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getSOF",  # Self-learning offset: maximum flow surplus (%, 5-50)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
@@ -1110,7 +1110,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getLWT",  # Leakage warning threshold (%, 80-99)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",
@@ -1624,7 +1624,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getMIH",  # Minimum humidity threshold (%)
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -1632,7 +1632,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getMXH",  # Maximum humidity threshold (%)
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -1922,7 +1922,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getWFR",  # Wi-Fi signal strength (%)
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",
@@ -1981,7 +1981,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getPRC",  # Percent remaining softening capacity
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -2607,7 +2607,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if sensor_key == "getBAT":
             profile = self.device_model.device_profile
             if profile is not None and profile.bat_in_percent:
-                self._attr_native_unit_of_measurement = PERCENTAGE
+                self._attr_native_unit_of_measurement = UnitOfRatio.PERCENTAGE
                 self._attr_device_class = SensorDeviceClass.BATTERY
                 self._attr_suggested_display_precision = 0
                 self._attr_translation_key = "getbap"
