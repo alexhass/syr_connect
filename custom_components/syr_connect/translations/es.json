@@ -1656,6 +1656,12 @@
     "microleakage_test_running": {
       "message": "Ya se está ejecutando una prueba de microfugas en el dispositivo {device}"
     },
+    "migration_cannot_connect": {
+      "message": "No se puede acceder al dispositivo {device} para detectar su modelo"
+    },
+    "migration_model_not_detected": {
+      "message": "No se puede detectar el modelo del dispositivo {device}. Se debe eliminar la entrada y volver a configurar el dispositivo"
+    },
     "no_alarm_to_reset": {
       "message": "El dispositivo {device} no tiene ninguna alarma activa que restablecer"
     },

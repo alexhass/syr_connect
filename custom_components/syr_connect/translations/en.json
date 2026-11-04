@@ -1656,6 +1656,12 @@
     "microleakage_test_running": {
       "message": "A microleakage test is already running on the device {device}"
     },
+    "migration_cannot_connect": {
+      "message": "The device {device} cannot be reached to detect its model"
+    },
+    "migration_model_not_detected": {
+      "message": "The model of the device {device} cannot be detected. The entry must be removed and the device set up again"
+    },
     "no_alarm_to_reset": {
       "message": "The device {device} has no active alarm to reset"
     },

@@ -1656,6 +1656,12 @@
     "microleakage_test_running": {
       "message": "Un test de microfuite est déjà en cours sur l'appareil {device}"
     },
+    "migration_cannot_connect": {
+      "message": "L'appareil {device} est injoignable, son modèle ne peut pas être détecté"
+    },
+    "migration_model_not_detected": {
+      "message": "Le modèle de l'appareil {device} ne peut pas être détecté. L'entrée doit être supprimée et l'appareil configuré à nouveau"
+    },
     "no_alarm_to_reset": {
       "message": "L'appareil {device} n'a aucune alarme active à réinitialiser"
     },

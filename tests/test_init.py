@@ -30,9 +30,15 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectInvalidResponseError,
 )
 from custom_components.syr_connect.response_parser import ResponseParser
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryError,
+    ConfigEntryNotReady,
+    HomeAssistantError,
+)
 from homeassistant.helpers import device_registry as dr
 
 _FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
@@ -616,19 +622,31 @@ async def test_async_migrate_entry_v9_to_v10(
 
 
 @pytest.mark.parametrize(
-    ("error", "message"),
+    ("error", "expected", "translation_key", "message"),
     [
-        (SyrConnectConnectionError("timeout"), "retried at the next start"),
-        (SyrConnectInvalidResponseError("no model"), "set up the device again"),
+        (
+            SyrConnectConnectionError("timeout"),
+            ConfigEntryNotReady,
+            "migration_cannot_connect",
+            "the migration is retried",
+        ),
+        (
+            SyrConnectInvalidResponseError("no model"),
+            ConfigEntryError,
+            "migration_model_not_detected",
+            "set up the device again",
+        ),
     ],
 )
 async def test_async_migrate_entry_v8_to_v9_fails(
     hass: HomeAssistant,
     caplog: pytest.LogCaptureFixture,
     error: Exception,
+    expected: type[Exception],
+    translation_key: str,
     message: str,
 ) -> None:
-    """Test a failed v8->v9 detection keeps version 8 so the next start tries again."""
+    """Test a failed v8->v9 detection keeps version 8 and raises a translated error."""
     entry = MockConfigEntry(
         version=8,
         domain=DOMAIN,
@@ -642,15 +660,56 @@ async def test_async_migrate_entry_v8_to_v9_fails(
     )
     entry.add_to_hass(hass)
 
+    with (
+        patch(
+            "custom_components.syr_connect.v8_to_v9_detect_local_model",
+            side_effect=error,
+        ),
+        pytest.raises(expected) as exc_info,
+    ):
+        await async_migrate_entry(hass, entry)
+
+    assert cast(HomeAssistantError, exc_info.value).translation_key == translation_key
+    assert cast(HomeAssistantError, exc_info.value).translation_placeholders == {
+        "device": "Local"
+    }
+    assert entry.version == 8
+    assert entry.data[CONF_MODEL] == "syrmuco"
+    assert message in caplog.text
+
+
+@pytest.mark.parametrize(
+    ("error", "state"),
+    [
+        (SyrConnectConnectionError("timeout"), ConfigEntryState.SETUP_RETRY),
+        (SyrConnectInvalidResponseError("no model"), ConfigEntryState.MIGRATION_ERROR),
+    ],
+)
+async def test_failed_v8_to_v9_migration_state(
+    hass: HomeAssistant, error: Exception, state: ConfigEntryState
+) -> None:
+    """An unreachable device is retried by Home Assistant, an unknown model is not."""
+    entry = MockConfigEntry(
+        version=8,
+        domain=DOMAIN,
+        title="Local",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "syrmuco",
+        },
+    )
+    entry.add_to_hass(hass)
+
     with patch(
         "custom_components.syr_connect.v8_to_v9_detect_local_model",
         side_effect=error,
     ):
-        assert await async_migrate_entry(hass, entry) is False
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
 
+    assert entry.state is state
     assert entry.version == 8
-    assert entry.data[CONF_MODEL] == "syrmuco"
-    assert message in caplog.text
 
 
 async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:

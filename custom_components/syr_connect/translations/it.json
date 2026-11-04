@@ -1656,6 +1656,12 @@
     "microleakage_test_running": {
       "message": "Un test di microperdita è già in corso sul dispositivo {device}"
     },
+    "migration_cannot_connect": {
+      "message": "Il dispositivo {device} non è raggiungibile per rilevarne il modello"
+    },
+    "migration_model_not_detected": {
+      "message": "Impossibile rilevare il modello del dispositivo {device}. La voce deve essere eliminata e il dispositivo configurato di nuovo"
+    },
     "no_alarm_to_reset": {
       "message": "Il dispositivo {device} non ha alcun allarme attivo da ripristinare"
     },

@@ -6,7 +6,11 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryError,
+    ConfigEntryNotReady,
+)
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -92,6 +96,12 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
       9 → 10: Add the cloud service (cf_bundle_identifier) to the unique_id of
              cloud entries, so the same e-mail address can be set up for two
              services, which have accounts of their own.
+
+    Raises:
+        ConfigEntryNotReady: If the local device cannot be reached to detect its
+            model (v8 -> v9); Home Assistant retries the migration later.
+        ConfigEntryError: If the model of the local device cannot be detected
+            (v8 -> v9).
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -198,14 +208,18 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             update_kwargs = await v8_to_v9_detect_local_model(hass, entry)
         except SyrConnectConnectionError as err:
-            # Leaves the entry at version 8, so the next start tries again
+            # Leaves the entry at version 8; Home Assistant retries the migration
             _LOGGER.error(
                 "Cannot migrate %s: the device is not reachable to detect its model, "
-                "the migration is retried at the next start: %s",
+                "the migration is retried: %s",
                 entry.title,
                 err,
             )
-            return False
+            raise ConfigEntryNotReady(
+                translation_domain=DOMAIN,
+                translation_key="migration_cannot_connect",
+                translation_placeholders={"device": entry.title},
+            ) from err
         except SyrConnectError as err:
             _LOGGER.error(
                 "Cannot migrate %s: the model of the device cannot be detected, remove "
@@ -213,7 +227,11 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 entry.title,
                 err,
             )
-            return False
+            raise ConfigEntryError(
+                translation_domain=DOMAIN,
+                translation_key="migration_model_not_detected",
+                translation_placeholders={"device": entry.title},
+            ) from err
         if update_kwargs:
             _LOGGER.debug(
                 "Applying v8->v9 migration for entry %s: %s",
