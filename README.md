@@ -37,13 +37,14 @@ Examples of device interfaces:
 
 ## Installation
 
-### Home Assistant Community Store - [HACS](https://hacs.xyz/) (recommended)
+[![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
 
-1. Open HACS in Home Assistant
-2. Go to "Integrations"
-3. Search for "SYR Connect"
-4. Click "Install"
-5. Restart Home Assistant
+### Marketplace (recommended)
+
+1. Go to Settings > Marketplace
+2. Search for "SYR Connect"
+3. Click "Install"
+4. Restart Home Assistant
 
 ### Manual Installation
 
@@ -51,6 +52,8 @@ Examples of device interfaces:
 2. Restart Home Assistant
 
 ## Configuration
+
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
 
 The integration supports two configuration modes:
 

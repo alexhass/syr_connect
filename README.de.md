@@ -37,13 +37,14 @@ Beispiele der Geräteoberflächen:
 
 ## Installation
 
-### Home Assistant Community Store - [HACS](https://hacs.xyz/) (empfohlen)
+[![Home-Assistant-Instanz öffnen und ein Repository im Marketplace öffnen.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
 
-1. Öffne HACS in Home Assistant
-2. Gehe zu „Integrationen“
-3. Suche nach „SYR Connect“
-4. Klicke auf „Installieren“
-5. Starte Home Assistant neu
+### Marketplace (empfohlen)
+
+1. Gehe zu Einstellungen > Marketplace
+2. Suche nach „SYR Connect“
+3. Klicke auf „Installieren“
+4. Starte Home Assistant neu
 
 ### Manuelle Installation
 
@@ -51,6 +52,8 @@ Beispiele der Geräteoberflächen:
 2. Starte Home Assistant neu
 
 ## Konfiguration
+
+[![Home-Assistant-Instanz öffnen und die Einrichtung einer neuen Integration starten.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
 
 Die Integration unterstützt zwei Konfigurationsmodi:
 
