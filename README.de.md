@@ -93,9 +93,15 @@ Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsger�
 
 Getestet und gemeldet als funktionierend:
 
+- CONEL CLEAR PRO Bodensensor
 - CONEL CLEAR PRO FILL
 - CONEL CLEAR PRO LEAKAGE PROTECTION
 - CONEL CLEAR PRO SOFT
+- concept SafeFloor Bodensensor
+- DITECH Funk-Bodensensor
+- Optima T2 Bodensensor
+- POLYGONVATRO Funk-Bodensensor
+- Sanibel Funk-Bodensensor A25
 - Sanibel Leckageschutzmodul A25
 - Sanibel Softwater UNO A25
 - SYR LEX 1500 Connect Einzel (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
@@ -115,7 +121,6 @@ Getestet und gemeldet als funktionierend:
 
 Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindest getestet werden (bitte melden):
 
-- CONEL CLEAR PRO Bodensensor
 - CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
 - concept 200 Doppelenthärtungsanlage
@@ -124,11 +129,9 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - concept 300 Triofilter mit Leckageschutz
 - concept Doppelenthärtungsanlage
 - concept Einzelenthärtungsanlage
-- concept SafeFloor Bodensensor
 - DITECH Anschlussmodul Plus
 - DITECH Doppelenthärtungsanlage
 - DITECH Einzelenthärtungsanlage
-- DITECH Funk-Bodensensor
 - DITECH Hygienespülbox
 - DITECH Rückspülautomatik HWS/RF
 - DITECH Rückspülfilter Protect
@@ -136,14 +139,11 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - Optima Doppelenthärtungsanlage
 - Optima Einzelenthärtungsanlage
 - Optima T Ersatzfilter
-- Optima T2 Bodensensor
 - Optima T2 Doppelenthärtungsanlage
-- POLYGONVATRO Funk-Bodensensor
 - POLYGONVATRO SafeTech Connect (über die AXA Gebäudeversicherung als „Wasserwächter“ vertrieben)
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatische Rückspülanlage RSA A25
-- Sanibel Funk-Bodensensor A25
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect

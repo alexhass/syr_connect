@@ -94,10 +94,16 @@ This integration works with SYR water softeners and leakage detection devices an
 Tested and reported as working:
 
 - CONEL CLEAR PRO FILL
+- CONEL CLEAR PRO Floor Sensor
 - CONEL CLEAR PRO LEAKAGE PROTECTION
 - CONEL CLEAR PRO SOFT
+- concept SafeFloor Floor Sensor
+- DITECH Wireless Floor Sensor
+- Optima T2 Floor Sensor
+- POLYGONVATRO Wireless Floor Sensor
 - Sanibel Leak Protection Module A25
 - Sanibel Softwater UNO A25
+- Sanibel Wireless Floor Sensor A25
 - SYR LEX 1500 Connect Single (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
@@ -115,7 +121,6 @@ Tested and reported as working:
 
 Other devices are also of interest, but may need to be integrated or at least tested (please report):
 
-- CONEL CLEAR PRO Floor Sensor
 - CONEL CLEAR PRO MULTICONTROL-KIT
 - CONEL CLEAR PRO SOFT TWIN
 - concept 200 Dual Water Softener
@@ -123,7 +128,6 @@ Other devices are also of interest, but may need to be integrated or at least te
 - concept 300 Automatic Backwash RSA
 - concept 300 Trio Filter with Leak Protection
 - concept Dual Water Softener
-- concept SafeFloor Floor Sensor
 - concept Single Water Softener
 - DITECH Automatic Backwash HWS/RF
 - DITECH Backwash Filter Protect
@@ -131,20 +135,16 @@ Other devices are also of interest, but may need to be integrated or at least te
 - DITECH Dual Water Softener
 - DITECH Hygiene Flush Box
 - DITECH Single Water Softener
-- DITECH Wireless Floor Sensor
 - Hansgrohe PontosBase
 - Optima Dual Water Softener
 - Optima Single Water Softener
 - Optima T Replacement Filter
 - Optima T2 Dual Water Softener
-- Optima T2 Floor Sensor
 - POLYGONVATRO SafeTech Connect (sold with AXA building insurance as "Wasserwächter")
-- POLYGONVATRO Wireless Floor Sensor
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatic Backwash System RSA A25
 - Sanibel Softwater DUO A25
-- Sanibel Wireless Floor Sensor A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
 - SYR All in One +
