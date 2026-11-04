@@ -298,7 +298,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.runtime_data = coordinator
 
-    # Detach devices that were removed from the account (e.g. by another user
+    # Remove devices that were removed from the account (e.g. by another user
     # of the same hub) so they don't linger in HA forever alongside their entities.
     # Skipped if a project's device list failed: its devices are missing, not deleted.
     if coordinator.device_list_complete:

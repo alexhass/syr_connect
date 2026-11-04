@@ -445,20 +445,19 @@ def cleanup_removed_devices(
     coordinator_data: SyrConnectCoordinatorData | None,
     entry_id: str,
 ) -> None:
-    """Detach HA devices for this entry that no longer exist in the SYR Connect account.
+    """Remove HA devices for this entry that no longer exist in the SYR Connect account.
 
     If a device is deleted from the account (e.g. by another user of the same
     hub) it simply stops appearing in `coordinator_data["devices"]`, but
     nothing else ever notices - the device (and all its entities) would
     otherwise stay in Home Assistant forever. This compares the device
     registry entries owned by `entry_id` against the serial numbers
-    currently returned by the coordinator and detaches any that disappeared.
+    currently returned by the coordinator and removes any that disappeared,
+    together with their entities.
 
-    Detaching only this `entry_id` (rather than a hard delete) is important
-    because the same physical device can be shared across config entries
-    (e.g. visible via two SYR Connect accounts); Home Assistant only fully
-    removes the device - cascading its entities - once no config entry
-    references it anymore.
+    Every config entry has a device of its own in the registry, also when the
+    same physical device is visible via two SYR Connect accounts, so removing
+    it leaves the device of the other entry untouched.
 
     Args:
         hass: Home Assistant instance.
@@ -486,9 +485,7 @@ def cleanup_removed_devices(
             )
             if device_id is not None and device_id not in current_ids:
                 _LOGGER.debug("Removing stale device from registry: %s", device_id)
-                device_registry.async_update_device(
-                    device_entry.id, remove_config_entry_id=entry_id
-                )
+                device_registry.async_remove_device(device_entry.id)
                 removed_ids.add(device_id)
         clear_device_statistics(hass, entry_id, removed_ids)
     except Exception:

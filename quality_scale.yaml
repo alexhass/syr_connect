@@ -208,7 +208,7 @@ rules:
   
   stale-devices:
     status: done
-    comment: Devices removed from the account are detached at the next setup of the entry if the device list was complete; until then their entities are unavailable
+    comment: Devices removed from the account are removed at the next setup of the entry if the device list was complete; until then their entities are unavailable
   
   # PLATINUM TIER
   async-dependency:

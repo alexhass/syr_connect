@@ -172,8 +172,8 @@ def test_registry_cleanup_handles_exception() -> None:
         )
 
 
-def test_cleanup_removed_devices_detaches_stale_device() -> None:
-    """A registry device whose id no longer appears in coordinator data is detached."""
+def test_cleanup_removed_devices_removes_stale_device() -> None:
+    """A registry device whose id no longer appears in coordinator data is removed."""
     hass = MagicMock()
     device_registry = MagicMock()
     stale_entry = SimpleNamespace(
@@ -194,13 +194,34 @@ def test_cleanup_removed_devices_detaches_stale_device() -> None:
             hass, cast(Any, {"devices": [{"id": "CURRENT_DEV"}]}), "entry1"
         )
 
-    device_registry.async_update_device.assert_called_once_with(
-        "registry_entry_id", remove_config_entry_id="entry1"
+    device_registry.async_remove_device.assert_called_once_with("registry_entry_id")
+
+
+async def test_cleanup_removed_devices_keeps_device_of_other_entry(
+    hass: HomeAssistant,
+) -> None:
+    """Only the device of this entry is removed, the same serial of another entry stays."""
+    entry = MockConfigEntry(domain=helpers.DOMAIN, entry_id="01JENTRYA")
+    other = MockConfigEntry(domain=helpers.DOMAIN, entry_id="01JENTRYB")
+    entry.add_to_hass(hass)
+    other.add_to_hass(hass)
+    device_registry = dr.async_get(hass)
+    for config_entry in (entry, other):
+        device_registry.async_get_or_create(
+            config_entry_id=config_entry.entry_id,
+            identifiers={(helpers.DOMAIN, "STALE_DEV")},
+        )
+
+    helpers.cleanup_removed_devices(
+        hass, cast(Any, {"devices": [{"id": "CURRENT_DEV"}]}), entry.entry_id
     )
+
+    assert not dr.async_entries_for_config_entry(device_registry, entry.entry_id)
+    assert dr.async_entries_for_config_entry(device_registry, other.entry_id)
 
 
 def test_cleanup_removed_devices_clears_statistics_of_removed_device() -> None:
-    """A detached device loses its history (unless another entry has it)."""
+    """A removed device loses its history (unless another entry has it)."""
     hass = MagicMock()
     device_registry = MagicMock()
     stale_entry = SimpleNamespace(
@@ -307,7 +328,7 @@ async def test_clear_device_statistics_without_series(
 
 
 def test_cleanup_removed_devices_keeps_current_device() -> None:
-    """A registry device still present in coordinator data must not be detached."""
+    """A registry device still present in coordinator data must not be removed."""
     hass = MagicMock()
     device_registry = MagicMock()
     current_entry = SimpleNamespace(
@@ -328,11 +349,11 @@ def test_cleanup_removed_devices_keeps_current_device() -> None:
             hass, cast(Any, {"devices": [{"id": "CURRENT_DEV"}]}), "entry1"
         )
 
-    device_registry.async_update_device.assert_not_called()
+    device_registry.async_remove_device.assert_not_called()
 
 
 def test_cleanup_removed_devices_handles_exception() -> None:
-    """Any error while scanning/detaching devices must not propagate."""
+    """Any error while scanning/removing devices must not propagate."""
     hass = MagicMock()
     with patch(
         "custom_components.syr_connect.helpers.dr.async_get",
