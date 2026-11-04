@@ -1,3 +1,6 @@
+<!-- markdownlint-disable-next-line MD041 -->
+![Syr](custom_components/syr_connect/brand/logo.png)
+
 # SYR Connect - Home Assistant Integration
 
 [![GitHub Release](https://img.shields.io/github/release/alexhass/syr_connect.svg?style=flat)](https://github.com/alexhass/syr_connect/releases)
@@ -8,8 +11,6 @@
 [![HACS](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml)
 [![ci](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexhass/syr_connect/graph/badge.svg?token=8P822HPPF3)](https://codecov.io/gh/alexhass/syr_connect)
-
-![Syr](custom_components/syr_connect/brand/logo.png)
 
 This custom integration enables control of SYR Connect devices through Home Assistant. This integration can also be used with identical devices from other brands. Mixed installations of different brands are supported as well.
 
