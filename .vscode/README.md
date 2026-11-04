@@ -27,7 +27,7 @@ Defines tasks for common development operations:
 - **Update Dev Requirements** - Install or update pip and the development dependencies to the newest versions `requirements-dev.txt` allows
 - **Update Dev Requirements (WSL)** - The same for the WSL venv (`~/.venvs/syr_connect`) that runs the tests
 - **Update Dev Environments** - Run both update tasks one after the other. On Windows, an update of ruff fails while the Ruff extension's language server uses `.venv\Scripts\ruff.exe`; disable the extension for the update in that case
-- **Pre-commit Run All** - Run all pre-commit hooks
+- **Pre-commit Run All** - Run all pre-commit hooks with prek
 
 Run tasks via: `Terminal > Run Task...` or `Ctrl+Shift+P > Tasks: Run Task`
 

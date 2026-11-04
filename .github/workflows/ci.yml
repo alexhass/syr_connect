@@ -129,8 +129,8 @@ jobs:
 
       - name: Check German spelling and compounds (README.de.md)
         run: |
-          pre-commit run cspell --all-files
-          pre-commit run german-compounds --all-files
+          prek run cspell --all-files
+          prek run german-compounds --all-files
 
   typecheck:
     name: Type Check (mypy)

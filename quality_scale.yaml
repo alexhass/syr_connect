@@ -221,7 +221,7 @@ rules:
   
   strict-typing:
     status: done
-    comment: mypy runs with the strict settings of Home Assistant core (mypy.ini); py.typed marker file present for PEP 561 compliance
+    comment: mypy runs with the strict settings of Home Assistant core (mypy.ini); the typed SyrConnectConfigEntry types the runtime data; py.typed marker file present for PEP 561 compliance
 
 # Summary
 # Bronze: 18/18 completed (100%) ✅ (3 exempt rules)

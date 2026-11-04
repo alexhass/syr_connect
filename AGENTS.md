@@ -24,7 +24,7 @@ All of these files apply. Read the matching ones before changing code.
 - Format (Windows): `.venv/Scripts/ruff.exe format .` after every change to Python code, before linting. `.venv/Scripts/ruff.exe format --check .` must report no changes.
 - Lint and types (Windows): `.venv/Scripts/ruff.exe check .` and `.venv/Scripts/mypy.exe` (checks the integration, `scripts/` and `tests/`, see `files` in `mypy.ini`).
 - Spelling (Windows): `.venv/Scripts/codespell.exe` checks code, comments and docs in American English. Its settings and the list of ignored words are in `[tool.codespell]` in `pyproject.toml`.
-- German spelling (WSL only): `pre-commit run cspell --all-files` and `pre-commit run german-compounds --all-files` check `README.de.md`. Known words are in `cspell.json`. The cspell hook (Node) does not run in pre-commit on Windows.
+- German spelling (Windows and WSL): `prek run cspell --all-files` and `prek run german-compounds --all-files` check `README.de.md`. Known words are in `cspell.json`. prek replaces pre-commit, as in Home Assistant core, and uses the same `.pre-commit-config.yaml`.
 - Git: Windows git and WSL git both work. `.gitattributes` forces LF line endings for every text file, as in Home Assistant core, independent of `core.autocrlf`.
 
 ## Deliberate Decisions
