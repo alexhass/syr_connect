@@ -196,7 +196,7 @@ rules:
   
   icon-translations:
     status: done
-    comment: Icons and state icons are defined in icons.json by translation key; code only sets the getBAT icon (depends on the battery device class)
+    comment: Icons, state icons and range icons (getBAT 0 V) are defined in icons.json by translation key; code only sets the icons of the reset buttons, which depend on the status of another key
   
   reconfiguration-flow:
     status: done

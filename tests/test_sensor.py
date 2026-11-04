@@ -1392,28 +1392,6 @@ async def test_sensor_rpw_with_babel_fallback(hass: HomeAssistant) -> None:
         assert isinstance(result, str)
 
 
-async def test_sensor_icon_exception_handling(hass: HomeAssistant) -> None:
-    """Test icon property handles exceptions gracefully."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRES": "invalid",  # Will cause exception in conversion
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRES")
-
-    # Should return base icon without crashing
-    icon = sensor.icon
-    assert icon is not None or icon is None  # Just verify it doesn't crash
-
-
 async def test_sensor_alarm_none_value(hass: HomeAssistant) -> None:
     """Test getALM sensor with None value."""
     data = {
@@ -1651,28 +1629,6 @@ async def test_sensor_prs_pressure_conversion(hass: HomeAssistant) -> None:
     assert sensor.native_value == 3.5
 
 
-async def test_sensor_icon_none_value_fallback(hass: HomeAssistant) -> None:
-    """Test icon property returns base icon when value is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPST")
-
-    # When value is None, icon should return base icon
-    icon = sensor.icon
-    assert icon is not None or icon is None  # Base icon may or may not be set
-
-
 async def test_sensor_sta_unknown_status(hass: HomeAssistant) -> None:
     """Test getSTA with unknown/unmapped status value."""
     data = {
@@ -1863,28 +1819,6 @@ async def test_sensor_sta_empty_value(hass: HomeAssistant) -> None:
     assert sensor.native_value == "status_inactive"
 
 
-async def test_sensor_icon_value_conversion_error(hass: HomeAssistant) -> None:
-    """Test icon property handles conversion errors gracefully."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPST": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPST")
-
-    # Should handle conversion error and return base icon or close-circle
-    icon = sensor.icon
-    assert icon in ["mdi:close-circle", None] or icon is not None
-
-
 async def test_sensor_precision_without_config(hass: HomeAssistant) -> None:
     """Test sensor numeric conversion when no precision is configured."""
     data = {
@@ -2023,19 +1957,7 @@ async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
         # Entities should still be added despite registry issues
 
 
-# Focused tests for uncovered branches in sensor icon and setup logic
-def test_icon_battery_zero(create_mock_coordinator: Callable[..., MagicMock]) -> None:
-    """Test icon battery zero."""
-    data = {
-        "devices": [
-            {"id": "d7", "name": "D7", "project_id": "p1", "status": {"getBAT": "0"}}
-        ]
-    }
-    coord = create_mock_coordinator(data)
-    sb = SyrConnectSensor(coord, "d7", "D7", "getBAT")
-    assert sb.icon == "mdi:battery-alert-variant-outline"
-
-
+# Focused tests for uncovered branches in sensor setup logic
 async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
     """Test async setup entry getPA group true."""
     data = {
@@ -4357,78 +4279,6 @@ async def test_getle_mapping(hass: HomeAssistant) -> None:
     assert sensor.native_value == 100
 
 
-async def test_sensor_icon_getbat_zero_numeric_alert(hass: HomeAssistant) -> None:
-    """Test getBAT icon shows alert when numeric voltage is zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getBAT": 0},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert sensor.icon == "mdi:battery-alert-variant-outline"
-
-
-async def test_sensor_icon_getbat_zero_string_alert(hass: HomeAssistant) -> None:
-    """Test getBAT icon shows alert when string "0" is provided."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getBAT": "0"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert sensor.icon == "mdi:battery-alert-variant-outline"
-
-
-async def test_sensor_icon_getbat_invalid_fallback_base(hass: HomeAssistant) -> None:
-    """Invalid getBAT values should result in the default battery icon (no alert)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getBAT": "invalid"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert sensor.icon is None  # default from icons.json
-
-
-async def test_sensor_icon_getbat_safe_t_format_base_icon(hass: HomeAssistant) -> None:
-    """Safe-T+ multi-value format should use the default battery icon (not alert)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getBAT": "6,12 4,38 3,90"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert sensor.icon is None  # default from icons.json
-
-
 @pytest.mark.parametrize(
     ("key", "raw", "expected"),
     [
@@ -4957,70 +4807,8 @@ async def test_sensor_apply_numeric_conversion_vol_exception(
         sensor_key="getVOL",
     )
 
-    # Should handle exception and return None or handle gracefully
-    value = sensor.native_value
-    # The conversion should handle the exception
-    assert value is not None or value is None  # Either way, no exception raised
-
-
-async def test_sensor_icon_getbat_zero_value(hass: HomeAssistant) -> None:
-    """Test icon for getBAT when value is exactly zero."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": "0",
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getBAT",
-    )
-
-    # Trigger caching by accessing native_value
-    _ = sensor.native_value
-    icon = sensor.icon
-    # When battery is 0, should show alert icon
-    assert icon == "mdi:battery-alert-variant-outline"
-
-
-async def test_sensor_icon_getbat_invalid_conversion(hass: HomeAssistant) -> None:
-    """Test icon for getBAT when value cannot be converted to float."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": "invalid_numeric",
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getBAT",
-    )
-
-    # Should handle exception in float conversion
-    icon = sensor.icon
-    assert icon is not None or icon is None  # Should return base icon
+    # The conversion error is handled; numeric_value returns the text that is no number
+    assert sensor.native_value == "invalid"
 
 
 async def test_sensor_native_value_caching(hass: HomeAssistant) -> None:
@@ -5850,50 +5638,6 @@ async def test_sensor_pa_group_exception_handling(hass: HomeAssistant) -> None:
         mock_add_entities = Mock()
         # Should not raise exception even if PA group logic fails
         await async_setup_entry(hass, entry, mock_add_entities)
-
-
-async def test_sensor_icon_bat_non_zero_string(hass: HomeAssistant) -> None:
-    """Test getBAT icon with non-zero string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": "5.5",  # Non-zero string
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    # Non-zero battery voltage keeps the default battery icon
-    icon = sensor.icon
-    assert icon is None  # default from icons.json
-
-
-async def test_sensor_icon_bat_conversion_exception(hass: HomeAssistant) -> None:
-    """Test getBAT icon when conversion raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": "not-a-number",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    # Conversion failure keeps the default battery icon
-    icon = sensor.icon
-    assert icon is None  # default from icons.json
 
 
 async def test_sensor_native_value_ala_exception(hass: HomeAssistant) -> None:
@@ -7329,7 +7073,6 @@ async def test_battery_zero_icon(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.native_value == 0.0
-    assert sensor.icon == "mdi:battery-alert-variant-outline"
 
 
 async def test_getala_exception_handling(hass: HomeAssistant) -> None:
@@ -7612,24 +7355,6 @@ async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
 # ---------------------------------------------------------------------------
 # Lines 409-410 — getBAT icon ValueError (float(sval) fails)
 # ---------------------------------------------------------------------------
-
-
-def test_sensor_icon_bat_cached_non_numeric_string(
-    create_mock_coordinator: Callable[..., MagicMock],
-) -> None:
-    """The getBAT icon: float(sval) ValueError caught (lines 409-410).
-
-    Set _last_native_value to a non-numeric string and status to None so
-    native_value returns the cached string.
-    """
-    data = {"devices": [{"id": "d1", "status": {"getBAT": None}}]}
-    coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "getBAT")
-    sensor._last_native_value = "not a number"  # force cache
-
-    icon = sensor.icon
-    # ValueError caught → falls through → default battery icon
-    assert icon is None  # default from icons.json
 
 
 # ---------------------------------------------------------------------------

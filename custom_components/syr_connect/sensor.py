@@ -2642,28 +2642,6 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
     @property
     @override
-    def icon(self) -> str | None:
-        """Return the icon of a dead battery (getBAT, 0 V); all other icons come from icons.json.
-
-        In percentage mode the BATTERY device class provides the icon.
-        """
-        if (
-            self._sensor_key != "getBAT"
-            or self.device_class == SensorDeviceClass.BATTERY
-        ):
-            return None
-
-        val = self.native_value
-        if val is not None:
-            try:
-                if float(str(val).strip()) == 0:
-                    return "mdi:battery-alert-variant-outline"
-            except TypeError, ValueError:
-                pass
-        return None
-
-    @property
-    @override
     def native_value(self) -> str | int | float | datetime | None:
         """Return the state of the sensor.
 

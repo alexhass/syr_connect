@@ -178,7 +178,11 @@
         "default": "mdi:gauge"
       },
       "getbat": {
-        "default": "mdi:car-battery"
+        "default": "mdi:car-battery",
+        "range": {
+          "0": "mdi:battery-alert-variant-outline",
+          "0.01": "mdi:car-battery"
+        }
       },
       "getbar2": {
         "default": "mdi:gauge"

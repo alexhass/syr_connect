@@ -3,6 +3,7 @@
 from collections.abc import Callable
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -24,6 +25,9 @@ def _all_icons() -> list[tuple[str, str, str]]:
             result.append((platform, key, spec["default"]))
             result.extend(
                 (platform, key, icon) for icon in spec.get("state", {}).values()
+            )
+            result.extend(
+                (platform, key, icon) for icon in spec.get("range", {}).values()
             )
     return result
 
@@ -123,6 +127,37 @@ def test_battery_level_icon_comes_from_device_class() -> None:
     assert "getbap" not in ICONS["sensor"]
 
 
-def test_battery_voltage_icon() -> None:
-    """The getbat is only used for battery voltages; a dead battery (0 V) is flagged in code."""
-    assert ICONS["sensor"]["getbat"] == {"default": "mdi:car-battery"}
+def _range_icon(spec: dict[str, Any], state: str) -> str:
+    """Return the icon the frontend shows for a numeric state of a range icon.
+
+    The icon of the highest range value less than or equal to the state, or the
+    default for a state below all ranges or one that is not a number.
+    """
+    try:
+        value = float(state)
+    except ValueError:
+        return str(spec["default"])
+    matches = [float(limit) for limit in spec["range"] if float(limit) <= value]
+    if not matches:
+        return str(spec["default"])
+    limit = max(matches)
+    return str(next(icon for key, icon in spec["range"].items() if float(key) == limit))
+
+
+@pytest.mark.parametrize(
+    ("raw", "icon"),
+    [
+        ("0", "mdi:battery-alert-variant-outline"),
+        ("0,00", "mdi:battery-alert-variant-outline"),
+        ("1", "mdi:car-battery"),
+        ("363", "mdi:car-battery"),
+        ("6,12 4,38 3,90", "mdi:car-battery"),
+        ("invalid", "mdi:car-battery"),
+    ],
+)
+def test_battery_voltage_icon(
+    create_mock_coordinator: Callable[..., MagicMock], raw: str, icon: str
+) -> None:
+    """A dead battery (getBAT 0 V) shows the alert icon, every other voltage the battery."""
+    state = _sensor_state(create_mock_coordinator, "getBAT", raw)
+    assert _range_icon(ICONS["sensor"]["getbat"], state) == icon

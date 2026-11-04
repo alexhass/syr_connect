@@ -698,9 +698,6 @@ async def test_async_setup_entry_registry_exception(
         # Should not raise exception, continues setup
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-        # Setup should still complete
-        assert True
-
 
 async def test_binary_sensor_string_nonzero(hass: HomeAssistant) -> None:
     """Test binary sensor with non-zero string value."""

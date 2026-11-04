@@ -495,7 +495,7 @@ def test_parse_device_status_dvs_is_list(parser: ResponseParser) -> None:
     xml = '<sc><dvs><c n="test" v="value"/></dvs></sc>'
     result = parser.parse_device_status_response(xml)
     # This tests the isinstance(dvs, list) branch
-    assert result is not None or result is None  # Depends on exact structure
+    assert result is None
 
 
 def test_parse_device_status_device_list_is_dict_with_c(parser: ResponseParser) -> None:
