@@ -153,10 +153,11 @@ config/
       ├── payload_builder.py
       ├── repairs.py
       ├── response_parser.py
-      ├── icon.png
-      ├── icon@2x.png
-      ├── logo.png
-      ├── logo@2x.png
+      ├── brand/
+      │  ├── icon.png
+      │  ├── icon@2x.png
+      │  ├── logo.png
+      │  └── logo@2x.png
       └── translations/
          ├── de.json
          ├── en.json
