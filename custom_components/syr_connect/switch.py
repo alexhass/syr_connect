@@ -4,14 +4,13 @@ import logging
 from typing import Any, override
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
@@ -63,11 +62,11 @@ _SYR_CONNECT_SWITCH_SUPPORTED_KEYS = set(_SYR_CONNECT_SWITCH_DESCRIPTIONS)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up boolean switch entities (e.g. getBUZ, getDFI)."""
-    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
+    coordinator = entry.runtime_data
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for switch platform")

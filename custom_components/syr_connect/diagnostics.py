@@ -9,14 +9,13 @@ import re
 from typing import Any
 
 from homeassistant.components.diagnostics import async_redact_data
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_SERVICE
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .helpers import get_device_model, is_empty_ip, mask_ug_value
 from .sensor import sensor_keys_for_status
@@ -613,7 +612,7 @@ def _redact_obj(obj: Any) -> Any:
 
 
 async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, entry: ConfigEntry
+    hass: HomeAssistant, entry: SyrConnectConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry.
 
@@ -624,7 +623,7 @@ async def async_get_config_entry_diagnostics(
     Returns:
         Dictionary with diagnostic information
     """
-    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
+    coordinator = entry.runtime_data
 
     devices_info: list[dict[str, Any]] = []
     projects_info: list[dict[str, Any]] = []

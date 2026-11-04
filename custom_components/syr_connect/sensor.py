@@ -43,7 +43,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers import (
@@ -2151,7 +2151,7 @@ def _hidden_sensor_keys(status: dict[str, Any]) -> set[str]:
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SYR Connect sensors.
@@ -2162,7 +2162,7 @@ async def async_setup_entry(
         async_add_entities: Callback to add entities
     """
     _LOGGER.debug("Setting up SYR Connect sensors")
-    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
+    coordinator = entry.runtime_data
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for sensors")

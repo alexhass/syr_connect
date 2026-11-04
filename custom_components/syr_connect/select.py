@@ -30,7 +30,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
     DOMAIN,
 )
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
@@ -529,12 +529,12 @@ def _add_safefloor_selects(b: _SyrConnectSelectBuilder) -> None:
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up select entities for SYR Connect."""
     _LOGGER.debug("Setting up SYR Connect select entities")
-    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
+    coordinator = entry.runtime_data
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for select platform")

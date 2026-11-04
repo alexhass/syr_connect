@@ -56,6 +56,8 @@ from .repairs import delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 
+type SyrConnectConfigEntry = ConfigEntry[SyrConnectDataUpdateCoordinator]
+
 
 class SyrConnectDataUpdateCoordinator(
     DataUpdateCoordinator[SyrConnectCoordinatorData | None]
@@ -73,7 +75,7 @@ class SyrConnectDataUpdateCoordinator(
         config_data: dict[str, Any],
         scan_interval: int | None = None,
         *,
-        config_entry: ConfigEntry | None = None,
+        config_entry: SyrConnectConfigEntry | None = None,
     ) -> None:
         """Initialize the coordinator.
 
@@ -770,7 +772,7 @@ class SyrConnectStatisticsCoordinator(DataUpdateCoordinator[None]):
     def __init__(
         self,
         hass: HomeAssistant,
-        config_entry: ConfigEntry,
+        config_entry: SyrConnectConfigEntry,
         coordinator: SyrConnectDataUpdateCoordinator,
     ) -> None:
         """Initialize the statistics coordinator.

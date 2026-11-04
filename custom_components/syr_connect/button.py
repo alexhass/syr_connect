@@ -22,10 +22,9 @@ command.
 """
 
 import logging
-from typing import cast, override
+from typing import override
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
@@ -33,7 +32,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .api_json import SyrConnectJsonAPI
 from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
@@ -109,7 +108,7 @@ def _reset_get_key(command: str, model: SyrConnectModel) -> str:
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up SYR Connect buttons.
@@ -120,7 +119,7 @@ async def async_setup_entry(
         async_add_entities: Callback to add entities
     """
     _LOGGER.debug("Setting up SYR Connect buttons")
-    coordinator = cast(SyrConnectDataUpdateCoordinator, entry.runtime_data)
+    coordinator = entry.runtime_data
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for buttons")

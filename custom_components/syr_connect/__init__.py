@@ -25,6 +25,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import (
+    SyrConnectConfigEntry,
     SyrConnectDataUpdateCoordinator,
     SyrConnectStatisticsCoordinator,
 )
@@ -259,7 +260,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> bool:
     """Set up SYR Connect from a config entry."""
     api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
     api_identifier = (
@@ -338,7 +339,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.info("Unloading SYR Connect integration")
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
@@ -351,7 +352,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def async_remove_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> None:
     """Delete the measurement history statistics of the devices of a removed entry."""
     device_ids = {
         identifier

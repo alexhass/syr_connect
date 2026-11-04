@@ -9,13 +9,12 @@ from homeassistant.components.valve import (
     ValveEntityDescription,
     ValveEntityFeature,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
@@ -52,7 +51,7 @@ _SYR_CONNECT_VALVE_SUPPORTED_KEYS = set(_SYR_CONNECT_VALVE_DESCRIPTIONS)
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up valve entities for SYR Connect."""
@@ -61,7 +60,7 @@ async def async_setup_entry(
     # We perform light validation of the values to avoid creating
     # entities for non-numeric or unexpected sensor payloads.
     _LOGGER.debug("Setting up SYR Connect valve entities")
-    coordinator: SyrConnectDataUpdateCoordinator = entry.runtime_data
+    coordinator = entry.runtime_data
 
     if not coordinator.data:
         _LOGGER.warning("No coordinator data available for valve platform")
