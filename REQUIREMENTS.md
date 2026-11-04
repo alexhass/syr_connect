@@ -2,7 +2,7 @@
 
 ## Home Assistant Requirements
 
-- **Home Assistant Version**: 2026.9.0 or higher (recommended: latest stable)
+- **Home Assistant Version**: 2026.10.0 or higher (recommended: latest stable)
 - **Python Version**: 3.14 or higher (included in Home Assistant)
 
 ## Development Requirements
