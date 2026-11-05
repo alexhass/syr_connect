@@ -273,7 +273,7 @@ class DebugXmlClient:
         self.payload_builder = PayloadBuilder(app_version, checksum, app_name)
         self.response_parser = ResponseParser()
         # Disable retrying for debug runs to surface errors immediately
-        self.http_client = HTTPClient(session, user_agent, max_retries=1)
+        self.http_client = HTTPClient(session, user_agent)
 
         # Log after all objects are constructed so a constructor failure doesn't
         # leave a misleading "=== Endpoint configuration ===" banner in the log.

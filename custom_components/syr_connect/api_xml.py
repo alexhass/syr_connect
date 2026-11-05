@@ -457,7 +457,7 @@ class SyrConnectXmlAPI:
             _LOGGER.debug("Status data parsed: %d attributes", len(status_data))
 
         except (aiohttp.ClientError, TimeoutError) as err:
-            # Network errors after all retries: wrap them like login()/get_devices() so callers
+            # Network errors: wrap them like login()/get_devices() so callers
             # only need to handle SyrConnectError
             _LOGGER.error("Failed to get device status: %s", err)
             raise SyrConnectConnectionError(
@@ -518,7 +518,7 @@ class SyrConnectXmlAPI:
                 device_id,
             )
         except (aiohttp.ClientError, TimeoutError) as err:
-            # Network errors after all retries: wrapped so the entity turns them into a
+            # Network errors: wrapped so the entity turns them into a
             # HomeAssistantError for the user instead of an unhandled exception
             _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
             raise SyrConnectConnectionError(

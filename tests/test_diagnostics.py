@@ -36,6 +36,10 @@ from custom_components.syr_connect.diagnostics import (
     mask_mac_value,
     mask_srn_value,
 )
+from custom_components.syr_connect.exceptions import (
+    SyrConnectConnectionError,
+    SyrConnectHTTPError,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -5047,3 +5051,50 @@ async def test_diagnostics_xml_json_no_session_sets_error(hass: HomeAssistant) -
     result = await async_get_config_entry_diagnostics(hass, entry)
     assert "raw_json" in result
     assert result["raw_json"] == {"error": "no http session available on coordinator"}
+
+
+async def test_local_device_not_reachable_skips_fetch(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """An unreachable device (login timeout) is logged in one line and not fetched again."""
+    caplog.set_level("DEBUG", logger="custom_components.syr_connect.diagnostics")
+    dev: Any = {"id": "dev1", "status": {"getWIP": "192.168.1.100"}}
+
+    with patch(
+        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
+    ) as mock_json_api_class:
+        mock_json_api = mock_json_api_class.return_value
+        mock_json_api.is_session_valid = MagicMock(return_value=False)
+        mock_json_api.login = AsyncMock(
+            side_effect=SyrConnectConnectionError("Connection failed: TimeoutError()")
+        )
+        mock_json_api.get_device_status = AsyncMock()
+
+        result = await diag._fetch_local_device_json(MagicMock(), dev, "/trio")
+
+    assert result == ("dev1", None)
+    mock_json_api.get_device_status.assert_not_called()
+    assert (
+        "device dev1 is not reachable at 192.168.1.100: Connection failed: TimeoutError()"
+        in caplog.text
+    )
+    assert "Traceback" not in caplog.text
+
+
+async def test_local_device_without_login_endpoint_is_fetched() -> None:
+    """A device that answers the login with an HTTP error is still fetched."""
+    dev: Any = {"id": "dev1", "status": {"getWIP": "192.168.1.100"}}
+
+    with patch(
+        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
+    ) as mock_json_api_class:
+        mock_json_api = mock_json_api_class.return_value
+        mock_json_api.is_session_valid = MagicMock(return_value=False)
+        mock_json_api.login = AsyncMock(
+            side_effect=SyrConnectHTTPError("Endpoint not found", status=404)
+        )
+        mock_json_api.get_device_status = AsyncMock(return_value={"getFLO": "5"})
+
+        result = await diag._fetch_local_device_json(MagicMock(), dev, "/trio")
+
+    assert result == ("dev1", {"getFLO": "5"})

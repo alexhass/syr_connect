@@ -17,6 +17,7 @@ from .api_xml import SyrConnectXmlAPI
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_SERVICE
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
+from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
 from .helpers import get_device_model, is_empty_ip, mask_ug_value
 from .sensor import sensor_keys_for_status
 
@@ -419,6 +420,17 @@ async def _fetch_local_device_json(
         try:
             if not json_api.is_session_valid():
                 await json_api.login()
+        except SyrConnectHTTPError:
+            # The device answered, only without the login endpoint: fetch anyway
+            _LOGGER.debug(
+                "Diagnostics: local login to device %s failed", dev_id, exc_info=True
+            )
+        except SyrConnectConnectionError as err:
+            # Not reachable (e.g. timeout, another network): /get/all would wait again
+            _LOGGER.debug(
+                "Diagnostics: device %s is not reachable at %s: %s", dev_id, ip, err
+            )
+            return dev_id, None
         except Exception:
             # If login fails, still attempt to fetch once
             _LOGGER.debug(

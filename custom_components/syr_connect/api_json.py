@@ -390,8 +390,9 @@ class SyrConnectJsonAPI:
 
         # --- Network/Connection Errors ---
         except (aiohttp.ClientError, TimeoutError) as err:
-            _LOGGER.error("JSON API: %s - Connection error: %s", operation, err)
-            raise SyrConnectConnectionError(f"Connection failed: {err}") from err
+            # repr: a timeout has no message text
+            _LOGGER.error("JSON API: %s - Connection error: %r", operation, err)
+            raise SyrConnectConnectionError(f"Connection failed: {err!r}") from err
 
         # --- Unexpected Errors ---
         # Catch-all for any other exceptions

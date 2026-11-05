@@ -985,11 +985,13 @@ async def test_execute_http_get_timeout_error() -> None:
     """Test _execute_http_get raises SyrConnectConnectionError on timeout."""
 
     sess = MagicMock()
-    sess.get = MagicMock(side_effect=TimeoutError("Request timed out"))
+    sess.get = MagicMock(side_effect=TimeoutError())
 
     client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
 
-    with pytest.raises(SyrConnectConnectionError, match="Connection failed"):
+    with pytest.raises(
+        SyrConnectConnectionError, match=r"Connection failed: TimeoutError\(\)"
+    ):
         await client._execute_http_get("http://test:5333/api/slow")
 
 

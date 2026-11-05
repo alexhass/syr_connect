@@ -1,6 +1,5 @@
-"""HTTP client with retry logic for SYR Connect API."""
+"""HTTP client for the SYR Connect XML API."""
 
-import asyncio
 import logging
 from typing import Any
 
@@ -15,13 +14,12 @@ _SYR_CONNECT_DEFAULT_HTTP_TIMEOUT = 30
 
 
 class HTTPClient:
-    """HTTP client with built-in retry logic and error handling."""
+    """HTTP client with error handling."""
 
     def __init__(
         self,
         session: aiohttp.ClientSession,
         user_agent: str,
-        max_retries: int = 3,
         timeout: int = _SYR_CONNECT_DEFAULT_HTTP_TIMEOUT,
         language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     ) -> None:
@@ -30,13 +28,11 @@ class HTTPClient:
         Args:
             session: aiohttp client session
             user_agent: User agent string for requests
-            max_retries: Maximum number of retry attempts
             timeout: Request timeout in seconds
             language: Locale like ``de-DE`` for the Accept-Language header
         """
         self.session = session
         self.user_agent = user_agent
-        self.max_retries = max_retries
         self.timeout = timeout
         self.language = language
 
@@ -69,7 +65,7 @@ class HTTPClient:
         data: dict[str, Any] | str,
         content_type: str = "application/x-www-form-urlencoded",
     ) -> str:
-        """Make POST request with retry logic.
+        """Make a POST request.
 
         Args:
             url: URL to request
@@ -80,60 +76,24 @@ class HTTPClient:
             Response text
 
         Raises:
-            aiohttp.ClientError: If request fails after all retries
+            aiohttp.ClientError: If the request fails
         """
         headers = self._get_headers(content_type)
         timeout = aiohttp.ClientTimeout(total=self.timeout)
 
-        for attempt in range(self.max_retries):
-            try:
-                _LOGGER.debug(
-                    "Making POST request to %s (attempt %d/%d)",
-                    url,
-                    attempt + 1,
-                    self.max_retries,
-                )
-
-                async with self.session.post(
-                    url, data=data, headers=headers, timeout=timeout
-                ) as response:
-                    _LOGGER.debug("Response status: %d", response.status)
-                    response.raise_for_status()
-                    text = await response.text()
-                    _LOGGER.debug("Response received (length: %d)", len(text))
-                    return text
-
-            except (TimeoutError, aiohttp.ClientError) as err:
-                # If this is an HTTP auth failure (401/403), do not retry — re-raise immediately
-                if isinstance(err, aiohttp.ClientResponseError) and err.status in (
-                    401,
-                    403,
-                ):
-                    _LOGGER.error(
-                        "Authentication error %s for %s; not retrying", err.status, url
-                    )
-                    raise
-
-                is_last_attempt = attempt == self.max_retries - 1
-
-                # Build a detailed message including URL and exception repr
-                error_msg = f"Request to {url} failed on attempt {attempt + 1}/{self.max_retries}: {err!r}"
-
-                if is_last_attempt:
-                    _LOGGER.error("%s", error_msg)
-                    # Re-raise a ClientError with a clear message so callers see details
-                    raise aiohttp.ClientError(
-                        f"Request failed after {self.max_retries} attempts to {url}: {err!r}"
-                    ) from err
-
-                # Calculate backoff time (exponential: 1s, 2s, 4s, ...)
-                backoff_time = 2**attempt
-                _LOGGER.warning(
-                    "%s. Retrying in %ds...",
-                    error_msg,
-                    backoff_time,
-                )
-                await asyncio.sleep(backoff_time)
-
-        # Should never reach here, but for type safety
-        raise aiohttp.ClientError("Request failed after all retries")
+        # One attempt only: a failed poll keeps the previous values and the next poll
+        # tries again, and a repeated set command could be executed twice
+        try:
+            _LOGGER.debug("Making POST request to %s", url)
+            async with self.session.post(
+                url, data=data, headers=headers, timeout=timeout
+            ) as response:
+                _LOGGER.debug("Response status: %d", response.status)
+                response.raise_for_status()
+                text = await response.text()
+                _LOGGER.debug("Response received (length: %d)", len(text))
+                return text
+        except (TimeoutError, aiohttp.ClientError) as err:
+            # repr: a timeout has no message text
+            _LOGGER.error("Request to %s failed: %r", url, err)
+            raise aiohttp.ClientError(f"Request to {url} failed: {err!r}") from err
