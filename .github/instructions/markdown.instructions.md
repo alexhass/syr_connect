@@ -5,7 +5,7 @@ applyTo: "**/*.md"
 
 # Markdown conventions
 
-- Lint rules are defined in `.markdownlint.json`: markdownlint defaults, except MD013 (line length) is off and MD033 only allows `br`.
+- Lint rules are defined in `.markdownlint.json`: markdownlint defaults, except MD013 (line length) is off and MD033 only allows `br` and `img` (the right-aligned logo in the READMEs).
 - Tables use the compact style with a spaced separator row: `| ------ | ------ |` (MD060).
 - URLs are never bare: use `<https://example.com/>` or `[text](https://example.com/)` (MD034).
 - `README.md` (English) and `README.de.md` (German) must always be kept in sync.
