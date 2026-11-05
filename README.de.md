@@ -1,5 +1,5 @@
 <!-- markdownlint-disable-next-line MD041 -->
-<img src="custom_components/syr_connect/brand/logo.png" alt="Syr" align="right" width="200">
+<img src="custom_components/syr_connect/brand/logo.png" alt="Syr" width="200">
 
 # SYR Connect – Home Assistant Integration
 
