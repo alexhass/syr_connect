@@ -33,6 +33,7 @@ from custom_components.syr_connect.exceptions import (
     InvalidAuthError,
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectLoginFailedError,
 )
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant import config_entries
@@ -1133,13 +1134,22 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect"}
 
 
-async def test_validate_input_xml_auth_error(hass: HomeAssistant) -> None:
+@pytest.mark.parametrize(
+    "error",
+    [
+        SyrConnectAuthError("Invalid credentials"),
+        SyrConnectLoginFailedError("Login without session"),  # unknown username
+    ],
+)
+async def test_validate_input_xml_auth_error(
+    hass: HomeAssistant, error: Exception
+) -> None:
     """Test validate_input_xml raises InvalidAuthError on auth failure."""
 
     with (
         patch(
             "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
-            side_effect=SyrConnectAuthError("Invalid credentials"),
+            side_effect=error,
         ),
         pytest.raises(InvalidAuthError),
     ):

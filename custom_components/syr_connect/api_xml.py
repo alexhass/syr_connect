@@ -57,6 +57,7 @@ from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
 from .helpers import mask_ug_value
@@ -281,9 +282,15 @@ class SyrConnectXmlAPI:
 
             # --- Parse and Decrypt Response ---
             # Response contains encrypted session data to protect credentials in transit
-            encrypted_text, _ = self.response_parser.parse_login_response(xml_response)
+            encrypted_text, parsed = self.response_parser.parse_login_response(
+                xml_response
+            )
             decrypted = self.encryption.decrypt(encrypted_text)
             _LOGGER.info("Login response decrypted successfully")
+
+            # Success is reported by <suc v="true"/> only, as in the SYR app
+            if not self.response_parser.is_login_successful(parsed):
+                self.response_parser.raise_login_rejected(decrypted)
 
             # --- Extract Session and Projects ---
             # Decrypted data contains session token and list of accessible projects
@@ -299,8 +306,12 @@ class SyrConnectXmlAPI:
 
         # --- Error Handling ---
         except SyrConnectAuthError as err:
-            # The server rejected the credentials (see parse_decrypted_login): re-authentication needed
+            # The server rejected the password (see raise_login_rejected): re-authentication needed
             _LOGGER.error("Authentication failed: %s", err)
+            raise
+        except SyrConnectLoginFailedError as err:
+            # Unknown username or cloud failure (see raise_login_rejected): no re-authentication
+            _LOGGER.error("Login failed: %s", err)
             raise
         except ValueError as err:
             # Malformed or unexpected answer (e.g. a maintenance page instead of XML). The

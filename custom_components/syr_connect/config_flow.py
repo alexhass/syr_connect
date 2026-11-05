@@ -37,6 +37,7 @@ from .exceptions import (
     InvalidAuthError,
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectLoginFailedError,
 )
 from .helpers import (
     build_entry_unique_id,
@@ -153,7 +154,9 @@ async def validate_input_xml(
     _LOGGER.debug("Testing XML API authentication...")
     try:
         await api.login()
-    except SyrConnectAuthError as err:
+    except (SyrConnectAuthError, SyrConnectLoginFailedError) as err:
+        # The cloud answers an unknown username like an outage (SyrConnectLoginFailedError);
+        # while setting up, wrong credentials are the likely cause
         _LOGGER.error("XML API: authentication failed: %s", err)
         raise InvalidAuthError from err
     except SyrConnectConnectionError as err:

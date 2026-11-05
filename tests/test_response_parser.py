@@ -12,6 +12,7 @@ import pytest
 
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
+    SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
 from custom_components.syr_connect.response_parser import (
@@ -225,31 +226,63 @@ def test_parse_decrypted_login_multiple_projects(parser: ResponseParser) -> None
 
 
 @pytest.mark.parametrize(
-    "server_message",
+    ("xml", "expected"),
     [
-        "Der Vorgang konnte nicht durchgeführt werden.",  # unknown username and password
-        "Der Benutzername und das Passwort stimmen nicht überein.",  # known username, wrong password
+        # Real answers (see docs/known_issues_xml_api.md, issue 3)
+        (
+            '<?xml version="1.0" encoding="utf-8"?><sc><api version="1.0">e/rm</api><suc v="true"/></sc>',
+            True,
+        ),
+        (
+            '<?xml version="1.0" encoding="utf-8"?><sc><api version="1.0">e/rm</api><suc v="false"/></sc>',
+            False,
+        ),
+        # No flag at all
+        ("<sc><api>e/rm</api></sc>", False),
     ],
 )
-def test_parse_decrypted_login_rejected_credentials_response(
-    parser: ResponseParser, server_message: Any
-) -> None:
-    """Real decrypted answers for rejected credentials (see docs/known_issues_xml_api.md, issue 3)."""
+def test_is_login_successful(parser: ResponseParser, xml: str, expected: bool) -> None:
+    """Only <suc v="true"/> reports a successful login."""
+    _encrypted, parsed = parser.parse_login_response(xml)
+    assert parser.is_login_successful(parsed) is expected
+
+
+def test_raise_login_rejected_wrong_password(parser: ResponseParser) -> None:
+    """Real decrypted answer for a wrong password is an auth error (see docs/known_issues_xml_api.md, issue 3)."""
     decrypted = (
-        '<nfo v="SyrConnect.Api.GetProjects" version="1.0.0" ts="2026-10-17 21:31:37" tzo="00:00:00" lng="de" reg="DE" />'
-        f'<app id="1" /><ags /><msg hl="Fehler" v="{server_message}" typ="1" />'
+        '<nfo v="SyrConnect.Api.GetProjects" version="1.0.0" ts="2026-10-17 21:34:56" tzo="00:00:00" lng="de" reg="DE" />'
+        '<app id="1" /><ags />'
+        '<msg hl="Fehler" v="Der Benutzername und das Passwort stimmen nicht überein." typ="1" />'
     )
     with pytest.raises(SyrConnectAuthError, match="Invalid credentials") as excinfo:
-        parser.parse_decrypted_login(decrypted)
-    assert server_message in str(excinfo.value)
+        parser.raise_login_rejected(decrypted)
+    assert "Passwort stimmen nicht überein" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "decrypted",
+    [
+        # Unknown username and password, or correct credentials during a cloud outage
+        '<nfo v="SyrConnect.Api.GetProjects" version="1.0.0" ts="2026-10-17 21:31:37" tzo="00:00:00" lng="de" reg="DE" />'
+        '<app id="1" /><ags /><msg hl="Fehler" v="Der Vorgang konnte nicht durchgeführt werden." typ="1" />',
+        # No message
+        "<ags />",
+        # Not XML
+        "<invalid",
+    ],
+)
+def test_raise_login_rejected_other_cause(
+    parser: ResponseParser, decrypted: str
+) -> None:
+    """Without the wrong-password text, a rejected login does not request re-authentication."""
+    with pytest.raises(SyrConnectLoginFailedError, match="Login rejected"):
+        parser.raise_login_rejected(decrypted)
 
 
 def test_parse_decrypted_login_no_session(parser: ResponseParser) -> None:
-    """Rejected credentials: the decrypted answer has no session, which is an auth error."""
+    """A successful login without session is a malformed answer, not rejected credentials."""
     xml = "<invalid>data</invalid>"
-    with pytest.raises(
-        SyrConnectAuthError, match="Invalid credentials or session data"
-    ):
+    with pytest.raises(ValueError, match="no session"):
         parser.parse_decrypted_login(xml)
 
 
@@ -680,6 +713,19 @@ def test_raise_if_session_expired_ignores_other_responses(
 ) -> None:
     """Only mtid="1" means a rejected token; anything else is left to the normal handling."""
     parser.raise_if_session_expired(xml)
+
+
+def test_cloud_error_response_raises_session_expired(parser: ResponseParser) -> None:
+    """The generic mtid="1" answer of a cloud outage also leads to a new login."""
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "fixtures/xml",
+        "SyrSafeFloor_GetSafeFloorStatistics_InvalidUnit.xml",
+    )
+    with open(path, encoding="utf-8") as f:
+        xml = f.read()
+    with pytest.raises(SyrConnectSessionExpiredError, match="An error has occurred"):
+        parser.raise_if_session_expired(xml)
 
 
 @pytest.mark.parametrize(

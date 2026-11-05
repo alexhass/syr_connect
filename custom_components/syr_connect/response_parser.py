@@ -4,16 +4,26 @@ from datetime import UTC, datetime
 import logging
 import math
 import re
-from typing import Any
+from typing import Any, NoReturn
 from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree
 
 from .data import SyrConnectDevice
-from .exceptions import SyrConnectAuthError, SyrConnectSessionExpiredError
+from .exceptions import (
+    SyrConnectAuthError,
+    SyrConnectLoginFailedError,
+    SyrConnectSessionExpiredError,
+)
 from .helpers import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
+
+# Text of a rejected login for a wrong password; always German
+# (docs/known_issues_xml_api.md, issue 3)
+_SYR_CONNECT_RESPONSE_PARSER_WRONG_PASSWORD_TEXT = (
+    "Benutzername und das Passwort stimmen nicht überein"
+)
 
 
 def _parse_utc_offset(value: Any) -> int | None:
@@ -180,6 +190,49 @@ class ResponseParser:
 
         return encrypted_text, parsed
 
+    @staticmethod
+    def is_login_successful(parsed: dict[str, Any]) -> bool:
+        """Return True if a parsed login response reports success (<suc v="true"/>).
+
+        The flag stands unencrypted next to <api> and is "false" for every rejected
+        login, whatever the cause (see docs/known_issues_xml_api.md, issue 3).
+        """
+        sc = parsed.get("sc")
+        suc = sc.get("suc") if isinstance(sc, dict) else None
+        return isinstance(suc, dict) and str(suc.get("@v", "")).lower() == "true"
+
+    def raise_login_rejected(self, decrypted_xml: str) -> NoReturn:
+        """Raise the error for a rejected login (<suc v="false"/>).
+
+        A wrong password is the only cause the server names, by the text of
+        <msg v="...">. An unknown username and cloud outages get the same generic text,
+        so they must not request a re-authentication (docs/known_issues_xml_api.md,
+        issue 3).
+
+        Args:
+            decrypted_xml: Decrypted content of the login response
+
+        Raises:
+            SyrConnectAuthError: If the server rejected the password
+            SyrConnectLoginFailedError: For every other cause
+        """
+        # Safe to log: a rejected login has no session token to leak
+        _LOGGER.debug("Decrypted rejected login response: %s", decrypted_xml)
+        try:
+            parsed = self.parse_xml(f"<xml>{decrypted_xml}</xml>")
+        except ValueError:
+            parsed = {}
+        root = parsed.get("xml")
+        msg = root.get("msg") if isinstance(root, dict) else None
+        server_message = msg.get("@v") if isinstance(msg, dict) else None
+        detail = f" Message: {server_message}" if server_message else ""
+        if (
+            isinstance(server_message, str)
+            and _SYR_CONNECT_RESPONSE_PARSER_WRONG_PASSWORD_TEXT in server_message
+        ):
+            raise SyrConnectAuthError(f"Invalid credentials.{detail}")
+        raise SyrConnectLoginFailedError(f"Login rejected.{detail}")
+
     def parse_decrypted_login(
         self, decrypted_xml: str
     ) -> tuple[str, list[dict[str, Any]]]:
@@ -192,31 +245,15 @@ class ResponseParser:
             Tuple of (session_id, projects_list)
 
         Raises:
-            SyrConnectAuthError: If the server rejected the credentials
             ValueError: If structure is invalid
         """
         wrapped_xml = f"<xml>{decrypted_xml}</xml>"
         parsed = self.parse_xml(wrapped_xml)
 
-        # Wrong username or password: the server still answers with HTTP 200 and a valid
-        # encrypted response, but the decrypted content has no session (usr@id). This is
-        # the only reliable sign of rejected credentials; every other parser error is a
-        # malformed or unexpected answer and must not trigger a re-authentication.
-        # See docs/known_issues_xml_api.md, issue 3.
+        # Only called for a successful login (<suc v="true"/>), so a missing session is a
+        # malformed answer, not rejected credentials
         if not self.validate_structure(parsed, ["xml", "usr", "@id"]):
-            # Safe to log: without a session there is no token to leak, and the content
-            # shows what the server answered instead.
-            _LOGGER.debug("Decrypted login response without session: %s", decrypted_xml)
-            # The server's <msg v="..."> names the cause only for a known user with a
-            # wrong password; it is added for the log but not used for detection.
-            msg = (
-                parsed["xml"].get("msg")
-                if isinstance(parsed.get("xml"), dict)
-                else None
-            )
-            server_message = msg.get("@v") if isinstance(msg, dict) else None
-            detail = f" Message: {server_message}" if server_message else ""
-            raise SyrConnectAuthError(f"Invalid credentials or session data.{detail}")
+            raise ValueError("Login succeeded but the response has no session")
 
         session_id = parsed["xml"]["usr"]["@id"]
 

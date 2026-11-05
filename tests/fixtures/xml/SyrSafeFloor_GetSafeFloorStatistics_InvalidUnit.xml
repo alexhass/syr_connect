@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Answer of GetSafeFloorStatistics for an invalid unit: HTTP 200, no data, same mtid="1" as an invalid token. GetProjectDeviceCollections returned a response with the same text and length during a cloud outage (see docs/known_issues_xml_api.md, issue 4) -->
+<sc>
+  <msg v="An error has occurred." hl="Error" mtid="1" />
+  <cs v="CCC" />
+</sc>

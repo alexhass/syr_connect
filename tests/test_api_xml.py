@@ -17,6 +17,7 @@ from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
 
@@ -243,7 +244,7 @@ async def test_login_success(api_client: SyrConnectXmlAPI) -> None:
         patch.object(
             api_client.response_parser,
             "parse_login_response",
-            return_value=("encrypted", {}),
+            return_value=("encrypted", {"sc": {"suc": {"@v": "true"}}}),
         ),
         patch.object(
             api_client.encryption,
@@ -264,24 +265,59 @@ async def test_login_success(api_client: SyrConnectXmlAPI) -> None:
 
 
 async def test_login_auth_error(api_client: SyrConnectXmlAPI) -> None:
-    """Wrong credentials: valid encrypted answer whose decrypted content has no session -> re-auth."""
+    """Wrong password: <suc v="false"/> with the wrong-password text -> re-auth."""
+    with (
+        patch.object(
+            api_client.http_client,
+            "post",
+            return_value='<sc><api>encrypted</api><suc v="false"/></sc>',
+        ),
+        patch.object(
+            api_client.encryption,
+            "decrypt",
+            return_value='<msg hl="Fehler" v="Der Benutzername und das Passwort stimmen nicht überein." typ="1" />',
+        ),
+        pytest.raises(SyrConnectAuthError, match="Invalid credentials"),
+    ):
+        await api_client.login()
+
+
+async def test_login_rejected_for_other_cause(api_client: SyrConnectXmlAPI) -> None:
+    """<suc v="false"/> without the wrong-password text (outage, unknown user) -> no re-auth."""
+    with (
+        patch.object(
+            api_client.http_client,
+            "post",
+            return_value='<sc><api>encrypted</api><suc v="false"/></sc>',
+        ),
+        patch.object(
+            api_client.encryption,
+            "decrypt",
+            return_value='<msg hl="Fehler" v="Der Vorgang konnte nicht durchgeführt werden." typ="1" />',
+        ),
+        pytest.raises(SyrConnectLoginFailedError, match="Login rejected"),
+    ):
+        await api_client.login()
+
+    assert not api_client.session_data
+
+
+async def test_login_without_suc_is_rejected(api_client: SyrConnectXmlAPI) -> None:
+    """Without <suc v="true"/> a login fails even if a session is present, as in the SYR app."""
     with (
         patch.object(
             api_client.http_client, "post", return_value="<sc><api>encrypted</api></sc>"
         ),
         patch.object(
-            api_client.response_parser,
-            "parse_login_response",
-            return_value=("encrypted", {}),
-        ),
-        patch.object(
             api_client.encryption,
             "decrypt",
-            return_value='<prs><pre id="p1" n="P1"/></prs>',
+            return_value='<usr id="123"/><prs><pre id="p1" n="P1"/></prs>',
         ),
-        pytest.raises(SyrConnectAuthError, match="Invalid credentials"),
+        pytest.raises(SyrConnectLoginFailedError),
     ):
         await api_client.login()
+
+    assert not api_client.session_data
 
 
 async def test_login_connection_error(api_client: SyrConnectXmlAPI) -> None:
@@ -550,7 +586,7 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
         patch.object(
             api_client.response_parser,
             "parse_login_response",
-            return_value=("encrypted", {}),
+            return_value=("encrypted", {"sc": {"suc": {"@v": "true"}}}),
         ),
         patch.object(api_client.encryption, "decrypt", return_value="<invalid>"),
         patch.object(

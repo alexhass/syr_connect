@@ -349,6 +349,9 @@ class DebugXmlClient:
         decrypted = self.encryption.decrypt(encrypted_text)
         _LOGGER.debug("--- Decrypted session payload ---\n%s", decrypted)
 
+        if not self.response_parser.is_login_successful(raw_parsed):
+            self.response_parser.raise_login_rejected(decrypted)
+
         _LOGGER.info("Parsing decrypted session ...")
         self.session_data, self.projects = self.response_parser.parse_decrypted_login(
             decrypted

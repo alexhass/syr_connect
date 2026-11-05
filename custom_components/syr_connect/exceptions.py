@@ -15,6 +15,16 @@ class SyrConnectConnectionError(SyrConnectError):
     """Connection error."""
 
 
+class SyrConnectLoginFailedError(SyrConnectConnectionError):
+    """The XML webservice rejected the login (<suc v="false"/>) for another cause than a wrong password.
+
+    The cloud gives the same generic message for an unknown username and during
+    outages (see docs/known_issues_xml_api.md, issue 3). The config flow reports it
+    as invalid credentials; during operation it is handled like any other connection
+    error: the next update logs in again, without a re-authentication.
+    """
+
+
 class SyrConnectSessionExpiredError(SyrConnectConnectionError):
     """The XML webservice rejected the session token (invalid or expired).
 
