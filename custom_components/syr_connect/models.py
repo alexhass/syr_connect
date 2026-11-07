@@ -492,29 +492,29 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        display_name="Hygiene Module (warm)",
+        display_name="Hygiene Module (hot)",
         dk=61,
         dkv=22,
         manufacturer="SYR",
-        name="hygienemodulwarm",
+        name="hygienemodulehot",
         # TODO: Untested model.
     ),
     SyrConnectModel(
         base_path=None,
-        display_name="Hygiene Module (warm and cold)",
+        display_name="Hygiene Module (hot and cold)",
         dk=62,
         dkv=23,
         manufacturer="SYR",
-        name="hygienemodulwarmcold",
+        name="hygienemodulehotcold",
         # TODO: Untested model.
     ),
     SyrConnectModel(
         base_path=None,
-        display_name="Hygiene Module (cold and warm)",
+        display_name="Hygiene Module (cold and hot)",
         dk=63,
         dkv=24,
         manufacturer="SYR",
-        name="hygienemodulcoldwarm",
+        name="hygienemodulecoldhot",
         # TODO: Untested model.
     ),
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────

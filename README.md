@@ -153,7 +153,7 @@ Other devices are also of interest, but may need to be integrated or at least te
 - SYR CONTROLICmini
 - SYR HVA
 - SYR HygBox Connect
-- SYR Hygiene Module (cold / warm / cold and warm)
+- SYR Hygiene Module (cold / hot / cold and hot)
 - SYR Inliner-HWA 3300
 - SYR IT 3000 Pendulum system
 - SYR LEX 1500 Connect Alternating
