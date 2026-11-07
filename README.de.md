@@ -42,15 +42,15 @@ Beispiele der Geräteoberflächen:
 
 ### Marketplace (empfohlen)
 
-1. Einstellungen > Marketplace öffnen
-2. Nach „SYR Connect“ suchen
-3. „Installieren“ auswählen
-4. Home Assistant neu starten
+1. Einstellungen > Marketplace öffnen.
+2. Nach „SYR Connect“ suchen.
+3. „Installieren“ auswählen.
+4. Home Assistant neu starten.
 
 ### Manuelle Installation
 
-1. Den Ordner `syr_connect` in das Verzeichnis `custom_components` kopieren
-2. Home Assistant neu starten
+1. Den Ordner `syr_connect` in das Verzeichnis `custom_components` kopieren.
+2. Home Assistant neu starten.
 
 ## Konfiguration
 
@@ -60,10 +60,10 @@ Die Integration unterstützt zwei Konfigurationsmodi:
 
 ### Einrichtung der Cloud-API (Alle Geräte)
 
-1. Einstellungen > Geräte & Dienste öffnen
-2. „+ Integration hinzufügen“ auswählen
-3. Nach „SYR Connect“ suchen
-4. „Cloud“ auswählen
+1. Einstellungen > Geräte & Dienste öffnen.
+2. „+ Integration hinzufügen“ auswählen.
+3. Nach „SYR Connect“ suchen.
+4. „Cloud“ auswählen.
 5. Die Zugangsdaten der App eingeben:
    - **Dienst**: Die App, in der die Geräte eingerichtet sind
    - **Benutzername**: Benutzername des Kontos in dieser App
@@ -73,10 +73,10 @@ Die Integration unterstützt zwei Konfigurationsmodi:
 
 Für neuere Geräte mit lokaler JSON-API, zum Beispiel die NeoSoft- und Trio-Geräte, SafeTech Lock, TRIO Lock, AC 3200 und RSA Connect und ihre baugleichen Geräte anderer Marken. Die Modellauswahl in der Einrichtung zeigt alle unterstützten Modelle:
 
-1. Einstellungen > Geräte & Dienste öffnen
-2. „+ Integration hinzufügen“ auswählen
-3. Nach „SYR Connect“ suchen
-4. „Lokal“ auswählen
+1. Einstellungen > Geräte & Dienste öffnen.
+2. „+ Integration hinzufügen“ auswählen.
+3. Nach „SYR Connect“ suchen.
+4. „Lokal“ auswählen.
 5. Die Geräteinformationen eingeben:
    - **Gerätemodell**: Modell des Geräts (z. B. NeoSoft 2500 Connect)
    - **Host**: IP-Adresse oder Hostname des Geräts (z. B. `192.168.178.199`)
@@ -176,7 +176,7 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 ### Nicht unterstützte Geräte
 
 - SYR Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um umbenannte Husty SaoCal-Geräte.
-- Husty SaoCal-Geräte. Siehe [husty_integration_home_assistant](https://github.com/trafopowielacz/husty_integration_home_assistant)
+- Husty SaoCal-Geräte. Siehe [husty_integration_home_assistant](https://github.com/trafopowielacz/husty_integration_home_assistant).
 
 ### Unterstützte Funktionen
 
@@ -265,53 +265,53 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 
 #### Binärsensoren
 
-- **Signalton bei Alarm**: Zeigt an, ob bei einem Alarm ein Signalton ertönt
-- **Leckageschutz**: Zeigt an, ob der Leckageschutz aktiv oder deaktiviert ist
-- **Ventiltest**: Zeigt an, ob gerade ein Ventiltest läuft
-- **Firmware-Prüfung**: Zeigt an, ob eine neue Firmware verfügbar ist (geprüft beim Start und alle 6 Stunden)
-- **Sommerzeit**: Zeigt an, ob das Gerät automatisch auf Sommerzeit umstellt
-- **Temperatursensor**, **Drucksensor**, **Leitfähigkeitssensor**: Zeigen an, ob der Messsensor aktiv oder deaktiviert ist
-- **Bodensensor-Überwachung**: Zeigt an, ob die Überwachung der Bodensensoren aktiviert ist
+- **Signalton bei Alarm**: Zeigt an, ob bei einem Alarm ein Signalton ertönt.
+- **Leckageschutz**: Zeigt an, ob der Leckageschutz aktiv oder deaktiviert ist.
+- **Ventiltest**: Zeigt an, ob gerade ein Ventiltest läuft.
+- **Firmware-Prüfung**: Zeigt an, ob eine neue Firmware verfügbar ist (geprüft beim Start und alle 6 Stunden).
+- **Sommerzeit**: Zeigt an, ob das Gerät automatisch auf Sommerzeit umstellt.
+- **Temperatursensor**, **Drucksensor**, **Leitfähigkeitssensor**: Zeigen an, ob der Messsensor aktiv oder deaktiviert ist.
+- **Bodensensor-Überwachung**: Zeigt an, ob die Überwachung der Bodensensoren aktiviert ist.
 
 #### Buttons (Aktionen)
 
-- **Sofort regenerieren**: Sofortige Regeneration starten
-- **Alarm zurücksetzen**: Aktive Alarmmeldungen löschen
-- **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen
-- **Warnung zurücksetzen**: Warnungen löschen
-- **Mikroleckage-Test starten**: Mikroleckage-Test starten. Das Ventil bleibt dabei etwa 4 Minuten geschlossen, eine Wasserentnahme während des Tests führt zu einem negativen Ergebnis (nur lokale API)
+- **Sofort regenerieren**: Sofortige Regeneration starten.
+- **Alarm zurücksetzen**: Aktive Alarmmeldungen löschen.
+- **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen.
+- **Warnung zurücksetzen**: Warnungen löschen.
+- **Mikroleckage-Test starten**: Mikroleckage-Test starten. Das Ventil bleibt dabei etwa 4 Minuten geschlossen, eine Wasserentnahme während des Tests führt zu einem negativen Ergebnis (nur lokale API).
 
 #### Schalter
 
-- **Signalton bei Alarm**: Signalton bei Alarm aktivieren oder deaktivieren
-- **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutz-Profils mit der Taste am Gerät erlauben oder sperren
-- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect)
-- **Automatische Rückspülung**: Automatische Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA)
-- **Rückspülerinnerung**: Erinnerung an die Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA)
+- **Signalton bei Alarm**: Signalton bei Alarm aktivieren oder deaktivieren.
+- **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutz-Profils mit der Taste am Gerät erlauben oder sperren.
+- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect).
+- **Automatische Rückspülung**: Automatische Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
+- **Rückspülerinnerung**: Erinnerung an die Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
 
 #### Auswahlfelder (Konfiguration)
 
-- **Regenerationsuhrzeit**: Tägliche Uhrzeit der Regeneration einstellen (15-Minuten-Intervalle)
-- **Aktives Leckageschutz-Profil**: Aktives Leckageschutz-Profil auswählen (bei Geräten mit mehreren Profilen)
-- **Salzmenge in Behälter 1–3**: Salzmenge je Behälter einstellen (je nach Modell, bis zu 3 Behälter)
-- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage)
-- **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display)
-- **Filtertyp**: Installierten Filtertyp auswählen (für NeoSoft-Geräte)
-- **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen)
-- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, ppm oder mmol/l)
-- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck
-- **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen
+- **Regenerationsuhrzeit**: Tägliche Uhrzeit der Regeneration einstellen (15-Minuten-Intervalle).
+- **Aktives Leckageschutz-Profil**: Aktives Leckageschutz-Profil auswählen (bei Geräten mit mehreren Profilen).
+- **Salzmenge in Behälter 1–3**: Salzmenge je Behälter einstellen (je nach Modell, bis zu 3 Behälter).
+- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage).
+- **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display).
+- **Filtertyp**: Installierten Filtertyp auswählen (für NeoSoft-Geräte).
+- **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen).
+- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, ppm oder mmol/l).
+- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
+- **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen.
 
 #### Ventilsteuerung
 
-- **Ventilabsperrung**: Steuerung des Haupt-Absperrventils
-  - Ventil öffnen und schließen
-  - Aktuelle Ventilposition und Status überwachen
-  - Integration mit Leckerkennungs-Automatisierungen für automatisches Absperren
+- **Ventilabsperrung**: Steuerung des Haupt-Absperrventils.
+  - Ventil öffnen und schließen.
+  - Aktuelle Ventilposition und Status überwachen.
+  - Integration mit Leckerkennungs-Automatisierungen für automatisches Absperren.
 
 #### Firmware-Update
 
-- **Firmware-Update**: Zeigt an, ob eine neue Firmware verfügbar ist, und installiert sie. Das Gerät muss per WLAN mit dem Internet verbunden sein. Die Nummer der neuen Version meldet das Gerät nicht
+- **Firmware-Update**: Zeigt an, ob eine neue Firmware verfügbar ist, und installiert sie. Das Gerät muss mit dem Internet verbunden sein. Die Nummer der neuen Version meldet das Gerät nicht.
 
 ### API-Modi
 
@@ -327,11 +327,11 @@ Die Integration unterstützt zwei API-Modi:
 
 #### Lokale API (JSON-basiert)
 
-- **Unterstützt von**: Neueren Modellen mit integrierter lokaler API, zum Beispiel NeoSoft, Trio DFR/LS, TRIO Lock, SafeTech Lock, AC 3200, RSA, Pontos Base, All in One +, HygBox und neueren SafeTech-Varianten, auch von anderen Marken. Die Modellauswahl in der Einrichtung zeigt alle unterstützten Modelle
-- **Verbindung**: Direkt zum Gerät über lokales Netzwerk (Port 5333)
-- **Authentifizierung**: Keine Zugangsdaten erforderlich
-- **Vorteile**: Keine Internetabhängigkeit, schnellere Reaktionszeiten, keine Cloud-Rate-Limits
-- **Voraussetzungen**: Gerät muss im selben Netzwerk wie Home Assistant sein, Gerät benötigt statische IP-Adresse oder Hostnamen
+- **Unterstützt von**: Neueren Modellen mit integrierter lokaler API, zum Beispiel NeoSoft, Trio DFR/LS, TRIO Lock, SafeTech Lock, AC 3200, RSA, Pontos Base, All in One +, HygBox und neueren SafeTech-Varianten, auch von anderen Marken. Die Modellauswahl in der Einrichtung zeigt alle unterstützten Modelle.
+- **Verbindung**: Direkt zum Gerät über lokales Netzwerk (Port 5333).
+- **Authentifizierung**: Keine Zugangsdaten erforderlich.
+- **Vorteile**: Keine Internetabhängigkeit, schnellere Reaktionszeiten, keine Cloud-Rate-Limits.
+- **Voraussetzungen**: Gerät muss im selben Netzwerk wie Home Assistant sein, Gerät benötigt statische IP-Adresse oder Hostnamen.
 
 Die Integration erkennt automatisch, welcher API-Modus basierend auf der bei der Einrichtung angegebenen Konfiguration zu verwenden ist.
 
@@ -341,15 +341,15 @@ Die Integration fragt die Geräte-API in regelmäßigen Abständen ab (Standard:
 
 ### Aktualisierung über die Cloud-API
 
-1. **Anmeldung**: Authentifiziert sich mit den Zugangsdaten bei der SYR Connect-Cloud-API
-2. **Geräteerkennung**: Ruft alle Projekte und Geräte ab, die mit dem Konto verknüpft sind
-3. **Statusabfrage**: Holt für jedes Gerät die aktuellen Statuswerte
-4. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
+1. **Anmeldung**: Authentifiziert sich mit den Zugangsdaten bei der SYR Connect-Cloud-API.
+2. **Geräteerkennung**: Ruft alle Projekte und Geräte ab, die mit dem Konto verknüpft sind.
+3. **Statusabfrage**: Holt für jedes Gerät die aktuellen Statuswerte.
+4. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten.
 
 ### Aktualisierung über die lokale API
 
-1. **Statusabfrage**: Holt den Gerätestatus direkt vom lokalen Endpunkt
-2. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
+1. **Statusabfrage**: Holt den Gerätestatus direkt vom lokalen Endpunkt.
+2. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten.
 
 Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuverlässiger für Echtzeit-Überwachung und Automatisierungen macht.
 
@@ -398,11 +398,11 @@ Die Cloud hält nur die Messungen der letzten 6 Tage vor. Das Synchronisationsin
 
 ### Bekannte Einschränkungen
 
-- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden Cloud-Dienst
-- **Aktualisierungsintervall**: Die Cloud-API erlaubt ein Aktualisierungsintervall von mindestens 60 Sekunden, die lokale API von mindestens 10 Sekunden
-- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect-App verfügbar
-- **Filterspülintervall**: Die Auswahl für diese Einstellung ist vorübergehend deaktiviert, weil das Gerät den Wert nach dem Schreiben wieder zurücksetzt; der aktuelle Wert wird weiterhin als Sensor angezeigt
-- **Unterstützung der lokalen API**: Nicht jedes Modell bietet eine lokale JSON-API. LEX 1500, LEXplus, i-LEX, Safe-T, SafeFloor, HVA, Hygienemodule und ältere SafeTech-Varianten benötigen den Cloud-API-Zugriff
+- **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden Cloud-Dienst.
+- **Aktualisierungsintervall**: Die Cloud-API erlaubt ein Aktualisierungsintervall von mindestens 60 Sekunden, die lokale API von mindestens 10 Sekunden.
+- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect-App verfügbar.
+- **Filterspülintervall**: Die Auswahl für diese Einstellung ist vorübergehend deaktiviert, weil das Gerät den Wert nach dem Schreiben wieder zurücksetzt; der aktuelle Wert wird weiterhin als Sensor angezeigt.
+- **Unterstützung der lokalen API**: Nicht jedes Modell bietet eine lokale JSON-API. LEX 1500, LEXplus, i-LEX, Safe-T, SafeFloor, HVA, Hygienemodule und ältere SafeTech-Varianten benötigen den Cloud-API-Zugriff.
 
 ## Anwendungsbeispiele
 
@@ -537,20 +537,20 @@ automation:
 
 Standardmäßig werden die Daten alle 60 Sekunden aktualisiert. Das Intervall wird in den Integrations-Optionen eingestellt: für die Cloud mindestens 60 Sekunden, für lokale Geräte mindestens 10 Sekunden und in beiden Fällen höchstens 600 Sekunden.
 
-1. Einstellungen > Geräte & Dienste öffnen
-2. Die SYR Connect-Integration öffnen
-3. „Konfigurieren“ auswählen
-4. Das Aktualisierungsintervall (in Sekunden) anpassen
+1. Einstellungen > Geräte & Dienste öffnen.
+2. Die SYR Connect-Integration öffnen.
+3. „Konfigurieren“ auswählen.
+4. Das Aktualisierungsintervall (in Sekunden) anpassen.
 
 ## Deinstallation
 
 So wird die Integration aus Home Assistant entfernt:
 
-1. Einstellungen > Geräte & Dienste öffnen
-2. Die SYR Connect-Integration öffnen
-3. Das Drei-Punkte-Menü (⋮) des Eintrags öffnen
-4. „Löschen“ auswählen
-5. Die Löschung bestätigen
+1. Einstellungen > Geräte & Dienste öffnen.
+2. Die SYR Connect-Integration öffnen.
+3. Das Drei-Punkte-Menü (⋮) des Eintrags öffnen.
+4. „Löschen“ auswählen.
+5. Die Löschung bestätigen.
 
 Alle zugehörigen Geräte und Entitäten werden automatisch entfernt.
 
@@ -560,10 +560,10 @@ Alle zugehörigen Geräte und Entitäten werden automatisch entfernt.
 
 Bei Problemen helfen die Diagnosedaten des Integrationseintrags. Sie enthalten die Daten aller Geräte des Eintrags:
 
-1. Einstellungen > Geräte & Dienste öffnen
-2. Die SYR Connect-Integration öffnen
-3. Beim Eintrag (Konto oder lokales Gerät) das Drei-Punkte-Menü (⋮) öffnen
-4. „Diagnosedaten herunterladen“ wählen
+1. Einstellungen > Geräte & Dienste öffnen.
+2. Die SYR Connect-Integration öffnen.
+3. Beim Eintrag (Konto oder lokales Gerät) das Drei-Punkte-Menü (⋮) öffnen.
+4. „Diagnosedaten herunterladen“ wählen.
 
 Passwörter, Benutzernamen, Sitzungsdaten, die Codenummer des Geräts, IP-Adressen, Gateways und der WLAN-Name werden aus der Datei entfernt, die Seriennummer wird maskiert.
 
@@ -573,39 +573,39 @@ Wie die Debug-Protokollierung ein- und ausgeschaltet wird, beschreibt [docs/howt
 
 ### Verbindungsprobleme
 
-- **Zugangsdaten prüfen**: Benutzername und Passwort der SYR Connect-App prüfen
-- **App testen**: Die Anmeldung in der SYR Connect-App muss mit demselben Konto funktionieren
-- **Protokolle prüfen**: Unter Einstellungen > System > Protokolle nach Fehlern mit `syr_connect` suchen
-- **Netzwerk**: Home Assistant muss Zugang zum Internet haben
+- **Zugangsdaten prüfen**: Benutzername und Passwort der SYR Connect-App prüfen.
+- **App testen**: Die Anmeldung in der SYR Connect-App muss mit demselben Konto funktionieren.
+- **Protokolle prüfen**: Unter Einstellungen > System > Protokolle nach Fehlern mit `syr_connect` suchen.
+- **Netzwerk**: Home Assistant muss Zugang zum Internet haben.
 
 ### Authentifizierungsfehler
 
 Bei der Meldung „Authentication failed“:
 
-1. Die Zugangsdaten prüfen
-2. Die Integration fordert zur erneuten Authentifizierung auf
-3. Einstellungen > Geräte & Dienste öffnen
-4. Bei der SYR Connect-Integration „Authentifizieren“ auswählen
-5. Die Zugangsdaten erneut eingeben
+1. Die Zugangsdaten prüfen.
+2. Die Integration fordert zur erneuten Authentifizierung auf.
+3. Einstellungen > Geräte & Dienste öffnen.
+4. Bei der SYR Connect-Integration „Authentifizieren“ auswählen.
+5. Die Zugangsdaten erneut eingeben.
 
 ### Keine Geräte gefunden
 
-- **App-Einrichtung**: Die Geräte müssen in der SYR Connect-App richtig eingerichtet sein
-- **Konto**: Es muss dasselbe Konto sein, in dem die Geräte eingerichtet sind
-- **Gerätestatus**: Die Geräte müssen in der SYR Connect-App online sein
-- **Protokolle**: Die Protokolle von Home Assistant auf Fehlermeldungen prüfen
+- **App-Einrichtung**: Die Geräte müssen in der SYR Connect-App richtig eingerichtet sein.
+- **Konto**: Es muss dasselbe Konto sein, in dem die Geräte eingerichtet sind.
+- **Gerätestatus**: Die Geräte müssen in der SYR Connect-App online sein.
+- **Protokolle**: Die Protokolle von Home Assistant auf Fehlermeldungen prüfen.
 
 ### Entitäten sind als nicht verfügbar markiert
 
-- **Gerät offline**: Die Cloud meldet das Gerät als offline. Stromversorgung und Netzwerkverbindung des Geräts müssen geprüft werden
-- **SYR Connect-App**: Das Gerät muss in der SYR Connect-App als online angezeigt werden
-- **Wieder online**: Die Entitäten werden wieder verfügbar, sobald das Gerät einen vollständigen Status sendet
+- **Gerät offline**: Die Cloud meldet das Gerät als offline. Stromversorgung und Netzwerkverbindung des Geräts müssen geprüft werden.
+- **SYR Connect-App**: Das Gerät muss in der SYR Connect-App als online angezeigt werden.
+- **Wieder online**: Die Entitäten werden wieder verfügbar, sobald das Gerät einen vollständigen Status sendet.
 
 Vorübergehende Probleme mit der Verbindung oder dem Cloud-Dienst machen Entitäten nicht unverfügbar. Die Entitäten behalten ihre letzten Werte, und der Fehler wird ins Protokoll geschrieben.
 
 ### Hohe CPU-/Speicherauslastung
 
-- **Aktualisierungsintervall erhöhen**: Einen höheren Wert (z. B. 120–300 Sekunden) in den Integrations-Optionen einstellen
+- **Aktualisierungsintervall erhöhen**: Einen höheren Wert (z. B. 120–300 Sekunden) in den Integrations-Optionen einstellen.
 
 ## Abhängigkeiten
 
@@ -618,8 +618,8 @@ Die Integration benötigt folgende Python-Pakete:
 
 Home Assistant installiert die Pakete automatisch, wenn:
 
-1. Die Integration über die UI hinzugefügt wird
-2. Home Assistant nach der Installation neu gestartet wird
+1. Die Integration über die UI hinzugefügt wird.
+2. Home Assistant nach der Installation neu gestartet wird.
 
 Für detaillierte Systemanforderungen siehe [REQUIREMENTS.md](REQUIREMENTS.md).
 
@@ -629,12 +629,12 @@ Für detaillierte Systemanforderungen siehe [REQUIREMENTS.md](REQUIREMENTS.md).
 
 Diese Integration steuert Wasseraufbereitungssysteme und Absperrventile. Fehlerhafte Konfiguration oder fehlerhafte Automatisierungen können zu Wasserschäden, Systemausfällen oder Sachschäden führen.
 
-- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen“ ohne jegliche Garantie bereitgestellt
-- **Gründlich testen**: Automatisierungen immer unter sicheren Bedingungen testen, bevor sie produktiv eingesetzt werden
-- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können die gesamte Wasserversorgung abschalten und müssen sorgfältig getestet werden
-- **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen
-- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen, dessen Verfügbarkeit nicht garantiert ist
-- **Notfallplan**: Ein alternativer Zugang zum Absperrventil muss vorhanden sein, falls das System ausfällt
+- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen“ ohne jegliche Garantie bereitgestellt.
+- **Gründlich testen**: Automatisierungen immer unter sicheren Bedingungen testen, bevor sie produktiv eingesetzt werden.
+- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können die gesamte Wasserversorgung abschalten und müssen sorgfältig getestet werden.
+- **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen.
+- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen, dessen Verfügbarkeit nicht garantiert ist.
+- **Notfallplan**: Ein alternativer Zugang zum Absperrventil muss vorhanden sein, falls das System ausfällt.
 
 Wer diese Integration installiert und nutzt, erkennt diese Risiken an und stimmt zu, sie verantwortungsbewusst zu verwenden.
 
