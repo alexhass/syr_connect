@@ -1621,7 +1621,7 @@
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Falha na autenticação com o SYR Connect. A integração deve ser reconfigurada"
+      "message": "Falha na autenticação com o SYR Connect. As credenciais devem ser introduzidas novamente"
     },
     "button_press_failed": {
       "message": "Não foi possível executar {entity} no dispositivo {device}"

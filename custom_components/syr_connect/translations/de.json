@@ -1621,7 +1621,7 @@
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Anmeldung bei SYR Connect fehlgeschlagen. Die Integration muss neu konfiguriert werden"
+      "message": "Anmeldung bei SYR Connect fehlgeschlagen. Die Anmeldedaten müssen neu eingegeben werden"
     },
     "button_press_failed": {
       "message": "{entity} konnte auf dem Gerät {device} nicht ausgeführt werden"

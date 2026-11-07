@@ -1621,7 +1621,7 @@
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Uwierzytelnianie w SYR Connect nie powiodło się. Integrację należy skonfigurować ponownie"
+      "message": "Uwierzytelnianie w SYR Connect nie powiodło się. Należy ponownie wprowadzić dane logowania"
     },
     "button_press_failed": {
       "message": "Nie udało się wykonać {entity} na urządzeniu {device}"

@@ -1621,7 +1621,7 @@
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Authenticatie bij SYR Connect mislukt. De integratie moet opnieuw worden geconfigureerd"
+      "message": "Authenticatie bij SYR Connect mislukt. De aanmeldingsgegevens moeten opnieuw worden ingevoerd"
     },
     "button_press_failed": {
       "message": "{entity} kon niet worden uitgevoerd op het apparaat {device}"
