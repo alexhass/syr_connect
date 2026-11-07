@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
-from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_SERVICE
+from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_SERVICE
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
@@ -527,6 +527,8 @@ def _device_summary(
         "project_id": device.get("project_id"),
         "manufacturer": manufacturer,
         "model": model_display,
+        # Local JSON API path of the model, None without local access
+        "base_path": model_info.base_path,
         "sw_version": status.get("getVER"),
         "hw_version": status.get("getFIR"),
         "api_type": api_type,
@@ -537,10 +539,6 @@ def _device_summary(
     # Add XML API specific fields
     if api_type == API_TYPE_XML and device.get("dclg"):
         device_info["dclg"] = device.get("dclg")
-
-    # Add JSON API specific fields
-    if api_type == API_TYPE_JSON and device.get("base_path"):
-        device_info["base_path"] = device.get("base_path")
 
     return device_info
 
@@ -648,6 +646,8 @@ async def async_get_config_entry_diagnostics(
             "version": entry.version,
             "options": dict(entry.options),
             "service": entry.data.get(CONF_SERVICE),
+            # Model chosen at setup of a local entry, None for cloud entries
+            "model": entry.data.get(CONF_MODEL),
         },
         "coordinator": {
             "last_update_success": coordinator.last_update_success,

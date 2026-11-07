@@ -3811,10 +3811,10 @@ async def test_diagnostics_device_info_xml_api(hass: HomeAssistant) -> None:
     assert device["hw_version"] == "HW_V1"
     assert device["api_type"] == API_TYPE_XML
     assert device["dclg"] == "device_collection_id"  # XML API specific
+    assert device["base_path"] is None  # LEX Plus 10 S has no local access
     assert device["status_count"] == 5
     assert "getCNA" in device["status_keys"]
     assert "getVER" in device["status_keys"]
-    assert "base_path" not in device  # Should not be present for XML API
 
 
 async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
@@ -3844,7 +3844,6 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
             {
                 "id": "SAFETECH01",
                 "name": "SafeTech Plus Connect",
-                "base_path": "/trio",
                 "available": True,
                 "status": {
                     "getSRN": "112AAA12345",
@@ -3884,7 +3883,8 @@ async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
     assert device["sw_version"] == "Safe-Tech-2.0.5"
     assert device["hw_version"] == "FW_ST_01"
     assert device["api_type"] == API_TYPE_JSON
-    assert device["base_path"] == "/trio"  # JSON API specific
+    assert device["base_path"] == "/trio"
+    assert diagnostics["entry"]["model"] == "safetechplus"
     # Only the sensors SafeTech Plus gets: getCNA, getFIR and getPRS are not in its allowlist
     assert device["status_keys"] == ["getMAC1", "getSRN", "getVER", "getWIP"]
     assert device["status_count"] == 4
@@ -3998,6 +3998,7 @@ async def test_diagnostics_service_branding(hass: HomeAssistant) -> None:
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
     assert diagnostics["entry"]["service"] == "de.consoft.gc.conel.connect"
+    assert diagnostics["entry"]["model"] is None
     device = diagnostics["devices"][0]
     assert device["manufacturer"] == "CONEL"
     assert device["model"] == "CLEAR PRO Floor Sensor"
@@ -4056,7 +4057,7 @@ async def test_diagnostics_json_redacts_data(
     coordinator = MagicMock()
     coordinator.last_update_success = True
     coordinator.last_update_success_time = datetime.now(UTC)
-    coordinator.data = {"devices": [{"id": "local", "base_path": "/"}]}
+    coordinator.data = {"devices": [{"id": "local"}]}
 
     # Create a fake JSON API type and monkeypatch diag.SyrConnectJsonAPI to our dummy
     class DummyJSONAPI:
@@ -4636,7 +4637,7 @@ async def test_json_api_no_devices_sets_error(
 
     mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
     mock_coordinator.data = {
-        "devices": [{"id": "local", "base_path": "/"}],
+        "devices": [{"id": "local"}],
         "projects": [],
     }
     mock_coordinator.last_update_success = True
