@@ -136,6 +136,9 @@ class SyrConnectDataUpdateCoordinator(
                 None  # No cloud service URL for local JSON API
             )
             self._service: str | None = None  # No cloud service for local JSON API
+            # The local JSON API reports no device kind, and the status does not tell
+            # the models apart, so the model chosen at setup is used
+            self._model: str | None = model
             _LOGGER.info(
                 "Coordinator initialized with JSON API (host=%s, model=%s)", host, model
             )
@@ -163,6 +166,7 @@ class SyrConnectDataUpdateCoordinator(
             self._username = username
             self._configuration_url = svc.configuration_url if svc else None
             self._service = conf_service
+            self._model = None
             _LOGGER.debug(
                 "Coordinator initialized with XML API (username=%s)", username
             )
@@ -405,7 +409,7 @@ class SyrConnectDataUpdateCoordinator(
                 return self._previous_device_or_empty(device)
 
             device["status"] = status
-            device["model"] = detect_device_model(device, self._service)
+            device["model"] = detect_device_model(device, self._service, self._model)
 
             # Emergency action.
             #
@@ -477,7 +481,7 @@ class SyrConnectDataUpdateCoordinator(
             device.get("id"),
         )
         device["status"] = {}
-        device["model"] = detect_device_model(device, self._service)
+        device["model"] = detect_device_model(device, self._service, self._model)
         device["available"] = True
         return device
 
@@ -580,7 +584,9 @@ class SyrConnectDataUpdateCoordinator(
                         device["available"] = True
                     applied = True
                 if device is not None and applied:
-                    device["model"] = detect_device_model(device, self._service)
+                    device["model"] = detect_device_model(
+                        device, self._service, self._model
+                    )
                 if applied:
                     self.async_set_updated_data(new_data)
                     optimistic_data = new_data

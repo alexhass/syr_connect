@@ -1558,6 +1558,32 @@ async def test_coordinator_init_json_api_invalid_model(hass: HomeAssistant) -> N
         )
 
 
+async def test_fetch_device_status_json_api_keeps_chosen_model(
+    hass: HomeAssistant,
+) -> None:
+    """The local JSON API uses the model chosen at setup, not the detected one."""
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectJsonAPI"
+    ) as mock_api_class:
+        mock_api = MagicMock()
+        mock_api.get_device_status = AsyncMock(return_value={"getCNA": "LEXplus10"})
+        mock_api_class.return_value = mock_api
+
+        config_data = {
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetechplus",
+            CONF_HOST: "192.168.1.100",
+        }
+        coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
+
+        device = {"id": "dev1", "dclg": "dev1"}
+
+        result = await coord._fetch_device_status(cast(Any, device))
+
+        assert result is not None
+        assert result["model"].name == "safetechplus"
+
+
 async def test_coordinator_init_defaults_to_xml_api(hass: HomeAssistant) -> None:
     """Test coordinator initialization defaults to XML API when API type not specified."""
     with patch(

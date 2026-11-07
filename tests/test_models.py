@@ -373,6 +373,29 @@ def test_ver_contains_signature_matches_and_skips() -> None:
         assert detect_model({"getVER": "nope"}).name == "unknown"
 
 
+def test_chosen_model_is_used_without_detection() -> None:
+    """A model chosen at setup is the result, whatever the status detects."""
+    test_sig = [
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Chosen",
+            base_path="/test",
+            name="testchosen",
+        ),
+        replace(
+            UNKNOWN_MODEL,
+            display_name="Test Detected",
+            base_path="/test",
+            name="testdetected",
+            cna_equals="DETECTED",
+        ),
+    ]
+    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+        flat = {"getCNA": "DETECTED"}
+        assert detect_model(flat, model="testchosen").name == "testchosen"
+        assert detect_model(flat, model="removed") is UNKNOWN_MODEL
+
+
 # ---------------------------------------------------------------------------
 # Manufacturer field tests
 # ---------------------------------------------------------------------------
@@ -785,7 +808,11 @@ def test_detect_model_logs_the_branded_name(
     """The log names the model as the cloud service of the config entry brands it."""
     with caplog.at_level("DEBUG", logger="custom_components.syr_connect.models"):
         result = detect_model(
-            status, service="de.consoft.gc.conel.connect", **device_kind
+            status,
+            dk=device_kind.get("dk"),
+            dkv=device_kind.get("dkv"),
+            sbt=device_kind.get("sbt"),
+            service="de.consoft.gc.conel.connect",
         )
 
     assert result.name == "safefloor"

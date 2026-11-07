@@ -689,6 +689,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         # TODO: Untested model.
         # srn_prefix="38",
         # Version string: "Safe-Tech V3.53", see https://www.youtube.com/watch?v=apdL8SLZ64Q&t=585s
+        # The device reports a version string that looks like "Safe-Tech V4.08" firmware installed.
         # ver_prefix="Safe-Tech V3",
     ),
     SyrConnectModel(
@@ -1466,8 +1467,12 @@ def detect_model(
     dkv: int | None = None,
     sbt: int | None = None,
     service: str | None = None,
+    model: str | None = None,
 ) -> SyrConnectModel:
     """Detect the device model from the cloud device kind and the flattened status.
+
+    A model chosen at setup is the result without detection: the local JSON API
+    reports no device kind, and its status does not tell the models apart.
 
     The cloud API (XML) reports `dk`, `dkv` and `sbt` for every device. They are the
     most reliable match and select the family of signatures with these values; a
@@ -1486,11 +1491,17 @@ def detect_model(
         sbt: Cloud API device subtype, None if unknown
         service: The cf_bundle_identifier of the config entry, None for the local
             JSON API; the log names the model as this service brands it
+        model: The name of the model chosen at setup (CONF_MODEL), None to detect it
 
     Returns:
-        The matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no signature
-        matches.
+        The chosen or matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no
+        signature matches.
     """
+    if model is not None:
+        return next(
+            (sig for sig in MODEL_SIGNATURES if sig.name == model),
+            UNKNOWN_MODEL,
+        )
     # getDFM is text in the cloud status and a number in the local status
     dfm = str(flat.get("getDFM")) if isinstance(flat, dict) else None
     signatures = [
