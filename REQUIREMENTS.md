@@ -47,7 +47,7 @@ To use the emulator and install to Apache:
    ```
 
 2. Configure the integration to use your webservers hostname or IP as the device host
-3. Select "Local Access" mode when adding the integration hub
+3. Select "Local" when adding the integration hub
 
 The emulator responds to all standard API calls and allows testing features without accessing real devices.
 

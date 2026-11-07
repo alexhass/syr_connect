@@ -4,12 +4,12 @@
       "already_configured": "Este hub ya está configurado"
     },
     "error": {
-      "cannot_connect": "No se puede conectar al servicio. Verifique su conexión a Internet e inténtelo de nuevo.",
-      "cannot_connect_local": "No se puede conectar al dispositivo local. Verifique que la dirección IP sea correcta y que el dispositivo esté encendido y conectado a su red local.",
-      "host_invalid": "Host no válido. Introduzca una dirección IP o nombre de host válido.",
-      "host_no_port": "El host no debe incluir un número de puerto. Introduzca solo la dirección IP o el nombre de host.",
-      "invalid_auth": "Nombre de usuario o contraseña inválidos. Verifique sus credenciales.",
-      "unknown": "Se ha producido un error inesperado. Inténtelo de nuevo más tarde."
+      "cannot_connect": "No se puede conectar al servicio. Debe comprobarse la conexión a Internet.",
+      "cannot_connect_local": "No se puede conectar al dispositivo local. La dirección IP debe ser correcta y el dispositivo debe estar encendido y conectado a la red local.",
+      "host_invalid": "Host no válido. Se requiere una dirección IP o un nombre de host válido.",
+      "host_no_port": "El host no debe incluir un número de puerto. Solo se admite la dirección IP o el nombre de host.",
+      "invalid_auth": "Nombre de usuario o contraseña no válidos. Deben comprobarse las credenciales.",
+      "unknown": "Se ha producido un error inesperado. La acción puede repetirse más tarde."
     },
     "step": {
       "api_json": {
@@ -21,7 +21,7 @@
           "host": "Dirección IP o nombre de host del dispositivo en la red local.",
           "model": "Seleccionar el modelo del dispositivo"
         },
-        "description": "Introduzca el modelo y el nombre de host/IP para acceso local",
+        "description": "Modelo y nombre de host o dirección IP del dispositivo",
         "title": "SYR Connect (Local)"
       },
       "api_xml": {
@@ -35,7 +35,7 @@
           "service": "Seleccionar la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
           "username": "El nombre de usuario con el que se inicia sesión en la nube."
         },
-        "description": "Introduzca las credenciales de su aplicación móvil para acceso en la nube",
+        "description": "Credenciales de la aplicación móvil para la nube",
         "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
@@ -47,7 +47,7 @@
           "password": "La contraseña con la que se inicia sesión en la nube.",
           "username": "El nombre de usuario con el que se inicia sesión en la nube."
         },
-        "description": "Las credenciales de {username} ya no son válidas. Introduzca nuevas credenciales.",
+        "description": "Las credenciales de {username} ya no son válidas. Se requieren nuevas credenciales.",
         "title": "Reautenticar SYR Connect"
       },
       "reauth_confirm_local": {
@@ -77,18 +77,18 @@
           "service": "Seleccionar la nube con la que se usan los dispositivos. Cada nube tiene sus propias cuentas.",
           "username": "La cuenta con la que se inicia sesión en la nube."
         },
-        "description": "Actualice su configuración.",
+        "description": "La configuración se puede modificar.",
         "title": "Reconfigurar SYR Connect"
       },
       "user": {
-        "description": "Elija cómo conectarse a su dispositivo SYR:",
+        "description": "Tipo de conexión con el dispositivo SYR:",
         "menu_option_descriptions": {
-          "api_json": "Conéctese directamente a un dispositivo en su red local usando su dirección IP. Funciona sin conexión y proporciona tiempos de respuesta más rápidos.",
-          "api_xml": "Use las credenciales de su aplicación móvil para acceder a todos sus dispositivos a través del servicio en la nube de SYR. Requiere conexión a Internet."
+          "api_json": "Conexión directa con un dispositivo de la red local mediante su dirección IP. Funciona sin Internet y responde más rápido.",
+          "api_xml": "Acceso a todos los dispositivos de la cuenta a través del servicio en la nube de SYR con las credenciales de la aplicación móvil. Requiere conexión a Internet."
         },
         "menu_options": {
-          "api_json": "Acceso local",
-          "api_xml": "Acceso en la nube"
+          "api_json": "Local",
+          "api_xml": "Nube"
         },
         "title": "SYR Connect"
       }
@@ -162,14 +162,8 @@
       "setnot": {
         "name": "Restablecer notificación"
       },
-      "setrst": {
-        "name": "Reiniciar dispositivo"
-      },
       "setsir": {
         "name": "Regenerar ahora"
-      },
-      "setsmr": {
-        "name": "Regeneración múltiple"
       },
       "setwrn": {
         "name": "Restablecer advertencia"
@@ -1622,27 +1616,18 @@
           "false": "Abierta",
           "true": "Cerrada"
         }
-      },
-      "getvlv": {
-        "name": "Estado de la válvula",
-        "state": {
-          "10": "Cerrada",
-          "11": "Cerrando",
-          "20": "Abierta",
-          "21": "Abriendo"
-        }
       }
     }
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Error de autenticación con SYR Connect. Vuelva a configurar la integración"
+      "message": "Error de autenticación con SYR Connect. Debe volver a configurarse la integración"
     },
     "button_press_failed": {
       "message": "No se pudo ejecutar {entity} en el dispositivo {device}"
     },
     "coordinator_data_unavailable": {
-      "message": "Todavía no hay datos del dispositivo. Inténtelo de nuevo más tarde"
+      "message": "Todavía no hay datos del dispositivo. La acción puede repetirse más tarde"
     },
     "device_not_found": {
       "message": "El dispositivo ya no está disponible en SYR Connect"
@@ -1694,12 +1679,6 @@
     },
     "valve_unknown_format": {
       "message": "La válvula del dispositivo {device} no se puede accionar porque su estado es desconocido"
-    }
-  },
-  "issues": {
-    "device_offline": {
-      "description": "El dispositivo SYR Connect \"{device_name}\" está actualmente sin conexión y no se puede contactar. Por favor, verifique:\n\n- La alimentación eléctrica del dispositivo\n- La conexión de red\n- El estado del servicio en la nube de SYR Connect\n\nEl dispositivo se reconectará automáticamente cuando vuelva a estar en línea.",
-      "title": "Dispositivo sin conexión: {device_name}"
     }
   },
   "options": {

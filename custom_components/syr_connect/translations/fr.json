@@ -4,12 +4,12 @@
       "already_configured": "Ce hub est déjà configuré"
     },
     "error": {
-      "cannot_connect": "Impossible de se connecter au service. Veuillez vérifier votre connexion Internet et réessayer.",
-      "cannot_connect_local": "Impossible de se connecter à l'appareil local. Veuillez vérifier que l'adresse IP est correcte et que l'appareil est allumé et connecté à votre réseau local.",
-      "host_invalid": "Hôte invalide. Entrez une adresse IP ou un nom d'hôte valide.",
-      "host_no_port": "L'hôte ne doit pas inclure de numéro de port. Entrez uniquement l'adresse IP ou le nom d'hôte.",
-      "invalid_auth": "Nom d'utilisateur ou mot de passe invalide. Veuillez vérifier vos identifiants.",
-      "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer plus tard."
+      "cannot_connect": "Impossible de se connecter au service. La connexion Internet doit être vérifiée.",
+      "cannot_connect_local": "Impossible de se connecter à l'appareil local. L'adresse IP doit être correcte et l'appareil doit être allumé et connecté au réseau local.",
+      "host_invalid": "Hôte invalide. Une adresse IP ou un nom d'hôte valide est requis.",
+      "host_no_port": "L'hôte ne doit pas inclure de numéro de port. Seuls l'adresse IP ou le nom d'hôte sont admis.",
+      "invalid_auth": "Nom d'utilisateur ou mot de passe invalide. Les identifiants doivent être vérifiés.",
+      "unknown": "Une erreur inattendue s'est produite. L'opération peut être relancée plus tard."
     },
     "step": {
       "api_json": {
@@ -21,7 +21,7 @@
           "host": "Adresse IP ou nom d'hôte de l'appareil dans le réseau local.",
           "model": "Sélectionner le modèle de l'appareil"
         },
-        "description": "Entrez le modèle et le nom d'hôte/IP pour l'accès local",
+        "description": "Modèle et nom d'hôte ou adresse IP de l'appareil",
         "title": "SYR Connect (Local)"
       },
       "api_xml": {
@@ -35,7 +35,7 @@
           "service": "Sélectionner le cloud utilisé avec les appareils. Chaque cloud a ses propres comptes.",
           "username": "Le nom d'utilisateur utilisé pour se connecter au cloud."
         },
-        "description": "Entrez vos identifiants de l'application mobile pour l'accès cloud",
+        "description": "Identifiants de l'application mobile pour le cloud",
         "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
@@ -47,7 +47,7 @@
           "password": "Le mot de passe utilisé pour se connecter au cloud.",
           "username": "Le nom d'utilisateur utilisé pour se connecter au cloud."
         },
-        "description": "Les identifiants pour {username} ne sont plus valides. Veuillez saisir de nouveaux identifiants.",
+        "description": "Les identifiants pour {username} ne sont plus valides. De nouveaux identifiants sont requis.",
         "title": "Réauthentifier SYR Connect"
       },
       "reauth_confirm_local": {
@@ -77,18 +77,18 @@
           "service": "Sélectionner le cloud utilisé avec les appareils. Chaque cloud a ses propres comptes.",
           "username": "Le compte utilisé pour se connecter au cloud."
         },
-        "description": "Mettez à jour votre configuration.",
+        "description": "La configuration peut être modifiée.",
         "title": "Reconfigurer SYR Connect"
       },
       "user": {
-        "description": "Choisissez comment vous connecter à votre appareil SYR :",
+        "description": "Type de connexion à l'appareil SYR :",
         "menu_option_descriptions": {
-          "api_json": "Connectez-vous directement à un appareil sur votre réseau local en utilisant son adresse IP. Fonctionne hors ligne et offre des temps de réponse plus rapides.",
-          "api_xml": "Utilisez vos identifiants de l'application mobile pour accéder à tous vos appareils via le service cloud SYR. Nécessite une connexion Internet."
+          "api_json": "Connexion directe à un appareil du réseau local via son adresse IP. Fonctionne sans Internet et répond plus rapidement.",
+          "api_xml": "Accès à tous les appareils du compte via le service cloud SYR avec les identifiants de l'application mobile. Nécessite une connexion Internet."
         },
         "menu_options": {
-          "api_json": "Accès local",
-          "api_xml": "Accès cloud"
+          "api_json": "Local",
+          "api_xml": "Cloud"
         },
         "title": "SYR Connect"
       }
@@ -162,14 +162,8 @@
       "setnot": {
         "name": "Réinitialiser la notification"
       },
-      "setrst": {
-        "name": "Réinitialiser l'appareil"
-      },
       "setsir": {
         "name": "Régénérer maintenant"
-      },
-      "setsmr": {
-        "name": "Régénération multiple"
       },
       "setwrn": {
         "name": "Réinitialiser l'avertissement"
@@ -1622,27 +1616,18 @@
           "false": "Ouvert",
           "true": "Fermé"
         }
-      },
-      "getvlv": {
-        "name": "État de la vanne",
-        "state": {
-          "10": "Fermée",
-          "11": "Fermeture",
-          "20": "Ouverte",
-          "21": "Ouverture"
-        }
       }
     }
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Échec de l'authentification auprès de SYR Connect. Veuillez reconfigurer l'intégration"
+      "message": "Échec de l'authentification auprès de SYR Connect. L'intégration doit être reconfigurée"
     },
     "button_press_failed": {
       "message": "Impossible d'exécuter {entity} sur l'appareil {device}"
     },
     "coordinator_data_unavailable": {
-      "message": "Aucune donnée d'appareil disponible pour le moment. Veuillez réessayer plus tard"
+      "message": "Aucune donnée d'appareil disponible pour le moment. L'opération peut être relancée plus tard"
     },
     "device_not_found": {
       "message": "L'appareil n'est plus disponible dans SYR Connect"
@@ -1694,12 +1679,6 @@
     },
     "valve_unknown_format": {
       "message": "La vanne de l'appareil {device} ne peut pas être commutée car son état est inconnu"
-    }
-  },
-  "issues": {
-    "device_offline": {
-      "description": "L'appareil SYR Connect \"{device_name}\" est actuellement hors ligne et ne peut pas être contacté. Veuillez vérifier :\n\n- L'alimentation électrique de l'appareil\n- La connexion réseau\n- L'état du service cloud SYR Connect\n\nL'appareil se reconnectera automatiquement lorsqu'il sera de nouveau en ligne.",
-      "title": "Appareil hors ligne : {device_name}"
     }
   },
   "options": {

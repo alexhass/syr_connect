@@ -4,12 +4,12 @@
       "already_configured": "This hub is already configured"
     },
     "error": {
-      "cannot_connect": "Unable to connect to service. Please check your internet connection and try again.",
-      "cannot_connect_local": "Unable to connect to local device. Please verify the device IP address is correct and the device is powered on and connected to your local network.",
-      "host_invalid": "Invalid host. Enter a valid IP address or hostname.",
-      "host_no_port": "Host must not include a port number. Enter only the IP address or hostname.",
-      "invalid_auth": "Invalid username or password. Please check your credentials.",
-      "unknown": "An unexpected error occurred. Please try again later."
+      "cannot_connect": "Unable to connect to the service. The internet connection must be checked.",
+      "cannot_connect_local": "Unable to connect to the local device. The IP address must be correct, and the device must be powered on and connected to the local network.",
+      "host_invalid": "Invalid host. A valid IP address or hostname is required.",
+      "host_no_port": "The host must not include a port number. Only the IP address or hostname is allowed.",
+      "invalid_auth": "Invalid username or password. The credentials must be checked.",
+      "unknown": "An unexpected error occurred. The action can be retried later."
     },
     "step": {
       "api_json": {
@@ -21,7 +21,7 @@
           "host": "IP address or hostname of the device in the local network.",
           "model": "Select the model of the device"
         },
-        "description": "Enter model and hostname/IP for local access",
+        "description": "Model and hostname or IP address of the device",
         "title": "SYR Connect (Local)"
       },
       "api_xml": {
@@ -35,7 +35,7 @@
           "service": "Select the cloud used with the devices. Every cloud has accounts of its own.",
           "username": "The username used to sign in to the cloud."
         },
-        "description": "Enter your mobile app credentials for cloud access",
+        "description": "Credentials of the mobile app for the cloud",
         "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
@@ -47,7 +47,7 @@
           "password": "The password used to sign in to the cloud.",
           "username": "The username used to sign in to the cloud."
         },
-        "description": "The credentials for {username} are no longer valid. Please enter new credentials.",
+        "description": "The credentials for {username} are no longer valid. New credentials are required.",
         "title": "Reauthenticate SYR Connect"
       },
       "reauth_confirm_local": {
@@ -77,18 +77,18 @@
           "service": "Select the cloud used with the devices. Every cloud has accounts of its own.",
           "username": "The account used to sign in to the cloud."
         },
-        "description": "Update your settings.",
+        "description": "The settings can be changed.",
         "title": "Reconfigure SYR Connect"
       },
       "user": {
-        "description": "Choose how to connect to your SYR device:",
+        "description": "Type of connection to the SYR device:",
         "menu_option_descriptions": {
-          "api_json": "Connect directly to a device on your local network using its IP address. Works offline and provides faster response times.",
-          "api_xml": "Use your mobile app credentials to access all your devices via the SYR cloud service. Requires an internet connection."
+          "api_json": "Direct connection to a device in the local network via its IP address. Works without internet and responds faster.",
+          "api_xml": "Access to all devices of the account via the SYR cloud service with the credentials of the mobile app. Requires an internet connection."
         },
         "menu_options": {
-          "api_json": "Local access",
-          "api_xml": "Cloud access"
+          "api_json": "Local",
+          "api_xml": "Cloud"
         },
         "title": "SYR Connect"
       }
@@ -162,14 +162,8 @@
       "setnot": {
         "name": "Reset notification"
       },
-      "setrst": {
-        "name": "Reset device"
-      },
       "setsir": {
         "name": "Regenerate now"
-      },
-      "setsmr": {
-        "name": "Regenerate multiple times"
       },
       "setwrn": {
         "name": "Reset warning"
@@ -1622,27 +1616,18 @@
           "false": "Opened",
           "true": "Closed"
         }
-      },
-      "getvlv": {
-        "name": "Valve status",
-        "state": {
-          "10": "Closed",
-          "11": "Closing",
-          "20": "Opened",
-          "21": "Opening"
-        }
       }
     }
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Authentication with SYR Connect failed. Please reconfigure the integration"
+      "message": "Authentication with SYR Connect failed. The integration must be reconfigured"
     },
     "button_press_failed": {
       "message": "Could not run {entity} on the device {device}"
     },
     "coordinator_data_unavailable": {
-      "message": "No device data available yet. Please try again later"
+      "message": "No device data available yet. The action can be retried later"
     },
     "device_not_found": {
       "message": "The device is no longer available in SYR Connect"
@@ -1694,12 +1679,6 @@
     },
     "valve_unknown_format": {
       "message": "The valve of the device {device} cannot be switched because its state is unknown"
-    }
-  },
-  "issues": {
-    "device_offline": {
-      "description": "The SYR Connect device \"{device_name}\" is currently offline and cannot be reached. Please check:\n\n- Device power supply\n- Network connection\n- SYR Connect cloud service status\n\nThe device will automatically reconnect when it comes back online.",
-      "title": "Device offline: {device_name}"
     }
   },
   "options": {

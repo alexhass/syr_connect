@@ -4,12 +4,12 @@
       "already_configured": "To centrum jest już skonfigurowane"
     },
     "error": {
-      "cannot_connect": "Nie można połączyć się z usługą. Sprawdź połączenie internetowe i spróbuj ponownie.",
-      "cannot_connect_local": "Nie można połączyć się z lokalnym urządzeniem. Sprawdź, czy adres IP urządzenia jest poprawny i czy urządzenie jest włączone oraz podłączone do sieci lokalnej.",
-      "host_invalid": "Nieprawidłowy host. Podaj prawidłowy adres IP lub nazwę hosta.",
-      "host_no_port": "Host nie może zawierać numeru portu. Podaj tylko adres IP lub nazwę hosta.",
-      "invalid_auth": "Nieprawidłowa nazwa użytkownika lub hasło. Sprawdź swoje dane logowania.",
-      "unknown": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później."
+      "cannot_connect": "Nie można połączyć się z usługą. Należy sprawdzić połączenie internetowe.",
+      "cannot_connect_local": "Nie można połączyć się z lokalnym urządzeniem. Adres IP musi być poprawny, a urządzenie musi być włączone i podłączone do sieci lokalnej.",
+      "host_invalid": "Nieprawidłowy host. Wymagany jest prawidłowy adres IP lub nazwa hosta.",
+      "host_no_port": "Host nie może zawierać numeru portu. Dozwolony jest tylko adres IP lub nazwa hosta.",
+      "invalid_auth": "Nieprawidłowa nazwa użytkownika lub hasło. Należy sprawdzić dane logowania.",
+      "unknown": "Wystąpił nieoczekiwany błąd. Operację można powtórzyć później."
     },
     "step": {
       "api_json": {
@@ -21,7 +21,7 @@
           "host": "Adres IP lub nazwa hosta urządzenia w sieci lokalnej.",
           "model": "Wybór modelu urządzenia"
         },
-        "description": "Podaj model i nazwę hosta/IP do dostępu lokalnego",
+        "description": "Model oraz nazwa hosta lub adres IP urządzenia",
         "title": "SYR Connect (lokalnie)"
       },
       "api_xml": {
@@ -35,7 +35,7 @@
           "service": "Wybór chmury, w której używane są urządzenia. Każda chmura ma własne konta.",
           "username": "Nazwa użytkownika używana do logowania w chmurze."
         },
-        "description": "Podaj dane logowania do aplikacji mobilnej, aby uzyskać dostęp przez chmurę",
+        "description": "Dane logowania do aplikacji mobilnej dla chmury",
         "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
@@ -47,7 +47,7 @@
           "password": "Hasło używane do logowania w chmurze.",
           "username": "Nazwa użytkownika używana do logowania w chmurze."
         },
-        "description": "Dane logowania dla {username} są już nieważne. Podaj nowe dane logowania.",
+        "description": "Dane logowania dla {username} są już nieważne. Wymagane są nowe dane logowania.",
         "title": "Ponowne uwierzytelnienie SYR Connect"
       },
       "reauth_confirm_local": {
@@ -77,18 +77,18 @@
           "service": "Wybór chmury, w której używane są urządzenia. Każda chmura ma własne konta.",
           "username": "Konto używane do logowania w chmurze."
         },
-        "description": "Zaktualizuj ustawienia.",
+        "description": "Ustawienia można zmienić.",
         "title": "Rekonfiguruj SYR Connect"
       },
       "user": {
-        "description": "Wybierz sposób połączenia z urządzeniem SYR:",
+        "description": "Rodzaj połączenia z urządzeniem SYR:",
         "menu_option_descriptions": {
-          "api_json": "Połącz się bezpośrednio z urządzeniem w sieci lokalnej, używając jego adresu IP. Działa offline i zapewnia szybszy czas odpowiedzi.",
-          "api_xml": "Użyj danych logowania do aplikacji mobilnej, aby uzyskać dostęp do wszystkich urządzeń przez usługę chmurową SYR. Wymaga połączenia internetowego."
+          "api_json": "Bezpośrednie połączenie z urządzeniem w sieci lokalnej za pomocą jego adresu IP. Działa bez internetu i reaguje szybciej.",
+          "api_xml": "Dostęp do wszystkich urządzeń konta przez usługę chmurową SYR za pomocą danych logowania do aplikacji mobilnej. Wymaga połączenia internetowego."
         },
         "menu_options": {
-          "api_json": "Dostęp lokalny",
-          "api_xml": "Dostęp przez chmurę"
+          "api_json": "Lokalny",
+          "api_xml": "Chmura"
         },
         "title": "SYR Connect"
       }
@@ -162,14 +162,8 @@
       "setnot": {
         "name": "Resetuj powiadomienie"
       },
-      "setrst": {
-        "name": "Zresetuj urządzenie"
-      },
       "setsir": {
         "name": "Regeneruj teraz"
-      },
-      "setsmr": {
-        "name": "Regeneracja wielokrotna"
       },
       "setwrn": {
         "name": "Resetuj ostrzeżenie"
@@ -1622,27 +1616,18 @@
           "false": "Otwarty",
           "true": "Zamknięty"
         }
-      },
-      "getvlv": {
-        "name": "Status zaworu",
-        "state": {
-          "10": "Zamknięty",
-          "11": "Zamykanie",
-          "20": "Otwarty",
-          "21": "Otwieranie"
-        }
       }
     }
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Uwierzytelnianie w SYR Connect nie powiodło się. Skonfiguruj integrację ponownie"
+      "message": "Uwierzytelnianie w SYR Connect nie powiodło się. Integrację należy skonfigurować ponownie"
     },
     "button_press_failed": {
       "message": "Nie udało się wykonać {entity} na urządzeniu {device}"
     },
     "coordinator_data_unavailable": {
-      "message": "Brak jeszcze danych urządzenia. Spróbuj ponownie później"
+      "message": "Brak jeszcze danych urządzenia. Operację można powtórzyć później"
     },
     "device_not_found": {
       "message": "Urządzenie nie jest już dostępne w SYR Connect"
@@ -1694,12 +1679,6 @@
     },
     "valve_unknown_format": {
       "message": "Nie można przełączyć zaworu urządzenia {device}, ponieważ jego stan jest nieznany"
-    }
-  },
-  "issues": {
-    "device_offline": {
-      "description": "Urządzenie SYR Connect \"{device_name}\" jest obecnie offline i nie można się z nim połączyć. Sprawdź:\n\n- Zasilanie urządzenia\n- Połączenie sieciowe\n- Status usługi chmurowej SYR Connect\n\nUrządzenie połączy się automatycznie po powrocie do trybu online.",
-      "title": "Urządzenie offline: {device_name}"
     }
   },
   "options": {

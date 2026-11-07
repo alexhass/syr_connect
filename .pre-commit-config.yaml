@@ -33,9 +33,9 @@ repos:
         additional_dependencies: ["ruff"]
         pass_filenames: false
         args: ["format", "--check", "."]
-      # A name in a German compound is joined with hyphens: SYR-Connect-Konto
+      # A product name in a German compound stays unchanged: SYR Connect-Konto
       - id: german-compounds
-        name: German compounds with hyphens
-        entry: '\b(SYR Connect|Home Assistant)-\w'
+        name: German compounds with product names
+        entry: '\b(SYR-Connect|Home-Assistant)\b'
         language: pygrep
-        files: ^README\.de\.md$
+        files: ^(README\.de\.md|custom_components/syr_connect/translations/de\.json)$

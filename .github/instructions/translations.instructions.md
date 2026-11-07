@@ -24,8 +24,8 @@ applyTo: "custom_components/syr_connect/{const.py,sensor.py,select.py,switch.py,
 - A qualifier after a name goes in parentheses: `Buzzer (profile 1)`, `Aborted (pressure drop)`, `Leak protection level (present)`. No dash constructions (`Leakage protection - Present level`) and no bare appended words (`Regenerationszyklen Anzahl`).
 - A container, tank or bottle is named with the preposition of the language instead of parentheses: `Salt volume in container 1`, `Salzmenge in Behälter 1`, `Quantité de sel dans le réservoir 1`, `Ilość soli w pojemniku 1`.
 - Use the normal hyphen (`-`), never the non-breaking hyphen (U+2011). Names and states end without a period.
-- English is American English (`Synchronization`) in sentence case (`Cloud access`, `SYR Connect options`).
-- German: join compounds, never split them with a space ("Deppenleerzeichen"). Join with a hyphen where a part is an abbreviation, a name or would be hard to read: `MAC-Adresse`, `WLAN-Signalstärke`, `Software-Update`, `SYR-Connect-Gerät`, `Mikroleckage-Test-Intervall`. The qualifier in parentheses starts with a capital letter: `Regenerationen (Gesamt)`, `Temperatur (Minimal)`; the other languages keep it lowercase.
+- English is American English (`Synchronization`) in sentence case (`Firmware update`, `SYR Connect options`).
+- German: join compounds, never split them with a space ("Deppenleerzeichen"). Join with a hyphen where a part is an abbreviation, a name or would be hard to read: `MAC-Adresse`, `WLAN-Signalstärke`, `Software-Update`, `Mikroleckage-Test-Intervall`. A product name stays unchanged and is joined with a hyphen: `SYR Connect-Gerät`, `Home Assistant-Instanz`, never `SYR-Connect-Gerät`. The qualifier in parentheses starts with a capital letter: `Regenerationen (Gesamt)`, `Temperatur (Minimal)`; the other languages keep it lowercase.
 - Dutch joins compounds as German does: `Microlektestinterval`, `Wi-Fi-signaalsterkte`, `SYR Connect-apparaat`.
 - French puts a space before `:` and uses straight apostrophes (`'`).
 - `pt.json` is European Portuguese (`utilizador`, `palavra-passe`, `ligação`, `fuga`, `caudal`, `a abrir`), not Brazilian Portuguese.

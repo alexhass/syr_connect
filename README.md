@@ -38,7 +38,7 @@ Examples of device interfaces:
 
 ## Installation
 
-[![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
+[![Open the Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
 
 ### Marketplace (recommended)
 
@@ -47,48 +47,49 @@ Examples of device interfaces:
 3. Click "Install"
 4. Restart Home Assistant
 
-### Manual Installation
+### Manual installation
 
-1. Copy the `syr_connect` folder to your `custom_components` directory
+1. Copy the `syr_connect` folder to the `custom_components` directory
 2. Restart Home Assistant
 
 ## Configuration
 
-[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
+[![Open the Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
 
 The integration supports two configuration modes:
 
-### Cloud API Setup (All Devices)
+### Cloud API setup (all devices)
 
 1. Go to Settings > Devices & Services
 2. Click "+ Add Integration"
 3. Search for "SYR Connect"
-4. Choose "Cloud Access"
-5. Enter your SYR Connect App credentials:
-   - **Username**: Your SYR Connect account email
-   - **Password**: Your SYR Connect account password
+4. Select "Cloud"
+5. Enter the credentials of the mobile app:
+   - **Service**: The app in which the devices are set up
+   - **Username**: Username of the account in this app
+   - **Password**: Password of the account in this app
 
-### Local API Setup (Newer Devices Only)
+### Local API setup (newer devices only)
 
-For devices with local JSON API support (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect):
+For newer devices with a local JSON API, for example the NeoSoft and Trio devices, SafeTech Lock, TRIO Lock, AC 3200 and RSA Connect and their identical devices of other brands. The model selection in the setup lists all supported models:
 
 1. Go to Settings > Devices & Services
 2. Click "+ Add Integration"
 3. Search for "SYR Connect"
-4. Choose "Local Access"
+4. Select "Local"
 5. Enter the device information:
-   - **Device Model**: Select your device model (e.g. NeoSoft 2500 Connect)
-   - **Host**: IP address of your device (e.g., `192.168.178.199`)
+   - **Device model**: Model of the device (e.g., NeoSoft 2500 Connect)
+   - **Host**: IP address or hostname of the device (e.g., `192.168.178.199`)
 
-**Note**: To find your device's IP address, check your router's DHCP client list or the device's display menu.
+**Note**: The IP address of the device is shown in the DHCP client list of the router or in the display menu of the device.
 
-**Important**: For stable operation, the device must have a **static IP address** or a **reserved DHCP lease** (DHCP reservation). If the device's IP address changes, the integration will lose connection and needs to be reconfigured. Alternatively, you can use a hostname if your network supports local DNS resolution.
+**Important**: For stable operation, the device must have a **static IP address** or a **reserved DHCP lease** (DHCP reservation). If the IP address of the device changes, the integration loses the connection. The new address is entered with "Reconfigure" in the three dots menu (⋮) of the entry. Alternatively, a hostname can be used if the network supports local DNS resolution.
 
 ## Features
 
-The integration automatically creates entities for all your SYR Connect devices.
+The integration automatically creates entities for all SYR Connect devices of the account.
 
-### Supported Devices
+### Supported devices
 
 This integration works with SYR water softeners and leakage detection devices and other that appear in the SYR Connect cloud (via the respective mobile app).
 
@@ -170,20 +171,20 @@ Other devices are also of interest, but may need to be integrated or at least te
 - TAKE Single Water Softener
 - Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
-**Note**: If the device is visible in your SYR Connect account, the integration will discover it and create the entities automatically. If you own an "untested device", it is helpful to share the diagnostic data to find out whether there are any unknown values or whether everything is working as desired. This also allows the list of tested devices to be continuously expanded.
+**Note**: If a device is visible in the SYR Connect account, the integration discovers it and creates the entities automatically. For an "untested device", shared diagnostics help to find unknown values and to check whether everything works as intended. This also allows the list of tested devices to be expanded.
 
-### Unsupported Devices
+### Unsupported devices
 
-- Oceanic Limex SMART COMPACT/MINI/MAXI devices. These devices use a different cloud portal (`i-lexconnect.com`) instead of the SYR Connect cloud service. This is a rebranded Husty SaoCal device.
+- SYR Oceanic Limex SMART COMPACT/MINI/MAXI devices. These devices use a different cloud portal (`i-lexconnect.com`) instead of the SYR Connect cloud service. These are rebranded Husty SaoCal devices.
 - Husty SaoCal devices. See [husty_integration_home_assistant](https://github.com/trafopowielacz/husty_integration_home_assistant)
 
-### Supported Functionality
+### Supported functionality
 
 #### Sensors
 
-The integration provides comprehensive monitoring of your devices:
+The integration provides comprehensive monitoring of the devices:
 
-#### Water Quality & Capacity
+#### Water quality & capacity
 
 - Raw/Soft water hardness monitoring
 - Water conductivity (µS/cm)
@@ -194,7 +195,7 @@ The integration provides comprehensive monitoring of your devices:
 - Total volume monitoring
 - Water hardness unit display
 
-#### Regeneration Information
+#### Regeneration information
 
 - Regeneration status and active-tank indicator (up to 3 tanks)
 - Regeneration mode (Standard / ECO / Power / Automatic)
@@ -204,13 +205,13 @@ The integration provides comprehensive monitoring of your devices:
 - Regeneration time schedule
 - Cycle counters and timing
 
-#### Salt Management
+#### Salt management
 
-- Salt volume in containers (1-3)
+- Salt volume in containers (1–3)
 - Salt stock levels (weeks remaining)
 - Resin reserve capacity per bottle
 
-#### System Monitoring
+#### System monitoring
 
 - Water pressure monitoring
 - Flow rate (current and instantaneous)
@@ -218,7 +219,7 @@ The integration provides comprehensive monitoring of your devices:
 - Battery and mains voltage
 - Alarm, notification, and warning status (current code and last 8 history entries)
 
-#### Leak Protection (LEXplus10SL / Trio DFR/LS)
+#### Leak protection (LEXplus10SL / Trio DFR/LS)
 
 - Leak protection volume and duration limits (present and absent profiles)
 - Active leak protection profile index
@@ -226,18 +227,18 @@ The integration provides comprehensive monitoring of your devices:
 - Temporary deactivation timer
 - Leakage warning threshold (%)
 
-#### Microleakage Testing (Trio DFR/LS, SafeTech, SafeTech+, TRIO Lock, SafeTech Lock)
+#### Microleakage test (Trio DFR/LS, SafeTech, SafeTech+, TRIO Lock, SafeTech Lock)
 
 - Microleakage test interval and status
 - Test duration and event count
 
-#### Self-Learning Phase (Trio DFR/LS, SafeTech+, TRIO Lock, SafeTech Lock)
+#### Self-learning phase (Trio DFR/LS, SafeTech+, TRIO Lock, SafeTech Lock)
 
 - Remaining and elapsed self-learning time
 - Flow rate and accumulated volume during self-learning
 - Self-learning settings: offset for volume and time, offset for flow, minimum flow
 
-#### Floor Leak Sensor (SafeFloor)
+#### Floor sensor (SafeFloor)
 
 - Current humidity and temperature
 - Battery level (%)
@@ -253,7 +254,7 @@ The integration provides comprehensive monitoring of your devices:
 - Next scheduled maintenance dates (semi-annual and annual)
 - Expected daily water consumption
 
-#### Device Information
+#### Device information
 
 - Serial number
 - Firmware version and model
@@ -262,48 +263,57 @@ The integration provides comprehensive monitoring of your devices:
 - Wi-Fi connectivity status and signal strength
 - Time zone (UTC offset)
 
-#### Binary Sensors
+#### Binary sensors
 
-- **Buzzer State**: Indicates whether the device buzzer is currently enabled
-- **Leak Protection**: Shows whether the leak protection is active or deactivated
-- **Valve Test**: Shows whether a valve test is running
-- **Firmware Check**: Shows whether new firmware is available (checked at startup and every 6 hours)
-- **Daylight Saving Time**: Shows whether the device switches to daylight saving time automatically
-- **Temperature, Pressure and Conductivity Sensor**: Shows whether the measuring sensor is active or deactivated
+- **Buzzer on alarm**: Shows whether the buzzer sounds on alarm
+- **Leak protection**: Shows whether the leak protection is active or deactivated
+- **Valve test**: Shows whether a valve test is running
+- **Firmware check**: Shows whether new firmware is available (checked at startup and every 6 hours)
+- **Daylight saving time**: Shows whether the device switches to daylight saving time automatically
+- **Temperature sensor**, **Pressure sensor**, **Conductivity sensor**: Show whether the measuring sensor is active or deactivated
+- **Floor sensor monitoring**: Shows whether the monitoring of the floor sensors is enabled
 
 #### Buttons (Actions)
 
-- **Regenerate Now**: Start immediate regeneration cycle
-- **Reset Alarm**: Clear active alarm messages
-- **Reset Notification**: Clear notification messages
-- **Reset Warning**: Clear warning messages
+- **Regenerate now**: Start an immediate regeneration
+- **Reset alarm**: Clear active alarm messages
+- **Reset notification**: Clear notification messages
+- **Reset warning**: Clear warning messages
+- **Start microleakage test**: Start the microleakage test. The valve stays closed for about 4 minutes, and drawing water during the test gives a negative result (local API only)
 
-#### Switch Controls
+#### Switches
 
-- **Buzzer**: Enable or disable the device buzzer
-- **Allow Profile Change on the Device**: Allow or block changing the leak protection profile with the button on the device
+- **Buzzer on alarm**: Enable or disable the buzzer on alarm
+- **Allow profile change on the device**: Allow or block changing the leak protection profile with the button on the device
+- **Filling mode**: Enable or disable the automatic filling (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect)
+- **Automatic backwash**: Enable or disable the automatic backwash (automatic backwash RSA)
+- **Backwash reminder**: Enable or disable the backwash reminder (automatic backwash RSA)
 
-#### Select Controls (Configuration)
+#### Selects (configuration)
 
-- **Regeneration Time**: Set the daily regeneration time (15-minute intervals)
-- **Leak Protection Profile**: Select active leak protection profile (for devices with multiple profiles)
-- **Salt Amount**: Configure salt quantity in containers (varies by model, up to 3 containers)
-- **Regeneration Interval**: Set how often regeneration occurs (model dependent: 1–4 days)
-- **Display Rotation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display)
-- **Filter Type**: Select the installed filter type (for NeoSoft devices)
-- **Regeneration Mode**: Select Standard / ECO / Power / Automatic (for devices that support it)
-- **Raw / Soft Water Hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l)
-- **Water Treatment and Filling** (MuCo-based devices): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure
-- **Floor Leak Sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval
+- **Regeneration time**: Set the daily regeneration time (15-minute intervals)
+- **Active leak protection profile**: Select the active leak protection profile (for devices with multiple profiles)
+- **Salt volume in container 1–3**: Set the salt volume per container (varies by model, up to 3 containers)
+- **Regeneration interval**: Set how often regeneration occurs (model dependent: 1–4 days)
+- **Display orientation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display)
+- **Filter type**: Select the installed filter type (for NeoSoft devices)
+- **Regeneration mode**: Select Standard / ECO / Power / Automatic (for devices that support it)
+- **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l)
+- **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure
+- **Floor sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval
 
-#### Valve Control
+#### Valve control
 
-- **Water Shut-off Valve**: Control the main water shut-off valve
+- **Valve shut-off**: Control the main water shut-off valve
   - Open and close valve operations
   - Monitor current valve position and status
   - Integrate with leak detection automations for automatic shutoff
 
-### API Modes
+#### Firmware update
+
+- **Firmware update**: Shows whether new firmware is available and installs it. The device must be connected to the internet via Wi-Fi. The device does not report the number of the new version
+
+### API modes
 
 The integration supports two API modes:
 
@@ -317,7 +327,7 @@ The integration supports two API modes:
 
 #### Local API (JSON-based)
 
-- **Supported by**: Select newer models with built-in local API (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect)
+- **Supported by**: Newer models with a built-in local API, for example NeoSoft, Trio DFR/LS, TRIO Lock, SafeTech Lock, AC 3200, RSA, Pontos Base, All in One +, HygBox and newer SafeTech variants, also from other brands. The model selection in the setup lists all supported models
 - **Connection**: Direct to device via local network (port 5333)
 - **Authentication**: No credentials required
 - **Advantages**: No internet dependency, faster response times, no cloud rate limits
@@ -325,36 +335,38 @@ The integration supports two API modes:
 
 The integration automatically detects which API mode to use based on the configuration provided during setup.
 
-## How Data is Updated
+## How data is updated
 
 The integration polls the device API at regular intervals (default: 60 seconds). The update process depends on the API mode:
 
-### Cloud API Update Process
+### Cloud API update process
 
-1. **Login**: Authenticates with the SYR Connect cloud API using your credentials
-2. **Device Discovery**: Retrieves all projects and devices associated with your account
-3. **Status Updates**: For each device, fetches current status including all sensor values
-4. **Entity Updates**: Updates all Home Assistant entities with the latest values
+1. **Login**: Authenticates with the SYR Connect cloud API using the credentials
+2. **Device discovery**: Retrieves all projects and devices associated with the account
+3. **Status updates**: For each device, fetches current status including all sensor values
+4. **Entity updates**: Updates all Home Assistant entities with the latest values
 
-### Local API Update Process
+### Local API update process
 
-1. **Status Updates**: Directly fetches device status from the local endpoint
-2. **Entity Updates**: Updates all Home Assistant entities with the latest values
+1. **Status updates**: Directly fetches device status from the local endpoint
+2. **Entity updates**: Updates all Home Assistant entities with the latest values
 
 The local API is faster and doesn't depend on internet connectivity, making it more reliable for real-time monitoring and automations.
 
-If a device becomes unavailable (e.g., offline or communication error), its entities are marked as unavailable until the next successful update.
+If an update fails temporarily (e.g., timeout, cloud maintenance or an incomplete answer), the entities keep their last values and the error is written to the log. Entities only become unavailable when the cloud reports the device as offline. They stay unavailable until the device sends a complete status again.
 
-### SafeFloor Measurement History
+### SafeFloor measurement history
 
 A SafeFloor measures temperature and humidity regularly but sends its measurements to the cloud only every few days, so its sensors show a flat line followed by a jump. The integration fetches the single measurements from the cloud every 12 hours and stores them as statistics named after the sensors (e.g. "Utility Room Temperature"). To see the real curve, add a card to a dashboard:
 
 1. Open the dashboard and select **Edit dashboard** at the top right.
 2. Select **Add card**, type `Statistics` into **Search cards** and pick **Statistics graph**.
-3. Select **Show code editor**, replace the text with the snippet below and select **Save**.
+3. Select **Show code editor**, replace the text with one of the snippets below and select **Save**.
 4. Select **Done**.
 
-Replace `123456789` with the serial number of your SafeFloor. For the humidity, add a second card with `_gethmd_history` instead of `_getcel_history`.
+Replace `123456789` with the serial number of the SafeFloor. One card is needed per measurement.
+
+Temperature:
 
 ```yaml
 type: statistics-graph
@@ -368,152 +380,167 @@ entities:
   - syr_connect:123456789_getcel_history
 ```
 
+Humidity:
+
+```yaml
+type: statistics-graph
+title: Humidity
+chart_type: line
+period: hour
+days_to_show: 14
+stat_types:
+  - mean
+entities:
+  - syr_connect:123456789_gethmd_history
+```
+
 The cloud keeps the measurements of the last 6 days only. Keep the synchronization interval of the sensor at 6 days or less, otherwise measurements are lost. The statistics are deleted together with the device.
 
-### Known Limitations
+### Known limitations
 
-- **Cloud Dependency**: The cloud API requires an active internet connection and functioning cloud service
-- **Update Interval**: Minimum recommended update interval is 60 seconds to avoid API rate limiting when using cloud API
-- **Limited Write Access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
-- **Filter Backwash Interval**: The select for this setting is temporarily disabled because the device resets the value after writing it; the current value is still shown as a sensor
-- **Local API Support**: Only some newer device models (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) provide a local JSON API. Most other models, including all LEXplus variants, require cloud API access
+- **Cloud dependency**: The cloud API requires an active internet connection and functioning cloud service
+- **Update interval**: The cloud API allows an update interval of at least 60 seconds, the local API of at least 10 seconds
+- **Limited write access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App
+- **Filter backwash interval**: The select for this setting is temporarily disabled because the device resets the value after writing it; the current value is still shown as a sensor
+- **Local API support**: Not every model provides a local JSON API. LEX 1500, LEXplus, i-LEX, Safe-T, SafeFloor, HVA, hygiene modules and older SafeTech variants require cloud API access
 
-## Use Cases & Examples
+## Use cases & examples
 
-### Automation Examples
+### Automation examples
 
-#### Low Salt Alert
+The examples use the YAML syntax of `configuration.yaml`. In all examples, `<serial_number>` must be replaced with the serial number of the device and `<device_name>` with the name of the mobile app device in Home Assistant.
 
-Get notified when salt supply is running low:
+#### Low salt alert
+
+Notification when the salt supply is running low:
 
 ```yaml
 automation:
-  - alias: "SYR: Low Salt Alert"
-    trigger:
-      - platform: numeric_state
+  - alias: "SYR: Low salt alert"
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.syr_connect_<serial_number>_getss1
         below: 2  # Less than 2 weeks of salt remaining
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "Water Softener Alert"
+          title: "Water softener"
           message: "Salt supply low - less than 2 weeks remaining"
 ```
 
-#### Daily Regeneration Report
+#### Daily regeneration report
 
-Get a daily summary of regeneration activity:
+Daily summary of the regenerations, the remaining capacity and the salt supply:
 
 ```yaml
 automation:
-  - alias: "SYR: Daily Regeneration Report"
-    trigger:
-      - platform: time
+  - alias: "SYR: Daily regeneration report"
+    triggers:
+      - trigger: time
         at: "20:00:00"
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "Water Softener Daily Report"
+          title: "Water softener daily report"
           message: >
-            Regenerations today: {{ states('sensor.syr_connect_<serial_number>_getnor') }}
-            Remaining capacity: {{ states('sensor.syr_connect_<serial_number>_getres') }}L
+            Regenerations (total): {{ states('sensor.syr_connect_<serial_number>_getnor') }}
+            Remaining capacity: {{ states('sensor.syr_connect_<serial_number>_getres') }} L
             Salt supply: {{ states('sensor.syr_connect_<serial_number>_getss1') }} weeks
 ```
 
-#### Alarm Notification
+#### Alarm notification
 
-Immediate notification when an alarm is triggered:
+Immediate notification when the device reports an alarm:
 
 ```yaml
 automation:
-  - alias: "SYR: Alarm Notification"
-    trigger:
-      - platform: template
-        value_template: "{{ states('sensor.syr_connect_<serial_number>_getalm') != 'no_alarm' }}"
-    action:
-      - service: notify.mobile_app
+  - alias: "SYR: Alarm notification"
+    triggers:
+      - trigger: template
+        value_template: >
+          {{ states('sensor.syr_connect_<serial_number>_getala')
+             not in ['no_alarm', 'unknown', 'unavailable'] }}
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "⚠️ Water Softener Alarm"
-          message: "Check your SYR device - alarm detected! Current alarm: {{ states('sensor.syr_connect_<serial_number>_getalm') }}"
+          title: "⚠️ SYR alarm"
+          message: "Current alarm: {{ states('sensor.syr_connect_<serial_number>_getala') }}"
           data:
             priority: high
 ```
 
-#### Water Flow Monitoring
+#### Water flow monitoring
 
-Alert on unusually high water flow (possible leak):
+Alert on unusually high water flow over several minutes (possible leak):
 
 ```yaml
 automation:
-  - alias: "SYR: High Flow Alert"
-    trigger:
-      - platform: numeric_state
+  - alias: "SYR: High flow alert"
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.syr_connect_<serial_number>_getflo
-        above: 20  # Flow rate above 20 L/min
+        above: 1200  # Flow rate above 1200 l/h (20 l/min)
         for:
           minutes: 5
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "High Water Flow Detected"
-          message: "Unusual water flow - check for leaks!"
+          title: "High water flow detected"
+          message: "Unusual water flow - possible leak"
 ```
 
-#### Leak Sensor — Close Water Valve
+#### Leak sensor: close water valve
 
-Automatically close the water valve when a leak sensor detects water. This example uses the standard `valve.close` service to close the SYR water shut-off valve. Replace the entity IDs with the correct IDs from your system. Test very carefully that this automation works correctly, as it can become a critical safety action.
+Closes the SYR water shut-off valve with the standard action `valve.close` when a leak sensor detects water. The entity IDs must be replaced with the IDs used in the installation. This automation can become a critical safety action, so it must be tested very carefully.
 
 ```yaml
 automation:
-  - alias: "SYR: Close Valve On Leak"
-    description: "Set SYR valve to closed (setAB = true) when a leak sensor detects water."
-    trigger:
-      - platform: state
+  - alias: "SYR: Close valve on leak"
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.house_leak_sensor
-        to: 'on'
-    action:
-      - service: valve.close
+        to: "on"
+    actions:
+      - action: valve.close
         target:
           entity_id: valve.syr_connect_<serial_number>_getab
-      - service: notify.mobile_app
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "SYR: Leak detected — valve closed"
-          message: "Water leak detected — SYR water shut-off valve has been closed automatically."
+          title: "SYR: Leak detected - valve closed"
+          message: "Water leak detected - the SYR water shut-off valve has been closed automatically."
 ```
 
-#### Scheduled Regeneration Override
+#### Weekend regeneration
 
-Trigger regeneration at a specific time:
+Starts a regeneration on Saturdays and Sundays at 03:00:
 
 ```yaml
 automation:
-  - alias: "SYR: Weekend Regeneration"
-    trigger:
-      - platform: time
+  - alias: "SYR: Weekend regeneration"
+    triggers:
+      - trigger: time
         at: "03:00:00"
-    condition:
+    conditions:
       - condition: time
         weekday:
           - sat
           - sun
-    action:
-      - service: button.press
+    actions:
+      - action: button.press
         target:
           entity_id: button.syr_connect_<serial_number>_setsir
 ```
 
-**Note**: Replace `<serial_number>` with your actual device serial number in all examples.
+## Configuration options
 
-## Configuration Options
+### Update interval
 
-### Scan Interval
+Data is updated every 60 seconds by default. The interval is set in the integration options: at least 60 seconds for the cloud, at least 10 seconds for local devices and at most 600 seconds in both cases.
 
-Data is updated every 60 seconds by default. You can configure this in the integration options:
-
-1. Go to Settings > Devices & Services
-2. Find the SYR Connect integration
-3. Click "Configure"
-4. Adjust the scan interval (in seconds)
+1. Open Settings > Devices & services
+2. Open the SYR Connect integration
+3. Select "Configure"
+4. Adjust the update interval (in seconds)
 
 ## Removal
 
@@ -529,52 +556,56 @@ All associated devices and entities will be automatically removed.
 
 ## Troubleshooting
 
-### Download Diagnostics
+### Download diagnostics
 
-If you encounter issues, you can download diagnostic information:
+For problems, the diagnostics of the integration entry help. They contain the data of all devices of the entry:
 
-1. Go to Settings > Devices & Services
-2. Find the SYR Connect integration
-3. Click on the device
-4. Click the three dots (⋮) menu
-5. Select "Download diagnostics"
+1. Open Settings > Devices & services
+2. Open the SYR Connect integration
+3. Open the three dots menu (⋮) of the entry (account or local device)
+4. Select "Download diagnostics"
 
-This file contains helpful information for troubleshooting (sensitive data like passwords are automatically redacted).
+Passwords, usernames, session data, the code number of the device, IP addresses, gateways and the Wi-Fi name are removed from the file, and the serial number is masked.
+
+### Debug logs
+
+Enabling and disabling debug logging is described in [docs/howto-debugging.md](docs/howto-debugging.md).
 
 ### Connection fails
 
-- **Check credentials**: Verify your SYR Connect App username and password
-- **Test the app**: Make sure you can log in to the SYR Connect mobile app
+- **Check credentials**: Verify the username and password of the SYR Connect App
+- **Test the app**: The login to the SYR Connect mobile app must work with the same account
 - **Check logs**: Go to Settings > System > Logs and search for "syr_connect" errors
-- **Network issues**: Ensure your Home Assistant instance has internet access
+- **Network issues**: Home Assistant must have internet access
 
 ### Authentication errors
 
-If you see "Authentication failed" errors:
+For "Authentication failed" errors:
 
-1. Verify your credentials are correct
+1. Verify the credentials
 2. The integration will prompt for reauthentication
 3. Go to Settings > Devices & Services
 4. Click "Authenticate" on the SYR Connect integration
-5. Enter your credentials again
+5. Enter the credentials again
 
 ### No devices found
 
 - **App setup**: Ensure devices are properly configured in the SYR Connect App
-- **Account access**: Verify you're using the same account that has the devices
+- **Account access**: The account must be the one in which the devices are set up
 - **Device status**: Check if devices are online in the SYR Connect App
 - **Logs**: Check Home Assistant logs for specific error messages
 
 ### Entities show as unavailable
 
-- **Device offline**: Check if the device is online in the SYR Connect App
-- **Network issues**: Verify internet connectivity
-- **Cloud service**: The SYR Connect cloud service might be temporarily unavailable
-- **Wait for update**: Entities will become available again on the next successful update
+- **Device offline**: The cloud reports the device as offline. The power supply and the network connection of the device must be checked
+- **SYR Connect App**: The device must be shown as online in the SYR Connect App
+- **Back online**: The entities become available again as soon as the device sends a complete status
+
+Temporary problems with the connection or the cloud service do not make entities unavailable. The entities keep their last values, and the error is written to the log.
 
 ### High CPU/Memory usage
 
-- **Increase scan interval**: Set a higher value (e.g., 120-300 seconds) in integration options
+- **Increase update interval**: Set a higher value (e.g., 120–300 seconds) in integration options
 - This reduces API calls and system load
 
 ## Dependencies
@@ -586,10 +617,10 @@ The integration requires the following Python packages:
 
 **Note**: The integration uses `defusedxml` for secure XML parsing and `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's built-in crypto libraries.
 
-This package is **automatically installed** by Home Assistant when you:
+Home Assistant installs the packages **automatically** when:
 
-1. Add the integration through the UI
-2. Restart Home Assistant after installation
+1. The integration is added through the UI
+2. Home Assistant is restarted after the installation
 
 For detailed system requirements and troubleshooting, see [REQUIREMENTS.md](REQUIREMENTS.md).
 
@@ -599,18 +630,18 @@ For detailed system requirements and troubleshooting, see [REQUIREMENTS.md](REQU
 
 This integration controls water treatment and water shut-off systems. Improper configuration or malfunctioning automations could result in water damage, system failures, or property damage.
 
-- **Use at Your Own Risk**: This software is provided "as is" without warranty of any kind
-- **Test Thoroughly**: Always test automations in safe conditions before deploying them
-- **Critical Systems**: Valve control automations can shut off your entire water supply - test carefully
-- **No Liability**: The authors and contributors are not responsible for any damages, water damage, property damage, or other issues resulting from the use of this integration
-- **Cloud Dependency**: This integration relies on the SYR Connect cloud service - availability is not guaranteed
-- **Backup Plan**: Ensure you have alternative access to your water shut-off valve in case of system failure
+- **Use at your own risk**: This software is provided "as is" without warranty of any kind
+- **Test thoroughly**: Always test automations in safe conditions before deploying them
+- **Critical systems**: Valve control automations can shut off the entire water supply and must be tested carefully
+- **No liability**: The authors and contributors are not responsible for any damages, water damage, property damage, or other issues resulting from the use of this integration
+- **Cloud dependency**: This integration relies on the SYR Connect cloud service, whose availability is not guaranteed
+- **Backup plan**: An alternative access to the water shut-off valve must exist in case of system failure
 
-By installing and using this integration, you acknowledge these risks and agree to use it responsibly.
+Installing and using this integration means acknowledging these risks and agreeing to use it responsibly.
 
 ## License
 
-Apache License 2.0 - see LICENSE file
+Apache License 2.0, see [LICENSE](LICENSE)
 
 ## Credits
 

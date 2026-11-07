@@ -290,6 +290,7 @@ _SYR_CONNECT_SENSOR_STA_VALUE_MAP = {
     "Płukanie wolne": "status_slow_rinse",
     "Płukanie szybkie": "status_fast_rinse",
     "Napełnianie": "status_filling",
+    "Bitte Salz nachfüllen": "status_refill_salt",
     "": "status_inactive",
     # Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report getSTA
     # as a plain integer code instead of a status message string.

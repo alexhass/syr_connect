@@ -1,7 +1,7 @@
 <!-- markdownlint-disable-next-line MD041 -->
 <img src="custom_components/syr_connect/brand/logo.png" alt="Syr" width="200">
 
-# SYR Connect – Home Assistant Integration
+# SYR Connect - Home Assistant-Integration
 
 [![GitHub Release](https://img.shields.io/github/release/alexhass/syr_connect.svg?style=flat)](https://github.com/alexhass/syr_connect/releases)
 [![syr_connect installs](https://img.shields.io/badge/dynamic/json?logo=home-assistant&logoColor=ccc&label=usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.syr_connect.total)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
@@ -12,7 +12,7 @@
 [![ci](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexhass/syr_connect/graph/badge.svg?token=8P822HPPF3)](https://codecov.io/gh/alexhass/syr_connect)
 
-Diese Custom-Integration ermöglicht die Steuerung von SYR-Connect-Geräten über Home Assistant. Des Weiteren kann diese Integration auch für die baugleichen Geräte anderer Marken genutzt werden. Gemischte Installationen unterschiedlicher Marken werden ebenfalls unterstützt.
+Diese Custom-Integration ermöglicht die Steuerung von SYR Connect-Geräten über Home Assistant. Des Weiteren kann diese Integration auch für die baugleichen Geräte anderer Marken genutzt werden. Gemischte Installationen unterschiedlicher Marken werden ebenfalls unterstützt.
 
 | Marke | Link |
 | ------ | ------ |
@@ -38,59 +38,60 @@ Beispiele der Geräteoberflächen:
 
 ## Installation
 
-[![Home-Assistant-Instanz öffnen und ein Repository im Marketplace öffnen.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
+[![Home Assistant-Instanz öffnen und ein Repository im Marketplace öffnen.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
 
 ### Marketplace (empfohlen)
 
-1. Gehe zu Einstellungen > Marketplace
-2. Suche nach „SYR Connect“
-3. Klicke auf „Installieren“
-4. Starte Home Assistant neu
+1. Einstellungen > Marketplace öffnen
+2. Nach „SYR Connect“ suchen
+3. „Installieren“ auswählen
+4. Home Assistant neu starten
 
 ### Manuelle Installation
 
-1. Kopiere den Ordner `syr_connect` in dein Verzeichnis `custom_components`
-2. Starte Home Assistant neu
+1. Den Ordner `syr_connect` in das Verzeichnis `custom_components` kopieren
+2. Home Assistant neu starten
 
 ## Konfiguration
 
-[![Home-Assistant-Instanz öffnen und die Einrichtung einer neuen Integration starten.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
+[![Home Assistant-Instanz öffnen und die Einrichtung einer neuen Integration starten.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
 
 Die Integration unterstützt zwei Konfigurationsmodi:
 
-### Cloud-API Einrichtung (Alle Geräte)
+### Einrichtung der Cloud-API (Alle Geräte)
 
-1. Gehe zu Einstellungen > Geräte & Dienste
-2. Klicke auf "+ Integration hinzufügen"
-3. Suche nach "SYR Connect"
-4. Wähle "Cloud-Zugriff"
-5. Gib deine SYR Connect App-Zugangsdaten ein:
-   - **Benutzername**: Deine SYR Connect Konto-E-Mail
-   - **Passwort**: Dein SYR Connect Konto-Passwort
+1. Einstellungen > Geräte & Dienste öffnen
+2. „+ Integration hinzufügen“ auswählen
+3. Nach „SYR Connect“ suchen
+4. „Cloud“ auswählen
+5. Die Zugangsdaten der App eingeben:
+   - **Dienst**: Die App, in der die Geräte eingerichtet sind
+   - **Benutzername**: Benutzername des Kontos in dieser App
+   - **Passwort**: Passwort des Kontos in dieser App
 
-### Lokale API Einrichtung (Nur neuere Geräte)
+### Einrichtung der lokalen API (Nur neuere Geräte)
 
-Für Geräte mit lokaler JSON-API-Unterstützung (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect):
+Für neuere Geräte mit lokaler JSON-API, zum Beispiel die NeoSoft- und Trio-Geräte, SafeTech Lock, TRIO Lock, AC 3200 und RSA Connect und ihre baugleichen Geräte anderer Marken. Die Modellauswahl in der Einrichtung zeigt alle unterstützten Modelle:
 
-1. Gehe zu Einstellungen > Geräte & Dienste
-2. Klicke auf "+ Integration hinzufügen"
-3. Suche nach "SYR Connect"
-4. Wähle "Lokaler-Zugriff"
-5. Gib die Geräteinformationen ein:
-   - **Gerätemodell**: Wähle dein Gerätemodell (z.b. NeoSoft 2500 Connect)
-   - **Host**: IP-Adresse deines Geräts (z.B. `192.168.178.199`)
+1. Einstellungen > Geräte & Dienste öffnen
+2. „+ Integration hinzufügen“ auswählen
+3. Nach „SYR Connect“ suchen
+4. „Lokal“ auswählen
+5. Die Geräteinformationen eingeben:
+   - **Gerätemodell**: Modell des Geräts (z. B. NeoSoft 2500 Connect)
+   - **Host**: IP-Adresse oder Hostname des Geräts (z. B. `192.168.178.199`)
 
-**Hinweis**: Um die IP-Adresse deines Geräts zu finden, überprüfe die DHCP-Client-Liste deines Routers oder das Display-Menü des Geräts.
+**Hinweis**: Die IP-Adresse des Geräts steht in der DHCP-Client-Liste des Routers oder im Display-Menü des Geräts.
 
-**Wichtig**: Für einen stabilen Betrieb muss das Gerät eine **statische IP-Adresse** oder eine **reservierte DHCP-Adresse** (DHCP-Reservierung) haben. Wenn sich die IP-Adresse des Geräts ändert, verliert die Integration die Verbindung und muss neu konfiguriert werden. Alternativ kannst du einen Hostnamen verwenden, wenn dein Netzwerk lokale DNS-Auflösung unterstützt.
+**Wichtig**: Für einen stabilen Betrieb muss das Gerät eine **statische IP-Adresse** oder eine **reservierte DHCP-Adresse** (DHCP-Reservierung) haben. Ändert sich die IP-Adresse des Geräts, verliert die Integration die Verbindung. Die neue Adresse wird über „Neu konfigurieren“ im Drei-Punkte-Menü (⋮) des Eintrags eingegeben. Alternativ kann ein Hostname verwendet werden, wenn das Netzwerk lokale DNS-Auflösung unterstützt.
 
 ## Funktionen
 
-Die Integration erstellt automatisch Entitäten für alle SYR Connect Geräte in deinem Konto.
+Die Integration erstellt automatisch Entitäten für alle SYR Connect-Geräte des Kontos.
 
 ### Unterstützte Geräte
 
-Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräten und anderen, die im SYR-Connect-Cloud-Portal (über die jeweilige Mobile App) sichtbar sind.
+Diese Integration funktioniert mit SYR-Wasserenthärtern, Leckage-Erkennungsgeräten und anderen, die im SYR Connect-Cloud-Portal (über die jeweilige App) sichtbar sind.
 
 Getestet und gemeldet als funktionierend:
 
@@ -170,18 +171,18 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - TAKE Einzelenthärtungsanlage
 - Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
-**Hinweis**: Wenn ein Gerät in deinem SYR-Connect-Konto sichtbar ist, wird die Integration es automatisch entdecken und die Entitäten erstellen. Wenn du ein „ungetestetes Gerät“ besitzt, hilft es, diagnostische Daten zu teilen, damit unbekannte Werte analysiert und die Liste getesteter Geräte erweitert werden kann.
+**Hinweis**: Wenn ein Gerät im SYR Connect-Konto sichtbar ist, entdeckt die Integration es automatisch und erstellt die Entitäten. Bei einem „ungetesteten Gerät“ helfen die geteilten Diagnosedaten, unbekannte Werte zu analysieren und die Liste getesteter Geräte zu erweitern.
 
 ### Nicht unterstützte Geräte
 
-- Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR-Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um ein umbenanntes Husty SaoCal-Gerät.
+- SYR Oceanic Limex SMART COMPACT/MINI/MAXI-Geräte. Diese Geräte nutzen statt des SYR Connect-Cloud-Dienstes ein anderes Cloud-Portal (`i-lexconnect.com`). Es handelt sich hierbei um umbenannte Husty SaoCal-Geräte.
 - Husty SaoCal-Geräte. Siehe [husty_integration_home_assistant](https://github.com/trafopowielacz/husty_integration_home_assistant)
 
 ### Unterstützte Funktionen
 
 #### Sensoren
 
-Die Integration bietet umfangreiche Überwachung deiner Geräte:
+Die Integration bietet eine umfangreiche Überwachung der Geräte:
 
 #### Wasserqualität & Kapazität
 
@@ -221,14 +222,14 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 #### Leckageschutz (LEXplus10SL / Trio DFR/LS)
 
 - Volumen- und Zeitgrenzwerte für den Leckageschutz (Anwesend- und Abwesendprofil)
-- Index des aktiven Leckageschutzprofils
-- Leckageschutzprofile 1–8 (Volumenlimit, maximale Dauer, Durchflussschwelle, Warn- und Summer-Flags)
+- Index des aktiven Leckageschutz-Profils
+- Leckageschutz-Profile 1–8 (Volumenlimit, maximale Dauer, Durchflussschwelle, Warn- und Signalton-Flags)
 - Timer für temporäre Deaktivierung
 - Leckage-Warnschwellwert (%)
 
-#### Mikroundichtigkeitstest (Trio DFR/LS, SafeTech, SafeTech+, TRIO Lock, SafeTech Lock)
+#### Mikroleckage-Test (Trio DFR/LS, SafeTech, SafeTech+, TRIO Lock, SafeTech Lock)
 
-- Testintervall und -status des Mikroundichtigkeitstests
+- Intervall und Status des Mikroleckage-Tests
 - Testdauer und Ereigniszähler
 
 #### Selbstlernphase (Trio DFR/LS, SafeTech+, TRIO Lock, SafeTech Lock)
@@ -264,12 +265,13 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 
 #### Binärsensoren
 
-- **Summer-Status**: Zeigt an, ob der Gerätesummer aktuell aktiviert ist
+- **Signalton bei Alarm**: Zeigt an, ob bei einem Alarm ein Signalton ertönt
 - **Leckageschutz**: Zeigt an, ob der Leckageschutz aktiv oder deaktiviert ist
 - **Ventiltest**: Zeigt an, ob gerade ein Ventiltest läuft
 - **Firmware-Prüfung**: Zeigt an, ob eine neue Firmware verfügbar ist (geprüft beim Start und alle 6 Stunden)
 - **Sommerzeit**: Zeigt an, ob das Gerät automatisch auf Sommerzeit umstellt
-- **Temperatur-, Druck- und Leitfähigkeitssensor**: Zeigt an, ob der Messsensor aktiv oder deaktiviert ist
+- **Temperatursensor**, **Drucksensor**, **Leitfähigkeitssensor**: Zeigen an, ob der Messsensor aktiv oder deaktiviert ist
+- **Bodensensor-Überwachung**: Zeigt an, ob die Überwachung der Bodensensoren aktiviert ist
 
 #### Buttons (Aktionen)
 
@@ -277,31 +279,39 @@ Die Integration bietet umfangreiche Überwachung deiner Geräte:
 - **Alarm zurücksetzen**: Aktive Alarmmeldungen löschen
 - **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen
 - **Warnung zurücksetzen**: Warnungen löschen
+- **Mikroleckage-Test starten**: Mikroleckage-Test starten. Das Ventil bleibt dabei etwa 4 Minuten geschlossen, eine Wasserentnahme während des Tests führt zu einem negativen Ergebnis (nur lokale API)
 
-#### Schaltersteuerungen
+#### Schalter
 
-- **Summer**: Gerätesummer aktivieren oder deaktivieren
-- **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutzprofils mit der Taste am Gerät erlauben oder sperren
+- **Signalton bei Alarm**: Signalton bei Alarm aktivieren oder deaktivieren
+- **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutz-Profils mit der Taste am Gerät erlauben oder sperren
+- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect)
+- **Automatische Rückspülung**: Automatische Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA)
+- **Rückspülerinnerung**: Erinnerung an die Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA)
 
-#### Auswahlsteuerungen (Konfiguration)
+#### Auswahlfelder (Konfiguration)
 
-- **Regenerationszeit**: Tägliche Regenerationszeit einstellen (15-Minuten-Intervalle)
-- **Leckageschutzprofil**: Aktives Leckageschutzprofil auswählen (bei Geräten mit mehreren Profilen)
-- **Salzmenge**: Salzmenge in Behältern konfigurieren (je nach Modell; bis zu 3 Behälter)
+- **Regenerationsuhrzeit**: Tägliche Uhrzeit der Regeneration einstellen (15-Minuten-Intervalle)
+- **Aktives Leckageschutz-Profil**: Aktives Leckageschutz-Profil auswählen (bei Geräten mit mehreren Profilen)
+- **Salzmenge in Behälter 1–3**: Salzmenge je Behälter einstellen (je nach Modell, bis zu 3 Behälter)
 - **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage)
-- **Display-Rotation**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display)
+- **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display)
 - **Filtertyp**: Installierten Filtertyp auswählen (für NeoSoft-Geräte)
 - **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen)
-- **Roh-/Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, ppm oder mmol/l)
-- **Wasseraufbereitung und Befüllung** (MuCo-basierte Geräte): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck
-- **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur ("Aus" deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen
+- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, ppm oder mmol/l)
+- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck
+- **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen
 
 #### Ventilsteuerung
 
-- **Absperrventil**: Steuerung des Haupt-Absperrventils
+- **Ventilabsperrung**: Steuerung des Haupt-Absperrventils
   - Ventil öffnen und schließen
   - Aktuelle Ventilposition und Status überwachen
   - Integration mit Leckerkennungs-Automatisierungen für automatisches Absperren
+
+#### Firmware-Update
+
+- **Firmware-Update**: Zeigt an, ob eine neue Firmware verfügbar ist, und installiert sie. Das Gerät muss per WLAN mit dem Internet verbunden sein. Die Nummer der neuen Version meldet das Gerät nicht
 
 ### API-Modi
 
@@ -309,15 +319,15 @@ Die Integration unterstützt zwei API-Modi:
 
 #### Cloud-API (XML-basiert)
 
-- **Unterstützt von**: Allen SYR-Connect-Geräten
-- **Verbindung**: Über den SYR-Connect-Cloud-Dienst
-- **Authentifizierung**: Benutzername und Passwort vom SYR-Connect-Konto
+- **Unterstützt von**: Allen SYR Connect-Geräten
+- **Verbindung**: Über den SYR Connect-Cloud-Dienst
+- **Authentifizierung**: Benutzername und Passwort vom SYR Connect-Konto
 - **Vorteile**: Funktioniert mit allen Gerätemodellen, Fernzugriff von überall
-- **Voraussetzungen**: Internetverbindung, SYR-Connect-Konto
+- **Voraussetzungen**: Internetverbindung, SYR Connect-Konto
 
 #### Lokale API (JSON-basiert)
 
-- **Unterstützt von**: Ausgewählte neuere Modelle mit integrierter lokaler API (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect)
+- **Unterstützt von**: Neueren Modellen mit integrierter lokaler API, zum Beispiel NeoSoft, Trio DFR/LS, TRIO Lock, SafeTech Lock, AC 3200, RSA, Pontos Base, All in One +, HygBox und neueren SafeTech-Varianten, auch von anderen Marken. Die Modellauswahl in der Einrichtung zeigt alle unterstützten Modelle
 - **Verbindung**: Direkt zum Gerät über lokales Netzwerk (Port 5333)
 - **Authentifizierung**: Keine Zugangsdaten erforderlich
 - **Vorteile**: Keine Internetabhängigkeit, schnellere Reaktionszeiten, keine Cloud-Rate-Limits
@@ -325,25 +335,25 @@ Die Integration unterstützt zwei API-Modi:
 
 Die Integration erkennt automatisch, welcher API-Modus basierend auf der bei der Einrichtung angegebenen Konfiguration zu verwenden ist.
 
-## Wie Daten aktualisiert werden
+## Aktualisierung der Daten
 
 Die Integration fragt die Geräte-API in regelmäßigen Abständen ab (Standard: 60 Sekunden). Der Aktualisierungsprozess hängt vom API-Modus ab:
 
-### Cloud-API Aktualisierungsprozess
+### Aktualisierung über die Cloud-API
 
-1. **Login**: Authentifiziert sich bei der SYR-Connect-Cloud-API mit deinen Zugangsdaten
-2. **Geräte-Erkennung**: Ruft alle Projekte und Geräte ab, die mit deinem Konto verknüpft sind
-3. **Status-Updates**: Holt für jedes Gerät die aktuellen Statuswerte
-4. **Entitäts-Updates**: Aktualisiert alle Home-Assistant-Entitäten mit den neuesten Werten
+1. **Anmeldung**: Authentifiziert sich mit den Zugangsdaten bei der SYR Connect-Cloud-API
+2. **Geräteerkennung**: Ruft alle Projekte und Geräte ab, die mit dem Konto verknüpft sind
+3. **Statusabfrage**: Holt für jedes Gerät die aktuellen Statuswerte
+4. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
 
-### Lokale API Aktualisierungsprozess
+### Aktualisierung über die lokale API
 
-1. **Status-Updates**: Holt den Gerätestatus direkt vom lokalen Endpunkt
-2. **Entitäts-Updates**: Aktualisiert alle Home-Assistant-Entitäten mit den neuesten Werten
+1. **Statusabfrage**: Holt den Gerätestatus direkt vom lokalen Endpunkt
+2. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten
 
 Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuverlässiger für Echtzeit-Überwachung und Automatisierungen macht.
 
-Wenn ein Gerät nicht verfügbar ist (z. B. offline), werden seine Entitäten bis zum nächsten erfolgreichen Update als nicht verfügbar markiert.
+Schlägt eine Aktualisierung vorübergehend fehl (z. B. Zeitüberschreitung, Wartung der Cloud oder eine unvollständige Antwort), behalten die Entitäten ihre letzten Werte, und der Fehler wird ins Protokoll geschrieben. Nicht verfügbar werden die Entitäten nur, wenn die Cloud das Gerät als offline meldet. Sie bleiben nicht verfügbar, bis das Gerät wieder einen vollständigen Status sendet.
 
 ### SafeFloor-Messverlauf
 
@@ -351,10 +361,12 @@ Ein SafeFloor misst Temperatur und Luftfeuchtigkeit regelmäßig, sendet seine M
 
 1. Das Dashboard öffnen und oben rechts **Dashboard bearbeiten** wählen.
 2. **Karte hinzufügen** wählen, in **Karten durchsuchen** `Statistik` eintippen und **Statistikdiagramm** wählen.
-3. **Code-Editor anzeigen** wählen, den Text durch den Ausschnitt unten ersetzen und **Speichern** wählen.
+3. **Code-Editor anzeigen** wählen, den Text durch einen der Ausschnitte unten ersetzen und **Speichern** wählen.
 4. **Fertig** wählen.
 
-`123456789` durch die Seriennummer des SafeFloor ersetzen. Für die Luftfeuchtigkeit eine zweite Karte mit `_gethmd_history` statt `_getcel_history` anlegen.
+`123456789` durch die Seriennummer des SafeFloor ersetzen. Je Messwert wird eine Karte benötigt.
+
+Temperatur:
 
 ```yaml
 type: statistics-graph
@@ -368,154 +380,177 @@ entities:
   - syr_connect:123456789_getcel_history
 ```
 
+Luftfeuchtigkeit:
+
+```yaml
+type: statistics-graph
+title: Luftfeuchtigkeit
+chart_type: line
+period: hour
+days_to_show: 14
+stat_types:
+  - mean
+entities:
+  - syr_connect:123456789_gethmd_history
+```
+
 Die Cloud hält nur die Messungen der letzten 6 Tage vor. Das Synchronisationsintervall des Sensors sollte deshalb höchstens 6 Tage betragen, sonst gehen Messungen verloren. Die Statistiken werden zusammen mit dem Gerät gelöscht.
 
 ### Bekannte Einschränkungen
 
 - **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden Cloud-Dienst
-- **Update-Intervall**: Empfohlenes Minimum ist 60 Sekunden, um API-Rate-Limits bei der Cloud-API zu vermeiden
-- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect App verfügbar
-- **Filter-Rückspülintervall**: Die Auswahl für diese Einstellung ist vorübergehend deaktiviert, weil das Gerät den Wert nach dem Schreiben wieder zurücksetzt; der aktuelle Wert wird weiterhin als Sensor angezeigt
-- **Lokale API-Unterstützung**: Nur einige neuere Gerätemodelle (NeoSoft 2500/5000 Connect, SafeTech Connect, TRIO DFR/LS Connect) bieten eine lokale JSON-API. Die meisten anderen Modelle, einschließlich aller LEXplus-Varianten, benötigen Cloud-API-Zugriff
+- **Aktualisierungsintervall**: Die Cloud-API erlaubt ein Aktualisierungsintervall von mindestens 60 Sekunden, die lokale API von mindestens 10 Sekunden
+- **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect-App verfügbar
+- **Filterspülintervall**: Die Auswahl für diese Einstellung ist vorübergehend deaktiviert, weil das Gerät den Wert nach dem Schreiben wieder zurücksetzt; der aktuelle Wert wird weiterhin als Sensor angezeigt
+- **Unterstützung der lokalen API**: Nicht jedes Modell bietet eine lokale JSON-API. LEX 1500, LEXplus, i-LEX, Safe-T, SafeFloor, HVA, Hygienemodule und ältere SafeTech-Varianten benötigen den Cloud-API-Zugriff
 
 ## Anwendungsbeispiele
 
-### Automation Beispiele
+### Automatisierungsbeispiele
 
-#### Niedriger Salz-Alarm
+Die Beispiele verwenden die YAML-Syntax der `configuration.yaml`. In allen Beispielen muss `<serial_number>` durch die Seriennummer des Geräts und `<device_name>` durch den Namen des Mobilgeräts der App in Home Assistant ersetzt werden.
 
-Benachrichtigung, wenn der Salzvorrat niedrig ist:
+#### Salzvorrat niedrig
+
+Benachrichtigung, wenn der Salzvorrat zur Neige geht:
 
 ```yaml
 automation:
-  - alias: "SYR: Low Salt Alert"
-    trigger:
-      - platform: numeric_state
+  - alias: "SYR: Salzvorrat niedrig"
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.syr_connect_<serial_number>_getss1
         below: 2  # Weniger als 2 Wochen Salzvorrat
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "Water Softener Alert"
-          message: "Salt supply low - less than 2 weeks remaining"
+          title: "Enthärtungsanlage"
+          message: "Salzvorrat niedrig - weniger als 2 Wochen"
 ```
 
 #### Täglicher Regenerationsbericht
 
+Tägliche Zusammenfassung der Regenerationen, der Restkapazität und des Salzvorrats:
+
 ```yaml
 automation:
-  - alias: "SYR: Daily Regeneration Report"
-    trigger:
-      - platform: time
+  - alias: "SYR: Täglicher Regenerationsbericht"
+    triggers:
+      - trigger: time
         at: "20:00:00"
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "Water Softener Daily Report"
+          title: "Enthärtungsanlage: Tagesbericht"
           message: >
-            Regenerations today: {{ states('sensor.syr_connect_<serial_number>_getnor') }}
-            Remaining capacity: {{ states('sensor.syr_connect_<serial_number>_getres') }}L
-            Salt supply: {{ states('sensor.syr_connect_<serial_number>_getss1') }} weeks
+            Regenerationen (Gesamt): {{ states('sensor.syr_connect_<serial_number>_getnor') }}
+            Restkapazität: {{ states('sensor.syr_connect_<serial_number>_getres') }} L
+            Salzvorrat: {{ states('sensor.syr_connect_<serial_number>_getss1') }} Wochen
 ```
 
 #### Alarm-Benachrichtigung
 
+Sofortige Benachrichtigung, wenn das Gerät einen Alarm meldet:
+
 ```yaml
 automation:
-  - alias: "SYR: Alarm Notification"
-    trigger:
-      - platform: template
-        value_template: "{{ states('sensor.syr_connect_<serial_number>_getalm') != 'no_alarm' }}"
-    action:
-      - service: notify.mobile_app
+  - alias: "SYR: Alarm-Benachrichtigung"
+    triggers:
+      - trigger: template
+        value_template: >
+          {{ states('sensor.syr_connect_<serial_number>_getala')
+             not in ['no_alarm', 'unknown', 'unavailable'] }}
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "⚠️ Water Softener Alarm"
-          message: "Check your SYR device - alarm detected! Current alarm: {{ states('sensor.syr_connect_<serial_number>_getalm') }}"
+          title: "⚠️ SYR-Alarm"
+          message: "Aktueller Alarm: {{ states('sensor.syr_connect_<serial_number>_getala') }}"
           data:
             priority: high
 ```
 
-#### Überwachung des Wasserflusses
+#### Überwachung des Wasserdurchflusses
+
+Warnung bei ungewöhnlich hohem Durchfluss über mehrere Minuten (mögliches Leck):
 
 ```yaml
 automation:
-  - alias: "SYR: High Flow Alert"
-    trigger:
-      - platform: numeric_state
+  - alias: "SYR: Hoher Durchfluss"
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.syr_connect_<serial_number>_getflo
-        above: 20  # Durchflussrate über 20 L/min
+        above: 1200  # Durchfluss über 1200 l/h (20 l/min)
         for:
           minutes: 5
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "High Water Flow Detected"
-          message: "Unusual water flow - check for leaks!"
+          title: "Hoher Wasserdurchfluss"
+          message: "Ungewöhnlicher Wasserdurchfluss - mögliches Leck"
 ```
 
-#### Lecksensor — Absperrventil schließen
+#### Lecksensor: Absperrventil schließen
 
-Schließt automatisch das Absperrventil, wenn ein Leckmelder einen Wasseraustritt meldet. Dieses Beispiel verwendet den Standard-Dienst `valve.close`, um das SYR-Absperrventil zu schließen. Ersetze die Entity-IDs durch die korrekten IDs in deinem System. Teste sehr sorgfältig, ob diese Automatisierung korrekt funktioniert, da sie zu einer kritischen Sicherheitsmaßnahme werden kann.
+Schließt das SYR-Absperrventil mit der Standard-Aktion `valve.close`, wenn ein Lecksensor Wasser erkennt. Die Entity-IDs müssen durch die IDs der eigenen Installation ersetzt werden. Diese Automatisierung kann zu einer kritischen Sicherheitsmaßnahme werden und muss deshalb sehr sorgfältig getestet werden.
 
 ```yaml
 automation:
   - alias: "SYR: Ventil bei Leck schließen"
-    description: "SYR-Ventil auf geschlossen (setAB = true) setzen, wenn ein Leckmelder Wasser erkennt."
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.house_leak_sensor
-        to: 'on'
-    action:
-      - service: valve.close
+        to: "on"
+    actions:
+      - action: valve.close
         target:
           entity_id: valve.syr_connect_<serial_number>_getab
-      - service: notify.mobile_app
+      - action: notify.mobile_app_<device_name>
         data:
-          title: "SYR: Leck erkannt — Ventil geschlossen"
-          message: "Wasseraustritt erkannt — SYR-Absperrventil wurde automatisch geschlossen."
+          title: "SYR: Leck erkannt - Ventil geschlossen"
+          message: "Wasseraustritt erkannt - das SYR-Absperrventil wurde automatisch geschlossen."
 ```
 
-#### Geplante Regenerations-Überschreibung
+#### Regeneration am Wochenende
+
+Startet samstags und sonntags um 03:00 Uhr eine Regeneration:
 
 ```yaml
 automation:
-  - alias: "SYR: Weekend Regeneration"
-    trigger:
-      - platform: time
+  - alias: "SYR: Regeneration am Wochenende"
+    triggers:
+      - trigger: time
         at: "03:00:00"
-    condition:
+    conditions:
       - condition: time
         weekday:
           - sat
           - sun
-    action:
-      - service: button.press
+    actions:
+      - action: button.press
         target:
           entity_id: button.syr_connect_<serial_number>_setsir
 ```
 
-**Hinweis**: Ersetze `<serial_number>` durch die Seriennummer deines Geräts in allen Beispielen.
-
 ## Konfigurationsoptionen
 
-### Scan-Intervall
+### Aktualisierungsintervall
 
-Standardmäßig werden Daten alle 60 Sekunden aktualisiert. Du kannst dies in den Integrations-Optionen anpassen:
+Standardmäßig werden die Daten alle 60 Sekunden aktualisiert. Das Intervall wird in den Integrations-Optionen eingestellt: für die Cloud mindestens 60 Sekunden, für lokale Geräte mindestens 10 Sekunden und in beiden Fällen höchstens 600 Sekunden.
 
-1. Gehe zu Einstellungen > Geräte & Dienste
-2. Finde die SYR Connect Integration
-3. Klicke auf „Konfigurieren"
-4. Passe das Scan-Intervall (in Sekunden) an
+1. Einstellungen > Geräte & Dienste öffnen
+2. Die SYR Connect-Integration öffnen
+3. „Konfigurieren“ auswählen
+4. Das Aktualisierungsintervall (in Sekunden) anpassen
 
 ## Deinstallation
 
-So entfernst du die Integration aus Home Assistant:
+So wird die Integration aus Home Assistant entfernt:
 
-1. Gehe zu Einstellungen > Geräte & Dienste
-2. Finde die SYR Connect Integration
-3. Klicke auf das Drei-Punkte-Menü (⋮)
-4. Wähle „Löschen“
-5. Bestätige die Löschung
+1. Einstellungen > Geräte & Dienste öffnen
+2. Die SYR Connect-Integration öffnen
+3. Das Drei-Punkte-Menü (⋮) des Eintrags öffnen
+4. „Löschen“ auswählen
+5. Die Löschung bestätigen
 
 Alle zugehörigen Geräte und Entitäten werden automatisch entfernt.
 
@@ -523,50 +558,54 @@ Alle zugehörigen Geräte und Entitäten werden automatisch entfernt.
 
 ### Diagnosedaten herunterladen
 
-Wenn Probleme auftreten, kannst du Diagnosedaten herunterladen:
+Bei Problemen helfen die Diagnosedaten des Integrationseintrags. Sie enthalten die Daten aller Geräte des Eintrags:
 
-1. Gehe zu Einstellungen > Geräte & Dienste
-2. Finde die SYR Connect Integration
-3. Klicke auf das Gerät
-4. Klicke auf das Drei-Punkte-Menü (⋮)
-5. Wähle „Diagnosedaten herunterladen“
+1. Einstellungen > Geräte & Dienste öffnen
+2. Die SYR Connect-Integration öffnen
+3. Beim Eintrag (Konto oder lokales Gerät) das Drei-Punkte-Menü (⋮) öffnen
+4. „Diagnosedaten herunterladen“ wählen
 
-Die Datei enthält hilfreiche Informationen zur Fehlersuche (sensible Daten wie Passwörter werden automatisch entfernt).
+Passwörter, Benutzernamen, Sitzungsdaten, die Codenummer des Geräts, IP-Adressen, Gateways und der WLAN-Name werden aus der Datei entfernt, die Seriennummer wird maskiert.
+
+### Debug-Protokolle
+
+Wie die Debug-Protokollierung ein- und ausgeschaltet wird, beschreibt [docs/howto-debugging.md](docs/howto-debugging.md) (Englisch).
 
 ### Verbindungsprobleme
 
-- **Zugangsdaten prüfen**: Überprüfe Benutzername und Passwort für die SYR Connect App
-- **App testen**: Melde dich in der SYR Connect App an, um zu prüfen, ob der Account funktioniert
-- **Logs prüfen**: Gehe zu Einstellungen > System > Protokolle und suche nach Fehlern mit "syr_connect"
-- **Netzwerk**: Stelle sicher, dass Home Assistant Internetzugang hat
+- **Zugangsdaten prüfen**: Benutzername und Passwort der SYR Connect-App prüfen
+- **App testen**: Die Anmeldung in der SYR Connect-App muss mit demselben Konto funktionieren
+- **Protokolle prüfen**: Unter Einstellungen > System > Protokolle nach Fehlern mit `syr_connect` suchen
+- **Netzwerk**: Home Assistant muss Zugang zum Internet haben
 
 ### Authentifizierungsfehler
 
-Wenn du "Authentication failed" siehst:
+Bei der Meldung „Authentication failed“:
 
-1. Überprüfe deine Zugangsdaten
+1. Die Zugangsdaten prüfen
 2. Die Integration fordert zur erneuten Authentifizierung auf
-3. Gehe zu Einstellungen > Geräte & Dienste
-4. Klicke auf "Authentifizieren" bei der SYR Connect Integration
-5. Gib deine Zugangsdaten erneut ein
+3. Einstellungen > Geräte & Dienste öffnen
+4. Bei der SYR Connect-Integration „Authentifizieren“ auswählen
+5. Die Zugangsdaten erneut eingeben
 
 ### Keine Geräte gefunden
 
-- **App-Einrichtung**: Stelle sicher, dass Geräte in der SYR Connect App richtig konfiguriert sind
-- **Konto**: Verwende dasselbe Konto, das deine Geräte enthält
-- **Gerätestatus**: Prüfe, ob Geräte in der SYR Connect App online sind
-- **Logs**: Prüfe Home-Assistant-Logs auf spezifische Fehlermeldungen
+- **App-Einrichtung**: Die Geräte müssen in der SYR Connect-App richtig eingerichtet sein
+- **Konto**: Es muss dasselbe Konto sein, in dem die Geräte eingerichtet sind
+- **Gerätestatus**: Die Geräte müssen in der SYR Connect-App online sein
+- **Protokolle**: Die Protokolle von Home Assistant auf Fehlermeldungen prüfen
 
 ### Entitäten sind als nicht verfügbar markiert
 
-- **Gerät offline**: Prüfe, ob das Gerät in der SYR Connect App online ist
-- **Netzwerkprobleme**: Verifiziere die Internetverbindung
-- **Cloud-Dienst**: Der SYR-Connect-Cloud-Dienst könnte vorübergehend nicht verfügbar sein
-- **Warte auf Update**: Entitäten werden nach dem nächsten erfolgreichen Update wieder verfügbar
+- **Gerät offline**: Die Cloud meldet das Gerät als offline. Stromversorgung und Netzwerkverbindung des Geräts müssen geprüft werden
+- **SYR Connect-App**: Das Gerät muss in der SYR Connect-App als online angezeigt werden
+- **Wieder online**: Die Entitäten werden wieder verfügbar, sobald das Gerät einen vollständigen Status sendet
+
+Vorübergehende Probleme mit der Verbindung oder dem Cloud-Dienst machen Entitäten nicht unverfügbar. Die Entitäten behalten ihre letzten Werte, und der Fehler wird ins Protokoll geschrieben.
 
 ### Hohe CPU-/Speicherauslastung
 
-- **Scan-Intervall erhöhen**: Setze einen höheren Wert (z. B. 120–300 Sekunden) in den Integrations-Optionen
+- **Aktualisierungsintervall erhöhen**: Einen höheren Wert (z. B. 120–300 Sekunden) in den Integrations-Optionen einstellen
 
 ## Abhängigkeiten
 
@@ -577,31 +616,31 @@ Die Integration benötigt folgende Python-Pakete:
 
 **Hinweis**: Die Integration verwendet `defusedxml` für sichere XML-Verarbeitung und `pycryptodomex` (nicht `pycryptodome`), um Konflikte mit Home Assistants internen Kryptobibliotheken zu vermeiden.
 
-Dieses Paket wird von Home Assistant automatisch installiert, wenn du:
+Home Assistant installiert die Pakete automatisch, wenn:
 
-1. Die Integration über die UI hinzufügst
-2. Home Assistant nach der Installation neu startest
+1. Die Integration über die UI hinzugefügt wird
+2. Home Assistant nach der Installation neu gestartet wird
 
 Für detaillierte Systemanforderungen siehe [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## Haftungsausschluss
 
-### WICHTIG: Bitte vor der Verwendung der Integration lesen
+### WICHTIG: Vor der Verwendung der Integration lesen
 
 Diese Integration steuert Wasseraufbereitungssysteme und Absperrventile. Fehlerhafte Konfiguration oder fehlerhafte Automatisierungen können zu Wasserschäden, Systemausfällen oder Sachschäden führen.
 
-- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen" ohne jegliche Garantie bereitgestellt
-- **Gründlich testen**: Teste Automatisierungen immer unter sicheren Bedingungen, bevor du sie produktiv einsetzt
-- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können deine gesamte Wasserversorgung abschalten - teste sorgfältig
+- **Nutzung auf eigenes Risiko**: Diese Software wird „wie besehen“ ohne jegliche Garantie bereitgestellt
+- **Gründlich testen**: Automatisierungen immer unter sicheren Bedingungen testen, bevor sie produktiv eingesetzt werden
+- **Kritische Systeme**: Ventilsteuerungs-Automatisierungen können die gesamte Wasserversorgung abschalten und müssen sorgfältig getestet werden
 - **Keine Haftung**: Die Autoren und Mitwirkenden übernehmen keine Verantwortung für Schäden, Wasserschäden, Sachschäden oder andere Probleme, die aus der Nutzung dieser Integration entstehen
-- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR-Connect-Cloud-Dienst angewiesen - Verfügbarkeit ist nicht garantiert
-- **Notfallplan**: Stelle sicher, dass du alternativen Zugang zu deinem Absperrventil hast, falls das System ausfällt
+- **Cloud-Abhängigkeit**: Diese Integration ist auf den SYR Connect-Cloud-Dienst angewiesen, dessen Verfügbarkeit nicht garantiert ist
+- **Notfallplan**: Ein alternativer Zugang zum Absperrventil muss vorhanden sein, falls das System ausfällt
 
-Durch die Installation und Nutzung dieser Integration erkennst du diese Risiken an und stimmst zu, sie verantwortungsbewusst zu verwenden.
+Wer diese Integration installiert und nutzt, erkennt diese Risiken an und stimmt zu, sie verantwortungsbewusst zu verwenden.
 
 ## Lizenz
 
-Apache License 2.0 - siehe LICENSE Datei
+Apache License 2.0, siehe [LICENSE](LICENSE)
 
 ## Danksagungen
 

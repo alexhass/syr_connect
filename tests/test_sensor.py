@@ -445,6 +445,26 @@ async def test_sensor_status_fast_rinse(hass: HomeAssistant) -> None:
     assert sensor.native_value == "status_fast_rinse"
 
 
+async def test_sensor_status_refill_salt(hass: HomeAssistant) -> None:
+    """Test status sensor for the German refill salt message (getSTA)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getSTA": "Bitte Salz nachfüllen",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
+
+    assert sensor.native_value == "status_refill_salt"
+
+
 async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
     """Test alarm sensor mapping (getALM)."""
     data = {

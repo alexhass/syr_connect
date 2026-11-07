@@ -4,12 +4,12 @@
       "already_configured": "Deze hub is al geconfigureerd"
     },
     "error": {
-      "cannot_connect": "Kan geen verbinding maken met de service. Controleer uw internetverbinding en probeer het opnieuw.",
-      "cannot_connect_local": "Kan geen verbinding maken met het lokale apparaat. Controleer of het IP-adres correct is en of het apparaat is ingeschakeld en verbonden met uw lokale netwerk.",
-      "host_invalid": "Ongeldige host. Voer een geldig IP-adres of hostnaam in.",
-      "host_no_port": "De host mag geen poortnummer bevatten. Voer alleen het IP-adres of de hostnaam in.",
-      "invalid_auth": "Ongeldige gebruikersnaam of wachtwoord. Controleer uw aanmeldingsgegevens.",
-      "unknown": "Er is een onverwachte fout opgetreden. Probeer het later opnieuw."
+      "cannot_connect": "Kan geen verbinding maken met de service. De internetverbinding moet worden gecontroleerd.",
+      "cannot_connect_local": "Kan geen verbinding maken met het lokale apparaat. Het IP-adres moet correct zijn en het apparaat moet zijn ingeschakeld en verbonden met het lokale netwerk.",
+      "host_invalid": "Ongeldige host. Een geldig IP-adres of een geldige hostnaam is vereist.",
+      "host_no_port": "De host mag geen poortnummer bevatten. Alleen het IP-adres of de hostnaam is toegestaan.",
+      "invalid_auth": "Ongeldige gebruikersnaam of wachtwoord. De aanmeldingsgegevens moeten worden gecontroleerd.",
+      "unknown": "Er is een onverwachte fout opgetreden. De actie kan later opnieuw worden uitgevoerd."
     },
     "step": {
       "api_json": {
@@ -21,7 +21,7 @@
           "host": "IP-adres of hostnaam van het apparaat in het lokale netwerk.",
           "model": "Model van het apparaat kiezen"
         },
-        "description": "Voer het model en de hostnaam/het IP-adres in voor lokale toegang",
+        "description": "Model en hostnaam of IP-adres van het apparaat",
         "title": "SYR Connect (Lokaal)"
       },
       "api_xml": {
@@ -35,7 +35,7 @@
           "service": "De cloud kiezen waarmee de apparaten worden gebruikt. Elke cloud heeft eigen accounts.",
           "username": "De gebruikersnaam waarmee bij de cloud wordt aangemeld."
         },
-        "description": "Voer uw app-aanmeldingsgegevens in voor cloudtoegang",
+        "description": "Aanmeldingsgegevens van de app voor de cloud",
         "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
@@ -47,7 +47,7 @@
           "password": "Het wachtwoord waarmee bij de cloud wordt aangemeld.",
           "username": "De gebruikersnaam waarmee bij de cloud wordt aangemeld."
         },
-        "description": "De aanmeldingsgegevens voor {username} zijn niet meer geldig. Voer nieuwe aanmeldingsgegevens in.",
+        "description": "De aanmeldingsgegevens voor {username} zijn niet meer geldig. Nieuwe aanmeldingsgegevens zijn vereist.",
         "title": "SYR Connect opnieuw verifiëren"
       },
       "reauth_confirm_local": {
@@ -77,18 +77,18 @@
           "service": "De cloud kiezen waarmee de apparaten worden gebruikt. Elke cloud heeft eigen accounts.",
           "username": "Het account waarmee bij de cloud wordt aangemeld."
         },
-        "description": "Werk uw instellingen bij.",
+        "description": "De instellingen kunnen worden gewijzigd.",
         "title": "SYR Connect opnieuw configureren"
       },
       "user": {
-        "description": "Kies hoe u verbinding wilt maken met uw SYR-apparaat:",
+        "description": "Type verbinding met het SYR-apparaat:",
         "menu_option_descriptions": {
-          "api_json": "Maak rechtstreeks verbinding met een apparaat op uw lokale netwerk via het IP-adres. Werkt offline en biedt snellere reactietijden.",
-          "api_xml": "Gebruik uw app-aanmeldingsgegevens om via de SYR-cloudservice toegang te krijgen tot al uw apparaten. Vereist een internetverbinding."
+          "api_json": "Rechtstreekse verbinding met een apparaat in het lokale netwerk via het IP-adres. Werkt zonder internet en reageert sneller.",
+          "api_xml": "Toegang tot alle apparaten van het account via de SYR-cloudservice met de aanmeldingsgegevens van de app. Vereist een internetverbinding."
         },
         "menu_options": {
-          "api_json": "Lokale toegang",
-          "api_xml": "Cloudtoegang"
+          "api_json": "Lokaal",
+          "api_xml": "Cloud"
         },
         "title": "SYR Connect"
       }
@@ -162,14 +162,8 @@
       "setnot": {
         "name": "Melding resetten"
       },
-      "setrst": {
-        "name": "Apparaat resetten"
-      },
       "setsir": {
         "name": "Nu regenereren"
-      },
-      "setsmr": {
-        "name": "Meervoudige regeneratie"
       },
       "setwrn": {
         "name": "Waarschuwing resetten"
@@ -1622,27 +1616,18 @@
           "false": "Geopend",
           "true": "Gesloten"
         }
-      },
-      "getvlv": {
-        "name": "Klepstatus",
-        "state": {
-          "10": "Gesloten",
-          "11": "Sluiten",
-          "20": "Geopend",
-          "21": "Openen"
-        }
       }
     }
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Authenticatie bij SYR Connect mislukt. Configureer de integratie opnieuw"
+      "message": "Authenticatie bij SYR Connect mislukt. De integratie moet opnieuw worden geconfigureerd"
     },
     "button_press_failed": {
       "message": "{entity} kon niet worden uitgevoerd op het apparaat {device}"
     },
     "coordinator_data_unavailable": {
-      "message": "Nog geen apparaatgegevens beschikbaar. Probeer het later opnieuw"
+      "message": "Nog geen apparaatgegevens beschikbaar. De actie kan later opnieuw worden uitgevoerd"
     },
     "device_not_found": {
       "message": "Het apparaat is niet meer beschikbaar in SYR Connect"
@@ -1694,12 +1679,6 @@
     },
     "valve_unknown_format": {
       "message": "De klep van het apparaat {device} kan niet worden geschakeld omdat de status onbekend is"
-    }
-  },
-  "issues": {
-    "device_offline": {
-      "description": "Het SYR Connect-apparaat \"{device_name}\" is momenteel offline en kan niet worden bereikt. Controleer:\n\n- Voeding van het apparaat\n- Netwerkverbinding\n- Status van de SYR Connect-cloudservice\n\nHet apparaat maakt automatisch opnieuw verbinding zodra het weer online is.",
-      "title": "Apparaat offline: {device_name}"
     }
   },
   "options": {

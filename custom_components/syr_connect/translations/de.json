@@ -4,12 +4,12 @@
       "already_configured": "Dieser Hub ist bereits konfiguriert"
     },
     "error": {
-      "cannot_connect": "Verbindung zum Dienst nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-      "cannot_connect_local": "Verbindung zum lokalen Gerät nicht möglich. Bitte überprüfen Sie, ob die IP-Adresse korrekt ist und das Gerät eingeschaltet und mit Ihrem lokalen Netzwerk verbunden ist.",
-      "host_invalid": "Ungültiger Host. Geben Sie eine gültige IP-Adresse oder einen Hostnamen ein.",
-      "host_no_port": "Der Host darf keine Portnummer enthalten. Geben Sie nur die IP-Adresse oder den Hostnamen ein.",
-      "invalid_auth": "Ungültiger Benutzername oder Passwort. Bitte überprüfen Sie Ihre Anmeldedaten.",
-      "unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut."
+      "cannot_connect": "Verbindung zum Dienst nicht möglich. Die Internetverbindung muss geprüft werden.",
+      "cannot_connect_local": "Verbindung zum lokalen Gerät nicht möglich. Die IP-Adresse muss korrekt sein, und das Gerät muss eingeschaltet und mit dem lokalen Netzwerk verbunden sein.",
+      "host_invalid": "Ungültiger Host. Eine gültige IP-Adresse oder ein Hostname ist erforderlich.",
+      "host_no_port": "Der Host darf keine Portnummer enthalten. Nur die IP-Adresse oder der Hostname ist zulässig.",
+      "invalid_auth": "Ungültiger Benutzername oder Passwort. Die Anmeldedaten müssen geprüft werden.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten. Der Vorgang kann später wiederholt werden."
     },
     "step": {
       "api_json": {
@@ -21,7 +21,7 @@
           "host": "IP-Adresse oder Hostname des Geräts im lokalen Netzwerk.",
           "model": "Modell des Gerätes auswählen"
         },
-        "description": "Geben Sie Modell und Hostname/IP für den lokalen Zugriff ein",
+        "description": "Modell und Hostname oder IP-Adresse des Geräts",
         "title": "SYR Connect (Lokal)"
       },
       "api_xml": {
@@ -35,7 +35,7 @@
           "service": "Die Cloud auswählen, mit der die Geräte genutzt werden. Jede Cloud hat eigene Konten.",
           "username": "Der Benutzername, mit dem die Anmeldung an der Cloud erfolgt."
         },
-        "description": "Geben Sie Ihre App-Anmeldedaten für den Cloud-Zugriff ein",
+        "description": "Anmeldedaten der App für die Cloud",
         "title": "SYR Connect (Cloud)"
       },
       "reauth_confirm": {
@@ -47,7 +47,7 @@
           "password": "Das Passwort, mit dem die Anmeldung an der Cloud erfolgt.",
           "username": "Der Benutzername, mit dem die Anmeldung an der Cloud erfolgt."
         },
-        "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Bitte geben Sie neue Anmeldedaten ein.",
+        "description": "Die Anmeldedaten für {username} sind nicht mehr gültig. Neue Anmeldedaten sind erforderlich.",
         "title": "SYR Connect erneut authentifizieren"
       },
       "reauth_confirm_local": {
@@ -77,18 +77,18 @@
           "service": "Die Cloud auswählen, mit der die Geräte genutzt werden. Jede Cloud hat eigene Konten.",
           "username": "Das Konto, mit dem die Anmeldung an der Cloud erfolgt."
         },
-        "description": "Aktualisieren Sie Ihre Einstellungen.",
+        "description": "Die Einstellungen können geändert werden.",
         "title": "SYR Connect neu konfigurieren"
       },
       "user": {
-        "description": "Wählen Sie, wie Sie sich mit Ihrem SYR-Gerät verbinden möchten:",
+        "description": "Art der Verbindung zum SYR-Gerät:",
         "menu_option_descriptions": {
-          "api_json": "Verbinden Sie sich direkt mit einem Gerät in Ihrem lokalen Netzwerk über dessen IP-Adresse. Dies funktioniert offline und bietet schnellere Reaktionszeiten.",
-          "api_xml": "Verwenden Sie Ihre App-Anmeldedaten, um über den SYR-Cloud-Dienst auf alle Ihre Geräte zuzugreifen. Dies benötigt eine Internetverbindung."
+          "api_json": "Direkte Verbindung zu einem Gerät im lokalen Netzwerk über dessen IP-Adresse. Funktioniert ohne Internet und reagiert schneller.",
+          "api_xml": "Zugriff auf alle Geräte des Kontos über den SYR-Cloud-Dienst mit den Anmeldedaten der App. Benötigt eine Internetverbindung."
         },
         "menu_options": {
-          "api_json": "Lokaler-Zugriff",
-          "api_xml": "Cloud-Zugriff"
+          "api_json": "Lokal",
+          "api_xml": "Cloud"
         },
         "title": "SYR Connect"
       }
@@ -162,14 +162,8 @@
       "setnot": {
         "name": "Benachrichtigung zurücksetzen"
       },
-      "setrst": {
-        "name": "Gerät zurücksetzen"
-      },
       "setsir": {
         "name": "Sofort regenerieren"
-      },
-      "setsmr": {
-        "name": "Mehrfach regenerieren"
       },
       "setwrn": {
         "name": "Warnung zurücksetzen"
@@ -1622,27 +1616,18 @@
           "false": "Geöffnet",
           "true": "Geschlossen"
         }
-      },
-      "getvlv": {
-        "name": "Ventilstatus",
-        "state": {
-          "10": "Geschlossen",
-          "11": "Wird geschlossen",
-          "20": "Geöffnet",
-          "21": "Wird geöffnet"
-        }
       }
     }
   },
   "exceptions": {
     "auth_failed": {
-      "message": "Anmeldung bei SYR Connect fehlgeschlagen. Bitte die Integration neu konfigurieren"
+      "message": "Anmeldung bei SYR Connect fehlgeschlagen. Die Integration muss neu konfiguriert werden"
     },
     "button_press_failed": {
       "message": "{entity} konnte auf dem Gerät {device} nicht ausgeführt werden"
     },
     "coordinator_data_unavailable": {
-      "message": "Noch keine Gerätedaten verfügbar. Bitte später erneut versuchen"
+      "message": "Noch keine Gerätedaten verfügbar. Der Vorgang kann später wiederholt werden"
     },
     "device_not_found": {
       "message": "Das Gerät ist in SYR Connect nicht mehr vorhanden"
@@ -1696,12 +1681,6 @@
       "message": "Das Gerät {device} meldet einen unbekannten Ventilzustand, deshalb kann das Ventil nicht angesteuert werden"
     }
   },
-  "issues": {
-    "device_offline": {
-      "description": "Das SYR-Connect-Gerät \"{device_name}\" ist derzeit offline und kann nicht erreicht werden. Bitte überprüfen Sie:\n\n- Stromversorgung des Geräts\n- Netzwerkverbindung\n- Status des SYR-Connect-Cloud-Dienstes\n\nDas Gerät wird automatisch wieder verbunden, sobald es online ist.",
-      "title": "Gerät offline: {device_name}"
-    }
-  },
   "options": {
     "step": {
       "init": {
@@ -1712,7 +1691,7 @@
           "scan_interval": "Legt fest, wie viele Sekunden zwischen zwei Aktualisierungen liegen. Für die Cloud sind mindestens 60 Sekunden möglich, für lokale Geräte mindestens 10 Sekunden, in beiden Fällen höchstens 600 Sekunden."
         },
         "description": "Definiert den Zeitabstand zwischen API-Aufrufen.",
-        "title": "SYR-Connect-Optionen"
+        "title": "SYR Connect-Optionen"
       }
     }
   }
