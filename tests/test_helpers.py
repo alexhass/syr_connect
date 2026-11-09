@@ -2384,8 +2384,8 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
     global_keys = {"getBAR", "getBAR2"}
     assert "getBAR" in safetech.SENSOR_SUPPORTED_KEYS
     assert "getBAR2" not in safetech.SENSOR_SUPPORTED_KEYS
-    assert "getBAR" not in safetechplus.SENSOR_SUPPORTED_KEYS
-    assert "getBAR2" in safetechplus.SENSOR_SUPPORTED_KEYS
+    assert "getBAR" in safetechplus.SENSOR_SUPPORTED_KEYS
+    assert "getBAR2" not in safetechplus.SENSOR_SUPPORTED_KEYS
     for names, module in (
         (safetech_names, safetech),
         (safetechplus_names, safetechplus),
@@ -2411,7 +2411,7 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
         )
 
     assert "getBAR" in safetech.SENSOR_SUPPORTED_KEYS
-    assert "getBAR" not in safetechplus.SENSOR_SUPPORTED_KEYS
+    assert "getBAR" in safetechplus.SENSOR_SUPPORTED_KEYS
 
 
 def test_get_model_supported_keys_lex_device_override() -> None:

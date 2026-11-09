@@ -1,7 +1,7 @@
 # Known issues — SYR JSON API
 
 This document lists known deviations between the official SYR JSON API
-documentation (https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung)
+documentation (<https://iotsyrpublicapi.z1.web.core.windows.net/#einleitung>)
 and the behavior observed in real devices, the test fixtures in this
 repository.
 
@@ -22,6 +22,7 @@ repository.
 - **API error-code case-sensitivity:** Error codes `NSC` and `MIMA` are expected uppercase; lowercased variants are treated as invalid.
 - **Time values are local time:** `getLAR` counts the local wall time of the device, not UTC; see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
+- **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.
 
 ## Detailed deviations, impacts, and references
 
@@ -41,7 +42,7 @@ repository.
 - To be considered as a good design change in newer devices.
 - Description: The legacy ADM login (`/set/ADM/(2)f`) is required by some older firmwares (SafeTech v4 / Pontos) but absent on all newer devices. Devices without this endpoint typically return HTTP 404.
 - Impact: Integrations must treat a 404 from the login endpoint as "login not required" instead of failing initialization.
-- Mitigation in this project: 
+- Mitigation in this project:
   - `SyrConnectJsonAPI.login()` treats 404 as "login not required" and continues.
 - Evidence / references:
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (login handles 404)
@@ -163,6 +164,15 @@ Actual (expected) device response:
 - Impact: see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - Mitigation in this project: The local API reports no UTC offset (the cloud's `tzo`), so `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as wall time in the time zone of Home Assistant.
 
+### 9. SafeTech+ reports the pressure in `getBAR`, not `getBAR2`
+
+- Tentatively be considered a documentation defect.
+- Description: The official per-model validity matrix marks `BAR2` as available and `BAR` as not available for the SafeTech+. The devices do the opposite: `getBAR` carries the pressure in mbar and `getBAR2` is `null` in the JSON API and empty in the XML API.
+- Impact: Following the documentation, the SafeTech+ has no pressure sensor.
+- Mitigation in this project: The SafeTech+ allowlist in `custom_components/syr_connect/devices/safetechplus.py` contains `getBAR` instead of `getBAR2`, and the matrix in [syrconnect-protocol.md](syrconnect-protocol.md) is corrected.
+- Evidence / references:
+  - Fixtures: [tests/fixtures/json/SyrSafeTechPlus_get_all.json](tests/fixtures/json/SyrSafeTechPlus_get_all.json), [tests/fixtures/xml/SyrSafeTechPlus_GetDeviceCollectionStatus.xml](tests/fixtures/xml/SyrSafeTechPlus_GetDeviceCollectionStatus.xml)
+
 ## Recommendations
 
 - Treat device responses as potentially non-conformant and normalize as needed (coerce numeric/boolean/string differences).
@@ -193,7 +203,7 @@ curl -i "http://localhost:5333/trio/get/XYZ"
 
 ## References
 
-- Official API documentation: https://iotsyrpublicapi.z1.web.core.windows.net/
+- Official API documentation: <https://iotsyrpublicapi.z1.web.core.windows.net/>
 - Client code: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 - Tests: [tests/test_api_json.py](tests/test_api_json.py)
 - Fixtures: [tests/fixtures/json/SyrSafeTech_get_all.json](tests/fixtures/json/SyrSafeTech_get_all.json), [tests/fixtures/json/SyrNeoSoft2500_get_all.json](tests/fixtures/json/SyrNeoSoft2500_get_all.json)

@@ -751,7 +751,7 @@ The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and chan
 
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
-| getBAR | "4077" | mbar | USER | | Measured inlet pressure (Safe-T+). Example: "4077 mbar" = 4.077 bar |
+| getBAR | "4077" | mbar | USER | | Measured inlet pressure (Safe-T+, SafeTech+). Example: "4077 mbar" = 4.077 bar |
 | getAVO | "0mL" | mL | FACTORY | | Volume of the current water withdrawal in mL; resets when the withdrawal is finished. Syr Apps shows value in "L" |
 | getBAR2 | "3479" | mbar | | | Measured outlet pressure (Trio DFR/LS / SYR TRIO Lock Connect, Sanibel). Example: "3479 mbar" = 3.479 bar |
 | getCS1<br>getCS2<br>getCS3 | "63"<br>"0"<br>"0" | % | | | Remaining capacity of the resin in tank 1, 2 or 3 |
@@ -1305,8 +1305,8 @@ available per model) alongside the confirmed descriptions.
 | Property | TRIO Lock | SafeTech Lock | AC 3200 | AC 3228 | RSA | TrioDFR LS | SafeTech+ | NeoSoft 2500 | NeoSoft 5000 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | AVO | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
-| BAR | X | X | X | ✓ | X | X | X | X | ✓ |
-| BAR2 | ✓ | X | ✓ | ✓ | X | X | ✓ | X | X |
+| BAR | X | X | X | ✓ | X | X | ✓ | X | ✓ |
+| BAR2 | ✓ | X | ✓ | ✓ | X | X | X | X | X |
 | BAT | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | X | X |
 | BUZ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | CEL | X | X | X | X | X | X | ✓ | X | ✓ |
@@ -1329,6 +1329,8 @@ available per model) alongside the confirmed descriptions.
 | VOL | ✓ | ✓ | X | X | X | ✓ | ✓ | ✓ | ✓ |
 | VPS1 | X | X | X | X | X | X | X | ✓ | ✓ |
 | VPS2 | X | X | X | X | X | X | X | X | ✓ |
+
+The BAR and BAR2 rows for SafeTech+ are corrected here: the official matrix lists BAR2, but the devices report BAR (see issue 9 in [known_issues_json_api.md](known_issues_json_api.md)).
 
 ## Statistics web services
 

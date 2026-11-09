@@ -1,8 +1,9 @@
 """Entity allowlists for SafeTech+ (dkv=39 and dkv=112).
 
 Based on the SafeTech+ JSON and XML fixtures and checked against the
-Per-model validity matrix. The matrix marks BAR unavailable for SafeTech+,
-so getBAR is intentionally absent here even though it appears in the captures.
+Per-model validity matrix. The official matrix swaps BAR and BAR2 for SafeTech+:
+the devices report getBAR and leave getBAR2 empty, so getBAR is used here (see
+issue 9 in docs/known_issues_json_api.md).
 The base SafeTech family keeps its separate devices/safetech.py allowlist.
 The self-learning phase is included: the official API documentation lists it
 for SafeTech+, although the captures report no self-learning results.
@@ -28,7 +29,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getWRN",
     # --- Pressure, voltage, and battery ---
     "getBAP",
-    "getBAR2",
+    "getBAR",
     "getBAT",
     "getNET",
     # --- Water quality ---
