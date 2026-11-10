@@ -502,7 +502,7 @@ def registry_cleanup(
     domain: str,
     allowed_keys: set[str] | None = None,
     entry_id: str | None = None,
-    hidden_keys: Callable[[dict[str, Any]], set[str]] | None = None,
+    hidden_keys: Callable[[dict[str, Any], SyrConnectModel], set[str]] | None = None,
 ) -> None:
     """Remove previously-registered entities from the entity registry.
 
@@ -512,7 +512,7 @@ def registry_cleanup(
 
     With `hidden_keys`, also removes the entities of the keys it returns for the
     current device status (the sensor platform passes the sensors that never become
-    an entity and getLOT/getOHW for the wrong cartridge type).
+    an entity and the keys of the other cartridge types).
 
     Args:
         hass: Home Assistant instance.
@@ -525,7 +525,7 @@ def registry_cleanup(
             same device_id (the same physical device visible from two hubs) are
             not ours to remove. Without it, nothing is removed.
         hidden_keys: Returns the keys whose entities are hidden for a device
-            status; they are removed as well.
+            status and model; they are removed as well.
     """
     if allowed_keys is None or entry_id is None:
         return
@@ -620,7 +620,9 @@ def registry_cleanup(
             # Remove the entities the platform hides for the current device status. Found by
             # unique_id, so a renamed or "_2"-suffixed entity is removed as well; the unique_id
             # contains the entry_id, so only entities of this config entry are found.
-            for key in hidden_keys(status) if hidden_keys is not None else ():
+            for key in (
+                hidden_keys(status, model_info) if hidden_keys is not None else ()
+            ):
                 entity_id = find_entity_id(registry, domain, entry_id, device_id, key)
                 if entity_id is not None:
                     _LOGGER.debug(
@@ -1316,57 +1318,61 @@ def _whu_code(raw_code: Any) -> int | None:
         return None
 
 
-def is_cartridge_key(status: dict[str, Any], key: str) -> bool:
-    """Return True if the key only applies to one cartridge type (getCRT).
+def get_cartridge_keys(model: SyrConnectModel) -> set[str]:
+    """Return the keys that only apply to one cartridge type (getCRT) of the model.
 
-    The maximum output conductivity (getLOT) applies to HVE/HVE+ cartridges, the soft
-    water hardness to HWE cartridges. MuCo reports the soft water hardness as getOHW,
-    the All in One + as getOWH. Softeners report getOWH without a cartridge type, there
-    it is the outlet water hardness and always applies.
+    The device profile maps each cartridge type to its key (`cartridge_keys`):
+    - MuCo filling: HWE -> getOHW, HVE/HVE+ -> getLOT
+    - All in One +: HWE -> getOWH
 
     Args:
-        status: The flattened device status.
-        key: The status key, e.g. "getOWH".
+        model: Detected model of the device.
 
     Returns:
-        True for getLOT, getOHW and getOWH of a device with a cartridge type.
+        The keys, empty for a model without cartridge types.
     """
-    return key in ("getLOT", "getOHW") or (key == "getOWH" and "getCRT" in status)
+    profile = model.device_profile
+    return set(profile.cartridge_keys.values()) if profile is not None else set()
+
+
+def get_cartridge_type_key(
+    model: SyrConnectModel, status: dict[str, Any]
+) -> str | None:
+    """Return the key of the reported cartridge type (getCRT), or None.
+
+    Args:
+        model: Detected model of the device.
+        status: The flattened device status.
+
+    Returns:
+        The key the device profile maps the cartridge type to, or None if the model has
+        no key for it.
+    """
+    profile = model.device_profile
+    crt_value = status.get("getCRT")
+    if profile is None or crt_value is None:
+        return None
+    return profile.cartridge_keys.get(str(crt_value).strip())
 
 
 def get_cartridge_key(
-    status: dict[str, Any], supported_keys: AbstractSet[str]
+    model: SyrConnectModel, status: dict[str, Any], supported_keys: AbstractSet[str]
 ) -> str | None:
-    """Return the cartridge key (see `is_cartridge_key`) that applies to getCRT, or None.
-
-    Formats:
-    - HVE/HVE+ (getCRT "1"/"2"): getLOT
-    - HWE (getCRT "0"): getOHW, or getOWH on the All in One +
+    """Return the cartridge key that becomes an entity for the device, or None.
 
     Args:
+        model: Detected model of the device.
         status: The flattened device status.
         supported_keys: The keys the model lists for the platform.
 
     Returns:
-        The key, or None if the cartridge type is unknown, or the model does not list
-        its key, or the key has no value.
+        The key of the reported cartridge type (see `get_cartridge_type_key`), or None
+        if there is none, or the model does not list it, or it has no value.
     """
-    crt_value = status.get("getCRT")
-    crt = str(crt_value).strip() if crt_value is not None else ""
-    if crt in ("1", "2"):
-        keys: tuple[str, ...] = ("getLOT",)
-    elif crt == "0":
-        keys = ("getOHW", "getOWH")
-    else:
+    key = get_cartridge_type_key(model, status)
+    if key is None or key not in supported_keys or status.get(key) in (None, ""):
         return None
-    return next(
-        (
-            key
-            for key in keys
-            if key in supported_keys and status.get(key) not in (None, "")
-        ),
-        None,
-    )
+    return key
 
 
 def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:

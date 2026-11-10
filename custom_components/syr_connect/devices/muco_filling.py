@@ -155,6 +155,11 @@ VALVE_SUPPORTED_KEYS: set[str] = set()
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    cartridge_keys={
+        "0": "getOHW",
+        "1": "getLOT",
+        "2": "getLOT",
+    },
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,

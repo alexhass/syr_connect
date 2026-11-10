@@ -658,6 +658,11 @@ async def test_async_setup_entry_registry_exception(
     assert len(entities) >= 1
 
 
+_SYR_CONNECT_TEST_MUCO_FILLING_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "conelclearprofill"
+)
+
+
 async def test_async_setup_entry_creates_muco_config_selects(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
@@ -672,6 +677,7 @@ async def test_async_setup_entry_creates_muco_config_selects(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
                 "status": {
                     "getCRS": "3",
                     "getCRT": "1",
@@ -725,6 +731,7 @@ async def test_muco_conditional_select_creates_ohw_for_hwe_cartridge(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
                 "status": {"getCRT": crt_value, "getOHW": "5"},
             }
         ]
@@ -753,6 +760,7 @@ async def test_muco_conditional_select_switches_live_on_crt_change(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
                 "status": {"getCRT": "0", "getOHW": "5"},
             }
         ]
@@ -4010,6 +4018,7 @@ async def test_muco_select_option_units_come_from_central_unit_map(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
                 "status": status,
             }
         ]

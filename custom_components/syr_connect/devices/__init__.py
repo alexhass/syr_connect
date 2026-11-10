@@ -78,6 +78,9 @@ class SyrConnectDeviceProfile:
     bat_in_percent: bool = False
     binary_sensor: AbstractSet[str]
     button: AbstractSet[str]
+    # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
+    # only the key of the reported cartridge type becomes an entity
+    cartridge_keys: Mapping[str, str] = field(default_factory=dict)
     select: AbstractSet[str]
     # Select keys whose options differ from the global step list of the platform: key ->
     # raw values in ascending order, e.g. other durations for getRMT

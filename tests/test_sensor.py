@@ -771,7 +771,7 @@ async def test_sensor_zero_values_created_and_kept(hass: HomeAssistant) -> None:
 
     created = {e._sensor_key for e in add_entities.call_args.args[0]}
     assert set(status) <= created
-    assert not set(status) & sensor_module._hidden_sensor_keys(status)
+    assert not set(status) & sensor_module._hidden_sensor_keys(status, UNKNOWN_MODEL)
 
 
 async def test_sensor_registered_sensor_created_with_empty_value(
@@ -7972,6 +7972,7 @@ async def test_muco_conditional_sensor_creates_ohw_for_hwe_cartridge(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _signature("conelclearprofill"),
                 "status": {"getCRT": crt_value, "getOHW": "5"},
             }
         ]
@@ -8000,6 +8001,7 @@ async def test_muco_conditional_sensor_switches_live_on_crt_change(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _signature("conelclearprofill"),
                 "status": {"getCRT": "0", "getOHW": "5"},
             }
         ]
@@ -8757,7 +8759,9 @@ def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
     keys = sensor_module.sensor_keys_for_status(status, model)
 
     assert set(keys) & {"getOWH", "getLOT", "getOHW"} == expected
-    assert sensor_module.is_sensor_visible(status, "getOWH", "5") == bool(expected)
+    assert ("getOWH" in sensor_module._hidden_sensor_keys(status, model)) is not bool(
+        expected
+    )
 
 
 def test_owh_sensor_without_cartridge_type_always_applies() -> None:
@@ -8767,4 +8771,6 @@ def test_owh_sensor_without_cartridge_type_always_applies() -> None:
     keys = sensor_module.sensor_keys_for_status(status, _signature("lex30"))
 
     assert keys.count("getOWH") == 1
-    assert "getOWH" not in sensor_module._hidden_sensor_keys(status)
+    assert "getOWH" not in sensor_module._hidden_sensor_keys(
+        status, _signature("lex30")
+    )

@@ -131,6 +131,9 @@ SELECT_RMT_OPTIONS = sorted(
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    cartridge_keys={
+        "0": "getOWH",
+    },
     select=SELECT_SUPPORTED_KEYS,
     select_options={
         "getRMT": SELECT_RMT_OPTIONS,

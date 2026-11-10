@@ -2627,84 +2627,110 @@ def test_empty_ip_hides_sensor_and_skips_mac() -> None:
 
 
 @pytest.mark.parametrize(
-    ("status", "key", "expected"),
+    ("model", "expected"),
     [
-        pytest.param({}, "getLOT", True, id="lot"),
-        pytest.param({}, "getOHW", True, id="ohw"),
-        pytest.param({"getCRT": "0"}, "getOWH", True, id="owh-with-cartridge"),
-        pytest.param({}, "getOWH", False, id="owh-of-softener"),
-        pytest.param({"getCRT": "0"}, "getIWH", False, id="other-key"),
+        pytest.param("conelclearprofill", {"getLOT", "getOHW"}, id="muco-filling"),
+        pytest.param("allinoneplus", {"getOWH"}, id="allinoneplus"),
+        pytest.param("lex30", set(), id="softener"),
+        pytest.param("unknown", set(), id="no-profile"),
     ],
 )
-def test_is_cartridge_key(status: dict[str, Any], key: str, expected: bool) -> None:
-    """The soft water hardness getOWH only depends on a reported cartridge type."""
-    assert helpers.is_cartridge_key(status, key) is expected
+def test_get_cartridge_keys(model: str, expected: set[str]) -> None:
+    """The device profile names the keys that only apply to one cartridge type."""
+    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
+
+    assert helpers.get_cartridge_keys(signature) == expected
 
 
 _SYR_CONNECT_TEST_CARTRIDGE_KEYS = {"getLOT", "getOHW", "getOWH"}
 
 
 @pytest.mark.parametrize(
-    ("status", "supported_keys", "expected"),
+    ("model", "status", "supported_keys", "expected"),
     [
         pytest.param(
+            "conelclearprofill",
             {"getCRT": "1", "getLOT": "7"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             "getLOT",
             id="hve",
         ),
         pytest.param(
+            "conelclearprofill",
             {"getCRT": 2, "getLOT": "7"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             "getLOT",
             id="hve-plus",
         ),
         pytest.param(
+            "conelclearprofill",
             {"getCRT": "0", "getOHW": "3", "getOWH": "5"},
-            {"getLOT", "getOHW"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             "getOHW",
             id="hwe-muco",
         ),
         pytest.param(
+            "allinoneplus",
             {"getCRT": "0", "getOHW": "3", "getOWH": "5"},
-            {"getOWH"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             "getOWH",
             id="hwe-allinoneplus",
         ),
         pytest.param(
+            "allinoneplus",
             {"getCRT": "1", "getLOT": "7"},
-            {"getOWH"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            None,
+            id="allinoneplus-hve",
+        ),
+        pytest.param(
+            "conelclearprofill",
+            {"getCRT": "1", "getLOT": "7"},
+            {"getOHW"},
             None,
             id="not-listed",
         ),
         pytest.param(
+            "conelclearprofill",
             {"getCRT": "0", "getOHW": ""},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             None,
             id="hwe-empty",
         ),
         pytest.param(
+            "conelclearprofill",
             {"getCRT": "1", "getLOT": None},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             None,
             id="hve-missing",
         ),
         pytest.param(
+            "conelclearprofill",
             {"getCRT": "", "getOHW": "3"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             None,
             id="no-cartridge",
         ),
         pytest.param(
+            "conelclearprofill",
             {"getOHW": "3"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
             None,
             id="no-crt",
         ),
+        pytest.param(
+            "unknown",
+            {"getCRT": "1", "getLOT": "7"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            None,
+            id="no-profile",
+        ),
     ],
 )
 def test_get_cartridge_key(
-    status: dict[str, Any], supported_keys: set[str], expected: str | None
+    model: str, status: dict[str, Any], supported_keys: set[str], expected: str | None
 ) -> None:
-    """The key that applies to the cartridge type, if the model lists it and it has a value."""
-    assert helpers.get_cartridge_key(status, supported_keys) == expected
+    """The key of the cartridge type, if the model lists it and it has a value."""
+    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
+
+    assert helpers.get_cartridge_key(signature, status, supported_keys) == expected

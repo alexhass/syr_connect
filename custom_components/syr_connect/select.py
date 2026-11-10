@@ -36,11 +36,11 @@ from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
     get_cartridge_key,
+    get_cartridge_keys,
     get_device_model,
     get_model_supported_keys,
     get_sensor_rtm_value,
     get_whu_unit,
-    is_cartridge_key,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
@@ -200,8 +200,6 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getLOT",  # Maximum output conductivity (raw x10 µS/cm) - only when getCRT is HVE/HVE+
-    "getOHW",  # Soft water hardness (°dH) - only when getCRT is HWE
     "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",  # Filling processes count
     "getRMT",  # Maximum filling duration (min)
@@ -458,10 +456,12 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
     # family only (see docs/syrconnect-protocol.md). The unit suffix follows the device's getWHU setting.
-    # On a device with a cartridge type, getOWH is the soft water hardness of the HWE cartridge,
-    # added by _async_setup_muco_conditional_selects instead.
+    # On the All in One +, getOWH is the soft water hardness of the HWE cartridge, added by
+    # _async_setup_muco_conditional_selects instead.
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
-        if b.allowed(hardness_key) and not is_cartridge_key(status, hardness_key):
+        if b.allowed(hardness_key) and hardness_key not in get_cartridge_keys(
+            b.model_info
+        ):
             b.entities.append(
                 SyrConnectHardnessSelect(
                     b.coordinator,
@@ -587,13 +587,13 @@ def _async_setup_muco_conditional_selects(
     live_keys: dict[str, set[str]] = {}
 
     def _wanted_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
-        # Only for models that list the key (MuCo filling, All in One +). Leak-protection and
-        # TrioLock devices also report getCRT/getLOT/getOHW but deliberately do not expose
-        # them; a select there would even write setOHW/setLOT.
+        # Only for models whose profile maps the cartridge types to keys (MuCo filling, All
+        # in One +). Leak-protection and TrioLock devices also report getCRT/getLOT/getOHW
+        # but deliberately do not expose them; a select there would even write setOHW/setLOT.
         supported_select_keys = get_model_supported_keys(
             model, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
         )
-        return get_cartridge_key(status, supported_select_keys)
+        return get_cartridge_key(model, status, supported_select_keys)
 
     def _build_entity(
         device_id: str, device_name: str, key: str

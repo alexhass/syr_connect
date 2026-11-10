@@ -51,6 +51,8 @@ from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers import (
     find_entity_id,
     get_cartridge_key,
+    get_cartridge_keys,
+    get_cartridge_type_key,
     get_device_model,
     get_model_supported_keys,
     get_sensor_ab_value,
@@ -66,7 +68,6 @@ from .helpers import (
     get_sensor_wrn_map,
     get_whu_divide_by,
     get_whu_unit,
-    is_cartridge_key,
     is_empty_ip,
     is_value_true,
     registry_cleanup,
@@ -2052,9 +2053,12 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
 }
 
 # Sensors that only a device profile enables: computed values that the device does not
-# report itself and that apply to one family only
+# report itself and that apply to one family only, and the keys of one cartridge type
+# (cartridge_keys of the profile)
 _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
     "getCND_class",
+    "getLOT",
+    "getOHW",
 }
 
 # Allowlist of known sensor keys, the global fallback for get_model_supported_keys()
@@ -2075,17 +2079,13 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     - Group-controlled keys: keys matching getPVx, getPTx, getPFx, getPNx,
         getPMx, getPWx, getPBx, getPRx are only visible when the device's
         corresponding getPAx flag is truthy (1, "1", True, "true"; see `is_value_true`).
-    - getLOT (Maximum output conductivity): only shown when getCRT (cartridge
-        type) is "1" (HVE) or "2" (HVE+).
-    - getOHW (Soft water hardness), and getOWH of a device with a cartridge type
-        (All in One +): only shown when getCRT (cartridge type) is "0" (HWE).
     - Empty values: the `hidden_when` of the key's description hides it when the
         reported value is None or a whitespace-only string ("empty"), or also the
         unspecified IP "0.0.0.0" or "::" ("empty_ip"). "always" hides it whatever the value.
 
     Args:
             status: The full flattened device status mapping (used for cross-key
-                    checks such as getPAx and getCRT).
+                    checks such as getPAx and getBAT).
             key: The status key being considered (e.g. getWIP, getPV1).
             value: The raw value reported by the device for this key.
 
@@ -2103,15 +2103,6 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
         return False
 
     if key == "getBAP" and _is_spurious_bap(status, value):
-        return False
-
-    crt_val = status.get("getCRT")
-    crt = None if crt_val is None else str(crt_val).strip()
-    # getLOT (Maximum output conductivity) only applies to HVE / HVE+ cartridges (getCRT 1 or 2).
-    if key == "getLOT" and crt not in ("1", "2"):
-        return False
-    # The soft water hardness only applies to HWE cartridges (getCRT 0).
-    if key != "getLOT" and is_cartridge_key(status, key) and crt != "0":
         return False
 
     return not _is_excluded_when_empty(key, value)
@@ -2153,24 +2144,24 @@ def _is_excluded_when_empty(key: str, value: Any) -> bool:
 
 
 # Sensors that registry_cleanup removes while they are hidden: keys that never become an
-# entity (hidden_when="always") and getLOT/getOHW/getOWH, which depend on getCRT (cross-key
-# rule in is_sensor_visible). A sensor hidden only because its own value is empty is not
+# entity (hidden_when="always"). The keys of the other cartridge types are removed as well
+# (see _hidden_sensor_keys). A sensor hidden only because its own value is empty is not
 # removed: removing it would drop its customizations (name, area, ...) whenever the
 # value happens to be empty at startup.
 _SYR_CONNECT_SENSOR_CONDITIONAL_KEYS = {
     description.key
     for description in _SYR_CONNECT_SENSOR_TYPES
     if description.hidden_when == "always"
-} | {"getLOT", "getOHW", "getOWH"}
+}
 
 
-def _hidden_sensor_keys(status: dict[str, Any]) -> set[str]:
+def _hidden_sensor_keys(status: dict[str, Any], model: SyrConnectModel) -> set[str]:
     """Return the conditional sensor keys that are hidden for the given device status."""
     return {
         key
         for key in _SYR_CONNECT_SENSOR_CONDITIONAL_KEYS
         if not is_sensor_visible(status, key, status.get(key))
-    }
+    } | (get_cartridge_keys(model) - {get_cartridge_type_key(model, status)})
 
 
 async def async_setup_entry(
@@ -2251,6 +2242,7 @@ def _build_device_sensors(
     group_entities, handled_keys = _build_pa_group_sensors(
         coordinator, registry, device_id, device_name, status, supported_sensor_keys
     )
+    handled_keys |= get_cartridge_keys(model_info)
     entities.extend(group_entities)
     sensor_count = len(group_entities)
 
@@ -2418,13 +2410,14 @@ def _pa_group_keys(idx: int) -> list[str]:
 def _muco_conditional_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
     """Return the cartridge key that applies to the cartridge type (getCRT), or None.
 
-    Only for models that list the key (MuCo filling, All in One +). Leak-protection and
-    TrioLock devices also report getCRT/getLOT/getOHW but deliberately do not expose them.
+    Only for models whose profile maps the cartridge types to keys (MuCo filling, All in
+    One +). Leak-protection and TrioLock devices also report getCRT/getLOT/getOHW but
+    deliberately do not expose them.
     """
     supported_sensor_keys = get_model_supported_keys(
         model, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     )
-    return get_cartridge_key(status, supported_sensor_keys)
+    return get_cartridge_key(model, status, supported_sensor_keys)
 
 
 def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> list[str]:
@@ -2445,7 +2438,7 @@ def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> li
         model, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     )
     keys = ["dst"] if status.get("dst") is not None else []
-    handled_keys: set[str] = set()
+    handled_keys = get_cartridge_keys(model)
     for idx in range(1, 9):
         group_keys = _pa_group_keys(idx)
         handled_keys.update(group_keys)
@@ -2509,15 +2502,14 @@ def _is_sensor_wanted(
         return False
 
     # Skip keys that are handled as binary sensors, dst (a dedicated
-    # SyrConnectConnectionStateSensor) and keys already handled by the getPA group logic.
-    # getLOT and the soft water hardness are mutually exclusive depending on getCRT and
-    # are handled dynamically (_async_setup_muco_conditional_sensors) so the applicable
-    # one can be added/removed live without an integration reload.
+    # SyrConnectConnectionStateSensor) and keys already handled elsewhere: the getPA group
+    # logic and the keys of the cartridge types, which are mutually exclusive depending on
+    # getCRT and handled dynamically (_async_setup_muco_conditional_sensors) so the
+    # applicable one can be added/removed live without an integration reload.
     if (
         key in _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
         or key == "dst"
         or key in handled_keys
-        or is_cartridge_key(status, key)
     ):
         return False
 
