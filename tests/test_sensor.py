@@ -8168,6 +8168,8 @@ async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
         ({"getCNA": "L20", "getFLO": "5"}, 300),
         ({"getCNA": "L100", "getFLO": "11"}, 660),
         ({"getCNA": "LEXplus10S", "getFLO": "0"}, 0),
+        # Rounded after the conversion: 4.5 l/min = 270 l/h
+        ({"getCNA": "LEXplus10S", "getFLO": "4.5"}, 270),
         ({"getCNA": "LEXplus10S", "getFLO": "abc"}, None),
         # Other models: l/h
         ({"getVER": "Safe-Tech V4.08", "getFLO": "240"}, 240),

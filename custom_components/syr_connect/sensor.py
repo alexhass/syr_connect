@@ -275,20 +275,6 @@ def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return dt_util.as_local(utc_time).strftime("%H:%M")
 
 
-def _value_flo(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Water flow (getFLO): raw value -> l/h.
-
-    Formats:
-    - LEX family: "4" (l/min) -> 240 l/h
-    - Other models: "240" (l/h) -> 240 l/h
-    """
-    flow = sensor.numeric_value(value)
-    profile = sensor.device_model.device_profile
-    if profile is not None and profile.flo_per_minute and isinstance(flow, int | float):
-        return flow * 60
-    return flow
-
-
 def _value_iwh(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
     return get_sensor_iwh_value(status or {})
@@ -587,7 +573,6 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
         suggested_display_precision=0,
-        value_fn=_value_flo,
     ),
     SyrConnectSensorEntityDescription(
         key="getVLV",  # Valve position (10=closed, 11=closing, 20=open, 21=opening)
@@ -2619,19 +2604,28 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 self._attr_translation_key = "getbap"
 
         # A device may report a key in another scale than its description, e.g. milliliters
-        # instead of liters. The extra decimals keep the resolution of the raw value.
+        # instead of liters or l/min instead of l/h. The extra decimals of a larger divisor
+        # keep the resolution of the raw value.
         profile = self.device_model.device_profile
-        divide_by = (
-            None if profile is None else profile.sensor_divide_by.get(sensor_key)
-        )
-        if divide_by is not None:
+        if profile is not None:
             description = self.entity_description
+            divide_by = profile.sensor_divide_by.get(sensor_key, description.divide_by)
+            multiply_by = profile.sensor_multiply_by.get(
+                sensor_key, description.multiply_by
+            )
             precision = description.suggested_display_precision
             if precision is not None and divide_by > description.divide_by:
                 precision += math.ceil(math.log10(divide_by / description.divide_by))
-            self.entity_description = replace(
-                description, divide_by=divide_by, suggested_display_precision=precision
-            )
+            if (divide_by, multiply_by) != (
+                description.divide_by,
+                description.multiply_by,
+            ):
+                self.entity_description = replace(
+                    description,
+                    divide_by=divide_by,
+                    multiply_by=multiply_by,
+                    suggested_display_precision=precision,
+                )
 
         # Cache last non-None native value to avoid writing None when API omits values
         self._last_native_value: str | int | float | datetime | None = None

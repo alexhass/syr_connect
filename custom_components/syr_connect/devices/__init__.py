@@ -55,14 +55,16 @@ class SyrConnectDeviceProfile:
     bat_in_percent: bool = False
     binary_sensor: AbstractSet[str]
     button: AbstractSet[str]
-    # The device reports the water flow (getFLO) in l/min instead of l/h
-    flo_per_minute: bool = False
     select: AbstractSet[str]
     sensor: AbstractSet[str]
     # Sensor keys the device reports in another scale than the entity description:
     # key -> divisor that replaces the description's divide_by, e.g. 1000 for
     # milliliters instead of liters
     sensor_divide_by: Mapping[str, int] = field(default_factory=dict)
+    # Sensor keys the device reports in another scale than the entity description:
+    # key -> factor that replaces the description's multiply_by, e.g. 60 for a flow
+    # in l/min instead of l/h
+    sensor_multiply_by: Mapping[str, int] = field(default_factory=dict)
     # Measurement history series the cloud keeps for the device; empty means none
     statistics: tuple[SyrConnectStatistic, ...] = ()
     switch: AbstractSet[str]
