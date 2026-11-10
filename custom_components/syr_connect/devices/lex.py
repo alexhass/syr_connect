@@ -32,7 +32,7 @@ used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global sensor.py allowlist first).
 """
 
-from . import SyrConnectDeviceProfile
+from . import WHU_UNITS_LEX, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -167,4 +167,5 @@ PROFILE = SyrConnectDeviceProfile(
     },
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    whu_units=WHU_UNITS_LEX,
 )

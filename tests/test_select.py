@@ -15,7 +15,11 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
+from custom_components.syr_connect.models import (
+    MODEL_SIGNATURES,
+    UNKNOWN_MODEL,
+    detect_model,
+)
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
@@ -4121,9 +4125,23 @@ async def test_hardness_select_sends_set_command(hass: HomeAssistant) -> None:
     coordinator.async_set_device_value.assert_any_call("device1", "setOWH", 0)
 
 
+# The hardness selects exist for the LEX family only, which numbers the getWHU units its own way
+_SYR_CONNECT_TEST_LEX_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "lex30"
+)
+
+
 @pytest.mark.parametrize(
     ("whu", "unit"),
-    [("0", "°dH"), ("1", "°fH"), ("2", "ppm"), ("3", "mmol/l")],
+    [
+        ("0", "°dH"),
+        ("1", "°fH"),
+        ("2", "°e"),
+        ("3", "mg/l CaCO₃"),
+        ("4", "ppm"),
+        ("5", "mmol/l"),
+        ("6", "mval/l"),
+    ],
 )
 async def test_hardness_select_unit_follows_whu(
     hass: HomeAssistant, whu: str, unit: str
@@ -4134,6 +4152,7 @@ async def test_hardness_select_unit_follows_whu(
             {
                 "id": "device1",
                 "name": "Device 1",
+                "model": _SYR_CONNECT_TEST_LEX_MODEL,
                 "status": {"getIWH": "36", "getWHU": whu},
             }
         ]
@@ -4172,9 +4191,13 @@ async def test_hardness_select_unit_updates_when_whu_changes(
 ) -> None:
     """Changing getWHU on the device is reflected immediately, without recreating the entity."""
     status = {"getIWH": "20", "getWHU": "0"}
-    coordinator = _build_coordinator(
-        hass, {"devices": [{"id": "device1", "name": "Device 1", "status": status}]}
-    )
+    device = {
+        "id": "device1",
+        "name": "Device 1",
+        "model": _SYR_CONNECT_TEST_LEX_MODEL,
+        "status": status,
+    }
+    coordinator = _build_coordinator(hass, {"devices": [device]})
     select = SyrConnectHardnessSelect(
         coordinator, "device1", "Device 1", "getIWH", 1, 100, 1
     )
@@ -4209,6 +4232,7 @@ async def test_hardness_select_current_option_prefers_exact_match(
                 {
                     "id": "device1",
                     "name": "Device 1",
+                    "model": _SYR_CONNECT_TEST_LEX_MODEL,
                     "status": {"getIWH": raw, "getWHU": "0"},
                 }
             ]

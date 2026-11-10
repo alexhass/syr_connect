@@ -298,7 +298,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Display orientation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display).
 - **Filter type**: Select the installed filter type (for NeoSoft devices).
 - **Regeneration mode**: Select Standard / ECO / Power / Automatic (for devices that support it).
-- **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, ppm or mmol/l).
+- **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l or mval/l).
 - **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure.
 - **Floor sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval.
 

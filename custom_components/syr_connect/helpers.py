@@ -1269,6 +1269,27 @@ def get_sensor_ala_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
     return (mapped, code) if mapped is not None else (None, code)
 
 
+def get_whu_unit(model: SyrConnectModel, raw_code: Any) -> str | None:
+    """Water hardness unit (getWHU): raw code -> unit of the model's code family.
+
+    Args:
+        model: Detected model of the device (selects the code family).
+        raw_code: Raw code value from the API (e.g. 0, "1", "2.0").
+
+    Returns:
+        The unit (e.g. "°dH"), or None for a missing or unknown code and for a model
+        without water hardness unit codes.
+    """
+    profile = model.device_profile
+    if raw_code is None or profile is None or profile.whu_units is None:
+        return None
+    try:
+        code = int(float(raw_code))
+    except ValueError, TypeError, OverflowError:
+        return None
+    return profile.whu_units.get(code)
+
+
 def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getNOT notification code to internal translation key.
 

@@ -20,6 +20,29 @@ in the platform modules (sensor.py, select.py, ...).
 from collections.abc import Mapping, Set as AbstractSet
 from dataclasses import dataclass, field
 
+# Water hardness unit codes (getWHU) of the device families: code -> unit. Each family
+# numbers the units differently, see docs/syrconnect-protocol.md.
+WHU_UNITS_LEX = {
+    0: "°dH",
+    1: "°fH",
+    2: "°e",
+    3: "mg/l CaCO₃",
+    4: "ppm",
+    5: "mmol/l",
+    6: "mval/l",
+}
+WHU_UNITS_MUCO = {
+    0: "°dH",
+    1: "°e",
+    2: "°fH",
+    3: "ppm",
+}
+WHU_UNITS_NEOSOFT = {
+    0: "°dH",
+    1: "mmol/l",
+    2: "°fH",
+}
+
 
 @dataclass(frozen=True, kw_only=True)
 class SyrConnectStatistic:
@@ -71,3 +94,6 @@ class SyrConnectDeviceProfile:
     # None means the global allowlist of the platform
     update: AbstractSet[str] | None = None
     valve: AbstractSet[str]
+    # Water hardness unit codes (getWHU) of the device family: code -> unit; None means
+    # the device has no water hardness unit
+    whu_units: Mapping[int, str] | None = None

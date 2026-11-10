@@ -27,7 +27,6 @@ from .const import (
     _SYR_CONNECT_SELECT_RVT_OPTIONS,
     _SYR_CONNECT_SELECT_WMP_MAP,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
     DOMAIN,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
@@ -39,6 +38,7 @@ from .helpers import (
     get_device_model,
     get_model_supported_keys,
     get_sensor_rtm_value,
+    get_whu_unit,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
@@ -906,11 +906,7 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
     """Water hardness select (`getIWH`/`getOWH`) with the unit taken from the live `getWHU` setting."""
 
     def _unit_label(self) -> str:
-        try:
-            whu = int(float(self._status.get("getWHU")))  # type: ignore[arg-type]
-        except ValueError, TypeError, OverflowError:
-            return ""
-        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(whu, "")
+        return get_whu_unit(self.device_model, self._status.get("getWHU")) or ""
 
     @property
     @override

@@ -16,7 +16,7 @@ are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 """
 
-from . import SyrConnectDeviceProfile
+from . import WHU_UNITS_MUCO, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -134,4 +134,5 @@ PROFILE = SyrConnectDeviceProfile(
     },
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    whu_units=WHU_UNITS_MUCO,
 )

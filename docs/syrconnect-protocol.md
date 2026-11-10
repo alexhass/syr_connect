@@ -733,8 +733,20 @@ These settings can be set by the user.
 | getSRO / setSRO | "0" | ° | SERVICE | 0 | Screen rotation: 0, 90, 180 or 270 degrees |
 | getTSD / setTSD | "0"<br>"True" | | USER / FACTORY | 0 | Temperature sensor setting. Value meaning depends on the API, see note below |
 | getUNI / setUNI | "0" | | USER | 0 | Units: 0 = °C, bar, liter; 1 = °F, psi, US liquid gallon (SafeTech, Safe-T+, Sanibel) |
-| getWHU / setWHU | "0" | | | | Water hardness unit: 0 = °dH, 1 = °fH, 2 = ppm, 3 = mmol/l |
+| getWHU / setWHU | "0" | | | | Water hardness unit; each device family numbers the units differently, see the table below |
 | getWMP / setWMP | "3600" | s | | | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
+
+Water hardness unit codes (`getWHU`) per device family. Other device kinds have no water hardness unit.
+
+| Code | LEX, LEXplus (dk 40, 80) | MultiController, All in One + (dk 1500–1506, 160) | NeoSoft family (dk 1200–1222) |
+| ------ | ------ | ------ | ------ |
+| 0 | °dH | °dH | °dH |
+| 1 | °fH | °e | mmol/l |
+| 2 | °e | °fH | °fH |
+| 3 | mg/l CaCO₃ | ppm | |
+| 4 | ppm | | |
+| 5 | mmol/l | | |
+| 6 | mval/l | | |
 
 The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and changed with `set`. From dk ≥ 1100 on, the API changed from integer to boolean values, and with it the meaning of these settings flipped:
 

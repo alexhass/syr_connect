@@ -43,7 +43,6 @@ from .const import (
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
     _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_WHU_VALUE_MAP,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -63,6 +62,7 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    get_whu_unit,
     is_empty_ip,
     is_value_true,
     registry_cleanup,
@@ -504,15 +504,8 @@ def _value_rcd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_whu(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Water hardness unit (getWHU): raw value -> unit."""
-    if isinstance(value, int | float):
-        return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-    if isinstance(value, str):
-        try:
-            return _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(value), None)
-        except ValueError, TypeError:
-            return None
-    return None
+    """Water hardness unit (getWHU): raw value -> unit of the model's code family."""
+    return get_whu_unit(sensor.device_model, value)
 
 
 def _value_vol(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -726,7 +719,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
-        key="getWHU",  # Water hardness unit (°dH / °fH / ppm / mmol/l)
+        key="getWHU",  # Water hardness unit (codes per device family, see WHU_UNITS_*)
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=_value_whu,
@@ -2581,17 +2574,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
 
         # Set unit of measurement for water hardness sensors dynamically
         if sensor_key in ("getIWH", "getOWH"):
-            # Try to get WHU value from device status
-            whu_value = self._status.get("getWHU")
-            if whu_value is not None:
-                try:
-                    self._attr_native_unit_of_measurement = (
-                        _SYR_CONNECT_SENSOR_WHU_VALUE_MAP.get(int(whu_value), None)
-                    )
-                except ValueError, TypeError:
-                    self._attr_native_unit_of_measurement = None
-            else:
-                self._attr_native_unit_of_measurement = None
+            self._attr_native_unit_of_measurement = get_whu_unit(
+                self.device_model, self._status.get("getWHU")
+            )
 
         # Override getBAT attributes for devices that report battery as percentage (SafeFloor).
         # The name follows the unit: "Battery level" like getBAP instead of "Battery voltage".

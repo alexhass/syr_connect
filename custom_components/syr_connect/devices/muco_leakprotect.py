@@ -49,7 +49,7 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-from . import SyrConnectDeviceProfile
+from . import WHU_UNITS_MUCO, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -252,4 +252,5 @@ PROFILE = SyrConnectDeviceProfile(
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    whu_units=WHU_UNITS_MUCO,
 )

@@ -30,7 +30,7 @@ allowlist) with a genuine non-empty value, move it into SENSOR_SUPPORTED_KEYS
 below.
 """
 
-from . import SyrConnectDeviceProfile
+from . import WHU_UNITS_NEOSOFT, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -133,4 +133,5 @@ PROFILE = SyrConnectDeviceProfile(
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    whu_units=WHU_UNITS_NEOSOFT,
 )

@@ -19,7 +19,12 @@ from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
-from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
+from custom_components.syr_connect.models import (
+    MODEL_SIGNATURES,
+    UNKNOWN_MODEL,
+    SyrConnectModel,
+    detect_model,
+)
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
@@ -342,24 +347,58 @@ async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
     assert sensor.native_value == "02:30"
 
 
-async def test_sensor_water_hardness_unit(hass: HomeAssistant) -> None:
-    """Test water hardness unit sensor mapping (getWHU)."""
+def _signature(name: str) -> SyrConnectModel:
+    """Return the model signature with the given name."""
+    return next(model for model in MODEL_SIGNATURES if model.name == name)
+
+
+@pytest.mark.parametrize(
+    ("model", "whu", "unit"),
+    [
+        # LEX family
+        ("lex30", "0", "°dH"),
+        ("lex30", 1, "°fH"),
+        ("lex30", "2", "°e"),
+        ("lex30", 3.0, "mg/l CaCO₃"),
+        ("lex30", "4", "ppm"),
+        ("lex30", "5", "mmol/l"),
+        ("lex30", "6", "mval/l"),
+        # MultiController and All in One +
+        ("conelclearprofill", "0", "°dH"),
+        ("conelclearprofill", "1", "°e"),
+        ("conelclearprofill", "2", "°fH"),
+        ("allinoneplus", "3", "ppm"),
+        # NeoSoft family
+        ("neosoft2500", "0", "°dH"),
+        ("neosoft2500", "1", "mmol/l"),
+        ("neosoft2500", "2", "°fH"),
+        # Unknown or invalid code of the family
+        ("neosoft2500", "3", None),
+        ("lex30", "invalid", None),
+        # A model without water hardness unit codes has no unit
+        ("safetechplus", "0", None),
+    ],
+)
+def test_sensor_whu_follows_model_family(
+    create_mock_coordinator: Callable[..., MagicMock],
+    model: str,
+    whu: Any,
+    unit: str | None,
+) -> None:
+    """The water hardness unit (getWHU) and the hardness sensors use the codes of the family."""
+    status = {"getIWH": "10", "getWHU": whu}
     data = {
         "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": "0",  # Maps to °dH
-                },
-            }
+            {"id": "d1", "name": "D1", "model": _signature(model), "status": status}
         ]
     }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
+    coordinator = create_mock_coordinator(data)
 
-    assert sensor.native_value == "°dH"
+    whu_sensor = SyrConnectSensor(coordinator, "d1", "D1", "getWHU")
+    iwh_sensor = SyrConnectSensor(coordinator, "d1", "D1", "getIWH")
+
+    assert whu_sensor.native_value == unit
+    assert iwh_sensor.native_unit_of_measurement == unit
 
 
 async def test_sensor_regeneration_weekdays_all(hass: HomeAssistant) -> None:
@@ -1033,6 +1072,7 @@ def test_extra_getwhu_and_getlar_and_getrpw(
                 "id": "dev_w",
                 "name": "Device W",
                 "project_id": "p1",
+                "model": _signature("lex30"),
                 "status": {
                     "getWHU": 1,
                     "getLAR": str(ts),
@@ -1323,27 +1363,6 @@ async def test_sensor_entity_registry_cleanup(hass: HomeAssistant) -> None:
     )
 
 
-async def test_sensor_whu_string_conversion(hass: HomeAssistant) -> None:
-    """Test getWHU sensor with string value that can be converted."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": "1",  # String instead of int
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
-
-    # Should convert string to int and map correctly
-    assert sensor.native_value is not None
-
-
 async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
     """Test getWHU sensor with invalid value."""
     data = {
@@ -1435,28 +1454,6 @@ async def test_sensor_alarm_none_value(hass: HomeAssistant) -> None:
     # When getALM is None, it gets mapped via the alarm value map
     # str(None or "") = "" which maps to 'no_alarm'
     assert sensor.native_value == "no_alarm"
-
-
-async def test_sensor_water_hardness_init_with_whu(hass: HomeAssistant) -> None:
-    """Test sensor initialization sets water hardness unit from getWHU."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getIWH": "10",
-                    "getWHU": 1,  # German degrees
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
-
-    # Should have water hardness unit set
-    assert sensor.native_unit_of_measurement is not None
 
 
 async def test_sensor_water_hardness_init_invalid_whu(hass: HomeAssistant) -> None:
@@ -2352,48 +2349,6 @@ async def test_sensor_rpw_locale_exception(hass: HomeAssistant) -> None:
     # Should still return weekday names despite any locale issues
     assert result is not None
     assert isinstance(result, str)
-
-
-async def test_sensor_whu_numeric_int_value(hass: HomeAssistant) -> None:
-    """Test getWHU with numeric int value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": 2,  # Integer value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
-
-    # Should convert int to mapped value
-    assert sensor.native_value is not None
-
-
-async def test_sensor_whu_numeric_float_value(hass: HomeAssistant) -> None:
-    """Test getWHU with numeric float value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": 1.0,  # Float value
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
-
-    # Should convert float to int then map
-    assert sensor.native_value is not None
 
 
 async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
@@ -3306,48 +3261,6 @@ async def test_sensor_value_not_in_status(hass: HomeAssistant) -> None:
 
     # Should return None when key not in status
     assert sensor.native_value is None
-
-
-async def test_sensor_whu_int_value(hass: HomeAssistant) -> None:
-    """Test getWHU with integer value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": 0,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
-
-    # Should return mapped value
-    assert sensor.native_value == "°dH"
-
-
-async def test_sensor_whu_float_value(hass: HomeAssistant) -> None:
-    """Test getWHU with float value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": 1.0,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
-
-    # Should return mapped value
-    assert sensor.native_value == "°fH"
 
 
 async def test_sensor_lar_value_error(hass: HomeAssistant) -> None:

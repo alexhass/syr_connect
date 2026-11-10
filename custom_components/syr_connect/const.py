@@ -370,15 +370,6 @@ _SYR_CONNECT_SENSOR_UL_VALUE_MAP = {
     10: 100,
 }
 
-# Water hardness unit mapping (for getWHU)
-# According to the SYR GUI, there are water hardness units "°dH" and "°fH" only.
-_SYR_CONNECT_SENSOR_WHU_VALUE_MAP = {
-    0: "°dH",  # German degree of water hardness (Grad deutsche Härte)
-    1: "°fH",  # French degree of water hardness (degré français de dureté)
-    2: "ppm",  # Parts per million (mg/L), common international unit
-    3: "mmol/l",  # Millimoles per liter, SI unit for water hardness
-}
-
 # Select options, sorted by name:
 # - `*_MAP`: option maps of the discrete selects: option key (translated by the frontend,
 #   or a label with unit) -> raw device value. None marks the option for an empty raw value.
