@@ -1750,6 +1750,32 @@ def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
     assert get_sensor_ala_map(model, "a1")[0] == "alarm_end_switch"
 
 
+@pytest.mark.parametrize("name", ["l10", "lex100", "lexplus10", "lexplus10s"])
+def test_get_sensor_ala_map_lex_short_table(name: str) -> None:
+    """i-LEX, LEX Plus 10 and LEX Plus 10 S know only the alarm codes 1-5."""
+    model = _signature(name)
+    assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
+    assert get_sensor_ala_map(model, "2")[0] == "alarm_pressure_too_low"
+    assert get_sensor_ala_map(model, "3")[0] == "alarm_pressure_too_high"
+    assert get_sensor_ala_map(model, "4")[0] == "alarm_pressure_sensor_faulty"
+    assert get_sensor_ala_map(model, "5")[0] == "alarm_valve_malfunction"
+    assert get_sensor_ala_map(model, "6") == (None, "6")
+    assert get_sensor_ala_map(model, "23") == (None, "23")
+
+
+def test_get_sensor_ala_map_lex_full_table() -> None:
+    """The LEX Plus 10 SL knows the full LEX alarm code table."""
+    model = _signature("lexplus10sl")
+    assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
+    assert get_sensor_ala_map(model, "2")[0] == "alarm_chlor_generator_fault"
+    assert get_sensor_ala_map(model, "3")[0] == "alarm_valve_malfunction"
+    assert get_sensor_ala_map(model, "4")[0] == "alarm_pressure_too_low"
+    assert get_sensor_ala_map(model, "5")[0] == "alarm_pressure_too_high"
+    assert get_sensor_ala_map(model, "6")[0] == "alarm_brine_level_low"
+    assert get_sensor_ala_map(model, "19")[0] == "alarm_pressure_sensor_faulty"
+    assert get_sensor_ala_map(model, "23")[0] == "alarm_leakage_volume_approaching"
+
+
 def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
     """Every signature using a MuCo/NeoSoft/SafeTech/Trio/LEX/Safe-T+ device file gets a mapping."""
 

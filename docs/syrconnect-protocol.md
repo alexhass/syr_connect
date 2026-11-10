@@ -586,7 +586,23 @@ Alarm codes of the SafeTech (dk 140). A1 and A3–AB match the NeoSoft / MuCo / 
 
 #### Alarm codes (getALA) — LEX family
 
-Applies to L10-L100, LEX10-100, LEXplus10/10S/10SL. All numeric codes are hex-parsed (single-digit codes 1-7 decode to themselves, two-digit codes 11-23 decode to 17-35); `lowsalt`/`nosalt` are also reported as literal text instead of a numeric code on some firmware versions. Any unmatched code (including `0`) is treated as no alarm.
+There are two tables. All numeric codes are hex-parsed (single-digit codes 1-7 decode to themselves, two-digit codes 11-23 decode to 17-35); `lowsalt`/`nosalt` are also reported as literal text instead of a numeric code on some firmware versions. Any unmatched code (including `0`) is treated as no alarm.
+
+L10-L100, LEX10-100 (dk 40) and LEXplus10/10S (dk 80, sbt 1 and 2) know only these codes (`lex.ALA_CODES`):
+
+| Code | Match type | Decoded (dec) | Enum (official) | Title (official English string) | Translation key |
+| --- | --- | --- | --- | --- | --- |
+| 0 | Hex-parse | 0 | – (null) | no alarm | `no_alarm` |
+| lowsalt (text) | String literal | – | lowSalt | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
+| nosalt (text) | String literal | – | noSalt2 | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
+| 1 | Hex-parse | 1 | noSalt | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
+| 2 | Hex-parse | 2 | pressureTooLow | Inlet pressure too low | `alarm_pressure_too_low` |
+| 3 | Hex-parse | 3 | pressureTooHigh | Inlet pressure too high | `alarm_pressure_too_high` |
+| 4 | Hex-parse | 4 | pressureSensorError | Malfunction pressure sensor | `alarm_pressure_sensor_faulty` |
+| 5 | Hex-parse | 5 | valveMalfunction | Valve mechanism defect | `alarm_valve_malfunction` |
+| other unmatched | Hex-parse | – | – (null) | no alarm (fallback) | `no_alarm` |
+
+LEXplus10SL (dk 80, sbt 7) knows the full table (`lexplus10sl.ALA_CODES`):
 
 | Code | Match type | Decoded (dec) | Enum (official) | Title (official English string) | Translation key |
 | --- | --- | --- | --- | --- | --- |
