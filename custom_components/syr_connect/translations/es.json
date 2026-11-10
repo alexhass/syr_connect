@@ -596,6 +596,7 @@
           "alarm_valve_position": "Posición de la válvula",
           "error_no_information": "Error: no hay información disponible",
           "fault_conductance_sensor": "¡Sensor de conductividad defectuoso!",
+          "low_salt": "Poca sal",
           "no_alarm": "Sin alarma"
         }
       },

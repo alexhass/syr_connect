@@ -596,6 +596,7 @@
           "alarm_valve_position": "Posizione della valvola",
           "error_no_information": "Errore: nessuna informazione disponibile",
           "fault_conductance_sensor": "Sensore di conducibilità difettoso!",
+          "low_salt": "Sale basso",
           "no_alarm": "Nessun allarme"
         }
       },

@@ -596,6 +596,7 @@
           "alarm_valve_position": "Position de la vanne",
           "error_no_information": "Erreur : aucune information disponible",
           "fault_conductance_sensor": "Capteur de conductivité défectueux",
+          "low_salt": "Sel faible",
           "no_alarm": "Aucune alarme"
         }
       },

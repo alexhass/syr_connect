@@ -596,6 +596,7 @@
           "alarm_valve_position": "Klepstand",
           "error_no_information": "Fout: geen informatie beschikbaar",
           "fault_conductance_sensor": "Geleidbaarheidssensor defect!",
+          "low_salt": "Laag zout",
           "no_alarm": "Geen alarm"
         }
       },

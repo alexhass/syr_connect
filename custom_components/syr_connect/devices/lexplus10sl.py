@@ -242,7 +242,7 @@ VALVE_SUPPORTED_KEYS = {
 # mean something else there.
 ALA_CODES = {
     "0": "no_alarm",
-    "LOWSALT": "alarm_salt_supply_empty",
+    "LOWSALT": "low_salt",
     "NOSALT": "alarm_salt_supply_empty",
     "1": "alarm_salt_supply_empty",
     "2": "alarm_chlor_generator_fault",

@@ -593,7 +593,7 @@ L10-L100, LEX10-100 (dk 40) and LEXplus10/10S (dk 80, sbt 1 and 2) know only the
 | Code | Match type | Decoded (dec) | Enum (official) | Title (official English string) | Translation key |
 | --- | --- | --- | --- | --- | --- |
 | 0 | Hex-parse | 0 | – (null) | no alarm | `no_alarm` |
-| lowsalt (text) | String literal | – | lowSalt | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
+| lowsalt (text) | String literal | – | lowSalt | Lack of salt – Please refill salt (reason: the salt supply is running out) | `low_salt` |
 | nosalt (text) | String literal | – | noSalt2 | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
 | 1 | Hex-parse | 1 | noSalt | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
 | 2 | Hex-parse | 2 | pressureTooLow | Inlet pressure too low | `alarm_pressure_too_low` |
@@ -607,7 +607,7 @@ LEXplus10SL (dk 80, sbt 7) knows the full table (`lexplus10sl.ALA_CODES`):
 | Code | Match type | Decoded (dec) | Enum (official) | Title (official English string) | Translation key |
 | --- | --- | --- | --- | --- | --- |
 | 0 | Hex-parse | 0 | – (null) | no alarm | `no_alarm` |
-| lowsalt (text) | String literal | – | lowSalt | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
+| lowsalt (text) | String literal | – | lowSalt | Lack of salt – Please refill salt (reason: the salt supply is running out) | `low_salt` |
 | nosalt (text) | String literal | – | noSalt2 | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
 | 1 | Hex-parse | 1 | noSalt | Lack of salt – Please refill salt | `alarm_salt_supply_empty` |
 | 2 | Hex-parse | 2 | chlorGenerator | Malfunction chlor generator | `alarm_chlor_generator_fault` |

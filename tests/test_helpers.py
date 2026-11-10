@@ -1754,6 +1754,8 @@ def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
 def test_get_sensor_ala_map_lex_short_table(name: str) -> None:
     """i-LEX, LEX Plus 10 and LEX Plus 10 S know only the alarm codes 1-5."""
     model = _signature(name)
+    assert get_sensor_ala_map(model, "LowSalt")[0] == "low_salt"
+    assert get_sensor_ala_map(model, "NoSalt")[0] == "alarm_salt_supply_empty"
     assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
     assert get_sensor_ala_map(model, "2")[0] == "alarm_pressure_too_low"
     assert get_sensor_ala_map(model, "3")[0] == "alarm_pressure_too_high"
@@ -1766,6 +1768,8 @@ def test_get_sensor_ala_map_lex_short_table(name: str) -> None:
 def test_get_sensor_ala_map_lex_full_table() -> None:
     """The LEX Plus 10 SL knows the full LEX alarm code table."""
     model = _signature("lexplus10sl")
+    assert get_sensor_ala_map(model, "LowSalt")[0] == "low_salt"
+    assert get_sensor_ala_map(model, "NoSalt")[0] == "alarm_salt_supply_empty"
     assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
     assert get_sensor_ala_map(model, "2")[0] == "alarm_chlor_generator_fault"
     assert get_sensor_ala_map(model, "3")[0] == "alarm_valve_malfunction"

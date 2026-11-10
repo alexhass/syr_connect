@@ -596,6 +596,7 @@
           "alarm_valve_position": "Ventilstellung",
           "error_no_information": "Fehler: keine Informationen verfügbar",
           "fault_conductance_sensor": "Leitfähigkeitssensor fehlerhaft!",
+          "low_salt": "Salz gering",
           "no_alarm": "Kein Alarm"
         }
       },

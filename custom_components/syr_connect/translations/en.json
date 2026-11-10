@@ -596,6 +596,7 @@
           "alarm_valve_position": "Valve position",
           "error_no_information": "Error: no information available",
           "fault_conductance_sensor": "Conductivity sensor faulty!",
+          "low_salt": "Low salt",
           "no_alarm": "No alarm"
         }
       },
