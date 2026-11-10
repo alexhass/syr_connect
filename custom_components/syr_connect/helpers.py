@@ -21,6 +21,7 @@ from .const import (
     _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
+    _SYR_CONNECT_SENSOR_CND_PER_DH,
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
     API_TYPE_JSON,
@@ -1076,7 +1077,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     Rules:
     1. If `getIWH` exists and is numeric, return it (int if whole).
     2. If `getIWH` missing/empty but `getCND` exists and is numeric,
-       default `getWHU` to 0 when missing and compute `getIWH = getCND / 33`.
+       default `getWHU` to 0 when missing and compute `getIWH = getCND / 35` (°dH).
     3. Return None when values are missing or unparsable.
     """
     if not status:
@@ -1115,11 +1116,8 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     with contextlib.suppress(Exception):
         status["getWHU"] = whu
 
-    # Compute and persist getIWH
-    # Calculation notes:
-    # - 1 °dH is equivalent to approximately 30-35 µS/cm per scientific articles.
-    # - However, the more precise standard value for clean, unpolluted fresh water appears to be 1 °dH = 33 µS/cm.
-    iwh = cnd / 33.0
+    # Compute and persist getIWH in °dH with the factor SYR uses
+    iwh = cnd / _SYR_CONNECT_SENSOR_CND_PER_DH
     iwh_out = int(iwh) if iwh.is_integer() else iwh
     with contextlib.suppress(Exception):
         status["getIWH"] = iwh_out

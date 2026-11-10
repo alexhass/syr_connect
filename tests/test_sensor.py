@@ -1545,7 +1545,7 @@ async def test_sensor_getiwh_derived_from_getcnd(hass: HomeAssistant) -> None:
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getCND": "330",
+                    "getCND": "350",
                 },
             }
         ]
@@ -1553,7 +1553,7 @@ async def test_sensor_getiwh_derived_from_getcnd(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
 
-    # getIWH should be derived as getCND / 33.0 -> 10 (int)
+    # getIWH should be derived as getCND / 35 -> 10 (int)
     assert sensor.native_value == 10
 
 

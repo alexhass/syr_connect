@@ -270,6 +270,10 @@ _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
     30: 1500,
 }
 
+# Conductivity (getCND) in µS/cm per °dH of water hardness, the factor SYR uses to estimate
+# the hardness from the conductivity
+_SYR_CONNECT_SENSOR_CND_PER_DH = 35
+
 # Mapping for getCRS sensor values (Cartridge size)
 # Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_CRS_VALUE_MAP = {

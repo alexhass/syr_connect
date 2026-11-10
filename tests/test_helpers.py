@@ -756,15 +756,15 @@ def test_get_sensor_iwh_returns_float_when_getiwh_string_float() -> None:
 def test_get_sensor_iwh_derived_from_getcnd_integer_result() -> None:
     """Test get sensor iwh derived from getCND integer result."""
     status = {"getCND": 540}
-    # 540 / 33 == 16.363636... -> float
-    assert get_sensor_iwh_value(status) == 540 / 33
+    # 540 / 35 == 15.428571... -> float
+    assert get_sensor_iwh_value(status) == 540 / 35
 
 
 def test_get_sensor_iwh_derived_from_getcnd_float_result() -> None:
     """Test get sensor iwh derived from getCND float result."""
     status = {"getCND": "378"}
-    # 378 / 33 == 11.454545... -> float
-    assert get_sensor_iwh_value(status) == 378 / 33
+    # 378 / 35 == 10.8 -> float
+    assert get_sensor_iwh_value(status) == 378 / 35
 
 
 def test_get_sensor_iwh_returns_none_on_invalid_getcnd() -> None:
@@ -782,8 +782,8 @@ def test_get_sensor_iwh_missing_both_returns_none() -> None:
 def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive() -> None:
     """Test get sensor iwh whu missing defaults to zero and derive."""
     status = {"getCND": 300, "getWHU": ""}
-    # 300 / 33 == 9.090909... -> float
-    assert get_sensor_iwh_value(status) == 300 / 33
+    # 300 / 35 == 8.571428... -> float
+    assert get_sensor_iwh_value(status) == 300 / 35
 
 
 def test_get_sensor_iwh_derived_from_getcnd_zero() -> None:
@@ -803,15 +803,15 @@ def test_get_sensor_iwh_derived_from_getcnd_empty_string() -> None:
 def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive() -> None:
     """Test get sensor iwh whu key missing defaults to zero and derive."""
     status = {"getCND": 30}
-    # getWHU missing -> default 0; 30 / 33 == 0.909090... -> float
-    assert get_sensor_iwh_value(status) == 30 / 33
+    # getWHU missing -> default 0; 30 / 35 == 0.857142... -> float
+    assert get_sensor_iwh_value(status) == 30 / 35
 
 
 def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists() -> None:
     """Invalid getWHU string should default to 0 and be persisted."""
     status = {"getCND": 300, "getWHU": "invalid"}
     result = get_sensor_iwh_value(status)
-    assert result == 300 / 33
+    assert result == 300 / 35
     # getWHU should have been normalized to 0
     assert status.get("getWHU") == 0
 
@@ -826,9 +826,9 @@ def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash() -> None:
                 raise RuntimeError("boom")
             return super().__setitem__(key, value)
 
-    status = BadStatus({"getCND": 330})
-    # Should compute 330/33 == 10 and not raise despite assignment error
-    assert get_sensor_iwh_value(status) == 330 / 33
+    status = BadStatus({"getCND": 350})
+    # Should compute 350/35 == 10 and not raise despite assignment error
+    assert get_sensor_iwh_value(status) == 10
 
 
 def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash() -> None:
@@ -848,9 +848,9 @@ def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash() -> Non
 
 def test_get_sensor_iwh_invalid_getiwh_falls_back_to_derive() -> None:
     """If explicit getIWH is invalid but getCND exists, derive from getCND."""
-    status = {"getIWH": "bad", "getWHU": 0, "getCND": 330}
-    # Should fall back and compute 330 / 33 == 10
-    assert get_sensor_iwh_value(status) == 330 / 33
+    status = {"getIWH": "bad", "getWHU": 0, "getCND": 350}
+    # Should fall back and compute 350 / 35 == 10
+    assert get_sensor_iwh_value(status) == 10
 
 
 def test_get_sensor_iwh_derived_assignment_raises_does_not_crash() -> None:
@@ -863,9 +863,9 @@ def test_get_sensor_iwh_derived_assignment_raises_does_not_crash() -> None:
                 raise RuntimeError("boom")
             return super().__setitem__(key, value)
 
-    status = BadStatus2({"getCND": 330})
-    # Should compute 330/33 == 10 and not raise despite assignment error
-    assert get_sensor_iwh_value(status) == 330 / 33
+    status = BadStatus2({"getCND": 350})
+    # Should compute 350/35 == 10 and not raise despite assignment error
+    assert get_sensor_iwh_value(status) == 10
 
 
 def test_get_sensor_net_value_numeric_float() -> None:
@@ -2588,7 +2588,7 @@ def test_helpers_infinite_values_count_as_invalid() -> None:
     """Infinity cannot be converted to int (OverflowError) and counts as invalid."""
     assert helpers.get_sensor_rtm_value({"getRTH": "inf", "getRTM": "30"}) is None
     # An invalid getWHU defaults to 0
-    assert get_sensor_iwh_value({"getCND": 300, "getWHU": "inf"}) == 300 / 33
+    assert get_sensor_iwh_value({"getCND": 300, "getWHU": "inf"}) == 300 / 35
     assert get_sensor_ab_value({"getAB": float("inf")}) is None
 
 
