@@ -7,7 +7,6 @@ the muco_filling profile (Conel Clear Pro Fill, AC 3228 Connect), the closest
 filling controller, and must be checked against a capture of a real device.
 
 Differences to muco_filling:
-- getDFM: not included, it is the role of a MultiController (dk 1500-1506).
 - getCFV, getLFV, getTRV: reported in milliliters instead of liters (see issue 10
   in docs/known_issues_json_api.md).
 - getOWH instead of getOHW: the soft water hardness of the HWE cartridge.
