@@ -1251,6 +1251,8 @@ The All in One + has these additional properties:
 
 | Property | Example | Unit | Description |
 | ------ | ------ | ------ | ------ |
+| getIWH / setIWH | "20" | `getWHU` | Raw water hardness. Default=20, Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10 |
+| getOWH / setOWH | "0" | `getWHU` | Soft water hardness, only visible when the cartridge type is HWE. Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness |
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |
 

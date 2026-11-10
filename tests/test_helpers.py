@@ -2734,3 +2734,23 @@ def test_get_cartridge_key(
     signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
 
     assert helpers.get_cartridge_key(signature, status, supported_keys) == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "key", "raw_code", "expected"),
+    [
+        pytest.param("allinoneplus", "getIWH", "3", (10, 900, 10), id="ppm"),
+        pytest.param("allinoneplus", "getOWH", 1, (0, 16, 1), id="e"),
+        pytest.param("allinoneplus", "getOWH", "7", None, id="unknown-unit"),
+        pytest.param("allinoneplus", "getOWH", None, None, id="no-unit"),
+        pytest.param("lex30", "getIWH", "0", None, id="fixed-range"),
+        pytest.param("unknown", "getIWH", "0", None, id="no-profile"),
+    ],
+)
+def test_get_hardness_range(
+    model: str, key: str, raw_code: Any, expected: tuple[int, int, int] | None
+) -> None:
+    """The profile names the water hardness range per unit (getWHU)."""
+    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
+
+    assert helpers.get_hardness_range(signature, key, raw_code) == expected

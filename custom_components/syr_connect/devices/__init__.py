@@ -81,6 +81,11 @@ class SyrConnectDeviceProfile:
     # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
     # only the key of the reported cartridge type becomes an entity
     cartridge_keys: Mapping[str, str] = field(default_factory=dict)
+    # Water hardness selects (getIWH, getOWH) whose range depends on the unit: key ->
+    # getWHU code -> (lowest, highest, step) in that unit
+    hardness_ranges: Mapping[str, Mapping[int, tuple[int, int, int]]] = field(
+        default_factory=dict
+    )
     select: AbstractSet[str]
     # Select keys whose options differ from the global step list of the platform: key ->
     # raw values in ascending order, e.g. other durations for getRMT

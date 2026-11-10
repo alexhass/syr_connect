@@ -38,6 +38,7 @@ from .helpers import (
     get_cartridge_key,
     get_cartridge_keys,
     get_device_model,
+    get_hardness_range,
     get_model_supported_keys,
     get_sensor_rtm_value,
     get_whu_unit,
@@ -460,13 +461,22 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
-    # family only (see docs/syrconnect-protocol.md). The unit suffix follows the device's getWHU setting.
-    # On the All in One +, getOWH is the soft water hardness of the HWE cartridge, added by
-    # _async_setup_muco_conditional_selects instead.
+    # family and All in One + (see docs/syrconnect-protocol.md). The unit suffix follows the
+    # device's getWHU setting. On the All in One +, the ranges depend on the unit, and getOWH is the
+    # soft water hardness of the HWE cartridge, added by _async_setup_muco_conditional_selects.
+    profile = b.model_info.device_profile
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
-        if b.allowed(hardness_key) and hardness_key not in get_cartridge_keys(
+        if not b.allowed(hardness_key) or hardness_key in get_cartridge_keys(
             b.model_info
         ):
+            continue
+        if profile is not None and hardness_key in profile.hardness_ranges:
+            b.entities.append(
+                SyrConnectRangedHardnessSelect(
+                    b.coordinator, b.device_id, b.device_name, hardness_key
+                )
+            )
+        else:
             b.entities.append(
                 SyrConnectHardnessSelect(
                     b.coordinator,
@@ -613,8 +623,8 @@ def _async_setup_muco_conditional_selects(
                 coordinator, device_id, device_name, "getLOT", lot_map
             )
         if key == "getOWH":
-            return SyrConnectHardnessSelect(
-                coordinator, device_id, device_name, "getOWH", 0, 12, 1
+            return SyrConnectRangedHardnessSelect(
+                coordinator, device_id, device_name, "getOWH"
             )
         return SyrConnectNumericSelect(
             coordinator, device_id, device_name, "getOHW", 0, 12, 1
@@ -938,6 +948,44 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
             return None
         unit = self._unit_label()
         return f"{value} {unit}" if unit else value
+
+
+class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
+    """Water hardness select whose range follows the live `getWHU` unit (All in One +).
+
+    The ranges come from the device profile (`hardness_ranges`). The soft water hardness
+    (getOWH) can be at most the raw water hardness (getIWH).
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        sensor_key: str,
+    ) -> None:
+        """Initialize the select entity."""
+        super().__init__(
+            coordinator, device_id, device_name, sensor_key, 0, 0, options=[]
+        )
+
+    @property
+    @override
+    def options(self) -> list[str]:
+        """Return the selectable options for the current unit."""
+        hardness_range = get_hardness_range(
+            self.device_model, self._sensor_key, self._status.get("getWHU")
+        )
+        if hardness_range is None:
+            return []
+        lowest, highest, step = hardness_range
+        if self._sensor_key == "getOWH" and _is_integer(self._status.get("getIWH")):
+            highest = min(highest, int(float(self._status["getIWH"])))
+        unit = self._unit_label()
+        return [
+            f"{value} {unit}" if unit else str(value)
+            for value in range(lowest, highest + 1, step)
+        ]
 
 
 class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):

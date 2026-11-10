@@ -1308,6 +1308,27 @@ def get_whu_divide_by(model: SyrConnectModel, raw_code: Any) -> int:
     return profile.whu_divide_by.get(code, 1)
 
 
+def get_hardness_range(
+    model: SyrConnectModel, key: str, raw_code: Any
+) -> tuple[int, int, int] | None:
+    """Return the range of a water hardness select for the unit (getWHU), or None.
+
+    Args:
+        model: Detected model of the device (its profile holds the ranges).
+        key: The water hardness key, e.g. "getIWH".
+        raw_code: Raw getWHU value from the API (e.g. 0, "1", "2.0").
+
+    Returns:
+        (lowest, highest, step) in the unit of the code, or None if the model has no
+        range for the key and unit.
+    """
+    profile = model.device_profile
+    code = _whu_code(raw_code)
+    if profile is None or code is None:
+        return None
+    return profile.hardness_ranges.get(key, {}).get(code)
+
+
 def _whu_code(raw_code: Any) -> int | None:
     """Return the getWHU code as integer, or None for a missing or invalid value."""
     if raw_code is None:

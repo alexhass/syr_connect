@@ -26,6 +26,7 @@ from custom_components.syr_connect.select import (
     SyrConnectHardnessSelect,
     SyrConnectNumericSelect,
     SyrConnectPrfSelect,
+    SyrConnectRangedHardnessSelect,
     SyrConnectRegenerationSelect,
     SyrConnectRotationSelect,
     _build_time_options,
@@ -4553,3 +4554,77 @@ async def test_allinoneplus_cwl_select(
     cwl = next(e for e in entities if getattr(e, "_sensor_key", None) == "getCWL")
     assert cwl.options == [f"{value} %" for value in range(1, 11)]
     assert cwl.current_option == "10 %"
+
+
+@pytest.mark.parametrize(
+    ("whu", "iwh", "iwh_options", "owh_options"),
+    [
+        pytest.param(
+            "0",
+            "20",
+            [f"{value} °dH" for value in range(1, 51)],
+            [f"{value} °dH" for value in range(13)],
+            id="dh",
+        ),
+        pytest.param(
+            "1",
+            "8",
+            [f"{value} °e" for value in range(1, 66)],
+            [f"{value} °e" for value in range(9)],
+            id="e-limited-by-raw-water",
+        ),
+        pytest.param(
+            "2",
+            "40",
+            [f"{value} °fH" for value in range(1, 91)],
+            [f"{value} °fH" for value in range(23)],
+            id="fh",
+        ),
+        pytest.param(
+            "3",
+            "350",
+            [f"{value} ppm" for value in range(10, 901, 10)],
+            [f"{value} ppm" for value in range(0, 221, 10)],
+            id="ppm",
+        ),
+        pytest.param("7", "20", [], [], id="unknown-unit"),
+    ],
+)
+async def test_allinoneplus_hardness_selects_follow_unit(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    whu: str,
+    iwh: str,
+    iwh_options: list[str],
+    owh_options: list[str],
+) -> None:
+    """The hardness ranges of the All in One + follow the unit; getOWH is at most getIWH."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {
+                    "getCRT": "0",
+                    "getIWH": iwh,
+                    "getOWH": "5",
+                    "getWHU": whu,
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    by_key = {getattr(e, "_sensor_key", None): e for e in entities}
+    assert isinstance(by_key["getIWH"], SyrConnectRangedHardnessSelect)
+    assert isinstance(by_key["getOWH"], SyrConnectRangedHardnessSelect)
+    assert by_key["getIWH"].options == iwh_options
+    assert by_key["getOWH"].options == owh_options

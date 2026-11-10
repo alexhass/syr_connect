@@ -15,6 +15,7 @@ Differences to muco_filling:
 - getRMT: other steps for the maximum filling duration (SELECT_RMT_OPTIONS).
 - getCWL: the warning threshold of the remaining capacity, only on this device.
 - getMFL: the manual filling, only on this device.
+- getIWH, getOWH: selects whose range follows the unit (HARDNESS_RANGES).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -94,6 +95,7 @@ SELECT_SUPPORTED_KEYS = {
     "getCRS",
     "getCRT",
     "getCWL",
+    "getIWH",
     "getOWH",
     "getRCD",
     "getRMN",
@@ -133,12 +135,31 @@ SELECT_RMT_OPTIONS = sorted(
 )
 
 
+# Water hardness ranges per unit: getWHU code -> (lowest, highest, step) in that unit.
+# The soft water hardness (getOWH) can be at most the raw water hardness (getIWH).
+HARDNESS_RANGES = {
+    "getIWH": {
+        0: (1, 50, 1),  # °dH
+        1: (1, 65, 1),  # °e
+        2: (1, 90, 1),  # °fH
+        3: (10, 900, 10),  # ppm
+    },
+    "getOWH": {
+        0: (0, 12, 1),  # °dH
+        1: (0, 16, 1),  # °e
+        2: (0, 22, 1),  # °fH
+        3: (0, 220, 10),  # ppm
+    },
+}
+
+
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     cartridge_keys={
         "0": "getOWH",
     },
+    hardness_ranges=HARDNESS_RANGES,
     select=SELECT_SUPPORTED_KEYS,
     select_options={
         "getRMT": SELECT_RMT_OPTIONS,
