@@ -1306,7 +1306,7 @@ available per model) alongside the confirmed descriptions.
 | NRT | int | No refill since, in s | - | ✓ | X |
 | SRN | string | Serial number of the device | - | ✓ | X |
 | TRT | int | Cumulative refill time in s | - | ✓ | X |
-| TRV | int | Cumulative refilled volume in liters (All in One +: milliliters, assumed) | - | ✓ | X |
+| TRV | int | Cumulative refilled volume in liters (All in One +: milliliters) | - | ✓ | X |
 | VER | string | Firmware version of the device | - | ✓ | X |
 | VOL | int | Cumulative volume in liters | - | ✓ | X |
 | VPS1 | int | No turbine pulses on control head 1 since, in s | - | ✓ | X |
@@ -1344,7 +1344,7 @@ available per model) alongside the confirmed descriptions.
 
 The BAR and BAR2 rows for SafeTech+ are corrected here: the official matrix lists BAR2, but the devices report BAR (see issue 9 in [known_issues_json_api.md](known_issues_json_api.md)).
 
-The All in One + (dk 160, not part of the matrix) reports the filling volumes in milliliters instead of liters, e.g. LFV "6600" for a refill of 6.6 l; CFV and TRV are assumed to use the same unit (see issue 10 in [known_issues_json_api.md](known_issues_json_api.md)). The MultiController filling controllers report liters.
+The All in One + (dk 160, not part of the matrix) reports the filling volumes CFV, LFV and TRV in milliliters instead of liters, e.g. LFV "6600" for a refill of 6.6 l (see issue 10 in [known_issues_json_api.md](known_issues_json_api.md)). The MultiController filling controllers report liters.
 
 ## Statistics web services
 
