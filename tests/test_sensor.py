@@ -401,6 +401,42 @@ def test_sensor_whu_follows_model_family(
     assert iwh_sensor.native_unit_of_measurement == unit
 
 
+@pytest.mark.parametrize(
+    ("model", "whu", "raw", "expected", "precision"),
+    [
+        # The NeoSoft family reports mmol/l in tenths
+        ("neosoft2500", "1", "15", 1.5, 1),
+        ("neosoft2500", 1, 4, 0.4, 1),
+        # Other units of the family and other families are unscaled
+        ("neosoft2500", "0", "15", 15, 0),
+        ("neosoft2500", "2", "27", 27, 0),
+        ("lex30", "5", "3", 3, 0),
+        ("neosoft2500", "invalid", "15", 15, 0),
+    ],
+)
+@pytest.mark.parametrize("key", ["getIWH", "getOWH"])
+def test_sensor_hardness_scale_follows_whu(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+    model: str,
+    whu: Any,
+    raw: Any,
+    expected: float,
+    precision: int,
+) -> None:
+    """The hardness sensors divide by the scale of the family's unit (getWHU)."""
+    status = {key: raw, "getWHU": whu}
+    data = {
+        "devices": [
+            {"id": "d1", "name": "D1", "model": _signature(model), "status": status}
+        ]
+    }
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
+
+    assert sensor.native_value == expected
+    assert sensor.suggested_display_precision == precision
+
+
 async def test_sensor_regeneration_weekdays_all(hass: HomeAssistant) -> None:
     """Test regeneration permitted weekdays with all days (getRPW)."""
     data = {

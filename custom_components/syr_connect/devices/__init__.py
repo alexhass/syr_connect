@@ -94,6 +94,9 @@ class SyrConnectDeviceProfile:
     # None means the global allowlist of the platform
     update: AbstractSet[str] | None = None
     valve: AbstractSet[str]
+    # Water hardness values (getIWH, getOWH) the device reports in another scale for a
+    # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l
+    whu_divide_by: Mapping[int, int] = field(default_factory=dict)
     # Water hardness unit codes (getWHU) of the device family: code -> unit; None means
     # the device has no water hardness unit
     whu_units: Mapping[int, str] | None = None

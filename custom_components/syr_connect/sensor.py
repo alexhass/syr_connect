@@ -62,6 +62,7 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
+    get_whu_divide_by,
     get_whu_unit,
     is_empty_ip,
     is_value_true,
@@ -277,7 +278,7 @@ def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 def _value_iwh(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
-    return get_sensor_iwh_value(status or {})
+    return sensor.numeric_value(get_sensor_iwh_value(status or {}))
 
 
 def _value_net(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -2595,6 +2596,10 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         if profile is not None:
             description = self.entity_description
             divide_by = profile.sensor_divide_by.get(sensor_key, description.divide_by)
+            if sensor_key in ("getIWH", "getOWH"):
+                divide_by *= get_whu_divide_by(
+                    self.device_model, self._status.get("getWHU")
+                )
             multiply_by = profile.sensor_multiply_by.get(
                 sensor_key, description.multiply_by
             )

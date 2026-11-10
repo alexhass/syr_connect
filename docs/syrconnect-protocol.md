@@ -736,7 +736,7 @@ These settings can be set by the user.
 | getWHU / setWHU | "0" | | | | Water hardness unit; each device family numbers the units differently, see the table below |
 | getWMP / setWMP | "3600" | s | | | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
 
-Water hardness unit codes (`getWHU`) per device family. Other device kinds have no water hardness unit.
+Water hardness unit codes (`getWHU`) per device family. Other device kinds have no water hardness unit. In mmol/l, the NeoSoft family reports the water hardness (`getIWH`, `getOWH`) in tenths: "15" = 1.5 mmol/l.
 
 | Code | LEX, LEXplus (dk 40, 80) | MultiController, All in One + (dk 1500–1506, 160) | NeoSoft family (dk 1200–1222) |
 | ------ | ------ | ------ | ------ |

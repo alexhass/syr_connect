@@ -141,5 +141,8 @@ PROFILE = SyrConnectDeviceProfile(
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    whu_divide_by={
+        1: 10,
+    },
     whu_units=WHU_UNITS_NEOSOFT,
 )
