@@ -4467,3 +4467,51 @@ async def test_allinoneplus_owh_select_only_for_hwe_cartridge(
         assert select.options[0] == "0 °dH"
         assert select.options[-1] == "12 °dH"
         assert select.current_option == "5 °dH"
+
+
+@pytest.mark.parametrize(
+    ("model_name", "first_options"),
+    [
+        pytest.param(
+            "allinoneplus",
+            ["5 min", "10 min", "15 min", "20 min", "30 min", "40 min", "50 min"],
+            id="allinoneplus",
+        ),
+        pytest.param(
+            "conelclearprofill",
+            ["1 min", "2 min", "3 min", "4 min", "5 min", "10 min", "15 min"],
+            id="muco-filling",
+        ),
+    ],
+)
+async def test_rmt_select_options_follow_profile(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    model_name: str,
+    first_options: list[str],
+) -> None:
+    """The All in One + offers other maximum filling durations (getRMT) than MuCo."""
+    model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": model,
+                "status": {"getRMT": "30"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    rmt = next(e for e in entities if getattr(e, "_sensor_key", None) == "getRMT")
+    assert rmt.options[:7] == first_options
+    assert rmt.options[-1] == "720 min"
+    assert rmt.current_option == "30 min"

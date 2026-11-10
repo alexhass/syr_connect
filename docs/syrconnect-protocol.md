@@ -1247,7 +1247,7 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getRVT / setRVT | "100" | L | Leak Protection: Maximum filling charges. Value range: 0-9900. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100 |
 | getTPR / setTPR | "18" | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps |
 
-The All in One + (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, unit from `getWHU`), and the device has no maximum output conductivity (`getLOT`).
+The All in One + (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, unit from `getWHU`), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
 
 #### Filling cycles
 

@@ -13,6 +13,7 @@ Differences to muco_filling:
 - getOWH instead of getOHW: the soft water hardness of the HWE cartridge.
 - getFFM, getLOT, getSRO: not included, the device has no filter type, no
   conductivity limit and no display rotation.
+- getRMT: other steps for the maximum filling duration (SELECT_RMT_OPTIONS).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -117,11 +118,24 @@ BUTTON_SUPPORTED_KEYS = {
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
+# Maximum filling duration (getRMT) in minutes: 5-20 in steps of 5, 30-50 in steps of 10,
+# 60-720 in steps of 30
+SELECT_RMT_OPTIONS = sorted(
+    {
+        *range(5, 21, 5),
+        *range(30, 51, 10),
+        *range(60, 721, 30),
+    }
+)
+
 
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
+    select_options={
+        "getRMT": SELECT_RMT_OPTIONS,
+    },
     sensor=SENSOR_SUPPORTED_KEYS,
     sensor_divide_by={
         "getCFV": 1000,

@@ -502,9 +502,15 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     if b.allowed("getRMN"):
         b.add_numeric("getRMN", 1, 10)
     # Maximum filling duration (getRMT) and charges (getRVT): non-uniform minute/liter steps
-    # (see docs/syrconnect-protocol.md)
+    # (see docs/syrconnect-protocol.md); the All in One + has other getRMT steps
     if b.allowed("getRMT"):
-        b.add_numeric_steps("getRMT", _SYR_CONNECT_SELECT_RMT_OPTIONS)
+        profile = b.model_info.device_profile
+        rmt_options = (
+            profile.select_options.get("getRMT", _SYR_CONNECT_SELECT_RMT_OPTIONS)
+            if profile is not None
+            else _SYR_CONNECT_SELECT_RMT_OPTIONS
+        )
+        b.add_numeric_steps("getRMT", rmt_options)
     if b.allowed("getRVT"):
         b.add_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
     # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)

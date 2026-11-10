@@ -79,6 +79,9 @@ class SyrConnectDeviceProfile:
     binary_sensor: AbstractSet[str]
     button: AbstractSet[str]
     select: AbstractSet[str]
+    # Select keys whose options differ from the global step list of the platform: key ->
+    # raw values in ascending order, e.g. other durations for getRMT
+    select_options: Mapping[str, list[int]] = field(default_factory=dict)
     sensor: AbstractSet[str]
     # Sensor keys the device reports in another scale than the entity description:
     # key -> divisor that replaces the description's divide_by, e.g. 1000 for
