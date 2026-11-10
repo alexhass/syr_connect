@@ -11,6 +11,7 @@ import logging
 from .devices import (
     SyrConnectDeviceProfile,
     allinoneplus,
+    hva,
     lex,
     lexplus10s,
     lexplus10sl,
@@ -180,6 +181,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
     SyrConnectModel(
         base_path=None,
+        device_profile=hva.PROFILE,
         display_name="HVA",
         dk=20,
         dkv=19,

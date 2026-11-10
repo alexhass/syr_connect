@@ -28,6 +28,7 @@ from custom_components.syr_connect import (
 from custom_components.syr_connect.const import API_TYPE_JSON, DOMAIN
 from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.devices import (
+    hva,
     lex,
     muco_connectioncentre,
     muco_filling,
@@ -2412,6 +2413,22 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
 
     assert "getBAR" in safetech.SENSOR_SUPPORTED_KEYS
     assert "getBAR" in safetechplus.SENSOR_SUPPORTED_KEYS
+
+
+@pytest.mark.parametrize("platform", ["sensor", "select"])
+def test_get_model_supported_keys_hva_without_rcp(platform: str) -> None:
+    """The HVA does not get the synchronization interval (getRCP) of the global allowlists.
+
+    On the HVA, getRCP is the remaining capacity, which the sensor and the select would
+    show as synchronization interval.
+    """
+    signature = _signature("hva")
+    global_keys = {"getBAR", "getRCP"}
+
+    assert signature.device_profile is hva.PROFILE
+    assert "getRCP" not in helpers.get_model_supported_keys(
+        signature, platform, global_keys
+    )
 
 
 def test_get_model_supported_keys_lex_device_override() -> None:
