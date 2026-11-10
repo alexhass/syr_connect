@@ -761,7 +761,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         manufacturer="SYR",
         name="allinoneplus",
         # TODO: Untested model.
-        srn_prefix="36",
+        ver_prefix="All-in-One+",
     ),
     SyrConnectModel(
         base_path="/hygbox",
