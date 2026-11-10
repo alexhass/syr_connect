@@ -546,6 +546,46 @@ def test_mask_srn_value_matches_and_masks() -> None:
     assert mask_srn_value("not-a-srn") == "not-a-srn"
 
 
+def test_redact_xml_masks_sn_attribute() -> None:
+    """The serial number in sn="..." is masked like getSRN, in the device list and the status."""
+    device_list = '<sc><dvs><d dg="cf36f6a5" sn="206AAA67890" sbt="2" /></dvs></sc>'
+    status = (
+        '<sc><dvs><d dclg="0b09f7ce" sn="206AAA67890">'
+        '<c n="getSRN" v="206AAA67890" /></d></dvs></sc>'
+    )
+
+    assert 'sn="206AAA12345"' in diag._redact_device_list_xml(device_list)
+    cleaned = diag._redact_xml(status)
+    assert 'sn="206AAA12345"' in cleaned
+    assert "206AAA67890" not in cleaned
+    # A value that is no serial number stays, as for getSRN
+    assert 'sn="123456789"' in diag._redact_xml('<d sn="123456789" />')
+
+
+def test_redact_device_list_xml_replaces_address_and_phone() -> None:
+    """The address and phone numbers of the project are replaced, empty ones stay empty."""
+    xml = (
+        '<sc><prs><pr pg="8625a6fc" pn="Haus+Mustermann" com="Max+Mustermann" '
+        'adr="Musterweg+12" zip="54321" rsd="Musterstadt" rg="Deutschland" '
+        'pho="%2b49+30+1234567" fax="" cph="%2b49+170+1234567" '
+        'url="mustermann.example" /></prs>'
+        '<col><dcl dclg="0b09f7ce" ali="Mustermann+Keller" /></col></sc>'
+    )
+
+    cleaned = diag._redact_device_list_xml(xml)
+
+    assert 'adr="Street+1"' in cleaned
+    assert 'zip="12345"' in cleaned
+    assert 'rsd="City"' in cleaned
+    assert 'pho="0123456789"' in cleaned
+    assert 'cph="0123456789"' in cleaned
+    assert 'url="example.com"' in cleaned
+    assert 'fax=""' in cleaned
+    # The country and the device name stay
+    assert 'rg="Deutschland"' in cleaned
+    assert 'ali="Mustermann+Keller"' in cleaned
+
+
 def test_mask_mac_value_colon_separator() -> None:
     """Test mask mac value colon separator."""
     inp = "aa:bb:cc:dd:ee:ff"

@@ -47,6 +47,17 @@ _SYR_CONNECT_DIAGNOSTICS_TO_REDACT = {
     "getWIP",  # Wi-Fi IP address
 }
 
+# Address and phone attributes of a project in the device list XML -> their placeholder
+_SYR_CONNECT_DIAGNOSTICS_PROJECT_PLACEHOLDERS = {
+    "adr": "Street+1",
+    "cph": "0123456789",
+    "fax": "0123456789",
+    "pho": "0123456789",
+    "rsd": "City",
+    "url": "example.com",
+    "zip": "12345",
+}
+
 
 def _local_json_base_path(device: SyrConnectDevice) -> str | None:
     """Return the local JSON API base path of the device's model, or None without local access.
@@ -141,6 +152,14 @@ def _redact_xml(xml: str) -> str:
             flags=re.IGNORECASE,
         )
 
+    # The same serial number as attribute of a device: <d sn="..." />
+    with contextlib.suppress(re.error, TypeError, ValueError):
+        cleaned = re.sub(
+            r'(\bsn\s*=\s*")([^\"]*)(")',
+            lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
+            cleaned,
+        )
+
     # For each redact key, replace attribute values like key="..."
     for key in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT:
         if not key:
@@ -207,8 +226,10 @@ def _redact_device_list_xml(xml: str) -> str:
 
     - `pn="..."` -> `My+Project` (project name)
     - `com="..."` -> `Firstname+Lastname` (contact/owner name)
+    - the address and phone numbers of the project
+      (`_SYR_CONNECT_DIAGNOSTICS_PROJECT_PLACEHOLDERS`), unless they are empty
 
-    Both are free text the user entered in the app and often contain an address or
+    All are free text the user entered in the app and often contain an address or
     family name. They are replaced by fixed placeholders instead of being removed,
     so the structure of the response stays recognizable.
     """
@@ -220,6 +241,11 @@ def _redact_device_list_xml(xml: str) -> str:
         cleaned = re.sub(
             r'(\bcom\s*=\s*")([^"]*)(")', r"\1Firstname+Lastname\3", cleaned
         )
+    for name, placeholder in _SYR_CONNECT_DIAGNOSTICS_PROJECT_PLACEHOLDERS.items():
+        with contextlib.suppress(re.error, TypeError, ValueError):
+            cleaned = re.sub(
+                rf'(\b{name}\s*=\s*")([^"]+)(")', rf"\g<1>{placeholder}\3", cleaned
+            )
     return cleaned
 
 
