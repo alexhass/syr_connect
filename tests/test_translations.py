@@ -1,4 +1,4 @@
-"""Tests that every raised exception message is translated."""
+"""Tests that every raised exception message and every alarm code is translated."""
 
 import ast
 import json
@@ -6,7 +6,12 @@ from pathlib import Path
 import string
 from typing import Any, cast
 
-from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.const import (
+    _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
+    _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
+    DOMAIN,
+)
+from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.translation import async_get_translations
@@ -63,6 +68,25 @@ def test_raised_exceptions_are_translated() -> None:
                 if name is not None
             }
             assert used == placeholders, f"{path.name}: {key}"
+
+
+def test_alarm_codes_are_translated() -> None:
+    """Every alarm code of every family has a state in getala and getalm in all languages.
+
+    getALM is mapped with the alarm codes of the model first (the LEX family reports
+    its current alarm there), then with its own value map.
+    """
+    ala_states = set(_SYR_CONNECT_SENSOR_ALA_CODES_GENERIC.values())
+    for model in MODEL_SIGNATURES:
+        profile = model.device_profile
+        if profile is not None and profile.ala_codes is not None:
+            ala_states.update(profile.ala_codes.values())
+    alm_states = ala_states | set(_SYR_CONNECT_SENSOR_ALM_VALUE_MAP.values())
+
+    for path in sorted((_INTEGRATION / "translations").glob("*.json")):
+        sensors = json.loads(path.read_text(encoding="utf-8"))["entity"]["sensor"]
+        assert ala_states <= set(sensors["getala"]["state"]), path.name
+        assert alm_states <= set(sensors["getalm"]["state"]), path.name
 
 
 async def test_exception_message_rendered_from_translation(hass: HomeAssistant) -> None:
