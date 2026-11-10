@@ -188,7 +188,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 
 - Überwachung Roh-/Weichwasserhärte
 - Wasserleitfähigkeit (µS/cm)
-- Härtebereich (weich, mittel, hart), geschätzt aus der Leitfähigkeit (SafeTech-Familie)
+- Wasserhärtebereich (weich, mittel, hart), geschätzt aus der Leitfähigkeit (SafeTech-Familie)
 - Leitfähigkeitsfaktor
 - Wassertemperatur (°C)
 - Verbleibende Enthärtekapazität

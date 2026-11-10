@@ -638,7 +638,7 @@
         "name": "Wasserleitfähigkeit"
       },
       "getcnd_class": {
-        "name": "Härtebereich",
+        "name": "Wasserhärtebereich",
         "state": {
           "hard": "Hart",
           "medium": "Mittel",

@@ -638,7 +638,7 @@
         "name": "Geleidbaarheid"
       },
       "getcnd_class": {
-        "name": "Hardheidsbereik",
+        "name": "Waterhardheidsbereik",
         "state": {
           "hard": "Hard",
           "medium": "Gemiddeld",
