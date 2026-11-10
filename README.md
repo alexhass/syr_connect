@@ -188,6 +188,7 @@ The integration provides comprehensive monitoring of the devices:
 
 - Raw/Soft water hardness monitoring
 - Water conductivity (µS/cm)
+- Water hardness range (soft, medium, hard), estimated from the conductivity (SafeTech family)
 - Conductivity factor
 - Water temperature (°C)
 - Remaining softening capacity tracking

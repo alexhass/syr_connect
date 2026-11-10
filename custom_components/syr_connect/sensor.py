@@ -38,6 +38,7 @@ from homeassistant.util import dt as dt_util
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_CND_PER_DH,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
     _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
@@ -208,6 +209,27 @@ def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         except ValueError, TypeError, OverflowError:
             return None
     return get_sensor_bat_value(value)
+
+
+def _value_cnd_class(
+    sensor: SyrConnectSensor, status: dict[str, Any], value: Any
+) -> Any:
+    """Water hardness range (getCND_class): conductivity (getCND) / 35 -> range in °dH.
+
+    Formats:
+    - getCND "245" (7.0 °dH, up to 8 °dH): "soft"
+    - getCND "384" (11.0 °dH, up to 14 °dH): "medium"
+    - getCND "608" (17.4 °dH): "hard"
+    """
+    conductivity = _to_float(status.get("getCND"))
+    if conductivity is None:
+        return None
+    hardness = conductivity / _SYR_CONNECT_SENSOR_CND_PER_DH
+    if hardness <= 8:
+        return "soft"
+    if hardness <= 14:
+        return "medium"
+    return "hard"
 
 
 def _value_cyt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -679,6 +701,17 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",  # value "" means sensor does not exist or is not measured.
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCND_class",  # Water hardness range computed from getCND (SafeTech family)
+        device_class=SensorDeviceClass.ENUM,
+        options=[
+            "soft",
+            "medium",
+            "hard",
+        ],
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_cnd_class,
     ),
     SyrConnectSensorEntityDescription(
         key="getCNF",  # Conductivity factor (raw 5-50 -> 0.5-5.0)
@@ -2016,8 +2049,16 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
     description.key: description for description in _SYR_CONNECT_SENSOR_TYPES
 }
 
+# Sensors that only a device profile enables: computed values that the device does not
+# report itself and that apply to one family only
+_SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
+    "getCND_class",
+}
+
 # Allowlist of known sensor keys, the global fallback for get_model_supported_keys()
-_SYR_CONNECT_SENSOR_SUPPORTED_KEYS = set(_SYR_CONNECT_SENSOR_DESCRIPTIONS)
+_SYR_CONNECT_SENSOR_SUPPORTED_KEYS = (
+    set(_SYR_CONNECT_SENSOR_DESCRIPTIONS) - _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS
+)
 
 
 def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
@@ -2251,6 +2292,19 @@ def _build_device_sensors(
         )
         sensor_count += 1
 
+    # The water hardness range is computed from the conductivity (_value_cnd_class)
+    if _is_cnd_class_wanted(status, supported_sensor_keys):
+        _LOGGER.debug("Creating sensor: device=%s key=getCND_class", device_id)
+        entities.append(
+            SyrConnectSensor(
+                coordinator,
+                device_id,
+                device_name,
+                "getCND_class",
+            )
+        )
+        sensor_count += 1
+
     _LOGGER.debug("Created %d sensor(s) for device %s", sensor_count, device_name)
     return entities
 
@@ -2414,7 +2468,19 @@ def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> li
     )
     if (conditional_key := _muco_conditional_key(status, model)) is not None:
         keys.append(conditional_key)
+    if _is_cnd_class_wanted(status, supported_sensor_keys):
+        keys.append("getCND_class")
     return keys
+
+
+def _is_cnd_class_wanted(
+    status: dict[str, Any], supported_sensor_keys: set[str]
+) -> bool:
+    """Return True if the device gets the water hardness range computed from getCND."""
+    return (
+        "getCND_class" in supported_sensor_keys
+        and _to_float(status.get("getCND")) is not None
+    )
 
 
 def _to_float(value: Any) -> float | None:

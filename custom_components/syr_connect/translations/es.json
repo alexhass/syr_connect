@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Conductividad"
       },
+      "getcnd_class": {
+        "name": "Rango de dureza del agua",
+        "state": {
+          "hard": "Dura",
+          "medium": "Media",
+          "soft": "Blanda"
+        }
+      },
       "getcnf": {
         "name": "Factor de conductividad"
       },

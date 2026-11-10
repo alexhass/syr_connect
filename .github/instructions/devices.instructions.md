@@ -10,7 +10,7 @@ applyTo: "custom_components/syr_connect/{devices/*.py,models.py,helpers.py}"
 - Use positive allowlists only. Do not add exclusion lists to `MODEL_SIGNATURES`.
 - An override must still contain structurally required keys such as `dst`, otherwise `registry_cleanup()` deletes them.
 - An empty override (`set()`) is valid and means "no entities". Always check `is None` when reading an override.
-- A key in a device file needs an entity description of its platform (`_SYR_CONNECT_<PLATFORM>_TYPES`). Except for selects it is then also in the global allowlist. Selects can be enabled by a device file alone (SafeFloor thresholds, LEX water hardness).
+- A key in a device file needs an entity description of its platform (`_SYR_CONNECT_<PLATFORM>_TYPES`). Except for selects and the sensors in `_SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS` it is then also in the global allowlist. Selects can be enabled by a device file alone (SafeFloor thresholds, LEX water hardness), and so can computed sensors of one family (`getCND_class`, SafeTech water hardness range).
 - The official per-model validity matrix in `docs/syrconnect-protocol.md` beats fixture contents. A key that is present in a fixture can still be a stub value. Only judge by fixture for properties the matrix does not cover.
 - Fixture co-presence of a key across models does not prove it is generic. When domain knowledge and fixture data conflict, ask the maintainer.
 - Match the exact `dk`/`dkv` in `models.py` before mapping a name from the matrix to a device file. Similar names can be different products.

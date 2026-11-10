@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Geleidbaarheid"
       },
+      "getcnd_class": {
+        "name": "Hardheidsbereik",
+        "state": {
+          "hard": "Hard",
+          "medium": "Gemiddeld",
+          "soft": "Zacht"
+        }
+      },
       "getcnf": {
         "name": "Geleidbaarheidsfactor"
       },

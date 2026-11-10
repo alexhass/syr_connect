@@ -861,7 +861,7 @@ These properties are only available on devices that contain leakage protection, 
 | getBSA / setBSA | "1"<br>"True" | | USER | 1 | Floor sensor monitoring: 0/False = disabled, 1/True = enabled |
 | getBSI | "2 (16 bar)" | | | | Pressure sensor type and range identifier (Safe-T+) |
 | getCEL | "203" | 1/10 °C | USER | | Temperature / Water temperature, e.g. 203 = 20.3°C |
-| getCND | "250" | µS/cm | USER | | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel) |
+| getCND | "250" | µS/cm | USER | | Conductivity (LEXplus10SL, Trio DFR/LS, SafeTech, SafeTech+, Sanibel). SafeTech family: getCND / 35 estimates the water hardness in °dH, shown as range: soft up to 8 °dH, medium up to 14 °dH, hard above |
 | getCND2 | "0" | µS/cm | | | Conductivity for second channel (Trio DFR/LS, Sanibel). Duplicate of getCND with 2 suffix |
 | getCSE2 | "false" | | | | Remote-service enable for second channel (Sanibel Leak Protection Module A25) |
 | getDFM | "1" | | | | MultiController device features: 1=Leak protection, 2=Connection centre, 3=All-in-One, 4=Automatic backwash (RSA), 5=Backwash filter with pressure reducer (DM) + leak protection (LS) |

@@ -28,6 +28,7 @@ from custom_components.syr_connect.models import (
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
+    _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS,
     _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     _SYR_CONNECT_SENSOR_TYPES,
     SyrConnectConnectionStateSensor,
@@ -78,7 +79,13 @@ def test_sensor_descriptions_have_unique_keys() -> None:
     """Every key is described once; a duplicate would silently replace the first one."""
     keys = [description.key for description in _SYR_CONNECT_SENSOR_TYPES]
     assert len(keys) == len(set(keys))
-    assert set(keys) == _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
+    assert (
+        set(keys)
+        == _SYR_CONNECT_SENSOR_SUPPORTED_KEYS | _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS
+    )
+    assert (
+        not _SYR_CONNECT_SENSOR_SUPPORTED_KEYS & _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS
+    )
 
 
 def test_sensor_descriptions_keep_as_string_without_value_fn() -> None:
@@ -399,6 +406,70 @@ def test_sensor_whu_follows_model_family(
 
     assert whu_sensor.native_value == unit
     assert iwh_sensor.native_unit_of_measurement == unit
+
+
+@pytest.mark.parametrize(
+    ("cnd", "expected"),
+    [
+        # getCND / 35 = water hardness in °dH
+        ("245", "soft"),
+        (280, "soft"),
+        ("281", "medium"),
+        ("384", "medium"),
+        (490, "medium"),
+        ("491", "hard"),
+        ("608", "hard"),
+        ("", None),
+        (None, None),
+        ("invalid", None),
+    ],
+)
+def test_sensor_cnd_class_from_conductivity(
+    create_mock_coordinator: Callable[..., MagicMock], cnd: Any, expected: str | None
+) -> None:
+    """The water hardness range is soft up to 8 °dH, medium up to 14 °dH, else hard."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "model": _signature("safetechplus"),
+                "status": {"getCND": cnd},
+            }
+        ]
+    }
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCND_class")
+
+    assert sensor.native_value == expected
+    assert sensor.options == ["soft", "medium", "hard"]
+
+
+@pytest.mark.parametrize(
+    ("model", "cnd", "created"),
+    [
+        # Only the SafeTech family gets the water hardness range
+        ("safetech", "384", True),
+        ("safetechplus", 245, True),
+        ("safetechplus", "", False),
+        ("lexplus10sl", "250", False),
+        ("unknown", "250", False),
+    ],
+)
+def test_sensor_cnd_class_created_for_safetech_family(
+    hass: HomeAssistant, model: str, cnd: Any, created: bool
+) -> None:
+    """The computed water hardness range is a sensor of the SafeTech profiles only."""
+    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
+    status = {"getCND": cnd}
+    device = {"id": "d1", "name": "D1", "model": signature, "status": status}
+    coordinator = _build_coordinator(hass, {"devices": [device]})
+
+    keys = sensor_module.sensor_keys_for_status(status, signature)
+    entities = sensor_module._build_device_sensors(hass, coordinator, cast(Any, device))
+    entity_keys = {getattr(entity, "_sensor_key", None) for entity in entities}
+
+    assert ("getCND_class" in keys) is created
+    assert ("getCND_class" in entity_keys) is created
 
 
 @pytest.mark.parametrize(

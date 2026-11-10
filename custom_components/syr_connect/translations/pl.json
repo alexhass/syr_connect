@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Przewodność"
       },
+      "getcnd_class": {
+        "name": "Zakres twardości wody",
+        "state": {
+          "hard": "Twarda",
+          "medium": "Średnia",
+          "soft": "Miękka"
+        }
+      },
       "getcnf": {
         "name": "Współczynnik przewodności"
       },

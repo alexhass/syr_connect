@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Conducibilità"
       },
+      "getcnd_class": {
+        "name": "Intervallo di durezza acqua",
+        "state": {
+          "hard": "Dura",
+          "medium": "Media",
+          "soft": "Dolce"
+        }
+      },
       "getcnf": {
         "name": "Fattore di conducibilità"
       },

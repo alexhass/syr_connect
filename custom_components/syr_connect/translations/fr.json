@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Conductivité"
       },
+      "getcnd_class": {
+        "name": "Plage de dureté de l'eau",
+        "state": {
+          "hard": "Dure",
+          "medium": "Moyenne",
+          "soft": "Douce"
+        }
+      },
       "getcnf": {
         "name": "Facteur de conductivité"
       },

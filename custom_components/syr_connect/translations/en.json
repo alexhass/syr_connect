@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Conductivity"
       },
+      "getcnd_class": {
+        "name": "Water hardness range",
+        "state": {
+          "hard": "Hard",
+          "medium": "Medium",
+          "soft": "Soft"
+        }
+      },
       "getcnf": {
         "name": "Conductivity factor"
       },

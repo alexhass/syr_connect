@@ -42,6 +42,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water quality ---
     "getCEL",
     "getCND",
+    "getCND_class",
     "getCNF",
     "getCNL",
     # --- Microleakage test ---

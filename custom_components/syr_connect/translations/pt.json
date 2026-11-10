@@ -637,6 +637,14 @@
       "getcnd": {
         "name": "Condutividade"
       },
+      "getcnd_class": {
+        "name": "Gama de dureza da água",
+        "state": {
+          "hard": "Dura",
+          "medium": "Média",
+          "soft": "Macia"
+        }
+      },
       "getcnf": {
         "name": "Fator de condutividade"
       },
