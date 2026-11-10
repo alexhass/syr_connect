@@ -4628,3 +4628,46 @@ async def test_allinoneplus_hardness_selects_follow_unit(
     assert isinstance(by_key["getOWH"], SyrConnectRangedHardnessSelect)
     assert by_key["getIWH"].options == iwh_options
     assert by_key["getOWH"].options == owh_options
+
+
+@pytest.mark.parametrize(
+    ("model_name", "custom"),
+    [
+        pytest.param("allinoneplus", True, id="allinoneplus"),
+        pytest.param("conelclearprofill", False, id="muco-filling"),
+    ],
+)
+async def test_crs_select_custom_size_follows_profile(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    model_name: str,
+    custom: bool,
+) -> None:
+    """Only a model with a custom cartridge size (getFCS) offers "custom" for getCRS."""
+    model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": model,
+                "status": {"getCRS": "0", "getFCS": "20"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    by_key = {getattr(e, "_sensor_key", None): e for e in entities}
+    assert ("custom" in by_key["getCRS"].options) is custom
+    assert (by_key["getCRS"].current_option == "custom") is custom
+    assert ("getFCS" in by_key) is custom
+    if custom:
+        assert by_key["getFCS"].options == [f"{value} L" for value in range(1, 101)]
+        assert by_key["getFCS"].current_option == "20 L"

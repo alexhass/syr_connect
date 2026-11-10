@@ -8774,3 +8774,16 @@ def test_owh_sensor_without_cartridge_type_always_applies() -> None:
     assert "getOWH" not in sensor_module._hidden_sensor_keys(
         status, _signature("lex30")
     )
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        pytest.param({"getCRS": "3"}, 7, id="fixed-size"),
+        pytest.param({"getCRS": "0", "getFCS": "20"}, 20.0, id="custom-size"),
+        pytest.param({"getCRS": "0"}, None, id="custom-size-missing"),
+    ],
+)
+def test_crs_sensor_custom_size(status: dict[str, Any], expected: float | None) -> None:
+    """The custom cartridge size (getCRS 0) of the All in One + is the liters of getFCS."""
+    assert sensor_module._value_crs(MagicMock(), status, status["getCRS"]) == expected

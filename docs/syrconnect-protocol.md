@@ -1201,7 +1201,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getCNF2 | "" | | *unknown* |
 | getCNL2 | "" | | *unknown* |
 | getDTX | "" | | *unknown* |
-| getFCS | "" | | *unknown* |
 | getFMT | "" | | *unknown* |
 | getFVT | "" | | *unknown* |
 | getFWURL | "" | | *unknown* — possibly firmware update URL |
@@ -1251,6 +1250,8 @@ The All in One + has these additional properties:
 
 | Property | Example | Unit | Description |
 | ------ | ------ | ------ | ------ |
+| getCRS / setCRS | "0" | L | Cartridge size as on MuCo, plus 0=custom size from `getFCS` |
+| getFCS / setFCS | "20" | L | Custom cartridge size, used when `getCRS` is 0. Range in SYR GUI: 1–100 L |
 | getIWH / setIWH | "20" | `getWHU` | Raw water hardness. Default=20, Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10 |
 | getOWH / setOWH | "0" | `getWHU` | Soft water hardness, only visible when the cartridge type is HWE. Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness |
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |

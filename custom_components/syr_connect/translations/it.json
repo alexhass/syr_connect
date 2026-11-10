@@ -174,7 +174,10 @@
         "name": "Durata allarme"
       },
       "getcrs": {
-        "name": "Dimensione cartuccia"
+        "name": "Dimensione cartuccia",
+        "state": {
+          "custom": "Personalizzata"
+        }
       },
       "getcrt": {
         "name": "Tipo di cartuccia",
@@ -204,6 +207,9 @@
           "5184000": "2 mesi",
           "7776000": "3 mesi"
         }
+      },
+      "getfcs": {
+        "name": "Dimensione cartuccia (personalizzata)"
       },
       "getffm": {
         "name": "Tipo di filtro",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "Contenuto di ferro"
+      },
+      "getfcs": {
+        "name": "Dimensione cartuccia (personalizzata)"
       },
       "getffm": {
         "name": "Tipo di filtro",

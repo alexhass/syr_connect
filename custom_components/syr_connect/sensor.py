@@ -505,13 +505,20 @@ def _value_ul(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> A
 
 
 def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Cartridge size (getCRS): raw value -> liters."""
+    """Cartridge size (getCRS): raw value -> liters.
+
+    Formats:
+    - Fixed size: "3" -> 7 L
+    - Custom size (All in One +): "0" -> the liters of getFCS
+    """
     if value is None or value == "":
         return None
     try:
         raw = int(float(value))
     except ValueError, TypeError, OverflowError:
         return None
+    if raw == 0:
+        return _to_float(status.get("getFCS"))
     return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
 
 
@@ -1976,6 +1983,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getCWL",  # Remaining capacity warning threshold (%)
         native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getFCS",  # Custom cartridge size (L), used for getCRS 0
+        native_unit_of_measurement=UnitOfVolume.LITERS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),

@@ -174,7 +174,10 @@
         "name": "Czas trwania alarmu"
       },
       "getcrs": {
-        "name": "Rozmiar wkładu"
+        "name": "Rozmiar wkładu",
+        "state": {
+          "custom": "Niestandardowy"
+        }
       },
       "getcrt": {
         "name": "Typ wkładu",
@@ -204,6 +207,9 @@
           "5184000": "2 miesiące",
           "7776000": "3 miesiące"
         }
+      },
+      "getfcs": {
+        "name": "Rozmiar wkładu (niestandardowy)"
       },
       "getffm": {
         "name": "Typ filtra",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "Zawartość żelaza"
+      },
+      "getfcs": {
+        "name": "Rozmiar wkładu (niestandardowy)"
       },
       "getffm": {
         "name": "Typ filtra",

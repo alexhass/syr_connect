@@ -62,6 +62,9 @@
       "getfcd": {
         "default": "mdi:calendar-filter-outline"
       },
+      "getfcs": {
+        "default": "mdi:filter-cog"
+      },
       "getffm": {
         "default": "mdi:filter"
       },
@@ -302,6 +305,9 @@
       },
       "getfco": {
         "default": "mdi:counter"
+      },
+      "getfcs": {
+        "default": "mdi:filter-cog"
       },
       "getffm": {
         "default": "mdi:filter"

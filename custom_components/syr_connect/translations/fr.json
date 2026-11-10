@@ -174,7 +174,10 @@
         "name": "Durée de l'alarme"
       },
       "getcrs": {
-        "name": "Taille de la cartouche"
+        "name": "Taille de la cartouche",
+        "state": {
+          "custom": "Personnalisée"
+        }
       },
       "getcrt": {
         "name": "Type de cartouche",
@@ -204,6 +207,9 @@
           "5184000": "2 mois",
           "7776000": "3 mois"
         }
+      },
+      "getfcs": {
+        "name": "Taille de la cartouche (personnalisée)"
       },
       "getffm": {
         "name": "Type de filtre",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "Teneur en fer"
+      },
+      "getfcs": {
+        "name": "Taille de la cartouche (personnalisée)"
       },
       "getffm": {
         "name": "Type de filtre",

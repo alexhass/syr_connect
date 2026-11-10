@@ -174,7 +174,10 @@
         "name": "Alarm duration"
       },
       "getcrs": {
-        "name": "Cartridge size"
+        "name": "Cartridge size",
+        "state": {
+          "custom": "Custom"
+        }
       },
       "getcrt": {
         "name": "Cartridge type",
@@ -204,6 +207,9 @@
           "5184000": "2 months",
           "7776000": "3 months"
         }
+      },
+      "getfcs": {
+        "name": "Cartridge size (custom)"
       },
       "getffm": {
         "name": "Filter type",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "Iron content"
+      },
+      "getfcs": {
+        "name": "Cartridge size (custom)"
       },
       "getffm": {
         "name": "Filter type",

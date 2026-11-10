@@ -174,7 +174,10 @@
         "name": "Alarmduur"
       },
       "getcrs": {
-        "name": "Cartridgegrootte"
+        "name": "Cartridgegrootte",
+        "state": {
+          "custom": "Aangepast"
+        }
       },
       "getcrt": {
         "name": "Cartridgetype",
@@ -204,6 +207,9 @@
           "5184000": "2 maanden",
           "7776000": "3 maanden"
         }
+      },
+      "getfcs": {
+        "name": "Cartridgegrootte (aangepast)"
       },
       "getffm": {
         "name": "Filtertype",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "IJzergehalte"
+      },
+      "getfcs": {
+        "name": "Cartridgegrootte (aangepast)"
       },
       "getffm": {
         "name": "Filtertype",

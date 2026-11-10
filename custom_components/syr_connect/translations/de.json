@@ -174,7 +174,10 @@
         "name": "Alarmdauer"
       },
       "getcrs": {
-        "name": "Kartuschengröße"
+        "name": "Kartuschengröße",
+        "state": {
+          "custom": "Benutzerdefiniert"
+        }
       },
       "getcrt": {
         "name": "Kartuschentyp",
@@ -204,6 +207,9 @@
           "5184000": "2 Monate",
           "7776000": "3 Monate"
         }
+      },
+      "getfcs": {
+        "name": "Kartuschengröße (Benutzerdefiniert)"
       },
       "getffm": {
         "name": "Filtertyp",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "Eisengehalt"
+      },
+      "getfcs": {
+        "name": "Kartuschengröße (Benutzerdefiniert)"
       },
       "getffm": {
         "name": "Filtertyp",

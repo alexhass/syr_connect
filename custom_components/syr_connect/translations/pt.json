@@ -174,7 +174,10 @@
         "name": "Duração do alarme"
       },
       "getcrs": {
-        "name": "Tamanho do cartucho"
+        "name": "Tamanho do cartucho",
+        "state": {
+          "custom": "Personalizado"
+        }
       },
       "getcrt": {
         "name": "Tipo de cartucho",
@@ -204,6 +207,9 @@
           "5184000": "2 meses",
           "7776000": "3 meses"
         }
+      },
+      "getfcs": {
+        "name": "Tamanho do cartucho (personalizado)"
       },
       "getffm": {
         "name": "Tipo de filtro",
@@ -784,6 +790,9 @@
       },
       "getfco": {
         "name": "Teor de ferro"
+      },
+      "getfcs": {
+        "name": "Tamanho do cartucho (personalizado)"
       },
       "getffm": {
         "name": "Tipo de filtro",

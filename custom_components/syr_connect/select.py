@@ -126,6 +126,10 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SyrConnectSelectEntityDescription(
+        key="getFCS",  # Custom cartridge size (L), used for getCRS 0
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
         key="getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
         entity_category=EntityCategory.CONFIG,
     ),
@@ -206,6 +210,7 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
     "getCWL",  # Remaining capacity warning threshold (%)
+    "getFCS",  # Custom cartridge size (L), used for getCRS 0
     "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",  # Filling processes count
     "getRMT",  # Maximum filling duration (min)
@@ -237,6 +242,11 @@ def _option_unit(key: str) -> str:
 _SYR_CONNECT_SELECT_CRS_MAP = {
     f"{v:g} {_option_unit('getCRS')}": k
     for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
+}
+# All in One +: also "custom" (raw 0), whose size in liters is getFCS
+_SYR_CONNECT_SELECT_CRS_CUSTOM_MAP = {
+    **_SYR_CONNECT_SELECT_CRS_MAP,
+    "custom": 0,
 }
 
 
@@ -506,8 +516,17 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     separately (_async_setup_muco_conditional_selects), which adds/removes whichever one
     currently applies instead of creating both and showing the other as unavailable.
     """
+    # Cartridge size (getCRS); a model with a custom size (getFCS) also offers "custom"
     if b.allowed("getCRS", _is_integer):
-        b.add_discrete("getCRS", _SYR_CONNECT_SELECT_CRS_MAP)
+        b.add_discrete(
+            "getCRS",
+            _SYR_CONNECT_SELECT_CRS_CUSTOM_MAP
+            if "getFCS" in b.supported_select_keys
+            else _SYR_CONNECT_SELECT_CRS_MAP,
+        )
+    # Custom cartridge size (getFCS): 1-100 L in steps of 1
+    if b.allowed("getFCS"):
+        b.add_numeric_steps("getFCS", list(range(1, 101)))
     # getCRT and getRCD have an option for the empty value, so any reported value counts
     if "getCRT" in b.supported_select_keys and "getCRT" in b.status:
         b.add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)

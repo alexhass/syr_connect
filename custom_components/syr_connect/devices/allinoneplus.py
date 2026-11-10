@@ -15,6 +15,7 @@ Differences to muco_filling:
 - getRMT: other steps for the maximum filling duration (SELECT_RMT_OPTIONS).
 - getCWL: the warning threshold of the remaining capacity, only on this device.
 - getMFL: the manual filling, only on this device.
+- getFCS: the custom cartridge size, selected with getCRS 0, only on this device.
 - getIWH, getOWH: selects whose range follows the unit (HARDNESS_RANGES).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
@@ -72,6 +73,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getCRS",
     "getCRT",
     "getCWL",
+    "getFCS",
     "getLRC",
     "getPRC",
     "getRCC",
@@ -95,6 +97,7 @@ SELECT_SUPPORTED_KEYS = {
     "getCRS",
     "getCRT",
     "getCWL",
+    "getFCS",
     "getIWH",
     "getOWH",
     "getRCD",
