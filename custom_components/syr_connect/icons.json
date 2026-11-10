@@ -203,7 +203,12 @@
         "default": "mdi:flash"
       },
       "getcnd_class": {
-        "default": "mdi:water-opacity"
+        "default": "mdi:water-opacity",
+        "state": {
+          "hard": "mdi:water",
+          "medium": "mdi:water-opacity",
+          "soft": "mdi:water-outline"
+        }
       },
       "getcnf": {
         "default": "mdi:tune-variant"
