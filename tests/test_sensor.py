@@ -629,8 +629,7 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
 
-    # Should return mapped key
-    assert sensor.native_value in ("low_salt", "LowSalt")
+    assert sensor.native_value == "alarm_salt_supply_low"
 
 
 @pytest.mark.parametrize(
@@ -1232,7 +1231,7 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(
     )  # unchanged; the state is translated under it
 
     alm = SyrConnectSensor(coord, "dev_map", "Device Map", "getALM")
-    assert alm.native_value == "no_salt"
+    assert alm.native_value == "alarm_salt_supply_empty"
     assert alm.translation_key == "getalm"
 
     le = SyrConnectSensor(coord, "dev_map", "Device Map", "getLE")

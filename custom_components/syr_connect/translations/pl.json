@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "Brak sygnału turbiny",
           "alarm_safet_valve_cannot_be_operated": "Zawór nie może być obsługiwany",
           "alarm_salt_supply_empty": "Brak soli",
+          "alarm_salt_supply_low": "Mało soli",
           "alarm_target_pressure_unreachable": "Nie można osiągnąć ciśnienia docelowego!",
           "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
           "alarm_turbine_blocked": "Turbina zablokowana!",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Pozycja zaworu",
           "error_no_information": "Błąd: brak dostępnych informacji",
           "fault_conductance_sensor": "Czujnik przewodności uszkodzony!",
-          "low_salt": "Mało soli",
           "no_alarm": "Brak alarmu"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "Brak sygnału turbiny",
           "alarm_safet_valve_cannot_be_operated": "Zawór nie może być obsługiwany",
           "alarm_salt_supply_empty": "Brak soli",
+          "alarm_salt_supply_low": "Mało soli",
           "alarm_target_pressure_unreachable": "Nie można osiągnąć ciśnienia docelowego!",
           "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
           "alarm_turbine_blocked": "Turbina zablokowana!",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Pozycja zaworu",
           "error_no_information": "Błąd: brak dostępnych informacji",
           "fault_conductance_sensor": "Czujnik przewodności uszkodzony!",
-          "low_salt": "Mało soli",
-          "no_alarm": "Brak alarmu",
-          "no_salt": "Brak soli"
+          "no_alarm": "Brak alarmu"
         }
       },
       "getaln": {

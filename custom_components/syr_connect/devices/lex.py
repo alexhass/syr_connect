@@ -133,7 +133,7 @@ VALVE_SUPPORTED_KEYS: set[str] = set()
 # translation key). The LEX Plus 10 SL has its own, longer table (lexplus10sl.ALA_CODES).
 ALA_CODES = {
     "0": "no_alarm",
-    "LOWSALT": "low_salt",
+    "LOWSALT": "alarm_salt_supply_low",
     "NOSALT": "alarm_salt_supply_empty",
     "1": "alarm_salt_supply_empty",
     "2": "alarm_pressure_too_low",

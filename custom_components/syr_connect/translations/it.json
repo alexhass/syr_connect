@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "Nessun segnale turbina",
           "alarm_safet_valve_cannot_be_operated": "La valvola non può essere azionata",
           "alarm_salt_supply_empty": "Nessun sale",
+          "alarm_salt_supply_low": "Sale basso",
           "alarm_target_pressure_unreachable": "Impossibile raggiungere la pressione target!",
           "alarm_temperature_sensor_faulty": "Sensore di temperatura difettoso!",
           "alarm_turbine_blocked": "Turbina bloccata!",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Posizione della valvola",
           "error_no_information": "Errore: nessuna informazione disponibile",
           "fault_conductance_sensor": "Sensore di conducibilità difettoso!",
-          "low_salt": "Sale basso",
           "no_alarm": "Nessun allarme"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "Nessun segnale turbina",
           "alarm_safet_valve_cannot_be_operated": "La valvola non può essere azionata",
           "alarm_salt_supply_empty": "Nessun sale",
+          "alarm_salt_supply_low": "Sale basso",
           "alarm_target_pressure_unreachable": "Impossibile raggiungere la pressione target!",
           "alarm_temperature_sensor_faulty": "Sensore di temperatura difettoso!",
           "alarm_turbine_blocked": "Turbina bloccata!",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Posizione della valvola",
           "error_no_information": "Errore: nessuna informazione disponibile",
           "fault_conductance_sensor": "Sensore di conducibilità difettoso!",
-          "low_salt": "Sale basso",
-          "no_alarm": "Nessun allarme",
-          "no_salt": "Nessun sale"
+          "no_alarm": "Nessun allarme"
         }
       },
       "getaln": {

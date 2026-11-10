@@ -231,8 +231,8 @@ _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC = {
 # - "LowSalt" -> device reports low salt <= 4kg
 # - ""        -> no alarm >= 5kg
 _SYR_CONNECT_SENSOR_ALM_VALUE_MAP = {
-    "NOSALT": "no_salt",
-    "LOWSALT": "low_salt",
+    "NOSALT": "alarm_salt_supply_empty",
+    "LOWSALT": "alarm_salt_supply_low",
     "": "no_alarm",
 }
 

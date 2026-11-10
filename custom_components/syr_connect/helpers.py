@@ -1248,7 +1248,7 @@ def get_sensor_ala_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
         raw_code: Raw code value from the API (e.g. "FF", "A5", "0").
 
     Returns:
-        Internal translation key (e.g. "no_alarm", "alarm_low_salt") or None if unknown.
+        Internal translation key (e.g. "no_alarm", "alarm_salt_supply_low") or None if unknown.
     """
     if raw_code is None:
         return (None, "")

@@ -138,7 +138,7 @@ def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         ala_mapped = None
     std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
     mapped = ala_mapped or std_mapped
-    # Mapped key (e.g. 'no_salt', 'low_salt', 'no_alarm') or the raw value as fallback
+    # Mapped key (e.g. 'alarm_salt_supply_empty', 'no_alarm') or the raw value as fallback
     if mapped is not None:
         return mapped
     if isinstance(value, str) and value.startswith("Alarms:"):

@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "Aucun signal de turbine",
           "alarm_safet_valve_cannot_be_operated": "La vanne ne peut pas être actionnée",
           "alarm_salt_supply_empty": "Pas de sel",
+          "alarm_salt_supply_low": "Sel faible",
           "alarm_target_pressure_unreachable": "Impossible d'atteindre la pression cible",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
           "alarm_turbine_blocked": "Turbine bloquée",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Position de la vanne",
           "error_no_information": "Erreur : aucune information disponible",
           "fault_conductance_sensor": "Capteur de conductivité défectueux",
-          "low_salt": "Sel faible",
           "no_alarm": "Aucune alarme"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "Aucun signal de turbine",
           "alarm_safet_valve_cannot_be_operated": "La vanne ne peut pas être actionnée",
           "alarm_salt_supply_empty": "Pas de sel",
+          "alarm_salt_supply_low": "Sel faible",
           "alarm_target_pressure_unreachable": "Impossible d'atteindre la pression cible",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
           "alarm_turbine_blocked": "Turbine bloquée",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Position de la vanne",
           "error_no_information": "Erreur : aucune information disponible",
           "fault_conductance_sensor": "Capteur de conductivité défectueux",
-          "low_salt": "Sel faible",
-          "no_alarm": "Aucune alarme",
-          "no_salt": "Pas de sel"
+          "no_alarm": "Aucune alarme"
         }
       },
       "getaln": {

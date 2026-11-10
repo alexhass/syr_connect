@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "Sin señal de turbina",
           "alarm_safet_valve_cannot_be_operated": "La válvula no puede ser accionada",
           "alarm_salt_supply_empty": "Sin sal",
+          "alarm_salt_supply_low": "Poca sal",
           "alarm_target_pressure_unreachable": "¡No se puede alcanzar la presión objetivo!",
           "alarm_temperature_sensor_faulty": "¡Sensor de temperatura defectuoso!",
           "alarm_turbine_blocked": "¡Turbina bloqueada!",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Posición de la válvula",
           "error_no_information": "Error: no hay información disponible",
           "fault_conductance_sensor": "¡Sensor de conductividad defectuoso!",
-          "low_salt": "Poca sal",
           "no_alarm": "Sin alarma"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "Sin señal de turbina",
           "alarm_safet_valve_cannot_be_operated": "La válvula no puede ser accionada",
           "alarm_salt_supply_empty": "Sin sal",
+          "alarm_salt_supply_low": "Poca sal",
           "alarm_target_pressure_unreachable": "¡No se puede alcanzar la presión objetivo!",
           "alarm_temperature_sensor_faulty": "¡Sensor de temperatura defectuoso!",
           "alarm_turbine_blocked": "¡Turbina bloqueada!",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Posición de la válvula",
           "error_no_information": "Error: no hay información disponible",
           "fault_conductance_sensor": "¡Sensor de conductividad defectuoso!",
-          "low_salt": "Poca sal",
-          "no_alarm": "Sin alarma",
-          "no_salt": "Sin sal"
+          "no_alarm": "Sin alarma"
         }
       },
       "getaln": {

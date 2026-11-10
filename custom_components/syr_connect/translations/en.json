@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "No turbine signal",
           "alarm_safet_valve_cannot_be_operated": "Valve cannot be operated",
           "alarm_salt_supply_empty": "No salt",
+          "alarm_salt_supply_low": "Low salt",
           "alarm_target_pressure_unreachable": "Target pressure cannot be reached!",
           "alarm_temperature_sensor_faulty": "Temperature sensor faulty!",
           "alarm_turbine_blocked": "Turbine blocked!",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Valve position",
           "error_no_information": "Error: no information available",
           "fault_conductance_sensor": "Conductivity sensor faulty!",
-          "low_salt": "Low salt",
           "no_alarm": "No alarm"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "No turbine signal",
           "alarm_safet_valve_cannot_be_operated": "Valve cannot be operated",
           "alarm_salt_supply_empty": "No salt",
+          "alarm_salt_supply_low": "Low salt",
           "alarm_target_pressure_unreachable": "Target pressure cannot be reached!",
           "alarm_temperature_sensor_faulty": "Temperature sensor faulty!",
           "alarm_turbine_blocked": "Turbine blocked!",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Valve position",
           "error_no_information": "Error: no information available",
           "fault_conductance_sensor": "Conductivity sensor faulty!",
-          "low_salt": "Low salt",
-          "no_alarm": "No alarm",
-          "no_salt": "No salt"
+          "no_alarm": "No alarm"
         }
       },
       "getaln": {

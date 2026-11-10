@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "Geen turbinesignaal",
           "alarm_safet_valve_cannot_be_operated": "Klep kan niet worden bediend",
           "alarm_salt_supply_empty": "Geen zout",
+          "alarm_salt_supply_low": "Laag zout",
           "alarm_target_pressure_unreachable": "Streefdruk kan niet worden bereikt!",
           "alarm_temperature_sensor_faulty": "Temperatuursensor defect!",
           "alarm_turbine_blocked": "Turbine geblokkeerd!",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Klepstand",
           "error_no_information": "Fout: geen informatie beschikbaar",
           "fault_conductance_sensor": "Geleidbaarheidssensor defect!",
-          "low_salt": "Laag zout",
           "no_alarm": "Geen alarm"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "Geen turbinesignaal",
           "alarm_safet_valve_cannot_be_operated": "Klep kan niet worden bediend",
           "alarm_salt_supply_empty": "Geen zout",
+          "alarm_salt_supply_low": "Laag zout",
           "alarm_target_pressure_unreachable": "Streefdruk kan niet worden bereikt!",
           "alarm_temperature_sensor_faulty": "Temperatuursensor defect!",
           "alarm_turbine_blocked": "Turbine geblokkeerd!",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Klepstand",
           "error_no_information": "Fout: geen informatie beschikbaar",
           "fault_conductance_sensor": "Geleidbaarheidssensor defect!",
-          "low_salt": "Laag zout",
-          "no_alarm": "Geen alarm",
-          "no_salt": "Geen zout"
+          "no_alarm": "Geen alarm"
         }
       },
       "getaln": {

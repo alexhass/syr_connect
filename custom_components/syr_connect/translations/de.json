@@ -589,6 +589,7 @@
           "alarm_safet_turbine_no_signal": "Kein Turbinen-Signal",
           "alarm_safet_valve_cannot_be_operated": "Absperrung kann nicht betätigt werden",
           "alarm_salt_supply_empty": "Salz leer",
+          "alarm_salt_supply_low": "Salz gering",
           "alarm_target_pressure_unreachable": "Solldruck kann nicht erreicht werden!",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
           "alarm_turbine_blocked": "Turbine blockiert!",
@@ -596,7 +597,6 @@
           "alarm_valve_position": "Ventilstellung",
           "error_no_information": "Fehler: keine Informationen verfügbar",
           "fault_conductance_sensor": "Leitfähigkeitssensor fehlerhaft!",
-          "low_salt": "Salz gering",
           "no_alarm": "Kein Alarm"
         }
       },
@@ -648,6 +648,7 @@
           "alarm_safet_turbine_no_signal": "Kein Turbinen-Signal",
           "alarm_safet_valve_cannot_be_operated": "Absperrung kann nicht betätigt werden",
           "alarm_salt_supply_empty": "Salz leer",
+          "alarm_salt_supply_low": "Salz gering",
           "alarm_target_pressure_unreachable": "Solldruck kann nicht erreicht werden!",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
           "alarm_turbine_blocked": "Turbine blockiert!",
@@ -655,9 +656,7 @@
           "alarm_valve_position": "Ventilstellung",
           "error_no_information": "Fehler: keine Informationen verfügbar",
           "fault_conductance_sensor": "Leitfähigkeitssensor fehlerhaft!",
-          "low_salt": "Salz gering",
-          "no_alarm": "Kein Alarm",
-          "no_salt": "Salz leer"
+          "no_alarm": "Kein Alarm"
         }
       },
       "getaln": {
