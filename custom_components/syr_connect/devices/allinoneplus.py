@@ -8,8 +8,9 @@ filling controller, and must be checked against a capture of a real device.
 
 Differences to muco_filling:
 - getDFM: not included, it is the role of a MultiController (dk 1500-1506).
-- getCFV, getLFV: reported in milliliters instead of liters (see issue 10 in
-  docs/known_issues_json_api.md).
+- getCFV, getLFV, getTRV: reported in milliliters instead of liters (see issue 10
+  in docs/known_issues_json_api.md). Confirmed for getLFV only; getCFV and getTRV
+  are assumed to use the same unit.
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -131,6 +132,7 @@ PROFILE = SyrConnectDeviceProfile(
     sensor_divide_by={
         "getCFV": 1000,
         "getLFV": 1000,
+        "getTRV": 1000,
     },
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
