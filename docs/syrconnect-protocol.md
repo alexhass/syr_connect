@@ -711,7 +711,7 @@ These settings can be set by the user.
 | getDTR | "[0,0,0,0,0,0,0,0]" | | | | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
 | getDWF / setDWF | "200" | L | | | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |
 | getFCO / setFCO | "0" | ppm | | | Iron content (always 0?) |
-| getIWH / setIWH | "14" | °dH / °fH | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only |
+| getIWH / setIWH | "14" | getWHU | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
 | getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |
 | getLOCK | "False" | | | | Device keypad/remote lock flag (Trio DFR/LS, SafeTech) |
 | getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps) |
@@ -719,7 +719,7 @@ These settings can be set by the user.
 | getMPR / setMPR | "40" | 1/10 bar | | | The set water pressure |
 | getMXH / setMXH | "95" | % | | | Maximum huminity, Values: 100=Off, 5-100% (5% steps) |
 | getMXT / setMXT | "490" | 1/10 | | | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
-| getOWH / setOWH | "7" | °dh / °fH | | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only |
+| getOWH / setOWH | "7" | getWHU | | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
 | getPSD / setPSD | "0"<br>"True" | | USER / FACTORY | 0 | Pressure sensor setting. Value meaning depends on the API, see note below |
 | getPST / setPST | "1" | | | | Pressure sensor installed: 1 = not available, 2 = available |
 | getRCP / setRCP | "43200" | s | | | Settings synchronization interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w. HVA: different meaning, "remaining capacity" in the format `"<n> (<m>L)"`: n / 100 = remaining capacity in %, m = remaining capacity in liters |
